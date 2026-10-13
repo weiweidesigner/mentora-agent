@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="zh">
 <head>
+<script src="/static/cases/theme.js?v=20261013-1"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>美国总统就职后100个日历日：标普500指数累计收益率（%）</title>
-  <script src="/veya/static/vendor/echarts.min.js"></script>
+  <script src="/static/vendor/echarts.min.js"></script>
 <script>window.echarts||document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"><\/script>')</script>
   <style>
     html, body {
@@ -403,6 +404,7 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/static/cases/theme.css?v=20261013-1">
 </head>
 <body>
   <div id="wrap">
@@ -432,7 +434,7 @@
 
 
   <script id="projectDynamicLinePatch">
-    window.__projectDynamicLineTheme = {
+    window.__projectDynamicLineTheme = document.documentElement.dataset.theme === "dark" ? {text:"#eef2f7",muted:"#a7b1c0",grid:"#2a3341",axis:"#566477",centerFill:"rgba(167,177,192,.14)"} : {
       text: "#151922",
       muted: "#687386",
       grid: "rgba(104, 115, 134, 0.13)",

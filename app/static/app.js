@@ -623,6 +623,7 @@ function createArtifactFallbackFrame(item, index) {
     artifactSource.searchParams.set("v", String(Date.now()));
     frame.src = artifactSource.href;
   } else {
+    if (source.pathname.includes("/static/cases/")) source.searchParams.set("theme", currentThemeMode());
     frame.src = source.href;
   }
   frame.addEventListener("load", () => resizeReportDocumentFrame(frame), { once: true });
@@ -633,7 +634,7 @@ function syncReportFrameThemes(mode = currentThemeMode()) {
   document.querySelectorAll(".reportDocumentFrame").forEach((frame) => {
     try {
       const source = new URL(frame.src, window.location.origin);
-      if (!source.pathname.startsWith("/share-artifact/")) return;
+      if (!source.pathname.includes("/share-artifact/") && !source.pathname.includes("/static/cases/")) return;
       if (source.searchParams.get("theme") === mode) return;
       source.searchParams.set("theme", mode);
       frame.src = source.href;

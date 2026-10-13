@@ -3494,3 +3494,5 @@ p {
   .caseCacheDate { font-size: 10px; }
   .caseAskButton { min-width: 170px; height: 46px; }
 }
+
+.conversation.is-case .message.user + .message.assistant { margin-top: 18px; }

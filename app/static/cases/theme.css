@@ -1,0 +1,13 @@
+/* Cached SVG charts use the host's neutral palette; series colours stay intact. */
+:root[data-theme="dark"] { --case-text:#eef2f7; --case-muted:#a7b1c0; --case-grid:#2a3341; }
+:root[data-theme="dark"] body:has(.chart-component) { color:var(--case-text); }
+:root[data-theme="dark"] .chart-component :is(.chart-title,.chart-legend) { color:var(--case-text)!important; }
+:root[data-theme="dark"] .chart-component :is(.axis-label,.x-label,.axis-title) { fill:var(--case-muted)!important; }
+:root[data-theme="dark"] .chart-component .grid-line { stroke:var(--case-grid)!important; }
+:root[data-theme="dark"] .chart-component .axis-line { stroke:#566477!important; }
+:root[data-theme="dark"] .chart-component .point { fill:#10131a; }
+:root[data-theme="dark"] #wrap { background:transparent!important; border-color:var(--case-grid)!important; }
+:root[data-theme="dark"] #timelineBar { background:#171d26!important; border-color:var(--case-grid)!important; }
+:root[data-theme="dark"] :is(.timeLabel,.timeLabel *,#speedBtn,#musicBtn) { color:var(--case-text)!important; }
+:root[data-theme="dark"] .pillBtn { background:#202733!important; border-color:var(--case-grid)!important; }
+:root[data-theme="dark"] #sliderTrack { background:#2a3341!important; }
