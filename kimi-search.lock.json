@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/kimi-search.git",
+  "revision": "a12a174e3c7c6bdc690c68f488e05c9947558b60",
+  "checkout": ".dependencies/kimi-search",
+  "links": {
+    "app/skills/external-search/scripts/external_info_search.py": "app/skills/external-search/scripts/external_info_search.py"
+  }
+}

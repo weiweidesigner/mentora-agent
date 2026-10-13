@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/vision-chart-analyst.git",
+  "revision": "0aa605af808b534d1afd9a7eef3ec808df92f81d",
+  "checkout": ".dependencies/vision-chart-analyst",
+  "links": {
+    "app/skills/vision-chart-analyst": "app/skills/vision-chart-analyst"
+  }
+}

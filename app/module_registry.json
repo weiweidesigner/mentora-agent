@@ -1,0 +1,326 @@
+[
+  {
+    "name": "ainvest_news_search",
+    "script": "ainvest_news_search.py",
+    "label": "AInvest News Search",
+    "description": "仅限美股/美国上市标的：搜索 AInvest 新闻并抓取文章标题、摘要、正文、发布时间和 URL。适合美股新闻、消息面、催化剂、监管进展、宏观事件、财报新闻、市场新闻和最新资讯。A股、港股、日股、英股、欧股及其他非美股市场禁止使用，必须改用 external_info_search.py。该模块只负责文本新闻/文章搜索；美股视频、Shorts、Featured YouTube Videos 使用 ainvest_video_search.py。"
+  },
+  {
+    "name": "ainvest_video_search",
+    "script": "ainvest_video_search.py",
+    "label": "AInvest Video Search",
+    "description": "仅限美股/美国上市标的：搜索 AInvest 端内 Videos、Featured YouTube Videos 和 Shorts 视频流，返回视频标题、封面、视频链接、时长、发布时间和 URL。A股、港股、日股、英股、欧股及其他非美股市场禁止使用，必须改用 external_info_search.py。cli_args 可使用 --query、--topic、--keyword、--category（videos/shorts）、--limit、--semantic、--semantic-threshold、--no-topic-filter、--start-date、--end-date；不要传 --source 或 --max-details，该工具会固定使用 AInvest category 视频流且不抓详情页。"
+  },
+  {
+    "name": "external_info_search",
+    "script": "external_info_search.py",
+    "label": "External Info Search",
+    "description": "Kimi 联网搜索答案工具。保留 Moonshot Formula tools/fibers 搜索链路，将 Kimi 最终答案写入 payload.answer，articles 只保存可提取的引用元数据。不会调用旧搜索引擎或二次抓取网页重建答案。默认使用 kimi-k3；MOONSHOT_API_KEY 由宿主本地环境提供。实现由公开 kimi-search 仓库固定版本引用。cli_args 可使用 --query、--site、--source kimi、--limit、--max-details。"
+  },
+  {
+    "name": "url_content_reader",
+    "script": "url_content_reader.py",
+    "label": "URL Content Reader",
+    "description": "链接内容读取工具，用于用户直接提供一个或多个 URL 并要求读取、总结、抽取网页正文、标题、描述、来源链接或把链接内容作为后续分析素材时使用。它不是搜索工具，不负责发现新网页；只读取用户给定链接。cli_args 可使用 --url（可重复）、--data、--question、--timeout、--max-chars。"
+  },
+  {
+    "name": "computer_use",
+    "script": "computer_use.py",
+    "label": "Browser Computer Use",
+    "description": "通过受控 Playwright 浏览器操作网站和本地 Web 应用，适合用户明确要求点击、导航、填写、选择、读取可见页面内容或截图的任务。它不控制原生桌面应用，也不得替代已有的金融数据、搜索、图表、Watchlist、Alert 或 Super Chart 专用 Skill。需要登录时可用 --profile 创建项目内命名持久化会话；若登录提供商拒绝或丢失自动化会话，可启动仅监听 localhost 调试端口的专用正式 Chrome，并用 --cdp-url 连接同一个已登录窗口。不得连接日常 Chrome profile 或非本机端点。cli_args 可使用 --url、--actions-json、--allow-host（可重复）、--allow-write、--allow-sensitive、--profile、--browser、--cdp-url、--headful、--storage-state、--timeout、--viewport-width、--viewport-height。表单变更必须添加 --allow-write；删除、购买、发布、发送、转账、确认订单等后果性操作必须获得用户对精确动作的明确授权后才能添加 --allow-sensitive。"
+  },
+  {
+    "name": "bar_line",
+    "script": "bar_line.py",
+    "label": "Bar Line Chart",
+    "description": "通用自带模板柱折图/Bar-Line 组件，适合用户要求绘制柱折图、双轴柱折图、柱线混合图，或提供自定义数据并希望同时展示规模值和比例/变化率时使用。默认样式和原有渲染逻辑必须保持不变；只有用户明确提出样式语义时，才通过 --style-json、--style-code 或 --style-file 传入 visualStyle patch，可控制 yAxis 位置/精度、tooltip 位置、line 是否显示圆点、bar 圆角、高度、颜色、legend、grid、seriesStyle 等。cli_args 可使用 --payload、--data-json、--title、--style-json、--style-code、--style-file、--payload-output、--schema。"
+  },
+  {
+    "name": "bar_chart",
+    "script": "bar_chart.py",
+    "label": "Bar Chart",
+    "description": "通用自带模板柱状图组件，适合用户提供分类数据或时间序列数据做单指标柱形对比。支持通过 --style-json 的 colorRules 按数值条件逐柱着色，例如涨跌/收益率正值绿、负值红。该脚本直接渲染 HTML，不通过外部 renderer；cli_args 可使用 --payload、--data-json、--title、--style-json、--schema。"
+  },
+  {
+    "name": "line_chart",
+    "script": "line_chart.py",
+    "label": "Line Chart",
+    "description": "通用自带模板单系列折线图组件，适合用户提供单指标时间序列数据展示趋势。该脚本是 group_line.py 的单系列 adapter，默认继承分组折线图的 x/y 轴、右轴、网格线、图例、tooltip、hover、间距和移动端样式；生成 payload 时必须提供非空 data，并提供 xField 以及 yField 或 series[0].field，建议提供 series[0].label 作为图例和 tooltip 名称。用户提出样式语义时，可通过 --style-json、--style-code 或 --style-file 传入 visualStyle patch。cli_args 可使用 --payload、--data-json、--data、--title、--style-json、--style-code、--style-file、--payload-output、--schema。"
+  },
+  {
+    "name": "group_line",
+    "script": "group_line.py",
+    "label": "Group Line Chart",
+    "description": "通用自带模板分组/多系列折线图组件，适合用户提供多个指标或多个对象的折线趋势对比数据。该脚本直接渲染 HTML，不通过外部 renderer；默认视觉规范与 bar_line.py 对齐，包括 x/y 轴、网格线、图例、tooltip、hover 和移动端适配。用户提出样式语义时，可通过 --style-json、--style-code 或 --style-file 传入 visualStyle patch，例如 ({line:{showPoints:true},seriesStyle:[...]}）。cli_args 可使用 --payload、--data-json、--title、--style-json、--style-code、--style-file、--payload-output、--schema。"
+  },
+  {
+    "name": "grouped_bar",
+    "script": "grouped_bar.py",
+    "label": "Grouped Bar Chart",
+    "description": "通用自带模板分组柱状图组件，适合用户提供多系列分类数据做并列柱状对比。支持通过 --style-json 的 colorRules 按数值条件逐柱着色，例如涨跌/收益率正值绿、负值红。该脚本直接渲染 HTML，不通过外部 renderer；cli_args 可使用 --payload、--data-json、--title、--style-json、--schema。"
+  },
+  {
+    "name": "pie",
+    "script": "pie.py",
+    "label": "Pie Chart",
+    "description": "通用饼图组件，适合用户提供分类占比、构成、份额、比例等 part-to-whole 数据。生成 payload 前必须读取 pie.schema.json，并按 type=pie、props.items[].label/value/displayValue 结构传入非空数据；cli_args 可使用 --payload、--data-json、--title、--payload-output、--schema。"
+  },
+  {
+    "name": "double_ring_pie",
+    "script": "double_ring_pie.py",
+    "label": "Double Ring Pie",
+    "description": "通用双环饼图组件，适合两个指标相对同一基准值的占比关系。生成 payload 前必须读取 double_ring_pie.schema.json；只在两个环共享同一分母时使用。cli_args 可使用 --payload、--output、--schema。"
+  },
+  {
+    "name": "treemap",
+    "script": "treemap.py",
+    "label": "Treemap Chart",
+    "description": "通用矩形图/Treemap 组件，适合展示分类占比、层级结构、业务收入结构、产品线构成等 part-to-whole 数据；矩形面积绑定 value，支持 children 嵌套层级。生成 payload 前必须读取 treemap.schema.json，并按 type=treemap、props.items[].label/value/displayValue/color/children 结构传入非空数据；也兼容直接 {title,items:[...]} 的 data-json。cli_args 可使用 --payload、--data-json、--title、--payload-output、--schema。"
+  },
+  {
+    "name": "waterfall",
+    "script": "waterfall.py",
+    "label": "Waterfall Chart",
+    "description": "通用瀑布图组件，适合展示起始值、增减项、堆叠步骤和最终汇总值。生成 payload 前必须读取 waterfall.schema.json，并按 items[].label/value/type/stackWithPrevious 构造数据。cli_args 可使用 --payload、--output、--schema。"
+  },
+  {
+    "name": "aime_dynamic_line",
+    "script": "dynamic_line.py",
+    "label": "Aime Dynamic Line",
+    "description": "通用 dynamic_line 动态折线图组件，使用 app/skills/generic-chart/scripts/dynamic_line.py 调用 Aime 动态折线 renderer，并由 dynamic_line.py 自己完成样式后处理；Yahoo 仅作为数据源。适合多系列时间序列、事件窗口收益率对齐、累计收益率动态变化等可播放/动态折线场景。样式版本 dynamic-line-20260719s：支持亮色/暗夜主题、移动端更紧凑高度、dynamic_line iframe 加载完成前不显示白色占位、播放器与绘图区安全间距、报告层高度覆盖修正、PC 端比例保持、禁用 tooltip、移除音频资源和音频按钮、进一步收窄移动端右侧留白和播放器上方间距、5 根网格线、标题下方左对齐图例、最新值展示在图例中、图上不展示最新值文字标签、图例与图形留有间距、绘图区居中时间水印、Y 轴两位小数、实心最新点和 CSS 居中播放三角。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output；只有当用户明确要求 dark/暗夜/深色模式时才添加 --theme dark，默认不要添加 --theme，也不要添加 --theme light。"
+  },
+  {
+    "name": "aime_dynamic_bar",
+    "script": "dynamic_bar.py",
+    "label": "Aime Dynamic Bar",
+    "description": "通用 Aime dynamic_bar 动态柱状图组件，适合随时间播放的排名、分类值变化、动态柱形竞赛等场景。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
+  },
+  {
+    "name": "aime_dynamic_bubble",
+    "script": "dynamic_bubble.py",
+    "label": "Aime Dynamic Bubble",
+    "description": "通用 Aime dynamic_bubble 动态气泡图组件，适合多变量气泡随时间变化、规模/位置/颜色同时编码的数据叙事。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
+  },
+  {
+    "name": "aime_mind_map",
+    "script": "mind_map.py",
+    "label": "Aime Mind Map",
+    "description": "通用 Aime mind_map 思维导图组件，适合新闻/网页/视频检索结果归纳、文章论点拆解、概念关系、研究框架、产业链影响和多层级要点总结。生成内容应由模型基于用户问题与前序 observation 提炼，不要写死在搜索或视频组件里。优先输出 3-5 个一级主题，每个主题下展开具体事件、关键实体、数字/日期、原因、影响、分歧与后续观察点；层级建议达到 3-4 层，节点短但信息密度高，避免“机会/风险/市场驱动因素”等空泛占位。支持主题模式参数：--theme 或 --theme-mode，可选 light/浅色模式、dark/暗夜模式，也支持 --dark。cli_args 可使用 --payload、--data-json、--data、--title、--theme、--theme-mode、--dark、--payload-output；data 可传 {\"content\":\"# 主题\\n## 一级主题\\n- 具体事件/实体\\n  - 关键数字/原因/影响\"}。"
+  },
+  {
+    "name": "aime_flowchart",
+    "script": "flowchart.py",
+    "label": "Aime Flowchart",
+    "description": "通用 Aime flowchart 流程图组件，适合步骤流程、决策路径、系统调用链、业务过程和因果链路展示。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
+  },
+  {
+    "name": "aime_timeline",
+    "script": "timeline.py",
+    "label": "Aime Timeline",
+    "description": "通用 Aime timeline 时间线组件，适合历史事件、产品里程碑、事故/政策/新闻发展脉络按时间顺序展示。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
+  },
+  {
+    "name": "aime_journey",
+    "script": "journey.py",
+    "label": "Aime Journey",
+    "description": "通用 Aime journey 旅程图组件，适合用户旅程、业务阶段、体验路径、流程阶段情绪或状态变化展示。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
+  },
+  {
+    "name": "yahoo_data",
+    "script": "yahoo_data.py",
+    "label": "Yahoo Data Tool",
+    "description": "Yahoo 支持范围内的通用结构化数据源，不限美股，也不绑定具体图表。适用于获取全球 Yahoo 支持标的的行情与派生序列、受支持财务时间序列、宏观指标及事件窗口数据，并输出可供计算、表格或图表模块复用的 rows/chartPayload。支持 metric：close、adj_close、volume、return_pct、cumulative_return、market_cap、open、high、low、financial_position、net_income、total_revenue、operating_income、gross_profit；financial_position（兼容 financials、balance_sheet）一次返回总资产、总负债、股东权益、现金及短期投资和总债务，默认应使用 annual。用户询问 latest/current 财务指标且未指定季度/年度时不要传 --period-type；若季度和年度历史序列均为空，工具会对支持字段使用 Yahoo 最新财务快照/TTM 值并在 payload 标记 fallback。显式季度/年度字段缺失时返回正常的不可用状态，不得把 TTM 冒充单季数据，不得展示替代口径卡片，也不得重复重试相同请求。宏观指标通过 --macro-indicators 获取。通用不等于任意网页数据：新闻、公告独有字段、历史员工人数等不受支持内容应交给搜索或公司披露，未知 metric 必须明确失败，不能退化为 close。它不是 generic_chart 渲染器；--chart-type 只支持 line、bar、dynamic_line。若用户指定 grouped-line、grouped-bar、bar-line、表格或自定义计算，应先用 yahoo_data.py 取结构化原始数据，再交给 code_interpreter.py 和对应通用组件。对于股票、ETF、数字币或可识别期权合约的行情/K线/技术面，应优先使用跨资产业务 kline.py；对于不适合业务K线的全球标的结构化序列，若 Yahoo 支持对应 symbol，可使用 yahoo_data.py。用户明确指定 Yahoo 时，Yahoo 是排他数据源，只可保留无外部取数的转换和渲染步骤，不得追加 AInvest、新闻或外部搜索。cli_args 可使用 --metric、--macro-indicators、--range、--start-date、--end-date、--period-type、--range-length、--language、--interval、--chart-type、--title、--symbols、--event-windows-json、--window-days、--style-json。"
+  },
+  {
+    "name": "code_interpreter",
+    "script": "code_interpreter.py",
+    "label": "Code Interpreter",
+    "description": "代码解释器工具。适合用户提供原始 JSON、CSV、表格或数组数据，并要求根据语义进行清洗、聚合、分组、排序、计算同比/环比/占比/累计值/派生指标。该工具会让模型生成受限 Python transform(raw_data, question) 脚本处理原始数据，并输出可供后续组件使用的 chartPayload 和 lineChartData；它自身绝不生成或渲染可见图表。只有路由另行选择具体图表组件时，才由下游图表 SKILL 渲染。它不是实时金融数据源，不应用于替代 Yahoo、K线、财报、新闻等取数模块。cli_args 可使用 --question、--data-json、--data、--raw-data、--payload、--chart-type、--title。"
+  },
+  {
+    "name": "capital_structure",
+    "script": "capital_structure.py",
+    "label": "capital_structure",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "shareholder_returns",
+    "script": "shareholder_returns.py",
+    "label": "Shareholder Returns",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "kline",
+    "script": "kline.py",
+    "label": "kline",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "multi_intraday",
+    "script": "multi_intraday.py",
+    "label": "美股多股分时卡片组",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "key_financial_indicators",
+    "script": "key_financial_indicators.py",
+    "label": "key_financial_indicators",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "revenue_expenses",
+    "script": "revenue_expenses.py",
+    "label": "Revenue & Expenses",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "valuation",
+    "script": "valuation.py",
+    "label": "Valuation",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "eps_estimate",
+    "script": "eps_estimate.py",
+    "label": "Eps Estimate",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "revenue_estimate",
+    "script": "revenue_estimate.py",
+    "label": "Revenue Estimate",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "income_statement",
+    "script": "income_statement.py",
+    "label": "Income Statement",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "balance_sheet",
+    "script": "balance_sheet.py",
+    "label": "Balance Sheet",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "cash_flow",
+    "script": "cash_flow.py",
+    "label": "Cash Flow",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "revenue_sources",
+    "script": "revenue_sources.py",
+    "label": "Revenue Breakdown (by business)",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "revenue_geography",
+    "script": "revenue_geography.py",
+    "label": "Revenue Breakdown (by geography)",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "payout_ratio",
+    "script": "payout_ratio.py",
+    "label": "Payout Ratio",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "dividend_yield",
+    "script": "dividend_yield.py",
+    "label": "Dividend Yield",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "key_stats",
+    "script": "key_stats.py",
+    "label": "Key Stats",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "investment_rating",
+    "script": "investment_rating.py",
+    "label": "Investment Rating",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "fundamental_investment_rating",
+    "script": "fundamental_investment_rating.py",
+    "label": "Fundamental Investment Rating",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "about_company",
+    "script": "about_company.py",
+    "label": "Company Info",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "executive_profile",
+    "script": "executive_profile.py",
+    "label": "Executive Profile",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "wall_street_consensus",
+    "script": "wall_street_consensus.py",
+    "label": "Wall Street Consensus",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "average_rating_history",
+    "script": "average_rating_history.py",
+    "label": "Average Rating History",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "price_target_vs_actual",
+    "script": "price_target_vs_actual.py",
+    "label": "Price_target_vs_actual",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "analyst_recommendations",
+    "script": "analyst_recommendations.py",
+    "label": "Analyst Recommendations",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "volume_profile",
+    "script": "volume_profile.py",
+    "label": "Volume Profile",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "trade_flow",
+    "script": "trade_flow.py",
+    "label": "Trade Flow Insight",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "seasonals",
+    "script": "seasonals.py",
+    "label": "Seasonals",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "institution_trades",
+    "script": "institution_trades.py",
+    "label": "Institution Trades",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "insider_trades",
+    "script": "insider_trades.py",
+    "label": "Insider Trades",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "congress_trades",
+    "script": "congress_trades.py",
+    "label": "Congress Trades",
+    "source": "business-charts-repository"
+  }
+]

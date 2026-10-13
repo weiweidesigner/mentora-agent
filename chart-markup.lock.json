@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/chart-markup.git",
+  "revision": "8cd0e6d776d39e164c60ad2025b0f2544519c5bf",
+  "checkout": ".dependencies/chart-markup",
+  "links": {
+    "app/skills/chart-markup": "app/skills/chart-markup"
+  }
+}

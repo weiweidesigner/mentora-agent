@@ -1,0 +1,33 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.8.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+jsonschema>=4.0.0
+openai>=1.40.0
+playwright>=1.45.0
+autogen-agentchat==0.5.7
+autogen-ext[openai]==0.5.7
+deepseek-harness-sdk==0.1.1rc1
+typesafe-sdk>=0.6.0,<0.7.0
+
+# Install the pinned private repository first: python scripts/sync_business_charts.py
+-r .dependencies/us-trading-charts/requirements.txt
+
+# A-share APIs are maintained in the pinned private data repository.
+-r .dependencies/cn-trading-data/requirements.txt
+
+# General-purpose charts are supplied by the pinned public repository.
+-r .dependencies/data-vis-charts/requirements.txt
+
+# Data and transformation skills are supplied by pinned public repositories.
+-r .dependencies/yahoo-market-data/requirements.txt
+-r .dependencies/data-code-interpreter/requirements.txt
+
+# Visualization routing is maintained in a pinned public repository.
+-r .dependencies/jev_vis_router/requirements.txt
+
+# Markup, chart vision and local image generation use pinned public repositories.
+-r .dependencies/chart-markup/requirements.txt
+-r .dependencies/vision-chart-analyst/requirements.txt
+-r .dependencies/flux-image/requirements.txt

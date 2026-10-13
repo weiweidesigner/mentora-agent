@@ -1,0 +1,1 @@
+../../../../.dependencies/url-content-reader/app/skills/external-search/scripts/url_content_reader.py

@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/us-market-vedio.git",
+  "revision": "b6f11df50cc9197c953b325e3511d715e454550d",
+  "checkout": ".dependencies/us-market-vedio",
+  "links": {
+    "app/skills/video-search": "app/skills/video-search"
+  }
+}

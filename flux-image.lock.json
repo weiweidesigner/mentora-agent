@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/flux-image.git",
+  "revision": "9a1ab81a0981482ae29150f42d53fd101f4293a0",
+  "checkout": ".dependencies/flux-image",
+  "links": {
+    "app/skills/flux-image": "app/skills/flux-image"
+  }
+}

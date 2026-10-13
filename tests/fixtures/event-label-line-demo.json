@@ -1,0 +1,122 @@
+{
+  "type": "line",
+  "title": "产品热度与关键事件",
+  "xField": "date",
+  "yField": "attention",
+  "series": [
+    {
+      "field": "attention",
+      "label": "关注度指数",
+      "axis": "right"
+    }
+  ],
+  "leftAxis": {
+    "visible": false
+  },
+  "rightAxis": {
+    "label": "关注度指数",
+    "visible": true,
+    "digits": 0
+  },
+  "visualStyle": {
+    "yAxis": {
+      "position": "right"
+    },
+    "tooltip": {
+      "showUnit": false
+    },
+    "positionLine": {
+      "visible": true
+    },
+    "overlays": [
+      {
+        "type": "pointMarkers",
+        "x": "09-04",
+        "targetField": "attention",
+        "shape": "circle",
+        "labelBox": true,
+        "eventTime": "2026-09-04",
+        "eventTitle": "产品发布会",
+        "labelPosition": "top"
+      },
+      {
+        "type": "pointMarkers",
+        "x": "09-10",
+        "targetField": "attention",
+        "shape": "circle",
+        "labelBox": true,
+        "eventTime": "2026-09-10",
+        "eventTitle": "首批订单披露",
+        "labelPosition": "top"
+      },
+      {
+        "type": "pointMarkers",
+        "x": "09-16",
+        "targetField": "attention",
+        "shape": "circle",
+        "labelBox": true,
+        "eventTime": "2026-09-16",
+        "eventTitle": "分析师上调预期",
+        "labelPosition": "top"
+      }
+    ]
+  },
+  "data": [
+    {
+      "date": "09-01",
+      "attention": 42
+    },
+    {
+      "date": "09-02",
+      "attention": 45
+    },
+    {
+      "date": "09-03",
+      "attention": 47
+    },
+    {
+      "date": "09-04",
+      "attention": 58
+    },
+    {
+      "date": "09-05",
+      "attention": 54
+    },
+    {
+      "date": "09-08",
+      "attention": 56
+    },
+    {
+      "date": "09-09",
+      "attention": 61
+    },
+    {
+      "date": "09-10",
+      "attention": 73
+    },
+    {
+      "date": "09-11",
+      "attention": 68
+    },
+    {
+      "date": "09-12",
+      "attention": 66
+    },
+    {
+      "date": "09-15",
+      "attention": 71
+    },
+    {
+      "date": "09-16",
+      "attention": 84
+    },
+    {
+      "date": "09-17",
+      "attention": 79
+    },
+    {
+      "date": "09-18",
+      "attention": 82
+    }
+  ]
+}

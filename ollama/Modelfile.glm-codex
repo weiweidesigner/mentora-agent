@@ -1,0 +1,4 @@
+FROM haervwe/GLM-4.6V-Flash-9B:latest
+PARAMETER num_ctx 16384
+PARAMETER num_predict 2048
+PARAMETER temperature 0.1

@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/weiweidesigner/url-content-reader.git",
+  "revision": "9e620f6451cb0faf5cef6982efad12493af3ddce",
+  "checkout": ".dependencies/url-content-reader",
+  "links": {
+    "app/skills/external-search/scripts/url_content_reader.py": "app/skills/external-search/scripts/url_content_reader.py"
+  }
+}
