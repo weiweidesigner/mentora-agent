@@ -147,6 +147,22 @@
 :root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
 [data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
 [data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+
+/* Reports flow into the conversation: metric groups are typography, not panels. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border:0!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-text-danger,var(--sv-status-danger))!important;background:var(--sv-bg-danger)!important;border-color:var(--sv-border-danger,var(--sv-border-subtle))!important}
+
+/* Standalone reports and sandboxed reports share the semantic runtime palette. */
+:root:not([data-theme="dark"]){--sv-text-success:var(--sv-jade-11,#208368);--sv-text-warning:var(--sv-amber-11,#915930);--sv-text-danger:var(--sv-red-11,#ce2c31);--sv-border-success:var(--sv-jade-7,#92ceac);--sv-border-warning:var(--sv-amber-7,#e8c36a);--sv-border-danger:var(--sv-red-7,#f3aeaf);--sv-bg-success:var(--sv-jade-3,#e6f4ea);--sv-bg-warning:var(--sv-amber-3,#fff3d0);--sv-bg-danger:var(--sv-red-3,#feebec)}
+:root[data-theme="dark"]{--sv-text-success:var(--sv-jade-11,#7ce2bd);--sv-text-warning:var(--sv-amber-11,#facf72);--sv-text-danger:var(--sv-red-11,#ff9592);--sv-border-success:var(--sv-jade-7,#1b5745);--sv-border-warning:var(--sv-amber-7,#6a4f0b);--sv-border-danger:var(--sv-red-7,#7e2e33);--sv-bg-success:var(--sv-jade-3,#132d21);--sv-bg-warning:var(--sv-amber-3,#35290f);--sv-bg-danger:var(--sv-red-3,#3b1219)}
+/* Timeline copy stays on the page; only status badges get a tinted surface. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
 </style></head><body><main data-aime-streamviz-root="true"><style>
 .jpm-wrap{color:var(--sv-text-primary);font-size:14px;line-height:1.6;padding-bottom:14px}
 .jpm-wrap h1{font-size:20px;margin:4px 0 6px;color:var(--sv-text-primary)}

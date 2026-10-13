@@ -1,10 +1,10 @@
 [
   {
     "id": "ashare-dashboard",
-    "title": "A 股市场仪表盘",
+    "title": "A 股市场一页报告",
     "tag": "市场全景",
-    "question": "分析今天 A 股市场表现，做成一页仪表盘。",
-    "preview": "上涨占比 52.3%，成交约 1.69 万亿元。用仪表盘查看指数、市场宽度和活跃个股。",
+    "question": "分析今天 A 股市场表现，做成一页报告给我。",
+    "preview": "上涨占比 52.3%，成交约 1.69 万亿元。用一页报告查看指数、市场宽度和活跃个股。",
     "cachedDate": "2026-10-13",
     "conversationUrl": "/static/cases/ashare-dashboard/conversation.json"
   },

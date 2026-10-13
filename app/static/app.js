@@ -626,7 +626,13 @@ function createArtifactFallbackFrame(item, index) {
     if (source.pathname.includes("/static/cases/")) source.searchParams.set("theme", currentThemeMode());
     frame.src = source.href;
   }
-  frame.addEventListener("load", () => resizeReportDocumentFrame(frame), { once: true });
+  frame.addEventListener("load", () => {
+    if (new URL(frame.src, window.location.origin).pathname.includes("/static/cases/")) {
+      const root = frame.contentDocument?.documentElement;
+      if (root) root.dataset.theme = new URL(frame.src).searchParams.get("theme") || currentThemeMode();
+    }
+    resizeReportDocumentFrame(frame);
+  });
   return frame;
 }
 
