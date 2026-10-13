@@ -147,6 +147,16 @@
       addUserMessage(cached.question);
       const article = createAssistantMessage(cached.question);
       article.classList.add("cachedCaseAnswer");
+      const cachedSteps = cached.activity?.steps || [];
+      if (cachedSteps.length && typeof appendStep === "function") {
+        cachedSteps.forEach((step, index) => appendStep(article, step.title, "原始案例的缓存执行记录", "done", `case-step-${index}`));
+        article.dataset.cachedActivityCount = String(cachedSteps.length);
+        article.dataset.thinkingState = "done";
+        article.activityEnded = true;
+        if (typeof normalizeLang === "function") article.dataset.lang = normalizeLang(cached.answer.lang || "zh-CN");
+        completeThinking(article);
+        updateThinkingSummary(article, "已思考");
+      }
       replayController = new window.AbortController();
       const signal = replayController.signal;
       closeActivityDrawer();

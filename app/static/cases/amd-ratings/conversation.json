@@ -25,5 +25,49 @@
     "reportUrl": "/static/cases/amd-ratings/deepseek-case-amd-ratings-consensus.html",
     "sources": [],
     "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "缓存执行步骤",
+    "steps": [
+      {
+        "title": "读取市场资讯检索技能"
+      },
+      {
+        "title": "读取公开信息检索技能"
+      },
+      {
+        "title": "读取分析总结技能"
+      },
+      {
+        "title": "获取分析师共识"
+      },
+      {
+        "title": "生成分析师评级分布"
+      },
+      {
+        "title": "检索公开来源"
+      },
+      {
+        "title": "生成评级历史变化"
+      },
+      {
+        "title": "对比目标价与实际股价"
+      },
+      {
+        "title": "检索市场资讯"
+      },
+      {
+        "title": "获取历史行情与基本数据"
+      },
+      {
+        "title": "执行数据汇总和指标计算"
+      },
+      {
+        "title": "生成 StreamViz 报告"
+      },
+      {
+        "title": "检查图表渲染效果"
+      }
+    ]
   }
 }

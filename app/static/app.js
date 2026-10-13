@@ -608,8 +608,17 @@ function guardStreamVisualization(host, item, index) {
 }
 
 function createArtifactFallbackFrame(item, index) {
+  const loadingStartedAt = Date.now();
+  const shell = document.createElement("div");
+  shell.className = "reportFrameShell is-chart-loading";
+  shell.dataset.artifactUrl = String(item.url || "");
+  const loading = document.createElement("div");
+  loading.className = "chartLoadingOverlay";
+  loading.setAttribute("role", "status");
+  loading.innerHTML = '<div class="chartLoadingBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>正在加载图表…</span>';
   const frame = document.createElement("iframe");
   frame.className = "reportDocumentFrame";
+  shell.append(frame, loading);
   frame.dataset.artifactUrl = String(item.url || "");
   frame.title = `Analysis chart ${index + 1}`;
   frame.scrolling = "no";
@@ -636,8 +645,12 @@ function createArtifactFallbackFrame(item, index) {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
+    setTimeout(() => requestAnimationFrame(() => {
+      loading.remove();
+      shell.classList.remove("is-chart-loading");
+    }), Math.max(0, 300 - (Date.now() - loadingStartedAt)));
   });
-  return frame;
+  return shell;
 }
 
 function syncReportFrameThemes(mode = currentThemeMode()) {
@@ -683,8 +696,8 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     exportCode: "",
     final: false,
     showActions: false,
-    loadingMessage: options.loadingMessage || "正在准备可视化",
-    loadingDwellMs: 0,
+    loadingMessage: options.loadingMessage || "正在加载图表…",
+    loadingDwellMs: 300,
   });
   artifactCode(item.url).then(async (rawCode) => {
     if (!host.isConnected) return;
@@ -1990,7 +2003,8 @@ function renderFinalAnswer(article, data) {
   // Keep the live hosts connected until the final layout atomically moves them.
   // Their React roots and sandbox documents survive the result handoff.
   article.completedStreamVisualizationHosts = new Map();
-  target.querySelectorAll(".streamvizArtifactHost[data-artifact-url], .reportDocumentFrame[data-artifact-url]").forEach((host) => {
+  target.querySelectorAll(".streamvizArtifactHost[data-artifact-url], .reportFrameShell[data-artifact-url], .reportDocumentFrame[data-artifact-url]").forEach((host) => {
+    if (host.classList.contains("reportDocumentFrame") && host.closest(".reportFrameShell")) return;
     article.completedStreamVisualizationHosts.set(host.dataset.artifactUrl, host);
   });
   const finalShell = document.createElement("div");
@@ -2607,7 +2621,9 @@ function updateThinkingSummary(article, prefix, options = {}) {
   if (!target) return;
   const startedAt = Number(article.dataset.startedAt || Date.now());
   const elapsed = Math.max(0, Date.now() - startedAt);
-  target.textContent = options.live ? article.dataset.currentThinking || prefix : `${prefix} ${formatDuration(elapsed)}`;
+  target.textContent = article.dataset.cachedActivityCount
+    ? `已思考 · ${article.dataset.cachedActivityCount} 个缓存步骤`
+    : options.live ? article.dataset.currentThinking || prefix : `${prefix} ${formatDuration(elapsed)}`;
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
     trigger.classList.toggle("is-thinking", Boolean(options.live));
@@ -2615,7 +2631,7 @@ function updateThinkingSummary(article, prefix, options = {}) {
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
   }
   if (activeActivityArticle === article && activityElapsed) {
-    activityElapsed.textContent = formatDuration(elapsed);
+    activityElapsed.textContent = article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
   }
 }
 
@@ -2652,7 +2668,7 @@ function syncActivityDrawer(article) {
   const state = article.dataset.thinkingState || "active";
   const lang = normalizeLang(article.dataset.lang || "en");
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
-  activityElapsed.textContent = formatDuration(elapsed);
+  activityElapsed.textContent = article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
   const steps = Array.from(article.querySelectorAll(".thinkingSteps li"))
     .map((item) => `<li class="${item.className}">${item.innerHTML}</li>`)
