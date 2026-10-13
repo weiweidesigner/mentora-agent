@@ -592,6 +592,11 @@ function mountStreamVisualization(host, payload) {
     return true;
   };
   if (render()) return;
+  // New hosts are appended by the caller after construction. If the runtime
+  // is already ready, mount on the next frame without overwriting newer content.
+  requestAnimationFrame(() => {
+    if (host.dataset.streamvizMounted !== "true") render();
+  });
   window.addEventListener("aime:streamviz-ready", render, { once: true });
 }
 
@@ -600,20 +605,24 @@ function guardStreamVisualization(host, item, index) {
   const fallback = () => {
     if (!host.isConnected || host.dataset.streamvizRendered === "true") return;
     window.AimeStreamViz?.unmount?.(host);
-    host.replaceWith(createArtifactFallbackFrame(item, index));
+    host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
   };
   clearTimeout(host.streamvizFallbackTimer);
   host.streamvizFallbackTimer = setTimeout(fallback, host.dataset.streamvizFailed === "true" ? 0 : 8000);
   return host;
 }
 
-function createArtifactFallbackFrame(item, index) {
-  const loadingStartedAt = Date.now();
+function createArtifactFallbackFrame(item, index, options = {}) {
+  const loadingStartedAt = Number(options.loadingStartedAt || Date.now());
   const shell = document.createElement("div");
   shell.className = "reportFrameShell is-chart-loading";
   shell.dataset.artifactUrl = String(item.url || "");
   const loading = document.createElement("div");
   loading.className = "chartLoadingOverlay";
+  loading.hidden = true;
+  const loadingTimer = setTimeout(() => {
+    if (shell.isConnected && shell.classList.contains("is-chart-loading")) loading.hidden = false;
+  }, Math.max(0, 2000 - (Date.now() - loadingStartedAt)));
   loading.setAttribute("role", "status");
   loading.innerHTML = '<div class="chartLoadingBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>正在加载图表…</span>';
   const frame = document.createElement("iframe");
@@ -645,10 +654,11 @@ function createArtifactFallbackFrame(item, index) {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
-    setTimeout(() => requestAnimationFrame(() => {
+    clearTimeout(loadingTimer);
+    requestAnimationFrame(() => {
       loading.remove();
       shell.classList.remove("is-chart-loading");
-    }), Math.max(0, 300 - (Date.now() - loadingStartedAt)));
+    });
   });
   return shell;
 }
@@ -690,6 +700,10 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   const host = document.createElement("div");
   host.className = `streamvizArtifactHost${options.live ? " is-live" : ""}`;
   host.dataset.artifactUrl = String(item.url || "");
+  host.dataset.loadingStartedAt = String(Date.now());
+  setTimeout(() => {
+    if (host.isConnected) host.classList.add("show-chart-loading");
+  }, 2000);
   mountStreamVisualization(host, {
     title: item.title || item.label || "",
     code: "",
@@ -697,13 +711,13 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     final: false,
     showActions: false,
     loadingMessage: options.loadingMessage || "正在加载图表…",
-    loadingDwellMs: 300,
+    loadingDwellMs: 0,
   });
   artifactCode(item.url).then(async (rawCode) => {
     if (!host.isConnected) return;
     if (!streamVisualizationCompatible(rawCode)) {
       window.AimeStreamViz?.unmount?.(host);
-      host.replaceWith(createArtifactFallbackFrame(item, index));
+      host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
       return;
     }
     const code = prepareStreamVisualizationCode(rawCode);
@@ -738,7 +752,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   }).catch(() => {
     if (!host.isConnected) return;
     window.AimeStreamViz?.unmount?.(host);
-    host.replaceWith(createArtifactFallbackFrame(item, index));
+    host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
   });
   return host;
 }

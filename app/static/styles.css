@@ -3516,3 +3516,7 @@ p {
 .streamvizArtifactHost .visualize-widget-loading-inline{flex-direction:column;gap:16px}
 .streamvizArtifactHost .visualize-widget-loading-inline::before{content:"";display:block;width:78px;height:48px;background:linear-gradient(var(--accent),var(--accent)) 0 100%/10px 20px no-repeat,linear-gradient(var(--accent),var(--accent)) 17px 100%/10px 34px no-repeat,linear-gradient(var(--accent),var(--accent)) 34px 100%/10px 24px no-repeat,linear-gradient(var(--accent),var(--accent)) 51px 100%/10px 45px no-repeat,linear-gradient(var(--accent),var(--accent)) 68px 100%/10px 32px no-repeat;opacity:.55;animation:chartLoadingPulse 1.1s ease-in-out infinite}
 @media(prefers-reduced-motion:reduce){.streamvizArtifactHost .visualize-widget-loading-inline::before{animation:none}}
+
+/* Fast charts never flash a loading animation. */
+.chartLoadingOverlay[hidden]{display:none}
+.streamvizArtifactHost:not(.show-chart-loading) .visualize-widget-loading-inline{display:none!important}
