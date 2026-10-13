@@ -24509,3 +24509,8 @@ def extract_visible_text(html_path: Path) -> list[str]:
             seen.add(part)
             result.append(part)
     return result
+
+# Compatibility for existing `uvicorn app.main:app` launch commands.
+# Keep the legacy helpers importable while all HTTP traffic uses the Harness
+# presentation gateway, including its framework config and session handling.
+from app.presentation import app as app  # noqa: E402,F811

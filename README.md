@@ -4,6 +4,8 @@
 
 Veya 是基于 DeepSeek Harness 的研究与可视化智能体，包含推理执行、工具活动展示、SSE 事件适配、报告展示、会话与分享、前端交互和样式。保留 Codex、本地 Ollama 与 AutoGen Studio 适配。组件、取数和视觉能力通过独立仓库的锁文件引用，不在宿主复制实现。
 
+旧启动命令 `uvicorn app.main:app` 也会接入同一个 Harness 展示网关；推荐入口仍为 `app.presentation:app`，不会因使用旧命令而转到 AutoGen Studio。
+
 ## 从仓库安装
 
 建议 Python 3.11+，并准备 Node.js/npm。部分业务、行情和搜索依赖为私有仓库，安装完整能力需要相应 GitHub 读取权限；主仓库为公开仓库。模型、行情、搜索等凭据只放在本地 `.env`，公开仓库仅提交空配置示例。
