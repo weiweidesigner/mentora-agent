@@ -7,6 +7,7 @@
   let selectedCase = null;
   let openingCase = false;
   let loadVersion = 0;
+  let replayController = null;
   const responseCache = new Map();
   const icons = [
     '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
@@ -18,6 +19,8 @@
   ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
 
   function clearCaseView() {
+    replayController?.abort();
+    replayController = null;
     selectedCase = null;
     loadVersion += 1;
     conversation.classList.remove("is-case");
@@ -30,6 +33,67 @@
     }
   }
   window.addEventListener("veya:chat-navigate", clearCaseView);
+
+  function replayPause(ms, signal) {
+    return new Promise((resolve) => {
+      if (signal.aborted) return resolve(false);
+      const finish = (ready) => {
+        window.clearTimeout(timer);
+        signal.removeEventListener("abort", cancel);
+        resolve(ready);
+      };
+      const cancel = () => finish(false);
+      const timer = window.setTimeout(() => finish(true), ms);
+      signal.addEventListener("abort", cancel, { once: true });
+    });
+  }
+
+  async function replayAnswer(article, answer, signal) {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const target = article.querySelector(".finalAnswer");
+    const flow = document.createElement("div");
+    flow.className = "mixedReport cachedReplay";
+    flow.setAttribute("aria-busy", "true");
+    target.append(flow);
+    const artifacts = answer.reportArtifacts || [];
+    const shown = new Set();
+    const parts = sanitizeUserFacingInsight(answer.interpretation || "").split(/(\[\[AIME_CHART:[^\]]+\]\])/g);
+    for (const part of parts) {
+      if (signal.aborted) return;
+      const marker = part.match(/^\[\[AIME_CHART:(.*?)\]\]$/);
+      if (marker) {
+        const index = artifacts.findIndex((item) => item.path === marker[1]);
+        if (index >= 0 && !shown.has(index)) {
+          flow.append(createStreamVisualizationArtifact(artifacts[index], index, { showActions: false }));
+          shown.add(index);
+          if (!await replayPause(280, signal)) return;
+        }
+        continue;
+      }
+      for (const paragraph of part.split(/\n\s*\n/).filter((text) => text.trim())) {
+        if (signal.aborted) return;
+        const block = document.createElement("div");
+        block.className = "streamingAnswer reportInterpretation";
+        block.innerHTML = formatInsight(paragraph);
+        const walker = document.createTreeWalker(block, window.NodeFilter.SHOW_TEXT);
+        const texts = [];
+        while (walker.nextNode()) {
+          texts.push({ node: walker.currentNode, value: walker.currentNode.textContent });
+          walker.currentNode.textContent = "";
+        }
+        flow.append(block);
+        // Reveal the rendered text, preserving links, lists and table markup.
+        for (const { node, value } of texts) {
+          for (let end = 18; end < value.length + 18; end += 18) {
+            if (signal.aborted) return;
+            node.textContent = value.slice(0, end);
+            if (!await replayPause(30, signal)) return;
+          }
+        }
+      }
+    }
+    flow.setAttribute("aria-busy", "false");
+  }
 
   async function showCase(id, navigate = true) {
     const row = (window.veyaCases || []).find((item) => item.id === id);
@@ -63,10 +127,19 @@
       addUserMessage(cached.question);
       const article = createAssistantMessage(cached.question);
       article.classList.add("cachedCaseAnswer");
-      renderFinalAnswer(article, cached.answer);
+      replayController = new window.AbortController();
+      const signal = replayController.signal;
       closeActivityDrawer();
       requestAnimationFrame(() => {
         if (version === loadVersion) messages.scrollTop = 0;
+      });
+      await replayAnswer(article, cached.answer, signal);
+      if (signal.aborted || version !== loadVersion) return;
+      const scrollTop = messages.scrollTop;
+      renderFinalAnswer(article, cached.answer);
+      closeActivityDrawer();
+      requestAnimationFrame(() => {
+        if (version === loadVersion) messages.scrollTop = scrollTop;
       });
     } catch (error) {
       if (version !== loadVersion) return;

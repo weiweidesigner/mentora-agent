@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 
 const source = readFileSync(new URL('../app/static/cases.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 20));
-function setup(url = 'https://example.com/') {
+function setup(url = 'https://example.com/', text = '完整缓存答案') {
   const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section><header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
   const w = dom.window;
   const rows = [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
@@ -17,9 +17,10 @@ function setup(url = 'https://example.com/') {
     escapeHtml: value => value, isMobileLayout: () => false, closeActivityDrawer: () => {}, updateComposerState: () => {},
     startNewChat: () => {w.dispatchEvent(new w.Event('veya:chat-navigate')); messages.innerHTML=''; conversation.classList.add('is-empty'); input.value='';},
     addUserMessage: question => {const el=w.document.createElement('p');el.textContent=question;messages.append(el);},
-    createAssistantMessage: () => {const el=w.document.createElement('article');messages.append(el);return el;},
+    createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
+    sanitizeUserFacingInsight: value => value, formatInsight: value => `<p>${value}</p>`,
     renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
-    fetch: async url => {requests.push(url); return {ok:true,json:async()=>url.endsWith('manifest.json')?rows:{question:rows[0].question,answer:{interpretation:'完整缓存答案'}}};},
+    fetch: async url => {requests.push(url); return {ok:true,json:async()=>url.endsWith('manifest.json')?rows:{question:rows[0].question,answer:{interpretation:text}}};},
   });
   vm.runInContext(source,context);
   return {w, requests, sent, conversation, messages};
@@ -43,6 +44,29 @@ test('direct case links work and returning home restores cards', async () => {
   assert.equal(h.conversation.classList.contains('is-case'),false);
   h.w.document.querySelector('.caseCard').click();await tick();
   assert.equal(h.requests.length,2,'reopening reuses cached response');
+});
+
+test('cached answers reveal progressively and stop when leaving the case', async () => {
+  const h=setup('https://example.com/', '逐步显示的缓存分析。'.repeat(40));await tick();
+  h.w.document.querySelector('.caseCard').click();await tick();
+  const first=h.messages.querySelector('.cachedReplay').textContent;
+  assert.ok(first.length>0 && first.length<400);
+  await new Promise(resolve=>setTimeout(resolve,65));
+  assert.ok(h.messages.querySelector('.cachedReplay').textContent.length>first.length);
+  h.w.document.querySelector('#caseBackButton').click();
+  await new Promise(resolve=>setTimeout(resolve,65));
+  assert.equal(h.messages.textContent,'');
+  assert.equal(h.w.document.querySelector('#caseActionBar').hidden,true);
+  assert.equal(h.requests.length,2);
+});
+
+test('reduced motion shows the complete cached answer immediately', async () => {
+  const text='完整答案'.repeat(100);
+  const h=setup('https://example.com/',text);
+  h.w.matchMedia=()=>({matches:true});await tick();
+  h.w.document.querySelector('.caseCard').click();await tick();
+  assert.ok(h.messages.textContent.includes(text));
+  assert.equal(h.messages.querySelector('.cachedReplay'),null);
 });
 
 test('all six published cases have complete answers and portable cached charts', () => {

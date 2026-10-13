@@ -610,6 +610,7 @@ function guardStreamVisualization(host, item, index) {
 function createArtifactFallbackFrame(item, index) {
   const frame = document.createElement("iframe");
   frame.className = "reportDocumentFrame";
+  frame.dataset.artifactUrl = String(item.url || "");
   frame.title = `Analysis chart ${index + 1}`;
   frame.scrolling = "no";
   const source = new URL(item.url, window.location.origin);
@@ -1960,7 +1961,7 @@ function renderFinalAnswer(article, data) {
   // Keep the live hosts connected until the final layout atomically moves them.
   // Their React roots and sandbox documents survive the result handoff.
   article.completedStreamVisualizationHosts = new Map();
-  target.querySelectorAll(".streamvizArtifactHost[data-artifact-url]").forEach((host) => {
+  target.querySelectorAll(".streamvizArtifactHost[data-artifact-url], .reportDocumentFrame[data-artifact-url]").forEach((host) => {
     article.completedStreamVisualizationHosts.set(host.dataset.artifactUrl, host);
   });
   const finalShell = document.createElement("div");
@@ -2320,7 +2321,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
     if (streamedHost) {
       article.completedStreamVisualizationHosts.delete(item.url);
       streamedHost.classList.remove("is-live");
-      guardStreamVisualization(streamedHost, item, index);
+      if (streamedHost.classList.contains("streamvizArtifactHost")) guardStreamVisualization(streamedHost, item, index);
       const slot = document.createElement("div");
       slot.className = "streamvizFinalSlot";
       slot.streamvizHost = streamedHost;
