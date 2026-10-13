@@ -616,6 +616,7 @@ function guardStreamVisualization(host, item, index) {
 let reportTooltipPortal = null;
 let activeReportTooltip = null;
 function dismissReportTooltip() {
+  document.querySelectorAll('.bar-line-tooltip-portal,.group-line-tooltip-portal,.bar-chart-tooltip-portal,.grouped-bar-tooltip-portal').forEach(tip=>tip.classList.remove('active'));
   if (reportTooltipPortal) reportTooltipPortal.hidden = true;
   if (activeReportTooltip) {
     activeReportTooltip.tip.classList.remove("show", "active");

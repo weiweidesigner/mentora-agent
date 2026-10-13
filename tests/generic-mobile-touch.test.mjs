@@ -1,0 +1,47 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { JSDOM } from 'jsdom';
+const saved = readFileSync(new URL('../app/static/cases/presidents-sp500/deepseek-case-presidents-sp500-grouped-bar.html', import.meta.url), 'utf8');
+const runtime = saved.match(/<script id="genericMobileTouch">([\s\S]*?)<\/script>/)[1];
+function fixture() {
+  const dom = new JSDOM('<svg id="chart"><rect class="hover-zone"/></svg><aside class="tip"></aside><button>其他位置</button>', { runScripts: 'outside-only' });
+  const { window } = dom;
+  const hit = window.document.querySelector('rect'), tip = window.document.querySelector('.tip');
+  window.document.elementFromPoint = () => hit;
+  window.hideTooltip = () => tip.classList.remove('active');
+  for (const type of ['mouseenter','mousemove']) hit.addEventListener(type, () => tip.classList.add('active'));
+  hit.addEventListener('mouseleave', window.hideTooltip);
+  window.eval(runtime);
+  const touch = type => {
+    const event = new window.Event(type, { bubbles: true });
+    Object.assign(event, { pointerType:'touch', pointerId:1, clientX:20, clientY:20 });
+    hit.dispatchEvent(event);
+  };
+  return { window, hit, tip, touch, close: () => window.close() };
+}
+test('a touch tooltip is readable briefly and cannot remain pinned', async () => {
+  const f = fixture();
+  try {
+    f.touch('pointerdown');f.touch('pointerup');assert(f.tip.classList.contains('active'));
+    await new Promise(resolve => setTimeout(resolve, 1300));
+    assert(!f.tip.classList.contains('active'));
+  } finally { f.close(); }
+});
+test('scroll and navigation dismiss native hover even without a tracked touch target', () => {
+  const f = fixture();
+  try {
+    for (const type of ['scroll','veya:chat-navigate']) {
+      f.hit.dispatchEvent(new f.window.MouseEvent('mouseenter'));assert(f.tip.classList.contains('active'));
+      f.window.dispatchEvent(new f.window.Event(type));assert(!f.tip.classList.contains('active'));
+    }
+  } finally { f.close(); }
+});
+test('touch compatibility mouse events cannot reopen a dismissed tooltip', () => {
+  const f = fixture();
+  try {
+    const event = new f.window.MouseEvent('mousemove', { bubbles:true });
+    Object.defineProperty(event, 'sourceCapabilities', { value:{firesTouchEvents:true} });
+    f.hit.dispatchEvent(event);assert(!f.tip.classList.contains('active'));
+  } finally { f.close(); }
+});
