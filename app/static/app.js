@@ -3214,7 +3214,8 @@ function statusStepKey(data, lang) {
   return `status:${statusTitle(data, lang)}`;
 }
 
-function startNewChat(createSession = false) {
+function startNewChat(createSession = false, focusInput = true) {
+  window.dispatchEvent(new Event("veya:chat-navigate"));
   if (activeController) activeController.abort();
   activeController = null;
   activeActivityArticle = null;
@@ -3227,7 +3228,7 @@ function startNewChat(createSession = false) {
   updateComposerState();
   button.disabled = false;
   autoFollow = true;
-  input.focus();
+  if (focusInput) input.focus();
   if (createSession) ensureCurrentSession("");
 }
 
@@ -3447,6 +3448,7 @@ function renderHistory() {
 }
 
 function restoreSession(sessionId) {
+  window.dispatchEvent(new Event("veya:chat-navigate"));
   const session = loadSessions().find((item) => item.id === sessionId);
   if (!session) return;
   const recoveredArtifacts = recoverLegacySessionArtifacts(session);

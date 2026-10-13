@@ -1,0 +1,246 @@
+<!doctype html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:transparent}*{box-sizing:border-box}</style><style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
+/* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
+:is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
+/* Semantic contract; legacy card/metric classes are aliases, outer names do not matter. */
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout]))){display:grid!important;gap:var(--sv-card-gap)!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout])))>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric]){padding:var(--sv-card-padding)!important;margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card]){display:flex!important;flex-direction:column!important;gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card])>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.metrics,[data-sv-layout="metrics"]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="stack"]{grid-template-columns:minmax(0,1fr)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
+:is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.sv-chips){flex-wrap:wrap}
+:is([data-aime-streamviz-root],[data-visualize-root]) .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important}
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metric{overflow-wrap:anywhere}
+  :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-grid,.cols){grid-template-columns:minmax(0,1fr)!important}
+  .svx .bd{min-width:0!important}
+  .svx .bdr3,.svx .scale-r{grid-template-columns:88px minmax(0,1fr) 64px!important}
+  .svx .bdrow{padding:10px 8px;column-gap:8px}
+  .svx .bfrow{grid-template-columns:80px minmax(0,1fr) minmax(0,1fr);height:52px}
+  .svx :is(.bleft,.brgt){position:relative;padding-bottom:18px}
+  .svx .bval{position:absolute;bottom:0;min-width:0;font-size:11px}
+  .svx .bleft .bval{right:4px}
+  .svx .brgt .bval{left:4px}
+  .svx .bdaxis{padding-top:16px;height:42px}
+  .svx .bdval{position:absolute;top:0;right:0;font-size:11px}
+}
+.sv-responsive-line{width:100%;min-width:0;color:var(--sv-text-secondary);font-size:12px}
+.sv-line-note{margin:0 0 12px 48px;line-height:1.5}
+.sv-line-body{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(220px,24vw,320px);box-sizing:border-box;padding-top:8px}
+.sv-line-y-axis,.sv-line-plot{position:relative;min-width:0;min-height:0}
+.sv-line-y-axis span{position:absolute;right:8px;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-plot svg{display:block;width:100%;height:100%;max-width:none}
+.sv-line-dot{position:absolute;left:100%;right:auto;width:7px;height:7px;box-sizing:border-box;border-radius:50%;transform:translate(-50%,-50%)}
+.sv-line-x-axis{position:relative;height:18px;margin:8px 0 0 48px}
+.sv-line-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.sv-line-x-axis span:last-child{transform:translateX(-100%)}
+.sv-line-values{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:13px;line-height:1.5}
+.sv-line-values span{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-values i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+/* Generated palettes are aliases, never a separate fixed light/dark theme. */
+[data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+[data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
+[data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.card,.panel,.sv-metric,.sv-node,.sv-rank){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.stat,.metric,.chart,.table-wrap,.sv-table-wrap){background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.cap,.bles,.note,.sub,.lg,.sv-summary,.sv-narrative p,.sv-node span,.sv-metric p,.sv-metric small,.sv-note,.sv-kicker,.stat span){color:var(--sv-text-secondary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(table,.sv-node b,.sv-rank b,.sv-event b){color:var(--sv-text-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(th,.sv-event time,.sv-rank small,.sv-event p){color:var(--sv-text-secondary)!important;background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+.stv .up{color:var(--sv-price-up)!important}.stv .dn{color:var(--sv-price-down)!important}.stv .nt{color:var(--sv-warning)!important}
+:is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-status-success)!important;background:var(--sv-bg-success)!important}
+:is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-warning)!important;background:var(--sv-bg-warning)!important}
+:is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-status-danger)!important;background:var(--sv-bg-danger)!important}
+:is(.sv-chip--neutral,.sv-badge,.chip){color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] :is([style*="color:#8fa2bd"],[style*="color:#c3cfe0"],[style*="color:#b9c6dc"],[style*="color:#c7d2e8"]){color:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] svg :is(text[fill="#e8eefb"],text[fill="#c3cfe0"],g[fill="#c3cfe0"],g[fill="#e8eefb"]){fill:var(--sv-text-primary)!important}
+[data-aime-streamviz-root] svg :is(text[fill="#8fa2bd"],g[fill="#8fa2bd"]){fill:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
+:root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
+:root:not([data-theme="dark"]) *{box-sizing:border-box}
+:root:not([data-theme="dark"]) html,:root:not([data-theme="dark"]) body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
+:root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
+:root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
+:root:not([data-theme="dark"]) .sv-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:12px}
+:root:not([data-theme="dark"]) .sv-badge-success{color:#09836f;background:#eaf8f2;border-color:#b7e6d5}
+:root:not([data-theme="dark"]) .sv-badge-warning{color:#a56417;background:#fff6df;border-color:#f0d28f}
+:root:not([data-theme="dark"]) .sv-badge-danger{color:#c34650;background:#fff0f1;border-color:#ffc3c8}
+:root:not([data-theme="dark"]) .svv{--bg:transparent!important;--card:#fff!important;--card2:#f6f7f9!important;--line:#dfe4eb!important;--text:#171b22!important;--muted:#667085!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root:not([data-theme="dark"]) .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#475467!important}
+:root:not([data-theme="dark"]) .svv .chip{color:#475467!important;background:#f6f7f9!important;border-color:#d0d5dd!important}
+:root:not([data-theme="dark"]) .svv .chip.success{color:#08745f!important;background:#e9f8f2!important;border-color:#9bdac7!important}
+:root:not([data-theme="dark"]) .svv .chip.warning{color:#925f0b!important;background:#fff5db!important;border-color:#ebc86f!important}
+:root:not([data-theme="dark"]) .svv .chip.danger{color:#b42335!important;background:#fff0f1!important;border-color:#f4aeb7!important}
+:root:not([data-theme="dark"]) .svv :is(.chart,.table-wrap){background:transparent!important}
+:root:not([data-theme="dark"]) .svv :is(.panel,.rank-html){background:#f6f7f9!important}
+:root:not([data-theme="dark"]) .svv table{color:#344054!important}
+:root:not([data-theme="dark"]) .svv thead th{color:#667085!important}
+:root:not([data-theme="dark"]) .svv tbody td{border-color:#dfe4eb!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#e8eefb"]{fill:#344054!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#93a4bd"]{fill:#667085!important}
+:root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
+:root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
+
+:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
+:root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
+:root[data-theme="dark"] .svv .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .svv .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .svv .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .svv .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .svv :is(.chart,.table-wrap){background:transparent!important}
+:root[data-theme="dark"] .svv :is(.panel,.rank-html){background:#181e28!important}
+:root[data-theme="dark"] .svv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .svv thead th{color:#aab6c7!important}
+:root[data-theme="dark"] .svv tbody td{border-color:#334052!important}
+:root[data-theme="dark"] .svv svg text[fill="#e8eefb"]{fill:#dbe3ee!important}
+:root[data-theme="dark"] .svv svg text[fill="#93a4bd"]{fill:#aab6c7!important}
+:root[data-theme="dark"] .svv svg :is(line,path)[stroke="#233247"]{stroke:#334052!important}
+:root[data-theme="dark"] .svv svg line[stroke="#93a4bd"]{stroke:#7d8ca3!important}
+:root[data-theme="dark"] .sv-report{color:#f1f5f9!important;background:transparent!important}
+:root[data-theme="dark"] .sv-report :is(.sv-kicker,.sv-lead,.dsub,.dlabel,.dlabel-flat,.dhead-c,.bval,.tval,.mv-meta,.keyline){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report :is(.card,.metric){background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report :is(.metric span,.metric em,.bname em,.tname em,.mv-id em){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .sv-report .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-report .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-report .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .sv-report .counts li{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .counts b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv-report :is(.btrack,.ttrack){background:#202733!important}
+:root[data-theme="dark"] .sv-report .mv{border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note{color:#aab6c7!important;background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note b{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv{--ink:#f1f5f9!important;--sub:#aab6c7!important;--line:#334052!important;--card:#181e28!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-sum,:root[data-theme="dark"] .sv .two p,:root[data-theme="dark"] .sv ol.steps{color:#c1cad7!important}
+:root[data-theme="dark"] .sv ol.steps b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-metric,:root[data-theme="dark"] .sv .pp-tabs>div,:root[data-theme="dark"] .sv .sv-narr>div,:root[data-theme="dark"] .sv .sv-note,:root[data-theme="dark"] .sv svg.payoff,:root[data-theme="dark"] .sv-card,:root[data-theme="dark"] .sv-metric{background:#181e28!important;border-color:#334052!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv thead th{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv tbody td{border-color:#2b3544!important}
+:root[data-theme="dark"] .sv tbody tr.hl{background:#1f3b46!important}
+:root[data-theme="dark"] .sv svg .ax,:root[data-theme="dark"] .sv svg .lk,:root[data-theme="dark"] .sv svg .lg{fill:#b9c5d5!important}
+:root[data-theme="dark"] .sv svg rect[fill="#eef2f7"],:root[data-theme="dark"] .sv svg rect[fill="#f8fafc"]{fill:#202733!important}
+:root[data-theme="dark"] .sv-badge-success,:root[data-theme="dark"] .sv .sv-chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-badge-warning,:root[data-theme="dark"] .sv .sv-chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-badge-danger,:root[data-theme="dark"] .sv .sv-chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+
+/* Report tables sit on the same card surface as ranked lists. Override the
+   widget runtime's independent neutral table palette inside report roots. */
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(table,.table-wrap,.sv-table-wrap){background:transparent!important;border-color:var(--sv-border-subtle)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+
+/* Financial direction is market-specific; success/danger remain status colors. */
+:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+[data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
+[data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+</style></head><body><main data-aime-streamviz-root="true"><style>
+.jpm-wrap{color:var(--sv-text-primary);font-size:14px;line-height:1.6;padding-bottom:14px}
+.jpm-wrap h1{font-size:20px;margin:4px 0 6px;color:var(--sv-text-primary)}
+.jpm-wrap .eyebrow{margin:0;font-size:12px;color:var(--sv-text-secondary)}
+.jpm-wrap .summary{margin:8px 0 0;color:var(--sv-text-secondary)}
+.jpm-wrap .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:16px;margin:16px 0}
+.jpm-wrap .metric{background:var(--sv-surface-secondary);border:1px solid var(--sv-border-subtle);border-radius:12px}
+.jpm-wrap .metric p{margin:0;font-size:12px;color:var(--sv-text-secondary)}
+.jpm-wrap .metric strong{display:block;font-size:22px;line-height:1.2;margin:4px 0 2px;color:var(--sv-text-primary)}
+.jpm-wrap .metric small{font-size:12px;color:var(--sv-text-secondary)}
+.jpm-wrap [data-sv-layout="grid"]{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px;align-items:start;margin:16px 0}
+.jpm-wrap .card{background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:12px;padding:16px;min-width:0}
+.jpm-wrap .card h2{font-size:16px;margin:0 0 8px;color:var(--sv-text-primary)}
+.jpm-wrap .cap{margin:0 0 8px;font-size:12px;color:var(--sv-text-secondary)}
+.jpm-wrap .sv-responsive-line{--sv-text-secondary:var(--sv-text-secondary);color:var(--sv-text-secondary)}
+.jpm-wrap svg{display:block;width:100%;height:100%}
+.jpm-wrap .sv-table-wrap{overflow-x:auto;border:1px solid var(--sv-border-subtle);border-radius:10px}
+.jpm-wrap table{width:100%;border-collapse:collapse;font-size:13px;min-width:420px}
+.jpm-wrap th{text-align:left;padding:8px 10px;font-weight:600;font-size:12px;color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-bottom:1px solid var(--sv-border-subtle)}
+.jpm-wrap td{padding:8px 10px;border-bottom:1px solid var(--sv-border-subtle);color:var(--sv-text-primary);vertical-align:top}
+.jpm-wrap td small{display:block;font-size:11px;color:var(--sv-text-secondary)}
+.jpm-wrap tr:last-child td{border-bottom:0}
+.jpm-wrap td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.jpm-wrap .tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:11px;border:1px solid var(--sv-border-subtle);background:var(--sv-surface-secondary);color:var(--sv-text-secondary);white-space:nowrap}
+.jpm-wrap .up{color:var(--sv-price-up)}
+.jpm-wrap .down{color:var(--sv-price-down)}
+.jpm-wrap .flat{color:var(--sv-price-flat)}
+.jpm-wrap .sig{border-left:2px solid var(--sv-border-subtle);padding:0 0 0 12px;margin:0 0 12px}
+.jpm-wrap .sig h3{margin:0 0 4px;font-size:14px;color:var(--sv-text-primary)}
+.jpm-wrap .sig p{margin:0;color:var(--sv-text-secondary);font-size:13px}
+.jpm-wrap .note{margin:12px 0 0;font-size:12px;color:var(--sv-text-secondary)}
+</style>
+<div class="jpm-wrap" data-sv-layout="stack">
+  <header>
+    <p class="eyebrow">行情截至 2026-10-12 美股收盘 · 财报与盘前反应：2026-10-13（盘中未纳入）</p>
+    <h1>JPM 技术面：中期上升趋势内的中级回调，短期待财报日确认</h1>
+    <p class="summary">收盘 334.30 美元，仍站在 200 日均线上方 3.8%，但被 20 日与 50 日均线压制；RSI14 从超卖区回升至 40.6，MACD 柱状线收敛至 -0.08 却仍未金叉；反弹伴随缩量（量比 0.67），且相对标普 500 在 20/60/120 日与年初至今全部跑输。方向确认点集中在 325 支撑与 338.6/349.8 压力之间。</p>
+  </header>
+
+  <div class="metrics" data-financial-market="US">
+    <article class="metric"><p>最新收盘</p><strong>334.30</strong><small>美元 · 日涨 +0.39%</small></article>
+    <article class="metric"><p>RSI14</p><strong>40.6</strong><small>14 日区间 31.6–41.7</small></article>
+    <article class="metric"><p>MACD 柱状线</p><strong>-0.08</strong><small>10 日均值 -2.45</small></article>
+    <article class="metric"><p>量比（对 20 日均量）</p><strong>0.67</strong><small>20 日均量 8.48 百万股</small></article>
+    <article class="metric"><p>距 52 周高点</p><strong>-8.79%</strong><small>高点 366.50（2026-08-13）</small></article>
+    <article class="metric"><p>相对 SPY（年初至今）</p><strong>-11.19pp</strong><small>JPM +2.71% vs SPY +13.90%</small></article>
+  </div>
+
+  <section class="card" data-financial-market="US">
+  <h2>近 126 个交易日走势对照（2026-04-14 = 100）</h2>
+  <p class="cap">同期 JPM 累计 +7.45%，标普 500（SPY）累计 +12.04%，JPM 跑输 4.59 个百分点。相对强弱（JPM/SPY）在 7 月底至 8 月一度领先（107.7，2026-07-28），9 月以来快速回落至 95.9。</p>
+  <div class="sv-responsive-line">
+    <div class="sv-line-body">
+      <div class="sv-line-y-axis"><span style="top:0.000%">119.2</span><span style="top:25.000%">112.7</span><span style="top:50.000%">106.2</span><span style="top:75.000%">99.7</span><span style="top:100.000%">93.3</span></div>
+      <div class="sv-line-plot">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="JPM 与标普500 归一化走势对比">
+          <line x1="0" y1="100.000" x2="100" y2="100.000" stroke="var(--sv-border-subtle)" stroke-width="1" vector-effect="non-scaling-stroke"/><line x1="0" y1="75.000" x2="100" y2="75.000" stroke="var(--sv-border-subtle)" stroke-width="1" vector-effect="non-scaling-stroke"/><line x1="0" y1="50.000" x2="100" y2="50.000" stroke="var(--sv-border-subtle)" stroke-width="1" vector-effect="non-scaling-stroke"/><line x1="0" y1="25.000" x2="100" y2="25.000" stroke="var(--sv-border-subtle)" stroke-width="1" vector-effect="non-scaling-stroke"/><line x1="0" y1="0.000" x2="100" y2="0.000" stroke="var(--sv-border-subtle)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+          <path d="M 0.000 73.964 L 0.800 70.915 L 1.600 69.950 L 2.400 65.242 L 3.200 65.242 L 4.000 68.600 L 4.800 64.664 L 5.600 66.207 L 6.400 63.120 L 7.200 62.464 L 8.000 64.394 L 8.800 64.432 L 9.600 60.535 L 10.400 59.416 L 11.200 60.882 L 12.000 57.679 L 12.800 52.084 L 13.600 53.319 L 14.400 50.000 L 15.200 49.035 L 16.000 49.653 L 16.800 47.376 L 17.600 44.135 L 18.400 49.112 L 19.200 49.421 L 20.000 52.161 L 20.800 47.955 L 21.600 47.144 L 22.400 45.524 L 23.200 42.784 L 24.000 42.861 L 24.800 40.546 L 25.600 39.504 L 26.400 38.346 L 27.200 37.767 L 28.000 40.739 L 28.800 39.157 L 29.600 50.039 L 30.400 49.074 L 31.200 50.309 L 32.000 56.753 L 32.800 49.884 L 33.600 47.685 L 34.400 40.430 L 35.200 42.900 L 36.000 48.109 L 36.800 44.906 L 37.600 46.218 L 38.400 52.238 L 39.200 52.431 L 40.000 51.814 L 40.800 54.785 L 41.600 48.109 L 42.400 44.906 L 43.200 45.447 L 44.000 45.987 L 44.800 42.398 L 45.600 44.366 L 46.400 45.639 L 47.200 42.167 L 48.000 40.353 L 48.800 43.556 L 49.600 42.089 L 50.400 40.430 L 51.200 42.707 L 52.000 46.836 L 52.800 47.492 L 53.600 44.057 L 54.400 44.559 L 55.200 49.653 L 56.000 49.267 L 56.800 49.151 L 57.600 48.186 L 58.400 54.515 L 59.200 47.723 L 60.000 44.752 L 60.800 38.848 L 61.600 31.246 L 62.400 32.095 L 63.200 32.789 L 64.000 30.165 L 64.800 30.320 L 65.600 31.670 L 66.400 30.590 L 67.200 27.619 L 68.000 28.468 L 68.800 30.513 L 69.600 33.407 L 70.400 32.519 L 71.200 36.108 L 72.000 34.372 L 72.800 35.606 L 73.600 34.256 L 74.400 34.179 L 75.200 31.362 L 76.000 32.365 L 76.800 33.638 L 77.600 36.571 L 78.400 34.680 L 79.200 30.243 L 80.000 31.902 L 80.800 34.217 L 81.600 36.224 L 82.400 38.732 L 83.200 35.143 L 84.000 37.073 L 84.800 39.002 L 85.600 40.855 L 86.400 36.108 L 87.200 36.610 L 88.000 30.050 L 88.800 30.127 L 89.600 33.214 L 90.400 33.561 L 91.200 31.246 L 92.000 34.410 L 92.800 35.221 L 93.600 36.070 L 94.400 35.336 L 95.200 32.172 L 96.000 29.317 L 96.800 26.924 L 97.600 27.966 L 98.400 29.818 L 99.200 27.233 L 100.000 27.503" fill="none" stroke="var(--sv-chart-series-2)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          <path d="M 0.000 73.964 L 0.800 80.408 L 1.600 75.430 L 2.400 75.005 L 3.200 66.670 L 4.000 71.648 L 4.800 71.610 L 5.600 73.269 L 6.400 77.475 L 7.200 73.346 L 8.000 73.539 L 8.800 76.279 L 9.600 71.339 L 10.400 72.304 L 11.200 78.285 L 12.000 76.086 L 12.800 69.294 L 13.600 79.983 L 14.400 85.154 L 15.200 87.740 L 16.000 81.720 L 16.800 87.431 L 17.600 87.855 L 18.400 90.479 L 19.200 86.852 L 20.000 93.103 L 20.800 85.309 L 21.600 84.035 L 22.400 79.829 L 23.200 79.405 L 24.000 88.666 L 24.800 91.830 L 25.600 88.627 L 26.400 91.984 L 27.200 86.582 L 28.000 86.698 L 28.800 74.234 L 29.600 72.420 L 30.400 73.964 L 31.200 71.995 L 32.000 76.433 L 32.800 71.031 L 33.600 62.040 L 34.400 63.699 L 35.200 49.151 L 36.000 46.257 L 36.800 56.483 L 37.600 48.727 L 38.400 45.408 L 39.200 46.257 L 40.000 44.212 L 40.800 51.736 L 41.600 51.312 L 42.400 53.859 L 43.200 45.485 L 44.000 44.983 L 44.800 40.970 L 45.600 39.118 L 46.400 49.768 L 47.200 43.749 L 48.000 42.514 L 48.800 44.945 L 49.600 34.565 L 50.400 29.587 L 51.200 34.217 L 52.000 36.764 L 52.800 39.542 L 53.600 31.670 L 54.400 27.966 L 55.200 25.882 L 56.000 21.753 L 56.800 18.049 L 57.600 16.659 L 58.400 32.288 L 59.200 24.686 L 60.000 23.528 L 60.800 22.448 L 61.600 16.428 L 62.400 14.267 L 63.200 17.933 L 64.000 16.428 L 64.800 13.611 L 65.600 10.794 L 66.400 6.897 L 67.200 9.482 L 68.000 9.829 L 68.800 12.145 L 69.600 9.289 L 70.400 16.737 L 71.200 23.837 L 72.000 23.798 L 72.800 17.817 L 73.600 17.431 L 74.400 17.663 L 75.200 20.518 L 76.000 16.274 L 76.800 18.280 L 77.600 19.592 L 78.400 18.010 L 79.200 10.794 L 80.000 15.039 L 80.800 21.406 L 81.600 19.901 L 82.400 21.329 L 83.200 18.010 L 84.000 25.573 L 84.800 22.641 L 85.600 27.078 L 86.400 26.577 L 87.200 26.152 L 88.000 23.220 L 88.800 38.153 L 89.600 41.202 L 90.400 39.928 L 91.200 34.333 L 92.000 42.359 L 92.800 44.366 L 93.600 49.498 L 94.400 46.604 L 95.200 47.608 L 96.000 47.608 L 96.800 48.958 L 97.600 51.080 L 98.400 48.804 L 99.200 46.836 L 100.000 45.215" fill="none" stroke="var(--sv-chart-series-1)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        </svg>
+        <i class="sv-line-dot" style="top:45.215%;background:var(--sv-chart-series-1)"></i>
+        <i class="sv-line-dot" style="left:100%;top:27.503%;background:var(--sv-chart-series-2)"></i>
+      </div>
+    </div>
+    <div class="sv-line-x-axis"><span style="left:0.000%">04-14</span><span style="left:24.800%">05-28</span><span style="left:49.600%">07-14</span><span style="left:74.400%">08-26</span><span style="left:100.000%">10-12</span></div>
+    <div class="sv-line-values">
+      <span><i style="background:var(--sv-chart-series-1)"></i>摩根大通（JPM）107.45</span>
+      <span><i style="background:var(--sv-chart-series-2)"></i>标普 500 ETF（SPY）112.04</span>
+    </div>
+  </div>
+</section>
+
+  <div data-sv-layout="grid">
+    <section class="card" data-financial-market="US">
+  <h2>相对大盘：JPM 全线跑输</h2>
+  <div class="sv-table-wrap"><table>
+    <thead><tr><th>区间</th><th>JPM</th><th>SPY</th><th>超额收益</th></tr></thead>
+    <tbody><tr><td>近 20 个交易日<small>2026-09-14 → 2026-10-12</small></td><td><span class="down">-4.52%</span></td><td><span class="up">+2.26%</span></td><td><span class="down">-6.78pp</span></td></tr><tr><td>近 60 个交易日<small>2026-07-17 → 2026-10-12</small></td><td><span class="down">-1.99%</span></td><td><span class="up">+4.68%</span></td><td><span class="down">-6.67pp</span></td></tr><tr><td>近 120 个交易日<small>2026-04-21 → 2026-10-12</small></td><td><span class="up">+6.81%</span></td><td><span class="up">+10.51%</span></td><td><span class="down">-3.70pp</span></td></tr><tr><td>年初至今<small>2026-01-02 → 2026-10-12</small></td><td><span class="up">+2.71%</span></td><td><span class="up">+13.90%</span></td><td><span class="down">-11.19pp</span></td></tr></tbody>
+  </table></div>
+  <p class="cap">未复权收盘价计算，不含股息；股息再投资会使实际总回报略高。</p>
+</section>
+    <section class="card">
+  <h2>关键位置（基准：2026-10-12 收盘 334.30 美元）</h2>
+  <div class="sv-table-wrap"><table>
+    <thead><tr><th>类型</th><th>价格（美元）</th><th>距收盘</th><th>依据</th></tr></thead>
+    <tbody><tr><td><span class="tag 压力">压力</span></td><td class="num">338.57</td><td class="num">+1.28%</td><td>20 日均线，10 月以来反弹未收复</td></tr><tr><td><span class="tag 压力">压力</span></td><td class="num">349.79</td><td class="num">+4.63%</td><td>50 日均线，同时靠近 7/15 高点 351.24</td></tr><tr><td><span class="tag 压力">压力</span></td><td class="num">362.86</td><td class="num">+8.54%</td><td>9/4 反弹高点 362.86</td></tr><tr><td><span class="tag 压力">压力</span></td><td class="num">366.50</td><td class="num">+9.63%</td><td>52 周及历史高点，2026-08-13 创下</td></tr><tr><td><span class="tag 支撑">支撑</span></td><td class="num">325.87</td><td class="num">-2.52%</td><td>10/1 低点 325.87 与 10/7 低点 325.07 构成双底区</td></tr><tr><td><span class="tag 支撑">支撑</span></td><td class="num">322.18</td><td class="num">-3.63%</td><td>200 日均线，中期多空分界</td></tr><tr><td><span class="tag 支撑">支撑</span></td><td class="num">308.88</td><td class="num">-7.60%</td><td>6/11 摆动低点</td></tr><tr><td><span class="tag 支撑">支撑</span></td><td class="num">279.10</td><td class="num">-16.51%</td><td>52 周低点，2026-03-12</td></tr></tbody>
+  </table></div>
+</section>
+  </div>
+
+  <section class="card">
+    <h2>需要观察的信号</h2>
+    <article class="sig"><h3>1. 10/13 财报日的价格反应（最高优先级）</h3><p>端内文章显示 Q3 2026 财报当日盘前一度跌超 3%，随后因 2027 年 NII（剔除 Markets）约 1,070 亿美元的中枢指引转为约 +1.3%。若按此推算，价格大致回到 338.6 一线，正好是 20 日均线；若收盘站稳该位置，短线修复成立，若冲高回落并跌破 325，则回调继续。</p></article><article class="sig"><h3>2. MACD 是否在零轴下方完成金叉</h3><p>柱状线已从 10 日均值 -2.45 收敛到 -0.08，但 DIF（-5.24）仍在 DEA（-5.20）下方，属"接近金叉"而非确认。放量站上 MA20 才能把动能修复转为趋势修复。</p></article><article class="sig"><h3>3. 量能能否配合</h3><p>最新成交 5.68 百万股，仅为 20 日均量的 0.67 倍；近 5 日均量较前 5 日下降 12.2%。缩量意味着抛压减轻，但也说明反弹缺少承接，方向需要放量确认。</p></article><article class="sig"><h3>4. RSI14 能否回到 50 上方</h3><p>RSI14 现为 40.6，14 日内低点 31.6，已脱离超卖但仍在弱势区间。重新跌破 35 意味着二次探底风险上升。</p></article><article class="sig"><h3>5. ATR 与波动管理</h3><p>ATR14 为 5.65 美元（约股价的 1.69%），财报日实际波动可能明显高于该水平，期权市场此前定价的财报日波动约为 2.6%。</p></article>
+  </section>
+
+  <p class="note">行情口径：日线未复权 OHLCV，来自 Nasdaq 历史行情接口（Yahoo 图表接口当日限流，已降级并按原样披露），覆盖 2024-09-13 至 2026-10-12；均线、RSI14、MACD(12,26,9)、ATR14、区间收益均由该数据计算，不含股息再投资。财报数据与盘前反应来自 AInvest 端内文章（页面标注 Tue, Oct 13, 2026 ET），该类文章的发布时间字段未随检索结果返回，正文抓取时间为本会话当日。10/13 盘中行情尚未纳入本页任何价格或指标。</p>
+</div></main></body></html>

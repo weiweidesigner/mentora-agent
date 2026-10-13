@@ -1,0 +1,170 @@
+{
+  "question": "近期有哪些重要事件可能影响美股？按宏观、政策、财报和行业主题，用思维导图整理关键催化剂。",
+  "cachedAt": "2026-10-13T19:43:34.000733+08:00",
+  "answer": {
+    "question": "近期有哪些重要事件可能影响美股？按宏观、政策、财报和行业主题，用思维导图整理关键催化剂。",
+    "interpretation": "## 核心结论\n\n**未来数周美股的主线不是\"降息交易\"，而是\"通胀与利率路径 + AI 资本开支验证\"的双重定价窗口。** 节奏上最密集的五个节点是：**10/14 九月 CPI → 10/27–28 FOMC → 10/29 Q3 GDP 与九月 PCE → 11/3 中期选举 → 12/11 联邦资金截止日**；财报侧则由 **10/13 四大银行开局、10/28–29 科技巨头集中披露、11/17 英伟达**收尾。与\"降息在即\"的直觉相反，公开日程显示美联储 9/16 已加息 25bp 至 3.75%–4.00%，且预测市场在 9/30 快照中给 10 月\"维持不变\"约 81%、\"再加息\"约 18%、\"降息\"不足 1%。\n\n市场内部结构已经先一步反映这种环境：**近 3 个月纳指 100 ETF +3.66%、标普 500 ETF +3.49%，而小盘 ETF −5.64%、长债 ETF −7.17%**，说明指数上行由少数 AI 权重股贡献，广度与久期敏感资产同时承压。下面用思维导图先给出四类催化剂的全景结构，再逐类展开证据、时点与验证点。\n\n[[AIME_CHART:case:us-catalysts/deepseek-case-us-catalysts-mindmap.html]]\n\n上图把催化剂整理为五个一级分支：宏观（通胀与利率路径）、政策（FOMC、财政截止、中期选举、关税与加密监管）、财报（Q3 季与 AI 门槛）、行业主题（算力、半导体存储、电力核能、医药、能源、加密、机器人）、风险与验证点。**所有节点均来自本轮检索到的官方日程、公司公告与可核验新闻，不含推测数值。**\n\n## 一、宏观：通胀数据主导，利率\"更高更久\"仍是基准情形\n\n未来六周通胀类数据密集落地：**9 月 CPI 于 10/14 08:30 ET 由 BLS 发布**，是 10/28 FOMC 前最关键的单一数据；随后 9 月 PPI（10/15）、进出口价格（10/16）、**Q3 GDP 初值与 9 月 PCE（10/29）**、10 月 CPI（11/10）、10 月 PCE 与 GDP 二估（11/25）依次公布。利率背景是：**美联储 9 月 16 日加息 25bp 至 3.75%–4.00% 并称通胀仍高**，10 年期美债收益率在 10 月 5 日一度达到 5.31%、为 2002 年以来高位（该收益率读数为二级来源，本轮未取得指数级原始数据）。\n\n资产价格的回应已经体现在久期端：**长债 ETF 近 3 个月 −7.17%、近 1 个月 −3.49%**，是六类资产中最弱的久期敞口；黄金 ETF 近 1 个月 −4.17%，说明\"避险+抗通胀\"并未同步受益。这意味着通胀若继续偏强，压力会先通过实际利率传导到高估值成长股，而不是通过盈利端。\n\n[[AIME_CHART:case:us-catalysts/deepseek-case-us-catalysts-returns-bar.html]]\n\n对比图最关键的差异是**\"指数强、广度弱\"**：纳指 100 ETF 是唯一近 1 个月与近 3 个月同时为正的宽基，而**小盘 ETF 近 3 个月 −5.64%、距 3 个月高点回撤 8.91%**，长债回撤 7.65%。换句话说，当前美股的上行由 AI 权重驱动，对利率与风险偏好变化的缓冲垫比指数点位显示的更薄。\n\n## 二、政策：FOMC、中期选举与 12/11 财政截止三个节点\n\n**10 月 27–28 日 FOMC（决议 10/28）与 12 月 8–9 日会议（含经济预测摘要与点阵图）**是利率路径的两个决策点；12 月会议将给出 2027 年利率路径中位数，对期限溢价与估值的影响通常大于单次决议本身。财政侧，**现行临时拨款法案把联邦资金延至 12 月 11 日**，跛脚鸭会期还需处理国防授权与多项到期授权；背景是 CBO 估算 **FY2026 赤字约 2.0 万亿美元**（由 CRFB 在 10/8 引述），国债供给与期限溢价是估值压力源。\n\n**11 月 3 日中期选举**（众议院 435 席全改选、参议院 35 席）的作用机制不是\"选举等于涨或跌\"，而是改变财政、税收与监管的可行集：分裂政府限制财政扩张、利好债券但对政策敏感板块不利，一党控制则触发税改、医保、能源与金融板块重估。贸易政策方面，最高法院已于 **2026 年 2 月 20 日裁定 IEEPA 不授权总统征收关税、相关关税自 2/24 停收**（不影响 232 与 301 关税），CBP 的退款系统第三阶段于 **10/6 上线**、按票处理而非自动退款，方向上改善进口密集行业现金流，但同时扩大财政融资需求。加密监管的最近明确窗口是 **10/19 GENIUS Act 第 3 条细则的评论截止**，OCC 最终稳定币规则预计 11 月前落地。\n\n## 三、财报：10/13 银行开局，10/28–29 是\"AI 资本开支验证周\"\n\n**10 月 13 日（今日）摩根大通、高盛、花旗、富国同日发布财报**，Q3 季由此开启；端内头条也在同日聚焦\"可能重置市场的 11 份财报\"（仅标题级证据，正文抓取受限）。随后的关键日期与看点如下：\n\n**10/15 台积电**（Q3 月度营收合计约 NT$1.4942 万亿、同比约 +50.9%，Q4 指引是算力链风向标）、**10/20 奈飞**（指引 Q3 收入 128.6 亿美元、同比约 +11.7%）、**10/21 特斯拉与 Meta**（Meta 指引 Q3 收入 610–640 亿美元、2026 年 capex 收窄至 1,300–1,450 亿美元）、**10/28 微软（FY27Q1，收入指引 898.5–909.5 亿美元、Azure 约 +45%）与 Alphabet**、**10/29 亚马逊（净销售指引 1,970–2,020 亿美元，2026 年现金 capex 上调至约 2,200 亿美元）**、**11/2 苹果（FY26Q4）**、**11/17 英伟达（FY27Q3，财季与日历 Q3 错位）**。可核实的关键信息很明确：**本轮最大的两个 AI 投入承诺来自亚马逊（约 2,200 亿美元）与 Meta（1,300–1,450 亿美元）**，因此 10/28–29 的资本开支指引与自由现金流质量，比单季 EPS 更能决定算力链的方向。\n\n[[AIME_CHART:case:us-catalysts/deepseek-case-us-catalysts-calendar-streamviz.html]]\n\n日历看板把上述日期按时间顺序排列，并附 Q3 财报日历与关注点。最值得标记的顺序特征是：**利率路径的三次校准（10/14 CPI、10/28 FOMC、10/29 PCE）与 AI 资本开支的三次验证（10/15 台积电、10/28–29 微软/亚马逊、11/17 英伟达）几乎交替出现**，任何一次证伪都会同时冲击指数权重与市场广度。\n\n## 四、行业主题：AI 算力仍是主轴，电力与油价成为\"第二瓶颈\"\n\n**AI 算力**：可核验锚点是英伟达 FY2026 Q3（截至 2025-10-26）收入 570.06 亿美元、数据中心 512 亿美元；管理层在 2026-08-26 的电话会材料中称 Vera Rubin 预计占当季数据中心收入约 20%。**半导体与存储**：AMD 于 2026-09-21 成为第四家市值突破 1 万亿美元的美国芯片商；美光称 2026 年 HBM 供应已售罄、HBM4 已投产——但拥挤交易的回撤风险同样真实，6 月 5 日曾有芯片股两日蒸发约 1.3 万亿美元市值的记录。**电力与核能**：AWS–Talen 1.92GW 购电协议、微软–Three Mile Island 837MW、Meta×Oklo 1.2GW 等项目把算力瓶颈外溢为电力与燃料资产的重估。**医药**：口服 GLP-1 进入商业化关键期（礼来 orforglipron 于 2026 年 4 月在美国获批，中国上市窗口为 2026 年下半年至 2027 年初）。**能源**：EIA 在 10/6 的展望中把 4Q26 布伦特预测上调至 105 美元/桶、2026 年均价 96 美元，柴油紧张同时抬升通胀与炼厂裂解。**加密与稳定币**：SEC 于 8/18 提出加密资产监管框架，细则落地期延续至 10–11 月。**机器人与自动驾驶**：特斯拉 robotaxi 扩城与 Optimus 量产推进，但完全无人驾驶许可仍是闸门。\n\n## 五、风险与验证点，以及数据时间与口径\n\n需要盯住的分歧集中在四处：**一是通胀粘性**，若 CPI 或核心 PCE 超预期，12 月\"再加息\"的尾部风险会重新定价久期资产；**二是市场广度**，小盘与长债的负收益说明指数上行依赖少数 AI 权重，一旦资本开支指引转弱，回撤幅度可能大于指数表现；**三是油价与电力成本**，高位油价同时抬升通胀预期并挤压非能源行业利润率；**四是财政与政策不确定性**，11/3 选举结果与 12/11 资金截止日可能重定价财政、关税与监管路径。此外，**10 月 FOMC 的概率分布是 2026-09-30 的预测市场快照、非最新值**；降息或加息概率会随 10/14 CPI 明显变化。\n\n数据时间与口径说明：**行情数据截至 2026-10-12 美股收盘**，来源为 Yahoo Finance 与 Nasdaq 日线接口，指数以 SPY/QQQ/DIA/IWM 等 ETF 代理、**非指数点位**；波动率指数与 10 年期收益率指数当期不可得（数据源限流），因此久期压力以长债 ETF 代理，5.31% 的收益率读数为二级来源。事件日期来自美联储 FOMC 日程、BLS 与 BEA 发布日程、以及公司 IR 公告，经外部检索逐条核对；营收、EPS 与 capex 数字区分了\"公司指引\"与\"第三方共识\"两类口径，均已标注来源时间。端内新闻使用 AInvest 2026-10-05 至 10-13 的头条与最新列表，**文章正文抓取受限，仅作标题级证据**；一次定向语义检索返回 0 条，已改用分类与话题入口，未用任何推算或占位数值补齐缺失项。",
+    "reportArtifacts": [
+      {
+        "path": "case:us-catalysts/deepseek-case-us-catalysts-mindmap.html",
+        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html"
+      },
+      {
+        "path": "case:us-catalysts/deepseek-case-us-catalysts-returns-bar.html",
+        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-returns-bar.html"
+      },
+      {
+        "path": "case:us-catalysts/deepseek-case-us-catalysts-calendar-streamviz.html",
+        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-calendar-streamviz.html"
+      }
+    ],
+    "reportUrl": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html",
+    "sources": [
+      {
+        "siteName": "finance.yahoo.com",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/jpmorganchase-host-third-quarter-2026-202200151.html",
+        "title": "Business Wire/Yahoo, 2026-09-17",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Pluang, 2026-10-09",
+        "url": "https://pluang.com/en/news-feed/pratinjau-laba-jpmorgan-chase-kuartal-3-2026",
+        "title": "Pluang, 2026-10-09",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "SignalStack, 2026-10-13",
+        "url": "https://www.signalstack.news/earnings/goldman-sachs/",
+        "title": "SignalStack, 2026-10-13",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Admiral, 2026-10-13",
+        "url": "https://admiralmarkets.com/analytics/traders-blog/jpmorgan-goldman-sachs-earnings-q3-2026",
+        "title": "Admiral, 2026-10-13",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "earningscountdown.com",
+        "url": "https://earningscountdown.com/stock/gs/",
+        "title": "EarningsCountdown, 2026-10-13",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Citi, 2026-10-02",
+        "url": "https://www.citigroup.com/global/news/press-release/2026/citi-third-quarter-2026-earnings-call",
+        "title": "Citi, 2026-10-02",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Wells Fargo IR",
+        "url": "https://www.wellsfargo.com/about/investor-relations/quarterly-earnings/",
+        "title": "Wells Fargo IR",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "investor.tsmc.com",
+        "url": "https://investor.tsmc.com/english/financial-calendar",
+        "title": "TSMC Financial Calendar, 2026-10-08",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "TSMC 3Q26 teleconference",
+        "url": "https://investor.tsmc.com/english/quarterly-results/teleconference",
+        "title": "TSMC 3Q26 teleconference",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Admiral, 2026-10-12",
+        "url": "https://admiralmarkets.com/analytics/traders-blog/tsmc-earnings-q3-2026-preview",
+        "title": "Admiral, 2026-10-12",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Tesla IR",
+        "url": "https://ir.tesla.com/",
+        "title": "Tesla IR",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "finance.yahoo.com",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/meta-announce-third-quarter-2026-203500910.html",
+        "title": "PR Newswire/Yahoo, 2026-10-12",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Meta IR",
+        "url": "https://investor.atmeta.com/home/default.aspx",
+        "title": "Meta IR",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "seekingalpha.com",
+        "url": "https://seekingalpha.com/news/4621106-meta-expects-q3-2026-revenue-of-61b-64b-while-narrowing-2026-capex-to-130b-145b",
+        "title": "Seeking Alpha, 2026-07-29",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "finance.yahoo.com",
+        "url": "https://finance.yahoo.com/media-advertising/articles/netflix-announce-third-quarter-2026-160000444.html",
+        "title": "PR Newswire/Yahoo, 2026-09-14",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Admiral, 2026-10-05",
+        "url": "https://admiralmarkets.com/analytics/traders-blog/netflix-stock-analysis-october-2026",
+        "title": "Admiral, 2026-10-05",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Microsoft IR, 2026-09-10",
+        "url": "https://www.microsoft.com/en-us/investor/default",
+        "title": "Microsoft IR, 2026-09-10",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Wall Street Horizon",
+        "url": "https://www.wallstreethorizon.com/microsoft-earnings-calendar",
+        "title": "Wall Street Horizon",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "CME Lite, 2026-10-08",
+        "url": "https://www.cmelitegroup.co.tt/knowledge-hub/microsoft-earnings-date-fiscal-q1-2027-report-time-estimates-and-expected-move/",
+        "title": "CME Lite, 2026-10-08",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Alphabet, 2026-10-07",
+        "url": "https://abc.xyz/investor/news/news-details/2026/Alphabet-Announces-Date-of-Third-Quarter-2026-Financial-Results-Conference-Call-2026-8tpGZsLS6v/default.aspx",
+        "title": "Alphabet, 2026-10-07",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Alphabet Events",
+        "url": "https://abc.xyz/investor/events/",
+        "title": "Alphabet Events",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Public, 2026-10-09",
+        "url": "https://public.com/stocks/googl/earnings",
+        "title": "Public, 2026-10-09",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "finance.yahoo.com",
+        "url": "https://finance.yahoo.com/calendar/earnings?symbol=AMZN",
+        "title": "Yahoo Finance, 2026-10-13",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "R40",
+        "url": "https://r40.io/stocks/amzn/earnings/2026-q3/",
+        "title": "R40",
+        "iconUrl": ""
+      }
+    ],
+    "lang": "zh-CN"
+  }
+}

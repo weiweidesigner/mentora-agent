@@ -6,7 +6,7 @@
     <title>Veya</title>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=theme-button-20261012-6" />
+    <link rel="stylesheet" href="/static/styles.css?v=case-gallery-20261013-1" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261012-3" />
   </head>
   <body>
@@ -95,6 +95,10 @@
         </div>
       </div>
       <section class="conversation is-empty" aria-label="图文对话分析">
+        <header id="caseDetailHeader" class="caseDetailHeader" hidden>
+          <button id="caseBackButton" class="caseBackButton" type="button"><span aria-hidden="true">←</span> 返回首页</button>
+          <span id="caseCacheDate" class="caseCacheDate"></span>
+        </header>
         <div id="messages" class="messages"></div>
         <div class="homeHero" aria-hidden="true">See Beyond the Data</div>
 
@@ -118,6 +122,13 @@
             </button>
           </div>
         </form>
+        <section id="homeCases" class="homeCases" aria-label="探索案例">
+          <div class="homeCasesHeading"><span>从一个问题开始</span><span>精选案例</span></div>
+          <div id="caseGrid" class="caseGrid"></div>
+        </section>
+        <div id="caseActionBar" class="caseActionBar" hidden>
+          <button id="caseAskButton" class="caseAskButton" type="button">问一问 <span aria-hidden="true">↗</span></button>
+        </div>
       </section>
       <dialog id="generatedImageDialog" class="generatedImageDialog" aria-label="图片详情">
         <div class="generatedImageDialogHeader">
@@ -140,6 +151,7 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261013-04365a2"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=share-preview-20261013-6"></script>
+    <script src="/static/app.js?v=case-gallery-20261013-1"></script>
+    <script src="/static/cases.js?v=20261013-1"></script>
   </body>
 </html>

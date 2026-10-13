@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ashare-dashboard",
+    "title": "A 股市场仪表盘",
+    "tag": "市场全景",
+    "question": "分析今天 A 股市场表现，做成一页仪表盘。",
+    "preview": "上涨占比 52.3%，成交约 1.69 万亿元。用仪表盘查看指数、市场宽度和活跃个股。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/ashare-dashboard/conversation.json"
+  },
+  {
+    "id": "amd-ratings",
+    "title": "AMD 分析师怎么看",
+    "tag": "分析师评级",
+    "question": "AMD 最新的分析师评级如何？结合评级分布、目标价和近期调整，帮我梳理市场共识。",
+    "preview": "23 位分析师共识买入，目标价区间 465–800 美元。查看评级分布与近期调整。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/amd-ratings/conversation.json"
+  },
+  {
+    "id": "presidents-sp500",
+    "title": "总统就职百日与标普 500",
+    "tag": "动态趋势",
+    "question": "比较 2000 年以来美国每次总统就职后 100 天内，标普 500 的累计收益率表现，用动态趋势图演绎各届差异。",
+    "preview": "7 次就职后的百日走势，动态对比累计收益率与回撤。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/presidents-sp500/conversation.json"
+  },
+  {
+    "id": "ths-dividends",
+    "title": "同花顺历史分红",
+    "tag": "分红时间线",
+    "question": "梳理同花顺（300033.SZ）的历史分红明细，按时间线展示每次分红及关键变化。",
+    "preview": "沿时间线回看历年现金分红与送转股，梳理股东回报的关键变化。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/ths-dividends/conversation.json"
+  },
+  {
+    "id": "us-catalysts",
+    "title": "美股近期重要催化剂",
+    "tag": "思维导图",
+    "question": "近期有哪些重要事件可能影响美股？按宏观、政策、财报和行业主题，用思维导图整理关键催化剂。",
+    "preview": "宏观、政策、财报与行业主题，串联近期市场的重要催化剂。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/us-catalysts/conversation.json"
+  },
+  {
+    "id": "jpm-technical",
+    "title": "JPM 技术走势",
+    "tag": "技术分析",
+    "question": "帮我分析摩根大通（JPM）近期的技术走势，结合价格、成交量和关键指标，指出趋势、支撑阻力及需要观察的信号。",
+    "preview": "结合价格、成交量和技术指标，定位趋势、支撑阻力与确认信号。",
+    "cachedDate": "2026-10-13",
+    "conversationUrl": "/static/cases/jpm-technical/conversation.json"
+  }
+]
