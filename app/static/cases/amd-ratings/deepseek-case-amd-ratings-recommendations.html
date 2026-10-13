@@ -96,7 +96,7 @@ svg{display:block;width:100%;height:280px;overflow:visible}
   transform:translateX(-50%);
   border-left:6px solid transparent;
   border-right:6px solid transparent;
-  border-top:6px solid var(--business-border-303030);
+  border-top:6px solid var(--business-bg-303030);
 }
 .tooltip.show{opacity:1}
 .tip-title{color:var(--business-text-fff);font-weight:800;margin-bottom:5px}
@@ -398,6 +398,26 @@ function drawChart(rows) {
       hideTooltip();
     });
   });
+  let touchStart = null;
+  svg.style.touchAction = 'pan-y';
+  svg.onpointerdown = (event) => {
+    if (event.pointerType === 'touch') touchStart = { x:event.clientX,y:event.clientY };
+  };
+  svg.onpointermove = (event) => {
+    if (event.pointerType !== 'touch' || !touchStart) return;
+    const dx = Math.abs(event.clientX - touchStart.x), dy = Math.abs(event.clientY - touchStart.y);
+    if (dy > 6 && dy > dx) { clearBands(); hideTooltip(); return; }
+    const rect = svg.getBoundingClientRect();
+    const sx = (event.clientX - rect.left) * W / rect.width;
+    const last = rows.length - 1;
+    const nearest = last ? Math.max(0, Math.min(last, Math.round((sx - x(0)) / (x(last) - x(0)) * last))) : 0;
+    clearBands();
+    hoverLayer.querySelectorAll('.hover-band')[nearest]?.classList.add('active');
+    showTooltip(rect.left + x(nearest) / W * rect.width, rows[nearest]);
+  };
+  svg.onpointercancel = () => { touchStart = null; clearBands(); hideTooltip(); };
+  svg.onpointerup = () => { touchStart = null; };
+
 }
 
 window.addEventListener('resize', () => window.requestAnimationFrame(() => {

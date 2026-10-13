@@ -612,6 +612,117 @@ function guardStreamVisualization(host, item, index) {
   return host;
 }
 
+// Lift same-origin chart tooltips into the page so iframe edges cannot clip them.
+let reportTooltipPortal = null;
+let activeReportTooltip = null;
+function dismissReportTooltip() {
+  if (reportTooltipPortal) reportTooltipPortal.hidden = true;
+  if (activeReportTooltip) {
+    activeReportTooltip.tip.classList.remove("show", "active");
+    activeReportTooltip = null;
+  }
+}
+function installReportTooltipPortal(frame) {
+  frame.reportTooltipCleanup?.();
+  const doc = frame.contentDocument;
+  if (!doc?.body) return;
+  const win = frame.contentWindow;
+  const observers = [];
+  const attached = new WeakSet();
+  const copyNode = (source) => {
+    if (source.nodeType === 3) return document.createTextNode(source.textContent);
+    if (source.nodeType !== 1 || !["DIV","SPAN","B","STRONG","SMALL","BR","UL","LI","P"].includes(source.tagName)) return document.createDocumentFragment();
+    const clone = document.createElement(source.tagName.toLowerCase());
+    const style = win.getComputedStyle(source);
+    for (const property of ["display","grid-template-columns","gap","align-items","justify-content","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","line-height","white-space","text-align","flex-shrink"]) clone.style.setProperty(property, style.getPropertyValue(property));
+    if (source.matches(".tip-dot,.tooltip-dot,.swatch")) {
+      clone.style.width = style.width;
+      clone.style.height = style.height;
+    }
+    for (const child of source.childNodes) clone.append(copyNode(child));
+    return clone;
+  };
+  const attach = (tip) => {
+    if (attached.has(tip)) return;
+    attached.add(tip);
+    let scheduled = false;
+    const update = () => {
+      if (!frame.isConnected || !tip.isConnected) {
+        if (activeReportTooltip?.tip === tip) dismissReportTooltip();
+        return;
+      }
+      const style = win.getComputedStyle(tip);
+      const shown = tip.matches(".show,.active") || tip.style.opacity === "1";
+      if (!shown || style.display === "none") {
+        if (activeReportTooltip?.tip === tip && reportTooltipPortal) reportTooltipPortal.hidden = true;
+        return;
+      }
+      if (!reportTooltipPortal) {
+        reportTooltipPortal = document.createElement("aside");
+        reportTooltipPortal.className = "reportTooltipPortal";
+        reportTooltipPortal.setAttribute("role", "tooltip");
+        document.body.append(reportTooltipPortal);
+      }
+      const portal = reportTooltipPortal;
+      activeReportTooltip = { frame, tip };
+      portal.replaceChildren(...Array.from(tip.childNodes, copyNode));
+      portal.hidden = false;
+      portal.style.setProperty("--report-tooltip-bg", style.backgroundColor);
+      for (const property of ["color","padding","font-size","font-family","line-height","border-radius"]) portal.style.setProperty(property, style.getPropertyValue(property));
+      const box = tip.getBoundingClientRect();
+      const chart = frame.getBoundingClientRect();
+      const scaleX = chart.width / (frame.clientWidth || chart.width);
+      portal.style.width = Math.min(box.width * scaleX, window.innerWidth - 16) + "px";
+      const arrowValue = style.getPropertyValue("--arrow-x") || style.getPropertyValue("--arrow-left") || "50%";
+      const arrow = arrowValue.includes("%") ? box.width * parseFloat(arrowValue) / 100 : parseFloat(arrowValue);
+      const anchor = chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
+      const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, chart.left + box.left * scaleX));
+      portal.style.left = left + "px";
+      portal.style.top = Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, chart.top + box.top)) + "px";
+      portal.style.setProperty("--report-tooltip-arrow-x", Math.max(12, Math.min(portal.offsetWidth - 12, anchor - left)) + "px");
+      // Keep native layout measurements, but only the outer portal paints the tooltip.
+      if (tip.style.visibility !== "hidden" || tip.style.getPropertyPriority("visibility") !== "important") tip.style.setProperty("visibility", "hidden", "important");
+    };
+    const observer = new win.MutationObserver(() => {
+      if (!scheduled) {
+        scheduled = true;
+        requestAnimationFrame(() => { scheduled = false; update(); });
+      }
+    });
+    observer.observe(tip, { attributes: true, attributeFilter: ["style","class"], childList: true, subtree: true });
+    observers.push(observer);
+  };
+  const discover = () => doc.querySelectorAll(".tooltip,.chart-tooltip").forEach(attach);
+  discover();
+  const discovery = new win.MutationObserver(discover);
+  discovery.observe(doc.body, { childList: true, subtree: true });
+  let gesture = null;
+  const onDown = (event) => { if (event.pointerType === "touch") gesture = { x:event.clientX,y:event.clientY }; };
+  const onMove = (event) => {
+    if (!gesture || event.pointerType !== "touch") return;
+    const dx = Math.abs(event.clientX - gesture.x), dy = Math.abs(event.clientY - gesture.y);
+    if (dy > 6 && dy > dx) {
+      dismissReportTooltip();
+      event.stopPropagation();
+    }
+  };
+  const onEnd = () => { gesture = null; };
+  doc.addEventListener("pointerdown",onDown,{capture:true,passive:true});
+  doc.addEventListener("pointermove",onMove,{capture:true,passive:true});
+  doc.addEventListener("pointercancel",onEnd,{passive:true});
+  doc.addEventListener("pointerup",onEnd,{passive:true});
+  frame.reportTooltipCleanup = () => {
+    observers.forEach(observer=>observer.disconnect());discovery.disconnect();
+    doc.removeEventListener("pointerdown",onDown,true);doc.removeEventListener("pointermove",onMove,true);
+    doc.removeEventListener("pointercancel",onEnd);doc.removeEventListener("pointerup",onEnd);
+    if (activeReportTooltip?.frame===frame) dismissReportTooltip();
+  };
+}
+window.addEventListener("scroll",dismissReportTooltip,{capture:true,passive:true});
+window.addEventListener("resize",dismissReportTooltip,{passive:true});
+document.addEventListener("pointerdown",dismissReportTooltip,{capture:true,passive:true});
+window.addEventListener("veya:chat-navigate",dismissReportTooltip);
+
 function createArtifactFallbackFrame(item, index, options = {}) {
   const loadingStartedAt = Date.now();
   const demoLoadingMs = Math.max(0, Number(options.demoLoadingMs || 0));
@@ -653,6 +764,7 @@ function createArtifactFallbackFrame(item, index, options = {}) {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
+    installReportTooltipPortal(frame);
     setTimeout(() => requestAnimationFrame(() => {
       loading.remove();
       shell.classList.remove("is-chart-loading");
