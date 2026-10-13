@@ -85,3 +85,17 @@ test('all six published cases have complete answers and portable cached charts',
     assert.doesNotMatch(JSON.stringify(cached),/\/home\/ubuntu|\/Users\//);
   }
 });
+
+test('ask button hides while scrolling down and returns on idle or upward scroll', async () => {
+  const h=setup();await tick();h.w.document.querySelector('.caseCard').click();await tick();
+  const bar=h.w.document.querySelector('#caseActionBar');
+  h.messages.scrollTop=100;h.messages.dispatchEvent(new h.w.Event('scroll'));
+  assert.equal(bar.classList.contains('is-scroll-hidden'),true);
+  assert.equal(bar.inert,true);
+  await new Promise(resolve=>setTimeout(resolve,270));
+  assert.equal(bar.classList.contains('is-scroll-hidden'),false);
+  h.messages.scrollTop=200;h.messages.dispatchEvent(new h.w.Event('scroll'));
+  h.messages.scrollTop=150;h.messages.dispatchEvent(new h.w.Event('scroll'));
+  assert.equal(bar.classList.contains('is-scroll-hidden'),false);
+  h.w.document.querySelector('#caseBackButton').click();
+});

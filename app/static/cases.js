@@ -8,6 +8,8 @@
   let openingCase = false;
   let loadVersion = 0;
   let replayController = null;
+  let scrollIdleTimer = null;
+  let lastScrollTop = 0;
   const responseCache = new Map();
   const icons = [
     '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
@@ -18,7 +20,25 @@
     '<path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="6" width="4" height="7" rx="1"/><rect x="10" y="10" width="4" height="6" rx="1"/><rect x="16" y="5" width="4" height="9" rx="1"/>',
   ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
 
+  function setScrollHidden(hidden) {
+    bar.classList.toggle("is-scroll-hidden", hidden);
+    bar.inert = hidden;
+  }
+
+  messages.addEventListener("scroll", () => {
+    if (!selectedCase) return;
+    const next = messages.scrollTop;
+    if (next > lastScrollTop + 2) setScrollHidden(true);
+    else if (next < lastScrollTop - 2) setScrollHidden(false);
+    lastScrollTop = next;
+    window.clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = window.setTimeout(() => setScrollHidden(false), 240);
+  }, { passive: true });
+
   function clearCaseView() {
+    window.clearTimeout(scrollIdleTimer);
+    setScrollHidden(false);
+    lastScrollTop = 0;
     replayController?.abort();
     replayController = null;
     selectedCase = null;

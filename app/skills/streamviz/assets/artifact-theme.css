@@ -163,3 +163,7 @@
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
+/* Timeline events without dates do not reserve an empty tinted date column. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event:is(:has(>time:empty),:not(:has(>time))){grid-template-columns:minmax(0,1fr)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event>time:empty{display:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline :is(time,p){background:transparent!important;border:0!important;color:var(--sv-text-secondary)!important}

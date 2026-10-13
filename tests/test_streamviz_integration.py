@@ -31,7 +31,7 @@ def test_streamviz_uses_pinned_repository_source_and_shared_theme() -> None:
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     lock = json.loads((ROOT / "package-lock.json").read_text(encoding="utf-8"))
     dependency = package["dependencies"]["streamviz-react"]
-    assert dependency.endswith("388153fdfd2413ffc2062c6df4083ef5575333d6")
+    assert dependency.endswith("788410798e5d0a16af82d94f82bf2f845c9be0bd")
     assert lock["packages"]["node_modules/streamviz-react"]["resolved"] == dependency
     config = (ROOT / "vite.streamviz.config.js").read_text(encoding="utf-8")
     assert "node_modules/streamviz-react/src/index.ts" in config

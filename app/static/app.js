@@ -161,7 +161,7 @@ function isMobileLayout() {
 function setSidebarCollapsed(collapsed) {
   shell.classList.toggle("sidebar-collapsed", collapsed);
   shell.classList.toggle("sidebar-open", !collapsed);
-  sidebarToggle?.setAttribute("aria-label", collapsed ? "Open sidebar" : "Collapse sidebar");
+  sidebarToggle?.setAttribute("aria-label", collapsed ? "展开侧边栏" : "收起侧边栏");
 }
 
 function syncResponsiveShell() {
@@ -174,7 +174,7 @@ mobileShellQuery.addEventListener?.("change", syncResponsiveShell);
 sidebarToggle?.addEventListener("click", () => {
   const isCollapsed = shell.classList.toggle("sidebar-collapsed");
   shell.classList.toggle("sidebar-open", !isCollapsed);
-  sidebarToggle.setAttribute("aria-label", isCollapsed ? "Open sidebar" : "Collapse sidebar");
+  sidebarToggle.setAttribute("aria-label", isCollapsed ? "展开侧边栏" : "收起侧边栏");
 });
 
 sidebarCollapseButton?.addEventListener("click", () => setSidebarCollapsed(true));
@@ -261,7 +261,7 @@ async function submitQuestion(question, options = {}) {
         inferenceModel: model,
         resolvedInferenceModel: "",
         history: currentSession.messages.slice(0, -1).slice(-8),
-        sessionTitle: currentSession.title === "New Chat" ? question : currentSession.title,
+        sessionTitle: currentSession.title === "新建对话" ? question : currentSession.title,
         themeMode: currentThemeMode(),
       }),
       signal: activeController.signal,
@@ -376,7 +376,7 @@ function createAssistantMessage(question) {
   article.activityStepKeys = new Set();
   article.innerHTML = `
     <div class="bubble assistantBubble">
-      <button class="thinkingTrigger is-thinking" type="button" aria-label="View activity">
+      <button class="thinkingTrigger is-thinking" type="button" aria-label="查看活动">
         <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thinking"))}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
       </button>
@@ -631,6 +631,10 @@ function createArtifactFallbackFrame(item, index) {
       const root = frame.contentDocument?.documentElement;
       if (root) root.dataset.theme = new URL(frame.src).searchParams.get("theme") || currentThemeMode();
     }
+    const doc = frame.contentDocument;
+    doc?.addEventListener("wheel", (event) => {
+      if (event.target?.closest?.("svg.markmap")) event.stopImmediatePropagation();
+    }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
   });
   return frame;
@@ -852,7 +856,7 @@ function renderUserMessage(article, text, images = []) {
     <div class="userMessageWrap">
       ${imageHtml}
       <div class="bubble userBubble">${escapeHtml(text)}</div>
-      <div class="userActions" aria-label="Message actions">
+      <div class="userActions" aria-label="消息操作">
         <button class="userActionButton copyUserMessage" type="button" data-tooltip="复制消息" aria-label="复制消息">
           <span class="actionIcon copyIcon" aria-hidden="true">${COPY_MESSAGE_ICON}</span>
           <span class="actionIcon checkIcon" aria-hidden="true">${CHECK_ICON}</span>
@@ -929,8 +933,8 @@ function beginEditUserMessage(article) {
     <div class="userEditBox">
       <textarea class="userEditInput" rows="1">${escapeHtml(original)}</textarea>
       <div class="userEditActions">
-        <button class="userEditCancel" type="button">Cancel</button>
-        <button class="userEditSend" type="button">Send</button>
+        <button class="userEditCancel" type="button">取消</button>
+        <button class="userEditSend" type="button">发送</button>
       </div>
     </div>
   `;
@@ -1041,12 +1045,12 @@ async function submitEditedUserMessage(article) {
   if (!next || sendButton?.disabled) return;
   if (activeController) activeController.abort();
   sendButton.disabled = true;
-  sendButton.textContent = "Sending";
+  sendButton.textContent = "发送中";
   try {
     await submitQuestion(next, { userArticle: article, replaceSessionQuestion: true });
   } finally {
     sendButton.disabled = false;
-    sendButton.textContent = "Send";
+    sendButton.textContent = "发送";
   }
 }
 
@@ -2043,7 +2047,7 @@ function transientShareSessionForArticle(article) {
   const answerHtml = article?.querySelector?.(".mixedReport")?.innerHTML || "";
   if (!reportUrl && !answerHtml) return null;
   const question = nearbyUserQuestionForArticle(article);
-  const title = currentSession?.title && currentSession.title !== "New Chat"
+  const title = currentSession?.title && currentSession.title !== "新建对话"
     ? currentSession.title
     : (question || document.title || "Veya");
   return {
@@ -2216,8 +2220,8 @@ function openVideoPlayer(video) {
     overlay = document.createElement("div");
     overlay.className = "aimeVideoOverlay";
     overlay.innerHTML = `
-      <div class="aimeVideoDialog" role="dialog" aria-modal="true" aria-label="Video player">
-        <button class="aimeVideoClose" type="button" aria-label="Close">×</button>
+      <div class="aimeVideoDialog" role="dialog" aria-modal="true" aria-label="视频播放器">
+        <button class="aimeVideoClose" type="button" aria-label="关闭">×</button>
         <div class="aimeVideoPlayer"></div>
         <a class="aimeVideoSourceLink" target="_blank" rel="noreferrer noopener"></a>
       </div>`;
@@ -2703,7 +2707,7 @@ function buildActivitySources(article, lang) {
 }
 
 function buildResultActions(article, lang) {
-  const shareButton = `<button class="resultActionButton shareResultButton" type="button" aria-label="Share" data-tip="Share">
+  const shareButton = `<button class="resultActionButton shareResultButton" type="button" aria-label="分享" data-tip="分享">
         <span class="resultActionIcon">${SHARE_ICON}</span>
       </button>`;
   return `
@@ -2736,7 +2740,7 @@ function buildCapabilityBar(links, lang) {
       </a>
     `;
   }).join("");
-  return `<nav class="capabilityBar" aria-label="AInvest actions">${linkHtml}</nav>`;
+  return `<nav class="capabilityBar" aria-label="AInvest 操作">${linkHtml}</nav>`;
 }
 
 function buildSourceTrigger(article, lang) {
@@ -3289,7 +3293,7 @@ function ensureCurrentSession(question) {
   if (currentSession) return currentSession;
   currentSession = {
     id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    title: "New Chat",
+    title: "新建对话",
     question,
     messages: [],
     createdAt: Date.now(),
@@ -3362,7 +3366,7 @@ function recordAssistantError(article, message) {
     role: "assistant",
     error: currentSession.error,
   });
-  currentSession.title = String(currentSession.question || "New Chat").trim().slice(0, 28) || "New Chat";
+  currentSession.title = String(currentSession.question || "新建对话").trim().slice(0, 28) || "新建对话";
   saveCurrentSession();
 }
 
@@ -3380,14 +3384,14 @@ async function summarizeSessionTitle(question, interpretation) {
   } catch {
     // Use the question as a quiet fallback when the naming model is unavailable.
   }
-  return String(question || "New Chat").trim().slice(0, 18);
+  return String(question || "新建对话").trim().slice(0, 18);
 }
 
 function loadSessions() {
   try {
     const parsed = volatileSessions ?? JSON.parse(localStorage.getItem(SESSION_STORAGE_KEY) || "[]");
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((session) => isRestorableSession(session));
+    return parsed.filter((session) => isRestorableSession(session)).map((session) => session.title === "New Chat" ? { ...session, title: "新建对话" } : session);
   } catch {
     return [];
   }
@@ -3429,16 +3433,16 @@ function renderHistory() {
   const sessions = loadSessions();
   storeSessions(sessions.slice(0, 20));
   if (!sessions.length) {
-    historyList.innerHTML = `<div class="historyEmpty">No history</div>`;
+    historyList.innerHTML = `<div class="historyEmpty">暂无对话</div>`;
     return;
   }
   historyList.innerHTML = sessions
     .map((session) => `
       <div class="historyItem ${currentSession?.id === session.id ? "is-selected" : ""}" data-session-id="${escapeHtml(session.id)}">
         <button class="historyOpen" type="button" data-session-id="${escapeHtml(session.id)}">
-          <span class="historyName">${escapeHtml(session.title || session.question || "Untitled chat")}</span>
+          <span class="historyName">${escapeHtml(session.title || session.question || "未命名对话")}</span>
         </button>
-        <button class="historyMore" type="button" aria-label="More" data-session-id="${escapeHtml(session.id)}">
+        <button class="historyMore" type="button" aria-label="更多操作" data-session-id="${escapeHtml(session.id)}">
           <svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M170.666667 512m-85.333334 0a85.333333 85.333333 0 1 0 170.666667 0 85.333333 85.333333 0 1 0-170.666667 0Z"></path><path d="M512 512m-85.333333 0a85.333333 85.333333 0 1 0 170.666666 0 85.333333 85.333333 0 1 0-170.666666 0Z"></path><path d="M853.333333 512m-85.333333 0a85.333333 85.333333 0 1 0 170.666667 0 85.333333 85.333333 0 1 0-170.666667 0Z"></path></svg>
         </button>
       </div>
@@ -3501,7 +3505,7 @@ function restoreSession(sessionId) {
     article.shareSession = session;
     article.innerHTML = `
       <div class="bubble assistantBubble">
-        <button class="thinkingTrigger is-complete" type="button" aria-label="View activity">
+        <button class="thinkingTrigger is-complete" type="button" aria-label="查看活动">
           <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thoughtFor"))} ${escapeHtml(formatDuration(session.thinkingElapsed || 0))}</span>
           <span class="thinkingChevron" aria-hidden="true"></span>
         </button>
@@ -3592,7 +3596,7 @@ function openShareDialog(article) {
     sharePreviewIframe.srcdoc = buildShareAnswerDocument(session);
     sharePreviewIframe.onload = () => prepareSharePreviewFrame(sharePreviewIframe);
   }
-  if (copyShareLinkText) copyShareLinkText.textContent = "Copy link";
+  if (copyShareLinkText) copyShareLinkText.textContent = "复制链接";
   if (shareDialog) shareDialog.hidden = false;
 }
 
@@ -3757,9 +3761,9 @@ async function copyShareLink() {
     textarea.remove();
   }
   if (copyShareLinkText) {
-    copyShareLinkText.textContent = copied ? "Copied" : "Copy failed";
+    copyShareLinkText.textContent = copied ? "已复制" : "复制失败";
     setTimeout(() => {
-      if (copyShareLinkText) copyShareLinkText.textContent = "Copy link";
+      if (copyShareLinkText) copyShareLinkText.textContent = "复制链接";
     }, 1800);
   }
 }
@@ -3811,7 +3815,7 @@ async function saveShareImage() {
   } finally {
     window.setTimeout(() => {
       saveShareImageButton.disabled = false;
-      if (saveShareImageText) saveShareImageText.textContent = "Save image";
+      if (saveShareImageText) saveShareImageText.textContent = "保存图片";
     }, 1800);
   }
 }
@@ -3911,7 +3915,7 @@ function beginRenameSession(sessionId) {
   const finish = () => {
     name.contentEditable = "false";
     name.classList.remove("is-editing");
-    const next = name.textContent.trim() || original || "Untitled chat";
+    const next = name.textContent.trim() || original || "未命名对话";
     renameSession(sessionId, next);
   };
   name.addEventListener("blur", finish, { once: true });
@@ -4084,7 +4088,7 @@ function renderModuleSource(source, item, index, total) {
   if (title) title.textContent = item.title || item.siteName || "AInvest";
   if (summary) summary.textContent = item.summary || "";
   if (count) count.textContent = `${index + 1}/${total}`;
-  if (chipName) chipName.textContent = `${item.siteName || domainFromUrl(item.url || "") || "Source"}${total > 1 ? ` +${total - 1}` : ""}`;
+  if (chipName) chipName.textContent = `${item.siteName || domainFromUrl(item.url || "") || "来源"}${total > 1 ? ` +${total - 1}` : ""}`;
   if (chipLogo && iconUrl) {
     chipLogo.dataset.sourceSite = item.siteName || "";
     chipLogo.onerror = () => { chipLogo.onerror = null; chipLogo.src = sourceFallbackLogoSrc(item.siteName || ""); };

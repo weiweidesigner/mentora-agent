@@ -2583,7 +2583,7 @@ p {
   margin: 0 auto;
   border: 1px solid rgba(17, 24, 39, 0.12);
   border-radius: 999px;
-  padding: 8px 8px 8px 17px;
+  padding: 8px;
   background: white;
   box-shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
   transition:
@@ -2603,7 +2603,7 @@ p {
   grid-template-columns: 40px 1fr 40px;
   width: 100%;
   border-radius: 999px;
-  padding: 8px 9px 8px 20px;
+  padding: 8px 9px;
   border-color: rgba(17, 24, 39, 0.11);
   box-shadow: 0 10px 28px rgba(17, 24, 39, 0.07);
 }
@@ -3155,7 +3155,7 @@ p {
   .conversation.is-empty .composerBox {
     grid-template-columns: 46px 1fr 46px;
     border-radius: 26px;
-    padding: 10px 10px 10px 16px;
+    padding: 10px;
   }
 
   .conversation.is-empty .composerBox.is-multiline {
@@ -3474,10 +3474,9 @@ p {
 .conversation.is-case .messages { padding-bottom: 118px; }
 .conversation.is-case .message.user .userActions, .conversation.is-case .thinkingTrigger, .conversation.is-case .shareResultButton { display: none; }
 .caseActionBar { position: absolute; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 30; }
-.caseAskButton { display: flex; align-items: center; justify-content: center; gap: 42px; min-width: 176px; height: 48px; border: 1px solid #ffffff20; border-radius: 999px; background: #7565ed; color: #fff; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; box-shadow: 0 8px 32px #5142bb45; }
+.caseAskButton { display: flex; align-items: center; justify-content: center; min-width: 176px; height: 48px; border: 1px solid #ffffff20; border-radius: 999px; background: #7565ed; color: #fff; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; box-shadow: 0 0 24px 7px #7565ed50, 0 8px 32px #5142bb45; }
 .caseAskButton:hover { background: #6554df; }
 .caseAskButton:disabled { opacity: .65; cursor: wait; }
-.caseAskButton span { font-size: 20px; }
 .caseLoading { padding: 28px 8px; text-align: center; color: var(--muted); font-size: 14px; }
 :root[data-theme="dark"] .caseCard { background: #171d26; }
 @media (max-width: 760px) {
@@ -3491,3 +3490,7 @@ p {
   .caseCacheDate { font-size: 10px; }
   .caseAskButton { min-width: 170px; height: 46px; }
 }
+
+.caseActionBar { transition: opacity .18s ease, transform .18s ease; }
+.caseActionBar.is-scroll-hidden { opacity: 0; transform: translate(-50%, 12px); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .caseActionBar { transition: none; } }
