@@ -3,26 +3,14 @@
   "cachedAt": "2026-10-13T19:27:43.229426+08:00",
   "answer": {
     "question": "分析今天 A 股市场表现，做成一页报告给我。",
-    "interpretation": "## 核心结论\n\n**2026-10-13 A 股是\"指数分化、个股涨多跌少、资金向创业板与科技硬件集中\"的一日行情**：上证指数收涨 0.10% 至 3800.86 点，深证成指与创业板指分别收跌 0.25%、0.18%，但全市场 **2909 家上涨、2485 家下跌**，涨跌幅中位数 +0.16%，上涨家数占比 52.3%——**等权口径明显强于市值加权指数**，说明拖累指数的是权重股而非市场整体。沪深京全样本成交额约 **16889 亿元，较前一交易日放量约 1380 亿元**，量能回暖但指数并未有效突破。\n\n[[AIME_CHART:case:ashare-dashboard/case-ashare-dashboard-market-dashboard.html]]\n\n## 关键证据\n\n**1. 结构分化是本日最主要的特征**：创业板涨跌幅中位数 +0.44%、上涨占比 59.1%，深市主板 +0.27%、沪市主板 +0.17%；而**科创板（-0.39%，上涨占比 41.3%）与北交所（-0.60%，上涨占比 33.8%）明显走弱**。分化幅度不大但方向一致，说明资金没有全面扩散，而是集中在特定板块。\n\n[[AIME_CHART:case:ashare-dashboard/case-ashare-dashboard-board-median.html]]\n\n**2. 涨跌分布呈\"中部厚、两端薄\"的温和偏多形态**：5560 只有效样本中，-1%~0 与 -3%~-1% 两档合计 2200 家，0~1% 与 1%~3% 两档合计 2377 家；涨幅 ≥9.9% 的 81 家、跌幅 ≤-9.9% 的仅 11 家，涨停与跌停的媒体口径为 70 家 / 10 家。**极端涨跌家数不对称，短线情绪偏暖，但绝大多数个股涨跌幅落在 ±3% 以内，属于\"温和普涨\"而非趋势行情**。\n\n[[AIME_CHART:case:ashare-dashboard/case-ashare-dashboard-market-breadth-histogram.html]]\n\n**3. 资金高度集中于算力/光模块链条，且与涨跌幅并不同步**：成交额前八（剔除北交所与上市首日新股）中，中际旭创 221.1 亿元、新易盛 146.1 亿元、天孚通信 99.4 亿元（当日 +7.48%）走强；而**宁德时代 119.1 亿元、长鑫科技 110.7 亿元放量却分别收跌 3.11%、2.79%**——放量下跌的权重股正是压制创业板指的直接原因。行业层面（申万一级，机构复盘口径）国防军工 +2.69%、通信 +1.78% 领涨，电力设备 -2.01%、汽车 -0.99%、非银金融 -0.98% 领跌。\n\n[[AIME_CHART:case:ashare-dashboard/case-ashare-dashboard-turnover-top.html]]\n\n**4. 个股与新股层面**：剔除上市首日新股后，全市场涨幅前五为建新股份、迅捷兴、金百泽、*ST仕净、晶雪节能（均为 +20.0% 附近）；跌幅前五为厦钨新能、ST喜临门、国恩股份、紫竹高科、大金重工（-10% 附近），**电池材料与部分 ST 个股是主要杀跌方向**。上市首日新股 N粤芯-U 收涨 223.06%、成交 71.4 亿元，因无涨跌幅限制未计入排行。\n\n**5. 盘中过程与资金线索**：三大指数早盘全线低开（09:36 快照：上证 -0.96%、深证成指 -1.79%、创业板指 -2.18%），午后探底回升、收盘收窄。宽基 ETF 当日成交 772.07 亿元，较前一交易日 573.02 亿元明显放量（Wind 口径），科技权重是主要承接力量；盘后龙虎榜 55 只个股异动，净流入居前为粤芯半导体 3.82 亿元。消息面包括新能源车出口退税率下调的讨论（机构认为对头部车企出海影响有限）与智算中心液冷规模化落地的产业链线索。\n\n## 风险与后续观察点\n\n- **放量但指数未突破**：成交额回到 1.69 万亿元量级，沪指仅微涨 0.10%、刚好站上 3800 点，**量价配合仍偏弱，若权重股（电池、新能源车链条）继续走弱，创业板指的相对强势可能被反转**。\n- **分化而非扩散**：科创板与北交所中位数收负、上涨占比仅 41.3%/33.8%，需观察弱势是否向主板扩散。\n- **观察点**：涨停家数能否维持 70 家以上、成交额能否稳定在 1.7 万亿元上方、算力/光模块龙头（中际旭创、新易盛、天孚通信）能否延续放量上行；三季报是下一阶段板块强弱的验证窗口。\n- **资金面判断受限**：北向资金净买入因港交所披露机制调整已不再公布，当日仅可核验北向成交总额 2618.83 亿元（沪股通 1227.81 亿元、深股通 1391.02 亿元），**成交额不等于净流入，本页不提供净流入数值**。\n\n## 数据时间与口径\n\n- **数据日期均为北京时间 2026-10-13（当日收盘后）**，不是替代日期；全市场快照抓取时间 2026-10-13 19:19，覆盖沪、深、北三市全部 5580 只股票，有效样本 5560 只（20 只停牌/无报价被剔除）。\n- **自算口径**（全市场逐股聚合）：涨跌家数、涨跌幅分布、板块中位数与上涨占比、成交额与个股排行，由全市场快照经代码计算得到。\n- **外部核对口径**：指数收盘点位、涨跌幅、行业涨跌幅、ETF 成交、涨停/跌停与龙虎榜来自公开行情与媒体/机构复盘，并经两次独立检索交叉核对一致；涨跌家数的媒体常用口径为 2909 涨 / 2486 跌，与本页自算 2909 / 2485 基本一致。\n- **差异与限制说明**：本页成交额 16889 亿元为沪深京全样本自算口径，交易所口径的沪深两市为 16759.08 亿元、媒体汇总三市约 1.69 万亿元；行业涨跌幅为二手复盘数据而非交易所直连；**\"双创指数盘中一度跌超 3%\"的说法缺乏当日来源（疑似与 10 月 9 日数据混淆），已核实后剔除，改用央广网 09:36 的早盘低开幅度**；A 股指数历史行情无可用来源（Yahoo 接口对 A 股指数连续返回 HTTP 429 限流、A 股数据接口的行情快照不支持指数与 ETF 代码），因此不提供指数走势/K 线图，避免用个股或近似标的冒充指数。上市首日新股与北交所标的不计入涨跌排行。\n- 以上为当日行情复盘与数据解读，不构成投资建议。",
+    "interpretation": "[[AIME_CHART:case:ashare-dashboard/case-ashare-streamviz-report.html]]",
     "reportArtifacts": [
       {
-        "path": "case:ashare-dashboard/case-ashare-dashboard-market-dashboard.html",
-        "url": "/static/cases/ashare-dashboard/case-ashare-dashboard-market-dashboard.html"
-      },
-      {
-        "path": "case:ashare-dashboard/case-ashare-dashboard-board-median.html",
-        "url": "/static/cases/ashare-dashboard/case-ashare-dashboard-board-median.html"
-      },
-      {
-        "path": "case:ashare-dashboard/case-ashare-dashboard-market-breadth-histogram.html",
-        "url": "/static/cases/ashare-dashboard/case-ashare-dashboard-market-breadth-histogram.html"
-      },
-      {
-        "path": "case:ashare-dashboard/case-ashare-dashboard-turnover-top.html",
-        "url": "/static/cases/ashare-dashboard/case-ashare-dashboard-turnover-top.html"
+        "path": "case:ashare-dashboard/case-ashare-streamviz-report.html",
+        "url": "/static/cases/ashare-dashboard/case-ashare-streamviz-report.html"
       }
     ],
-    "reportUrl": "/static/cases/ashare-dashboard/case-ashare-dashboard-market-dashboard.html",
+    "reportUrl": "/static/cases/ashare-dashboard/case-ashare-streamviz-report.html",
     "sources": [
       {
         "siteName": "东方财富行情页摘要",
@@ -70,12 +58,6 @@
         "siteName": "央广网",
         "url": "https://www.cnr.cn/jingji/cjtt/yw/20261013/t20261013_527840414.shtml",
         "title": "央广网",
-        "iconUrl": ""
-      },
-      {
-        "siteName": "新浪财经 2026-10-09",
-        "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-10-09/doc-iniurfei6938014.shtml",
-        "title": "新浪财经 2026-10-09",
         "iconUrl": ""
       }
     ],

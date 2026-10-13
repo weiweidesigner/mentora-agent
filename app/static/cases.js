@@ -84,7 +84,7 @@
       if (marker) {
         const index = artifacts.findIndex((item) => item.path === marker[1]);
         if (index >= 0 && !shown.has(index)) {
-          flow.append(createStreamVisualizationArtifact(artifacts[index], index, { showActions: false }));
+          flow.append(createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal }));
           shown.add(index);
           if (!await replayPause(280, signal)) return;
         }

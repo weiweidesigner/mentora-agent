@@ -686,7 +686,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     loadingMessage: options.loadingMessage || "正在准备可视化",
     loadingDwellMs: 0,
   });
-  artifactCode(item.url).then((rawCode) => {
+  artifactCode(item.url).then(async (rawCode) => {
     if (!host.isConnected) return;
     if (!streamVisualizationCompatible(rawCode)) {
       window.AimeStreamViz?.unmount?.(host);
@@ -694,6 +694,24 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       return;
     }
     const code = prepareStreamVisualizationCode(rawCode);
+    if (options.replay && code.includes('<article class="veya-report"') && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      // Replay the saved document through the same incremental renderer as live HTML.
+      // Load its theme first, then reveal content while retaining one artifact host.
+      const contentStart = Math.max(0, code.indexOf("<article class=\"veya-report\""));
+      for (let end = contentStart; end < code.length; end += 180) {
+        if (!host.isConnected || options.signal?.aborted) return;
+        mountStreamVisualization(host, {
+          title: item.title || item.label || "",
+          code: code.slice(0, end),
+          exportCode: "",
+          final: false,
+          showActions: false,
+          loadingDwellMs: 0,
+        });
+        await new Promise((resolve) => window.setTimeout(resolve, 24));
+      }
+      if (!host.isConnected || options.signal?.aborted) return;
+    }
     mountStreamVisualization(host, {
       title: item.title || item.label || "",
       code,

@@ -77,7 +77,8 @@ test('all six published cases have complete answers and portable cached charts',
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
-    assert.ok(cached.answer.interpretation.length>500);
+    const artifactText=cached.answer.reportArtifacts.map(artifact=>readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8').replace(/<style[\s\S]*?<\/style>/g,'').replace(/<[^>]+>/g,'')).join('');
+    assert.ok(cached.answer.interpretation.length+artifactText.length>500);
     assert.ok(cached.answer.reportArtifacts.length>0);
     const paths=cached.answer.reportArtifacts.map(artifact=>artifact.path);
     for (const marker of cached.answer.interpretation.matchAll(/\[\[AIME_CHART:(.*?)\]\]/g)) assert.ok(paths.includes(marker[1]));
@@ -98,4 +99,19 @@ test('ask button hides while scrolling down and returns on idle or upward scroll
   h.messages.scrollTop=150;h.messages.dispatchEvent(new h.w.Event('scroll'));
   assert.equal(bar.classList.contains('is-scroll-hidden'),false);
   h.w.document.querySelector('#caseBackButton').click();
+});
+
+
+test('A-share case demonstrates one integrated StreamViz report without duplicate prose', () => {
+  const cached=JSON.parse(readFileSync(new URL('../app/static/cases/ashare-dashboard/conversation.json',import.meta.url),'utf8'));
+  assert.equal(cached.answer.reportArtifacts.length,1);
+  assert.match(cached.answer.interpretation,/^\[\[AIME_CHART:case:ashare-dashboard\/case-ashare-streamviz-report.html\]\]$/);
+  const report=readFileSync(new URL('../app'+cached.answer.reportArtifacts[0].url,import.meta.url),'utf8');
+  assert.match(report,/data-aime-streamviz-root="true"/);
+  assert.match(report,/data-financial-market="CN"/);
+  for (const section of ['指数对照','市场宽度','板块分化','行业强弱','活跃个股','接下来观察什么','数据与口径']) assert.ok(report.includes(section));
+  assert.match(report,/2909 家 · 52.32%/);
+  assert.match(report,/2485 家 · 44.69%/);
+  assert.match(report,/2026-10-13 收盘缓存/);
+  assert.doesNotMatch(report,/<script|<iframe/);
 });
