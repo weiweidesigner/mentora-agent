@@ -3469,6 +3469,7 @@ p {
 .caseDetailHeader { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; padding: 18px 24px 8px; gap: 12px; }
 .caseBackButton { border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 0; }
 .caseBackButton span { margin-right: 6px; }
+.caseCloseIcon { display: none; }
 .caseCacheDate { color: var(--muted); font-size: 11px; }
 .conversation.is-case .composer, .conversation.is-case .homeCases { display: none; }
 .conversation.is-case .messages { padding-bottom: 118px; }
@@ -3487,10 +3488,17 @@ p {
   .caseCard h2 { font-size: 15px; }
   .caseCard p { font-size: 12px; }
   .caseCardTag { font-size: 11px; }
-  .caseDetailHeader { padding: 12px 14px 4px; }
-  .caseCacheDate { font-size: 10px; }
+  .conversation.is-case { position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 124; padding: 0; overflow: hidden; animation: caseOverlayEnter .2s ease-out; }
+  .conversation.is-case .messages { min-height: 0; overscroll-behavior-y: contain; }
+  .caseDetailHeader { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; gap: 4px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .caseCacheDate { grid-column: 2; grid-row: 1; text-align: center; font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+  .caseBackButton { grid-column: 3; grid-row: 1; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border-radius: 10px; }
+  .caseBackLabel { display: none; }
+  .caseCloseIcon { display: block; width: 24px; height: 24px; }
   .caseAskButton { min-width: 170px; height: 46px; }
 }
+@keyframes caseOverlayEnter { from { opacity: .6; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media(prefers-reduced-motion:reduce) { .conversation.is-case { animation: none; } }
 
 .caseActionBar { transition: opacity .18s ease, transform .18s ease; }
 .caseActionBar.is-scroll-hidden { opacity: 0; transform: translate(-50%, 12px); pointer-events: none; }
@@ -3535,7 +3543,7 @@ p {
   #sidebarToggle::after{transform:translate(-50%,4px)}
   #railNewChat svg{width:22px;height:22px}
   .sidebarContent,.shell.sidebar-collapsed .sidebarContent{top:52px;height:calc(100dvh - 52px)}
-  .conversation:not(.is-empty){padding-top:52px}
+  .conversation:not(.is-empty):not(.is-case){padding-top:52px}
   .messages{padding-top:12px}
   .userMessageWrap{position:relative;gap:0;width:fit-content;max-width:calc(100vw - 64px)}
   .userActions{position:absolute;right:calc(100% + 4px);bottom:0;flex-direction:column;gap:0}

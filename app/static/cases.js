@@ -4,6 +4,8 @@
   const date = document.querySelector("#caseCacheDate");
   const bar = document.querySelector("#caseActionBar");
   const ask = document.querySelector("#caseAskButton");
+  const back = document.querySelector("#caseBackButton");
+  let returnFocus = null;
   let selectedCase = null;
   let openingCase = false;
   let loadVersion = 0;
@@ -11,6 +13,23 @@
   let scrollIdleTimer = null;
   let lastScrollTop = 0;
   const responseCache = new Map();
+  function syncCaseOverlay() {
+    const mobile = !!selectedCase && isMobileLayout();
+    conversation.setAttribute("aria-label", mobile ? date.textContent : "图文对话分析");
+    if (mobile) {
+      conversation.setAttribute("role", "dialog");
+      conversation.setAttribute("aria-modal", "true");
+      conversation.setAttribute("aria-labelledby", "caseCacheDate");
+    } else {
+      conversation.removeAttribute("role");
+      conversation.removeAttribute("aria-modal");
+      conversation.removeAttribute("aria-labelledby");
+    }
+    const sidebar = document.querySelector("#appSidebar");
+    if (sidebar) sidebar.inert = mobile;
+    back?.setAttribute("aria-label", mobile ? "关闭案例回放" : "返回首页");
+  }
+  window.addEventListener("resize", syncCaseOverlay);
   const icons = [
     '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
     '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>',
@@ -42,6 +61,7 @@
     replayController?.abort();
     replayController = null;
     selectedCase = null;
+    syncCaseOverlay();
     loadVersion += 1;
     conversation.classList.remove("is-case");
     header.hidden = true;
@@ -132,6 +152,7 @@
   async function showCase(id, navigate = true) {
     const row = (window.veyaCases || []).find((item) => item.id === id);
     if (!row) return;
+    returnFocus = gallery.querySelector(`[data-case="${id}"]`);
     openingCase = true;
     try { startNewChat(false, false); } finally { openingCase = false; }
     input.blur();
@@ -142,8 +163,10 @@
     header.hidden = false;
     bar.hidden = false;
     date.textContent = "案例回放 · " + row.cachedDate;
+    syncCaseOverlay();
     ask.disabled = false;
     if (isMobileLayout()) setSidebarCollapsed(true);
+    if (isMobileLayout()) back?.focus({ preventScroll: true });
     const url = new URL(window.location.href);
     url.searchParams.set("case", id);
     if (navigate) history.pushState({ case: id }, "", url);
@@ -197,7 +220,14 @@
     }
   }
 
-  document.querySelector("#caseBackButton")?.addEventListener("click", () => startNewChat(false, false));
+  function closeCase() {
+    startNewChat(false, false);
+    returnFocus?.focus({ preventScroll: true });
+  }
+  back?.addEventListener("click", closeCase);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && selectedCase && isMobileLayout() && !document.querySelector(".activityDrawer.is-open")) closeCase();
+  });
   ask?.addEventListener("click", () => {
     if (!selectedCase) return;
     const question = selectedCase.question;
