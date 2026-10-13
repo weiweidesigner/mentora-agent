@@ -3452,11 +3452,11 @@ p {
 .homeCases { display: none; }
 .conversation.is-empty .homeCases { display: block; flex: 0 0 auto; width: min(100%, 760px); margin: 28px auto 0; padding: 0 0 32px; }
 .conversation.is-empty .homeCases[hidden] { display: none; }
-.homeCasesHeading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--muted); }
-.homeCasesHeading span:last-child { font-size: 11px; opacity: .75; }
 .caseGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .caseCard { min-width: 0; padding: 14px; text-align: left; font: inherit; color: var(--ink); border: 1px solid var(--line); border-radius: 14px; background: var(--panel, #fff); cursor: pointer; transition: border-color .18s, transform .18s, box-shadow .18s; }
-.caseCard:hover { transform: translateY(-2px); border-color: var(--case-accent); box-shadow: 0 8px 22px #0000000a; }
+@media (hover:hover) and (pointer:fine) and (min-width:761px) {
+  .caseCard:hover { transform: translateY(-2px); border-color: var(--case-accent); box-shadow: 0 8px 22px #0000000a; }
+}
 .caseCard:focus-visible, .caseAskButton:focus-visible, .caseBackButton:focus-visible { outline: 2px solid #8a7bff; outline-offset: 3px; }
 .caseCardTop { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
 .caseCardIcon { width: 26px; height: 26px; display: grid; place-items: center; color: var(--case-accent); background: color-mix(in srgb, var(--case-accent) 12%, transparent); border-radius: 7px; }
@@ -3484,8 +3484,9 @@ p {
   .caseGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .caseCard { padding: 12px; border-radius: 12px; }
   .caseCardTop { margin-bottom: 9px; gap: 5px; }
-  .caseCard h2 { font-size: 13px; }
-  .caseCard p { font-size: 10px; }
+  .caseCard h2 { font-size: 15px; }
+  .caseCard p { font-size: 12px; }
+  .caseCardTag { font-size: 11px; }
   .caseDetailHeader { padding: 12px 14px 4px; }
   .caseCacheDate { font-size: 10px; }
   .caseAskButton { min-width: 170px; height: 46px; }
