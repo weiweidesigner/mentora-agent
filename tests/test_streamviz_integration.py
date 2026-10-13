@@ -384,3 +384,15 @@ def test_final_artifacts_stream_before_final_answer(tmp_path, monkeypatch) -> No
     assert response.text.index("event: visualization") < response.text.index("event: final")
     assert '"delta"' in response.text
     assert '"final": true' in response.text
+
+
+def test_prefixed_cloud_artifacts_remain_visible_in_shared_report(monkeypatch):
+    from app import presentation
+    monkeypatch.setenv("AICHART_BASE_PATH", "/veya")
+    markup = presentation.standalone_share_html({
+        "question": "Cloud report", "interpretation": "A trend",
+        "reportArtifacts": [{"url": "/veya/generated/cloud-check.html"}], "themeMode": "dark",
+    })
+    assert 'src="/share-artifact/cloud-check.html?theme=dark"' in markup
+    assert presentation.canonical_host_url("/veya/generated/chart.html") == "/generated/chart.html"
+    assert presentation.canonical_host_url("https://example.com/veya/generated/chart.html").startswith("https://example.com/")

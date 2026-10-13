@@ -17,3 +17,6 @@ app/skills/*.zip
 *.db
 *.sqlite*
 app/static/vendor/streamviz/*.map
+
+# Cloud Harness session runtime.
+.dsh/

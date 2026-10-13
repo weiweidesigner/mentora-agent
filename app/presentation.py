@@ -490,6 +490,14 @@ def generated_file(value: str, suffix: str) -> Path:
     return path
 
 
+def canonical_host_url(value: str) -> str:
+    """Normalize a reverse-proxy prefix before resolving local artifacts."""
+    prefix = os.getenv("AICHART_BASE_PATH", "").strip().rstrip("/")
+    if prefix and value.startswith(prefix + "/"):
+        return value[len(prefix):]
+    return value
+
+
 @app.post("/api/share-session")
 def save_share_session(payload: ShareSessionRequest) -> dict[str, str]:
     session_id = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(payload.session.get("id") or "")).strip("-")
@@ -544,12 +552,12 @@ def _share_artifact_frames(session: dict[str, Any]) -> str:
     for artifact in artifacts:
         if not isinstance(artifact, dict):
             continue
-        url = str(artifact.get("url") or artifact.get("htmlUrl") or "").strip()
+        url = canonical_host_url(str(artifact.get("url") or artifact.get("htmlUrl") or "").strip())
         url = LEGACY_ARTIFACT_REDIRECTS.get(url, url)
         if url.startswith("/generated/") and url.endswith(".html") and url not in urls:
             urls.append(url)
     if not urls:
-        report_url = str(session.get("reportUrl") or "").strip()
+        report_url = canonical_host_url(str(session.get("reportUrl") or "").strip())
         report_url = LEGACY_ARTIFACT_REDIRECTS.get(report_url, report_url)
         if report_url.startswith("/generated/") and report_url.endswith(".html"):
             urls.append(report_url)

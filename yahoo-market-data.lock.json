@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/yahoo-market-data.git",
-  "revision": "01506678fad6a8221aa0b7b4de6fc2f191e6c2a4",
+  "revision": "86cde91fd1ecf4ac3dd477aa182fa517b2916133",
   "checkout": ".dependencies/yahoo-market-data",
   "links": {
     "app/skills/yahoo-data": "app/skills/yahoo-data"

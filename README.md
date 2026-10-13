@@ -286,3 +286,7 @@ python3 scripts/sync_us_market_vedio.py --update
 ## 验证
 
 安装依赖后运行 `python -m pip install -r requirements-dev.txt`、`python -m pytest tests -q` 与 `node --test tests/*.test.mjs`。部分集成测试需要额外的本地模型、Codex Skill 或配置；本地凭据检查在公开检出未配置密钥时跳过。
+
+## Ubuntu 云端部署
+
+仓库提供 `deploy/veya-agent.service` 与 `deploy/nginx-veya.conf`，用于 systemd 常驻运行和已有 HTTPS 站点下的 `/veya/` 路由。后端仅监听本机 8000 端口，入口使用登录保护并保留 SSE 流式响应。部署与更新说明见 `deploy/README.md`。云端仅保存运行所需的本地 `.env`；模型权重与 Mac 专用生图环境不包含在 CPU 云部署中。

@@ -1,0 +1,21 @@
+[Unit]
+Description=Veya DeepSeek Harness web application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/veya-agent
+Environment=PYTHONUNBUFFERED=1
+Environment="PATH=/home/ubuntu/veya-agent/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+EnvironmentFile=/home/ubuntu/veya-agent/.env
+ExecStart=/home/ubuntu/veya-agent/.venv/bin/python -m uvicorn app.presentation:app --host 127.0.0.1 --port 8000 --proxy-headers
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
