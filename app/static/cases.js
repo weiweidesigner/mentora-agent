@@ -151,7 +151,7 @@
     messages.innerHTML = '<div class="caseLoading" role="status">正在打开缓存对话…</div>';
     try {
       if (!responseCache.has(id)) {
-        const response = await fetch(row.conversationUrl);
+        const response = await fetch(row.conversationUrl, { cache: "no-store" });
         if (!response.ok) throw new Error("案例暂时无法打开");
         responseCache.set(id, await response.json());
       }
@@ -208,7 +208,7 @@
     else if (selectedCase) startNewChat(false, false);
   });
 
-  fetch("/static/cases/manifest.json").then((response) => {
+  fetch("/static/cases/manifest.json", { cache: "no-store" }).then((response) => {
     if (!response.ok) throw new Error("Case catalog unavailable");
     return response.json();
   }).then((rows) => {

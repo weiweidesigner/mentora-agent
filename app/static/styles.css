@@ -3522,3 +3522,10 @@ p {
 .streamvizArtifactHost:not(.show-chart-loading) .visualize-widget-loading-inline{display:none!important}
 
 .cachedReplay .reportInterpretation [hidden]{display:none!important}
+
+/* Compact cached answer spacing; its analysis needs no leading separator. */
+.cachedCaseAnswer .thinkingTrigger{margin-bottom:8px}
+.cachedCaseAnswer .reportInterpretation{margin:0 0 12px}
+.cachedCaseAnswer .reportInterpretation :is(h1,h2,h3,h4,h5){margin:16px 0 8px}
+.cachedCaseAnswer .reportInterpretation>:is(h1,h2,h3,h4,h5):first-child{margin-top:0}
+.cachedCaseAnswer .reportInterpretation hr{display:none}
