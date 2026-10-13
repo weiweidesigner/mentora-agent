@@ -3015,8 +3015,9 @@ p {
   }
 
   .conversation.is-empty {
+    justify-content: flex-start;
     gap: 0;
-    padding: 64px 0 0;
+    padding: clamp(160px, 30dvh, 260px) 0 0;
   }
 
   .messages {
