@@ -95,3 +95,33 @@ test('a held horizontal gesture follows the finger and remains horizontal on the
     assert.equal(contexts,1);
   } finally {f.close();}
 });
+test('local pie tooltips follow outside the chart without rebuilding data or copying event attributes', () => {
+  const dom=new JSDOM('<svg><path class="pie-slice"/></svg><div class="stage"><aside class="pie-tooltip" style="background:rgb(21,25,34)"><div onclick="throw 1">甲</div></aside></div>',{runScripts:'outside-only'});
+  const w=dom.window,hit=w.document.querySelector('path'),source=w.document.querySelector('aside'),stage=w.document.querySelector('.stage');
+  Object.defineProperties(source,{offsetParent:{value:stage},offsetWidth:{value:120},offsetHeight:{value:40}});
+  Object.defineProperties(stage,{clientWidth:{value:320},clientHeight:{value:360}});stage.getBoundingClientRect=()=>({left:0,top:0});
+  w.document.elementFromPoint=()=>hit;w.hideTooltip=()=>source.classList.remove('active');hit.addEventListener('mouseenter',()=>source.classList.add('active'));hit.addEventListener('mouseleave',w.hideTooltip);w.eval(runtime);
+  const touch=(type,x)=>{const e=new w.Event(type,{bubbles:true});Object.assign(e,{pointerType:'touch',pointerId:1,clientX:x,clientY:80});hit.dispatchEvent(e);};
+  try{
+    touch('pointerdown',20);const portal=w.document.querySelector('.generic-local-tooltip-portal');assert(portal&&!portal.hidden);assert.equal(source.style.visibility,'hidden');assert.equal(portal.querySelector('[onclick]'),null);
+    const data=portal.innerHTML;touch('pointermove',100);assert.equal(portal.style.left,'114px');assert.equal(portal.innerHTML,data);assert.equal(portal.style.getPropertyValue('--local-tip-bg'),'rgb(21, 25, 34)');
+    w.dispatchEvent(new w.Event('scroll'));assert(portal.hidden);assert.equal(source.style.visibility,'');
+  }finally{w.close();}
+});
+test('canvas charts use public tooltip actions to select the nearest bubble and follow the finger', () => {
+  const f=fixture(),actions=[],dom=f.window.document.querySelector('#chart');
+  dom.getBoundingClientRect=()=>({left:0,top:0,width:390,height:400});
+  const instance={getOption:()=>({tooltip:[{show:true}],series:[{type:'scatter',data:[[50,80],[150,80]]}]}),getWidth:()=>390,getHeight:()=>400,containPixel:()=>true,convertToPixel:(_,value)=>value,dispatchAction:action=>actions.push(action)};
+  f.window.echarts={getInstanceByDom:()=>instance};
+  try{
+    f.touch('pointerdown');
+    const e=new f.window.Event('pointermove',{bubbles:true});Object.assign(e,{pointerType:'touch',pointerId:1,clientX:150,clientY:80});f.hit.dispatchEvent(e);
+    const show=actions.filter(a=>a.type==='showTip');assert.equal(show[0].dataIndex,0);assert.equal(show.at(-1).dataIndex,1);assert.deepEqual(Array.from(show.at(-1).position),[150,80]);
+    f.window.dispatchEvent(new f.window.Event('scroll'));assert(actions.some(a=>a.type==='hideTip'));
+  }finally{f.close();}
+});
+test('canvas tooltip interaction preserves a component with tooltips explicitly disabled', () => {
+  const f=fixture(),actions=[],dom=f.window.document.querySelector('#chart');dom.getBoundingClientRect=()=>({left:0,top:0,width:390,height:400});
+  f.window.echarts={getInstanceByDom:()=>({getOption:()=>({tooltip:[{show:false}]}),dispatchAction:a=>actions.push(a)})};
+  try{f.touch('pointerdown');f.touch('pointerup');assert(!actions.some(a=>a.type==='showTip'));}finally{f.close();}
+});
