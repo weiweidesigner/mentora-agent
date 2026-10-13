@@ -102,10 +102,12 @@ test('ask button hides while scrolling down and returns on idle or upward scroll
 });
 
 
-test('A-share case demonstrates one integrated StreamViz report without duplicate prose', () => {
+test('A-share case combines narrative analysis with one integrated StreamViz report', () => {
   const cached=JSON.parse(readFileSync(new URL('../app/static/cases/ashare-dashboard/conversation.json',import.meta.url),'utf8'));
   assert.equal(cached.answer.reportArtifacts.length,1);
-  assert.match(cached.answer.interpretation,/^\[\[AIME_CHART:case:ashare-dashboard\/case-ashare-streamviz-report.html\]\]$/);
+  assert.match(cached.answer.interpretation,/核心结论/);
+  assert.match(cached.answer.interpretation,/风险与后续观察点/);
+  assert.equal([...cached.answer.interpretation.matchAll(/\[\[AIME_CHART:/g)].length,1);
   const report=readFileSync(new URL('../app'+cached.answer.reportArtifacts[0].url,import.meta.url),'utf8');
   assert.match(report,/data-aime-streamviz-root="true"/);
   assert.match(report,/data-financial-market="CN"/);
