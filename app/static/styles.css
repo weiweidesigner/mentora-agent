@@ -807,12 +807,9 @@ textarea {
 }
 
 .message.user + .message.assistant {
-  margin-top: -34px;
-}
-
-.message.user.is-editing + .message.assistant {
   margin-top: 18px;
 }
+
 
 .bubble {
   max-width: min(100%, 980px);
@@ -3495,4 +3492,3 @@ p {
   .caseAskButton { min-width: 170px; height: 46px; }
 }
 
-.conversation.is-case .message.user + .message.assistant { margin-top: 18px; }
