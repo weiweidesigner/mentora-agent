@@ -43,7 +43,7 @@ body.theme-dark .chart-legend{color:#aab4c5}
 .tooltip-label{display:flex;align-items:center;gap:5px;color:#f5f5f5;min-width:0}
 .tooltip-dot{width:7px;height:7px;border-radius:50%;flex:none}
 .tooltip-value{margin-left:auto;color:#fff;font-weight:650;font-variant-numeric:tabular-nums}
-.range-shell{display:none;--handle-size:32px;height:var(--handle-size);margin:6px 0 0;padding:0 calc(var(--handle-size) / 2);position:relative;touch-action:none}
+.range-shell{display:none;--handle-size:32px;height:var(--handle-size);margin:6px 0 0;padding:0 calc(var(--handle-size) / 2);position:relative;touch-action:pan-y}
 .chart-component.has-range .range-shell{display:block}
 .range-shell[hidden]{display:none}
 .range-track{position:relative;width:100%;height:var(--handle-size)}
@@ -335,30 +335,40 @@ function updateRangeByIndex(index) {
   render();
 }
 function setupRangeDrag() {
+  let origin = null;
+  const rememberTouch = event => { origin = event.pointerType === 'touch' ? {x:event.clientX,y:event.clientY} : null; };
   const startDrag = handle => event => {
+    rememberTouch(event);
     draggingRangeHandle = handle;
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
+    if (event.pointerType !== 'touch') event.preventDefault();
   };
   leftHandle.addEventListener('pointerdown', startDrag('left'));
   rightHandle.addEventListener('pointerdown', startDrag('right'));
   rangeTrack.addEventListener('pointerdown', event => {
     if (event.target.closest('.range-handle')) return;
+    rememberTouch(event);
     const rows = fullRows();
     if (rows.length < rangeThreshold()) return;
     ensureRangeState();
     const index = rangeIndexFromClientX(event.clientX, rows.length);
     draggingRangeHandle = Math.abs(index - rangeStart) <= Math.abs(index - rangeEnd) ? 'left' : 'right';
-    updateRangeByIndex(index);
-    event.preventDefault();
+    if (!origin) updateRangeByIndex(index);
+    if (event.pointerType !== 'touch') event.preventDefault();
   });
   window.addEventListener('pointermove', event => {
     if (!draggingRangeHandle) return;
+    if (origin) {
+      const dx=Math.abs(event.clientX-origin.x),dy=Math.abs(event.clientY-origin.y);
+      if(dy>6&&dy>dx){draggingRangeHandle=null;return;}
+      if(dx<6)return;
+    }
     const rows = fullRows();
     if (rows.length < rangeThreshold()) return;
     updateRangeByIndex(rangeIndexFromClientX(event.clientX, rows.length));
   });
-  window.addEventListener('pointerup', () => { draggingRangeHandle = null; });
+  window.addEventListener('pointerup', event => { if(draggingRangeHandle&&origin)updateRangeByIndex(rangeIndexFromClientX(event.clientX,fullRows().length));draggingRangeHandle=null;origin=null; });
+  window.addEventListener('pointercancel', () => {draggingRangeHandle=null;origin=null;});
 }
 setupRangeDrag();
 function fmt(value, axis) {
@@ -868,5 +878,53 @@ postChartHeight();
 setTimeout(postChartHeight, 80);
 setTimeout(postChartHeight, 300);
 </script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  const clear = event => { emit(active,'mouseleave',event);active=null; };
+  const select = event => {
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits);
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    emit(active,'mousemove',event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType!=='touch'||event.target.closest('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest('svg,canvas,.treemap-cell'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,vertical:false};
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const dx=Math.abs(event.clientX-gesture.x),dy=Math.abs(event.clientY-gesture.y);
+    if(gesture.vertical||(dy>6&&dy>dx)){
+      gesture.vertical=true;clear(event);event.stopImmediatePropagation();return;
+    }
+    if(dx>6)select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(!gesture.vertical)select(event);
+    gesture=null;
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // ZRender and other runtimes also listen to legacy touchmove. Let vertical
+  // gestures reach the browser without their canvas handlers cancelling scroll.
+  document.addEventListener('touchmove',event=>{
+    if(gesture?.vertical&&event.touches.length===1)event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){host.addEventListener('scroll',()=>clear({clientX:0,clientY:0}),{capture:true,passive:true});if(host===host.parent)break;host=host.parent;}
+  } catch (_) {}
+})();
+</script>
+
+
 </body>
 </html>

@@ -442,7 +442,47 @@
       centerFill: "rgba(104,115,134,.13)"
     };
   </script>
-  <script>
+  <style id="dynamicLineMobileLayout">
+.mobileDynamicHeader{display:none}
+@media(max-width:720px){
+ #wrap{height:var(--mobile-dynamic-height,380px)!important;min-height:0!important}
+ .mobileDynamicHeader{display:block;position:absolute;left:0;right:0;top:0;z-index:2}
+ .mobileDynamicTitle{margin:0 0 8px;font-size:14px;line-height:1.4;font-weight:700;color:var(--sv-text,#eef2f7);overflow-wrap:anywhere}
+ .mobileDynamicLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px}
+ .mobileDynamicLegend button{display:flex;align-items:center;gap:5px;min-width:0;padding:2px 0;border:0;background:transparent;color:inherit;font:10px/1.4 sans-serif;text-align:left;touch-action:manipulation}
+ .mobileDynamicLegend i{width:12px;height:3px;flex-shrink:0;border-radius:2px}
+ .mobileDynamicLegend span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mobileDynamicLegend b{margin-left:auto;font-weight:500;flex-shrink:0;font-variant-numeric:tabular-nums}
+ .mobileDynamicLegend button[aria-pressed="false"]{opacity:.4}
+ #timelineBar{bottom:0!important;gap:6px!important;padding:4px 0!important}
+ #timelineBar .timeLabel{min-width:22px!important}
+ #timelineBar #playBtn,#timelineBar .pillBtn{flex-shrink:0}
+}
+</style>
+<script>
+const mobileLegendSelection={};
+function updateMobileDynamicHeader(){
+ let header=document.querySelector('.mobileDynamicHeader');
+ if(!header){header=document.createElement('div');header.className='mobileDynamicHeader';document.getElementById('wrap').append(header);}
+ const compact=isCompactLayout();header.hidden=!compact;
+ if(!compact)return;
+ header.replaceChildren();
+ const heading=document.createElement('div');heading.className='mobileDynamicTitle';heading.textContent=title;heading.style.color=window.__projectDynamicLineTheme.text;header.append(heading);
+ const legend=document.createElement('div');legend.className='mobileDynamicLegend';legend.style.color=window.__projectDynamicLineTheme.muted;
+ seriesList.forEach((name,index)=>{
+  const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-pressed',String(mobileLegendSelection[name]!==false));
+  const marker=document.createElement('i');marker.style.background=colorPalette[index%colorPalette.length].line;
+  const label=document.createElement('span');label.textContent=name.replace(/（(.*?)）/g,'·$1');
+  const value=document.createElement('b'),data=fullSeriesDataMap[name]||[],point=getLastValidPoint(data.slice(0,Math.min(getSafeIndex(),data.length-1)+1));value.textContent=point?formatPlainValue(point.value):'—';
+  button.append(marker,label,value);button.onclick=()=>{mobileLegendSelection[name]=mobileLegendSelection[name]===false;renderChart();};legend.append(button);
+ });
+ header.append(legend);
+ const height=Math.ceil(header.getBoundingClientRect().height)+250+52;
+ const wrap=document.getElementById('wrap');
+ if(wrap.style.getPropertyValue('--mobile-dynamic-height')!==height+'px'){wrap.style.setProperty('--mobile-dynamic-height',height+'px');chart.resize();}
+}
+</script>
+<script>
     const chart = echarts.init(document.getElementById('chart'));
     const chartDom = document.getElementById('chart');
     const errorBox = document.getElementById('errorBox');
@@ -477,8 +517,8 @@
         legendRight: 0,
         gridLeft: 0,
         gridRight: 0,
-        gridTop: legendTop + legendRows * legendRowHeight + (compact ? 12 : 16),
-        gridBottom: compact ? 76 : 92
+        gridTop: compact ? document.querySelector('.mobileDynamicHeader').offsetHeight + 10 : legendTop + legendRows * legendRowHeight + 16,
+        gridBottom: compact ? 52 : 92
       };
     }
 
@@ -773,6 +813,7 @@
     }
 
     function renderChart() {
+      updateMobileDynamicHeader();
       if (!xList.length || !seriesList.length) {
         throw new Error('没有可用于渲染折线图的数据');
       }
@@ -791,7 +832,7 @@
         animationDurationUpdate: animDuration,
         animationEasingUpdate: animEasing,
         title: {
-          text: title,
+          text: compact ? '' : title,
           left: 0,
           top: compact ? 14 : 18,
           textStyle: {
@@ -801,6 +842,8 @@
           }
         },
         legend: {
+          show: !compact,
+          selected: mobileLegendSelection,
           data: seriesList,
           top: dynamicChartLayout().legendTop,
           left: dynamicChartLayout().legendLeft,
@@ -1181,5 +1224,53 @@
       setTimeout(postChartHeight, 900);
     })();
   </script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  const clear = event => { emit(active,'mouseleave',event);active=null; };
+  const select = event => {
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits);
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    emit(active,'mousemove',event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType!=='touch'||event.target.closest('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest('svg,canvas,.treemap-cell'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,vertical:false};
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const dx=Math.abs(event.clientX-gesture.x),dy=Math.abs(event.clientY-gesture.y);
+    if(gesture.vertical||(dy>6&&dy>dx)){
+      gesture.vertical=true;clear(event);event.stopImmediatePropagation();return;
+    }
+    if(dx>6)select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(!gesture.vertical)select(event);
+    gesture=null;
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // ZRender and other runtimes also listen to legacy touchmove. Let vertical
+  // gestures reach the browser without their canvas handlers cancelling scroll.
+  document.addEventListener('touchmove',event=>{
+    if(gesture?.vertical&&event.touches.length===1)event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){host.addEventListener('scroll',()=>clear({clientX:0,clientY:0}),{capture:true,passive:true});if(host===host.parent)break;host=host.parent;}
+  } catch (_) {}
+})();
+</script>
+
+
 </body>
 </html>
