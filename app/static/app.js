@@ -633,7 +633,7 @@ function createArtifactFallbackFrame(item, index) {
     }
     const doc = frame.contentDocument;
     doc?.addEventListener("wheel", (event) => {
-      if (event.target?.closest?.("svg.markmap")) event.stopImmediatePropagation();
+      if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
   });

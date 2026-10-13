@@ -111,9 +111,13 @@ test('A-share case combines narrative analysis with one integrated StreamViz rep
   const report=readFileSync(new URL('../app'+cached.answer.reportArtifacts[0].url,import.meta.url),'utf8');
   assert.match(report,/data-aime-streamviz-root="true"/);
   assert.match(report,/data-financial-market="CN"/);
-  for (const section of ['指数对照','市场宽度','板块分化','行业强弱','活跃个股','接下来观察什么','数据与口径']) assert.ok(report.includes(section));
+  for (const section of ['指数对照','市场宽度','板块分化','行业强弱','成交额前十','涨跌分布','板块结构','成交分层','个股两端','接下来观察什么','数据与口径']) assert.ok(report.includes(section));
   assert.match(report,/2909 家 · 52.32%/);
   assert.match(report,/2485 家 · 44.69%/);
   assert.match(report,/2026-10-13 收盘缓存/);
   assert.doesNotMatch(report,/<script|<iframe/);
+  const evidence=JSON.parse(readFileSync(new URL('../app/static/cases/ashare-dashboard/streamviz-report.payload.json',import.meta.url),'utf8')).evidenceSnapshot;
+  assert.equal(evidence.distribution.length,13);
+  for (const groups of [evidence.distribution,evidence.boardComparison,evidence.turnoverTiers]) assert.equal(groups.reduce((total,row)=>total+row.count,0),evidence.validCount);
+  assert.ok(evidence.rankings.every(group=>group.rows.length===10));
 });

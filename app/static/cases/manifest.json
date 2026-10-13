@@ -4,7 +4,7 @@
     "title": "A 股市场一页报告",
     "tag": "市场全景",
     "question": "分析今天 A 股市场表现，做成一页报告给我。",
-    "preview": "指数分化，个股温和偏强。用一页流式报告查看指数对照、市场宽度、板块分化与后续观察。",
+    "preview": "指数与个股体感为何分化？通过涨跌分布、板块结构、成交分层及涨跌排行，完整复盘 A 股市场。",
     "cachedDate": "2026-10-13",
     "conversationUrl": "/static/cases/ashare-dashboard/conversation.json"
   },
