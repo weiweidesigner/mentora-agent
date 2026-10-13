@@ -3392,7 +3392,7 @@ function statusStepKey(data, lang) {
   return `status:${statusTitle(data, lang)}`;
 }
 
-function startNewChat(createSession = false, focusInput = true) {
+function startNewChat(createSession = false, focusInput = false) {
   window.dispatchEvent(new Event("veya:chat-navigate"));
   if (activeController) activeController.abort();
   activeController = null;
@@ -3407,6 +3407,7 @@ function startNewChat(createSession = false, focusInput = true) {
   button.disabled = false;
   autoFollow = true;
   if (focusInput) input.focus();
+  else input.blur();
   if (createSession) ensureCurrentSession("");
 }
 
