@@ -136,6 +136,10 @@
       {
         "title": "生成 StreamViz 报告"
       }
-    ]
+    ],
+    "elapsedMs": 457365,
+    "startedAt": 1791890867077,
+    "endedAt": 1791891324442,
+    "durationSource": "harness-session-timestamps"
   }
 }

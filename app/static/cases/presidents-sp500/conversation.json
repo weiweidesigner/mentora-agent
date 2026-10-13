@@ -62,6 +62,10 @@
       {
         "title": "检查图表渲染效果"
       }
-    ]
+    ],
+    "elapsedMs": 597163,
+    "startedAt": 1791890574668,
+    "endedAt": 1791891171831,
+    "durationSource": "harness-session-timestamps"
   }
 }

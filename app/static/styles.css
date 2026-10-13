@@ -3520,3 +3520,5 @@ p {
 /* Fast charts never flash a loading animation. */
 .chartLoadingOverlay[hidden]{display:none}
 .streamvizArtifactHost:not(.show-chart-loading) .visualize-widget-loading-inline{display:none!important}
+
+.cachedReplay .reportInterpretation [hidden]{display:none!important}

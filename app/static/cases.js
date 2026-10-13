@@ -84,9 +84,19 @@
       if (marker) {
         const index = artifacts.findIndex((item) => item.path === marker[1]);
         if (index >= 0 && !shown.has(index)) {
-          flow.append(createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal }));
+          const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal });
+          flow.append(host);
           shown.add(index);
           if (!await replayPause(280, signal)) return;
+          // Continue the narrative after this chart has finished its own loading/replay.
+          for (let attempt = 0; attempt < 120; attempt += 1) {
+            if (signal.aborted) return;
+            const current = Array.from(flow.querySelectorAll(".streamvizArtifactHost,.reportFrameShell"))
+              .find((element) => element.dataset.artifactUrl === host.dataset.artifactUrl);
+            if (current?.classList.contains("reportFrameShell") && !current.classList.contains("is-chart-loading")) break;
+            if (current?.dataset.artifactCodeReady === "true" && current.dataset.streamvizRendered === "true") break;
+            if (!await replayPause(100, signal)) return;
+          }
         }
         continue;
       }
@@ -95,6 +105,7 @@
         const block = document.createElement("div");
         block.className = "streamingAnswer reportInterpretation";
         block.innerHTML = formatInsight(paragraph);
+        block.querySelectorAll("li,tr,p,h1,h2,h3,h4").forEach((element) => { element.hidden = true; });
         const walker = document.createTreeWalker(block, window.NodeFilter.SHOW_TEXT);
         const texts = [];
         while (walker.nextNode()) {
@@ -104,10 +115,13 @@
         flow.append(block);
         // Reveal the rendered text, preserving links, lists and table markup.
         for (const { node, value } of texts) {
-          for (let end = 18; end < value.length + 18; end += 18) {
+          if (value.trim()) {
+            for (let parent = node.parentElement; parent && parent !== block; parent = parent.parentElement) parent.hidden = false;
+          }
+          for (let end = 12; end < value.length + 12; end += 12) {
             if (signal.aborted) return;
             node.textContent = value.slice(0, end);
-            if (!await replayPause(30, signal)) return;
+            if (!await replayPause(36, signal)) return;
           }
         }
       }
@@ -151,6 +165,7 @@
       if (cachedSteps.length && typeof appendStep === "function") {
         cachedSteps.forEach((step, index) => appendStep(article, step.title, "原始案例的缓存执行记录", "done", `case-step-${index}`));
         article.dataset.cachedActivityCount = String(cachedSteps.length);
+        if (Number(cached.activity.elapsedMs) > 0) article.dataset.cachedElapsedMs = String(cached.activity.elapsedMs);
         article.dataset.thinkingState = "done";
         article.activityEnded = true;
         if (typeof normalizeLang === "function") article.dataset.lang = normalizeLang(cached.answer.lang || "zh-CN");

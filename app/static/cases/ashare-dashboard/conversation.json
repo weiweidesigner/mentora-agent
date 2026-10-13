@@ -102,6 +102,10 @@
       {
         "title": "读取分析总结技能"
       }
-    ]
+    ],
+    "elapsedMs": 565834,
+    "startedAt": 1791890297479,
+    "endedAt": 1791890863313,
+    "durationSource": "harness-session-timestamps"
   }
 }

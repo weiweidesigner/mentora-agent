@@ -748,6 +748,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       loadingMessage: options.loadingMessage || "正在生成可视化",
       loadingDwellMs: 0,
     });
+    host.dataset.artifactCodeReady = "true";
     guardStreamVisualization(host, item, index);
   }).catch(() => {
     if (!host.isConnected) return;
@@ -2107,7 +2108,7 @@ function transientShareSessionForArticle(article) {
     messages: question ? [{ role: "user", text: question, images: [] }] : [],
     thinkingStepsHtml: article?.querySelector?.(".thinkingSteps")?.innerHTML || "",
     thinkingStartedAt: Number(article?.dataset?.startedAt || Date.now()),
-    thinkingElapsed: Math.max(0, Date.now() - Number(article?.dataset?.startedAt || Date.now())),
+    thinkingElapsed: Number(article?.dataset?.cachedElapsedMs) || Math.max(0, Date.now() - Number(article?.dataset?.startedAt || Date.now())),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -2634,9 +2635,9 @@ function updateThinkingSummary(article, prefix, options = {}) {
   const target = article.querySelector(".thinkingSummaryText");
   if (!target) return;
   const startedAt = Number(article.dataset.startedAt || Date.now());
-  const elapsed = Math.max(0, Date.now() - startedAt);
+  const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
   target.textContent = article.dataset.cachedActivityCount
-    ? `已思考 · ${article.dataset.cachedActivityCount} 个缓存步骤`
+    ? `已思考${article.dataset.cachedElapsedMs ? " " + formatDuration(Number(article.dataset.cachedElapsedMs)) : ""}`
     : options.live ? article.dataset.currentThinking || prefix : `${prefix} ${formatDuration(elapsed)}`;
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
@@ -2645,7 +2646,7 @@ function updateThinkingSummary(article, prefix, options = {}) {
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
   }
   if (activeActivityArticle === article && activityElapsed) {
-    activityElapsed.textContent = article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+    activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
   }
 }
 
@@ -2678,11 +2679,11 @@ function syncActivityDrawer(article) {
   const shouldStick = activityAutoFollow || isActivityNearBottom();
   const previousScrollTop = activityBody.scrollTop;
   const startedAt = Number(article.dataset.startedAt || Date.now());
-  const elapsed = Math.max(0, Date.now() - startedAt);
+  const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
   const state = article.dataset.thinkingState || "active";
   const lang = normalizeLang(article.dataset.lang || "en");
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
-  activityElapsed.textContent = article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+  activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
   const steps = Array.from(article.querySelectorAll(".thinkingSteps li"))
     .map((item) => `<li class="${item.className}">${item.innerHTML}</li>`)
