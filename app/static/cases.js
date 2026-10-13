@@ -84,7 +84,7 @@
       if (marker) {
         const index = artifacts.findIndex((item) => item.path === marker[1]);
         if (index >= 0 && !shown.has(index)) {
-          const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal });
+          const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal, demoLoadingMs: artifacts[index].caseDemoLoadingMs });
           flow.append(host);
           shown.add(index);
           if (!await replayPause(280, signal)) return;
@@ -93,7 +93,7 @@
             if (signal.aborted) return;
             const current = Array.from(flow.querySelectorAll(".streamvizArtifactHost,.reportFrameShell"))
               .find((element) => element.dataset.artifactUrl === host.dataset.artifactUrl);
-            if (current?.classList.contains("reportFrameShell") && !current.classList.contains("is-chart-loading")) break;
+            if (current?.classList.contains("reportFrameShell") && current.dataset.artifactReady === "true") break;
             if (current?.dataset.artifactCodeReady === "true" && current.dataset.streamvizRendered === "true") break;
             if (!await replayPause(100, signal)) return;
           }
@@ -157,6 +157,11 @@
       }
       if (version !== loadVersion) return;
       const cached = structuredClone(responseCache.get(id));
+      if (id === "presidents-sp500") {
+        cached.answer.reportArtifacts?.forEach((artifact) => {
+          if (artifact.path?.endsWith("/deepseek-case-presidents-sp500-dynamic-line.html")) artifact.caseDemoLoadingMs = 800;
+        });
+      }
       messages.innerHTML = "";
       addUserMessage(cached.question);
       const article = createAssistantMessage(cached.question);
@@ -197,10 +202,10 @@
     if (!selectedCase) return;
     const question = selectedCase.question;
     ask.disabled = true;
-    startNewChat(true, false);
+    startNewChat(false, false);
     input.value = question;
     updateComposerState();
-    form.requestSubmit();
+    input.focus({ preventScroll: true });
   });
   window.addEventListener("popstate", () => {
     const id = new URLSearchParams(location.search).get("case");

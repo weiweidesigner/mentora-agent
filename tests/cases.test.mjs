@@ -25,14 +25,16 @@ function setup(url = 'https://example.com/', text = '完整缓存答案') {
   vm.runInContext(source,context);
   return {w, requests, sent, conversation, messages};
 }
-test('case replay loads cached conversation without inference; ask sends its question', async () => {
+test('case replay loads cached conversation without inference; ask fills an editable draft', async () => {
   const h=setup();await tick();
   h.w.document.querySelector('.caseCard').click();await tick();
   assert.match(h.messages.textContent,/AMD 最新评级如何？完整缓存答案/);
   assert.equal(h.w.document.querySelector('#caseActionBar').hidden,false);
   assert.equal(h.requests.length,2);
   h.w.document.querySelector('#caseAskButton').click();
-  assert.deepEqual(h.sent,['AMD 最新评级如何？']);
+  assert.deepEqual(h.sent,[]);
+  assert.equal(h.w.document.querySelector('#question').value,'AMD 最新评级如何？');
+  assert.equal(h.w.document.activeElement,h.w.document.querySelector('#question'));
   assert.equal(h.w.document.querySelector('#caseActionBar').hidden,true);
   assert.equal(new URL(h.w.location.href).searchParams.has('case'),false);
 });

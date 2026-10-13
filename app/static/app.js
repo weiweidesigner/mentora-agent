@@ -605,7 +605,7 @@ function guardStreamVisualization(host, item, index) {
   const fallback = () => {
     if (!host.isConnected || host.dataset.streamvizRendered === "true") return;
     window.AimeStreamViz?.unmount?.(host);
-    host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
+    host.replaceWith(createArtifactFallbackFrame(item, index));
   };
   clearTimeout(host.streamvizFallbackTimer);
   host.streamvizFallbackTimer = setTimeout(fallback, host.dataset.streamvizFailed === "true" ? 0 : 8000);
@@ -613,21 +613,20 @@ function guardStreamVisualization(host, item, index) {
 }
 
 function createArtifactFallbackFrame(item, index, options = {}) {
-  const loadingStartedAt = Number(options.loadingStartedAt || Date.now());
+  const loadingStartedAt = Date.now();
+  const demoLoadingMs = Math.max(0, Number(options.demoLoadingMs || 0));
   const shell = document.createElement("div");
-  shell.className = "reportFrameShell is-chart-loading";
+  shell.className = `reportFrameShell${demoLoadingMs ? " is-chart-loading is-case-demo" : ""}`;
   shell.dataset.artifactUrl = String(item.url || "");
   const loading = document.createElement("div");
   loading.className = "chartLoadingOverlay";
-  loading.hidden = true;
-  const loadingTimer = setTimeout(() => {
-    if (shell.isConnected && shell.classList.contains("is-chart-loading")) loading.hidden = false;
-  }, Math.max(0, 2000 - (Date.now() - loadingStartedAt)));
+  loading.hidden = !demoLoadingMs;
   loading.setAttribute("role", "status");
   loading.innerHTML = '<div class="chartLoadingBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>正在加载图表…</span>';
   const frame = document.createElement("iframe");
   frame.className = "reportDocumentFrame";
-  shell.append(frame, loading);
+  shell.append(frame);
+  if (demoLoadingMs) shell.append(loading);
   frame.dataset.artifactUrl = String(item.url || "");
   frame.title = `Analysis chart ${index + 1}`;
   frame.scrolling = "no";
@@ -654,11 +653,11 @@ function createArtifactFallbackFrame(item, index, options = {}) {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
     resizeReportDocumentFrame(frame);
-    clearTimeout(loadingTimer);
-    requestAnimationFrame(() => {
+    setTimeout(() => requestAnimationFrame(() => {
       loading.remove();
       shell.classList.remove("is-chart-loading");
-    });
+      shell.dataset.artifactReady = "true";
+    }), Math.max(0, demoLoadingMs - (Date.now() - loadingStartedAt)));
   });
   return shell;
 }
@@ -697,13 +696,10 @@ async function artifactCode(url) {
 
 function createStreamVisualizationArtifact(item, index, options = {}) {
   item = canonicalArtifact(item);
+  if (Number(options.demoLoadingMs) > 0) return createArtifactFallbackFrame(item, index, { demoLoadingMs: options.demoLoadingMs });
   const host = document.createElement("div");
   host.className = `streamvizArtifactHost${options.live ? " is-live" : ""}`;
   host.dataset.artifactUrl = String(item.url || "");
-  host.dataset.loadingStartedAt = String(Date.now());
-  setTimeout(() => {
-    if (host.isConnected) host.classList.add("show-chart-loading");
-  }, 2000);
   mountStreamVisualization(host, {
     title: item.title || item.label || "",
     code: "",
@@ -717,7 +713,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     if (!host.isConnected) return;
     if (!streamVisualizationCompatible(rawCode)) {
       window.AimeStreamViz?.unmount?.(host);
-      host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
+      host.replaceWith(createArtifactFallbackFrame(item, index));
       return;
     }
     const code = prepareStreamVisualizationCode(rawCode);
@@ -753,7 +749,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   }).catch(() => {
     if (!host.isConnected) return;
     window.AimeStreamViz?.unmount?.(host);
-    host.replaceWith(createArtifactFallbackFrame(item, index, { loadingStartedAt: host.dataset.loadingStartedAt }));
+    host.replaceWith(createArtifactFallbackFrame(item, index));
   });
   return host;
 }
@@ -2385,7 +2381,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       slot.streamvizHost = streamedHost;
       return slot;
     }
-    if (item.renderMode === "iframe") return createArtifactFallbackFrame(item, index);
+    if (item.renderMode === "iframe") return createArtifactFallbackFrame(item, index, { demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
     const artifactUrl = new URL(item.url, window.location.origin);
     const imageUrl = String(item.imageUrl || "");
     if (imageUrl.startsWith("/generated/") || /^\/generated\/flux-[^/]+\.html$/i.test(artifactUrl.pathname)) {
@@ -2409,7 +2405,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       previewButton.addEventListener("click", () => openGeneratedImagePreview(image.src, previewButton));
       return previewButton;
     }
-    return createStreamVisualizationArtifact(item, index, { showActions: false });
+    return createStreamVisualizationArtifact(item, index, { showActions: false, demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
   };
   // A single FLUX result is visual-only, including previously saved conversations
   // whose interpretation still contains the old completion message.
@@ -2910,8 +2906,8 @@ const COPY = {
     routeDetail: "模型根据用户问题和模块元数据选择后续要执行的组件。",
     completedLabel: "已结束",
     stoppedLabel: "已停止",
-	    thinkingSection: "Thinking",
-	    sources: "Source",
+	    thinkingSection: "思考过程",
+	    sources: "来源",
 	    toolOutputLabel: "输出",
 	    fallbackDetail: "正在推进当前分析步骤。",
 	  },
@@ -2945,8 +2941,8 @@ const COPY = {
     routeDetail: "模型根據你的問題和模組資料選擇後續要執行的元件。",
     completedLabel: "已結束",
     stoppedLabel: "已停止",
-	    thinkingSection: "Thinking",
-	    sources: "Source",
+	    thinkingSection: "思考過程",
+	    sources: "來源",
 	    toolOutputLabel: "輸出",
 	    fallbackDetail: "正在推進目前分析步驟。",
 	  },

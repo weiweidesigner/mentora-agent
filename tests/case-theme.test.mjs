@@ -12,8 +12,8 @@ test('cached iframe themes follow the host initially and after toggling, includi
   for(const path of ['/static/cases/amd/chart.html','/veya/static/cases/jpm/chart.html']) {
     context.item={url:path};const shell=vm.runInContext('createArtifactFallbackFrame(item,0)',context);
     dom.window.document.body.append(shell);const frame=shell.querySelector('iframe');
-    assert.ok(shell.querySelector('[role="status"]').hidden);
-    assert.ok(shell.classList.contains('is-chart-loading'));
+    assert.equal(shell.querySelector('[role="status"]'),null);
+    assert.equal(shell.classList.contains('is-chart-loading'),false);
     assert.equal(new URL(frame.src).searchParams.get('theme'),'dark');
   }
   const other=dom.window.document.createElement('iframe');other.src='https://other.example/chart.html';other.className='reportDocumentFrame';dom.window.document.body.append(other);
