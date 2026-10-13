@@ -289,4 +289,4 @@ python3 scripts/sync_us_market_vedio.py --update
 
 ## Ubuntu 云端部署
 
-仓库提供 `deploy/veya-agent.service` 与 `deploy/nginx-veya.conf`，用于 systemd 常驻运行和已有 HTTPS 站点下的 `/veya/` 路由。后端仅监听本机 8000 端口，入口使用登录保护并保留 SSE 流式响应。部署与更新说明见 `deploy/README.md`。云端仅保存运行所需的本地 `.env`；模型权重与 Mac 专用生图环境不包含在 CPU 云部署中。
+仓库提供 `deploy/veya-agent.service` 与 `deploy/nginx-veya.conf`，用于 systemd 常驻运行和已有 HTTPS 站点下的 `/veya/` 路由。后端仅监听本机 8000 端口，入口无需登录并保留 SSE 流式响应。部署与更新说明见 `deploy/README.md`。云端仅保存运行所需的本地 `.env`；模型权重与 Mac 专用生图环境不包含在 CPU 云部署中。
