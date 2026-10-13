@@ -3555,3 +3555,16 @@ p {
   .mobileBrand img{width:26px;height:26px;object-fit:contain}
   .messages{-webkit-overflow-scrolling:touch;touch-action:pan-y}
 }
+
+@media(max-width:760px){
+  .sidebarContent .brandName{font-size:20px}
+  .sidebarContent .brandMark{width:36px;height:36px}
+  .sidebarContent .sidebarAction,.sidebarContent .historyOpen{font-size:16px;min-height:44px}
+  .sidebarContent .sidebarAction svg{width:24px;height:24px}
+  .sidebarContent .historyTitle{font-size:14px}
+  .sidebarContent .historyItem{min-height:44px;grid-template-columns:minmax(0,1fr) 32px 6px}
+  .sidebarContent .historyMore{width:32px;height:32px}
+  .sidebarContent .historyMore svg{width:20px;height:20px}
+  .sidebarContent .themeToggleButton,.sidebarContent .sidebarCollapseButton{width:36px;height:36px}
+  .sidebarContent .themeToggleButton svg,.sidebarContent .sidebarCollapseButton svg{width:22px;height:22px}
+}
