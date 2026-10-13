@@ -79,3 +79,19 @@ test('moving within the same data row does not rebuild its tooltip on every touc
     assert.equal(enters,1);assert.equal(moves,0);
   } finally {f.close();}
 });
+test('a held horizontal gesture follows the finger and remains horizontal on the return sweep', () => {
+  const f=fixture();let contexts=0;
+  Object.defineProperty(f.tip,'offsetWidth',{value:100});
+  f.window.parentTooltipContext=()=>{contexts++;return {element:f.tip,win:f.window,offsetLeft:0};};
+  try {
+    f.touch('pointerdown');
+    const move=(x,y)=>{
+      const event=new f.window.Event('pointermove',{bubbles:true});
+      Object.assign(event,{pointerType:'touch',pointerId:1,clientX:x,clientY:y});f.hit.dispatchEvent(event);
+    };
+    move(100,20);assert.equal(f.tip.style.left,'50px');
+    move(120,20);assert.equal(f.tip.style.left,'70px');
+    move(20,30);assert(f.tip.classList.contains('active'));assert.equal(f.tip.style.left,'8px');
+    assert.equal(contexts,1);
+  } finally {f.close();}
+});

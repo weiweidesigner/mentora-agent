@@ -676,8 +676,8 @@ function installReportTooltipPortal(frame) {
       portal.style.width = Math.min(box.width * scaleX, window.innerWidth - 16) + "px";
       const arrowValue = style.getPropertyValue("--arrow-x") || style.getPropertyValue("--arrow-left") || "50%";
       const arrow = arrowValue.includes("%") ? box.width * parseFloat(arrowValue) / 100 : parseFloat(arrowValue);
-      const anchor = chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
-      const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, chart.left + box.left * scaleX));
+      const anchor = gesture?.direction==="horizontal" ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
+      const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (gesture?.direction==="horizontal" ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));
       portal.style.left = left + "px";
       portal.style.top = Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, chart.top + box.top)) + "px";
       portal.style.setProperty("--report-tooltip-arrow-x", Math.max(12, Math.min(portal.offsetWidth - 12, anchor - left)) + "px");
@@ -698,11 +698,19 @@ function installReportTooltipPortal(frame) {
   const discovery = new win.MutationObserver(discover);
   discovery.observe(doc.body, { childList: true, subtree: true });
   let gesture = null;
-  const onDown = (event) => { if (event.pointerType === "touch") gesture = { x:event.clientX,y:event.clientY }; };
+  const onDown = (event) => { if (event.pointerType === "touch") gesture = { x:event.clientX,y:event.clientY,currentX:event.clientX,direction:"pending" }; };
   const onMove = (event) => {
     if (!gesture || event.pointerType !== "touch") return;
     const dx = Math.abs(event.clientX - gesture.x), dy = Math.abs(event.clientY - gesture.y);
-    if (dy > 6 && dy > dx) {
+    if(gesture.direction==="pending"&&Math.max(dx,dy)>6)gesture.direction=dx>=dy?"horizontal":"vertical";
+    gesture.currentX=event.clientX;
+    if(gesture.direction==="horizontal"&&activeReportTooltip?.frame===frame&&reportTooltipPortal){
+      const anchor=frame.getBoundingClientRect().left+event.clientX,width=reportTooltipPortal.offsetWidth;
+      const left=Math.max(8,Math.min(window.innerWidth-width-8,anchor-width/2));
+      reportTooltipPortal.style.left=left+"px";
+      reportTooltipPortal.style.setProperty("--report-tooltip-arrow-x",Math.max(12,Math.min(width-12,anchor-left))+"px");
+    }
+    if (gesture.direction==="vertical") {
       dismissReportTooltip();
       event.stopPropagation();
     }
