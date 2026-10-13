@@ -45,3 +45,37 @@ test('touch compatibility mouse events cannot reopen a dismissed tooltip', () =>
     f.hit.dispatchEvent(event);assert(!f.tip.classList.contains('active'));
   } finally { f.close(); }
 });
+test('vertical touch moves stay native after pointercancel, without legacy chart interception', () => {
+  const f = fixture();
+  try {
+    const touchEvent = (type, y) => {
+      const event = new f.window.Event(type, { bubbles:true, cancelable:true });
+      Object.assign(event, { touches:[{clientX:20,clientY:y}] });
+      f.hit.dispatchEvent(event);return event;
+    };
+    f.hit.addEventListener('touchmove', event => event.preventDefault());
+    touchEvent('touchstart',20);f.touch('pointercancel');
+    assert(!touchEvent('touchmove',40).defaultPrevented);
+    assert(!touchEvent('touchmove',80).defaultPrevented);
+  } finally { f.close(); }
+});
+test('scrolling past an inactive chart does not repeatedly measure or hide its tooltip', () => {
+  const f = fixture();let calls=0;
+  f.window.hideTooltip=()=>calls++;
+  try {
+    for(let i=0;i<30;i++)f.window.dispatchEvent(new f.window.Event('scroll'));
+    assert.equal(calls,0);
+  } finally { f.close(); }
+});
+test('moving within the same data row does not rebuild its tooltip on every touch move', () => {
+  const f = fixture();let enters=0,moves=0;
+  f.hit.addEventListener('mouseenter',()=>enters++);f.hit.addEventListener('mousemove',()=>moves++);
+  try {
+    f.touch('pointerdown');
+    for(const x of [30,40,50]) {
+      const event=new f.window.Event('pointermove',{bubbles:true});
+      Object.assign(event,{pointerType:'touch',pointerId:1,clientX:x,clientY:20});f.hit.dispatchEvent(event);
+    }
+    assert.equal(enters,1);assert.equal(moves,0);
+  } finally {f.close();}
+});
