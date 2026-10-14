@@ -32,6 +32,7 @@ from pydantic import BaseModel, Field
 
 from app.autogen_reasoning import AutoGenPlanningError, complete_text_with_autogen, plan_route_with_autogen
 from app.jev_visualization_router import JevVisualizationRouter, JevVisualizationRouterError
+from app.jev_kline_annotations import normalize_kline_annotations, kline_annotation_style
 from app.business_chart_dependency import load_registry_data
 
 from app.agent_runtime import (
@@ -1712,108 +1713,53 @@ def _kline_payload_rows(payload: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def model_kline_annotation_style(question: str, annotation: dict[str, Any]) -> tuple[str, str]:
-    """Map inferred chart semantics to a visible native K-line color and label."""
-    text = f"{question} {annotation.get('text') or ''}".lower()
-    if any(term in text for term in ("卖", "賣", "sell", "exit", "止盈", "压力", "壓力", "阻力")):
-        return "#ef4444", "卖出参考线"
-    if any(term in text for term in ("买", "買", "buy", "entry", "支撑", "支撐")):
-        return "#16a34a", "买入参考线"
-    if any(term in text for term in ("止损", "止損", "stop loss")):
-        return "#f97316", "止损参考线"
-    return "#2563eb", "技术参考线"
+    """Compatibility adapter; policy is owned by jev_vis_router."""
+    return kline_annotation_style(annotation)
 
 
-def infer_model_kline_annotations(
-    question: str,
-    runs: list[ModuleRun],
-) -> tuple[dict[str, Any], ...]:
-    """Infer one native K-line annotation with a compact structured model call.
-
-    This is intentionally independent from the long-form report interpretation. A
-    valid chart mutation should not disappear merely because the prose model
-    response was truncated or returned malformed JSON.
-    """
-    if not wants_model_derived_chart_annotation(question):
-        return ()
-    api_key = model_api_key()
-    if not api_key:
-        return ()
-    requested_symbol = str(infer_symbol_from_question(question) or extract_stock_code(question) or "").strip().upper()
-    run = next(
-        (
-            item
-            for item in runs
-            if item.selected.filename == "kline.py"
-            and item.payload_path.exists()
-            and (not requested_symbol or str(item.code or "").strip().upper() == requested_symbol)
-        ),
-        None,
-    )
-    if run is None:
-        return ()
+def _jev_kline_context(run: ModuleRun) -> dict[str, Any]:
     payload = read_json_file(run.payload_path)
     if not isinstance(payload, dict):
-        return ()
-    rows = _kline_payload_rows(payload)
-    if not rows:
-        return ()
+        return {}
+    component = payload.get("component") if isinstance(payload.get("component"), dict) else payload
+    props = component.get("props") if isinstance(component.get("props"), dict) else component
+    symbol = str(run.code or props.get("code") or "").upper()
+    return {
+        "symbol": symbol,
+        "period": str(props.get("dataType") or props.get("period") or payload.get("period") or "1d"),
+        "ohlcv": _kline_payload_rows(payload),
+        "ma_periods": props.get("ma"),
+        "market": "CN" if re.search(r"\.(SH|SZ|SS|BJ)$", symbol) else "HK" if symbol.endswith(".HK") else "US",
+    }
 
-    evidence_rows: list[dict[str, Any]] = []
-    for row in rows[-40:]:
-        if not isinstance(row, dict):
-            continue
-        evidence_rows.append(
-            {
-                key: row.get(key)
-                for key in ("time", "timestamp", "open", "high", "low", "close", "volume")
-                if row.get(key) is not None
-            }
+
+def _legacy_kline_mark(mark: dict[str, Any]) -> dict[str, Any]:
+    point = mark["points"][0]
+    return {**mark, "time": point["time"], "price": point["price"]}
+
+
+def infer_model_kline_annotations(question: str, runs: list[ModuleRun], *, proposals: Any = None) -> tuple[dict[str, Any], ...]:
+    """JEV selects validated native coordinates independently of report prose."""
+    if not wants_model_derived_chart_annotation(question):
+        return ()
+    requested_symbol = str(infer_symbol_from_question(question) or extract_stock_code(question) or "").upper()
+    run = next((item for item in runs if item.selected.filename == "kline.py" and item.payload_path.exists() and (not requested_symbol or str(item.code or "").upper() == requested_symbol)), None)
+    if run is None:
+        return ()
+    context = _jev_kline_context(run)
+    if not context.get("ohlcv"):
+        return ()
+    exact = deterministic_52_week_extrema_annotation(question, runs)
+    try:
+        plan = JevVisualizationRouter().plan_kline_annotations(
+            question=question, proposals=[exact] if exact else proposals,
+            requested_type=requested_native_kline_annotation_type(question),
+            language=html_lang_for_question(question), **context,
         )
-    if not evidence_rows:
+        return tuple(_legacy_kline_mark({**mark, "source": "jev-kline-plan", "markStrategy": plan.mark_strategy, "markConfidence": plan.confidence}) for mark in plan.annotations)
+    except JevVisualizationRouterError as exc:
+        print(f"JEV K-line annotation planning unavailable: {exc}", file=sys.stderr)
         return ()
-
-    annotation_type = requested_native_kline_annotation_type(question) or "horizontal"
-    symbol = str(run.code or requested_symbol).strip().upper()
-    period = str(payload.get("period") or payload.get("dataType") or "").strip()
-    latest_time = str(evidence_rows[-1].get("time") or evidence_rows[-1].get("timestamp") or "").strip()
-    language_name = response_language_name(question)
-    prompt = (
-        "You are a technical-chart annotation planner. Infer exactly one useful reference level from the user's intent and the supplied K-line OHLCV evidence. "
-        "Do not use a fixed ticker, fixed price, canned threshold, or external chart. The selected price must be supported by recent price structure such as a pullback area, swing high/low, consolidation boundary, or volume-confirmed level. "
-        "For a current buy/sell-point text request, attach the label to the newest supplied candle time while choosing the price from the evidence. "
-        "Return JSON only and no prose. Price must be a positive number inside the visible K-line range. "
-        f"Use {language_name} for text. Required annotation type: {annotation_type}. "
-        f"Required symbol: {symbol}. Required newest candle time for text/callout: {latest_time}. "
-        'Schema: {"chart_annotations":[{"symbol":"BABA","type":"text","time":"1787900000000","price":123.45,"text":"concise evidence-based label"}]}.\n'
-        f"User question: {question}\n"
-        f"K-line period: {period}\n"
-        f"Latest 40 OHLCV rows: {json.dumps(evidence_rows, ensure_ascii=False, separators=(',', ':'))}"
-    )
-    client = OpenAI(api_key=api_key, base_url=VOLCANO_BASE_URL, timeout=min(VOLCANO_INTERPRET_TIMEOUT_SECONDS, 45.0))
-    for attempt in range(2):
-        try:
-            completion = create_chat_completion(
-                client,
-                json_object=True,
-                model=VOLCANO_INTERPRET_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.1 if attempt == 0 else 0,
-                max_tokens=1200,
-                **structured_planner_model_options(VOLCANO_INTERPRET_MODEL),
-            )
-            raw = completion_text(completion, "K线标记模型")
-            parsed = parse_json_object(raw)
-            raw_items = parsed.get("chart_annotations") if isinstance(parsed, dict) else None
-            normalized = normalize_model_chart_annotations(raw_items, question, runs)
-            if normalized:
-                return normalized
-            print(
-                f"K-line annotation model returned no valid coordinate ({completion_diagnostics(completion)}).",
-                file=sys.stderr,
-            )
-        except Exception as exc:  # noqa: BLE001 - independent model fallback
-            print(f"K-line annotation model attempt {attempt + 1} failed: {exc}", file=sys.stderr)
-    return ()
 
 
 def apply_model_kline_annotations(
@@ -1825,7 +1771,9 @@ def apply_model_kline_annotations(
     """Write model-derived data-coordinate annotations into rendered K-line modules."""
     if not wants_model_derived_chart_annotation(question):
         return []
-    chart_annotations = interpretation.chart_annotations or infer_model_kline_annotations(question, runs)
+    chart_annotations = interpretation.chart_annotations
+    if not chart_annotations or any(item.get("source") != "jev-kline-plan" for item in chart_annotations):
+        chart_annotations = infer_model_kline_annotations(question, runs, proposals=chart_annotations)
     if not chart_annotations:
         return []
     results: list[dict[str, Any]] = []
@@ -1865,8 +1813,6 @@ def apply_model_kline_annotations(
         if price < min(visible_prices) * 0.5 or price > max(visible_prices) * 1.5:
             continue
         annotation_type = str(annotation.get("type") or "horizontal").lower()
-        if annotation_type == "segment":
-            continue
         point_time = str(annotation.get("time") or latest_time)
         semantic_color, semantic_label = model_kline_annotation_style(question, annotation)
         annotation_text = str(annotation.get("text") or "").strip()
@@ -1885,7 +1831,7 @@ def apply_model_kline_annotations(
         rendered_annotation = {
             "type": annotation_type,
             "period": annotation_period,
-            "points": [{"time": point_time, "price": price}],
+            "points": annotation.get("points") or [{"time": point_time, "price": price}],
             "text": annotation_text,
             "color": str(annotation.get("color") or semantic_color),
             "source": str(annotation.get("source") or "model"),
@@ -19940,8 +19886,8 @@ def interpret_with_volcano(
     try:
         result = run_completion(build_prompt())
         if wants_model_derived_chart_annotation(question):
-            annotations = result.chart_annotations or infer_model_kline_annotations(question, runs)
-            if annotations and not result.chart_annotations:
+            annotations = infer_model_kline_annotations(question, runs, proposals=result.chart_annotations)
+            if annotations != result.chart_annotations:
                 result = InterpretationResult(
                     title=result.title,
                     overview=result.overview,
@@ -20286,55 +20232,21 @@ def deterministic_52_week_extrema_annotation(
     }
 
 
-def normalize_model_chart_annotations(
-    raw_items: Any,
-    question: str,
-    runs: list[ModuleRun],
-) -> tuple[dict[str, Any], ...]:
+def normalize_model_chart_annotations(raw_items: Any, question: str, runs: list[ModuleRun]) -> tuple[dict[str, Any], ...]:
+    """Keep the legacy report response shape while delegating validation to JEV."""
     if not wants_model_derived_chart_annotation(question):
         return ()
-    deterministic_extrema = deterministic_52_week_extrema_annotation(question, runs)
-    if deterministic_extrema:
-        return (deterministic_extrema,)
-    if not isinstance(raw_items, list):
-        return ()
-    kline_symbols = {
-        str(run.code or "").strip().upper()
-        for run in runs
-        if run.selected.filename == "kline.py"
-    }
-    requested_symbol = str(infer_symbol_from_question(question) or extract_stock_code(question) or "").strip().upper()
-    normalized: list[dict[str, Any]] = []
-    requested_annotation_type = requested_native_kline_annotation_type(question)
-    for item in raw_items[:3]:
-        if not isinstance(item, dict):
+    exact = deterministic_52_week_extrema_annotation(question, runs)
+    proposals = [exact] if exact else raw_items
+    marks = []
+    for run in runs:
+        if run.selected.filename != "kline.py" or not run.payload_path.exists():
             continue
-        symbol = str(item.get("symbol") or requested_symbol).strip().upper()
-        annotation_type = str(item.get("type") or "horizontal").strip().lower()
-        if requested_annotation_type in {"buy", "sell", "text", "callout"}:
-            annotation_type = requested_annotation_type
-        try:
-            price = float(item.get("price"))
-        except (TypeError, ValueError):
-            continue
-        if annotation_type not in {"horizontal", "vertical", "segment", "buy", "sell", "text", "callout"}:
-            continue
-        if not math.isfinite(price) or price <= 0:
-            continue
-        if kline_symbols and symbol not in kline_symbols:
-            continue
-        normalized.append(
-            {
-                "symbol": symbol,
-                "type": annotation_type,
-                "price": price,
-                "time": str(item.get("time") or "").strip(),
-                "text": plain_text_excerpt(str(item.get("text") or "技术参考位").strip(), 80),
-                "color": str(item.get("color") or "").strip(),
-                "source": "model",
-            }
-        )
-    return tuple(normalized[:1])
+        context = _jev_kline_context(run)
+        if context.get("ohlcv"):
+            normalized = normalize_kline_annotations(proposals, requested_type=requested_native_kline_annotation_type(question), max_marks=3, **context)
+            marks.extend(_legacy_kline_mark({**mark, "source": "jev-kline-policy"}) for mark in normalized)
+    return tuple(marks[:3])
 
 
 def parse_interpretation_result(raw: str, runs: list[ModuleRun], question: str) -> InterpretationResult:

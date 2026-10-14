@@ -395,6 +395,11 @@ class LocalAgentFrameworks:
             "- 每个 [[AIME_CHART:...]] 必须紧邻其对应解读段落，不能把所有图堆在答案末尾；辅助图不得重复主图信息。",
             "- 最终形成图文一体的回答：图表提供可视证据，文字说明洞察、因果边界、时间口径和风险。",
         ])
+        if "kline.py" in decision.selected_scripts and decision.mark_strategy != "no-mark":
+            lines.extend([
+                "- K线标记统一交给 JEV：先使用 business-chart-recall/kline.py 已取到的真实 OHLCV payload，再运行 python app/jev_kline_annotations.py --payload <行情payload> --question <原问句> --output <含标记payload>。",
+                "- 使用 JEV 输出 payload 调用原生 kline.py 渲染；不得手写猜测价位、在正文模型中生成坐标，或用通用 mark 替换原生 annotations。JEV 负责证据校验、选点、周期绑定和配色；原生组件负责避碰、绘制和触摸交互。",
+            ])
         if decision.mark_strategy == "signed-direction":
             lines.extend([
                 "- 强制执行：柱状图、分组柱状图或柱折图的每个有符号柱值必须按数值方向着色，正值 #00b899、负值 #ff2f57、零值 #94a3b8；不得仅使用系列默认色。",
