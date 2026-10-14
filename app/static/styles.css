@@ -3467,7 +3467,7 @@ p {
 .caseCard h2 { margin: 0 0 7px; font-size: 14px; line-height: 1.45; font-weight: 650; }
 .caseCard p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .caseDetailHeader[hidden], .caseActionBar[hidden] { display: none; }
-.caseDetailHeader { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; align-items: center; flex: 0 0 auto; padding: 8px 24px; gap: 4px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.caseDetailHeader { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; align-items: center; flex: 0 0 auto; padding: 8px 24px; gap: 4px; background: var(--bg); border-bottom: 0; }
 .caseBackButton { grid-column: 3; grid-row: 1; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border-radius: 10px; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
 .caseBackButton span { margin-right: 6px; }
 .caseBackLabel { display: none; }
