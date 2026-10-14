@@ -84,6 +84,12 @@ test('published home cases have complete answers and portable cached charts', ()
     const artifactText=cached.answer.reportArtifacts.map(artifact=>readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8').replace(/<style[\s\S]*?<\/style>/g,'').replace(/<[^>]+>/g,'')).join('');
     assert.ok(cached.answer.interpretation.length+artifactText.length>500);
     assert.ok(cached.answer.reportArtifacts.length>0);
+    assert.equal(cached.activity.detailSource,'cached-tool-results');
+    assert.ok(cached.activity.steps.some(step=>step.durationMs>0 && step.detail.includes('结果：')));
+    for (const step of cached.activity.steps) {
+      assert.ok(step.detail);
+      assert.doesNotMatch(step.detail,/started background job|原始案例的缓存执行记录/);
+    }
     const paths=cached.answer.reportArtifacts.map(artifact=>artifact.path);
     for (const marker of cached.answer.interpretation.matchAll(/\[\[AIME_CHART:(.*?)\]\]/g)) assert.ok(paths.includes(marker[1]));
     for (const artifact of cached.answer.reportArtifacts) assert.ok(existsSync(new URL('../app'+artifact.url,import.meta.url)));

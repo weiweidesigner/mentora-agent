@@ -98,48 +98,275 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "缓存执行步骤",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "读取 A 股行情数据技能"
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：a-share-data, business-chart-recall, yahoo-data, generic-chart, streamviz, external-search, code-interpreter, vision-chart-analyst",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "读取金融业务图表技能"
+        "title": "执行 adjustment_factors.py",
+        "detail": "调用：adjustment_factors.py\n参数：--output outputs/data/case-ths-dividends-adjustment-factors.json\n结果：{\n  \"code\": 0,\n  \"message\": \"success\",\n  \"request_id\": \"6090aa67534f45b9b0dee3f686437111\",\n  \"data\": {\n    \"thscode\": \"300033.SZ\",\n    \"ticker\": \"300033\",\n    \"item\": [\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1790092800000,\n        \"dividend_per_share\": 0.2,\n        \"per_share_bonus\": 0\n      },\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1775750400000,\n        \"dividend_per_share\": 5.1,\n        \"per_share_bonus\": 0.4\n      },\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1758556800000,\n        \"dividend_per_share\": 0.1,\n        \"per_share_bonus\": 0\n      },\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1743091200000,\n        \"dividend_per_share\": 3.0,\n        \"per_share_bonus\": 0\n      },\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1711641600000,\n        \"dividend_per_share\": 2.2,\n        \"per_share_bonus\": 0\n      },\n      {\n        \"ticker\": \"300033\",\n        \"ex_date_ms\": 1680105600000,\n        \"dividend_per_shar\n…（结果摘要已截取）\n耗时：0.31 秒",
+        "state": "done",
+        "elapsedMs": 9850,
+        "durationMs": 311,
+        "tool": "adjustment_factors.py"
       },
       {
-        "title": "读取 Yahoo 行情数据技能"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：Tue Oct 13 11:28:00 AM UTC 2026\ncount 19\n2026-09-22 0.2 0\n2026-04-09 5.1 0.4\n2025-09-22 0.1 0\n2025-03-27 3.0 0\n2024-03-28 2.2 0\n2023-03-29 2.5 0\n2022-03-29 1.8 0\n2021-03-30 1.2 0\n2020-04-01 0.85 0\n2019-03-28 0.48 0\n2018-03-29 0.9 0\n2017-03-14 0.9 0\n2016-03-10 0.74 0\n2015-04-23 0.08 1.0\n2014-05-15 0.06 1.0\n2013-05-27 0.06 0\n2012-05-16 0.14 0\n2011-04-28 0.21 0\n2010-03-11 0.3 1.0\n[stderr]\n:7: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 13095,
+        "durationMs": 34,
+        "tool": "bash"
       },
       {
-        "title": "读取通用图表技能"
+        "title": "检索公开资料",
+        "detail": "调用：external_info_search.py\n参数：--query \"同花顺 300033 历年分红明细：请列出上市以来每一次分红方案的 分红年度、方案内容（每10股派息/送股/转增）、股权登记日、除权除息日、派息日、现金分红总额、当年归母净利润、分红率（股利支付率）。特别核对 2025年度分红方案（2026年实施）和 2026年中期分红。\" --output outputs/data/case-ths-dividends-search.json\n结果：exit=1\n  File \"external_info_search.py\", line 395, in search_moonshot\n    raise RuntimeError(\"MOONSHOT_API_KEY is not set\")\nRuntimeError: MOONSHOT_API_KEY is not set\n[status: completed, exit code: 0]\n耗时：2.31 秒",
+        "state": "done",
+        "elapsedMs": 31082,
+        "durationMs": 2310,
+        "tool": "external_info_search.py"
       },
       {
-        "title": "读取 StreamViz 展示技能"
+        "title": "执行 historical_kline.py",
+        "detail": "调用：historical_kline.py\n参数：--output outputs/generated/case-ths-dividends-kline-recent.html --payload-output outputs/data/case-ths-dividends-kline-recent.json\n结果：{\"html\": \"case-ths-dividends-kline-recent.html\", \"payload\": \"case-ths-dividends-kline-recent.json\", \"bars\": 2427, \"name\": \"同花顺\", \"first_date_ms\": 1476374400000, \"last_date_ms\": 1791820800000, \"adjust\": \"none\"}\n耗时：0.81 秒",
+        "state": "done",
+        "elapsedMs": 29598,
+        "durationMs": 815,
+        "tool": "historical_kline.py"
       },
       {
-        "title": "读取公开信息检索技能"
+        "title": "执行 historical_kline.py",
+        "detail": "调用：historical_kline.py\n参数：--output outputs/generated/case-ths-dividends-kline-early.html --payload-output outputs/data/case-ths-dividends-kline-early.json\n结果：{\"html\": \"case-ths-dividends-kline-early.html\", \"payload\": \"case-ths-dividends-kline-early.json\", \"bars\": 1629, \"name\": \"同花顺\", \"first_date_ms\": 1261670400000, \"last_date_ms\": 1476288000000, \"adjust\": \"none\"}\n耗时：1.08 秒",
+        "state": "done",
+        "elapsedMs": 32158,
+        "durationMs": 1076,
+        "tool": "historical_kline.py"
       },
       {
-        "title": "检索公开来源"
+        "title": "检索公开资料",
+        "detail": "调用：external_info_search.py\n参数：--query \"同花顺 300033 历年分红明细：请列出上市以来每一次分红方案的分红年度、方案内容（每10股派息/送股/转增）、股权登记日、除权除息日、派息日、现金分红总额、当年归母净利润、分红率。特别核对2025年度分红方案和2026年中期分红。\" --output outputs/data/case-ths-dividends-search.json\n结果：exit=0\n[status: completed, exit code: 0]\n耗时：112.19 秒",
+        "state": "done",
+        "elapsedMs": 153143,
+        "durationMs": 112192,
+        "tool": "external_info_search.py"
       },
       {
-        "title": "获取历史行情与基本数据"
+        "title": "获取历史行情",
+        "detail": "调用：yahoo_data.py\n参数：--payload-output outputs/data/case-ths-dividends-yahoo.json\n结果：Yahoo Finance request failed: Yahoo Finance request failed for 300033.SZ chart max 1mo: RuntimeError: Yahoo Finance data request failed: attempt 1 query1.finance.yahoo.com: HTTP Error 429: Too Many Requests; attempt 1 query2.finance.yahoo.com: HTTP Error 429: Too Many Requests; RuntimeError: Yahoo Finance data request failed: attempt 1 query1.finance.yahoo.com: HTTP Error 429: Too Many Requests; attempt 1 query2.finance.yahoo.com: HTTP Error 429: Too Many Requests\n耗时：8.84 秒",
+        "state": "done",
+        "elapsedMs": 51522,
+        "durationMs": 8841,
+        "tool": "yahoo_data.py"
       },
       {
-        "title": "读取数据计算技能"
+        "title": "执行 income_statements.py",
+        "detail": "调用：income_statements.py\n参数：--period annual --limit 20 --output outputs/data/case-ths-dividends-income-annual.json\n结果：{\n  \"code\": 0,\n  \"message\": \"success\",\n  \"request_id\": \"6ebd6c0f0c244fb6b763f2a384ddb326\",\n  \"data\": {\n    \"timestamp\": 1767110400000,\n    \"item\": [\n      {\n        \"thscode\": \"300033.SZ\",\n        \"ticker\": \"300033\",\n        \"period\": \"annual\",\n        \"fiscal_year\": 2025,\n        \"fiscal_period\": \"FY\",\n        \"report_date_ms\": 1773072000000,\n        \"period_end_ms\": 1767110400000,\n        \"currency\": \"CNY\",\n        \"operating_income\": 6028985966.48,\n        \"operating_costs\": 509784224.57,\n        \"operating_expenses\": 2617739330.96,\n        \"sales_fee\": 759240273.21,\n        \"manage_fee\": 245080887.72,\n        \"research_and_development_expenses\": 1145077195.39,\n        \"operating_profit\": 3612165083.71,\n        \"interest_expenses\": null,\n        \"profit_total\": 3603679559.75,\n        \"income_tax_expense\": 398576945.68,\n        \"net_profit\": 3205102614.07,\n        \"parent_holder_net_profit\": 3205082002.69,\n        \"basic_eps\": 5.96\n      },\n      {\n        \"thscode\": \"300033.SZ\",\n   \n…（结果摘要已截取）\n耗时：0.28 秒",
+        "state": "done",
+        "elapsedMs": 58126,
+        "durationMs": 281,
+        "tool": "income_statements.py"
       },
       {
-        "title": "执行数据汇总和指标计算"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：以下**仅依据本次已返回的检索结果**整理；凡未在返回来源中出现的字段，我一律标“未核到/不适用”，不补齐推算值。币种均为**人民币**；“分红率”按**现金分红总额 ÷ 当年归母净利润**计算，若现金分红总额口径含中期+年度会单独说明。\n\n## 重点核对：2025年度、2025中期、2026中期\n\n| 分红期间 | 方案内容（每10股） | 基数/股本口径 | 股权登记日 | 除权除息日 | 派息/红利发放日 | 现金分红总额 | 对应归母净利润 | 分红率 | 核验来源 |\n|---|---:|---:|---|---|---|---:|---:|---:|---|\n| 2025年年度权益分派 | 派51.000000元含税；送0；资本公积每10股转增4.000000股 | 以2025-12-31总股本537,600,000股为基数；实施后总股本752,640,000股 | 2026-04-09 | 2026-04-10 | 2026-04-10 | 本次年度方案派现2,741,760,000元；2025年度含中期合计现金分红2,795,520,000元 | 2025年归母净利润3,205,082,002.69元 | 年度末次方案口径：85.54%；含2025中期全年口径：87.22% | [2025年度权益分派实施公告-巨潮](http://static.cninfo.com.cn/finalpage/2026-04-02/1225075817.PDF)；[2026一季报-巨潮](http://static.cninfo.com.cn/finalpage/2026-04-23/1225154869.PDF)；[2025年度利润分配预案公告-新浪转载](https://money.finance.sina.com.cn/corp/view/vCB_AllBulletinDetail.php?stockid=300033&id=11987646) |\n| 2025年中期 | 派1.000000元含税；未核到送转 | 未核到 | 2025-09-22 | 2025-09-23 | 2025-09-23 | 约53,760,000元（媒体据年报称“约0.54亿元”） | 2025半年度归母净利润未核到 | 不适用/未核到 | [2025半年度分红派息实施公告-巨潮](\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 155623,
+        "durationMs": 30,
+        "tool": "bash"
       },
       {
-        "title": "检查图表渲染效果"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：['type', 'component', 'source']\n{\"type\": \"kline\", \"component\": {\"type\": \"kline\", \"title\": \"同花顺 300033.SZ K线\", \"props\": {\"symbol\": \"300033.SZ\", \"code\": \"300033.SZ\", \"name\": \"同花顺\", \"dataType\": \"1d\", \"language\": \"zh\", \"themeMode\": \"light\", \"market\": \"CN\", \"candleColors\": \"red_up_green_down\", \"availablePeriods\": [\"1d\"], \"prefetchPeriods\": [\"1d\"], \"showNameBeforeCode\": true, \"showPeriodTabs\": false, \"subIndicators\": [\"VOL\", \"MACD\"]}, \"data\": [{\"time\": 1476374400000, \"open\": 65.22, \"high\": 65.5, \"low\": 64.47, \"close\": 65.1, \"volume\": 3038133.0, \"turnover\": 197220629.66}, {\"time\": 1476633600000, \"open\": 65.9, \"high\": 66.8, \"low\": 65.18, \"close\": 65.32, \"volume\": 4264946.0, \"turnover\": 281741866.61}, {\"time\": 1476720000000, \"open\": 65.09, \"high\": 68.5, \"low\": 65.09, \"close\": 67.48, \"volume\": 7578721.0, \"turnover\": 509739718.64},\n[stderr]\nTraceback (most recent call last):\n  File \"\", line 6, in \nKeyError: 'data'\n[exit code: 1]\n耗时：0.05 秒",
+        "state": "error",
+        "elapsedMs": 188322,
+        "durationMs": 47,
+        "tool": "bash"
       },
       {
-        "title": "生成 StreamViz 报告"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：['timestamp', 'item']\nannual rows 20\n2025 3205082002.69 5.96 6028985966.48 CNY\n2024 1823266690.03 3.39 4186794650.06 CNY\n2023 1402468555.23 2.61 3564260219.05 CNY\n2022 1691066996.78 3.15 3559137454.21 CNY\n2021 1911204641.07 3.56 3509864834.4 CNY\n2020 1723975028.38 3.21 2843697937.51 CNY\n2019 897675406.14 1.67 1742093893.2 CNY\n2018 633934218.67 1.18 1386887015.18 CNY\n2017 725653800.79 1.35 1409698260.25 CNY\n2016 1211576655.51 2.25 1733656403.77 CNY\n2015 957222809.96 1.78 1441944901.94 CNY\n2014 60455517.41 0.11 265597077.67 CNY\n2013 21921943.83 0.08 183880522.44 CNY\n2012 25946246.4 0.19 172026022.75 CNY\n2011 61731605.79 0.46 215274957.27 CNY\n2010 91266854.73 0.68 214445827.28 CNY\n2009 74735230 0.74 190816866.86 CNY\n2008 38345511.6 0.76 117361447.33 CNY\n2007 46515111.79 0.96 86408639.8 CNY\n2006 8630745.8 0.26 23101093.87 CNY\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 189724,
+        "durationMs": 32,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-ths-dividends-assemble.py",
+        "detail": "调用：case-ths-dividends-assemble.py\n结果：{\"output\": \"case-ths-dividends-raw.json\", \"actions\": 19, \"annual\": 20, \"bars\": 4056}\n耗时：0.07 秒",
+        "state": "done",
+        "elapsedMs": 218792,
+        "durationMs": 68,
+        "tool": "case-ths-dividends-assemble.py"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-analysis.py",
+        "detail": "调用：case-ths-dividends-transform-analysis.py\n参数：--output outputs/generated/case-ths-dividends-analysis-exec.html --payload-output outputs/data/case-ths-dividends-analysis.json\n结果：Traceback (most recent call last):\n  File \"code_interpreter.py\", line 1663, in \n    raise SystemExit(main())\n                     ^^^^^^\n  File \"code_interpreter.py\", line 1611, in main\n    chart_payload = run_transform(code, raw_data, args.question, chart_mode=chart_mode)\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"code_interpreter.py\", line 486, in run_transform\n    result = transform(raw_data, question)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"\", line 27, in transform\nAttributeError: 'list' object has no attribute 'get'\n耗时：1.13 秒",
+        "state": "error",
+        "elapsedMs": 238790,
+        "durationMs": 1132,
+        "tool": "case-ths-dividends-transform-analysis.py"
+      },
+      {
+        "title": "执行 diag.py",
+        "detail": "调用：diag.py\n参数：--output diag.html\n结果：File \"code_interpreter.py\", line 486, in run_transform\n    result = transform(raw_data, question)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"\", line 4, in transform\nNameError: name 'type' is not defined. Did you mean: 'tuple'?\n耗时：1.04 秒",
+        "state": "done",
+        "elapsedMs": 245394,
+        "durationMs": 1036,
+        "tool": "diag.py"
+      },
+      {
+        "title": "执行 diag.py",
+        "detail": "调用：diag.py\n参数：--output diag.html\n结果：{\"ok\": true, \"output\": \"diag.html\", \"mode\": \"data\", \"rows\": 0}\n耗时：0.97 秒",
+        "state": "done",
+        "elapsedMs": 248126,
+        "durationMs": 972,
+        "tool": "diag.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：Data transformation completeData transformation completeCalculation and data processing completed.\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 249217,
+        "durationMs": 31,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 code_interpreter.py",
+        "detail": "调用：code_interpreter.py\n参数：--output diag.html --payload-output diag.json\n结果：{\"kind\": \"list\", \"len\": 1, \"firstIsDict\": true, \"firstKeys\": [\"value\"]}\n耗时：0.87 秒",
+        "state": "done",
+        "elapsedMs": 252139,
+        "durationMs": 872,
+        "tool": "code_interpreter.py"
+      },
+      {
+        "title": "执行 code_interpreter.py",
+        "detail": "调用：code_interpreter.py\n结果：data_json arg: outputs/data/case-ths-dividends-raw.json\n\ndict_keys(['value'])\n耗时：0.82 秒",
+        "state": "done",
+        "elapsedMs": 262815,
+        "durationMs": 823,
+        "tool": "code_interpreter.py"
+      },
+      {
+        "title": "执行 code_interpreter.py",
+        "detail": "调用：code_interpreter.py\n参数：--output outputs/generated/case-ths-dividends-analysis-exec.html --payload-output outputs/data/case-ths-dividends-analysis.json\n结果：{\"ok\": true, \"output\": \"case-ths-dividends-analysis-exec.html\", \"mode\": \"data\", \"rows\": 19}\n耗时：0.93 秒",
+        "state": "done",
+        "elapsedMs": 267969,
+        "durationMs": 933,
+        "tool": "code_interpreter.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：events 19 price cover {'first': '2009-12-25', 'last': '2026-10-13', 'count': 4056}\n2010-03-12 next:2010-03-15 FY2009 年度 dps 0.3 bonus 1.0 close 46.85 yield 0.64 gap -0.3 theo 50.32 align -0.6\n2011-04-29 next:2011-05-03 FY2010 年度 dps 0.21 bonus 0.0 close 25.42 yield 0.826 gap -1.02 theo 0.83 align -123.8\n2012-05-17 next:2012-05-18 FY2011 年度 dps 0.14 bonus 0.0 close 17.33 yield 0.808 gap 0.46 theo 0.81 align 57.1\n2013-05-28 next:2013-05-29 FY2012 年度 dps 0.06 bonus 0.0 close 18.36 yield 0.327 gap 0.05 theo 0.33 align 16.7\n2014-05-16 next:2014-05-19 FY2013 年度 dps 0.06 bonus 1.0 close 12.49 yield 0.48 gap -7.29 theo 50.24 align -14.5\n2015-04-24 next:2015-04-27 FY2014 年度 dps 0.08 bonus 1.0 close 92.47 yield 0.087 gap -5.98 theo 50.04 align -12.0\n2016-03-11 next:2016-03-14 FY2015 年度 dps 0.74 bonus 0.0 close 51.89 yield 1.426 gap -5.18 theo 1.43 align -363.5\n2017-03-15 next:2017-03-16 FY2016 年度 dps 0.9 bonus 0.0 close 67.1 yield 1.341 gap -0.83 theo 1.34 align -62.2\n2018-03-30 next:2018-04-02 \n…（结果摘要已截取）\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 269950,
+        "durationMs": 56,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-events.py",
+        "detail": "调用：case-ths-dividends-transform-events.py\n参数：--output outputs/generated/case-ths-dividends-analysis-exec.html --payload-output outputs/data/case-ths-dividends-analysis.json\n结果：{\"ok\": true, \"output\": \"case-ths-dividends-analysis-exec.html\", \"mode\": \"data\", \"rows\": 19}\n耗时：1.02 秒",
+        "state": "done",
+        "elapsedMs": 319287,
+        "durationMs": 1016,
+        "tool": "case-ths-dividends-transform-events.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：2010-03-12 登记 2010-03-11 FY2009 年度 每10股派3.00元、送转10.0股 | 总额0.4032亿 | 登记日收 100.1 | 股息率 0.3 | 除息开盘 50.2 理论 49.9 偏离 0.6\n2011-04-29 登记 2011-04-28 FY2010 年度 每10股派2.10元、不送转 | 总额0.2822亿 | 登记日收 24.9 | 股息率 0.843 | 除息开盘 24.75 理论 24.69 偏离 0.24\n2012-05-17 登记 2012-05-16 FY2011 年度 每10股派1.40元、不送转 | 总额0.1882亿 | 登记日收 16.88 | 股息率 0.829 | 除息开盘 16.93 理论 16.74 偏离 1.14\n2013-05-28 登记 2013-05-27 FY2012 年度 每10股派0.60元、不送转 | 总额0.0806亿 | 登记日收 19.13 | 股息率 0.314 | 除息开盘 18.91 理论 19.07 偏离 -0.84\n2014-05-16 登记 2014-05-15 FY2013 年度 每10股派0.60元、送转10.0股 | 总额0.1613亿 | 登记日收 25.78 | 股息率 0.233 | 除息开盘 12.84 理论 12.86 偏离 -0.16\n2015-04-24 登记 2015-04-23 FY2014 年度 每10股派0.80元、送转10.0股 | 总额0.4301亿 | 登记日收 168.19 | 股息率 0.048 | 除息开盘 79.99 理论 84.055 偏离 -4.84\n2016-03-11 登记 2016-03-10 FY2015 年度 每10股派7.40元、不送转 | 总额3.9782亿 | 登记日收 53.55 | 股息率 1.382 | 除息开盘 52.6 理论 52.81 偏离 -0.4\n2017-03-15 登记 2017-03-14 FY2016 年度 每10股派9.00元、不送转 | 总额4.8384亿 | 登记日收 67.9 | 股息率 1.325 | 除息开盘 67.1 理论 67.0 偏离 0.15\n2018-03-30 登记 2018-03-29 FY2017 年度 每10股派9.00元、不送转 | 总额4.8\n…（结果摘要已截取）\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 321045,
+        "durationMs": 43,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-events.py",
+        "detail": "调用：case-ths-dividends-transform-events.py\n参数：--output outputs/generated/case-ths-dividends-analysis-exec.html --payload-output outputs/data/case-ths-dividends-analysis.json\n结果：patched\n{\"ok\": true, \"output\": \"case-ths-dividends-analysis-exec.html\", \"mode\": \"data\", \"rows\": 19}\n2009 1 每股 0.3 总额0.2016亿 净利0.75亿 分红率 26.98\n2010 1 每股 0.21 总额0.2822亿 净利0.91亿 分红率 30.92\n2011 1 每股 0.14 总额0.1882亿 净利0.62亿 分红率 30.48\n2012 1 每股 0.06 总额0.0806亿 净利0.26亿 分红率 31.08\n2013 1 每股 0.06 总额0.0806亿 净利0.22亿 分红率 36.79\n2014 1 每股 0.08 总额0.2150亿 净利0.60亿 分红率 35.57\n2015 1 每股 0.74 总额3.9782亿 净利9.57亿 分红率 41.56\n2016 1 每股 0.9 总额4.8384亿 净利12.12亿 分红率 39.93\n2017 1 每股 0.9 总额4.8384亿 净利7.26亿 分红率 66.68\n2018 1 每股 0.48 总额2.5805亿 净利6.34亿 分红率 40.71\n2019 1 每股 0.85 总额4.5696亿 净利8.98亿 分红率 50.9\n2020 1 每股 1.2 总额6.4512亿 净利17.24亿 分红率 37.42\n2021 1 每股 1.8 总额9.6768亿 净利19.11亿 分红率 50.63\n2022 1 每股 2.5 总额13.4400亿 净利16.91亿 分红率 79.48\n2023 1 每股 2.2 总额11.8272亿 净利14.02亿 分红率 84.33\n2024 1 每股 3.0 总额16.1280亿 净利18.23亿 分红率 88.46\n2025 2 每股 5.2 总额27.9552亿 净利32.05亿 分红率 87.22\n\nFY2025 现金分红总额（推算 vs 公告） 27.9552 27.9552 MATCH 87.22 87.22\nFY2024 现金分红总额（推算 vs 公告） 16.128 16.128 MATCH 88.46 88.46\nFY2023 现金分红总额（推算 vs 公告） 11.8272 11.8272 MATCH 84.33 8\n…（结果摘要已截取）\n耗时：1.15 秒",
+        "state": "done",
+        "elapsedMs": 337930,
+        "durationMs": 1145,
+        "tool": "case-ths-dividends-transform-events.py"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-chart.py",
+        "detail": "调用：case-ths-dividends-transform-chart.py\n参数：--output outputs/generated/case-ths-dividends-chartdata-exec.html --payload-output outputs/data/case-ths-dividends-chartdata.json\n结果：annual rows 17 events 19\n{\"ok\": true, \"output\": \"case-ths-dividends-chartdata-exec.html\", \"mode\": \"chart-data\", \"rows\": 17}\n{\"type\": \"bar-line\", \"chartType\": \"bar-line\", \"title\": \"同花顺（300033.SZ）历年每股现金分红与股利支付率\", \"xField\": \"fiscalYear\", \"data\": [{\"fiscalYear\": \"2009年\", \"cashPerShare\": 0.3, \"payoutPct\": 26.98, \"cashTotalYi\": 0.2, \"netProfitYi\": 0.75}, {\"fiscalYear\": \"2010年\", \"cashPerShare\": 0.21, \"payoutPct\": 30.92, \"cashTotalYi\": 0.28, \"netProfitYi\": 0.91}, {\"fiscalYear\": \"2011年\", \"cashPerShare\": 0.14, \"payoutPct\": 30.48, \"cashTotalYi\": 0.19, \"netProfitYi\": 0.62}, {\"fiscalYear\": \"2012年\", \"cashPerShare\": 0.06, \"payoutPct\": 31.08, \"cashTotalYi\": 0.08, \"netProfitYi\": 0.26}, {\"fiscalYear\": \"2013年\", \"cashPerShare\": 0.06, \"payoutPct\": 36.79, \"cashTotalYi\": 0.08, \"netProfitYi\": 0.22}, {\"fiscalYear\": \"2014年\", \"cashPerShare\": 0.08, \"payoutPct\": 35.57, \"cashTotalYi\": 0.21, \"netProfitYi\": 0.6}, {\"fiscalYear\": \"2015年\", \"cashPerShare\": 0.74, \"payoutPct\": 41.56, \"cashTotalYi\": 3.98, \"netProfitYi\": 9.5\n…（结果摘要已截取）\n耗时：0.92 秒",
+        "state": "done",
+        "elapsedMs": 350017,
+        "durationMs": 921,
+        "tool": "case-ths-dividends-transform-chart.py"
+      },
+      {
+        "title": "执行 bar_line.py",
+        "detail": "调用：bar_line.py\n参数：--output outputs/generated/case-ths-dividends-barline.html --payload-output outputs/data/case-ths-dividends-barline-normalized.json\n结果：written\n{\"ok\": true, \"output\": \"case-ths-dividends-barline.html\"}\n-rw------- 1 ubuntu ubuntu 49713 Oct 13 19:33 outputs/generated/case-ths-dividends-barline.html\n耗时：0.09 秒",
+        "state": "done",
+        "elapsedMs": 353950,
+        "durationMs": 92,
+        "tool": "bar_line.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code 300033.SZ --output outputs/data/case-ths-dividends-vision.json\n结果：{\n  \"script\": \"bar_line.py\",\n  \"summary\": \"图中最新可见期为2025年，每股现金分红升至5.20元，为历史最高，较2024年的3.00元明显跃升；股利支付率自2016年约40%持续上行，2022年后稳定在75%以上并在近年高位趋平。分红金额仅在2018年（0.48元）和2023年（2.20元）出现回落，整体呈抬升趋势。投资者需关注接近八成的股利支付率能否持续，以及2025年分红大幅提高是否有盈利增长与现金流支撑，同时留意2023年式的阶段性回落是否重演。\",\n  \"hasUsableData\": true,\n  \"dataStatus\": \"ok\",\n  \"latestVisiblePeriod\": \"2025年\",\n  \"latestVisibleValues\": [\n    {\n      \"series\": \"每股现金分红（元/股，含税）\",\n      \"value\": \"5.20元\"\n    }\n  ],\n  \"renderedImage\": \"case-ths-dividends-barline-a27fc5a5159d.png\"\n}\n[status: completed, exit code: 0]\n耗时：10.05 秒",
+        "state": "done",
+        "elapsedMs": 371571,
+        "durationMs": 10054,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：{\"exDate\": \"2025-03-28\", \"recordDate\": \"2025-03-27\", \"fiscalYear\": 2024, \"kind\": \"年度\", \"cashPerShare\": 3.0, \"bonusPerShare\": 0.0, \"planPer10\": \"每10股派30.00元、不送转\", \"shareBase\": 537600000.0, \"cashTotalYuan\": 1612800000.0, \"cashTotalYi\": 16.128, \"closeOnRecordDate\": 296.9, \"dividendYieldPct\": 1.01, \"exDayOpen\": 294.42, \"theoreticalExOpen\": 293.9, \"exDayOpenDeviationPct\": 0.18}\n{\"exDate\": \"2025-09-23\", \"recordDate\": \"2025-09-22\", \"fiscalYear\": 2025, \"kind\": \"中期\", \"cashPerShare\": 0.1, \"bonusPerShare\": 0.0, \"planPer10\": \"每10股派1.00元、不送转\", \"shareBase\": 537600000.0, \"cashTotalYuan\": 53760000.0, \"cashTotalYi\": 0.5376, \"closeOnRecordDate\": 369.01, \"dividendYieldPct\": 0.027, \"exDayOpen\": 363.98, \"theoreticalExOpen\": 368.91, \"exDayOpenDeviationPct\": -1.34}\n{\"exDate\": \"2026-04-10\", \"recordDate\": \"2026-04-09\", \"fiscalYear\": 2025, \"kind\": \"年度\", \"cashPerShare\": 5.1, \"bonusPerShare\": 0.4, \"planPer10\": \"每10股派51.00元、送转4.0股\", \"shareBase\": 537600000.0, \"cashTotalYuan\": 2741760000.0, \"cashTotalYi\": 27.4176, \"\n…（结果摘要已截取）\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 361578,
+        "durationMs": 48,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-streamviz.py",
+        "detail": "调用：case-ths-dividends-transform-streamviz.py\n参数：--output outputs/generated/case-ths-dividends-streamviz-exec.html --payload-output outputs/data/case-ths-dividends-streamviz-wrapper.json\n结果：^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"\", line 77, in transform\nTypeError: not enough arguments for format string\n[stderr]\nTraceback (most recent call last):\n  File \"\", line 3, in \nFileNotFoundError: [Errno 2] No such file or directory: 'case-ths-dividends-streamviz-wrapper.json'\n[exit code: 1]\n耗时：0.92 秒",
+        "state": "error",
+        "elapsedMs": 401904,
+        "durationMs": 923,
+        "tool": "case-ths-dividends-transform-streamviz.py"
+      },
+      {
+        "title": "执行 case-ths-dividends-transform-streamviz.py",
+        "detail": "调用：case-ths-dividends-transform-streamviz.py\n参数：--output outputs/generated/case-ths-dividends-streamviz-exec.html --payload-output outputs/data/case-ths-dividends-streamviz-wrapper.json\n结果：True\n{\"ok\": true, \"output\": \"case-ths-dividends-streamviz-exec.html\", \"mode\": \"data\", \"rows\": 0}\nmetrics 4 timeline 11 table rows 19\n同花顺上市以来累计实施 19 次现金分红，合计派现 108.84 亿元；每股现金分红由2009年度的0.30元升至2025年度的5.20元，股利支付率由不足三成抬升至87%一线，并在2025年度首次形成“中期+年度”的一年两次派现节奏。\n分红年度2025（年度）｜每10股派51.00元、送转4.0股｜现金分红 27.4176 亿元｜股权登记日 2026-04-09 收盘 308.08 元，对应股息率 1.66%｜该年度股利支付率 87.22%\n耗时：1.81 秒",
+        "state": "done",
+        "elapsedMs": 412377,
+        "durationMs": 1808,
+        "tool": "case-ths-dividends-transform-streamviz.py"
+      },
+      {
+        "title": "生成分析报告",
+        "detail": "调用：render_streamviz.py\n参数：--output outputs/generated/case-ths-dividends-timeline-streamviz.html\n结果：{\"ok\": true, \"tool\": \"streamviz\", \"output\": \"case-ths-dividends-timeline-streamviz.html\", \"bytes\": 31846}\n-rw------- 1 ubuntu ubuntu 31846 Oct 13 19:34 outputs/generated/case-ths-dividends-timeline-streamviz.html\n4\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 414004,
+        "durationMs": 53,
+        "tool": "render_streamviz.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code 300033.SZ --output outputs/data/case-ths-dividends-vision-streamviz.json\n结果：\"script\": \"render_streamviz.py\",\n  \"summary\": \"该看板结构完整、可读性良好：顶部四张指标卡（累计现金分红108.84亿元、2025年度每股派息5.20元、2025年度股利支付率87.22%、最近一次派息每10股派2.00元）、中部10个关键节点时间线与下方19次分红全明细表列（除权除息日、股权登记日、分红年度、方案、现金分红总额、股息率）均对齐无遮挡，底部说明文字段落完整无溢出。最新可见节点为2026-09-23除权除息的2026年中期派息，每10股派2.00元、不转增，现金分红总额1.5053亿元，登记日收盘价210.37元对应股息率仅0.10%，无论总额还是股息率都远低于2025年度的27.4176亿元／1.66%与2024年度的16.1280亿元／1.01%。分红节奏在2025年度出现明显拐点，由长期的一年一次变为一年两次，2025与2026两个年度各出现两次派息，累计17个年度连续派现未中断，每股派息金额则从2009年度的0.30元一路升至2025年度的5.20元。后续需关注标注为“尚未公布”的2025年度方案最终公告，以及2026年4月每10股转增4股实施后对每股派息与股息率历史可比性的影响。\",\n  \"hasUsableData\": true,\n  \"dataStatus\": \"ok\",\n  \"latestVisiblePeriod\": \"2026-09-23（2026年中期）\",\n  \"latestVisibleValues\": [\n    {\n      \"series\": \"最近一次派息方案（每10股）\",\n      \"value\": \"派2.00元；不转增\"\n    },\n    {\n      \"series\": \"2026年中期现金分红总额\",\n      \"value\": \"1.5053亿元\"\n    },\n    {\n      \"series\": \"2026年中期股息率（登记日收盘价）\",\n      \"value\": \"0.10%\"\n    },\n    {\n      \"series\": \"累计现金分红（税后）\",\n      \"value\": \"108.84亿元\"\n    }\n  ],\n  \"renderedImage\": \"case-ths-dividends-timeline-s\n…（结果摘要已截取）\n耗时：13.69 秒",
+        "state": "done",
+        "elapsedMs": 435383,
+        "durationMs": 13685,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：total cash yi 108.8371 events 19\nyield min/max 0.027 1.937\nannual payment count 17\nfirst/last 2010-03-12 2026-09-23\nprice coverage {'first': '2009-12-25', 'last': '2026-10-13', 'bars': 4056}\ndev max 4.84\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 421755,
+        "durationMs": 47,
+        "tool": "bash"
       }
     ],
     "elapsedMs": 457365,
     "startedAt": 1791890867077,
     "endedAt": 1791891324442,
-    "durationSource": "harness-session-timestamps"
+    "durationSource": "harness-session-timestamps",
+    "detailSource": "cached-tool-results"
   }
 }

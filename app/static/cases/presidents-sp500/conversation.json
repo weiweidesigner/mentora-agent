@@ -36,36 +36,283 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "缓存执行步骤",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "读取 Yahoo 行情数据技能"
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：yahoo-data, streamviz",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "读取 StreamViz 展示技能"
+        "title": "获取历史行情",
+        "detail": "调用：yahoo_data.py\n参数：--code '^GSPC' --start-date 1999-12-01 --end-date 2026-10-13 --interval 1d --payload-output outputs/data/case-presidents-sp500-gspc-daily.json\n结果：{\"ok\": true, \"source\": \"Nasdaq historical API\", \"rendered\": false, \"payloadOutput\": \"case-presidents-sp500-gspc-daily.json\"}\n耗时：11.16 秒",
+        "state": "done",
+        "elapsedMs": 29561,
+        "durationMs": 11162,
+        "tool": "yahoo_data.py"
       },
       {
-        "title": "获取历史行情与基本数据"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：['type', 'source', 'symbol', 'title', 'subtitle', 'metric', 'metricLabel', 'method', 'range', 'interval', 'chartType', 'currency', 'exchangeName', 'regularMarketPrice', 'rows', 'visualStyle', 'markers', 'lineChartData', 'providerSymbol']\ntype = yahoo-data\nsource = Nasdaq historical API\nsymbol = ^GSPC\ntitle = 标普500指数日线收盘（1999-12 至今）\nsubtitle = 1999-12-01..2026-10-13 / 1d\nmetric = close\nmetricLabel = Close\nmethod = SPY proxy for S&P 500 index\nrange = 1999-12-01..2026-10-13\ninterval = 1d\nchartType = line\ncurrency = USD\nexchangeName = Nasdaq\nregularMarketPrice = 778.1\nrows -> len 2513\nvisualStyle = {}\nmarkers = []\nlineChartData -> len obj\nproviderSymbol = SPY\nfirst [{'date': '2016-10-12', 'value': 213.71, 'open': 213.59, 'high': 214.32, 'low': 213.01, 'close': 213.71, 'adjClose': None, 'volume': 73322980.0, 'returnPct': None, 'cumulativeReturnPct': 0.0}, {'date': '2016-10-13', 'value': 213.01, 'open': 212.16, 'high': 213.59, 'low': 211.21, 'close': 213.01, 'adjClose': None, 'volume': 10118\n…（结果摘要已截取）\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 31619,
+        "durationMs": 48,
+        "tool": "bash"
       },
       {
-        "title": "执行数据汇总和指标计算"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== query1\n429\nEdge: Too Many Requests\n== query2\n429\nEdge: Too Many Requests\n耗时：1.33 秒",
+        "state": "done",
+        "elapsedMs": 35875,
+        "durationMs": 1334,
+        "tool": "bash"
       },
       {
-        "title": "生成动态趋势对比图"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：--stooq\n200 796\nThis site requires JavaScript to verify your browser. Please enable JavaScript and reload.\n(async()=>{const c=\"AAAAAGrOFLh6Ii0t2b90dCltEii8I1T0fN0cwRooTEWCcwCQXU1ILcDRb9s\",d=4,t=\"0\".repeat(d),e=new TextEncoder;let n=0;while(1){const h=await crypto.subtle.digest(\"SHA-256\",e.encode(c+n)),x=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,\"0\")).join(\"\");if(x.startsWith(t))break;n++}const r=await fetch(\"/__verify\",{method:\"POST\",headers:{\"Content-Type\":\"application/x-www-form-urlencoded\"},body:\"c=\"+encodeURIComponent(c)+\"&n=\"+n,credentials:\"same-origin\"});if(r.ok)location.reload()})();\n\n(async()=>{const c=\"AAAAAGrOFLh6Ii0t2b90dCltEii8I1T0fN0cwRooTEWCcwCQXU1ILcDRb9s\",d=4,t=\"0\".repeat(d),e=new TextEncoder;let n=0;while(1){const h=await crypto.subtle.digest(\"SHA-256\",e.encode(c+n)),x=Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,\"0\")).join(\"\");if(x.startsWith(t))break;n++}const r=await fetch(\"/__verify\",{method:\"POST\",headers:{\"Content-Type\":\"app\n…（结果摘要已截取）\n耗时：2.23 秒",
+        "state": "done",
+        "elapsedMs": 42056,
+        "durationMs": 2235,
+        "tool": "bash"
       },
       {
-        "title": "生成分组对比图"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：--nasdaq SPX\n200 142\n{\"data\":null,\"message\":null,\"status\":{\"rCode\":400,\"bCodeMessage\":[{\"code\":1001,\"errorMessage\":\"Symbol not exists.\"}],\"developerMessage\":null}}\n--fred\n200 48903\nobservation_date,SP500\n2016-10-13,2132.55\n2016-10-14,2132.98\n2026-10-09,7811.54\n2026-10-12,7807.24\n耗时：7.44 秒",
+        "state": "done",
+        "elapsedMs": 49495,
+        "durationMs": 7439,
+        "tool": "bash"
       },
       {
-        "title": "生成 StreamViz 报告"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== stockanalysis\n403 4553\n\n  \n     \n     \n  <!\n== wsj\n000 0\n[stderr]\nhead: cannot open 'wsj.csv' for reading: No such file or directory\nwc: wsj.csv: No such file or directory\n[exit code: 1]\n耗时：30.64 秒",
+        "state": "done",
+        "elapsedMs": 86989,
+        "durationMs": 30638,
+        "tool": "bash"
       },
       {
-        "title": "检查图表渲染效果"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== mw\n401 775\nmarketwatch.com#cmsg{animation: A 1.5s;}@keyframes A{0%{opacity:0;}99%{opacity:0;}100%{opacity:1;}}Please enable JS and disable any ad blockervar dd={'rt':'c','cid':'AHrlqAAAAAMArNnapFz0L10AfN0cwQ==','hsh':'D428D51E28968797BC27FB9153435D','t':'fe','qp':'','s':47891,'e':'dc03fc62b0d9ffb09a2c4d79a185773d7a76adbd29a7edb033eb328c6f7440befe9d50515d6faa74223192f6cacd893d','host':'geo.captcha-delivery.com','cookie':'oXo4xqt3_z8DcbhL5iw4Odup0UUzKSpTmdCyCbFZBKkAbBHSVU0JaUErIUmYFZuMa61ot5ZMhdLuWyxZhMiLFm5p3Wr7~ZvEgp8_ry5H7kzgnextqadIcrVqL2VLUq~Q'}0 mw.csv\n== yahoo retry\n429\nEdge: Too Many Requests\n耗时：1.43 秒",
+        "state": "done",
+        "elapsedMs": 88424,
+        "durationMs": 1434,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== eodhd\n403 9\nForbidden\n== fmp\n401 184\n{\n  \"Error Message\": \"Invalid API KEY. Feel free to create a Free API Key or visit https://site.financialmodelingprep.com/faqs?search=why-is-my-api-key-invalid for more information.\"\n}\n== nasdaq idx gspc\n{\"data\":null,\"message\":null,\"status\":{\"rCode\":400,\"bCodeMessage\":[{\"code\":1001,\"errorMessage\":\"Symbol not exists.\"}],\"developerMessage\":null}} 200\n\n== nasdaq idx ndx\n{\"data\":{\"symbol\":\"NDX\",\"totalRecords\":130,\"tradesTable\":{\"asOf\":null,\"headers\":{\"date\":\"Date\",\"close\":\"Close/Last\",\"volume\":\"Volume\",\"open\":\"Open\",\"high\":\"High\",\"low\":\"Low\"},\"rows\":[{\"date\":\"06/29/2001\",\"close\":\"1,830.00\",\"volume\":\"--\",\"open\":\"1,812.00\",\"high\":\"1,865.00\",\"low\":\"1,795.00\"},{\"date\":\"\n耗时：12.15 秒",
+        "state": "done",
+        "elapsedMs": 109729,
+        "durationMs": 12149,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== cboe us_indices\n307 169\n\r\n307 Temporary Redirect\r\n\r\n\r\n\r\n7 spx_cboe.csv\n== cboe delayed\n307 169\n\r\n307 Temporary Redirect\r\n\r\n307 Temporary Redirect\r\ncloudflare\r\n\r\n\n耗时：2.69 秒",
+        "state": "done",
+        "elapsedMs": 123637,
+        "durationMs": 2695,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== jina reader yahoo\n000 0\n[stderr]\nhead: cannot open 'jina.txt' for reading: No such file or directory\n[exit code: 1]\n耗时：40.02 秒",
+        "state": "done",
+        "elapsedMs": 163660,
+        "durationMs": 40023,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== cboe csv -L\n200 293148 https://cdn-api.cboe.com/api/global/us_indices/daily_prices/SPX_History.csv\nDATE,SPX\n01/02/1975,70.230000\n01/03/1975,70.710000\n10/09/2026,7811.540000\n10/12/2026,7807.240000\n13054 spx_cboe.csv\n耗时：2.87 秒",
+        "state": "done",
+        "elapsedMs": 168661,
+        "durationMs": 2872,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：== cboe delayed -L\n200 1706253 https://cdn-api.cboe.com/api/global/delayed_quotes/charts/historical/_SPX.json\n{\"timestamp\": \"2026-10-13 11:08:58\", \"data\": [{\"date\": \"1975-01-02\", \"volume\": \"0.0\", \"open\": \"0.000000\", \"high\": \"70.920000\", \"low\": \"68.650000\", \"close\": \"70.230000\"}, {\"date\": \"1975-01-03\", \"volume\": \"0.0\", \"open\": \"0.000000\", \"high\": \"71.640000\", \"low\": \"69.290000\", \"close\": \"70.710000\"}, {\"date\n耗时：4.85 秒",
+        "state": "done",
+        "elapsedMs": 173510,
+        "durationMs": 4849,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-presidents-sp500-fetch-spx.py",
+        "detail": "调用：case-presidents-sp500-fetch-spx.py\n结果：{\"symbol\": \"SPX\", \"instrument\": \"S&P 500 index (index level, not an ETF proxy)\", \"source\": \"Cboe Global Indices daily price history\", \"sourceUrl\": \"https://cdn-api.cboe.com/api/global/us_indices/daily_prices/SPX_History.csv\", \"fetchedAtUtc\": \"2026-10-13T11:26:14+00:00\", \"sha256\": \"0176fca2c4bc3ea0eced6abedc746ea3602312ee772c8f661e902cfbc8d87e08\", \"rawBytes\": 293148, \"rowCount\": 13053, \"firstDate\": \"1975-01-02\", \"lastDate\": \"2026-10-12\"}\n耗时：4.11 秒",
+        "state": "done",
+        "elapsedMs": 200139,
+        "durationMs": 4107,
+        "tool": "case-presidents-sp500-fetch-spx.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-transform-windows.py",
+        "detail": "调用：case-presidents-sp500-transform-windows.py\n参数：--output outputs/data/case-presidents-sp500-windows-exec.html --payload-output outputs/data/case-presidents-sp500-windows.json\n结果：{\"ok\": true, \"output\": \"case-presidents-sp500-windows-exec.html\", \"mode\": \"data\", \"rows\": 0}\n耗时：1.31 秒",
+        "state": "done",
+        "elapsedMs": 254503,
+        "durationMs": 1306,
+        "tool": "case-presidents-sp500-transform-windows.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：{'chartName': 'event_window_cumulative_return', 'title': '美国总统就职后100个日历日 标普500指数累计收益率对比', 'unit': '%', 'windowDays': 100, 'instrument': 'S&P 500 index (SPX) daily close', 'convention': 'base = last close strictly before inauguration day; calendar days 0-100; non-trading days carry forward the last close', 'dataStart': '1975-01-02', 'dataEnd': '2026-10-12', 'observationCount': 13053}\n{\"term\": \"2001 小布什（首次）\", \"person\": \"乔治·W·布什 第43任 首次就职\", \"eventDate\": \"2001-01-20\", \"baseDate\": \"2001-01-19\", \"baseClose\": 1342.54, \"day100Date\": \"2001-04-30\", \"day100Close\": 1249.46, \"ret100\": -6.93, \"maxRet\": 2.32, \"maxRetDay\": 10, \"minRet\": -17.82, \"minRetDay\": 74, \"maxDrawdown\": -19.69, \"maxDrawdownDay\": 74, \"annualizedVol\": 25.19, \"tradingDays\": 69, \"tradingDaysUp\": 32, \"tradingDaysDown\": 37, \"firstMoveDate\": \"2001-01-22\", \"firstMovePct\": 0.03, \"windowComplete\": true}\n{\"term\": \"2005 小布什（连任）\", \"person\": \"乔治·W·布什 连任就职\", \"eventDate\": \"2005-01-20\", \"baseDate\": \"2005-01-19\", \"baseClose\": 1184.63, \"day100Date\n…（结果摘要已截取）\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 255860,
+        "durationMs": 44,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-presidents-sp500-fetch-fred-crosscheck.py",
+        "detail": "调用：case-presidents-sp500-fetch-fred-crosscheck.py\n结果：{\"series\": \"SP500\", \"instrument\": \"S&P 500 index (index level)\", \"source\": \"Federal Reserve Bank of St. Louis (FRED), series SP500\", \"sourceUrl\": \"https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500\", \"fetchedAtUtc\": \"2026-10-13T11:27:21+00:00\", \"sha256\": \"59990d549a3fc4f67993a9d8600585cf4e611081ed032a1ea095ab4fa14abeed\", \"rowCount\": 2512, \"firstDate\": \"2016-10-13\", \"lastDate\": \"2026-10-12\"}\n耗时：3.03 秒",
+        "state": "done",
+        "elapsedMs": 267066,
+        "durationMs": 3030,
+        "tool": "case-presidents-sp500-fetch-fred-crosscheck.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-transform-crosscheck.py",
+        "detail": "调用：case-presidents-sp500-transform-crosscheck.py\n参数：--output outputs/data/case-presidents-sp500-crosscheck-exec.html --payload-output outputs/data/case-presidents-sp500-crosscheck.json\n结果：merged rows 13053 2512\n{\"ok\": true, \"output\": \"case-presidents-sp500-crosscheck-exec.html\", \"mode\": \"data\", \"rows\": 0}\n{\n \"comparison\": \"Cboe SPX daily close vs FRED SP500 daily close (overlapping dates only)\",\n \"overlapStart\": null,\n \"overlapEnd\": null,\n \"overlapCount\": 0,\n \"maxAbsDiff\": null,\n \"maxRelDiffPct\": null,\n \"exactMatchCount\": 0,\n \"worstCases\": [],\n \"samples\": []\n}\n耗时：1.08 秒",
+        "state": "done",
+        "elapsedMs": 275239,
+        "durationMs": 1081,
+        "tool": "case-presidents-sp500-transform-crosscheck.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-transform-crosscheck.py",
+        "detail": "调用：case-presidents-sp500-transform-crosscheck.py\n参数：--output outputs/data/case-presidents-sp500-crosscheck-exec.html --payload-output outputs/data/case-presidents-sp500-crosscheck.json\n结果：{\"ok\": true, \"output\": \"case-presidents-sp500-crosscheck-exec.html\", \"mode\": \"data\", \"rows\": 0}\n{\n \"comparison\": \"Cboe SPX daily close vs FRED SP500 daily close (overlapping dates only)\",\n \"cboeSource\": \"Cboe Global Indices daily price history\",\n \"fredSource\": \"Federal Reserve Bank of St. Louis (FRED), series SP500\",\n \"overlapStart\": \"2016-10-13\",\n \"overlapEnd\": \"2026-10-12\",\n \"overlapCount\": 2512,\n \"maxAbsDiff\": 7.89,\n \"maxRelDiffPct\": 0.28336,\n \"exactMatchCount\": 2482,\n \"worstCases\": [\n  {\n   \"date\": \"2019-02-28\",\n   \"cboe\": 2792.38,\n   \"fred\": 2784.49,\n   \"absDiff\": 7.89,\n   \"relDiffPct\": 0.28336\n  },\n  {\n   \"date\": \"2020-03-13\",\n   \"cboe\": 2710.95,\n   \"fred\": 2711.02,\n   \"absDiff\": 0.07,\n   \"relDiffPct\": 0.00258\n  },\n  {\n   \"date\": \"2018-11-29\",\n   \"cboe\": 2737.8,\n   \"fred\": 2737.76,\n   \"absDiff\": 0.04,\n   \"relDiffPct\": 0.00146\n  },\n  {\n   \"date\": \"2018-12-21\",\n   \"cboe\": 2416.58,\n   \"fred\": 2416.62,\n   \"absDiff\": 0.0399,\n   \"relDiffPct\": 0.00165\n  },\n  {\n   \"date\": \"2018-11-27\",\n \n…（结果摘要已截取）\n耗时：1.02 秒",
+        "state": "done",
+        "elapsedMs": 280395,
+        "durationMs": 1020,
+        "tool": "case-presidents-sp500-transform-crosscheck.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-transform-dynamic-line.py",
+        "detail": "调用：case-presidents-sp500-transform-dynamic-line.py\n参数：--output outputs/data/case-presidents-sp500-dynamic-line-exec.html --payload-output outputs/data/case-presidents-sp500-dynamic-line-payload.json --output outputs/data/case-presidents-sp500-grouped-bar-exec.html --payload-output outputs/data/case-presidents-sp500-grouped-bar-payload.json\n结果：{\"ok\": true, \"output\": \"case-presidents-sp500-dynamic-line-exec.html\", \"mode\": \"chart-data\", \"rows\": 707}\n{\"ok\": true, \"output\": \"case-presidents-sp500-grouped-bar-exec.html\", \"mode\": \"chart-data\", \"rows\": 7}\n耗时：1.84 秒",
+        "state": "done",
+        "elapsedMs": 291399,
+        "durationMs": 1838,
+        "tool": "case-presidents-sp500-transform-dynamic-line.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：case-presidents-sp500-dynamic-line-payload.json -> ['chartName', 'title', 'unit', 'theme', 'encode', 'seriesOrder', 'data', 'chartType', 'xField', 'series']\n{\"chartName\": \"dynamic_line\", \"title\": \"美国总统就职后100个日历日：标普500指数累计收益率（%）\", \"unit\": \"%\", \"theme\": \"light\", \"encode\": {\"x\": \"day\", \"series\": \"term\", \"y\": \"value\"}, \"seriesOrder\": [\"2001 小布什（首次）\", \"2005 小布什（连任）\", \"2009 奥巴马（首次）\", \"2013 奥巴马（连任）\", \"2017 特朗普（首次）\", \"2021 拜登（首次）\", \"2025 特朗普（二次）\"], \"chartType\": \"dynamic_line\", \"xField\": \"day\", \"series\": [{\"field\": \"value\", \"label\": \"数值\", \"type\": \"line\"}]}\ndata[0..2] [{\"day\": 0, \"term\": \"2001 小布什（首次）\", \"value\": 0.0}, {\"day\": 1, \"term\": \"2001 小布什（首次）\", \"value\": 0.0}]\ncase-presidents-sp500-grouped-bar-payload.json -> ['chartType', 'title', 'xField', 'series', 'leftAxis', 'rightAxis', 'visualStyle', 'data', 'chartName']\n{\"chartType\": \"grouped-bar\", \"title\": \"各届就职后100个日历日：期末累计收益率与期间最大回撤（%）\", \"xField\": \"term\", \"series\": [{\"field\": \"endReturn\", \"label\": \"第100日累计收益率\", \"type\": \"bar\", \"axis\": \"right\"}, \n…（结果摘要已截取）\n耗时：0.07 秒",
+        "state": "done",
+        "elapsedMs": 292975,
+        "durationMs": 66,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 dynamic_line.py",
+        "detail": "调用：dynamic_line.py\n参数：--output outputs/generated/deepseek-case-presidents-sp500-dynamic-line.html\n结果：dynamic line series: 7 rows: 707\n{\"ok\": true, \"output\": \"deepseek-case-presidents-sp500-dynamic-line.html\", \"chartName\": \"dynamic_line\"}\nexit=0\n-rw------- 1 ubuntu ubuntu 40479 Oct 13 19:27 outputs/generated/deepseek-case-presidents-sp500-dynamic-line.html\n耗时：0.51 秒",
+        "state": "done",
+        "elapsedMs": 298560,
+        "durationMs": 505,
+        "tool": "dynamic_line.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：len 39991\ntitle tag: ['美国总统就职后100个日历日：标普500指数累计收益率（%）']\nseriesList: [\"2001 小布什（首次）\",\"2005 小布什（连任）\",\"2009 奥巴马（首次）\",\"2013 奥巴马（连任）\",\"2017 特朗普（首次）\",\"2021 拜登（首次）\",\"2025 特朗普（二次）\"]\nxList sample: [\"1\",\"2\",\"3\",\"4\",\"5\",\"6\",\"7\",\"8\",\"9\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"18\",\"19\",\"20\",\"21\",\"22\",\"23\",\"24\",\"25\",\"26\nrows literal found: True []\nhas dark theme support: False False\ncolor literals count: 36\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 301878,
+        "durationMs": 41,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 grouped_bar.py",
+        "detail": "调用：grouped_bar.py\n参数：--output outputs/generated/deepseek-case-presidents-sp500-grouped-bar.html\n结果：{\"ok\": true, \"output\": \"deepseek-case-presidents-sp500-grouped-bar.html\"}\nexit=0\n-rw------- 1 ubuntu ubuntu 29021 Oct 13 19:27 outputs/generated/deepseek-case-presidents-sp500-grouped-bar.html\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 301938,
+        "durationMs": 59,
+        "tool": "grouped_bar.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：xList len 100 first5 ['1', '2', '3', '4', '5'] last3 ['98', '99', '100']\nhas 0: False\ncss vars: []\nbody bg snippet: ['background: #0b0e14;', 'background: rgba(15, 23, 42, 0.84);', 'background: rgba(17, 24, 39, 0.92);', 'background: rgba(30, 64, 175, 0.88);', 'background: rgba(17, 24, 39, 0.92);']\nvar(--arrow-left\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 307291,
+        "durationMs": 40,
+        "tool": "bash"
+      },
+      {
+        "title": "执行 case-presidents-sp500-transform-dynamic-line.py",
+        "detail": "调用：case-presidents-sp500-transform-dynamic-line.py\n参数：--output outputs/data/case-presidents-sp500-dynamic-line-exec.html --payload-output outputs/data/case-presidents-sp500-dynamic-line-payload.json --output outputs/generated/deepseek-case-presidents-sp500-dynamic-line.html\n结果：patched transform\n{\"ok\": true, \"output\": \"case-presidents-sp500-dynamic-line-exec.html\", \"mode\": \"chart-data\", \"rows\": 707}\nrows 707 series 7\n{\"ok\": true, \"output\": \"deepseek-case-presidents-sp500-dynamic-line.html\", \"chartName\": \"dynamic_line\"}\nxList len 101 0 100\n{'2001 小布什（首次）': 101, '2005 小布什（连任）': 101, '2009 奥巴马（首次）': 101, '2013 奥巴马（连任）': 101, '2017 特朗普（首次）': 101, '2021 拜登（首次）': 101, '2025 特朗普（二次）': 101}\nfirst values {'2001 小布什（首次）': 0.0, '2005 小布什（连任）': -0.78, '2009 奥巴马（首次）': -5.28, '2013 奥巴马（连任）': 0.0, '2017 特朗普（首次）': 0.34, '2021 拜登（首次）': 1.39, '2025 特朗普（二次）': 0.0} last values {'2001 小布什（首次）': -6.93, '2005 小布什（连任）': -2.35, '2009 奥巴马（首次）': 2.67, '2013 奥巴马（连任）': 6.51, '2017 特朗普（首次）': 5.32, '2021 拜登（首次）': 10.06, '2025 特朗普（二次）': -7.13}\nsize 40029\n耗时：1.47 秒",
+        "state": "done",
+        "elapsedMs": 356548,
+        "durationMs": 1468,
+        "tool": "case-presidents-sp500-transform-dynamic-line.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-build-streamviz.py",
+        "detail": "调用：case-presidents-sp500-build-streamviz.py\n结果：{\"payload\": \"case-presidents-sp500-streamviz-payload.json\", \"bytes\": 8551, \"rows\": 7}\n耗时：0.08 秒",
+        "state": "done",
+        "elapsedMs": 390403,
+        "durationMs": 77,
+        "tool": "case-presidents-sp500-build-streamviz.py"
+      },
+      {
+        "title": "生成分析报告",
+        "detail": "调用：render_streamviz.py\n参数：--output outputs/generated/deepseek-case-presidents-sp500-streamviz.html\n结果：{\"ok\": true, \"tool\": \"streamviz\", \"output\": \"deepseek-case-presidents-sp500-streamviz.html\", \"bytes\": 28435}\n-rw------- 1 ubuntu ubuntu 28435 Oct 13 19:29 outputs/generated/deepseek-case-presidents-sp500-streamviz.html\n6\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 394510,
+        "durationMs": 55,
+        "tool": "render_streamviz.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--output outputs/data/case-presidents-sp500-vision-dynamic-line.json\n结果：Traceback (most recent call last):\n  File \"vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ^^^^^^\n  File \"vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n                                                                    ^^^^^^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 262, in analyze_chart\n    client = model_client()\n             ^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\n耗时：6.24 秒",
+        "state": "error",
+        "elapsedMs": 407027,
+        "durationMs": 6239,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--output outputs/data/case-presidents-sp500-vision-others.json\n结果：Traceback (most recent call last):\n  File \"vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ^^^^^^\n  File \"vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 330, in analyze_uploaded\n    client = model_client()\n             ^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\n耗时：4.86 秒",
+        "state": "error",
+        "elapsedMs": 411889,
+        "durationMs": 4862,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-verify-render.py",
+        "detail": "调用：case-presidents-sp500-verify-render.py\n结果：[stderr]\nTraceback (most recent call last):\n  File \"case-presidents-sp500-verify-render.py\", line 27, in \n    page.goto(path.as_uri())\n  File \"_generated.py\", line 9875, in goto\n    self._sync(\n  File \"_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"_page.py\", line 560, in goto\n    return await self._main_frame.goto(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"_frame.py\", line 156, in goto\n    await self._channel.send(\n  File \"_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"file://deepseek-case-presidents-sp500-dynamic-line.html\", waiting until \"load\"\n\n[exit code: 1]\n耗时：30.74 秒",
+        "state": "error",
+        "elapsedMs": 453410,
+        "durationMs": 30744,
+        "tool": "case-presidents-sp500-verify-render.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-verify-render.py",
+        "detail": "调用：case-presidents-sp500-verify-render.py\n结果：patched\n{\n \"dynamic-line\": {\n  \"bytes\": 40517,\n  \"pageErrors\": [\n   \"echarts is not defined\"\n  ],\n  \"canvasCount\": 0,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n },\n \"grouped-bar\": {\n  \"bytes\": 29021,\n  \"pageErrors\": [],\n  \"canvasCount\": 0,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n },\n \"streamviz\": {\n  \"bytes\": 28435,\n  \"pageErrors\": [],\n  \"canvasCount\": 0,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n }\n}\n耗时：35.23 秒",
+        "state": "done",
+        "elapsedMs": 515017,
+        "durationMs": 35231,
+        "tool": "case-presidents-sp500-verify-render.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-verify-render.py",
+        "detail": "调用：case-presidents-sp500-verify-render.py\n结果：patched\n{\n \"dynamic-line\": {\n  \"bytes\": 40517,\n  \"pageErrors\": [],\n  \"canvasCount\": 1,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n },\n \"grouped-bar\": {\n  \"bytes\": 29021,\n  \"pageErrors\": [],\n  \"canvasCount\": 0,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n },\n \"streamviz\": {\n  \"bytes\": 28435,\n  \"pageErrors\": [],\n  \"canvasCount\": 0,\n  \"overflow\": {\n   \"320\": false,\n   \"390\": false,\n   \"1280\": false\n  }\n }\n}\n耗时：36.70 秒",
+        "state": "done",
+        "elapsedMs": 556830,
+        "durationMs": 36700,
+        "tool": "case-presidents-sp500-verify-render.py"
+      },
+      {
+        "title": "执行 case-presidents-sp500-verify-chart-dom.py",
+        "detail": "调用：case-presidents-sp500-verify-chart-dom.py\n结果：{\n \"dynamicLine\": {\n  \"instance\": true,\n  \"seriesCount\": 7,\n  \"seriesNames\": [\n   \"2001 小布什（首次）\",\n   \"2005 小布什（连任）\",\n   \"2009 奥巴马（首次）\",\n   \"2013 奥巴马（连任）\",\n   \"2017 特朗普（首次）\",\n   \"2021 拜登（首次）\",\n   \"2025 特朗普（二次）\"\n  ],\n  \"pointsPerSeries\": [\n   101,\n   101,\n   101,\n   101,\n   101,\n   101,\n   101\n  ],\n  \"lastValues\": [\n   -6.93,\n   -2.35,\n   2.67,\n   6.51,\n   5.32,\n   10.06,\n   -7.13\n  ],\n  \"xAxisPoints\": 101,\n  \"xFirstLast\": \"100\"\n },\n \"groupedBar\": {\n  \"svg\": true,\n  \"rectCount\": 28,\n  \"sampleLabels\": [\n   \"20.00\",\n   \"10.00\",\n   \"0.00\",\n   \"-10.00\",\n   \"-20.00\",\n   \"-30.00\",\n   \"累计收益率 / 回撤（%）\",\n   \"2001 小布什（首次）\",\n   \"2005 小布什（连任）\",\n   \"2009 奥巴马（首次）\",\n   \"2013 奥巴马（连任）\",\n   \"2017 特朗普（首次）\"\n  ],\n  \"labelCount\": 14\n }\n}\n耗时：9.21 秒",
+        "state": "done",
+        "elapsedMs": 573860,
+        "durationMs": 9206,
+        "tool": "case-presidents-sp500-verify-chart-dom.py"
       }
     ],
     "elapsedMs": 597163,
     "startedAt": 1791890574668,
     "endedAt": 1791891171831,
-    "durationSource": "harness-session-timestamps"
+    "durationSource": "harness-session-timestamps",
+    "detailSource": "cached-tool-results"
   }
 }

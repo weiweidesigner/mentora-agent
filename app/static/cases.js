@@ -28,7 +28,7 @@
     home.setAttribute("aria-hidden", "true");
     origin.before(home);
     const moved = [];
-    conversation.querySelectorAll(":scope > .homeHero,:scope > #chatForm,:scope > #homeCases,:scope > #inspirationSquare").forEach(node => {
+    conversation.querySelectorAll(":scope > #homeBackdrop,:scope > .homeHero,:scope > #chatForm,:scope > #homeCases,:scope > #inspirationSquare").forEach(node => {
       const slot = document.createComment("home component location");
       node.before(slot);
       moved.push([node, slot]);

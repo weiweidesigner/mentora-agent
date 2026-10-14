@@ -6,7 +6,7 @@
     <title>Veya</title>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-artifact-polish" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-video-background" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261014-intrinsic-height" />
   </head>
   <body>
@@ -96,6 +96,10 @@
         </div>
       </div>
       <section class="conversation is-empty" aria-label="图文对话分析">
+        <div id="homeBackdrop" class="homeBackdrop" aria-hidden="true">
+          <video id="homeBackdropVideo" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="/static/assets/home-market-background.jpg" data-src="/static/assets/home-market-background.mp4" tabindex="-1"></video>
+          <div class="homeBackdropMask"></div>
+        </div>
         <header id="caseDetailHeader" class="caseDetailHeader" hidden>
           <button id="caseBackButton" class="caseBackButton" type="button"><span class="caseBackLabel"><span aria-hidden="true">←</span> 返回首页</span><svg class="caseCloseIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
           <span id="caseCacheDate" class="caseCacheDate"></span>
@@ -161,7 +165,8 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261014-intrinsic-height"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261014-artifact-polish"></script>
-    <script src="/static/cases.js?v=20261014-artifact-polish"></script>
+    <script src="/static/app.js?v=interface-20261014-video-background"></script>
+    <script src="/static/home-background.js?v=20261014-video-background"></script>
+    <script src="/static/cases.js?v=20261014-video-background"></script>
   </body>
 </html>

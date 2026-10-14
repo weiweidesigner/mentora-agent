@@ -27,51 +27,283 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "缓存执行步骤",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "读取市场资讯检索技能"
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：internal-search, external-search, advisor-text-generation, vision-chart-analyst",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "读取公开信息检索技能"
+        "title": "获取分析师共识与目标价",
+        "detail": "调用：wall_street_consensus.py\n参数：--code AMD --output outputs/generated/deepseek-case-amd-ratings-consensus.html --payload-output outputs/case-amd-ratings/amd_consensus_payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/deepseek-case-amd-ratings-consensus.html\",\n  \"payloadOutput\": \"outputs/case-amd-ratings/amd_consensus_payload.json\"\n}\n[status: completed, exit code: 0]\n耗时：10.81 秒",
+        "state": "done",
+        "elapsedMs": 27928,
+        "durationMs": 10807,
+        "tool": "wall_street_consensus.py"
       },
       {
-        "title": "读取分析总结技能"
+        "title": "分析近期评级调整",
+        "detail": "调用：analyst_recommendations.py\n参数：--code AMD --output outputs/generated/deepseek-case-amd-ratings-recommendations.html --payload-output outputs/case-amd-ratings/amd_recommendations_payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/deepseek-case-amd-ratings-recommendations.html\",\n  \"payloadOutput\": \"outputs/case-amd-ratings/amd_recommendations_payload.json\"\n}\n[status: completed, exit code: 0]\n耗时：13.29 秒",
+        "state": "done",
+        "elapsedMs": 30451,
+        "durationMs": 13294,
+        "tool": "analyst_recommendations.py"
       },
       {
-        "title": "获取分析师共识"
+        "title": "检索公开资料",
+        "detail": "调用：external_info_search.py\n参数：--query \"AMD 超微半导体 最新分析师评级调整 2026年10月 目标价 上调 下调 买入 中性 平均目标价 分析师数量\" --output outputs/case-amd-ratings/amd_external_ratings.json\n结果：Traceback (most recent call last):\n  File \"external_info_search.py\", line 628, in \n    raise SystemExit(main())\n                     ^^^^^^\n  File \"external_info_search.py\", line 598, in main\n    response = run_with_wall_timeout(\n               ^^^^^^^^^^^^^^^^^^^^^^\n  File \"external_info_search.py\", line 97, in run_with_wall_timeout\n    return callback()\n           ^^^^^^^^^^\n  File \"external_info_search.py\", line 599, in \n    lambda: search_moonshot(query, limit, kimi_timeout, freshness_context),\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"external_info_search.py\", line 395, in search_moonshot\n    raise RuntimeError(\"MOONSHOT_API_KEY is not set\")\nRuntimeError: MOONSHOT_API_KEY is not set\n[status: completed, exit code: 0]\n耗时：3.81 秒",
+        "state": "error",
+        "elapsedMs": 20980,
+        "durationMs": 3808,
+        "tool": "external_info_search.py"
       },
       {
-        "title": "生成分析师评级分布"
+        "title": "整理历史评级变化",
+        "detail": "调用：average_rating_history.py\n参数：--code AMD --output outputs/generated/deepseek-case-amd-ratings-avg-rating-history.html --payload-output outputs/case-amd-ratings/amd_avg_rating_payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/deepseek-case-amd-ratings-avg-rating-history.html\",\n  \"payloadOutput\": \"outputs/case-amd-ratings/amd_avg_rating_payload.json\"\n}\n[status: completed, exit code: 0]\n耗时：11.98 秒",
+        "state": "done",
+        "elapsedMs": 31622,
+        "durationMs": 11982,
+        "tool": "average_rating_history.py"
       },
       {
-        "title": "检索公开来源"
+        "title": "对比目标价与实际走势",
+        "detail": "调用：price_target_vs_actual.py\n参数：--code AMD --output outputs/generated/deepseek-case-amd-ratings-target-vs-price.html --payload-output outputs/case-amd-ratings/amd_target_vs_actual_payload.json\n结果：任务已启动，但原始记录未保存最终返回结果。\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 19711,
+        "durationMs": 48,
+        "tool": "price_target_vs_actual.py"
       },
       {
-        "title": "生成评级历史变化"
+        "title": "检索相关新闻",
+        "detail": "调用：ainvest_news_search.py\n参数：--limit 12 --output outputs/case-amd-ratings/amd_ainvest_news.json\n结果：[warn] duckduckgo variant failed: : fetch failed: https://duckduckgo.com/html/?q=site%3Aainvest.com%2Fnews: \nsaved 12 article(s) to outputs/case-amd-ratings/amd_ainvest_news.json\n[status: completed, exit code: 0]\n耗时：97.68 秒",
+        "state": "done",
+        "elapsedMs": 117392,
+        "durationMs": 97681,
+        "tool": "ainvest_news_search.py"
       },
       {
-        "title": "对比目标价与实际股价"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：=== consensus ===\n{\n \"type\": \"wall-street-consensus\",\n \"name\": \"华尔街共识\",\n \"title\": \"AMD 华尔街共识与目标价\",\n \"code\": \"AMD\",\n \"market\": \"185\",\n \"marketLabel\": \"NASDAQ\",\n \"ratingSummary\": {\n  \"label\": \"买入\",\n  \"score\": 3.95652174,\n  \"analystCount\": 23,\n  \"windowDays\": 90,\n  \"lastUpdatedText\": \"Updated Oct 7, 2026\",\n  \"sourceWindowText\": \"Analyst actions in the last 90 days\"\n },\n \"priceTarget\": {\n  \"average\": 643.26086957,\n  \"low\": 465,\n  \"high\": 800\n },\n \"lastPrice\": 594.24,\n \"upside\": {\n  \"amount\": 49.020869569999945,\n  \"percent\": 8.249338578688736\n },\n \"analystBreakdown\": [\n  {\n   \"key\": \"strongBuy\",\n   \"label\": \"强烈买入\",\n   \"count\": 1,\n   \"percent\": 4.35\n  },\n  {\n   \"key\": \"buy\",\n   \"label\": \"买入\",\n   \"count\": 20,\n   \"percent\": 86.96\n  },\n  {\n   \"key\": \"hold\",\n   \"label\": \"持有\",\n   \"count\": 2,\n   \"percent\": 8.7\n  },\n  {\n   \"key\": \"sell\",\n   \"label\": \"卖出\",\n   \"count\": 0,\n   \"percent\": 0\n  },\n  {\n   \"key\": \"strongSell\",\n   \"label\": \"强烈卖出\",\n   \"count\": 0,\n   \"percent\": 0\n  }\n ],\n \"industryRank\": {\n  \"\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 31617,
+        "durationMs": 31,
+        "tool": "bash"
       },
       {
-        "title": "检索市场资讯"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：[\n {\n  \"date\": \"2026-04-14\",\n  \"averageTarget\": 283.06666667,\n  \"timestamp\": \"2026-04-14T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-05-14\",\n  \"averageTarget\": 436,\n  \"timestamp\": \"2026-05-14T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-06-13\",\n  \"averageTarget\": 473.08,\n  \"timestamp\": \"2026-06-13T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-07-14\",\n  \"averageTarget\": 530.56,\n  \"timestamp\": \"2026-07-14T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-08-13\",\n  \"averageTarget\": 621.58333333,\n  \"timestamp\": \"2026-08-13T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-09-12\",\n  \"averageTarget\": 623.54166667,\n  \"timestamp\": \"2026-09-12T00:00:00.000Z\"\n },\n {\n  \"date\": \"2026-10-13\",\n  \"averageTarget\": 643.26086957,\n  \"timestamp\": \"2026-10-13T00:00:00.000Z\"\n }\n]\nKEYS ['type', 'name', 'title', 'code', 'market', 'marketLabel', 'ratingSummary', 'priceTarget', 'lastPrice', 'upside', 'analystBreakdown', 'industryRank', 'history', 'analystActions', 'peers', 'source', 'language', 'labels', 'componentUi', 'theme']\ntype \"wall-street-consensus\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 33783,
+        "durationMs": 34,
+        "tool": "bash"
       },
       {
-        "title": "获取历史行情与基本数据"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：{\n \"type\": \"analyst-recommendations\",\n \"name\": \"Recommendations\",\n \"title\": \"Recommendations\",\n \"code\": \"AMD\",\n \"market\": \"185\",\n \"defaultPeriod\": \"6M\",\n \"views\": {\n  \"1M\": [\n   {\n    \"month\": \"2026-10\",\n    \"timestamp\": \"2026-10-13T00:00:00.000Z\",\n    \"strongBuy\": 1,\n    \"buy\": 20,\n    \"hold\": 2,\n    \"sell\": 0,\n    \"strongSell\": 0,\n    \"total\": 23\n   }\n  ],\n  \"3M\": [\n   {\n    \"month\": \"2026-08\",\n    \"timestamp\": \"2026-08-31T00:00:00.000Z\",\n    \"strongBuy\": 1,\n    \"buy\": 21,\n    \"hold\": 2,\n    \"sell\": 0,\n    \"strongSell\": 0,\n    \"total\": 24\n   },\n   {\n    \"month\": \"2026-09\",\n    \"timestamp\": \"2026-09-30T00:00:00.000Z\",\n    \"strongBuy\": 1,\n    \"buy\": 20,\n    \"hold\": 2,\n    \"sell\": 0,\n    \"strongSell\": 0,\n    \"total\": 23\n   },\n   {\n    \"month\": \"2026-10\",\n    \"timestamp\": \"2026-10-13T00:00:00.000Z\",\n    \"strongBuy\": 1,\n    \"buy\": 20,\n    \"hold\": 2,\n    \"sell\": 0,\n    \"strongSell\": 0,\n    \"total\": 23\n   }\n  ],\n  \"6M\": [\n   {\n    \"month\": \"2026-05\",\n    \"timestamp\": \"2026-05-31T00:00:00.00\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 33815,
+        "durationMs": 31,
+        "tool": "bash"
       },
       {
-        "title": "执行数据汇总和指标计算"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：count 20\n2026-10-06 Mizuho Vijay Rakesh Maintains Outperform Outperform 705.0 580.0 125.0\n2026-10-06 Citigroup Atif Malik Maintains 买入 Buy 800.0 575.0 225.0\n2026-10-05 Stifel Ruben Roy Maintains 买入 Buy 700.0 635.0 65.0\n2026-09-29 StoneX Cody Acree Reiterates 买入 Buy 685.0 685.0 0.0\n2026-09-29 Rosenblatt Kevin Cassidy Maintains 买入 Buy 700.0 700.0 0.0\n2026-09-25 B of A Securities Vivek Arya Maintains 买入 Buy 720.0 620.0 100.0\n2026-09-10 Piper Sandler David O'Connor Initiates Coverage on Overweight None 600.0 None None\n2026-08-25 Raymond James Simon Leopold Upgrades 强烈买入 Outperform 641.0 565.0 76.0\n2026-08-21 BMO Capital Harsh Kumar Initiates Coverage on Outperform Outperform 550.0 None None\n2026-08-06 Argus Research Jim Kelleher Maintains 买入 Buy 625.0 450.0 175.0\n2026-08-05 Cantor Fitzgerald C.J. Muse Reiterates Overweight Overweight 700.0 700.0 0.0\n2026-08-05 RBC Capital Srinivas Reddy Pajjuri Reiterates Sector Perform Sector Perform 540.0 540.0 0.0\n2026-08-05 Wedbush Matthew Stevens Brys\n…（结果摘要已截取）\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 35944,
+        "durationMs": 40,
+        "tool": "bash"
       },
       {
-        "title": "生成 StreamViz 报告"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：===== amd_avg_rating_payload.json\n{\n \"type\": \"average-rating-history\",\n \"name\": \"Average Rating History\",\n \"title\": \"Average Rating History\",\n \"code\": \"AMD\",\n \"market\": \"185\",\n \"defaultPeriod\": \"6M\",\n \"views\": {\n  \"1M\": [\n   {\n    \"date\": \"2026-09-13\",\n    \"averageRating\": 3.95652174,\n    \"timestamp\": \"2026-09-13T00:00:00.000Z\"\n   },\n   {\n    \"date\": \"2026-09-20\",\n    \"averageRating\": 3.95652174,\n    \"timestamp\": \"2026-09-20T00:00:00.000Z\"\n   },\n   {\n    \"date\": \"2026-09-28\",\n    \"averageRating\": 3.95652174,\n    \"timestamp\": \"2026-09-28T00:00:00.000Z\"\n   },\n   {\n    \"date\": \"2026-10-05\",\n    \"averageRating\": 3.95652174,\n    \"timestamp\": \"2026-10-05T00:00:00.000Z\"\n   },\n   {\n    \"date\": \"2026-10-13\",\n    \"averageRating\": 3.95652174,\n    \"timestamp\": \"2026-10-13T00:00:00.000Z\"\n   }\n  ],\n  \"3M\": [\n   {\n    \"date\": \"2026-07-13\",\n    \"averageRating\": 3.8,\n    \"timestamp\": \"2026-07-13T00:00:00.000Z\"\n   },\n   {\n    \"date\": \"2026-08-05\",\n    \"averageRating\": 3.88461538,\n    \"timestamp\": \"2026-\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 35976,
+        "durationMs": 31,
+        "tool": "bash"
       },
       {
-        "title": "检查图表渲染效果"
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果： 12\n[stderr]\nTraceback (most recent call last):\n  File \"\", line 5, in \nAttributeError: 'list' object has no attribute 'get'\n[exit code: 1]\n耗时：0.03 秒",
+        "state": "error",
+        "elapsedMs": 119229,
+        "durationMs": 31,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：---\n | AInvest | https://www.ainvest.com/news/chinese-competitor-memory-chips-coming-2610/\nThe Chinese Competitor Memory Chips Did Not See Coming\nThe Chinese Competitor Memory Chips Did Not See Coming\n---\n | AInvest | https://www.ainvest.com/news/nvidia-week-noise-108-billion-print-november-bet-26\nNVIDIA's Week Was Noise. The $108 Billion Print in November Is the Bet.\nNVIDIA's Week Was Noise. The $108 Billion Print in November Is the Bet.\n---\n | AInvest | https://www.ainvest.com/news/trump-team-sold-amd-meta-trade-noise-cheapest-magni\nTrump's Team Sold AMD for Meta. The Trade Is Noise, the 'Cheapest Magnificent Seven' Label Isn't\nTrump's Team Sold AMD for Meta. The Trade Is Noise, the 'Cheapest Magnificent Seven' Label Isn't\n---\n | AInvest | https://www.ainvest.com/news/amd-10-billion-saudi-deal-real-infrastructure-wrapp\nAMD's \"$10 billion\" Saudi deal is real infrastructure wrapped in an up-to number\nAMD's \"$10 billion\" Saudi deal is real infrastructure wrapped in an up-to number\n---\n \n…（结果摘要已截取）\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 120573,
+        "durationMs": 58,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：['url', 'title', 'published_at', 'published_date', 'source', 'author', 'summary', 'content_text', 'content_html', 'image', 'audio_url', 'duration_seconds', 'video_url', 'video_time_seconds', 'matched_topics', 'semantic_terms', 'relevance_score']\n{\"url\": \"https://www.ainvest.com/news/chinese-competitor-memory-chips-coming-2610/\", \"title\": \"The Chinese Competitor Memory Chips Did Not See Coming\", \"published_at\": \"\", \"published_date\": \"\", \"source\": \"AInvest\", \"author\": \"\", \"summary\": \"The Chinese Competitor Memory Chips Did Not See Coming\", \"content_text\": \"\", \"content_html\": null, \"image\": \"https://cdn.ainvest.com/articles/focusnews/coverimage/content/pictures/P8_72c42bd31764557805212.jpg\", \"audio_url\": \"\", \"duration_seconds\": 0, \"video_url\": \"\", \"video_time_seconds\": 0, \"matched_topics\": [], \"semantic_terms\": [], \"relevance_score\": 0.0}\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 122280,
+        "durationMs": 32,
+        "tool": "bash"
+      },
+      {
+        "title": "获取历史行情",
+        "detail": "调用：yahoo_data.py\n参数：--code AMD --interval 1d --payload-output outputs/case-amd-ratings/amd_price_6mo.json\n结果：{\"ok\": true, \"source\": \"Nasdaq historical API\", \"rendered\": false, \"payloadOutput\": \"amd_price_6mo.json\"}\n[status: completed, exit code: 0]\n耗时：10.90 秒",
+        "state": "done",
+        "elapsedMs": 141808,
+        "durationMs": 10901,
+        "tool": "yahoo_data.py"
+      },
+      {
+        "title": "检索相关新闻",
+        "detail": "调用：ainvest_news_search.py\n参数：--query \"AMD analyst price target rating\" --limit 10 --output outputs/case-amd-ratings/amd_ainvest_analyst_news.json\n结果：任务已启动，但原始记录未保存最终返回结果。\n耗时：0.02 秒",
+        "state": "done",
+        "elapsedMs": 130936,
+        "durationMs": 16,
+        "tool": "ainvest_news_search.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果： ['type', 'source', 'symbol', 'title', 'subtitle', 'metric', 'metricLabel', 'method', 'range', 'interval', 'chartType', 'currency', 'exchangeName', 'regularMarketPrice', 'rows', 'visualStyle', 'markers', 'lineChartData', 'providerSymbol']\nrows 132\n[{'date': '2026-04-06', 'value': 220.18, 'open': 219.28, 'high': 226.31, 'low': 217.73, 'close': 220.18, 'adjClose': None, 'volume': 30786420.0, 'returnPct': None, 'cumulativeReturnPct': 0.0}, {'date': '2026-04-07', 'value': 221.53, 'open': 218.255, 'high': 222.0984, 'low': 215.375, 'close': 221.53, 'adjClose': None, 'volume': 26483010.0, 'returnPct': 0.6131347079662008, 'cumulativeReturnPct': 0.6131347079662008}]\n[{'date': '2026-10-08', 'value': 620.68, 'open': 639.36, 'high': 643.85, 'low': 613.3388, 'close': 620.68, 'adjClose': None, 'volume': 23488160.0, 'returnPct': -3.8986777320162314, 'cumulativeReturnPct': 181.89663002997546}, {'date': '2026-10-09', 'value': 608.1, 'open': 626.89, 'high': 627.37, 'low': 606.0, 'close': 608.1, 'adjClos\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 141840,
+        "durationMs": 32,
+        "tool": "bash"
+      },
+      {
+        "title": "整理分析数据",
+        "detail": "调用：transform_recent_actions.py\n参数：--output outputs/case-amd-ratings/amd_recent_actions_result.json --payload-output outputs/case-amd-ratings/amd_recent_actions_payload.json\n结果：{\"ok\": true, \"output\": \"amd_recent_actions_result.json\", \"mode\": \"data\", \"rows\": 0}\n耗时：0.96 秒",
+        "state": "done",
+        "elapsedMs": 150067,
+        "durationMs": 960,
+        "tool": "transform_recent_actions.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：[stderr]\nTraceback (most recent call last):\n  File \"\", line 3, in \n  File \"/usr/lib/python3.12/json/__init__.py\", line 293, in load\n    return loads(fp.read(),\n           ^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/__init__.py\", line 346, in loads\n    return _default_decoder.decode(s)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/decoder.py\", line 337, in decode\n    obj, end = self.raw_decode(s, idx=_w(s, 0).end())\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/json/decoder.py\", line 355, in raw_decode\n    raise JSONDecodeError(\"Expecting value\", s, err.value) from None\njson.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)\n[exit code: 1]\n耗时：0.03 秒",
+        "state": "error",
+        "elapsedMs": 151657,
+        "durationMs": 34,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：{\n \"asOf\": \"2026-10-13\",\n \"latestMonth\": \"2026-10\",\n \"distribution\": [\n  {\n   \"label\": \"强烈买入\",\n   \"count\": 1,\n   \"percent\": 4.35\n  },\n  {\n   \"label\": \"买入\",\n   \"count\": 20,\n   \"percent\": 86.96\n  },\n  {\n   \"label\": \"持有\",\n   \"count\": 2,\n   \"percent\": 8.7\n  },\n  {\n   \"label\": \"卖出\",\n   \"count\": 0,\n   \"percent\": 0.0\n  },\n  {\n   \"label\": \"强烈卖出\",\n   \"count\": 0,\n   \"percent\": 0.0\n  }\n ],\n \"analystTotal\": 23,\n \"monthlyPath\": [\n  {\n   \"month\": \"2026-05\",\n   \"strongBuy\": 0,\n   \"buy\": 17,\n   \"hold\": 7,\n   \"total\": 24,\n   \"bullishPercent\": 70.83,\n   \"holdPercent\": 29.17\n  },\n  {\n   \"month\": \"2026-06\",\n   \"strongBuy\": 0,\n   \"buy\": 20,\n   \"hold\": 6,\n   \"total\": 26,\n   \"bullishPercent\": 76.92,\n   \"holdPercent\": 23.08\n  },\n  {\n   \"month\": \"2026-07\",\n   \"strongBuy\": 0,\n   \"buy\": 22,\n   \"hold\": 4,\n   \"total\": 26,\n   \"bullishPercent\": 84.62,\n   \"holdPercent\": 15.38\n  },\n  {\n   \"month\": \"2026-08\",\n   \"strongBuy\": 1,\n   \"buy\": 21,\n   \"hold\": 2,\n   \"total\": 24,\n   \"bullishPercent\": 91.67,\n   \"holdPercent\": 8.\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 154164,
+        "durationMs": 32,
+        "tool": "bash"
+      },
+      {
+        "title": "整理分析数据",
+        "detail": "调用：transform_consensus.py\n参数：--output outputs/case-amd-ratings/amd_consensus_result.html --payload-output outputs/case-amd-ratings/amd_consensus_derived.json\n结果：{\"ok\": true, \"output\": \"amd_consensus_result.html\", \"mode\": \"data\", \"rows\": 0}\n耗时：0.86 秒",
+        "state": "done",
+        "elapsedMs": 163004,
+        "durationMs": 863,
+        "tool": "transform_consensus.py"
+      },
+      {
+        "title": "整理分析数据",
+        "detail": "调用：transform_price.py\n参数：--output outputs/case-amd-ratings/amd_price_result.html --payload-output outputs/case-amd-ratings/amd_price_derived.json\n结果：{\"ok\": true, \"output\": \"amd_price_result.html\", \"mode\": \"data\", \"rows\": 0}\n耗时：0.87 秒",
+        "state": "done",
+        "elapsedMs": 163871,
+        "durationMs": 867,
+        "tool": "transform_price.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：===== amd_consensus_derived.json\n{\n \"code\": \"AMD\",\n \"marketLabel\": \"NASDAQ\",\n \"consensusLabel\": \"买入\",\n \"consensusScore\": 3.96,\n \"analystCount\": 23,\n \"windowDays\": 90,\n \"lastUpdatedText\": \"Updated Oct 7, 2026\",\n \"lastPrice\": 594.24,\n \"averageTarget\": 643.26,\n \"lowTarget\": 465,\n \"highTarget\": 800,\n \"upsidePercent\": 8.25,\n \"upsideAmount\": 49.02,\n \"targetLowVsPricePercent\": -21.75,\n \"targetHighVsPricePercent\": 34.63,\n \"targetPath\": [\n  {\n   \"date\": \"2026-04-14\",\n   \"averageTarget\": 283.07,\n   \"changePercent\": null\n  },\n  {\n   \"date\": \"2026-05-14\",\n   \"averageTarget\": 436,\n   \"changePercent\": 54.03\n  },\n  {\n   \"date\": \"2026-06-13\",\n   \"averageTarget\": 473.08,\n   \"changePercent\": 8.5\n  },\n  {\n   \"date\": \"2026-07-14\",\n   \"averageTarget\": 530.56,\n   \"changePercent\": 12.15\n  },\n  {\n   \"date\": \"2026-08-13\",\n   \"averageTarget\": 621.58,\n   \"changePercent\": 17.16\n  },\n  {\n   \"date\": \"2026-09-12\",\n   \"averageTarget\": 623.54,\n   \"changePercent\": 0.32\n  },\n  {\n   \"date\": \"2026-10-13\",\n   \"averageTarge\n…（结果摘要已截取）\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 165394,
+        "durationMs": 32,
+        "tool": "bash"
+      },
+      {
+        "title": "组织报告内容",
+        "detail": "调用：build_streamviz_payload.py\n结果：amd_streamviz_payload.json 7 4 7\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 194710,
+        "durationMs": 46,
+        "tool": "build_streamviz_payload.py"
+      },
+      {
+        "title": "生成分析报告",
+        "detail": "调用：render_streamviz.py\n参数：--output outputs/generated/deepseek-case-amd-ratings-streamviz.html\n结果：{\"ok\": true, \"tool\": \"streamviz\", \"output\": \"deepseek-case-amd-ratings-streamviz.html\", \"bytes\": 26638}\n26638 outputs/generated/deepseek-case-amd-ratings-streamviz.html\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 195963,
+        "durationMs": 62,
+        "tool": "render_streamviz.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：0\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 199704,
+        "durationMs": 30,
+        "tool": "bash"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AMD --output outputs/case-amd-ratings/vision_consensus.json\n结果：Traceback (most recent call last):\n  File \"vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ^^^^^^\n  File \"vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n                                                                    ^^^^^^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 262, in analyze_chart\n    client = model_client()\n             ^^^^^^^^^^^^^^\n  File \"vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\n[status: completed, exit code: 0]\n耗时：11.25 秒",
+        "state": "error",
+        "elapsedMs": 210954,
+        "durationMs": 11249,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AMD --output outputs/case-amd-ratings/vision_streamviz.json\n结果：任务已启动，但原始记录未保存最终返回结果。\n耗时：0.02 秒",
+        "state": "done",
+        "elapsedMs": 203691,
+        "durationMs": 19,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "检查图表展示",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AMD --output outputs/case-amd-ratings/vision_recommendations.json\n结果：任务已启动，但原始记录未保存最终返回结果。\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 203717,
+        "durationMs": 26,
+        "tool": "vision_chart_analyst.py"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：deepseek-case-amd-ratings-consensus-214d50a23758.png 1600x341\ndeepseek-case-amd-ratings-recommendations-68e5f363085a.png 1600x1346\ndeepseek-case-amd-ratings-streamviz-264c3891a658.png 1600x1315\n=== streamviz content check ===\nOK   AMD 近期分析师目标价调整轨迹\nOK   643.26\nOK   8.25%\nOK   花旗集团\nOK   575 → 800\nOK   2026-10-06\nOK   平均目标价路径\nOK   594.24\nOK   回撤\nOK   38/77\nOK   sv-timeline\nOK   sv-metrics\nOK   sv-table\nOK   sv-rankings\nOK   data-aime-streamviz-root\nlen 25617\n耗时：0.06 秒",
+        "state": "done",
+        "elapsedMs": 217193,
+        "durationMs": 58,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：OK   643.26 2\nOK   465 1\nOK   800 6\nOK   23 8\nOK   强烈买入 3\nOK   行业 4\nOK   594.24 1\nOK   4.35 1\nOK   height 18\nMISS min-height 0\nlen 22742\n=== head of consensus html ===\n\n\n\n\n\nAMD 华尔街共识与目标价\n\n:root{color-scheme:light;--business-bg-ffffff:#ffffff;--business-text-111827:#111827;--business-text-6b7280:#6b7280;--business-border-e5e7eb:#e5e7eb;--business-bg-f3f4f6:#f3f4f6;--business-bg-f7f8fb:#f7f8fb;--business-bg-e8ebf0:#e8ebf0;--business-bg-e9f8f1:#e9f8f1;--business-bg-0f1720:#0f1720;--business-text-eef4f8:#eef4f8;--business-text-8f9aa8:#8f9aa8;--business-border-263241:#263241;--business-bg-172231:#172231;--business-bg-070b10:#070b10;--business-bg-222e3b:#222e3b;}\n:root[data-theme=\"dark\"]{color-scheme:dark;--business-bg-ffffff:#202b3a;--business-text-111827:#e8edf5;--business\n耗时：0.03 秒",
+        "state": "done",
+        "elapsedMs": 219763,
+        "durationMs": 33,
+        "tool": "bash"
+      },
+      {
+        "title": "整理数据与校验结果",
+        "detail": "调用：bash\n结果：grid-template-columns:minmax(0,1fr) minmax(0,1fr)\ngrid-template-columns:minmax(0,1fr) minmax(0,1fr)\ngrid-template-columns:140px minmax(0,1fr)\ngrid-template-columns:12px 1fr auto\ngrid-template-columns:minmax(0,1fr) 176px\ngrid-template-columns:28px 1fr auto\ngrid-template-columns:1fr\ngrid-template-columns:132px minmax(0,1fr)\ngrid-template-columns:1fr\n--- body markup ---\n class=\"theme-light\">\n\n\nconst payload = {\"type\": \"wall-street-consensus\", \"name\": \"华尔街共识\", \"title\": \"AMD 华尔街共识与目标价\", \"code\": \"AMD\", \"market\": \"185\", \"marketLabel\": \"NASDAQ\", \"ratingSummary\": {\"label\": \"买入\", \"score\": 3.95652174, \"analystCount\": 23, \"windowDays\": 90, \"lastUpdatedText\": \"Updated Oct 7, 2026\", \"sourceWindowText\": \"Analyst actions in the last 90 days\"}, \"priceTarget\": {\"average\": 643.26086957, \"low\": 465, \"high\": 800}, \"lastPrice\": 594.24, \"upside\": {\"amount\": 49.020869569999945, \"percent\": 8.249338578688736}, \"analystBreakdown\": [{\"key\": \"strongBuy\", \"label\": \"强烈买入\", \"count\": 1, \"percent\": 4.35}, {\"key\": \"buy\"\n…（结果摘要已截取）\n耗时：0.04 秒",
+        "state": "done",
+        "elapsedMs": 222534,
+        "durationMs": 36,
+        "tool": "bash"
+      },
+      {
+        "title": "验证图表结构与交互",
+        "detail": "调用：verify_dom.py\n结果：deepseek-case-amd-ratings-consensus.html@1600 overflowX= 0 height= 900 missing= []\n    AMD 华尔街共识与目标价 近 90 天 | 更新于 2026年10月7日 共识评级 买入 3.96 / 5，来自 23 位分析师 强烈卖出 卖出 持有 买入 强烈买入 目标价 $643.26 $49.02 (+8.25%) 相对当前价 $594.24 低 $465 高 $800 分析师分布 23 位分析师 强烈买入 1 买入 20 持有 2 卖出 0 强烈\ndeepseek-case-amd-ratings-recommendations.html@1600 overflowX= 0 height= 1345 missing= ['2026-10-06']\n    分析师推荐 月度推荐评级分布 1M 3M 6M 1Y 30 23 15 8 0 2026年5月 2026年7月 2026年10月 强烈买入 买入 持有 卖出 强烈卖出 近期分析师动作 机构 分析师 动作 评级 目标价 日期 Mizuho Vijay Rakesh 维持 跑赢大盘→跑赢大盘 705 +125 2026年10月6日 Citigroup Atif \ndeepseek-case-amd-ratings-target-vs-price.html@1600 overflowX= 0 height= 900 missing= ['643.26', '594.24']\n    目标价与实际价格 最新价差 49.02 (+8.25%) 1M 3M 6M 1Y 690 568 445 323 200 4月14日 7月14日 10月13日 实际价格 平均目标价\ndeepseek-case-amd-ratings-streamviz.html@1600 overflowX= 0 height= 1314 missing= []\n    证据快照 · 截至 2026-10-13 AMD 近期分析师目标价调整轨迹 9 月以来可追溯的 7 条分析师动作中，4 条为上调、0 条下调，中位上调幅度 125 美元；平均目标价由 4 月的 283.07 美元升至 643.26 美元，但最新收盘价 594.24 美元（2026-10-12）自 10 月 6\n…（结果摘要已截取）\n耗时：21.14 秒",
+        "state": "done",
+        "elapsedMs": 248648,
+        "durationMs": 21137,
+        "tool": "verify_dom.py"
       }
     ],
     "elapsedMs": 276111,
     "startedAt": 1791890297067,
     "endedAt": 1791890573178,
-    "durationSource": "harness-session-timestamps"
+    "durationSource": "harness-session-timestamps",
+    "detailSource": "cached-tool-results"
   }
 }

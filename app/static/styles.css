@@ -3693,3 +3693,13 @@ p {
 .activityStepDetail { white-space:pre-line; overflow-wrap:anywhere; }
 .mobileBrand { border:0; background:transparent; padding:0; font-family:inherit; cursor:pointer; }
 .reportGeneratedImageButton { cursor:default; }
+
+/* Decorative local video stays behind the home hero and fades into the gallery. */
+.conversation.is-empty { position:relative; isolation:isolate; }
+.homeBackdrop { display:none; position:absolute; inset:0 0 auto; height:100dvh; min-height:540px; z-index:-1; overflow:hidden; pointer-events:none; }
+.conversation.is-empty > .homeBackdrop { display:block; }
+.homeBackdrop video { display:block; width:100%; height:100%; object-fit:cover; object-position:center; opacity:.2; filter:saturate(.55); }
+.homeBackdropMask { position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.52) 46%,var(--bg) 94%); }
+:root[data-theme="dark"] .homeBackdrop video { opacity:.4; filter:saturate(.65); }
+:root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(14,19,26,.24),rgba(14,19,26,.5) 46%,var(--bg) 94%); }
+@media(max-width:760px) { .homeBackdrop { height:85dvh; min-height:480px; } .homeBackdrop video { object-position:55% center; } }

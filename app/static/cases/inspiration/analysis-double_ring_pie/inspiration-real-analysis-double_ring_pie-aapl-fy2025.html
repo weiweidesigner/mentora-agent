@@ -14,9 +14,12 @@
 	.double-ring-component{width:100%;min-height:0;padding:8px 18px 10px;background:transparent}
 	.ring-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;max-width:560px;margin:0 auto}
 	.ring-stage{position:relative;width:100%;height:250px;display:flex;align-items:center;justify-content:center}
-	.ring-side{width:100%;display:flex;justify-content:center}
+	.ring-side{width:100%;display:flex;flex-direction:column;justify-content:center}
 	svg{display:block;width:240px;height:240px;overflow:visible}
 .center-text{font-size:18px;font-weight:500;fill:var(--business-text-171717);text-anchor:middle;dominant-baseline:middle}
+:root[data-theme="dark"] .ring-track{fill:#2b3544}
+.center-caption{font-size:12px;fill:var(--business-text-4b5563)}
+.ring-baseline{margin:10px 0 0;text-align:center;font-size:12px;color:var(--business-text-4b5563)}
 .ring-track,.ring-arc,.ring-highlight{transition:opacity .12s ease}
 .ring-arc{cursor:pointer}
 .ring-arc:hover{opacity:.88}
@@ -45,12 +48,13 @@
     <div class="ring-stage"><svg role="img" aria-label="苹果 FY2025 利润率双环图（营收为共同基准）"></svg><div class="ring-tooltip"></div></div>
     <div class="ring-side">
       <div class="ring-legend"></div>
-      <div class="metric-list"></div>
+      <p class="ring-baseline">均以 FY2025 营收为基准</p>
+<div class="metric-list"></div>
     </div>
   </div>
 </section>
 <script>
-const config = {"title": "苹果 FY2025 利润率双环图（营收为共同基准）", "centerLabel": "营收 100%", "height": 430, "base": {"label": "营收（共同基准）", "value": 416.161, "displayValue": "4,161.61 亿美元", "color": "#a8b0bd", "trackColor": "#eceef1"}, "rings": [{"label": "营业利润", "value": 133.05, "total": 416.161, "displayValue": "1,330.50 亿美元 · 占营收 31.97%", "color": "#3b6ff5"}, {"label": "净利润", "value": 112.01, "total": 416.161, "displayValue": "1,120.10 亿美元 · 占营收 26.92%", "color": "#27b0a4"}], "metrics": [{"label": "财年", "value": "FY2025（截至 2025-09-27）"}, {"label": "营收", "value": "4,161.61 亿美元"}, {"label": "营业利润率", "value": "31.97%"}, {"label": "净利率", "value": "26.92%"}, {"label": "营业利润", "value": "1,330.50 亿美元"}, {"label": "净利润", "value": "1,120.10 亿美元"}, {"label": "净利率 − 营业利润率", "value": "−5.05 个百分点"}, {"label": "净利润 / 营业利润", "value": "84.19%"}]};
+const config = {"title": "苹果 FY2025 利润率双环图（营收为共同基准）", "centerLabel": "总营收", "height": 430, "base": {"label": "营收（共同基准）", "value": 416.161, "displayValue": "4,161.61 亿美元", "color": "#a8b0bd", "trackColor": "#eceef1"}, "rings": [{"label": "营业利润", "value": 133.05, "total": 416.161, "displayValue": "1,330.50 亿美元 · 占营收 31.97%", "color": "#3b6ff5"}, {"label": "净利润", "value": 112.01, "total": 416.161, "displayValue": "1,120.10 亿美元 · 占营收 26.92%", "color": "#27b0a4"}], "metrics": [{"label": "财年", "value": "FY2025（截至 2025-09-27）"}, {"label": "营收", "value": "4,161.61 亿美元"}, {"label": "营业利润率", "value": "31.97%"}, {"label": "净利率", "value": "26.92%"}, {"label": "营业利润", "value": "1,330.50 亿美元"}, {"label": "净利润", "value": "1,120.10 亿美元"}, {"label": "净利率 − 营业利润率", "value": "−5.05 个百分点"}, {"label": "净利润 / 营业利润", "value": "84.19%"}]};
 const root = document.querySelector('.double-ring-component');
 const stage = root.querySelector('.ring-stage');
 const svg = root.querySelector('svg');
@@ -107,16 +111,16 @@ function render() {
     arc.addEventListener('mouseleave', hideTooltip);
     svg.appendChild(arc);
   });
-  svg.appendChild(node('text', {x:cx,y:cy,class:'center-text'}, config.centerLabel));
+  svg.appendChild(node('text', {x:cx,y:cy-14,class:'center-text center-caption'}, config.centerLabel));
+  const amount = node('text', {x:cx,y:cy+12,class:'center-text'}, config.base.displayValue);
+  svg.appendChild(amount);
+  const maxWidth = innerR * 1.65;
+  if (amount.getComputedTextLength() > maxWidth) amount.style.fontSize = `${18 * maxWidth / amount.getComputedTextLength()}px`;
 
-  const baseLegend = document.createElement('span');
-  baseLegend.className = 'legend-item';
-  baseLegend.innerHTML = `<i class="legend-dot" style="background:${config.base.color}"></i>${config.base.label}`;
-  legend.appendChild(baseLegend);
   config.rings.slice().reverse().forEach(ring => {
     const item = document.createElement('span');
     item.className = 'legend-item';
-    item.innerHTML = `<i class="legend-dot" style="background:${ring.color}"></i>${ring.label}`;
+    item.innerHTML = `<i class="legend-dot" style="background:${ring.color}"></i>${ring.label === '营业利润' ? '营业利润率' : '净利率'} ${(ring.value / ring.total * 100).toFixed(2)}%`;
     legend.appendChild(item);
   });
 
