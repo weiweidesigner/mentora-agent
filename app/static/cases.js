@@ -384,10 +384,6 @@
       resizeObserver.disconnect();
       lanes = [];
       hovered = gallery.matches(":hover");
-      if (!desktop.matches) {
-        gallery.innerHTML = rows.map(cardHtml).join("");
-        return;
-      }
       const split = Math.ceil(rows.length / 2);
       gallery.innerHTML = [rows.slice(0, split), rows.slice(split)].map((items, rowIndex) => `
         <div class="caseLane" aria-label="案例泳道 ${rowIndex + 1}">
@@ -398,6 +394,19 @@
         lanes.push(state);
         resizeObserver.observe(lane);
         sizeLane(state);
+        // Touch uses native scrolling; pause drift through the swipe and inertia.
+        lane.addEventListener("pointerdown", event => {
+          if (event.pointerType === "mouse") return;
+          state.dragging = true;
+        });
+        const endTouch = event => {
+          if (event.pointerType === "mouse") return;
+          state.dragging = false;
+          state.position = lane.scrollLeft;
+          state.manualUntil = performance.now() + 2500;
+        };
+        lane.addEventListener("pointerup", endTouch);
+        lane.addEventListener("pointercancel", endTouch);
         let pointer = null;
         lane.addEventListener("pointerdown", event => {
           if (event.pointerType !== "mouse" || event.button !== 0) return;
@@ -439,7 +448,7 @@
     function moveLanes(now) {
       const elapsed = Math.min(64, now - previousFrame) / 1000;
       previousFrame = now;
-      if (desktop.matches && !document.hidden && !selectedCase && conversation.classList.contains("is-empty")) {
+      if (!document.hidden && !selectedCase && conversation.classList.contains("is-empty")) {
         const paused = hovered || !!gallery.querySelector(":focus-visible") || reducedMotion.matches;
         lanes.forEach(state => {
           if (!state.cycle || state.dragging) return;

@@ -3662,20 +3662,28 @@ p {
   .inspirationGrid .caseCard p { font-size:12px; }
 }
 @media(max-width:480px) { .inspirationGrid { grid-template-columns:minmax(0,1fr); } }
-@media(min-width:761px) {
-  .conversation.is-empty .homeCases { width:min(calc(100% - 48px),1100px); max-width:none; padding:0 0 32px; }
-  .caseGrid { display:flex; flex-direction:column; gap:20px; min-width:0; }
-  .caseLane { width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; overscroll-behavior-x:contain; cursor:grab; mask-image:linear-gradient(to right,transparent,#000 80px,#000 calc(100% - 80px),transparent); }
-  .caseLane::-webkit-scrollbar { display:none; }
-  .caseLaneTrack { display:flex; width:max-content; padding:8px 0; }
-  .caseLaneSet { display:flex; gap:20px; padding-right:20px; flex:none; }
-  .caseLane .caseCard { flex:0 0 320px; width:320px; padding:16px; min-height:128px; user-select:none; cursor:grab; }
-  .caseLane .caseCardTop { margin-bottom:8px; }
-  .caseLane .caseCardIcon { width:22px; height:22px; }
-  .caseLane .caseCardIcon svg { width:14px; height:14px; }
-  .caseLane .caseCardTag { font-size:12px; }
-  .caseLane .caseCard h2 { margin:0 0 5px; font-size:16px; line-height:1.35; }
-  .caseLane .caseCard p { font-size:13px; line-height:1.5; }
-  .caseLane.is-dragging,.caseLane.is-dragging .caseCard { cursor:grabbing; }
-  .caseLane .caseCard:hover { transform:none; box-shadow:none; }
+/* Shared two-row gallery: native touch swipe and continuous desktop drift. */
+.conversation.is-empty .homeCases { width:min(calc(100% - 48px),1100px); max-width:none; margin-top:20px; padding:0 0 16px; }
+.caseGrid { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.caseLane { width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; overscroll-behavior-x:contain; cursor:grab; mask-image:linear-gradient(to right,transparent,#000 48px,#000 calc(100% - 48px),transparent); }
+.caseLane::-webkit-scrollbar { display:none; }
+.caseLaneTrack { display:flex; width:max-content; padding:4px 0; }
+.caseLaneSet { display:flex; gap:14px; padding-right:14px; flex:none; }
+.caseLane .caseCard { flex:0 0 320px; width:320px; height:116px; padding:12px; user-select:none; cursor:grab; }
+.caseLane .caseCardTop { margin-bottom:6px; }
+.caseLane .caseCardIcon { width:20px; height:20px; flex-shrink:0; }
+.caseLane .caseCardIcon svg { width:14px; height:14px; }
+.caseLane .caseCardTag { font-size:12px; }
+.caseLane .caseCard h2 { margin:0 0 4px; font-size:16px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.caseLane .caseCard p { font-size:13px; line-height:1.45; }
+.caseLane.is-dragging,.caseLane.is-dragging .caseCard { cursor:grabbing; }
+.caseLane .caseCard:hover { transform:none; box-shadow:none; }
+@media(max-width:760px) {
+  .conversation.is-empty .homeCases { width:100%; margin-top:16px; padding:0 0 12px; }
+  .caseGrid { gap:6px; }
+  .caseLane { mask-image:linear-gradient(to right,transparent,#000 20px,#000 calc(100% - 20px),transparent); }
+  .caseLaneSet { gap:12px; padding-right:12px; }
+  .caseLane .caseCard { flex-basis:min(276px,calc(100vw - 60px)); width:min(276px,calc(100vw - 60px)); height:112px; }
+  .caseLane .caseCard h2 { font-size:15px; }
+  .caseLane .caseCard p { font-size:12px; line-height:1.5; }
 }
