@@ -3491,14 +3491,22 @@ p {
   .conversation.is-case { position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 124; padding: 0; overflow: hidden; animation: caseOverlayEnter .2s ease-out; }
   .conversation.is-case .messages { min-height: 0; overscroll-behavior-y: contain; }
   .caseDetailHeader { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; gap: 4px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
-  .caseCacheDate { grid-column: 2; grid-row: 1; text-align: center; font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+  .caseCacheDate { grid-column: 2; grid-row: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-align: center; font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+  .caseTitleText { display: inline-block; white-space: nowrap; }
+  .caseCacheDate.is-marquee { text-align: left; }
+  .caseCacheDate.is-marquee .caseTitleText { animation: caseTitleMarquee var(--case-title-duration, 8s) linear infinite alternate; }
   .caseBackButton { grid-column: 3; grid-row: 1; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border-radius: 10px; }
   .caseBackLabel { display: none; }
   .caseCloseIcon { display: block; width: 24px; height: 24px; }
   .caseAskButton { min-width: 170px; height: 46px; }
 }
 @keyframes caseOverlayEnter { from { opacity: .6; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes caseTitleMarquee { 0%, 18% { transform: translateX(0); } 82%, 100% { transform: translateX(var(--case-title-travel)); } }
 @media(prefers-reduced-motion:reduce) { .conversation.is-case { animation: none; } }
+@media(max-width:760px) and (prefers-reduced-motion:reduce) {
+  .caseCacheDate.is-marquee { overflow-x: auto; scrollbar-width: none; }
+  .caseCacheDate.is-marquee .caseTitleText { animation: none; }
+}
 
 .caseActionBar { transition: opacity .18s ease, transform .18s ease; }
 .caseActionBar.is-scroll-hidden { opacity: 0; transform: translate(-50%, 12px); pointer-events: none; }

@@ -13,6 +13,29 @@
   let scrollIdleTimer = null;
   let lastScrollTop = 0;
   const responseCache = new Map();
+  function updateCaseTitle(measure = false) {
+    const bubble = messages.querySelector(".message.user .userBubble");
+    const showQuestion = !!selectedCase && isMobileLayout() && !!bubble && messages.scrollTop > 0
+      && bubble.getBoundingClientRect().bottom <= messages.getBoundingClientRect().top + 4;
+    const title = selectedCase ? (showQuestion ? selectedCase.question : "案例回放 · " + selectedCase.cachedDate) : "";
+    let text = date.querySelector(".caseTitleText");
+    if (!text || text.textContent !== title) {
+      text = document.createElement("span");
+      text.className = "caseTitleText";
+      text.textContent = title;
+      date.replaceChildren(text);
+      date.setAttribute("aria-label", title);
+      date.title = title;
+      measure = true;
+    }
+    if (measure) {
+      date.classList.remove("is-marquee");
+      const distance = showQuestion ? Math.max(0, text.scrollWidth - date.clientWidth) : 0;
+      date.style.setProperty("--case-title-travel", `${-distance}px`);
+      date.style.setProperty("--case-title-duration", `${Math.max(6, distance / 30 + 3)}s`);
+      date.classList.toggle("is-marquee", distance > 1);
+    }
+  }
   function syncCaseOverlay() {
     const mobile = !!selectedCase && isMobileLayout();
     conversation.setAttribute("aria-label", mobile ? date.textContent : "图文对话分析");
@@ -28,6 +51,7 @@
     const sidebar = document.querySelector("#appSidebar");
     if (sidebar) sidebar.inert = mobile;
     back?.setAttribute("aria-label", mobile ? "关闭案例回放" : "返回首页");
+    updateCaseTitle(true);
   }
   window.addEventListener("resize", syncCaseOverlay);
   const icons = [
@@ -47,6 +71,7 @@
   messages.addEventListener("scroll", () => {
     if (!selectedCase) return;
     const next = messages.scrollTop;
+    updateCaseTitle();
     if (next > lastScrollTop + 2) setScrollHidden(true);
     else if (next < lastScrollTop - 2) setScrollHidden(false);
     lastScrollTop = next;
@@ -187,6 +212,7 @@
       }
       messages.innerHTML = "";
       addUserMessage(cached.question);
+      updateCaseTitle(true);
       const article = createAssistantMessage(cached.question);
       article.classList.add("cachedCaseAnswer");
       const cachedSteps = cached.activity?.steps || [];
