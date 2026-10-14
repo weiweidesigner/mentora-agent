@@ -9768,6 +9768,13 @@ var Pe = ":root,\n[data-theme=\"light\"] {\n  color-scheme: light;\n  --sv-slate
     let bottom = Math.max(0, root.scrollHeight);
     const paintedNodes = nodes.flatMap((node) => [node, ...Array.from(node.querySelectorAll('*'))]);
     paintedNodes.forEach((node) => {
+      // Closed details can retain descendant layout boxes despite not painting them.
+      if (typeof node.checkVisibility === 'function' && !node.checkVisibility()) return;
+      for (let ancestor = node.parentElement; ancestor && ancestor !== root; ancestor = ancestor.parentElement) {
+        if (ancestor.tagName !== 'DETAILS' || ancestor.hasAttribute('open')) continue;
+        const summary = Array.from(ancestor.children).find((child) => child.tagName === 'SUMMARY');
+        if (!summary || !summary.contains(node)) return;
+      }
       const styles = window.getComputedStyle(node);
       if (styles.display === 'none' || styles.visibility === 'hidden') return;
       const rect = node.getBoundingClientRect();
