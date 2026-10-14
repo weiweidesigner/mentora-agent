@@ -774,3 +774,21 @@ def test_deepseek_streams_only_root_public_text_before_final(tmp_path, monkeypat
     snapshots = [data for kind,data in events if kind=="answer_text"]
     assert snapshots == [{"text":"公开分析正文","replace":True}]
     assert next(i for i,(kind,_) in enumerate(events) if kind=="answer_text") < next(i for i,(kind,_) in enumerate(events) if kind=="final")
+
+
+def test_execution_receipts_never_become_modules_fallbacks_or_explicit_charts(tmp_path):
+    generated=tmp_path/'outputs'/'generated';generated.mkdir(parents=True)
+    receipt=generated/'ds_review_artifact.html'
+    receipt.write_text('<html><main data-artifact-type="data-transform"><h1>数据处理完成</h1></main></html>')
+    chart=generated/'real-chart.html';chart.write_text('<html><body><svg></svg></body></html>')
+    client=LocalAgentFrameworks(project_root=tmp_path,generated_dir=generated)
+    output=[{'ok':True,'output':str(receipt)},{'ok':True,'output':str(chart)}]
+    modules=client._html_modules_from_tool_output(output)
+    assert len(modules)==1 and modules[0]['htmlUrl']=='/generated/real-chart.html'
+    assert receipt.resolve() not in client._generated_html_snapshot()
+    answer=f'正文\n[[AIME_CHART:{receipt}]]\n[[AIME_CHART:{chart}]]'
+    final=client._artifact_payload('deepseek','测试',answer,'run','session')
+    assert len(final['reportArtifacts'])==1 and final['reportArtifacts'][0]['url']=='/generated/real-chart.html'
+    assert str(receipt) not in final['interpretation'] and '正文' in final['interpretation']
+    only=client._artifact_payload('deepseek','测试',f'正文\n[[AIME_CHART:{receipt}]]','run','session')
+    assert only['reportArtifacts']==[] and only['interpretation']=='正文'

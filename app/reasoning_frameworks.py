@@ -812,6 +812,7 @@ class LocalAgentFrameworks:
             skill_names = [name.strip() for name in skill_match.group(1).split(",") if name.strip() and name.strip() != "none"]
         artifacts: list[dict[str, str]] = []
         resolved_markers: dict[str, Path] = {}
+        intermediate_markers: set[str] = set()
         for raw in dict.fromkeys(markers):
             marker_path = raw.strip()
             candidates: list[Path]
@@ -831,10 +832,13 @@ class LocalAgentFrameworks:
                     and path.suffix.lower() == ".html"
                     and self.generated_dir in path.parents
                 ):
+                    if not self._is_user_facing_html(path):
+                        intermediate_markers.add(raw)
+                        break
                     resolved_markers[raw] = path
                     artifacts.append({"path": str(path), "url": f"/generated/{path.name}"})
                     break
-        if markers and not artifacts:
+        if markers and not artifacts and any(raw not in intermediate_markers for raw in markers):
             missing = ", ".join(Path(raw.strip()).name for raw in dict.fromkeys(markers))
             raise ReasoningFrameworkError(
                 f"模型引用的图表文件未成功生成：{missing}。请重试本次请求。"
@@ -937,8 +941,21 @@ class LocalAgentFrameworks:
             "thoughtSummary": thought_summary,
         }
 
+    @staticmethod
+    def _is_user_facing_html(path: Path) -> bool:
+        """Execution receipts are intermediate evidence, never visual reports."""
+        try:
+            with path.open(encoding="utf-8") as handle:
+                prefix = handle.read(65536)
+        except (OSError, UnicodeDecodeError):
+            return False
+        return not bool(re.search(
+            r"<main\b[^>]*\bdata-artifact-type\s*=\s*[\"'](?:data-transform|execution-receipt)[\"']",
+            prefix, flags=re.I,
+        ))
+
     def _html_modules_from_tool_output(self, value: Any) -> list[dict[str, Any]]:
-        """Publish generated HTML immediately through the StreamViz transport."""
+        """Register user-facing generated HTML; omit internal execution receipts."""
         modules: list[dict[str, Any]] = []
         seen: set[Path] = set()
 
@@ -972,7 +989,7 @@ class LocalAgentFrameworks:
                 if not path.is_absolute():
                     path = self.project_root / path
                 path = path.resolve()
-                if path not in seen and path.is_file() and self.generated_dir in path.parents:
+                if path not in seen and path.is_file() and self.generated_dir in path.parents and self._is_user_facing_html(path):
                     seen.add(path)
                     modules.append({
                         "htmlUrl": f"/generated/{path.name}",
@@ -995,7 +1012,7 @@ class LocalAgentFrameworks:
                 stat = path.stat()
             except OSError:
                 continue
-            if stat.st_size > 0:
+            if stat.st_size > 0 and self._is_user_facing_html(path):
                 snapshot[path.resolve()] = (stat.st_mtime_ns, stat.st_size)
         return snapshot
 

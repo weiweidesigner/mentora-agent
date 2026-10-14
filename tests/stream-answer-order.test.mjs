@@ -36,3 +36,18 @@ test('public text snapshots render once and never expose chart marker coordinate
     assert.equal(f.article.querySelector('.streamAnswerPreview').textContent,'完整解释。');
   } finally { f.close(); }
 });
+test('native visualization events wait until public prose starts and retain event order', () => {
+  const f=fixture(), rendered=[];
+  f.w.upsertStreamVisualization=(_article,data)=>rendered.push(data);
+  try {
+    for (const event of [{id:'chart',reset:true},{id:'chart',delta:'<p>chart</p>'},{id:'chart',final:true}]) f.w.queueStreamVisualization(f.article,event);
+    assert.equal(rendered.length,0);
+    assert.equal(f.article.querySelector('.finalAnswer').children.length,0);
+    f.w.renderStreamAnswerText(f.article,{text:'先给结论。'});
+    assert.equal(rendered.length,3);
+    assert.equal(rendered[1].delta,'<p>chart</p>');
+    assert.equal(f.article.pendingVisualizations.length,0);
+    f.w.queueStreamVisualization(f.article,{id:'chart',title:'更新'});
+    assert.equal(rendered.length,4);
+  } finally {f.close();}
+});

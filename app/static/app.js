@@ -419,7 +419,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "visualization" || eventName === "visualize_widget") {
-    upsertStreamVisualization(article, data);
+    queueStreamVisualization(article, data);
     return;
   }
   if (eventName === "vision_asset") {
@@ -836,6 +836,11 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   });
   artifactCode(item.url).then(async (rawCode) => {
     if (!host.isConnected) return;
+    if (/<main\b[^>]*\bdata-artifact-type\s*=\s*["'](?:data-transform|execution-receipt)["']/i.test(rawCode)) {
+      window.AimeStreamViz?.unmount?.(host);
+      host.remove();
+      return;
+    }
     if (!streamVisualizationCompatible(rawCode)) {
       window.AimeStreamViz?.unmount?.(host);
       host.replaceWith(createArtifactFallbackFrame(item, index));
@@ -923,13 +928,31 @@ function renderStreamAnswerText(article, data = {}) {
   }
   const stick = isNearBottom();
   preview.innerHTML = formatInsight(text);
+  article.answerTextStarted = true;
+  revealPendingVisualizations(article);
   keepScrollPosition(stick);
+}
+
+function queueStreamVisualization(article, data = {}) {
+  if (!article.answerTextStarted && !article.activityEnded) {
+    article.pendingVisualizations = article.pendingVisualizations || [];
+    article.pendingVisualizations.push(data);
+    return;
+  }
+  upsertStreamVisualization(article, data);
+}
+
+function revealPendingVisualizations(article) {
+  const pending = article.pendingVisualizations || [];
+  article.pendingVisualizations = [];
+  pending.forEach(data => upsertStreamVisualization(article, data));
 }
 
 function upsertStreamVisualization(article, data = {}) {
   const lane = streamVisualizationLane(article);
   if (!lane) return;
   const key = String(data.id || data.callId || data.toolCallId || "visualization");
+  if (article.nonVisualVisualizationIds?.has(key)) return;
   if (data.discard) {
     const provisional = Array.from(lane.querySelectorAll(".streamvizArtifactHost"))
       .find((item) => item.dataset.visualizationId === key);
@@ -961,6 +984,13 @@ function upsertStreamVisualization(article, data = {}) {
   } else {
     const replacement = data.widget_code ?? data.widgetCode ?? data.html;
     if (replacement !== undefined) host.streamVisualizationCode = String(replacement || "");
+  }
+  if (/<main\b[^>]*\bdata-artifact-type\s*=\s*["'](?:data-transform|execution-receipt)["']/i.test(host.streamVisualizationCode || "")) {
+    article.nonVisualVisualizationIds = article.nonVisualVisualizationIds || new Set();
+    article.nonVisualVisualizationIds.add(key);
+    window.AimeStreamViz?.unmount?.(host);
+    host.remove();
+    return;
   }
   mountStreamVisualization(host, {
     title: data.title || "",
@@ -1470,7 +1500,7 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
   lang = normalizeLang(lang);
   const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
   const reasoningTitle = compactReasoningTitle(reasoning, lang);
-  if (reasoningTitle) return reasoningTitle;
+  if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
 
   const command = toolCommandText(params, shellCommand);
   const lowerCommand = command.toLowerCase();
@@ -1508,6 +1538,9 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
       symbol && symbol !== "CODEX" ? `正在取得 ${symbol} 的行情資料` : "正在取得行情資料",
       symbol && symbol !== "CODEX" ? `Retrieving market data for ${symbol}` : "Retrieving market data",
     );
+  }
+  if (/^(?:bash|shell|exec_command|command_execution)$/i.test(effectiveScript)) {
+    return localized("正在处理数据与准备分析", "正在處理資料與準備分析", "Preparing data and analysis");
   }
   if (/\.py$|\.sh$/.test(effectiveScript)) {
     return localized(`正在执行${displayName}`, `正在執行${displayName}`, `Running ${displayName}`);
@@ -2111,6 +2144,8 @@ function renderRoute(article, steps) {
 
 function renderFinalAnswer(article, data) {
   const target = article.querySelector(".finalAnswer");
+  article.answerTextStarted = true;
+  revealPendingVisualizations(article);
   completeThinking(article);
   updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "thoughtFor"));
   article.dataset.thinkingState = "done";
