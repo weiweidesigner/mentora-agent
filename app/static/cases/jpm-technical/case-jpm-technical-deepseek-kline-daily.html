@@ -58,6 +58,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   #annotation-editor{left:8px!important;right:8px!important;width:auto}
 }
 @media(max-width:380px){.period-button{min-width:40px;padding:0 8px;font-size:14px}#kline-tooltip{width:min(148px,40%)}}
+
+.kline-mobile-legend,.kline-mobile-levels{display:none}
+@media(max-width:760px){
+  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:15px!important}
+  .kline-title{gap:10px;padding-right:8px}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
+  .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
+  .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
+  .kline-mobile-levels:empty,.kline-mobile-legend:empty{display:none}
+  .kline-mobile-levels button{border:1px solid var(--kl-border);border-radius:6px;background:transparent;color:var(--kl-text);padding:5px 7px;font:inherit;font-size:11px;line-height:1.3;-webkit-tap-highlight-color:transparent}
+  .kline-mobile-levels i{display:inline-block;width:10px;height:2px;margin-right:5px;vertical-align:middle}
+}
+
 </style>
 <style data-kline-theme="dual">/* Native K-line palettes, shared by standalone and previously saved charts. */
 :root[data-theme="light"] {
@@ -133,6 +147,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   const tooltip = document.getElementById('kline-tooltip');
   const annotationEditor = document.getElementById('annotation-editor');
   const annotationEditorInput = annotationEditor?.querySelector('input');
+
+  const mobileLegend = document.createElement('div');
+  mobileLegend.className = 'kline-mobile-legend';
+  root.querySelector('.chart-host').before(mobileLegend);
+  const mobileLevels = document.createElement('div');
+  mobileLevels.className = 'kline-mobile-levels';
+  root.append(mobileLevels);
+  function syncMobileSummary(entries) {
+    const key = JSON.stringify(entries);
+    if (mobileLegend.dataset.key !== key) {
+      mobileLegend.dataset.key = key;
+      mobileLegend.replaceChildren(...entries.map(([text,color]) => {
+        const span = document.createElement('span'); span.textContent = text; span.style.color = color; return span;
+      }));
+    }
+    const levels = annotations.filter(item => item.type === 'horizontal-line' && String(item.period || config.dataType) === String(activePeriod));
+    const levelKey = JSON.stringify(levels);
+    if (mobileLevels.dataset.key !== levelKey) {
+      mobileLevels.dataset.key = levelKey;
+      mobileLevels.replaceChildren(...levels.map(item => {
+        const button = document.createElement('button'); button.type = 'button';
+        const swatch = document.createElement('i'); swatch.style.background = annotationColor(item);
+        const price = fmtPrice(item.points[0].price);
+        // Existing labels sometimes already include a rounded price; do not repeat it.
+        const text = (item.text || '').replace(/\s*[-+]?\d+(?:\.\d+)?\s*$/, '').trim() || price;
+        button.append(swatch, document.createTextNode(text === price ? price : `${text} ${price}`));
+        button.setAttribute('aria-label', `${text} ${price}`);
+        button.addEventListener('click', () => { selectedAnnotationId = selectedAnnotationId === item.id ? null : item.id; draw(); });
+        return button;
+      }));
+    }
+  }
+  function selectMobileAnnotation(clientX, clientY) {
+    if (window.innerWidth > 760) return false;
+    const rect = canvas.getBoundingClientRect();
+    const id = hitTestAnnotation(clientX - rect.left, clientY - rect.top);
+    selectedAnnotationId = id === selectedAnnotationId ? null : id;
+    if (!id) return false;
+    activeIndex = -1; hideTooltip(); draw(); return true;
+  }
+
 
   function hideTooltip() {
     tooltip.classList.remove('is-visible', 'is-below');
@@ -428,14 +483,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
   function getLayout(width) {
     const rightPad = estimateAxisRightPad(width);
-    const isCompact = width < 520;
+    const isCompact = width <= 760;
     const configuredMainHeight = Number(config.mainChartHeight || 300);
     const configuredSubHeight = Number(config.subChartHeight || 72);
     const mainHeight = isCompact
-      ? Math.max(205, Math.min(configuredMainHeight, Math.round(width * 0.62)))
+      ? Math.max(260, Math.min(Math.max(configuredMainHeight, 300), Math.round(width * 0.82)))
       : configuredMainHeight;
     const baseSubHeight = isCompact
-      ? Math.max(44, Math.min(configuredSubHeight, Math.round(width * 0.15)))
+      ? Math.max(44, Math.min(configuredSubHeight, Math.round(width * 0.12)))
       : configuredSubHeight;
     const xHeight = isCompact ? 26 : 30;
     const panes = [];
@@ -462,7 +517,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
   function resizeCanvas() {
     const rect = canvas.parentElement.getBoundingClientRect();
-    const layout = getLayout(Math.max(320, Math.floor(rect.width)));
+    const layout = getLayout(Math.max(240, Math.floor(rect.width)));
     const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
     canvas.style.width = `${layout.width}px`;
     canvas.style.height = `${layout.height}px`;
@@ -579,7 +634,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   function drawPriceAxis(pane, s, blockedRects = []) {
     ctx.strokeStyle = theme.gridStrong;
     ctx.beginPath(); ctx.moveTo(pane.x + pane.w, pane.y); ctx.lineTo(pane.x + pane.w, pane.y + pane.h); ctx.stroke();
-    const ticks = 4;
+    const ticks = window.innerWidth <= 760 ? 3 : 4;
+    const axisFontSize = window.innerWidth <= 760 ? 11 : 12;
     const labelSafePad = 12;
     for (let i = 0; i <= ticks; i++) {
       const val = s.hi - (s.hi - s.lo) * i / ticks;
@@ -590,9 +646,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       // 如果刻度与最新价标签发生碰撞，则隐藏该刻度，避免 551.63 一类价签与右轴数字重叠。
       const labelY = Math.max(pane.y + labelSafePad, Math.min(pane.y + pane.h - labelSafePad, y));
       const label = fmtAxisPrice(val);
-      const rect = textRect(label, pane.x + pane.w + 7, labelY, 12, 500, 'left');
+      const rect = textRect(label, pane.x + pane.w + 7, labelY, axisFontSize, 500, 'left');
       if (blockedRects.some(item => rectsOverlap(rect, item, 5))) continue;
-      drawText(label, pane.x + pane.w + 7, labelY, theme.axis, 12, 500, 'left');
+      drawText(label, pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, 'left');
     }
   }
 
@@ -602,12 +658,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
     ctx.beginPath(); ctx.moveTo(pane.x + pane.w, pane.y); ctx.lineTo(pane.x + pane.w, pane.y + pane.h); ctx.stroke();
     const lo = minValue;
     const hi = maxValue;
+    const axisFontSize = window.innerWidth <= 760 ? 11 : 12;
     const labelSafePad = 10;
     for (const i of [0, 1]) {
       const val = i === 0 ? hi : lo;
       const y = i === 0 ? pane.y : pane.y + pane.h;
       const labelY = Math.max(pane.y + labelSafePad, Math.min(pane.y + pane.h - labelSafePad, y));
-      drawText(formatter(val), pane.x + pane.w + 7, labelY, theme.axis, 12, 500, 'left');
+      drawText(formatter(val), pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, 'left');
     }
   }
 
@@ -1011,13 +1068,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   function drawAnnotationLayer(state) {
     annotationHitRegions = [];
     const main = state.main;
+    const compact = window.innerWidth <= 760;
     const activeAnnotations = annotations.filter(item => String(item.period || config.dataType) === String(activePeriod));
     const horizontalLabels = horizontalAnnotationLabelLayout(
-      activeAnnotations.filter(item => item.type === 'horizontal-line'),
+      compact ? [] : activeAnnotations.filter(item => item.type === 'horizontal-line'),
       state,
     );
     const bubbleLayouts = annotationBubbleLayout(
-      activeAnnotations.filter(item => item.type === 'text' || item.type === 'callout'),
+      activeAnnotations.filter(item => (item.type === 'text' || item.type === 'callout') && (!compact || item.id === selectedAnnotationId || nearestBarIndex(state.all, normTime(item.points[0].time)) === state.all.length - 1)),
       state,
       [...horizontalLabels.values()],
     );
@@ -1030,7 +1088,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
         if (y < main.y || y > main.y + main.h) return;
         if (phase === 'geometry') {
           ctx.save(); ctx.setLineDash(isDraft ? [5, 4] : [7, 4]);
-          ctx.strokeStyle = color; ctx.lineWidth = selected ? 3 : (item.source === 'model' ? 2.2 : 1.5);
+          ctx.strokeStyle = color; ctx.lineWidth = compact ? (selected ? 1.8 : 1) : (selected ? 3 : (item.source === 'model' ? 2.2 : 1.5));
           ctx.beginPath(); ctx.moveTo(main.x, y); ctx.lineTo(main.x + main.w, y); ctx.stroke(); ctx.restore();
           if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'line', x1: main.x, y1: y, x2: main.x + main.w, y2: y });
         }
@@ -1056,6 +1114,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       }
       if (!first) return;
       if (item.type === 'text' || item.type === 'callout') {
+        if (compact && !selected && first.index !== state.all.length - 1) {
+          if (phase === 'geometry') {
+            ctx.save(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(first.x, first.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            if (!isDraft) annotationHitRegions.push({ id:item.id, type:'point', x:first.x, y:first.y, r:16 });
+          }
+          return;
+        }
         if (phase !== 'connector' && phase !== 'label') return;
         const hitRect = drawAnnotationBubble(item, first, main, color, selected, isDraft, bubbleLayouts.get(item.id), phase);
         if (!isDraft && phase === 'label') annotationHitRegions.push({ id: item.id, type: 'rect', ...hitRect });
@@ -1215,9 +1280,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 
     const isTimeShare = isMinutePeriod();
     const legendFontSize = window.innerWidth < 520 ? 10 : 11;
+    const compact = window.innerWidth <= 760;
     const avgValues = isTimeShare ? averagePrice(all) : [];
     const mas = isTimeShare ? [] : (config.ma || [5, 10, 20, 60]).map(n => Number(n)).filter(n => Number.isFinite(n) && n > 1).slice(0, 4);
     const maValues = isTimeShare ? [] : mas.map(n => movingAverage(all, n));
+    if (compact) {
+      const index = activeIndex >= 0 ? activeIndex : all.length - 1;
+      const entries = isTimeShare ? [[`${labels.price} ${fmtPrice(all[index]?.close)}`, upColor], [`${labels.avgPrice} ${fmtPrice(avgValues[index])}`,maColors[0]]] : mas.map((n,i) => [`MA${n} ${fmtPrice(maValues[i]?.[index])}`,maColors[i]]).filter((entry,i) => Number.isFinite(maValues[i]?.[index]));
+      syncMobileSummary(entries);
+    }
     const slice = visibleSlice(all, layout);
     const visible = slice.list;
     const main = layout.panes[0];
@@ -1260,9 +1331,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       const legendIndex = activeIndex >= 0 ? activeIndex : all.length - 1;
       const priceText = `${labels.price} ${fmtPrice(all[legendIndex]?.close)}`;
       const legendStartX = main.x + 4;
-      drawText(priceText, legendStartX, main.y + 18, upColor, legendFontSize, 800);
+      if (!compact) drawText(priceText, legendStartX, main.y + 18, upColor, legendFontSize, 800);
       const avgText = `${labels.avgPrice} ${fmtPrice(avgValues[legendIndex])}`;
-      drawText(avgText, legendStartX + ctx.measureText(priceText).width + 18, main.y + 18, maColors[0], legendFontSize, 800);
+      if (!compact) drawText(avgText, legendStartX + ctx.measureText(priceText).width + 18, main.y + 18, maColors[0], legendFontSize, 800);
     } else {
       const drawCandleBar = (bar, i) => {
         const x = xOf(i);
@@ -1336,7 +1407,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
           lx = main.x + 4;
           ly += legendLineGap;
         }
-        drawText(label, lx, ly, maColors[idx], legendFontSize, 800);
+        if (!compact) drawText(label, lx, ly, maColors[idx], legendFontSize, 800);
         lx += labelW + legendGap;
       });
 
@@ -1345,6 +1416,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       const hiIdx = all.indexOf(visibleHigh); const loIdx = all.indexOf(visibleLow);
       const drawExtremeLabel = (value, idx, y, color, marker) => {
         const x = xOf(idx);
+        if (compact) { ctx.save(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); return; }
         const raw = fmtPrice(value);
         const preferLeft = x > main.x + main.w * 0.66;
         let text = preferLeft ? `${raw} ${marker}` : `${marker} ${raw}`;
@@ -1503,7 +1575,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       const safePad = 2;
       const labelX = isFirst ? main.x + safePad : isLast ? main.x + main.w - safePad : x;
       const align = isFirst ? 'left' : isLast ? 'right' : 'center';
-      drawText(label, labelX, xY, theme.axis, 12, 500, align);
+      drawText(label, labelX, xY, theme.axis, window.innerWidth <= 760 ? 11 : 12, 500, align);
     }
 
     if (activeIndex >= slice.start && activeIndex <= slice.end) {
@@ -1674,7 +1746,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
       handleAnnotationClick(e);
       return;
     }
-    if (!dragMoved) toggleTooltipFromX(e.clientX);
+    if (!dragMoved && !selectMobileAnnotation(e.clientX, e.clientY)) toggleTooltipFromX(e.clientX);
   });
   const panZoomEnabled = true;
   if (panZoomEnabled) {
@@ -1788,7 +1860,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
           return;
         }
         if (!dragMoved && lastPointerX !== null) {
-          toggleTooltipFromX(lastPointerX);
+          if (!selectMobileAnnotation(lastPointerX, lastPointerY)) toggleTooltipFromX(lastPointerX);
           ignoreNextClick = true;
         }
         isDragging = false;
