@@ -368,7 +368,20 @@ body {
       const requested = new URLSearchParams(location.search).get('theme');
       if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
     })();
-    </script></head>
+    </script><style data-sankey-layout>
+html,body{height:auto!important;min-height:0!important;}
+.wrap{height:520px;min-height:520px;grid-template-rows:auto minmax(0,1fr) 42px;gap:8px;}
+.chart{background:transparent!important;}
+.bottom{grid-template-columns:28px max-content minmax(0,1fr) max-content;gap:8px;padding:6px 8px;}
+.play{width:28px;height:28px;border:0;background:#4c91ff;box-shadow:none;color:#fff;}
+.play:hover{background:#4c91ff;}.play svg{display:none;}
+.play::before{content:"";width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid #fff;transform:translateX(1px);}
+.play.is-playing::before{width:8px;height:10px;border:0;background:linear-gradient(90deg,#fff 0 36%,transparent 36% 64%,#fff 64% 100%);transform:none;}
+.track{height:4px;top:11px;border-radius:999px;background:rgba(76,145,255,.18);}
+.tick{top:9px;height:8px;opacity:.4;}
+.thumb{width:14px;height:14px;top:6px;border:0;border-radius:50%;background:#4c91ff;box-shadow:0 0 0 5px rgba(76,145,255,.14);}.thumb i{display:none;}
+@media(max-width:720px){.wrap{height:420px;min-height:420px;}.axis-date{font-size:11px;}.chart{overflow-x:auto;}#svg{min-width:640px;}}
+</style></head>
 <body>
 <main class="wrap">
   <header class="toolbar">
@@ -1080,7 +1093,7 @@ function render(options = {}) {
   state.index = Math.min(Math.max(0, state.index), data.length - 1);
 
   const rect = chart.getBoundingClientRect();
-  const width = Math.max(320, rect.width);
+  const width = Math.max(window.innerWidth <= 720 ? 640 : 320, rect.width);
   const height = Math.max(220, rect.height);
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
@@ -1201,6 +1214,7 @@ function updateTimeline() {
 function setPlayIcon(mode) {
   const icon = document.getElementById('playIcon');
   const playBtn = document.getElementById('playBtn');
+  playBtn.classList.toggle('is-playing', mode === 'pause');
   icon.setAttribute('viewBox', '0 0 1024 1024');
   if (mode === 'pause') {
     playBtn.setAttribute('aria-label', t('pause'));

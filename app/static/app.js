@@ -2697,6 +2697,9 @@ function sanitizeUserFacingInsight(value) {
     }
   }
   return source
+    .replace(/^(#{1,6}[^\n]+)$/gm, line => line.replace(/[（(][^（）\n()]*(?:本次.*(?:抓取|取数)|组件字段|组件内)[^（）\n()]*[）)]/g, ""))
+    .replace(/^.*(?:All charts render|Final artifacts are in place|structural verification).*$/gim, "")
+    .replace(/[（(]`?[^（）\n()]*?(?:financial_reports_visual\/|abroad\/finance\/)[^（）\n()]*[）)]/g, "")
     .replace(/^(?!.*\[\[AIME_CHART:).*?(?:执行说明|产物[：:]|产物文件|生成产物|分析中间件|outputs\/|payload\.json|subjects not matched share|--sample).*$/gim, "")
     .replace(/^(?:已完成|我已完成|本次已用).*?(?:渲染|执行|校验|生成|取数).*$/gm, "")
     .replace(/来自\s+`?fetch_yahoo_data\([^\n)]*\)`?\s*的\s*/gi, "")

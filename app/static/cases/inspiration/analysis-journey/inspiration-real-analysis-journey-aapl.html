@@ -179,7 +179,7 @@ body.is-fullscreen.is-forced-landscape #wrap{
   #source{padding:54px 18px 24px}
 }
 </style>
-</head>
+<style data-journey-layout>html,body{height:auto!important;min-height:0!important;overflow:visible!important;}body:not(.is-fullscreen) #wrap,body:not(.is-fullscreen) #viewport,body:not(.is-fullscreen) #diagram{height:auto;min-height:0;}body:not(.is-fullscreen) #title{position:relative;top:auto;left:auto;right:auto;padding-right:44px;white-space:normal;}body:not(.is-fullscreen) #diagram{padding:12px 0;min-width:max-content;}body:not(.is-fullscreen) #viewport{overflow-x:auto;overflow-y:hidden;}body:not(.is-fullscreen) #viewport::before{content:"左右滑动查看完整旅程";display:block;font-size:12px;color:#93a0b3;margin:8px 0;}body:not(.is-fullscreen) #diagram svg{max-width:none;}</style></head>
 <body>
 <div id="wrap">
   <div id="title">AAPL 最近四份财报经营旅程 从产品增长到股东现金回报</div>
@@ -223,7 +223,7 @@ function measuredHeight() {
     const rect = node.getBoundingClientRect();
     return rect.height > 1 ? Math.max(max, rect.bottom) : max;
   }, 0);
-  return Math.max(420, Math.ceil(bottom || document.body.scrollHeight || document.documentElement.scrollHeight || 520));
+  return Math.max(200, Math.ceil(bottom || document.body.scrollHeight || document.documentElement.scrollHeight || 520));
 }
 
 function postChartHeight() {
@@ -319,7 +319,7 @@ function fitDiagram() {
   const heightScale = availableHeight / naturalHeight;
   const scale = isFullscreen
     ? Math.max(0.1, Math.min(widthScale, heightScale))
-    : Math.min(1, widthScale, heightScale);
+    : 1;
   svg.style.width = `${Math.round(naturalWidth * scale)}px`;
   viewport.scrollTo({left:0, top:0});
 }
@@ -404,6 +404,12 @@ document.addEventListener("webkitfullscreenchange", () => {
   }
 });
 
+config.journey = {width:200,height:80,taskMargin:30,leftMargin:130,taskFontSize:15};
+if(document.documentElement.dataset.theme==='dark') {
+  const fills=['#1b2c45','#16362f','#402d1b','#2d2442','#3f2433','#163238'];
+  [taskPalette,sectionPalette].forEach(palette=>palette.forEach((item,i)=>{item.fillColor=fills[i%fills.length];item.textColor='#f1f5f9';}));
+  Object.assign(config.themeVariables,{primaryTextColor:'#f1f5f9',textColor:'#c1cad7',taskTextOutsideColor:'#c1cad7',actorTextColor:'#c1cad7',signalColor:'#64748b'});
+}
 mermaid.initialize(config);
 (async () => {
   try {
@@ -423,6 +429,18 @@ mermaid.initialize(config);
     svg.removeAttribute("height");
     svg.setAttribute("preserveAspectRatio", "xMidYMin meet");
     applyJourneyPalette();
+    svg.querySelectorAll('.face').forEach(face => {
+      const eyes = face.nextElementSibling;
+      if (eyes?.tagName.toLowerCase() === 'g') eyes.remove();
+      face.remove();
+    });
+    svg.querySelectorAll('.task-line').forEach(line => line.remove());
+    const boxes = Array.from(svg.querySelectorAll('rect.journey-section,rect.task'));
+    const bottom = Math.max(...boxes.map(el=>{const b=el.getBBox();return b.y+b.height;})) + 20;
+    const box = svg.viewBox.baseVal;
+    svg.setAttribute('viewBox', `${box.x} ${box.y} ${box.width} ${bottom-box.y}`);
+    naturalHeight = bottom-box.y;
+
     refitDiagram();
   } catch (err) {
     errorBox.style.display = "block";

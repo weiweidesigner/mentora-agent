@@ -304,7 +304,13 @@
       const requested = new URLSearchParams(location.search).get('theme');
       if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
     })();
-    </script></head>
+    </script><style data-forecast-palette>
+.status{fill:var(--text);}.status.beat,.status.met{fill:var(--green);}.status.missed{fill:var(--red);}
+:root[data-theme="dark"] .hover-band{fill:#93a0b3;opacity:.10;}
+:root[data-theme="dark"] .estimate{fill:#181e28;stroke:#a8b3c4;}
+:root[data-theme="dark"] .tooltip{background:#202733;color:#f1f5f9;--tip:#202733;}
+.tooltip{font-size:13px;line-height:1.45;}.tooltip::after{top:var(--tooltip-arrow-top,100%);}
+</style></head>
 
 <body>
   <main class="frame">
@@ -387,6 +393,9 @@
     }
 
     function cssClassFromStatus(status) {
+      if (String(status).includes('超预期')) return 'beat';
+      if (String(status).includes('低于')) return 'missed';
+      if (String(status).includes('待披露')) return 'upcoming';
       return String(status || "")
         .toLowerCase()
         .replace(/\s+/g, "-");
@@ -646,7 +655,7 @@
 
       tooltip.innerHTML = [
         `${i18n.date || "Date"} ${d.date || ""}`,
-        `${payload.actualLabel || "Actual"} ${fmt(actual, decimals())} ${unit()}`,
+        actual == null ? `${payload.actualLabel || "实际值"} ${i18n.upcoming || "待披露"}` : `${payload.actualLabel || "Actual"} ${fmt(actual, decimals())} ${unit()}`,
         `${payload.estimateLabel || "Estimate"} ${fmt(estimate, decimals())} ${unit()}`,
         surpriseLine,
       ].join("<br>");
@@ -678,7 +687,12 @@
       );
 
       tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${tooltipTop}px`;
+      const firstGridTop = Math.min(...Array.from(svg.querySelectorAll('line.grid,line.axis')).map(line => Number(line.getAttribute('y1'))));
+      const gridTop = Number.isFinite(firstGridTop) ? firstGridTop : 20;
+      const above = gridTop - tipRect.height - 10;
+      const fitsAbove = wrapRect.top + above >= 8;
+      tooltip.style.top = `${fitsAbove ? above : gridTop + 10}px`;
+      tooltip.style.setProperty('--tooltip-arrow-top', fitsAbove ? '100%' : '-5px');
       tooltip.style.setProperty("--tooltip-arrow-left", `${arrowLeft}px`);
       tooltip.style.visibility = "visible";
     }

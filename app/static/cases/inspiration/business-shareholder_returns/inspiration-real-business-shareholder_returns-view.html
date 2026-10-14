@@ -42,18 +42,18 @@ td.flat{color:var(--sv-price-flat)}
       <div class="badges">
         <span class="badge">AAPL · NASDAQ</span>
         <span class="badge">数据快照 2026-07-29</span>
-        <span class="badge">行业口径 Consumer Electronics</span>
+        <span class="badge">行业口径 消费电子</span>
         <span class="badge">总回报 %（不含股息）</span>
       </div>
     </div>
-    <button id="toggle" type="button" aria-live="polite">切换深色</button>
+    <button hidden id="toggle" type="button" aria-live="polite">切换深色</button>
   </div>
 
   <div class="surface" data-financial-market="US">
     <iframe id="frame" class="frame" title="AAPL 股东回报分组柱状图"
       src="inspiration-real-business-shareholder_returns.html"></iframe>
   </div>
-  <p class="caption">原生股东回报业务组件：同一周期内三根柱体依次为个股、行业与市场总回报；5 年周期源组件未返回数据，柱体以半透明占位。</p>
+  <p class="caption">同一周期内三根柱体依次为个股、行业与市场总回报；5 年周期未提供数据。</p>
 
   <h3>超额差值明细</h3>
   <div class="tbl-scroll">
@@ -90,7 +90,7 @@ function setTheme(mode) {
   toggle.textContent = mode === 'dark' ? '切换浅色' : '切换深色';
 }
 toggle.addEventListener('click', () => setTheme(document.documentElement.dataset.svPreview === 'dark' ? 'light' : 'dark'));
-const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+const preferred = document.documentElement.dataset.theme || 'light';
 setTheme(preferred);
 </script>
 </body>

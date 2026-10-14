@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>股东回报</title>
+<style>:root{--business-text-111827:#111827;}:root[data-theme="dark"]{--business-text-111827:#e8edf5;}
+
+:root{color-scheme:light;--business-text-171717:#171717;--business-border-ececec:#ececec;--business-border-767b84:#767b84;--business-text-747474:#747474;--business-text-666:#666;--business-text-8a8a8a:#8a8a8a;--business-text-858585:#858585;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-text-d0d0d0:#d0d0d0;--business-text-777:#777;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-171717:#e8edf5;--business-border-ececec:#293646;--business-border-767b84:#566477;--business-text-747474:#a8b3c4;--business-text-666:#a8b3c4;--business-text-8a8a8a:#a8b3c4;--business-text-858585:#a8b3c4;--business-text-fff:#f5f7fb;--business-text-d8d8d8:#a8b3c4;--business-text-d0d0d0:#a8b3c4;--business-text-777:#a8b3c4;}
+
+*{box-sizing:border-box}
+html,body{width:100%;min-height:100%;margin:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;letter-spacing:0;color:var(--business-text-171717);background:transparent}
+.chart-shell{width:100%;margin:0;padding:0;border:0;background:transparent}
+.chart-component{position:relative;width:100%;container-type:inline-size;height:clamp(430px,calc(100cqw * .44),560px);padding:0;background:transparent;overflow:visible;display:flex;flex-direction:column}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.chart-title{margin:0;color:var(--business-text-171717);font-size:16px;line-height:1.18;font-weight:850;letter-spacing:0}
+.chart-stage{width:100%;min-height:260px;flex:1;overflow:visible}
+svg{display:block;width:100%;height:100%;overflow:visible}
+.grid-line{stroke:var(--business-border-ececec);stroke-width:1}
+.axis-line{stroke:var(--business-border-767b84);stroke-width:1.2}
+.axis-label{fill:var(--business-text-747474);font-size:12px;font-weight:400}
+.x-label{fill:var(--business-text-666);font-size:12px;font-weight:400;text-anchor:middle}
+.bar{rx:0;cursor:crosshair}
+.hover-zone{fill:transparent;cursor:crosshair}
+.highlight{fill:var(--business-text-8a8a8a);pointer-events:none}
+.chart-legend{position:static;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:18px;color:var(--business-text-858585);font-size:13px;line-height:1.2;text-align:center;margin-top:12px;pointer-events:auto}
+.legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.chart-tooltip{position:fixed;z-index:2147483647;min-width:190px;max-width:min(340px,calc(100vw - 24px));padding:10px 12px;background:rgba(59,59,59,.96);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .08s ease;box-shadow:none;filter:none;white-space:nowrap}
+.chart-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid rgba(59,59,59,.96)}
+.chart-tooltip.active{opacity:1;visibility:visible}
+.tooltip-title{display:block;color:var(--business-text-d8d8d8);margin-bottom:6px;font-size:12px;font-weight:400}
+.tooltip-row{display:flex;justify-content:space-between;align-items:center;gap:18px;white-space:nowrap;min-height:22px}
+.tooltip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-d0d0d0)}
+.tooltip-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.tooltip-value{color:var(--business-text-fff);font-weight:700;font-variant-numeric:tabular-nums}
+.empty {
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  color:var(--business-text-777);
+  font-size:13px;
+}
+@media (max-width: 760px) {
+  .chart-component{height:clamp(340px,calc(100cqw * .78),420px);padding:0}
+  .chart-head{margin-bottom:12px}
+  .chart-title{font-size:16px}
+  .chart-stage{min-height:220px}
+  .axis-label,.x-label{font-size:10.5px}
+  .chart-legend{gap:8px 12px;min-height:30px;font-size:11px;align-content:center;margin-top:10px}
+  .legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+  .legend-dot{width:8px;height:8px}
+  .chart-tooltip{min-width:168px;max-width:calc(100vw - 24px);font-size:11px;padding:8px 10px;white-space:normal}
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<section class="chart-shell">
+  <div id="root"></div>
+</section>
+<script>
+const payload = {"type": "shareholder-returns", "name": "股东回报", "title": "股东回报", "code": "AAPL", "market": "185", "exchange": "NASDAQ", "stockHeader": "AAPL", "returns": [{"period": "7 Day", "stock": -0.2, "industry": 4.0, "market": -0.6, "stockLabel": "-0.2%", "industryLabel": "+4.0%", "marketLabel": "-0.6%"}, {"period": "30 Day", "stock": 13.6, "industry": -6.7, "market": 0.8, "stockLabel": "+13.6%", "industryLabel": "-6.7%", "marketLabel": "+0.8%"}, {"period": "90 Day", "stock": 22.9, "industry": 36.7, "market": 3.5, "stockLabel": "+22.9%", "industryLabel": "+36.7%", "marketLabel": "+3.5%"}, {"period": "1 Year", "stock": 55.8, "industry": 134.2, "market": 16.5, "stockLabel": "+55.8%", "industryLabel": "+134.2%", "marketLabel": "+16.5%"}, {"period": "3 Year", "stock": 83.0, "industry": 173.4, "market": 65.4, "stockLabel": "+83.0%", "industryLabel": "+173.4%", "marketLabel": "+65.4%"}, {"period": "5 Year", "stock": null, "industry": null, "market": null, "stockLabel": "--", "industryLabel": "--", "marketLabel": "--"}], "question": "Is AAPL overvalued?", "insights": [{"label": "Return vs Industry", "text": "Return vs Industry: AAPL underperformed the Consumer Electronics industry which returned 134.2% over the past year.", "tone": "negative"}, {"label": "Return vs Market", "text": "Return vs Market: AAPL exceeded the US Market which returned 16.5% over the past year.", "tone": "positive"}], "includeDividendReturns": false, "source": {"provider": "AInvest analysis page", "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/analysis/"}, "language": "zh-CN", "labels": {"title": "股东回报", "subtitle": "按周期对比个股、行业与市场总回报", "stockFallback": "个股", "industry": "行业", "market": "市场", "empty": "暂无股东回报数据。", "chartAria": "按周期对比股东回报的分组柱状图", "periods": {"7 Day": "7日", "30 Day": "30日", "90 Day": "90日", "1 Year": "1年", "3 Year": "3年", "5 Year": "5年"}}, "theme": "light", "componentUi": {"Industry": "行业", "Exchange": "交易所", "Business": "主营业务", "Stock": "股票", "Value": "价值", "Dividend": "分红", "Ratio": "占比", "Total": "合计", "Shareholder Returns": "股东回报"}};
+const root = document.getElementById('root');
+const bundle = payload.labels || {};
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function t(key, fallback) {
+  return bundle[key] || fallback;
+}
+
+function label(row, key) {
+  return row[`${key}Label`] || '--';
+}
+
+function periodLabel(value) {
+  return (bundle.periods && bundle.periods[value]) || value;
+}
+
+function numberValue(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function svgNode(name, attrs = {}, text = '') {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+  if (text !== '') el.textContent = text;
+  return el;
+}
+
+function niceLimit(value) {
+  if (!Number.isFinite(value) || value <= 0) return 10;
+  const exponent = Math.floor(Math.log10(value));
+  const base = value / Math.pow(10, exponent);
+  const niceBase = base <= 1 ? 1 : base <= 2 ? 2 : base <= 5 ? 5 : 10;
+  return niceBase * Math.pow(10, exponent);
+}
+
+function evenlySpacedTicks(minY, maxY) {
+  return Array.from({ length: 5 }, (_, index) => maxY - (maxY - minY) * index / 4);
+}
+
+function buildDomain(values) {
+  const finite = values.filter(Number.isFinite);
+  if (!finite.length) return { minY: 0, maxY: 1, ticks: evenlySpacedTicks(0, 1), clampSmallNegative: true };
+  const minValue = Math.min(...finite);
+  const maxValue = Math.max(...finite);
+  if (minValue >= 0 || Math.abs(minValue) <= Math.max(1, maxValue) * .08) {
+    const maxY = niceLimit(Math.max(1, maxValue));
+    return { minY: 0, maxY, ticks: evenlySpacedTicks(0, maxY), clampSmallNegative: true };
+  }
+  if (maxValue <= 0) {
+    const minY = -niceLimit(Math.max(1, Math.abs(minValue)));
+    return { minY, maxY: 0, ticks: evenlySpacedTicks(minY, 0), clampSmallNegative: false };
+  }
+  const maxY = niceLimit(Math.max(1, maxValue));
+  const minY = -niceLimit(Math.max(1, Math.abs(minValue)));
+  return { minY, maxY, ticks: evenlySpacedTicks(minY, maxY), clampSmallNegative: false };
+}
+
+function formatAxis(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  if (Math.abs(n) >= 100) return `${Math.round(n)}%`;
+  return `${n.toFixed(n % 1 === 0 ? 0 : 1)}%`;
+}
+
+function renderLegend(legend, series) {
+  legend.innerHTML = series.map(item => `
+    <span class="legend-item">
+      <span class="legend-dot" style="background:${item.color}"></span>
+      ${esc(item.label)}
+    </span>
+  `).join('');
+}
+
+function renderSvgChart(chart, rows, series, tooltip) {
+  const svg = chart.querySelector('svg');
+  const stage = chart.querySelector('.chart-stage');
+  const width = Math.max(320, stage.clientWidth || chart.clientWidth || 960);
+  const height = Math.max(240, stage.clientHeight || 340);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.innerHTML = '';
+
+  const values = rows.flatMap(row => series.map(item => numberValue(row[item.key]))).filter(value => value !== null);
+  const domain = buildDomain(values);
+  const minY = domain.minY;
+  const maxY = domain.maxY;
+  const axisLabels = domain.ticks.map(formatAxis);
+  const estimateTextWidth = label => String(label || '').length * 7.2;
+  const rightAxisWidth = Math.max(34, ...axisLabels.map(estimateTextWidth));
+  const margin = { top: 22, right: Math.ceil(rightAxisWidth + 18), bottom: 48, left: 0 };
+  const plotW = Math.max(1, width - margin.left - margin.right);
+  const plotH = Math.max(1, height - margin.top - margin.bottom);
+  const y = value => margin.top + (maxY - value) / (maxY - minY) * plotH;
+  const rowCount = rows.length;
+  const groupGapRatio = .5;
+  const groupW = plotW / Math.max(1, rowCount + (rowCount - 1) * groupGapRatio);
+  const groupGap = groupW * groupGapRatio;
+  const totalGroupW = groupW * rowCount + groupGap * Math.max(0, rowCount - 1);
+  const groupStart = margin.left + Math.max(0, (plotW - totalGroupW) / 2);
+  const groupXAt = index => groupStart + index * (groupW + groupGap);
+  const xCenter = index => groupXAt(index) + groupW / 2;
+  const ticks = domain.ticks;
+  const firstGridY = y(ticks[0]);
+  const highlights = [];
+
+  ticks.forEach(value => {
+    const gy = y(value);
+    svg.appendChild(svgNode('line', { x1: margin.left, y1: gy, x2: margin.left + plotW, y2: gy, class: 'grid-line' }));
+    svg.appendChild(svgNode('text', { x: margin.left + plotW + 12, y: gy + 4, class: 'axis-label', 'text-anchor': 'start' }, formatAxis(value)));
+  });
+  svg.appendChild(svgNode('line', { x1: margin.left, y1: y(0), x2: margin.left + plotW, y2: y(0), class: 'axis-line' }));
+
+  rows.forEach((row, index) => {
+    svg.appendChild(svgNode('text', { x: xCenter(index), y: margin.top + plotH + 28, class: 'x-label' }, periodLabel(row.period)));
+  });
+
+  const barGap = 4;
+  const barW = Math.max(4, (groupW - barGap * (series.length - 1)) / series.length);
+
+  function clearHighlight() {
+    highlights.forEach(item => item.setAttribute('opacity', '0'));
+  }
+
+  function showTooltip(cx, tooltipRows, title) {
+    tooltip.innerHTML = `
+      <strong class="tooltip-title">${esc(title)}</strong>
+      ${tooltipRows.map(item => `
+        <div class="tooltip-row">
+          <span class="tooltip-label"><span class="tooltip-dot" style="background:${item.color}"></span>${esc(item.label)}</span>
+          <span class="tooltip-value">${esc(item.display)}</span>
+        </div>
+      `).join('')}
+    `;
+    tooltip.classList.add('active');
+    const chartRect = chart.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+    const rawLeft = chartRect.left + cx - tipRect.width / 2;
+    const left = Math.max(12, Math.min(window.innerWidth - tipRect.width - 12, rawLeft));
+    const svgRect = svg.getBoundingClientRect();
+    const svgScaleY = svgRect.height / height;
+    const firstGridTop = svgRect.top + firstGridY * svgScaleY;
+    const safeTop = chartRect.top + 24;
+    const top = Math.max(safeTop, firstGridTop - 10);
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.setProperty('--arrow-left', `${Math.max(16, Math.min(tipRect.width - 16, chartRect.left + cx - left))}px`);
+  }
+
+  function hideTooltip() {
+    tooltip.classList.remove('active');
+  }
+
+  rows.forEach((row, rowIndex) => {
+    const groupX = groupXAt(rowIndex);
+    const hitLeft = rowIndex === 0 ? margin.left : groupX - groupGap / 2;
+    const hitRight = rowIndex === rowCount - 1 ? margin.left + plotW : groupX + groupW + groupGap / 2;
+    const highlight = svgNode('rect', {
+      x: hitLeft,
+      y: margin.top,
+      width: Math.max(1, hitRight - hitLeft),
+      height: plotH,
+      class: 'highlight',
+      opacity: 0,
+    });
+    highlights.push(highlight);
+    svg.appendChild(highlight);
+
+    series.forEach((item, seriesIndex) => {
+      const value = numberValue(row[item.key]);
+      const isMissing = value === null;
+      const y0 = y(0);
+      const boundedValue = !isMissing && domain.clampSmallNegative && value < 0 ? 0 : value;
+      const y1 = isMissing ? y0 - 1.5 : (domain.clampSmallNegative && value < 0 ? y0 + 1.5 : y(boundedValue));
+      svg.appendChild(svgNode('rect', {
+        x: groupX + seriesIndex * (barW + barGap),
+        y: Math.min(y0, y1),
+        width: barW,
+        height: Math.max(1, Math.abs(y0 - y1)),
+        fill: item.color,
+        opacity: isMissing ? .28 : 1,
+        class: 'bar',
+      }));
+    });
+
+    const tooltipRows = series.map(item => ({ label: item.label, color: item.color, display: label(row, item.key) }));
+    const hit = svgNode('rect', {
+      x: hitLeft,
+      y: margin.top,
+      width: Math.max(1, hitRight - hitLeft),
+      height: plotH,
+      class: 'hover-zone',
+    });
+    hit.addEventListener('mouseenter', () => {
+      clearHighlight();
+      highlight.setAttribute('opacity', '.08');
+      showTooltip(xCenter(rowIndex), tooltipRows, periodLabel(row.period));
+    });
+    hit.addEventListener('mousemove', () => showTooltip(xCenter(rowIndex), tooltipRows, periodLabel(row.period)));
+    hit.addEventListener('mouseleave', () => {
+      clearHighlight();
+      hideTooltip();
+    });
+    svg.appendChild(hit);
+  });
+}
+
+function render() {
+  const rows = Array.isArray(payload.returns) ? payload.returns : [];
+  if (!rows.length) {
+    root.innerHTML = `<div class="empty">${esc(t('empty', 'No shareholder returns data.'))}</div>`;
+    return;
+  }
+  const stockName = payload.stockHeader || payload.code || t('stockFallback', 'Stock');
+  const series = [
+    { key: 'stock', label: stockName, color: 'var(--business-text-111827)' },
+    { key: 'industry', label: t('industry', 'Industry'), color: '#2f7ed8' },
+    { key: 'market', label: t('market', 'Market'), color: '#d97706' },
+  ];
+
+  root.innerHTML = `
+    <div class="chart-component">
+      <header class="chart-head">
+        <div>
+          <h1 class="chart-title">${esc(payload.title || t('title', 'Shareholder Returns'))}</h1>
+        </div>
+      </header>
+      <div class="chart-stage"><svg role="img" aria-label="${esc(t('chartAria', 'Grouped bar chart comparing shareholder returns by period'))}"></svg></div>
+      <div class="chart-legend"></div>
+      <div class="chart-tooltip"></div>
+    </div>
+  `;
+  const chart = root.querySelector('.chart-component');
+  const legend = root.querySelector('.chart-legend');
+  const tooltip = root.querySelector('.chart-tooltip');
+  renderLegend(legend, series);
+  renderSvgChart(chart, rows, series, tooltip);
+  window.addEventListener('resize', () => renderSvgChart(chart, rows, series, tooltip), { passive: true });
+}
+
+render();
+</script>
+</body>
+</html>
