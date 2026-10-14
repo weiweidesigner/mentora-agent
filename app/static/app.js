@@ -197,6 +197,17 @@ brandHomeButton?.addEventListener("click", () => {
 });
 
 input.addEventListener("input", updateComposerState);
+input.addEventListener("keydown", event => handleMessageEnter(event, input, () => form.requestSubmit()));
+function handleMessageEnter(event, textarea, send) {
+  if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
+  event.preventDefault();
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+    textarea.setRangeText("\n", textarea.selectionStart, textarea.selectionEnd, "end");
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  } else if (!event.repeat) {
+    send();
+  }
+}
 attachButton?.addEventListener("click", () => imageInput?.click());
 imageInput?.addEventListener("change", async (event) => {
   await addImageFiles(event.target.files);
@@ -1140,10 +1151,7 @@ function beginEditUserMessage(article) {
   article.querySelector(".userEditCancel")?.addEventListener("click", () => renderUserMessage(article, original));
   article.querySelector(".userEditSend")?.addEventListener("click", () => submitEditedUserMessage(article));
   textarea.addEventListener("keydown", (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-      event.preventDefault();
-      submitEditedUserMessage(article);
-    }
+    handleMessageEnter(event, textarea, () => submitEditedUserMessage(article));
     if (event.key === "Escape") {
       event.preventDefault();
       renderUserMessage(article, original);

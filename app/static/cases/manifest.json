@@ -52,5 +52,14 @@
     "preview": "结合价格、成交量和技术指标，定位趋势、支撑阻力与确认信号。",
     "cachedDate": "2026-10-13",
     "conversationUrl": "/static/cases/jpm-technical/conversation.json"
+  },
+  {
+    "id": "sse-events",
+    "title": "上证指数走势与重要事件",
+    "tag": "事件标记",
+    "question": "把2026年上证指数股价走势用折线图展示出来，并在线上mark出2026年股市重要事件",
+    "preview": "回看 2026 年上证指数走势，结合 8 个重要事件，梳理冲高、回落与低位震荡。",
+    "cachedDate": "2026-10-14",
+    "conversationUrl": "/static/cases/sse-events/conversation.json"
   }
 ]

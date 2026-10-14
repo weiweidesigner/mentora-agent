@@ -3635,11 +3635,13 @@ p {
   .caseLane::-webkit-scrollbar { display:none; }
   .caseLaneTrack { display:flex; width:max-content; padding:8px 0; }
   .caseLaneSet { display:flex; gap:20px; padding-right:20px; flex:none; }
-  .caseLane .caseCard { flex:0 0 320px; width:320px; padding:20px; min-height:156px; user-select:none; cursor:grab; }
-  .caseLane .caseCardTop { margin-bottom:12px; }
+  .caseLane .caseCard { flex:0 0 320px; width:320px; padding:16px; min-height:128px; user-select:none; cursor:grab; }
+  .caseLane .caseCardTop { margin-bottom:8px; }
+  .caseLane .caseCardIcon { width:22px; height:22px; }
+  .caseLane .caseCardIcon svg { width:14px; height:14px; }
   .caseLane .caseCardTag { font-size:12px; }
-  .caseLane .caseCard h2 { font-size:16px; }
-  .caseLane .caseCard p { font-size:13px; }
+  .caseLane .caseCard h2 { margin:0 0 5px; font-size:16px; line-height:1.35; }
+  .caseLane .caseCard p { font-size:13px; line-height:1.5; }
   .caseLane.is-dragging,.caseLane.is-dragging .caseCard { cursor:grabbing; }
   .caseLane .caseCard:hover { transform:none; box-shadow:none; }
 }
