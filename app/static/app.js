@@ -789,6 +789,13 @@ function createArtifactFallbackFrame(item, index, options = {}) {
       if (root) root.dataset.theme = new URL(frame.src).searchParams.get("theme") || currentThemeMode();
     }
     const doc = frame.contentDocument;
+    if (doc?.head && !doc.querySelector('[data-case-palette]')) {
+      const sharedControls = doc.createElement('script');
+      const runtimeScript = document.querySelector('script[src*="/static/app.js"]');
+      sharedControls.src = new URL('cases/theme.js?v=20261014-business-controls', runtimeScript?.src || new URL('/static/app.js', location.origin)).href;
+      sharedControls.addEventListener('load', () => resizeReportDocumentFrame(frame), {once:true});
+      doc.head.append(sharedControls);
+    }
     doc?.addEventListener("wheel", (event) => {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });

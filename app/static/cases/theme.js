@@ -12,6 +12,16 @@
   const palette = document.createElement("style");
   palette.dataset.casePalette = "true";
   palette.textContent = `
+
+    :root { --case-grip:#64748b; --case-handle-bg:#fff; --case-handle-border:#cbd5e1; --case-active-bg:#e4eaff; --case-active-text:#2450a8; --case-active-border:#8fa4df; }
+    :root[data-theme="dark"] { --case-grip:#94a3b8; --case-handle-bg:#202b3a; --case-handle-border:#334052; --case-active-bg:#334052; --case-active-text:#f1f5f9; --case-active-border:#7186a1; }
+    .range-shell,.time-range-shell,.brush { --handle-size:32px!important; --track-pad:16px!important; --track-height:3px!important; height:32px!important; margin-bottom:12px!important; }
+    .range-handle,.time-range-handle,.brush .handle { width:32px!important; height:32px!important; background:var(--case-handle-bg)!important; border:1px solid var(--case-handle-border)!important; }
+    .range-filter .range-track { height:32px!important; }
+    .range-filter .range-handle,.range-filter .range-track::before,.range-filter .range-track-active { top:16px!important; }
+    .range-handle::before,.time-range-handle::before,.brush .handle::before { width:2px!important; height:13px!important; background:var(--case-grip)!important; box-shadow:-5px 0 0 var(--case-grip),5px 0 0 var(--case-grip)!important; opacity:1!important; }
+    .segmented button.active,.segment.active,.metric-tab.active,.tab.active,.waterfall-tab.active,.period-button.active,.seg-btn.active,.year-chip.selected,
+    button[aria-selected="true"],.toggle.active,.yoy-btn.active { background:var(--case-active-bg)!important; color:var(--case-active-text)!important; box-shadow:inset 0 0 0 1px var(--case-active-border)!important; font-weight:700!important; }
     :root[data-theme="dark"] #title,
     :root[data-theme="dark"] .chart-title { color: #f1f5f9; }
     :root[data-theme="dark"] .axis-label,
@@ -25,7 +35,6 @@
     :root[data-theme="dark"] .bar-label { fill: #8294ff; }
     :root[data-theme="dark"] #radar circle[fill="none"] { stroke: #334052; stroke-width: 1; }
     :root[data-theme="dark"] #radar line { stroke: #334052; stroke-width: 1; }
-    :root[data-theme="dark"] .segmented button[aria-selected="true"] { background:#334052; color:#f1f5f9; box-shadow:inset 0 0 0 1px #526176; font-weight:700; }
     :root[data-theme="dark"] .segmented button[aria-selected="false"] { color:#a8b3c4; }
     :root[data-theme="dark"] #radar path { fill: rgba(255, 138, 24, .22); stroke-width: 3; }
 
