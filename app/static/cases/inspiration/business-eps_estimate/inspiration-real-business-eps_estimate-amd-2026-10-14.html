@@ -253,7 +253,8 @@
       }
 
       .frame {
-        min-height: 380px;
+        height: 300px;
+        min-height: 0;
       }
 
       .header {
@@ -270,7 +271,7 @@
       }
 
       .chart {
-        min-height: 245px;
+        min-height: 0;
       }
 
       .ylabel {
@@ -476,12 +477,12 @@
       resetTooltip();
 
       const rect = wrap.getBoundingClientRect();
-      const width = Math.max(320, rect.width);
-      const height = Math.max(300, rect.height);
+      const width = Math.max(1, rect.width);
+      const height = Math.max(1, rect.height);
 
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-      contentInset = width < 700 ? 18 : 22;
+      contentInset = width < 700 ? 12 : 22;
       tooltipTop = width < 700 ? -82 : -96;
 
       document.documentElement.style.setProperty("--content-inset", `${contentInset}px`);
@@ -491,7 +492,7 @@
         return;
       }
 
-      const yLabelReserve = width < 700 ? 36 : 46;
+      const yLabelReserve = width < 700 ? 72 : 46;
 
       const margin = {
         top: width < 700 ? 20 : 20,
@@ -506,7 +507,7 @@
       const chartRight = width - margin.right;
       const gridRight = chartRight - yLabelReserve;
       const plotW = Math.max(120, gridRight - chartLeft);
-      const plotH = Math.max(140, height - margin.top - margin.bottom);
+      const plotH = Math.max(width < 700 ? 110 : 140, height - margin.top - margin.bottom);
 
       const values = chartData
         .flatMap(d => [d.actual, d.estimate])
