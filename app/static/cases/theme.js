@@ -31,6 +31,8 @@ svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-hi
 
     .kline-title strong[data-business-title],[data-business-title] {font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;}
     @media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}
+    .kline-component .kline-title strong[data-business-title]{margin:0!important}
+    .kline-component .period-button{display:inline-flex;align-items:center;justify-content:center;line-height:1;margin:0}
     :root { --case-grip:#64748b; --case-handle-bg:#fff; --case-handle-border:#cbd5e1; --case-active-bg:#e4eaff; --case-active-text:#2450a8; --case-active-border:#8fa4df; }
     :root[data-theme="dark"] { --case-grip:#94a3b8; --case-handle-bg:#202b3a; --case-handle-border:#334052; --case-active-bg:#334052; --case-active-text:#f1f5f9; --case-active-border:#7186a1; }
     .range-shell,.time-range-shell,.brush { --handle-size:32px!important; --track-pad:16px!important; --track-height:3px!important; height:32px!important; margin-bottom:12px!important; }
