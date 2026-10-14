@@ -461,6 +461,7 @@
     }
 
     function resetTooltip() {
+      tooltip.classList.remove("active");
       tooltip.style.visibility = "hidden";
       tooltip.style.left = `${contentInset}px`;
       tooltip.style.top = `${tooltipTop}px`;
@@ -718,12 +719,14 @@
       );
 
       tooltip.style.left = `${left}px`;
-      const firstGridTop = Math.min(...Array.from(svg.querySelectorAll('line.grid,line.axis')).map(line => Number(line.getAttribute('y1'))));
+      const gridLines = Array.from(svg.querySelectorAll('line.grid,line.axis'));
+      const firstGridTop = Math.min(...gridLines.map(line => line.getBoundingClientRect().top - wrapRect.top));
       const gridTop = Number.isFinite(firstGridTop) ? firstGridTop : 20;
-      const above = gridTop - tipRect.height - 10;
-      const fitsAbove = wrapRect.top + above >= 8;
+      const above = gridTop - tipRect.height - 6;
+      const fitsAbove = !!window.frameElement || wrapRect.top + above >= 8;
       tooltip.style.top = `${fitsAbove ? above : gridTop + 10}px`;
       tooltip.style.setProperty('--tooltip-arrow-top', fitsAbove ? '100%' : '-5px');
+      tooltip.classList.add('active');
       tooltip.style.setProperty("--tooltip-arrow-left", `${arrowLeft}px`);
       tooltip.style.visibility = "visible";
     }

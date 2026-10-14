@@ -179,7 +179,14 @@ body.is-fullscreen.is-forced-landscape #wrap{
   #source{padding:54px 18px 24px}
 }
 </style>
-<style data-journey-layout>html,body{height:auto!important;min-height:0!important;overflow:visible!important;}body:not(.is-fullscreen) #wrap,body:not(.is-fullscreen) #viewport,body:not(.is-fullscreen) #diagram{height:auto;min-height:0;}body:not(.is-fullscreen) #title{position:relative;top:auto;left:auto;right:auto;padding-right:44px;white-space:normal;}body:not(.is-fullscreen) #diagram{padding:12px 0;min-width:max-content;}body:not(.is-fullscreen) #viewport{overflow-x:auto;overflow-y:hidden;}body:not(.is-fullscreen) #viewport::before{content:"左右滑动查看完整旅程";display:block;font-size:12px;color:#93a0b3;margin:8px 0;}body:not(.is-fullscreen) #diagram svg{max-width:none;}</style></head>
+<style data-journey-layout>html,body{height:auto!important;min-height:0!important;overflow:visible!important;}body:not(.is-fullscreen) #wrap,body:not(.is-fullscreen) #viewport,body:not(.is-fullscreen) #diagram{height:auto;min-height:0;}body:not(.is-fullscreen) #title{position:relative;top:auto;left:auto;right:auto;padding-right:44px;white-space:normal;}body:not(.is-fullscreen) #diagram{padding:12px 0;min-width:0;}body.journey-expanded:not(.is-fullscreen) #diagram{min-width:max-content;}body:not(.is-fullscreen) #viewport{overflow-x:auto;overflow-y:hidden;}body:not(.is-fullscreen) #diagram svg{max-width:none;}</style><style>
+.journeyToolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0;color:#64748b;font-size:12px}
+:root[data-theme="dark"] .journeyToolbar{color:#a8b3c4}
+#journeyZoomButton{width:32px;height:32px;flex:none;padding:7px;border:1px solid #d5dde7;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+:root[data-theme="dark"] #journeyZoomButton{border-color:#334052}
+#journeyZoomButton:hover{background:rgba(148,163,184,.12)}
+#journeyZoomButton svg{display:block;width:100%;height:100%;fill:currentColor}
+</style></head>
 <body>
 <div id="wrap">
   <div id="title">AAPL 最近四份财报经营旅程 从产品增长到股东现金回报</div>
@@ -189,7 +196,8 @@ body.is-fullscreen.is-forced-landscape #wrap{
   <button id="exitFullscreenBtn" type="button" aria-label="退出全屏" title="退出全屏">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3"></path><path d="M15 3v6h6"></path><path d="M21 15h-6v6"></path><path d="M3 15h6v6"></path></svg>
   </button>
-  <div id="viewport">
+  <div class="journeyToolbar"><span id="journeyViewHint">全貌视图 · 点击放大查看细节</span><button id="journeyZoomButton" type="button" aria-label="放大旅程图" aria-pressed="false"></button></div>
+<div id="viewport">
     <div id="diagram"></div>
     <pre id="source"></pre>
     <div id="error"></div>
@@ -209,6 +217,7 @@ const sourceBox = document.getElementById("source");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const exitFullscreenBtn = document.getElementById("exitFullscreenBtn");
 let svg = null;
+let journeyExpanded = false;
 let naturalWidth = 0;
 let naturalHeight = 0;
 
@@ -319,8 +328,9 @@ function fitDiagram() {
   const heightScale = availableHeight / naturalHeight;
   const scale = isFullscreen
     ? Math.max(0.1, Math.min(widthScale, heightScale))
-    : 1;
+    : (journeyExpanded ? 1 : Math.min(1, viewport.clientWidth / naturalWidth));
   svg.style.width = `${Math.round(naturalWidth * scale)}px`;
+  svg.style.height = `${Math.round(naturalHeight * scale)}px`;
   viewport.scrollTo({left:0, top:0});
 }
 
@@ -456,6 +466,18 @@ if ("ResizeObserver" in window) {
   new ResizeObserver(postChartHeight).observe(document.getElementById("wrap"));
 }
 window.addEventListener("load", postChartHeight);
+const zoomButton = document.getElementById('journeyZoomButton');
+function syncJourneyView() {
+  document.body.classList.toggle('journey-expanded', journeyExpanded);
+  zoomButton.setAttribute('aria-pressed', String(journeyExpanded));
+  zoomButton.setAttribute('aria-label', journeyExpanded ? '缩小，查看旅程全貌' : '放大旅程图');
+  zoomButton.title = journeyExpanded ? '缩小，查看全貌' : '放大，滑动查看细节';
+  zoomButton.innerHTML = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="${journeyExpanded ? 'M411.741 558.545a34.909 34.909 0 0 1 34.909 34.909v272.105a34.909 34.909 0 1 1-69.818 0V677.748L106.147 948.433a34.909 34.909 0 0 1-49.338-49.361l270.685-270.708H139.636a34.909 34.909 0 0 1 0-69.819h272.105zM899.072 56.785a34.909 34.909 0 0 1 49.338 49.338L677.748 376.832h187.858a34.909 34.909 0 0 1 0 69.818H593.454a34.909 34.909 0 0 1-34.909-34.909V139.636a34.909 34.909 0 0 1 69.819 0v187.811L899.072 56.785z' : 'M895.4 153.7c0-.9-.6-1.8-.8-2.7a30 30 0 0 0-29.2-22.3H672a32 32 0 0 0 0 64h114.7L553.4 425.4a32 32 0 0 0 45.2 45.2L832 237.3V352a32 32 0 0 0 64 0V160a34 34 0 0 0-.6-6.3zM425.4 553.4L192 786.7V672a32 32 0 0 0-64 0v192a32 32 0 0 0 32 32h192a32 32 0 0 0 0-64H237.3l233.3-233.4a32 32 0 0 0-45.2-45.2z'}"></path></svg>`;
+  document.getElementById('journeyViewHint').textContent = journeyExpanded ? '左右滑动查看完整旅程' : '全貌视图 · 点击放大查看细节';
+  refitDiagram();
+}
+zoomButton.addEventListener('click', () => {journeyExpanded = !journeyExpanded; syncJourneyView();});
+syncJourneyView();
 window.addEventListener("resize", refitDiagram);
 window.addEventListener("orientationchange", () => {
   setTimeout(refitDiagram, 120);

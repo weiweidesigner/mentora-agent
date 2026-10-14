@@ -694,7 +694,7 @@ function installReportTooltipPortal(frame) {
       const chart = frame.getBoundingClientRect();
       const scaleX = chart.width / (frame.clientWidth || chart.width);
       portal.style.width = Math.min(box.width * scaleX, window.innerWidth - 16) + "px";
-      const arrowValue = style.getPropertyValue("--arrow-x") || style.getPropertyValue("--arrow-left") || "50%";
+      const arrowValue = style.getPropertyValue("--arrow-x") || style.getPropertyValue("--arrow-left") || style.getPropertyValue("--tooltip-arrow-left") || "50%";
       const arrow = arrowValue.includes("%") ? box.width * parseFloat(arrowValue) / 100 : parseFloat(arrowValue);
       const anchor = gesture?.direction==="horizontal" ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
       const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (gesture?.direction==="horizontal" ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));

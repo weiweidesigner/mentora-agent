@@ -138,8 +138,8 @@ function buildSeries(frame){
  const frameRows=validRowsForFrame(frame);
  const riskLeader = [...frameRows].sort((a,b)=>num(b[enc.x])-num(a[enc.x]))[0];
  const riskMark = group => ({
-   symbol: 'circle', symbolSize: 8,
-   itemStyle: {color: darkMode ? '#f1f5f9' : '#151922'},
+   symbol: 'circle', symbolSize: 0,
+   itemStyle: {color: 'transparent'},
    label: {show:true,formatter:'当月波动最高',position:'bottom',distance:42,color:chartText,fontSize:11},
    data: riskLeader && (!group || String(riskLeader[enc.series])===group)
      ? [{coord:[num(riskLeader[enc.x]),num(riskLeader[enc.y])]}] : []
