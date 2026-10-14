@@ -185,6 +185,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a5ca5b79709e1c5489b7298ec2)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AMD目标价与股价价差走势",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

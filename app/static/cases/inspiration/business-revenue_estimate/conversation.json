@@ -177,6 +177,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a849be79058e0ca9e039a1bf18)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AMD营收超预期幅度收窄与Q3'26门槛",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

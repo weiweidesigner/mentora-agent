@@ -1,7 +1,7 @@
 {
   "type": "wall-street-consensus",
   "name": "华尔街共识",
-  "title": "华尔街共识",
+  "title": "AMD华尔街评级与目标价共识分歧",
   "code": "NVDA",
   "market": "185",
   "marketLabel": "NASDAQ",
@@ -341,5 +341,6 @@
     "Wall Street Consensus": "华尔街共识",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD华尔街评级与目标价共识分歧"
 }

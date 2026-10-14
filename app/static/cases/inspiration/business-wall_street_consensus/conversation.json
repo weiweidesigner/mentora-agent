@@ -129,6 +129,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b3411f744f87d195f9632a19b1)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AMD华尔街评级与目标价共识分歧",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

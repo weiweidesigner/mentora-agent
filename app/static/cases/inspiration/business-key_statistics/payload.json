@@ -45,5 +45,7 @@
     "provider": "Yahoo Finance historical cached snapshot",
     "symbol": "AAPL"
   },
-  "language": "zh-CN"
+  "language": "zh-CN",
+  "title": "AAPL 4.95万亿市值与40.79倍市盈率估值分析",
+  "customTitle": "AAPL 4.95万亿市值与40.79倍市盈率估值分析"
 }

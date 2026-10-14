@@ -56,5 +56,5 @@ grid.innerHTML = items.map(item => `
 new ResizeObserver(updateColumns).observe(grid);
 updateColumns();
 </script>
-</body>
+<style data-business-heading-style>.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="AAPL 4.95万亿市值与40.79倍市盈率估值分析";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
 </html>

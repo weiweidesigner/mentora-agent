@@ -74,7 +74,7 @@
   },
   "source": "AInvest financial_reports_visual/finance/v1/forecast",
   "language": "zh-CN",
-  "title": "收入",
+  "title": "AMD营收超预期幅度收窄与Q3'26门槛",
   "labels": {
     "nextReport": "下次披露",
     "noData": "暂无数据",
@@ -83,5 +83,6 @@
     "above": "高于预期",
     "below": "低于预期"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD营收超预期幅度收窄与Q3'26门槛"
 }

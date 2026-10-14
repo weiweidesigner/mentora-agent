@@ -1,7 +1,7 @@
 {
   "type": "shareholder-returns",
   "name": "Shareholder Returns",
-  "title": "股东回报",
+  "title": "AAPL三年股东回报：跑赢美股却落后消费电子行业",
   "code": "AAPL",
   "market": "185",
   "exchange": "NASDAQ",
@@ -98,5 +98,6 @@
       "5 Year": "5年"
     }
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL三年股东回报：跑赢美股却落后消费电子行业"
 }

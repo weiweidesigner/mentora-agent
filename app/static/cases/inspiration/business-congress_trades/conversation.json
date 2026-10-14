@@ -209,6 +209,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139917bae78529a5edd5bb64f8506)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL议员交易：卖压集中与披露时差",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

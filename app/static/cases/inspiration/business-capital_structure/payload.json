@@ -1,7 +1,7 @@
 {
   "type": "waterfall",
   "name": "资本结构",
-  "title": "资本结构",
+  "title": "AAPL 资本结构：市值与企业价值对比",
   "props": {
     "unit": " USD",
     "height": 320,
@@ -55,5 +55,6 @@
     }
   },
   "language": "zh-CN",
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL 资本结构：市值与企业价值对比"
 }

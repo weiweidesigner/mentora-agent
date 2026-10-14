@@ -1,7 +1,7 @@
 {
   "type": "price-target-vs-actual",
   "name": "目标价与实际股价",
-  "title": "目标价与实际价格",
+  "title": "AMD目标价与股价价差走势",
   "code": "NVDA",
   "market": "185",
   "defaultPeriod": "6M",
@@ -286,5 +286,6 @@
     "Price Target vs Actual Price": "目标价与实际股价",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD目标价与股价价差走势"
 }

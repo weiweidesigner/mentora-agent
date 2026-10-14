@@ -1,7 +1,7 @@
 {
   "type": "income-statement",
   "name": "Income Statement",
-  "title": "利润表",
+  "title": "AAPL近八季营收利润与毛利率增长质量",
   "code": "AAPL",
   "description": "AAPL's revenue and profit trends over recent years, visualized with a waterfall chart to showcase the revenue-to-profit funnel.",
   "trendMetrics": [
@@ -8812,5 +8812,6 @@
     "cumulative": "累计",
     "componentTitle": "利润表"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL近八季营收利润与毛利率增长质量"
 }

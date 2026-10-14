@@ -52252,7 +52252,7 @@
       "12月"
     ]
   },
-  "title": "累计涨幅表现",
+  "title": "AAPL近五年月度表现规律分析",
   "componentUi": {
     "Business": "主营业务",
     "Type": "类型",
@@ -52262,5 +52262,6 @@
     "Price": "价格",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL近五年月度表现规律分析"
 }

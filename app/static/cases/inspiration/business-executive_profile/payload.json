@@ -1,7 +1,7 @@
 {
   "type": "executive-profile",
   "name": "Executive profile",
-  "title": "Executive profile",
+  "title": "AAPL管理层与董事会治理结构分析",
   "code": "AAPL",
   "market": "185",
   "exchange": "NASDAQ",
@@ -201,5 +201,6 @@
     "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/profile/"
   },
   "language": "zh-CN",
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL管理层与董事会治理结构分析"
 }

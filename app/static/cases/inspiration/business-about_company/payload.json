@@ -1,7 +1,7 @@
 {
   "type": "about-company",
   "name": "公司资料",
-  "title": "公司资料",
+  "title": "NVDA 公司档案与上市结构核验",
   "code": "NVDA",
   "market": "185",
   "exchange": "NASDAQ",
@@ -86,5 +86,6 @@
     "Value": "价值",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "NVDA 公司档案与上市结构核验"
 }

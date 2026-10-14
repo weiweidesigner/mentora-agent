@@ -1,7 +1,7 @@
 {
   "type": "key-financial-indicators",
   "name": "关键财务指标",
-  "title": "关键财务指标",
+  "title": "AAPL ROE下滑源于去杠杆而非盈利转弱",
   "code": "GOOGL",
   "metrics": [
     {
@@ -463,5 +463,6 @@
     "startPeriod": "起始期间",
     "endPeriod": "结束期间"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL ROE下滑源于去杠杆而非盈利转弱"
 }

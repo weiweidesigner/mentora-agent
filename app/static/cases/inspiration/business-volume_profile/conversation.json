@@ -137,6 +137,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b1f866748f84d5f245c2ceeb56)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "NVDA 成交价位分布：228.52 美元单点堆积",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

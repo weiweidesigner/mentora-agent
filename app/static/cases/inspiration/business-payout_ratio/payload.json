@@ -1,7 +1,7 @@
 {
   "type": "payout-ratio",
   "name": "Payout Ratio",
-  "title": "派息率",
+  "title": "苹果分红率创13年新低：利润快增稀释派息",
   "code": "AAPL",
   "series": [
     {
@@ -150,5 +150,6 @@
       "pay_out_ratio": "派息率"
     }
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "苹果分红率创13年新低：利润快增稀释派息"
 }

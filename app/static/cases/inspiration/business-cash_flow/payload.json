@@ -1,7 +1,7 @@
 {
   "type": "cash-flow",
   "name": "现金流",
-  "title": "现金流",
+  "title": "AAPL经营现金流与现金流向拆解",
   "code": "NVDA",
   "description": "NVDA's cash flow trends over recent years, visualized with a waterfall chart to illustrate changes in its operating, investing, and financing cash flows.",
   "trendMetrics": [
@@ -723,5 +723,6 @@
     "breakdown": "拆解",
     "yoy": "同比"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL经营现金流与现金流向拆解"
 }

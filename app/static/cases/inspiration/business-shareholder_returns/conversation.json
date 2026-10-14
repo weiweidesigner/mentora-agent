@@ -201,6 +201,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139af7a177042aa1777a30fd6e6e2)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL三年股东回报：跑赢美股却落后消费电子行业",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

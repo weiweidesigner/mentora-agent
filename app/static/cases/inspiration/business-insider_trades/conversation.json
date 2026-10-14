@@ -233,6 +233,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399966e57636bd14a9fb9f9bf728)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL内部人交易：近三年零买入、47笔全为卖出",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

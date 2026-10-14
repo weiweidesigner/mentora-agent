@@ -1,7 +1,7 @@
 {
   "type": "revenue-expenses",
   "name": "Revenue & Expenses",
-  "title": "收入与费用",
+  "title": "GOOGL收入去向与利润形成拆解",
   "code": "NVDA",
   "periodType": "quarterly",
   "currency": "USD",
@@ -1375,5 +1375,6 @@
   },
   "source": "AInvest financial_reports_visual/usa/v1/sankey",
   "language": "zh-CN",
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "GOOGL收入去向与利润形成拆解"
 }

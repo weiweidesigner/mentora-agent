@@ -1,7 +1,7 @@
 {
   "type": "average-rating-history",
   "name": "Average Rating History",
-  "title": "Average Rating History",
+  "title": "AMD近一年分析师评级V型修复与高位横盘",
   "code": "NVDA",
   "market": "185",
   "defaultPeriod": "6M",
@@ -189,5 +189,6 @@
     "Strong Sell": "强烈卖出",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD近一年分析师评级V型修复与高位横盘"
 }

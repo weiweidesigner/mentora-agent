@@ -289,6 +289,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a3a4c778729dc283ae2313eb1d)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "苹果微软英伟达分时走势对比",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

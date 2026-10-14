@@ -1,6 +1,6 @@
 {
   "type": "multi-intraday",
-  "title": "",
+  "title": "苹果微软英伟达分时走势对比",
   "mode": "multi-symbol-same-date",
   "cards": [
     {
@@ -24,5 +24,6 @@
       "barCount": 390,
       "source": "ainvest"
     }
-  ]
+  ],
+  "customTitle": "苹果微软英伟达分时走势对比"
 }

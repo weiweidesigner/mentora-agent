@@ -1,7 +1,7 @@
 {
   "type": "insider-trades",
   "name": "内部人交易",
-  "title": "内部人交易",
+  "title": "AAPL内部人交易：近三年零买入、47笔全为卖出",
   "code": "NVDA",
   "market": "185",
   "exchange": "NASDAQ",
@@ -3625,5 +3625,6 @@
     "Age": "年龄",
     "Ownership": "持股"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL内部人交易：近三年零买入、47笔全为卖出"
 }

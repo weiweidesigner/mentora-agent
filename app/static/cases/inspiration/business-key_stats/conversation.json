@@ -177,6 +177,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a156c275fda3d58b8d8be01bd5)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "NVDA缩量收复日内高位，量价背离",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

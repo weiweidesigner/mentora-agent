@@ -361,6 +361,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13990973978bab464931a153786b1)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL 资本结构：市值与企业价值对比",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

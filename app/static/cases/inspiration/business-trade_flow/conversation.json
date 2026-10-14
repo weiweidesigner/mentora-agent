@@ -177,6 +177,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b00a557bd88f879c6994e9e99a)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "NVDA价涨资金流出，超大单独买",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

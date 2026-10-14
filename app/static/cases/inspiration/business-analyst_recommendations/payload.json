@@ -1,7 +1,7 @@
 {
   "type": "analyst-recommendations",
   "name": "Recommendations",
-  "title": "Recommendations",
+  "title": "AMD分析师评级分布：买入占比逾九成",
   "code": "NVDA",
   "market": "185",
   "defaultPeriod": "6M",
@@ -298,5 +298,6 @@
     "Strong Sell": "强烈卖出",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD分析师评级分布：买入占比逾九成"
 }

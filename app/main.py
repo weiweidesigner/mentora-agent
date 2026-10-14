@@ -7326,7 +7326,7 @@ def legacy_route_with_model(question: str) -> dict[str, Any]:
         "- 对业务图表召回脚本，必须使用 chart schema catalog 中 business-chart-recall 对应 script 的 visualChannelMappings、dataContract 和 builtInDataSources 理解该组件需要什么业务数据、展示什么视觉通道、哪些 CLI 参数只是取数/周期/市场控制；不要把业务组件当成任意通用图表来发明 payload。\n"
         "- revenue_expenses.py 使用 --type quarterly|annual|both 控制周期，不支持 --period-type；income_statement.py、balance_sheet.py、cash_flow.py 和 key_financial_indicators.py 使用 --period-type。\n"
         "- 如果用户问题包含 [上传图片识别结果]，且用户要求重绘/复刻/按图生成，必须优先使用其中的 chartTitle、chartType、xAxis、yAxis、seriesNames、legend 和 extractedData 来选择脚本、设置 --chart-type 和 --data-json；chartTitle 是理解原图主题和避免选错图的依据，但最终 --title 应基于 extractedData 总结一个有洞察、吸引人的图表标题，可保留原图主题词但不要机械照抄。若 chartType 与用户文字冲突，以用户最新文字要求为准，但 reason 必须说明。\n"
-        "- 对所有通用数据图表，尤其是 bar_line.py 柱折图，cli_args 应尽量包含 --title。标题必须基于数据总结核心发现，使用用户语言，短而有信息量，突出最大值/异常点/趋势/对比关系之一；不要使用“柱折图”“Bar Line Chart”“数据图表”“指标变化趋势”这类脚本名或泛标题，也不要只拼接字段名。trade_flow.py 也支持 --title，应基于用户问句中的资金流/订单流分析目标生成标题，不要使用 Trade Flow Insight 组件名；执行器还会在拿到真实资金流数据后用模型二次生成最终标题。财报业务组件如 income_statement.py、revenue_expenses.py 不支持 --title，不要给它们传 --title。\n"
+        "- 对所有通用数据图表，尤其是 bar_line.py 柱折图，cli_args 应尽量包含 --title。标题必须基于数据总结核心发现，使用用户语言，短而有信息量，突出最大值/异常点/趋势/对比关系之一；不要使用“柱折图”“Bar Line Chart”“数据图表”“指标变化趋势”这类脚本名或泛标题，也不要只拼接字段名。trade_flow.py 也支持 --title，应基于用户问句中的资金流/订单流分析目标生成标题，不要使用 Trade Flow Insight 组件名；执行器还会在拿到真实资金流数据后用模型二次生成最终标题。全部业务图表组件支持 --title，必须根据用户问题与已知数据用模型生成具体标题并传入，不要只填写组件名；未取数时使用中性的分析主题，不能虚构结论。\n"
         "- 如果用户要求自定义图表样式，例如“折线上标红超过 5% 的点”“黄色五角星标记”“在点上标记简要事件”“加一条 0 轴虚线”“选中区域要有浅灰背景”“tooltip 在第一条网格线上方”“负值红色正值蓝色”“折线加粗/显示节点/隐藏 legend/坐标轴放左边”，不要在路由里写成固定问句规则；应在对应图表工具 cli_args 中加入 --style-json。style-json 是通用 visualStyle JSON，可包含：{\"version\":1,\"overlays\":[{\"type\":\"thresholdMarkers|pointMarkers|referenceLine|selectedBand\",\"sourceMetric\":\"return_pct\",\"targetField\":\"value\",\"threshold\":5,\"direction\":\"above|below\",\"color\":\"#facc15\",\"shape\":\"star|rect|circle|square\",\"radius\":4,\"width\":10,\"height\":8,\"showInLegend\":false,\"eventLabel\":\"财报/拆股/新品\",\"labelTemplate\":\"{date}\",\"showEventLabel\":true,\"maxLabels\":6}],\"line\":{\"showPoints\":false,\"strokeWidth\":2.5},\"point\":{\"radius\":3.2,\"outerRadius\":5},\"yAxis\":{\"position\":\"right|left|both\",\"suffix\":\"%\",\"digits\":2},\"tooltip\":{\"placement\":\"aboveFirstGrid|topGrid|cursor|fixed\",\"offsetY\":-44,\"arrow\":true,\"maxWidth\":280},\"legend\":{\"visible\":true},\"grid\":{\"count\":5},\"margin\":{\"top\":34,\"right\":66,\"bottom\":56,\"left\":24},\"colorRules\":[{\"field\":\"value\",\"condition\":\"<0\",\"color\":\"#ef4444\"}],\"seriesStyle\":[{\"field\":\"value\",\"color\":\"#2563eb\",\"strokeWidth\":2.4,\"opacity\":1}]}。sourceMetric 是用于判断/筛选的字段，targetField 是视觉落点字段；二者可以不同。group_line.py 使用本地 renderer，默认视觉规范应与 bar_line.py 的 x/y 轴、网格线、tooltip、图例和 hover 细节保持一致；只有用户提出额外样式要求时，才使用 --style-json 或 --style-code 注入模型生成的 visualStyle patch。\n"
         "- 用户明确指定的可视化形态是硬语义约束，必须保留到最终输出。比如用户要求“分组柱状图/分组柱形图/grouped bar/grouped column/多系列柱状对比”，最终图表必须是 grouped-bar；用户要求“分组折线/grouped line/grouped-line/多系列折线”，最终图表必须是 grouped-line；不要降级为普通柱状图、普通折线图或 dynamic_line，除非用户明确要求动态播放。\n"
         "- 如果结构化取数工具不能直接渲染用户指定的图表形态，应把取数工具作为前置数据源，再追加 code_interpreter.py 做 chart-ready payload 转换，并在 code_interpreter.py 的 cli_args 中设置 --chart-type 为用户指定形态，例如 grouped-bar 或 grouped-line。搜索/文本证据到数值图表 payload 的抽取不走 code_interpreter.py，由执行器的 ARK schema structuring 完成。\n"
@@ -18136,13 +18136,13 @@ def adapt_cli_args_for_script(selected: SkillScript, args: list[str], question: 
         return normalize_yahoo_interval_args(args)
 
     if selected.filename == "revenue_expenses.py":
-        return adapt_revenue_expenses_cli_args(remove_cli_option(args, {"--title"}))
+        return adapt_revenue_expenses_cli_args(args)
 
     if selected.filename == "income_statement.py":
-        return remove_cli_option(args, {"--title", "--period-type", "--view", "--range-length", "--latest-offset", "--period-offset", "--metric", "--from-period", "--to-period", "--from-date", "--to-date", "--language"})
+        return remove_cli_option(args, {"--period-type", "--view", "--range-length", "--latest-offset", "--period-offset", "--metric", "--from-period", "--to-period", "--from-date", "--to-date", "--language"})
 
     if selected.filename == "cash_flow.py":
-        return remove_cli_option(args, {"--title", "--period-type", "--view", "--range-length", "--latest-offset", "--period-offset", "--metric", "--from-period", "--to-period", "--from-date", "--to-date", "--language"})
+        return remove_cli_option(args, {"--period-type", "--view", "--range-length", "--latest-offset", "--period-offset", "--metric", "--from-period", "--to-period", "--from-date", "--to-date", "--language"})
 
     if selected.key != "kline":
         return args

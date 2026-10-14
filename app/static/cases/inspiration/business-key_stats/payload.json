@@ -1,7 +1,7 @@
 {
   "type": "key-stats",
   "name": "关键统计数据",
-  "title": "关键统计数据",
+  "title": "NVDA缩量收复日内高位，量价背离",
   "code": "NVDA",
   "market": "185",
   "fields": {
@@ -279,5 +279,6 @@
     "Key Stats": "关键指标",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "NVDA缩量收复日内高位，量价背离"
 }

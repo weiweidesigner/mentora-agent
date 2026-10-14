@@ -1,7 +1,7 @@
 {
   "type": "trade-flow",
   "name": "Trade Flow Insight",
-  "title": "资金流洞察",
+  "title": "NVDA价涨资金流出，超大单独买",
   "code": "NVDA",
   "market": "185",
   "currency": "USD",
@@ -10642,5 +10642,6 @@
     "range end": "结束周期",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "NVDA价涨资金流出，超大单独买"
 }

@@ -201,6 +201,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399f832a7b009c3d7190d45b8032)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL ROE下滑源于去杠杆而非盈利转弱",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

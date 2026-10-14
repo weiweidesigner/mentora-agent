@@ -1,7 +1,7 @@
 {
   "type": "investment-rating",
   "name": "投资评级",
-  "title": "投资评级",
+  "title": "AAPL多维度投资评级：情绪支撑下的中性评分",
   "code": "GOOGL",
   "market": "185",
   "exchange": "NASDAQ",
@@ -57,5 +57,6 @@
       "dividend": "分红"
     }
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL多维度投资评级：情绪支撑下的中性评分"
 }

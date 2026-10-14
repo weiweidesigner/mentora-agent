@@ -169,6 +169,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139975f2178739e28a0d4d1096bc9)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL近八季营收利润与毛利率增长质量",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

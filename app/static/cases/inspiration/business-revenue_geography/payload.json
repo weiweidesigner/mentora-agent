@@ -1,7 +1,7 @@
 {
   "type": "pie",
   "name": "按地区收入明细",
-  "title": "按地区收入明细",
+  "title": "AAPL 2026Q3 各地区收入占比结构",
   "language": "zh-CN",
   "i18n": {
     "name": "按地区收入明细",
@@ -54,5 +54,6 @@
     "statusMsg": "result empty",
     "method": "AInvest 未返回该股票的地区收入明细；已生成无数据状态而不是执行失败。"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL 2026Q3 各地区收入占比结构"
 }

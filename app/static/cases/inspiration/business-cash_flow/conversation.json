@@ -137,6 +137,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399159857172a38064935d16126c)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL经营现金流与现金流向拆解",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

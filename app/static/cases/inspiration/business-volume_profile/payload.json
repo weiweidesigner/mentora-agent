@@ -1,7 +1,7 @@
 {
   "type": "volume-profile",
   "name": "成交分布",
-  "title": "成交分布",
+  "title": "NVDA 成交价位分布：228.52 美元单点堆积",
   "code": "NVDA",
   "market": "185",
   "averagePrice": 226.7724860730985,
@@ -328,5 +328,6 @@
     "Total": "合计",
     "Age": "年龄"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "NVDA 成交价位分布：228.52 美元单点堆积"
 }

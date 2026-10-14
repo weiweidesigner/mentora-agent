@@ -225,6 +225,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399d82a17689a0f9a6e27ddc7f57)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL多维度投资评级：情绪支撑下的中性评分",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

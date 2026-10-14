@@ -105,6 +105,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398fa08f7f9185eeb26d6c1456a0)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AMD分析师评级分布：买入占比逾九成",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

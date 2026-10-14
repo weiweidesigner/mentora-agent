@@ -145,6 +145,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139929cda7e31914cebc8630b16fe)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL股息率三年走势：2024年见顶后持续走低",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

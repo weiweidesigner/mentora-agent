@@ -1,7 +1,7 @@
 {
   "type": "congress-trades",
   "name": "Congress Trades",
-  "title": "Congress Trades",
+  "title": "AAPL议员交易：卖压集中与披露时差",
   "code": "AAPL",
   "market": "185",
   "period": "3Y",
@@ -518,5 +518,6 @@
     }
   },
   "language": "zh-CN",
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL议员交易：卖压集中与披露时差"
 }

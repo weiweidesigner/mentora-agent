@@ -113,6 +113,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139ac8d4a7e70aa4df2f2f21e9284)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL 2026Q3 各地区收入占比结构",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

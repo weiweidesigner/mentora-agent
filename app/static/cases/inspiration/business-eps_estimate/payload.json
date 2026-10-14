@@ -1,6 +1,6 @@
 {
   "name": "收益预估",
-  "title": "收益预估",
+  "title": "AMD每股收益超预期幅度收窄与Q3预期跳升",
   "code": "GOOGL",
   "companyName": "Alphabet A",
   "nextDate": "Sep 30, 2026",
@@ -70,5 +70,6 @@
     "above": "高于预期",
     "below": "低于预期"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AMD每股收益超预期幅度收窄与Q3预期跳升"
 }

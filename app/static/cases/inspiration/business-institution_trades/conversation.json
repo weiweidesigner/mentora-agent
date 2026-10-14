@@ -169,6 +169,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399bbeb5731aaf0ebda07dffa285)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL机构13F净买入与最新申报骤降",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

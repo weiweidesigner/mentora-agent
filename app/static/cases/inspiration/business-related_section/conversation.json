@@ -257,6 +257,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a64bd376aea00d58914f4cf787)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL 相关 ETF 持仓权重与板块关联分析",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

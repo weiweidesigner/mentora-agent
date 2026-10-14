@@ -1,7 +1,7 @@
 {
   "type": "balance-sheet",
   "name": "Balance Sheet",
-  "title": "资产负债表",
+  "title": "AAPL负债率降至71.95%的结构分析",
   "code": "GOOGL",
   "description": "GOOGL's asset and liability trends over recent years, visualized with a waterfall chart to illustrate changes in its asset-liability structure.",
   "trendMetrics": [
@@ -780,5 +780,6 @@
     "rangeStart": "开始周期",
     "rangeEnd": "结束周期"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL负债率降至71.95%的结构分析"
 }

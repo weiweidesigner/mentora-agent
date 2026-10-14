@@ -1,7 +1,7 @@
 {
   "type": "dividend-yield",
   "name": "Dividend Yield",
-  "title": "股息率",
+  "title": "AAPL股息率三年走势：2024年见顶后持续走低",
   "code": "AAPL",
   "series": [
     {
@@ -5483,5 +5483,6 @@
     "emptyTitle": "暂无数据",
     "emptyMessage": "暂无股息率数据"
   },
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL股息率三年走势：2024年见顶后持续走低"
 }

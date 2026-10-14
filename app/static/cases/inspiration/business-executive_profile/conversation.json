@@ -257,6 +257,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13995054a7d588f48b71fb0e28e85)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AAPL管理层与董事会治理结构分析",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "type": "pie",
   "name": "按来源/业务收入明细",
-  "title": "按来源/业务收入明细",
+  "title": "AAPL最新季度收入构成与占比变化",
   "props": {
     "height": 360,
     "subtitle": "GOOGL · 按业务收入结构 · Q2 '26",
@@ -57,5 +57,6 @@
     "method": "Uses AInvest Financials Revenue Breakdown data from the USA sankey endpoint. Pie slices include positive business revenue sources only; negative adjustments are retained in source metadata because pie slices cannot represent negative values."
   },
   "language": "zh-CN",
-  "theme": "light"
+  "theme": "light",
+  "customTitle": "AAPL最新季度收入构成与占比变化"
 }

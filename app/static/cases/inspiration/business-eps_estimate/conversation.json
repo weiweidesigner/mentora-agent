@@ -161,6 +161,11 @@
       "fallback": "agent-selection",
       "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139949c3f7beba7cbff2424166361)",
       "candidateCount": 45
+    },
+    "chartTitle": {
+      "value": "AMD每股收益超预期幅度收窄与Q3预期跳升",
+      "source": "model-generated",
+      "model": "deepseek-v4-flash"
     }
   }
 }
