@@ -18,6 +18,7 @@
     const showQuestion = !!selectedCase && isMobileLayout() && !!bubble && messages.scrollTop > 0
       && bubble.getBoundingClientRect().bottom <= messages.getBoundingClientRect().top + 4;
     const title = selectedCase ? (showQuestion ? selectedCase.question : "案例回放 · " + selectedCase.cachedDate) : "";
+    date.classList.toggle("is-question", showQuestion);
     let text = date.querySelector(".caseTitleText");
     if (!text || text.textContent !== title) {
       text = document.createElement("span");
