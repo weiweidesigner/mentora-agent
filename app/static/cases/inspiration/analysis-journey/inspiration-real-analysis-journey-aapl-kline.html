@@ -491,7 +491,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
     const configuredMainHeight = Number(config.mainChartHeight || 300);
     const configuredSubHeight = Number(config.subChartHeight || 72);
     const mainHeight = isCompact
-      ? Math.max(260, Math.min(Math.max(configuredMainHeight, 300), Math.round(width * 0.82)))
+      ? Math.max(180, Math.min(configuredMainHeight, 230, Math.round(width * 0.6)))
       : configuredMainHeight;
     const baseSubHeight = isCompact
       ? Math.max(44, Math.min(configuredSubHeight, Math.round(width * 0.12)))

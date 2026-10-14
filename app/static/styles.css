@@ -3703,3 +3703,13 @@ p {
 :root[data-theme="dark"] .homeBackdrop video { opacity:.4; filter:saturate(.65); }
 :root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(14,19,26,.24),rgba(14,19,26,.5) 46%,var(--bg) 94%); }
 @media(max-width:760px) { .homeBackdrop { height:85dvh; min-height:480px; } .homeBackdrop video { object-position:55% center; } }
+
+@media(max-width:760px){
+ .inspirationGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .inspirationGrid .caseCard{padding:9px;min-height:124px;min-width:0}
+ .inspirationGrid .caseCardTop{gap:5px;margin-bottom:7px}
+ .inspirationGrid .caseCardIcon{width:18px;height:18px}
+ .inspirationGrid .caseCardTag{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .inspirationGrid .caseCard h4{font-size:12px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .inspirationGrid .caseCard p{font-size:10px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}

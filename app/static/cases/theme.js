@@ -12,6 +12,22 @@
   const palette = document.createElement("style");
   palette.dataset.casePalette = "true";
   palette.textContent = `
+svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-highlight-color:transparent}
+.case-single-tab{display:none!important}
+.intraday-tabs{display:none}
+@media(max-width:720px){
+ .component{height:auto!important;min-height:0!important}
+ .stage,.trend-stage,.waterfall-stage{height:210px!important;min-height:0!important}
+ .chart-panel .chart{height:190px!important;aspect-ratio:auto!important}
+ .range-filter{height:48px!important;padding:5px 16px 6px!important;box-sizing:border-box}
+ .range-shell,.time-range-shell{padding-inline:16px!important;box-sizing:border-box}
+ .ring-stage{height:200px!important} .ring-stage svg{width:190px!important;height:190px!important}
+ .intraday-card{min-width:0!important;width:100%;height:400px!important}
+ .intraday-row{--columns:1;grid-auto-columns:100%!important;gap:10px}
+ .intraday-tabs{display:flex!important;gap:6px;margin:4px 0 8px}
+ .intraday-tabs button{border:0;border-radius:7px;padding:7px 10px;background:transparent;color:inherit;font:inherit;font-size:12px}
+}
+
 
     .kline-title strong[data-business-title],[data-business-title] {font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;}
     @media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}
@@ -58,4 +74,39 @@
   observer.observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener("DOMContentLoaded", syncBody, { once: true });
   syncBody();
+
+  const prepareMobileControls = () => {
+    document.querySelectorAll('.period-tabs,.segmented,.metric-tabs,.top-tabs,.chart-tabs').forEach(tabs => {
+      const buttons = tabs.querySelectorAll('button');
+      tabs.classList.toggle('case-single-tab', buttons.length === 1);
+    });
+    if (!document.querySelector('[data-business-theme-runtime],.kline-component,.multi-intraday')) return;
+    document.querySelectorAll('svg').forEach(svg => {
+      if (svg.dataset.businessSwipe || svg.onpointermove || !svg.querySelector('.hover-zone,.hit,.hit-area')) return;
+      svg.dataset.businessSwipe='true';
+      svg.style.touchAction='pan-y';
+      let start=null;
+      svg.addEventListener('pointerdown', event => {if(event.pointerType==='touch')start={x:event.clientX,y:event.clientY};});
+      svg.addEventListener('pointermove', event => {
+        if(event.pointerType!=='touch'||!start)return;
+        const dx=Math.abs(event.clientX-start.x),dy=Math.abs(event.clientY-start.y);
+        if(dy>6 && dy>dx){svg.dispatchEvent(new MouseEvent('mouseleave',{bubbles:false}));return;}
+        const zones=[...svg.querySelectorAll('.hover-zone,.hit,.hit-area')].filter(e=>e.getBoundingClientRect().width>0);
+        const nearest=zones.sort((a,b)=>{const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();return Math.abs(ar.left+ar.width/2-event.clientX)-Math.abs(br.left+br.width/2-event.clientX);})[0];
+        if(nearest){const pos={clientX:event.clientX,clientY:event.clientY,bubbles:false};nearest.dispatchEvent(new MouseEvent('mouseenter',pos));nearest.dispatchEvent(new MouseEvent('mousemove',pos));nearest.dispatchEvent(new PointerEvent('pointerenter', {...pos,pointerType:'mouse'}));}
+      });
+      const end=()=>{start=null;};svg.addEventListener('pointerup',end);svg.addEventListener('pointercancel',end);
+    });
+  };
+  const initControls = () => {
+    const row=document.querySelector('.intraday-row');
+    if(row && !document.querySelector('.intraday-tabs')) {
+      const tabs=document.createElement('nav');tabs.className='intraday-tabs';tabs.setAttribute('aria-label','分时股票');
+      [...row.children].forEach((card,i)=>{const button=document.createElement('button');button.type='button';button.textContent=card.querySelector('iframe')?.title.split(' ')[0]||String(i+1);button.setAttribute('aria-selected',String(i===0));button.addEventListener('click',()=>{row.scrollTo({left:card.offsetLeft-row.offsetLeft,behavior:'smooth'});[...tabs.children].forEach((b,n)=>b.setAttribute('aria-selected',String(n===i)));});tabs.append(button);});row.before(tabs);
+      row.addEventListener('scroll',()=>{const index=Math.round(row.scrollLeft/Math.max(1,row.clientWidth+10));[...tabs.children].forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));},{passive:true});
+    }
+    prepareMobileControls();let pending=false;
+    new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;prepareMobileControls();});}).observe(document.body,{childList:true,subtree:true});
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initControls,{once:true});else initControls();
 })();
