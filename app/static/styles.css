@@ -3458,6 +3458,7 @@ p {
   .caseCard:hover { transform: translateY(-2px); border-color: var(--case-accent); box-shadow: 0 8px 22px #0000000a; }
 }
 .caseCard:focus-visible, .caseAskButton:focus-visible, .caseBackButton:focus-visible { outline: 2px solid #8a7bff; outline-offset: 3px; }
+.caseCard { -webkit-tap-highlight-color: transparent; }
 .caseCardTop { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
 .caseCardIcon { width: 26px; height: 26px; display: grid; place-items: center; color: var(--case-accent); background: color-mix(in srgb, var(--case-accent) 12%, transparent); border-radius: 7px; }
 .caseCardIcon svg { width: 16px; height: 16px; }
