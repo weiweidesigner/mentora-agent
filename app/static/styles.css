@@ -3501,17 +3501,21 @@ p {
   .caseCacheDate.is-question { grid-column: 1 / 3; text-align: left; }
   .caseCacheDate.is-marquee { text-align: left; }
   .caseCacheDate.is-marquee .caseTitleText { animation: caseTitleMarquee var(--case-title-duration, 8s) linear infinite alternate; }
+  .caseCacheDate.is-looping .caseTitleText { display: inline-flex; gap: 36px; animation: caseTitleLoop var(--case-title-duration,8s) linear infinite; }
+  .caseTitleCopy { flex: none; }
   .caseBackButton { grid-column: 3; grid-row: 1; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border-radius: 10px; }
   .caseBackLabel { display: none; }
   .caseCloseIcon { display: block; width: 24px; height: 24px; }
   .caseAskButton { min-width: 170px; height: 46px; }
 }
 @keyframes caseOverlayEnter { from { opacity: .6; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes caseTitleLoop { 0%, 10% { transform: translateX(0); } 100% { transform: translateX(var(--case-title-loop-travel)); } }
 @keyframes caseTitleMarquee { 0%, 18% { transform: translateX(0); } 82%, 100% { transform: translateX(var(--case-title-travel)); } }
 @media(prefers-reduced-motion:reduce) { .conversation.is-case { animation: none; } }
 @media(prefers-reduced-motion:reduce) {
   .caseCacheDate.is-marquee { overflow-x: auto; scrollbar-width: none; }
   .caseCacheDate.is-marquee .caseTitleText { animation: none; }
+  .caseTitleCopy { display: none; }
 }
 
 .caseActionBar { transition: opacity .18s ease, transform .18s ease; }

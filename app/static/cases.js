@@ -67,9 +67,10 @@
     const title = selectedCase ? (showQuestion ? selectedCase.question : (isMobileLayout() ? "案例回放 · " : "案例回放：") + selectedCase.cachedDate) : "";
     date.classList.toggle("is-question", showQuestion);
     let text = date.querySelector(".caseTitleText");
-    if (!text || text.textContent !== title) {
+    if (!text || text.dataset.title !== title) {
       text = document.createElement("span");
       text.className = "caseTitleText";
+      text.dataset.title = title;
       text.textContent = title;
       date.replaceChildren(text);
       date.setAttribute("aria-label", title);
@@ -77,16 +78,28 @@
       measure = true;
     }
     if (measure) {
-      date.classList.remove("is-marquee");
+      date.classList.remove("is-marquee", "is-looping");
+      text.querySelector(".caseTitleCopy")?.remove();
       const distance = showQuestion ? Math.max(0, text.scrollWidth - date.clientWidth) : 0;
       date.style.setProperty("--case-title-travel", `${-distance}px`);
       date.style.setProperty("--case-title-duration", `${Math.max(6, distance / 30 + 3)}s`);
       date.classList.toggle("is-marquee", distance > 1);
+      if (distance > 1 && isMobileLayout()) {
+        const travel = text.scrollWidth + 36;
+        const copy = document.createElement("span");
+        copy.className = "caseTitleCopy";
+        copy.setAttribute("aria-hidden", "true");
+        copy.textContent = title;
+        text.append(copy);
+        date.style.setProperty("--case-title-loop-travel", `${-travel}px`);
+        date.style.setProperty("--case-title-duration", `${Math.max(8, travel / 30 + 2)}s`);
+        date.classList.add("is-looping");
+      }
     }
   }
   function syncCaseOverlay() {
     const mobile = !!selectedCase && isMobileLayout();
-    conversation.setAttribute("aria-label", mobile ? date.textContent : "图文对话分析");
+    conversation.setAttribute("aria-label", mobile ? date.getAttribute("aria-label") : "图文对话分析");
     conversation.removeAttribute("role");
     conversation.removeAttribute("aria-modal");
     conversation.removeAttribute("aria-labelledby");
