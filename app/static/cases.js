@@ -344,13 +344,108 @@
     return response.json();
   }).then((rows) => {
     window.veyaCases = rows;
-    gallery.innerHTML = rows.map((row, index) => `
+    const cardHtml = (row, index) => `
       <button class="caseCard" type="button" data-case="${escapeHtml(row.id)}" style="--case-accent:${["#6d5efc", "#2784df", "#c17632", "#358a73", "#9661cb", "#5272b7"][index % 6]}">
-        <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span><span class="caseCardArrow" aria-hidden="true">↗</span></div>
+        <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
         <h2>${escapeHtml(row.title)}</h2>
         <p>${escapeHtml(row.preview)}</p>
-      </button>`).join("");
-    gallery.querySelectorAll("[data-case]").forEach((card) => card.addEventListener("click", () => showCase(card.dataset.case)));
+      </button>`;
+    const desktop = window.matchMedia("(min-width:761px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
+    let lanes = [], hovered = false, suppressClickUntil = 0;
+    let previousFrame = performance.now();
+    const resizeObserver = new ResizeObserver(() => lanes.forEach(sizeLane));
+    function sizeLane(state) {
+      const { lane, track } = state;
+      const original = track.firstElementChild;
+      const cycle = original.getBoundingClientRect().width;
+      if (!cycle) return;
+      const count = Math.ceil(lane.clientWidth / cycle) + 2;
+      while (track.children.length < count) {
+        const copy = original.cloneNode(true);
+        copy.setAttribute("aria-hidden", "true");
+        copy.querySelectorAll("button").forEach(button => button.tabIndex = -1);
+        track.append(copy);
+      }
+      while (track.children.length > count) track.lastElementChild.remove();
+      state.position = cycle + (state.cycle ? ((state.position % cycle) + cycle) % cycle : (state.direction < 0 ? cycle * .35 : 0));
+      state.cycle = cycle;
+      lane.scrollLeft = state.position;
+    }
+    function renderGallery() {
+      resizeObserver.disconnect();
+      lanes = [];
+      hovered = gallery.matches(":hover");
+      if (!desktop.matches) {
+        gallery.innerHTML = rows.map(cardHtml).join("");
+        return;
+      }
+      const split = Math.ceil(rows.length / 2);
+      gallery.innerHTML = [rows.slice(0, split), rows.slice(split)].map((items, rowIndex) => `
+        <div class="caseLane" aria-label="案例泳道 ${rowIndex + 1}">
+          <div class="caseLaneTrack"><div class="caseLaneSet">${items.map((row, index) => cardHtml(row, index + (rowIndex ? split : 0))).join("")}</div></div>
+        </div>`).join("");
+      gallery.querySelectorAll(".caseLane").forEach((lane, index) => {
+        const state = { lane, track: lane.firstElementChild, direction: index ? -1 : 1, position: 0, cycle: 0, dragging: false, manualUntil: 0 };
+        lanes.push(state);
+        resizeObserver.observe(lane);
+        sizeLane(state);
+        let pointer = null;
+        lane.addEventListener("pointerdown", event => {
+          if (event.pointerType !== "mouse" || event.button !== 0) return;
+          pointer = { id: event.pointerId, x: event.clientX, position: lane.scrollLeft };
+        });
+        lane.addEventListener("pointermove", event => {
+          if (!pointer || event.pointerId !== pointer.id) return;
+          const distance = event.clientX - pointer.x;
+          if (!state.dragging && Math.abs(distance) < 5) return;
+          state.dragging = true;
+          lane.classList.add("is-dragging");
+          if (!lane.hasPointerCapture(event.pointerId)) lane.setPointerCapture(event.pointerId);
+          event.preventDefault();
+          state.position = Math.max(0, Math.min(lane.scrollWidth - lane.clientWidth, pointer.position - distance));
+          lane.scrollLeft = state.position;
+        });
+        const endDrag = event => {
+          if (!pointer || event.pointerId !== pointer.id) return;
+          if (state.dragging) suppressClickUntil = performance.now() + 250;
+          if (lane.hasPointerCapture(event.pointerId)) lane.releasePointerCapture(event.pointerId);
+          pointer = null;
+          state.dragging = false;
+          state.position = lane.scrollLeft;
+          lane.classList.remove("is-dragging");
+        };
+        lane.addEventListener("pointerup", endDrag);
+        lane.addEventListener("pointercancel", endDrag);
+        lane.addEventListener("lostpointercapture", endDrag);
+        lane.addEventListener("wheel", () => { state.manualUntil = performance.now() + 1200; }, { passive: true });
+      });
+    }
+    gallery.addEventListener("mouseenter", () => { hovered = true; });
+    gallery.addEventListener("mouseleave", () => { hovered = false; });
+    gallery.addEventListener("click", event => {
+      if (performance.now() < suppressClickUntil) { event.preventDefault(); return; }
+      const card = event.target.closest("[data-case]");
+      if (card) showCase(card.dataset.case);
+    });
+    function moveLanes(now) {
+      const elapsed = Math.min(64, now - previousFrame) / 1000;
+      previousFrame = now;
+      if (desktop.matches && !document.hidden && !selectedCase && conversation.classList.contains("is-empty")) {
+        const paused = hovered || !!gallery.querySelector(":focus-visible") || reducedMotion.matches;
+        lanes.forEach(state => {
+          if (!state.cycle || state.dragging) return;
+          if (paused || now < state.manualUntil) { state.position = state.lane.scrollLeft; return; }
+          state.position += state.direction * 18 * elapsed;
+          state.position = state.cycle + ((state.position - state.cycle) % state.cycle + state.cycle) % state.cycle;
+          state.lane.scrollLeft = state.position;
+        });
+      }
+      requestAnimationFrame(moveLanes);
+    }
+    desktop.addEventListener("change", renderGallery);
+    renderGallery();
+    requestAnimationFrame(moveLanes);
     const id = new URLSearchParams(location.search).get("case");
     if (id) showCase(id, false);
   }).catch(() => {

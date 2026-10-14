@@ -3463,7 +3463,6 @@ p {
 .caseCardIcon { width: 26px; height: 26px; display: grid; place-items: center; color: var(--case-accent); background: color-mix(in srgb, var(--case-accent) 12%, transparent); border-radius: 7px; }
 .caseCardIcon svg { width: 16px; height: 16px; }
 .caseCardTag { font-size: 10px; color: var(--muted); }
-.caseCardArrow { margin-left: auto; color: var(--muted); font-size: 16px; }
 .caseCard h2 { margin: 0 0 7px; font-size: 14px; line-height: 1.45; font-weight: 650; }
 .caseCard p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .caseDetailHeader[hidden], .caseActionBar[hidden] { display: none; }
@@ -3627,3 +3626,20 @@ p {
   .caseOverlayPanel .activityHeader{border-top-right-radius:16px}
 }
 @media(prefers-reduced-motion:reduce){.caseOverlayPanel{transition:none}}
+
+/* Desktop case gallery: two continuous, draggable swimlanes. */
+@media(min-width:761px) {
+  .conversation.is-empty .homeCases { width:100%; max-width:none; padding:0 0 32px; }
+  .caseGrid { display:flex; flex-direction:column; gap:20px; min-width:0; }
+  .caseLane { width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; overscroll-behavior-x:contain; cursor:grab; mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent); }
+  .caseLane::-webkit-scrollbar { display:none; }
+  .caseLaneTrack { display:flex; width:max-content; padding:8px 0; }
+  .caseLaneSet { display:flex; gap:20px; padding-right:20px; flex:none; }
+  .caseLane .caseCard { flex:0 0 320px; width:320px; padding:20px; min-height:156px; user-select:none; cursor:grab; }
+  .caseLane .caseCardTop { margin-bottom:12px; }
+  .caseLane .caseCardTag { font-size:12px; }
+  .caseLane .caseCard h2 { font-size:16px; }
+  .caseLane .caseCard p { font-size:13px; }
+  .caseLane.is-dragging,.caseLane.is-dragging .caseCard { cursor:grabbing; }
+  .caseLane .caseCard:hover { transform:none; box-shadow:none; }
+}
