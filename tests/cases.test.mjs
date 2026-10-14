@@ -130,8 +130,10 @@ test('inspiration categories switch by click and keyboard and replay without inf
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();
   const tabs=h.w.document.querySelector('#inspirationTabs');
-  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'recommended');
-  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,2);
+  assert.equal(tabs.querySelector('[data-category="recommended"]'),null);
+  assert.equal(tabs.querySelector('.inspirationCount'),null);
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'charts');
+  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,1);
   tabs.querySelector('[data-category="art"]').click();
   assert.match(h.w.document.querySelector('#inspirationPanel h3').textContent,/艺术绘图/);
   tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));

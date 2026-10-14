@@ -25,7 +25,7 @@
     {
       "id": "art",
       "title": "艺术绘图",
-      "subtitle": "用金融主题插画，把抽象想法变成可见的灵感。"
+      "subtitle": "从日常故事到奇幻世界，把想象变成可见的灵感。"
     }
   ],
   "cases": [
@@ -715,10 +715,10 @@
     },
     {
       "id": "art-2",
-      "title": "全球资金流动的想象",
-      "tag": "金融主题插画",
-      "question": "画一张金融杂志风格插画：全球资本流动化为金色光河，连接地球上透明的金融城市，深蓝与金色，优雅的全球资金网络意象，没有文字和数字。",
-      "preview": "以光河连接城市，表达全球资本流动的概念。",
+      "title": "猫咪的深夜拉面店",
+      "tag": "动漫插画",
+      "question": "画一间雨夜里的猫咪拉面店，暖黄灯光、热汤蒸汽，温暖的动漫风格。",
+      "preview": "雨夜、热汤与猫咪小店，描绘一段温暖的深夜日常。",
       "cachedDate": "2026-10-14",
       "conversationUrl": "/static/cases/inspiration/art-2/conversation.json",
       "category": "art",
@@ -727,10 +727,10 @@
     },
     {
       "id": "art-3",
-      "title": "AI 产业的研究视角",
-      "tag": "金融主题插画",
-      "question": "画一张精致金融研究插画：分析师站在巨大的半导体芯片与抽象投资景观旁，表现 AI 产业研究视角，青绿与蓝色，杂志封面构图，没有文字和数字。",
-      "preview": "将芯片、分析师与投资景观组合成金融主题插画。",
+      "title": "月球上的复古音乐节",
+      "tag": "科幻插画",
+      "question": "画一场月球上的复古音乐节，宇航员乐队和跳舞的观众，远处是地球，配色鲜明。",
+      "preview": "把复古乐队搬到月球，在星空与地球之间举办一场音乐节。",
       "cachedDate": "2026-10-14",
       "conversationUrl": "/static/cases/inspiration/art-3/conversation.json",
       "category": "art",

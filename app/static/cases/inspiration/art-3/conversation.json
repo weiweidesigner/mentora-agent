@@ -1,8 +1,8 @@
 {
-  "question": "画一张精致金融研究插画：分析师站在巨大的半导体芯片与抽象投资景观旁，表现 AI 产业研究视角，青绿与蓝色，杂志封面构图，没有文字和数字。",
-  "cachedAt": "2026-10-14T16:38:38.924000+08:00",
+  "question": "画一场月球上的复古音乐节，宇航员乐队和跳舞的观众，远处是地球，配色鲜明。",
+  "cachedAt": "2026-10-14T17:59:08.973000+08:00",
   "answer": {
-    "question": "画一张精致金融研究插画：分析师站在巨大的半导体芯片与抽象投资景观旁，表现 AI 产业研究视角，青绿与蓝色，杂志封面构图，没有文字和数字。",
+    "question": "画一场月球上的复古音乐节，宇航员乐队和跳舞的观众，远处是地球，配色鲜明。",
     "code": "",
     "selectedSkill": {
       "key": "flux-image",
@@ -10,23 +10,23 @@
       "script": "flux-image",
       "reason": "Veya 直接执行并验证了本地 flux-image Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.html",
-    "reportUrl": "/static/cases/inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.html",
+    "htmlUrl": "/static/cases/inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.html",
+    "reportUrl": "/static/cases/inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.html",
-        "url": "/static/cases/inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.html",
-        "imageUrl": "/static/cases/inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.png",
+        "path": "case:inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.html",
+        "url": "/static/cases/inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.html",
+        "imageUrl": "/static/cases/inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.png",
         "mediaType": "image",
-        "alt": "AI 产业的研究视角"
+        "alt": "月球上的复古音乐节"
       }
     ],
     "payloadUrl": null,
-    "interpretation": "[[AIME_CHART:case:inspiration/art-3/flux-d8c7768e81084371a60d608822f8627c.html]]",
+    "interpretation": "[[AIME_CHART:case:inspiration/art-3/flux-2b463f83533d495187513910e0e1db64.html]]",
     "status": [
       "FLUX.2 [klein] 4B 已生成图片"
     ],
-    "agentRunId": "flux-71f31168165945709ad91fd9187dcfc7",
+    "agentRunId": "flux-49ab10c5f1b549bc9777373c16eff99b",
     "studioSessionId": null,
     "engineSessionId": "",
     "reasoningFramework": "deepseek",
@@ -37,31 +37,30 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "生成记录",
     "steps": [
       {
-        "title": "本地图片已生成并验证",
-        "elapsedMs": 15044
+        "title": "插画已生成并验证",
+        "elapsedMs": 15947
       }
     ],
-    "startedAt": 1791967103878,
-    "endedAt": 1791967118924,
-    "elapsedMs": 15046,
-    "durationSource": "sum-measured-generation-stages",
+    "startedAt": 1791971933026,
+    "endedAt": 1791971948973,
+    "elapsedMs": 15947,
+    "durationSource": "measured-chat-stream",
     "stages": [
       {
-        "name": "实际对话生成",
-        "startedAt": 1791967103878,
-        "endedAt": 1791967118924,
-        "elapsedMs": 15046
+        "name": "对话绘图",
+        "startedAt": 1791971933026,
+        "endedAt": 1791971948973,
+        "elapsedMs": 15947
       }
     ]
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",
-    "sessionId": "inspiration-real-art-3-6d1832beab1948ae91ae811daa05ca8e",
-    "renderer": null,
-    "sample": false,
-    "visualRoute": null
+    "sessionId": "gallery-art-refresh-c87806fc7fa44ce7ba0f1a7e6e3bc83c",
+    "renderer": "flux-image",
+    "sample": false
   }
 }

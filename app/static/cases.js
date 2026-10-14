@@ -472,15 +472,14 @@
       if (!response.ok) throw new Error("灵感案例暂时无法加载");
       const catalog = await response.json();
       window.veyaCases = [...window.veyaCases, ...catalog.cases.filter(row => !window.veyaCases.some(existing => existing.id === row.id))];
-      const categories = [{ id: "recommended", title: "推荐" }, ...catalog.categories];
-      let active = "recommended";
+      const categories = catalog.categories;
+      let active = categories[0]?.id;
       const render = () => {
         tabs.innerHTML = categories.map(category => {
-          const count = category.id === "recommended" ? catalog.cases.length : catalog.cases.filter(row => row.category === category.id).length;
-          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}<span class="inspirationCount">${count}</span></button>`;
+          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`;
         }).join("");
         panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
-        panel.innerHTML = catalog.categories.filter(category => active === "recommended" || category.id === active).map(category => {
+        panel.innerHTML = catalog.categories.filter(category => category.id === active).map(category => {
           const rows = catalog.cases.filter(row => row.category === category.id);
           return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}<span class="inspirationCount">${rows.length}</span></h3><p>${escapeHtml(category.subtitle)}</p></header><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
         }).join("");

@@ -1,8 +1,8 @@
 {
-  "question": "画一张金融杂志风格插画：全球资本流动化为金色光河，连接地球上透明的金融城市，深蓝与金色，优雅的全球资金网络意象，没有文字和数字。",
-  "cachedAt": "2026-10-14T16:38:23.878000+08:00",
+  "question": "画一间雨夜里的猫咪拉面店，暖黄灯光、热汤蒸汽，温暖的动漫风格。",
+  "cachedAt": "2026-10-14T17:58:53.026000+08:00",
   "answer": {
-    "question": "画一张金融杂志风格插画：全球资本流动化为金色光河，连接地球上透明的金融城市，深蓝与金色，优雅的全球资金网络意象，没有文字和数字。",
+    "question": "画一间雨夜里的猫咪拉面店，暖黄灯光、热汤蒸汽，温暖的动漫风格。",
     "code": "",
     "selectedSkill": {
       "key": "flux-image",
@@ -10,23 +10,23 @@
       "script": "flux-image",
       "reason": "Veya 直接执行并验证了本地 flux-image Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
-    "reportUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
+    "htmlUrl": "/static/cases/inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.html",
+    "reportUrl": "/static/cases/inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
-        "url": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
-        "imageUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.png",
+        "path": "case:inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.html",
+        "url": "/static/cases/inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.html",
+        "imageUrl": "/static/cases/inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.png",
         "mediaType": "image",
-        "alt": "全球资金流动的想象"
+        "alt": "猫咪的深夜拉面店"
       }
     ],
     "payloadUrl": null,
-    "interpretation": "[[AIME_CHART:case:inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html]]",
+    "interpretation": "[[AIME_CHART:case:inspiration/art-2/flux-41daa796be144e588ff3f5a62c201e86.html]]",
     "status": [
       "FLUX.2 [klein] 4B 已生成图片"
     ],
-    "agentRunId": "flux-173bcc40413d467783de14fab7131b81",
+    "agentRunId": "flux-07878807b20345149d074c9a268b5967",
     "studioSessionId": null,
     "engineSessionId": "",
     "reasoningFramework": "deepseek",
@@ -37,31 +37,30 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "生成记录",
     "steps": [
       {
-        "title": "本地图片已生成并验证",
-        "elapsedMs": 15503
+        "title": "插画已生成并验证",
+        "elapsedMs": 18000
       }
     ],
-    "startedAt": 1791967088374,
-    "endedAt": 1791967103878,
-    "elapsedMs": 15504,
-    "durationSource": "sum-measured-generation-stages",
+    "startedAt": 1791971915026,
+    "endedAt": 1791971933026,
+    "elapsedMs": 18000,
+    "durationSource": "measured-chat-stream",
     "stages": [
       {
-        "name": "实际对话生成",
-        "startedAt": 1791967088374,
-        "endedAt": 1791967103878,
-        "elapsedMs": 15504
+        "name": "对话绘图",
+        "startedAt": 1791971915026,
+        "endedAt": 1791971933026,
+        "elapsedMs": 18000
       }
     ]
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",
-    "sessionId": "inspiration-real-art-2-84ce4b1af7bf4fd78815b2d2b62186f9",
-    "renderer": null,
-    "sample": false,
-    "visualRoute": null
+    "sessionId": "gallery-art-refresh-4868ba24c9924988bc6ea897c0c2a87c",
+    "renderer": "flux-image",
+    "sample": false
   }
 }
