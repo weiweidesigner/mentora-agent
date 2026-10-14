@@ -1,5 +1,14 @@
 [
   {
+    "id": "sse-kdj-backtest",
+    "title": "上证指数 KDJ 胜率回测",
+    "tag": "策略回测",
+    "question": "KDJ 这个指标准吗？以上证指数为例，回测一下它的胜率有多少。",
+    "preview": "金叉、死叉真的有效吗？对比 20 年历史胜率、随机基准与资金曲线，拆解不同 KDJ 用法。",
+    "cachedDate": "2026-10-14",
+    "conversationUrl": "/static/cases/sse-kdj-backtest/conversation.json"
+  },
+  {
     "id": "ashare-dashboard",
     "title": "A 股市场一页报告",
     "tag": "市场全景",

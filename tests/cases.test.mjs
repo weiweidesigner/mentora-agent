@@ -75,7 +75,7 @@ test('reduced motion shows the complete cached answer immediately', async () => 
 
 test('published home cases have complete answers and portable cached charts', () => {
   const rows=JSON.parse(readFileSync(new URL('../app/static/cases/manifest.json',import.meta.url),'utf8'));
-  assert.equal(rows.length,7);
+  assert.equal(rows.length,8);
   assert.equal(new Set(rows.map(row=>row.id)).size,rows.length);
   for (const row of rows) {
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
