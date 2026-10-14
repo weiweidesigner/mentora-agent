@@ -3706,10 +3706,10 @@ p {
 
 @media(max-width:760px){
  .inspirationGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .inspirationGrid .caseCard{padding:8px;height:104px;min-height:0;min-width:0}
- .inspirationGrid .caseCardTop{gap:5px;margin-bottom:4px}
- .inspirationGrid .caseCardIcon{width:18px;height:18px}
+ .inspirationGrid .caseCard{padding:7px;height:84px;min-height:0;min-width:0}
+ .inspirationGrid .caseCardTop{gap:4px;margin-bottom:2px}
+ .inspirationGrid .caseCardIcon{width:16px;height:16px}
  .inspirationGrid .caseCardTag{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .inspirationGrid .caseCard h4{margin-bottom:3px;font-size:12px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
- .inspirationGrid .caseCard p{font-size:10px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .inspirationGrid .caseCard h4{margin-bottom:2px;font-size:12px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .inspirationGrid .caseCard p{font-size:10px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 }
