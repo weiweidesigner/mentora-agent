@@ -2777,10 +2777,11 @@ function toggleActivityDrawer(article) {
 
 function openActivityDrawer(article) {
   activeActivityArticle = article;
-  activityAutoFollow = true;
+  activityAutoFollow = !article.classList.contains("cachedCaseAnswer");
   shell?.classList.add("activity-open");
   activityDrawer?.classList.add("is-open");
   activityDrawer?.setAttribute("aria-hidden", "false");
+  if (article.classList.contains("cachedCaseAnswer") && activityBody) activityBody.scrollTop = 0;
   syncActivityDrawer(article);
 }
 
@@ -2793,7 +2794,7 @@ function closeActivityDrawer() {
 
 function syncActivityDrawer(article) {
   if (!activityDrawer || !activityBody || activeActivityArticle !== article) return;
-  const shouldStick = activityAutoFollow || isActivityNearBottom();
+  const shouldStick = !article.classList.contains("cachedCaseAnswer") && (activityAutoFollow || isActivityNearBottom());
   const previousScrollTop = activityBody.scrollTop;
   const startedAt = Number(article.dataset.startedAt || Date.now());
   const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);

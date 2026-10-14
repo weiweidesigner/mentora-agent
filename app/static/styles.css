@@ -3590,3 +3590,29 @@ p {
   .sidebarContent .themeToggleButton,.sidebarContent .sidebarCollapseButton{width:36px;height:36px}
   .sidebarContent .themeToggleButton svg,.sidebarContent .sidebarCollapseButton svg{width:22px;height:22px}
 }
+
+/* Case replay is a modal over the real home screen, with an independent activity panel. */
+.caseOverlay{position:fixed;inset:0;z-index:124;display:flex;align-items:stretch;justify-content:center;padding:56px 32px 24px;background:#0007;backdrop-filter:blur(4px)}
+.caseOverlayPanel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 0;width:min(100%,1600px);min-width:0;min-height:0;border:1px solid var(--line);border-radius:16px;background:var(--bg);box-shadow:0 24px 80px #0005;transition:grid-template-columns .18s ease}
+.caseOverlayPanel:has(>.activityDrawer.is-open){grid-template-columns:minmax(0,1fr) 380px}
+.caseOverlayPanel>.conversation.is-case{position:relative;inset:auto;height:100%;width:100%;min-height:0;border-radius:16px;overflow:hidden;padding:0;z-index:auto;animation:none}
+.caseOverlayPanel .caseDetailHeader{min-height:56px;border-radius:16px 16px 0 0}
+.caseOverlayPanel>.activityDrawer{height:100%;width:100%;border-radius:0 16px 16px 0;display:none;z-index:2}
+.caseOverlayPanel>.activityDrawer.is-open{display:grid}
+.caseHomeBackground{grid-column:2;grid-row:1}
+.shell.case-overlay-open.activity-open{grid-template-columns:236px minmax(0,1fr) 0}
+.shell.sidebar-collapsed.case-overlay-open.activity-open{grid-template-columns:56px minmax(0,1fr) 0}
+@media(min-width:761px){
+  .caseOverlayPanel .caseBackButton{position:fixed;top:10px;right:24px;width:36px;height:36px;background:#20242de6;color:#fff;border-radius:50%;z-index:3}
+}
+@media(max-width:1000px) and (min-width:761px){
+  .caseOverlay{padding:56px 16px 16px}
+  .caseOverlayPanel:has(>.activityDrawer.is-open){grid-template-columns:minmax(0,1fr) 320px}
+}
+@media(max-width:760px){
+  .caseOverlay{padding:0;background:var(--bg);backdrop-filter:none}
+  .caseOverlayPanel{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none;grid-template-columns:minmax(0,1fr)!important}
+  .caseOverlayPanel>.conversation.is-case,.caseOverlayPanel .caseDetailHeader{border-radius:0}
+  .caseOverlayPanel>.activityDrawer{position:absolute;left:0;right:0;bottom:0;width:100%;height:min(78dvh,680px);border-radius:22px 22px 0 0;z-index:126}
+}
+@media(prefers-reduced-motion:reduce){.caseOverlayPanel{transition:none}}

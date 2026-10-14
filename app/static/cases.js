@@ -13,6 +13,53 @@
   let scrollIdleTimer = null;
   let lastScrollTop = 0;
   const responseCache = new Map();
+  let overlay = null;
+  let restoreOverlayNodes = null;
+  function mountCaseOverlay() {
+    const origin = document.createComment("case conversation location");
+    conversation.before(origin);
+    const home = document.createElement("section");
+    home.className = "conversation is-empty caseHomeBackground";
+    home.inert = true;
+    home.setAttribute("aria-hidden", "true");
+    origin.before(home);
+    const moved = [];
+    conversation.querySelectorAll(":scope > .homeHero,:scope > #chatForm,:scope > #homeCases").forEach(node => {
+      const slot = document.createComment("home component location");
+      node.before(slot);
+      moved.push([node, slot]);
+      home.append(node);
+    });
+    overlay = document.createElement("div");
+    overlay.className = "caseOverlay";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "caseCacheDate");
+    const panel = document.createElement("div");
+    panel.className = "caseOverlayPanel";
+    panel.append(conversation);
+    const drawer = document.querySelector("#activityDrawer");
+    let drawerSlot = null;
+    if (drawer) {
+      drawerSlot = document.createComment("activity drawer location");
+      drawer.before(drawerSlot);
+      panel.append(drawer);
+    }
+    overlay.append(panel);
+    document.body.append(overlay);
+    document.querySelector(".shell")?.classList.add("case-overlay-open");
+    overlay.addEventListener("click", event => { if (event.target === overlay) closeCase(); });
+    restoreOverlayNodes = () => {
+      moved.forEach(([node, slot]) => slot.replaceWith(node));
+      origin.replaceWith(conversation);
+      if (drawerSlot) drawerSlot.replaceWith(drawer);
+      home.remove();
+      overlay.remove();
+      overlay = null;
+      restoreOverlayNodes = null;
+      document.querySelector(".shell")?.classList.remove("case-overlay-open");
+    };
+  }
   function updateCaseTitle(measure = false) {
     const bubble = messages.querySelector(".message.user .userBubble");
     const showQuestion = !!selectedCase && !!bubble && messages.scrollTop > 0
@@ -40,17 +87,11 @@
   function syncCaseOverlay() {
     const mobile = !!selectedCase && isMobileLayout();
     conversation.setAttribute("aria-label", mobile ? date.textContent : "图文对话分析");
-    if (mobile) {
-      conversation.setAttribute("role", "dialog");
-      conversation.setAttribute("aria-modal", "true");
-      conversation.setAttribute("aria-labelledby", "caseCacheDate");
-    } else {
-      conversation.removeAttribute("role");
-      conversation.removeAttribute("aria-modal");
-      conversation.removeAttribute("aria-labelledby");
-    }
+    conversation.removeAttribute("role");
+    conversation.removeAttribute("aria-modal");
+    conversation.removeAttribute("aria-labelledby");
     const sidebar = document.querySelector("#appSidebar");
-    if (sidebar) sidebar.inert = mobile;
+    if (sidebar) sidebar.inert = !!selectedCase;
     back?.setAttribute("aria-label", "关闭案例回放");
     updateCaseTitle(true);
   }
@@ -90,6 +131,7 @@
     syncCaseOverlay();
     loadVersion += 1;
     conversation.classList.remove("is-case");
+    restoreOverlayNodes?.();
     header.hidden = true;
     bar.hidden = true;
     const url = new URL(window.location.href);
@@ -181,6 +223,7 @@
     returnFocus = gallery.querySelector(`[data-case="${id}"]`);
     openingCase = true;
     try { startNewChat(false, false); } finally { openingCase = false; }
+    mountCaseOverlay();
     input.blur();
     const version = ++loadVersion;
     selectedCase = row;
@@ -192,7 +235,7 @@
     syncCaseOverlay();
     ask.disabled = false;
     if (isMobileLayout()) setSidebarCollapsed(true);
-    if (isMobileLayout()) back?.focus({ preventScroll: true });
+    back?.focus({ preventScroll: true });
     const url = new URL(window.location.href);
     url.searchParams.set("case", id);
     if (navigate) history.pushState({ case: id }, "", url);
@@ -253,8 +296,21 @@
   }
   back?.addEventListener("click", closeCase);
   window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && selectedCase && !document.querySelector(".activityDrawer.is-open")) closeCase();
-  });
+    if (!selectedCase) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (document.querySelector(".activityDrawer.is-open")) { closeActivityDrawer(); back?.focus({ preventScroll: true }); }
+      else closeCase();
+    }
+    if (event.key === "Tab" && overlay) {
+      const controls = Array.from(overlay.querySelectorAll('button:not(:disabled),a[href],input,textarea,select,[tabindex="0"]'))
+        .filter(node => node.getClientRects().length && !node.closest('[inert]') && !node.closest('.activityDrawer:not(.is-open)'));
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }
+  }, true);
   ask?.addEventListener("click", () => {
     if (!selectedCase) return;
     const question = selectedCase.question;
