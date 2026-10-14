@@ -132,8 +132,9 @@ test('inspiration categories switch by click and keyboard and replay without inf
   const tabs=h.w.document.querySelector('#inspirationTabs');
   assert.equal(tabs.querySelector('[data-category="recommended"]'),null);
   assert.equal(tabs.querySelector('.inspirationCount'),null);
-  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'charts');
-  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,1);
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'all');
+  assert.equal(tabs.querySelector('[data-category="all"]').textContent,'全部');
+  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,2);
   tabs.querySelector('[data-category="art"]').click();
   assert.match(h.w.document.querySelector('#inspirationPanel h3').textContent,/艺术绘图/);
   tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
