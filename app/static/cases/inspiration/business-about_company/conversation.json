@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "# NVDA 公司档案：字段本身可信，但\"公司资料\"只解决身份识别问题，不构成经营或估值证据\n\n**核心结论：这份 NVDA 公司档案给出的是一个身份层快照——半导体行业分类、1999-01-22 在 NASDAQ 上市、42,000 名全职员工、1 月 31 日财年结束、特拉华注册＋加州圣克拉拉运营。其中\"上市日期 + 财年结束日\"是两个可以直接用于投资流程的硬字段，而\"成立日期\"字段为空、员工数无统计时点、主营业务描述粒度不足以刻画当前收入结构——这三处决定了该组件只能用于标的识别与会计日历校对，不能替代财报、估值或收入拆分模块。**\n\n## 关键证据（全部来自本次实时抓取的组件字段）\n\n**身份与上市结构：** 公司名 Nvidia Corporation，代码 NVDA，AInvest 市场标识 185 / NASDAQ，交易所字段为 NASDAQ Stock Exchange，证券类型 Common stock。上市日期 **01/22/1999**，截至本次数据日 2026-10-14 已上市 **10,127 天（约 27.7 年）**——这是组件中唯一可精确折算时间跨度的字段，也意味着 NVDA 完整穿越了互联网泡沫、2008 年周期与当前 AI 资本开支周期，任何\"新股/次新股\"框架都不适用。\n\n**行业分类：** 字段值为 **Semiconductor（半导体）**，单值、无二级子行业。它足以做板块归因的第一步（半导体 vs 软件 vs 硬件），但**无法区分 GPU、加速计算平台、数据中心系统与网络业务**，做同业对比时会与 IDM、模拟芯片、设备厂商混入同一格子，需要下游再接更细的行业或收入拆分口径。\n\n**财年结束日：01-31。** 这是本档案中对投资操作最有价值的字段。NVDA 采用**非自然年财年**，其 FY2027 第一个财季覆盖的是 2026 年 2 月—4 月。做跨公司同比、季度环比或\"最新一期财报\"定位时，若不先做这个日历对齐，极易把不同自然季度的数据当作同期比较。\n\n**全职员工：42,000。** 组件**未标注该数字的统计时点**，也没有给出与上一期的变化。这是全表中口径最模糊的字段：它既可能是最新 10-K 口径，也可能是第三方数据库的滞后值。在没有时点的情况下，不宜用它计算人均收入或人均利润——那会得到一个无法归因的比率。\n\n**办公地址：2788 San Tomas Expressway, Santa Clara, CA 95051。** 与简介中\"1993 年 4 月在加州注册成立、1998 年 4 月在特拉华州重新注册\"形成一致的法律—运营结构：**运营总部在加州，注册地在特拉华**。这一点对理解公司治理、股东诉讼管辖与州税安排有意义。\n\n**成立日期字段返回 \"--\"（空值）。** 这是本次渲染中唯一缺失的字段，且我未用任何估算值填充。成立时间需从简介原文取：\"incorporated in California in April 1993\"——即**成立于 1993 年 4 月，早于上市约 5 年 9 个月**。字段与简介不一致时，以简介原文为准，并把它当作已知缺口披露。\n\n**主营业务与简介的粒度差异：** 主营字段仅为一句 \"Provides accelerated computing and graphics solutions.\"；简介则补充了\"GPU 与 Tegra 两大业务基于同一底层架构\"，以及\"硬件＋系统软件＋可编程算法＋库＋系统＋服务\"的平台战略。两段文字都**未标注更新日期**，属于定性自我描述（tagline \"The world leader in Artificial Intelligence Computing\" 同为营销定位），**不含任何收入占比、地区分布或客户集中度信息**。按组件契约，这些内容只能回答\"这家公司做什么\"，不能回答\"钱从哪来、增长在哪一段\"。\n\n**网站字段：** 值为 \"www.nvidia.com;investor.nvidia.com\"，两个域名被合并进单个字段，href 也是同一合并串——组件不会把它拆成两个可点击入口，使用时需人工区分公司站与投资者关系站。\n\n[[AIME_CHART:case:inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html]]\n\n上图即本次生成的 NVDA 公司资料业务组件（原生 about_company 组件渲染，简体中文、浅色初始主题，支持运行时空/深色切换）。图中最需要盯住的不是公司名，而是 **\"成立日期\"一格显示为 \"--\"、\"财年结束日\"一格明确写着 01-31**：前者提示这个字段在本数据源上不可用，任何\"成立于 X 年\"的表述必须回到简介原文；后者则是可直接落到财报日历上的硬约束。把这两格与\"上市日期 01/22/1999\"并排看，就能得出本组件唯一可被量化的结论——**NVDA 是一家有 27.7 年上市历史、以 1 月底为财年末、注册于特拉华而运营于加州的半导体公司**，其余字段均为定性或未标时点的描述。\n\n## 对投资判断的含义与下一步确认点\n\n**这份档案能支撑什么：** 标的身份核验（避免同名/ADR 混淆）、板块初筛、财报日历对齐、以及作为其他模块（收入拆分、估值、评级、资金流）的统一键值入口。它的正确用法是**当作这些模块的前置条件，而不是结论**。\n\n**它明确不能支撑什么：** 任何关于增长、利润率、AI 收入占比、客户集中度或估值的判断。全员 42,000 若被直接用于人均指标，会因缺少时点而产生系统性偏差。\n\n**下一步应确认的三件事：** ① 员工数的统计时点（对应哪一份 10-K）；② 最新财季归属（在 01-31 财年制下明确是 FY 哪一季）；③ 收入结构口径（数据中心/游戏/专业可视化/汽车等分部占比），这需要收入来源拆分组件而非本档案。\n\n## 数据时间与口径披露\n\n- **数据日期：2026-10-14**（本次执行于 2026-10-14 16:38 CST 通过组件内置数据源实时抓取 AInvest 股票页摘要，`https://www.ainvest.com/stocks/NASDAQ-NVDA/`）。抓取结果与 2026-10-14 保存的同一份结构化快照**逐字段完全一致**，因此本次结论可视为 2026-10-14 当日有效。\n- **组件性质：** 静态公司档案，**不含财报期间、不含行情时间序列、不含派生比率**；除\"上市日期\"可折算上市时长外，其余字段无时间维度。\n- **缺失与降级：** \"成立日期\"为真实空值（组件原样渲染为 \"--\"），未做任何填充；\"全职员工 42,000\"未标注统计时点，属口径不完整数据，本回答仅作字段陈述、未用于派生计算。\n- 未使用示例数据、模拟数值或旧 HTML 复制；本次为重新取数与重新渲染产物。",
+    "interpretation": "# NVDA 公司档案：字段本身可信，但\"公司资料\"只解决身份识别问题，不构成经营或估值证据\n\n**核心结论：这份 NVDA 公司档案给出的是一个身份层快照——半导体行业分类、1999-01-22 在 NASDAQ 上市、42,000 名全职员工、1 月 31 日财年结束、特拉华注册＋加州圣克拉拉运营。其中\"上市日期 + 财年结束日\"是两个可以直接用于投资流程的硬字段，而\"成立日期\"字段为空、员工数无统计时点、主营业务描述粒度不足以刻画当前收入结构——这三处决定了该组件只能用于标的识别与会计日历校对，不能替代财报、估值或收入拆分模块。**\n\n## 关键证据（全部来自本次实时抓取的组件字段）\n\n**身份与上市结构：** 公司名 Nvidia Corporation，代码 NVDA，AInvest 市场标识 185 / NASDAQ，交易所字段为 NASDAQ Stock Exchange，证券类型 Common stock。上市日期 **01/22/1999**，截至本次数据日 2026-10-14 已上市 **10,127 天（约 27.7 年）**——这是组件中唯一可精确折算时间跨度的字段，也意味着 NVDA 完整穿越了互联网泡沫、2008 年周期与当前 AI 资本开支周期，任何\"新股/次新股\"框架都不适用。\n\n**行业分类：** 字段值为 **Semiconductor（半导体）**，单值、无二级子行业。它足以做板块归因的第一步（半导体 vs 软件 vs 硬件），但**无法区分 GPU、加速计算平台、数据中心系统与网络业务**，做同业对比时会与 IDM、模拟芯片、设备厂商混入同一格子，需要下游再接更细的行业或收入拆分口径。\n\n**财年结束日：01-31。** 这是本档案中对投资操作最有价值的字段。NVDA 采用**非自然年财年**，其 FY2027 第一个财季覆盖的是 2026 年 2 月—4 月。做跨公司同比、季度环比或\"最新一期财报\"定位时，若不先做这个日历对齐，极易把不同自然季度的数据当作同期比较。\n\n**全职员工：42,000。** 组件**未标注该数字的统计时点**，也没有给出与上一期的变化。这是全表中口径最模糊的字段：它既可能是最新 10-K 口径，也可能是第三方数据库的滞后值。在没有时点的情况下，不宜用它计算人均收入或人均利润——那会得到一个无法归因的比率。\n\n**办公地址：2788 San Tomas Expressway, Santa Clara, CA 95051。** 与简介中\"1993 年 4 月在加州注册成立、1998 年 4 月在特拉华州重新注册\"形成一致的法律—运营结构：**运营总部在加州，注册地在特拉华**。这一点对理解公司治理、股东诉讼管辖与州税安排有意义。\n\n**主营业务与简介的粒度差异：** 主营字段仅为一句 \"Provides accelerated computing and graphics solutions.\"；简介则补充了\"GPU 与 Tegra 两大业务基于同一底层架构\"，以及\"硬件＋系统软件＋可编程算法＋库＋系统＋服务\"的平台战略。两段文字都**未标注更新日期**，属于定性自我描述（tagline \"The world leader in Artificial Intelligence Computing\" 同为营销定位），**不含任何收入占比、地区分布或客户集中度信息**。按组件契约，这些内容只能回答\"这家公司做什么\"，不能回答\"钱从哪来、增长在哪一段\"。\n\n**网站字段：** 值为 \"www.nvidia.com;investor.nvidia.com\"，两个域名被合并进单个字段，href 也是同一合并串——组件不会把它拆成两个可点击入口，使用时需人工区分公司站与投资者关系站。\n\n[[AIME_CHART:case:inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html]]\n\n## 对投资判断的含义与下一步确认点\n\n**这份档案能支撑什么：** 标的身份核验（避免同名/ADR 混淆）、板块初筛、财报日历对齐、以及作为其他模块（收入拆分、估值、评级、资金流）的统一键值入口。它的正确用法是**当作这些模块的前置条件，而不是结论**。\n\n**它明确不能支撑什么：** 任何关于增长、利润率、AI 收入占比、客户集中度或估值的判断。全员 42,000 若被直接用于人均指标，会因缺少时点而产生系统性偏差。\n\n**下一步应确认的三件事：** ① 员工数的统计时点（对应哪一份 10-K）；② 最新财季归属（在 01-31 财年制下明确是 FY 哪一季）；③ 收入结构口径（数据中心/游戏/专业可视化/汽车等分部占比），这需要收入来源拆分组件而非本档案。\n\n## 数据时间与口径披露\n\n- **数据日期：2026-10-14**。\n- **组件性质：** 静态公司档案，**不含财报期间、不含行情时间序列、不含派生比率**；除\"上市日期\"可折算上市时长外，其余字段无时间维度。\n- **缺失与降级：** \"成立日期\"为真实空值（未提供），未做任何填充；\"全职员工 42,000\"未标注统计时点，属口径不完整数据，本回答仅作字段陈述、未用于派生计算。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -40,75 +40,69 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 5087
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall, advisor-text-generation",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 5477
+        "title": "Probe live AInvest fetch for NVDA",
+        "detail": "调用：about_company.py\n参数：--code NVDA --market auto --output nvda_live_probe.html --payload-output nvda_live_probe.json\n结果：bash: timeout: command not found\nEXIT=0\n[exit code: 1]\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 10768,
+        "durationMs": 0,
+        "tool": "about_company.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 6517
+        "title": "Live probe of about_company.py for NVDA",
+        "detail": "调用：about_company.py\n参数：--code NVDA --market auto --output nvda_live_probe.html --payload-output nvda_live_probe.json\n结果：{\n  \"ok\": true,\n  \"output\": \"nvda_live_probe.html\",\n  \"payloadOutput\": \"nvda_live_probe.json\"\n}\nEXIT=0\n-rw-r--r--@ 1 yunsa  wheel  6241 Oct 14 16:38 nvda_live_probe.html\n-rw-r--r--@ 1 yunsa  wheel  2667 Oct 14 16:38 nvda_live_probe.json\n耗时：2.28 秒",
+        "state": "done",
+        "elapsedMs": 14246,
+        "durationMs": 2276,
+        "tool": "about_company.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 6928
+        "title": "Compare live payload with cached payload",
+        "detail": "调用：bash\n结果：keys live: ['type', 'name', 'title', 'code', 'market', 'exchange', 'companyName', 'tagline', 'fields', 'wideFields', 'introduction', 'source', 'language', 'componentUi', 'theme']\nfields live: [\n {\n  \"key\": \"industry\",\n  \"label\": \"行业\",\n  \"value\": \"Semiconductor\"\n },\n {\n  \"key\": \"establishedDate\",\n  \"label\": \"成立日期\",\n  \"value\": \"--\"\n },\n {\n  \"key\": \"listingDate\",\n  \"label\": \"上市日期\",\n  \"value\": \"01/22/1999\"\n },\n {\n  \"key\": \"exchange\",\n  \"label\": \"交易所\",\n  \"value\": \"NASDAQ Stock Exchange\"\n },\n {\n  \"key\": \"employees\",\n  \"label\": \"全职员工\",\n  \"value\": \"42,000\"\n },\n {\n  \"key\": \"fiscalYearEnds\",\n  \"label\": \"财年结束日\",\n  \"value\": \"01-31\"\n },\n {\n  \"key\": \"website\",\n  \"label\": \"网站\",\n  \"value\": \"www.nvidia.com;investor.nvidia.com\",\n  \"href\": \"www.nvidia.com;investor.nvidia.com\"\n },\n {\n  \"key\": \"securityType\",\n  \"label\": \"证券类型\",\n  \"value\": \"Common stock\"\n }\n]\nwide: [\n {\n  \"key\": \"officeAddress\",\n  \"label\": \"办公地址\",\n  \"value\": \"2788 San Tomas Expressway, Santa Clara, CA 95051\"\n },\n {\n  \"key\": \"business\",\n  \"l\n…（结果摘要已截取）\n耗时：0.01 秒",
+        "state": "done",
+        "elapsedMs": 17179,
+        "durationMs": 7,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 8014
+        "title": "Render NVDA about_company HTML into outputs/generated",
+        "detail": "调用：about_company.py\n参数：--code NVDA --market auto --output outputs/generated/inspiration-real-business-about_company-NVDA.html --payload-output outputs/generated/inspiration-real-business-about_company-NVDA-payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/inspiration-real-business-about_company-NVDA.html\",\n  \"payloadOutput\": \"outputs/generated/inspiration-real-business-about_company-NVDA-payload.json\"\n}\nEXIT=0\n-rw-r--r--@ 1 yunsa  staff  6241 Oct 14 16:38 outputs/generated/inspiration-real-business-about_company-NVDA.html\n耗时：1.21 秒",
+        "state": "done",
+        "elapsedMs": 22327,
+        "durationMs": 1209,
+        "tool": "about_company.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 8571
+        "title": "Validate rendered HTML content",
+        "detail": "调用：bash\n结果：6241 outputs/generated/inspiration-real-business-about_company-NVDA.html\nlang=\"zh-CN\"\ndata-theme=\"light\"\ndata-theme=\"dark\"\n--- sample/AMD check ---\n0\nNvidia Corporation       1\nSemiconductor            1\n01/22/1999               1\n42,000                   1\n01-31                    1\n2788 San Tomas           1\naccelerated computing    1\n公司资料             2\n--- --  缺失字段 ---\nlen 6029\nhas about-company script: True\n\n\n\n\n\n公司资料\n\n:root{color-scheme:light;--business-text-111:#111;}\n:root[data-theme=\"dark\"]{color-scheme:dark;--business-text-111:#e8edf5;}\n\n* { box-sizing:border-box; }\nbody {\n  margin:0;\n  background:transparent;\n  color:var(--\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 25327,
+        "durationMs": 1,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 10396
+        "title": "Extract visible text from rendered HTML",
+        "detail": "调用：bash\n结果：>\n|\n  |\n  |\n  |\n  |\n  |\n|\n|\nconst payload = {\"type\": \"about-company\", \"name\": \"公司资料\", \"title\": \"公司资料\", \"code\": \"NVDA\", \"market\": \"185\", \"exchange\": \"NASDAQ\", \"companyName\": \"Nvidia Corporation\", \"tagline\": \"The world leader in Artificial Intelligence Computing\", \"fields\": [{\"key\": \"industry\", \"label\": \"行业\", \"value\": \"Semiconductor\"}, {\"key\": \"establishedDate\", \"label\": \"成立日期\", \"value\": \"--\"}, {\"key\": \"listingDate\", \"label\": \"上市日期\", \"value\": \"01/22/1999\"}, {\"key\": \"exchange\", \"label\": \"交易所\", \"value\": \"NASDAQ Stock Exchange\"}, {\"key\": \"employees\", \"label\": \"全职员工\", \"value\": \"42,000\"}, {\"key\": \"fiscalYearEnds\", \"label\": \"财年结束日\", \"value\": \"01-31\"}, {\"key\": \"website\", \"label\": \"网站\", \"value\": \"www.nvidia.com;investor.nvidia.com\", \"href\": \"www.nvidia.com;investor.nvidia.com\"}, {\"key\": \"securityType\", \"label\": \"证券类型\", \"value\": \"Common stock\"}], \"wideFields\": [{\"key\": \"officeAddress\", \"label\": \"办公地址\", \"value\": \"2788 San Tomas Expressway, Santa Clara, CA 95051\"}, {\"key\": \"business\", \"label\": \"主营业\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 38204,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 10768
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 14246
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 17179
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 22327
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 25327
-      },
-      {
-        "title": "正在汇总结论与关键证据",
-        "elapsedMs": 33370
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 34016
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 34757
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 38204
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 40420
+        "title": "Compute listing anniversary duration",
+        "detail": "调用：bash\n结果：10127 days 27.73 years\nFY end 01-31 next: 2027-01-31\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 40420,
+        "durationMs": 0,
+        "tool": "bash"
       }
     ],
     "startedAt": 1791967070201,
@@ -122,7 +116,8 @@
         "endedAt": 1791967121845,
         "elapsedMs": 51644
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

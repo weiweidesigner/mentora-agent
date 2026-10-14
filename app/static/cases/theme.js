@@ -25,6 +25,8 @@
     :root[data-theme="dark"] .bar-label { fill: #8294ff; }
     :root[data-theme="dark"] #radar circle[fill="none"] { stroke: #334052; stroke-width: 1; }
     :root[data-theme="dark"] #radar line { stroke: #334052; stroke-width: 1; }
+    :root[data-theme="dark"] .segmented button[aria-selected="true"] { background:#334052; color:#f1f5f9; box-shadow:inset 0 0 0 1px #526176; font-weight:700; }
+    :root[data-theme="dark"] .segmented button[aria-selected="false"] { color:#a8b3c4; }
     :root[data-theme="dark"] #radar path { fill: rgba(255, 138, 24, .22); stroke-width: 3; }
 
   `;

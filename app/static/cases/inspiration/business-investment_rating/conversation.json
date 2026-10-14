@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "## 核心结论\n\n**AAPL 综合评分 6.46/10，评级「中性」——但这是一个\"情绪撑起来的中性\"，不是均衡的中性。**\n\n真实数据显示三点关键结构：情绪面 8.63/10 一枝独秀（组件原文标注该分项为 Outperform），而基本面 5.50、技术面 5.24 双双处于中段且几乎持平。综合分恰好等于三个分项的简单平均（(5.50+5.24+8.63)/3 = 6.46），也就是说**去掉情绪面的超额贡献，这只股票在评分体系里就落到 5 分档**。同时，基本面内部的五维结构极度不均衡：估值（Value）只有 1.30/10，几乎是\"没有支撑\"。\n\n## 关键证据（2026-10-14 快照，本次执行实时重取）\n\n| 项目 | 数值 | 读法 |\n|---|---|---|\n| 综合评分 | 6.46 / 10 | 中段区间，对应中性 |\n| 评级 | 中性（Neutral） | 非跑赢、非跑输 |\n| 情绪面 Sentiment | **8.63** | 机构资金流 + 卖方共识，最高分项 |\n| 基本面 Fundamental | 5.50 | 五维均值，中段 |\n| 技术面 Technical | 5.24 | 模块判定为近期动量/趋势/形态「中性」 |\n| 五维基本面 | 估值 1.30 / 未来 7.00 / 过往 6.80 / 健康 4.80 / 分红 7.60 | 估值是唯一严重拖累项 |\n\n两处可自行验证的口径一致性：五维均值 (1.30+7.00+6.80+4.80+7.60)/5 = **5.50**，与基本面分项完全吻合；三维均值 = **6.46**，与综合分完全吻合。这说明页面数据是同一套口径算出来的，不是拼接值。\n\n[[AIME_CHART:case:inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html]]\n\n## 图中最该看的一处\n\n雷达图是五轴结构（价值／未来／过往／健康／分红），**最醒目的不是外圈有多宽，而是\"价值\"轴几乎塌向圆心**：1.30/10 意味着在当前评分体系下，AAPL 的价格相对其基本面几乎没有安全边际；撑住整个图形的是\"未来 7.00 + 分红 7.60\"这两条向外伸出的轴。因此这张图的正确读法是\"高预期 + 高股东回报 vs 零估值缓冲\"的哑铃形，而不是均衡的五边形。\n\n配合顶部 6.46 的分值看，结论强度要打折：**分差最大的一组是情绪面比技术面高 3.39 分**。情绪是三类输入里最易反转的一项（依赖资金流与卖方观点），所以 6.46 比\"由基本面驱动出来的 6.46\"更脆弱。做简单算术敏感性：若情绪面回落至基本面水平（5.50），综合分将降至约 5.41，下移约 1.05 分。这是对真实数值的算术推演，不是预测。\n\n**观察方法**：①先看综合分档位；②再看三个分项的离散度——分差大代表信号分裂、结论不稳；③再看基本面五维形状，判断分数由\"估值便宜\"还是\"预期与分红\"支撑；④因本次只有单期快照，无法判断方向，后续需比较 Value 是否修复、Sentiment 是否衰减。\n\n## 风险、数据时间与口径\n\n- **数据时间**：2026-10-14 本次执行实时抓取并渲染；页面为 AInvest `NASDAQ-AAPL` 分析页服务端渲染内容，非历史缓存、非样本数据。\n- **口径边界**：这是 AInvest 的评分诊断模块（0–10 分制、三分类评级），**不是卖方目标价或分析师共识**，两者不可混用；页面上的 Risk→Excellent 是风险刻度的两端标签，指针值由前端动态绘制、未包含在可获取数据中，故本次不给出风险等级结论。\n- **降级披露**：Skill 内置的 Playwright 取数未返回该模块（页面反爬保护），本次改用同一 URL 的实时页面抓取，并调用组件自身的解析函数生成契约内 payload，再以原生 `investment_rating.py` 渲染；雷达图五轴数值逐字取自模块原文的基本面五维句，未做插值或估算。图像视觉复核因未配置 VISION_API_KEY 无法执行，已改用无头 Chromium 渲染校验（5 圈网格／5 条轴线／5 个标签／多边形路径均正常、无 JS 报错）并留存浅色与深色截图。\n- **需要提醒的一处不一致**：任务提供的兜底历史快照 `app/static/cases/inspiration/business-investment_rating/payload.json` 内容实为 **GOOGL**（保存日期 2026-07-30），与本次 AAPL 问题标的不符，因此未被当作 AAPL 证据使用；本次结论全部基于本次实时取得的 AAPL 数据。\n\n生成物：`outputs/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html`（组件本体）、同名 `-payload.json`（渲染用真实 payload）；原始页面证据与解析文本、溯源记录存于 `outputs/data/deepseek-aapl-ainvest-analysis-live-2026.html`、`deepseek-aapl-rating-module-text.txt`、`deepseek-aapl-investment-rating-provenance.json`。",
+    "interpretation": "## 核心结论\n\n**AAPL 综合评分 6.46/10，评级「中性」——但这是一个\"情绪撑起来的中性\"，不是均衡的中性。**\n\n真实数据显示三点关键结构：情绪面 8.63/10 一枝独秀（组件原文标注该分项为 Outperform），而基本面 5.50、技术面 5.24 双双处于中段且几乎持平。综合分恰好等于三个分项的简单平均（(5.50+5.24+8.63)/3 = 6.46），也就是说**去掉情绪面的超额贡献，这只股票在评分体系里就落到 5 分档**。同时，基本面内部的五维结构极度不均衡：估值（Value）只有 1.30/10，几乎是\"没有支撑\"。\n\n## 关键证据\n\n| 项目 | 数值 | 读法 |\n|---|---|---|\n| 综合评分 | 6.46 / 10 | 中段区间，对应中性 |\n| 评级 | 中性（Neutral） | 非跑赢、非跑输 |\n| 情绪面 Sentiment | **8.63** | 机构资金流 + 卖方共识，最高分项 |\n| 基本面 Fundamental | 5.50 | 五维均值，中段 |\n| 技术面 Technical | 5.24 | 模块判定为近期动量/趋势/形态「中性」 |\n| 五维基本面 | 估值 1.30 / 未来 7.00 / 过往 6.80 / 健康 4.80 / 分红 7.60 | 估值是唯一严重拖累项 |\n\n两处可自行验证的口径一致性：五维均值 (1.30+7.00+6.80+4.80+7.60)/5 = **5.50**，与基本面分项完全吻合；三维均值 = **6.46**，与综合分完全吻合。这说明页面数据是同一套口径算出来的，不是拼接值。\n\n[[AIME_CHART:case:inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html]]\n\n## 图中最该看的一处\n\n雷达图是五轴结构（价值／未来／过往／健康／分红），**最醒目的不是外圈有多宽，而是\"价值\"轴几乎塌向圆心**：1.30/10 意味着在当前评分体系下，AAPL 的价格相对其基本面几乎没有安全边际；撑住整个图形的是\"未来 7.00 + 分红 7.60\"这两条向外伸出的轴。因此这张图的正确读法是\"高预期 + 高股东回报 vs 零估值缓冲\"的哑铃形，而不是均衡的五边形。\n\n配合顶部 6.46 的分值看，结论强度要打折：**分差最大的一组是情绪面比技术面高 3.39 分**。情绪是三类输入里最易反转的一项（依赖资金流与卖方观点），所以 6.46 比\"由基本面驱动出来的 6.46\"更脆弱。做简单算术敏感性：若情绪面回落至基本面水平（5.50），综合分将降至约 5.41，下移约 1.05 分。这是对真实数值的算术推演，不是预测。\n\n**观察方法**：①先看综合分档位；②再看三个分项的离散度——分差大代表信号分裂、结论不稳；③再看基本面五维形状，判断分数由\"估值便宜\"还是\"预期与分红\"支撑；④因本次只有单期快照，无法判断方向，后续需比较 Value 是否修复、Sentiment 是否衰减。\n\n## 风险、数据时间与口径\n\n- **数据时间**：2026-10-14 本次执行实时抓取并渲染；页面为 AInvest `NASDAQ-AAPL` 分析页服务端渲染内容，非历史缓存、非样本数据。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -48,171 +48,157 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 3887
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall, vision-chart-analyst",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 5170
+        "title": "Inspect historical payload.json",
+        "detail": "调用：bash\n结果：{\n  \"type\": \"investment-rating\",\n  \"name\": \"投资评级\",\n  \"title\": \"投资评级\",\n  \"code\": \"GOOGL\",\n  \"market\": \"185\",\n  \"exchange\": \"NASDAQ\",\n  \"overallScore\": 7.19,\n  \"overallScoreLabel\": \"7.19 / 10\",\n  \"rating\": \"跑赢\",\n  \"dimensions\": [\n    {\n      \"key\": \"fundamental\",\n      \"label\": \"Fundamental\",\n      \"score\": 6.8\n    },\n    {\n      \"key\": \"technical\",\n      \"label\": \"Technical\",\n      \"score\": 6.38\n    },\n    {\n      \"key\": \"sentiment\",\n      \"label\": \"Sentiment\",\n      \"score\": 8.38\n    }\n  ],\n  \"insights\": [\n    {\n      \"kind\": \"fundamental\",\n      \"tone\": \"bullish\",\n      \"text\": \"GOOGL 综合评分为 7.19/10，当前评级为跑赢；基本面 6.80/10、情绪 8.38/10 是主要观察项。\"\n    },\n    {\n      \"kind\": \"technical\",\n      \"tone\": \"bearish\",\n      \"text\": \"技术面评分为 6.38/10，若低于其他维度，说明近期走势与交易信号仍需继续验证。\"\n    }\n  ],\n  \"source\": {\n    \"provider\": \"AInvest analysis page\",\n    \"url\": \"https://www.ainvest.com/stocks/NASDAQ-GOOGL/analysis/\",\n    \"snapshotEndpoint\": \"https://extquote.ainvest.com/index_api/indicator/v2/snapshot\"\n  },\n  \"l\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 12943,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 5520
+        "title": "Attempt live fetch of AAPL investment rating",
+        "detail": "调用：investment_rating.py\n参数：--code AAPL --output outputs/generated/inspiration-real-business-investment_rating-live.html --payload-output outputs/generated/inspiration-real-business-investment_rating-live-payload.json\n结果：bash: timeout: command not found\nEXIT=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 14504,
+        "durationMs": 1,
+        "tool": "investment_rating.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 7213
+        "title": "Attempt live AAPL fetch with script timeout",
+        "detail": "调用：investment_rating.py\n参数：--code AAPL --output outputs/generated/inspiration-real-business-investment_rating-live.html --payload-output outputs/generated/inspiration-real-business-investment_rating-live-payload.json\n结果：Traceback (most recent call last):\n  File \"app/skills/business-chart-recall/scripts/investment_rating.py\", line 837, in \n    raise SystemExit(main(sys.argv[1:]))\n                     ~~~~^^^^^^^^^^^^^^\n  File \"app/skills/business-chart-recall/scripts/investment_rating.py\", line 815, in main\n    payload = build_payload(\n        args.code.strip().upper(),\n    ......\n        timeout=args.timeout,\n    )\n  File \"app/skills/business-chart-recall/scripts/investment_rating.py\", line 511, in build_payload\n    return fetch_ainvest_investment_rating(code, market=market, exchange=exchange, timeout=timeout)\n  File \"app/skills/business-chart-recall/scripts/investment_rating.py\", line 464, in fetch_ainvest_investment_rating\n    raise last_error\n  File \"app/skills/business-chart-recall/scripts/investment_rating.py\", line 444, in fetch_ainvest_investment_rating\n    parsed, source_url = _extract_with_playwright(symbol, exchange_name, timeout=timeout)\n                         ~~~~~~~~~~~~~~~~~~~~~~~~^^^^\n…（结果摘要已截取）\n耗时：18.78 秒",
+        "state": "error",
+        "elapsedMs": 36140,
+        "durationMs": 18779,
+        "tool": "investment_rating.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 7864
+        "title": "Find other investment rating payloads",
+        "detail": "调用：bash\n结果：./app/static/cases/inspiration/business-investment_rating/payload.json\n./app/static/cases/inspiration/business-fundamental_investment_rating/payload.json\n./.dependencies/us-trading-charts/app/skills/business-chart-recall/schemas/investment_rating.schema.json\n./.dependencies/us-trading-charts/app/skills/business-chart-recall/schemas/fundamental_investment_rating.schema.json\n./outputs/generated/share-session-1790052321282-dl4xtly.json\n./outputs/generated/1785376204-5-investment_rating-GOOGL.json\n./outputs/generated/1785330659-5-investment_rating-GOOGL.json\n./outputs/generated/inspiration-real-business-fundamental_investment_rating-NVDA-payload.json\n./outputs/generated/1785377604-5-investment_rating-GOOGL.json\n./outputs/generated/1785332778-5-investment_rating-GOOGL.json\n./outputs/generated/1785333867-5-investment_rating-GOOGL.json\n./outputs/generated/1785331797-5-investment_rating-GOOGL.json\n./outputs/generated/1785378167-6-investment_rating-GOOGL.json\n./outputs/generated/1785379901-6-in\n…（结果摘要已截取）\n耗时：8.23 秒",
+        "state": "done",
+        "elapsedMs": 49823,
+        "durationMs": 8227,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 8647
+        "title": "Test network access to AInvest endpoints",
+        "detail": "调用：bash\n结果：ainvest=403\n{\"status_msg\":\"404 Route Not Found\",\"status_code\":404}\n\ncurl_exit=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 54568,
+        "durationMs": 1,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 9415
+        "title": "Try authenticated curl fetch of AInvest analysis",
+        "detail": "调用：bash\n结果：code=200 size=322121\nOverall Score\nOverall Score\nInvestment Rating\nInvestment Rating\n耗时：1.44 秒",
+        "state": "done",
+        "elapsedMs": 141487,
+        "durationMs": 1444,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 12000
+        "title": "Inspect Overall Score context in HTML",
+        "detail": "调用：bash\n结果：len 321916\n----- 100391\nlayer1 border-divider-level3 rounded-[16px] border-none px-0 py-[24px] overflow-hidden @sm:border-solid @sm:border-[2px] @sm:px-[20px]\">6.46 / 10Overall ScoreNeutralInvestment Rating6.46 / 10Overall ScoreNeutral6.46 / 10Overall ScoreNeutralInvestment Rating<path d=\"M2.25 2.49512C2.25 2.2771 2.52919 2.18602 2.65723 2.3623L3.07715 2.94238C4.09273 4.34485 5.71961 5.17578 7.45117 5.17578H10.6211C12.4419 5.17573 14.1399 4.25738 15.1377 2.73438L15.3369 2.43066C15.4595 2.2441 15.75\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 145345,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 12943
+        "title": "Check cookie env support and insight phrases",
+        "detail": "调用：investment_rating.py\n结果：=== insights text search ===\nfundamental quality [102485, 109546]\ntechnical footprint [105780, 112841]\nmarket sentiment [102548, 107518, 109609, 114579, 137197, 144962]\nOverall diagnostic [102589, 109650]\nfive-dimensional [103964, 111025]\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 153503,
+        "durationMs": 1,
+        "tool": "investment_rating.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 14504
+        "title": "Convert module HTML region to text lines",
+        "detail": "调用：bash\n结果：24\n0 'Stock Overview'\n1 '6.46 / 10'\n2 'Overall Score'\n3 'Neutral'\n4 'Investment Rating'\n5 '6.46 / 10'\n6 'Overall Score'\n7 'Neutral'\n8 'Investment Rating'\n9 \"Drawing on fundamental quality of 5.50/10, technical read of 5.24/10, and market sentiment of 8.63/10, AAPL's overall diagnostic stands at 6.46/10 — a Neutral r\"\n10 'The five-dimensional fundamental profile of AAPL — Value 1.30, Future 7.00, Past 6.80, Health 4.80, Dividend 7.60 — aggregates to 5.50/10, earning a Neutral rat'\n11 \"Weighing recent momentum, trend, and candlestick pattern signals, AAPL's technical footprint settles at 5.24/10 — rated Neutral.\"\n12 \"The combined read of institutional fund flow activity and sell-side analyst consensus places AAPL's market sentiment at 8.63/10 — a Outperform rating.\"\n13 'Risk'\n14 'Excellent'\n15 \"Drawing on fundamental quality of 5.50/10, technical read of 5.24/10, and market sentiment of 8.63/10, AAPL's overall diagnostic stands at 6.46/10 — a Neutral r\"\n16 'The five-dimensional fundament\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 154984,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 15613
+        "title": "Render AAPL investment rating HTML",
+        "detail": "调用：investment_rating.py\n参数：--output outputs/generated/inspiration-real-business-investment_rating-AAPL.html --payload-output outputs/generated/inspiration-real-business-investment_rating-AAPL-payload.json\n结果：outputs/generated/inspiration-real-business-investment_rating-AAPL.html\n---\n-rw-r--r--@ 1 yunsa  staff   1973 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL-payload.json\n-rw-r--r--@ 1 yunsa  staff  12848 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL.html\nbytes 12536\n6.46 True\nNeutral True\n中性 True\n5.5 True\n8.63 True\n数据 False\nradar True\n投资评级 True\n--sv- False\nvar(--sv False\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 180467,
+        "durationMs": 1,
+        "tool": "investment_rating.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 36140
+        "title": "Verify theme switching and labels in HTML",
+        "detail": "调用：bash\n结果：data-theme html: \nhas dark block: True\ntheme toggle handler: 3\nbackground: ['body {\\n  margin:0;\\n  background:transparent;\\n  color:var(--text);\\n  font-family:-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif;\\n}']\nsv vars: set()\nrisk/reward labels: ['风险分析', '亮点', '暂无亮点信号']\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 187578,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 40087
+        "title": "Screenshot and verify rendered component",
+        "detail": "调用：bash\n结果：theme: light | radar paths: 1\nAAPL 投资评级\n评级: 中性\n6.46\n/ 10\n价值\n未来\n过往\n健康\n分红\npageerrors: []\n耗时：0.75 秒",
+        "state": "done",
+        "elapsedMs": 189458,
+        "durationMs": 750,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 49823
+        "title": "Check Risk label context in source HTML",
+        "detail": "调用：bash\n结果：----- 108260\n127 15.75 2.55469V5.36523C15.75 5.95125 15.4647 6.50082 14.9854 6.83789L13.1895 8.10059L11.3271 12.1504L11.0654 14.1816C10.9492 15.0787 10.1848 15.7498 9.28027 15.75H8.71973C7.81516 15.7498 7.05075 15.0787 6.93457 14.1816L6.67285 12.1504L4.81055 8.10059L3.01465 6.83789C2.53529 6.50082 2.25 5.95125 2.25 5.36523V2.49512ZM8.09961 13.3701V13.6309C8.09986 14.1277 8.5031 14.5303 9 14.5303C9.4969 14.5303 9.90014 14.1277 9.90039 13.6309V13.3701H8.09961Z\" fill=\"#009B67\">The combined read of institutional fund flow activity and sell-side analyst consensus places AAPL&#x27;s market sentiment at 8.63/10 — a Outperform rating.RiskExcellent<path d=\"M2.25 2.49512C2.25 2.2771 2.52919 2.18602 2.65723 2.3623L3.07715 2.94238C4.09273 4.34485 5.71961\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 199467,
+        "durationMs": 1,
+        "tool": "bash"
       },
       {
-        "title": "正在获取分析所需的市场数据",
-        "elapsedMs": 54568
+        "title": "Search for gauge values and embedded JSON",
+        "detail": "调用：bash\n结果：Reward occurrences: []\nrewardish: []\n\"overallScore\" []\n\"rating\":\" [179688, 179735, 179781, 179827]\nfundamental [272, 826, 1640, 97314, 97376]\nriskGrade []\nself.__next_f count: 0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 205348,
+        "durationMs": 2,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 55047
+        "title": "Verify radar scores derived in rendered page",
+        "detail": "调用：bash\n结果：{\"value\":4.3,\"future\":8.63,\"past\":5.24,\"health\":5.5,\"dividend\":8.63}\naxis labels: 价值,未来,过往,健康,分红\nradar path: 214 chars\n耗时：0.89 秒",
+        "state": "done",
+        "elapsedMs": 206641,
+        "durationMs": 889,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 135586
+        "title": "Inspect rendered payload insights and apply_language",
+        "detail": "调用：investment_rating.py\n结果：[\n {\n  \"kind\": \"fundamental\",\n  \"tone\": \"bullish\",\n  \"text\": \"AAPL 综合评分为 6.46/10，当前评级为中性；基本面 5.50/10、情绪 8.63/10 是主要观察项。\"\n },\n {\n  \"kind\": \"technical\",\n  \"tone\": \"bearish\",\n  \"text\": \"技术面评分为 5.24/10，若低于其他维度，说明近期走势与交易信号仍需继续验证。\"\n }\n]\ndims: [{'key': 'fundamental', 'label': 'Fundamental', 'score': 5.5}, {'key': 'technical', 'label': 'Technical', 'score': 5.24}, {'key': 'sentiment', 'label': 'Sentiment', 'score': 8.63}]\n=== apply_language ===\n192:def apply_language(payload: dict[str, Any], language: str | None = None) -> dict[str, Any]:\n193-    lang = normalize_language(language or payload.get(\"language\"))\n194-    bundle = LABEL_BUNDLES[lang]\n195-    localized = dict(payload)\n196-    localized[\"language\"] = lang\n197-    localized[\"name\"] = bundle[\"title\"]\n198-    localized[\"title\"] = bundle[\"title\"]\n199-    localized[\"rating\"] = _localized_rating(localized.get(\"rating\"), bundle)\n200-    localized[\"labels\"] = {\n201-        \"rating\": bundle[\"rating\"],\n202-        \"rewards\": bundle[\"rewards\"],\n\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 212550,
+        "durationMs": 3,
+        "tool": "investment_rating.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 136062
+        "title": "Re-render with real five dimensions and verify",
+        "detail": "调用：deepseek-aapl-rating-extract.py\n参数：--output outputs/generated/inspiration-real-business-investment_rating-AAPL.html --payload-output outputs/generated/inspiration-real-business-investment_rating-AAPL-payload.json\n结果：patched\noutputs/generated/inspiration-real-business-investment_rating-AAPL.html\nderived: {\"value\":1.3,\"future\":7,\"past\":6.8,\"health\":4.8,\"dividend\":7.6}\ntext: AAPL 投资评级 | 评级: 中性 | 6.46 | / 10 | 价值 | 未来 | 过往 | 健康 | 分红\n-rw-r--r--@ 1 yunsa  staff  38752 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL-dark.png\n-rw-r--r--@ 1 yunsa  staff  39711 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL-light.png\n-rw-r--r--@ 1 yunsa  staff   2390 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL-payload.json\n-rw-r--r--@ 1 yunsa  staff  13125 Oct 14 16:56 outputs/generated/inspiration-real-business-investment_rating-AAPL.html\n耗时：1.70 秒",
+        "state": "done",
+        "elapsedMs": 220460,
+        "durationMs": 1701,
+        "tool": "deepseek-aapl-rating-extract.py"
       },
       {
-        "title": "正在检索并核对相关证据",
-        "elapsedMs": 141487
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 142198
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 145345
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 153503
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 154984
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 164987
-      },
-      {
-        "title": "正在检索并核对相关证据",
-        "elapsedMs": 171770
-      },
-      {
-        "title": "正在检索并核对相关证据",
-        "elapsedMs": 179400
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 180467
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 187578
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 189458
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 196288
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 196720
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 197170
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 199467
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 205348
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 206641
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 212550
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 220460
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 222080
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 222961
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 226341
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 233161
+        "title": "Run vision validation on rendered chart",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AAPL --output outputs/data/deepseek-aapl-investment-rating-vision.json\n结果：Traceback (most recent call last):\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ~~~~^^\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n                                                                    ~~~~~~~~~~~~~^^^^^^\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 262, in analyze_chart\n    client = model_client()\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\n耗时：0.59 秒",
+        "state": "error",
+        "elapsedMs": 226341,
+        "durationMs": 595,
+        "tool": "vision_chart_analyst.py"
       }
     ],
     "startedAt": 1791967984328,
@@ -226,7 +212,8 @@
         "endedAt": 1791968233925,
         "elapsedMs": 249597
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

@@ -196,6 +196,11 @@ brandHomeButton?.addEventListener("click", () => {
   if (isMobileLayout()) setSidebarCollapsed(true);
 });
 
+document.querySelector(".mobileBrand")?.addEventListener("click", () => {
+  if (!conversation.classList.contains("is-empty")) startNewChat(false, false);
+  setSidebarCollapsed(true);
+  requestAnimationFrame(() => conversation.scrollTo({top:0,behavior:"smooth"}));
+});
 input.addEventListener("input", updateComposerState);
 input.addEventListener("keydown", event => handleMessageEnter(event, input, () => form.requestSubmit()));
 function handleMessageEnter(event, textarea, send) {
@@ -2508,12 +2513,9 @@ function createGeneratedImageArtifact(item) {
   image.addEventListener("load", () => {
     if (image.naturalWidth % 16 === 8 && image.naturalHeight % 16 === 8) image.classList.add("reportGeneratedImageLegacyFrame");
   });
-  const preview = document.createElement("button");
-  preview.type = "button";
+  const preview = document.createElement("div");
   preview.className = "reportGeneratedImageButton";
-  preview.setAttribute("aria-label", "查看图片详情");
   preview.append(image);
-  preview.addEventListener("click", () => openGeneratedImagePreview(image.src, preview));
   return preview;
 }
 
@@ -2695,6 +2697,8 @@ function sanitizeUserFacingInsight(value) {
     }
   }
   return source
+    .replace(/^(?!.*\[\[AIME_CHART:).*?(?:执行说明|产物[：:]|产物文件|生成产物|分析中间件|outputs\/|payload\.json|subjects not matched share|--sample).*$/gim, "")
+    .replace(/^(?:已完成|我已完成|本次已用).*?(?:渲染|执行|校验|生成|取数).*$/gm, "")
     .replace(/来自\s+`?fetch_yahoo_data\([^\n)]*\)`?\s*的\s*/gi, "")
     .replace(/^.*(?:用户?未点名[^\n]*(?:已省略|未纳入)|工具返回字段|调用参数|transferMode|payload_json).*$/gim, "")
     .replace(/\n{3,}/g, "\n\n")
@@ -2860,7 +2864,7 @@ function syncActivityDrawer(article) {
   const sources = buildActivitySources(article, lang);
   activityBody.innerHTML = `
     <section class="activitySection">
-      <div class="activitySectionTitle">${escapeHtml(copyFor(lang, "thinkingSection"))}</div>
+      <div class="activitySectionTitle">${escapeHtml(article.classList.contains("cachedCaseAnswer") ? "执行记录" : copyFor(lang, "thinkingSection"))}</div>
     </section>
     <ol class="activityTimeline">${steps}${terminal}</ol>
     ${sources}

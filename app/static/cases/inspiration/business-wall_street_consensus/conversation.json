@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "## 核心结论\n\n**AMD 当前华尔街共识是\"评级高、空间小\"的典型组合：23 位分析师给出 3.96/5 的\"买入\"共识（86.96% 买入 + 4.35% 强烈买入，仅 2 家持有，无卖出），均值目标价 643.26 美元，相对最新价 605.53 美元只剩约 6.2% 上行空间。** 目标价与评级本身并不低，问题在于股价已经把目标价的大部分上调消化掉了——过去半年均值目标价翻了 2.27 倍（283.07 → 643.26），同期股价涨幅更大，导致\"共识买入\"与\"剩余空间\"出现明显脱节。行业维度上，AMD 在 77 家半导体公司中仅排第 38 位（评分 3.96，低于行业平均 4.00），属于\"被看多但不被当作最优选择\"的位置。\n\n## 关键证据与图表解读\n\n[[AIME_CHART:case:inspiration/business-wall_street_consensus/inspiration-real-business-wall_street_consensus-amd-zh.html]]\n\n**1）评级结构与目标价区间（图中\"共识评级 / 目标价 / 分析师分布\"区）**\n- 评级标签：买入；共识分数 3.96/5，样本 23 位分析师，窗口为最近 90 天的分析师动作，组件内标注更新至 2026-10-07。\n- 目标价三档：低 465 / 均值 643.26 / 高 800。**区间宽度达均值目标价的 52.1%**，说明覆盖 AMD 的分析师对估值锚的分歧很大，均值目标的参考性弱于分歧度本身。\n- 相对最新价 605.53：到均值目标 +6.2%、到最高目标 +32.1%、**到最低目标 −23.2%**。也就是说，最悲观的分析师目标价低于现价约两成，共识下限并不提供支撑。\n\n**2）评级分布在半年内完成一次\"减持持有、增持买入\"的迁移（图\"分析师分布\"与历史 Tab）**\n- 持有家数：2026-05 的 7 家 → 06 月 6 家 → 07 月 4 家 → 08/09/10 月稳定在 2 家；强烈买入从 08 月起出现 1 家，买入维持在 20–22 家。\n- 同期共识分数从 3.60 单调抬升到 3.96。**这是\"卖方逐步向多头聚拢\"的过程，不是一次性跳升**，说明评级上修是持续动作而非单一事件驱动。\n\n**3）目标价上修与股价赛跑（图\"目标价历史\"Tab 是本次最重要的一张）**\n- 均值目标价：2026-04-14 的 283.07 → 05 月 436 → 06 月 473.08 → 07 月 530.56 → 08 月 626.87 → 09 月 625.65 → 10 月 643.26。\n- 关键拐点在 08 月：目标价单月从约 531 跳到约 627，此后 09 月几乎走平（625.65），10 月仅回升 2.81%。**上修斜率明显放缓，而股价已到 605.53，目标价的\"领先优势\"被压缩到个位数百分比**——这正是共识买入但盈亏比变差的量化体现。\n\n**4）最新分析师动作全是\"维持评级、上调目标价\"（图 \"analyst actions\" 明细）**\n- 2026-10-06 Citigroup（Atif Malik）：维持买入，目标价 575 → 800（+225）。\n- 2026-10-06 Mizuho（Vijay Rakesh）：维持 Outperform，580 → 705（+125）。\n- 2026-10-05 Stifel（Ruben Roy）：维持买入，635 → 700（+65）。\n- 2026-09-29 StoneX 685、Rosenblatt 700：均为重申/维持，目标价未动。\n- 观察点：**近两周的推动力集中在目标价上调，没有评级上调**；且最高目标价 800 由 Citigroup 一家贡献，均值被单一机构拉动，需警惕均值目标的集中度风险。\n\n**5）行业排名是这份共识里最\"反直觉\"的一项**\n- 半导体行业 77 家公司中 AMD 排名第 38 位（中位水平），行业平均分 4.00 高于 AMD 的 3.96。\n- 对照榜内：英伟达 4.05 排第 1、GCT Semiconductor 4.00 排第 2、慧荣科技 4.00 排第 3。**AMD 的绝对评级不低，但相对同行并不占优**——把\"买入\"理解成\"行业首选\"会误读这份数据。\n\n## 风险、数据时间与口径\n\n- **数据时间**：本组件于本次执行实时取自 AInvest 分析师评级接口与行情接口，NASDAQ（market id 185），快照生成于 2026-10-14；组件内标注的分析师动作窗口更新至 2026-10-07，评级/目标价统计窗口为最近 90 天，最新价为渲染时点行情。\n- **口径**：共识分数为 1–5 分制（5 分为强烈买入）；上行空间 =（均值目标价 / 最新价 − 1），未计入股息与时间价值；行业排名基于同一接口的行业评分排序，非第三方分类。\n- **风险点**：① 均值目标价含 Citigroup 800 美元这一高点，去极值后上行空间会更小；② 目标价分歧区间宽达均值目标的 52%，\"均值\"本身不是可靠锚；③ 共识分数自 4 月以来持续上行，属于滞后确认型指标，股价已先于评级反映预期；④ 评级分布无卖出，缺少空头视角，共识存在系统性偏乐观的结构性偏差；⑤ 组件为单一标的快照，不含分析师目标价的时间加权，不能据此判断具体买卖时点。\n- **降级说明**：本次无需降级——实时接口正常返回 AMD 全量共识数据，未使用 `--sample` 或任何模拟值。用户提供的 2026-10-14 NVDA 历史快照（均值目标价 344.10、最新价 228.52、上行 50.58%、评级 4.05 强烈买入）仅作为横向参照在结论中引用，未作为本次渲染数据源。",
+    "interpretation": "## 核心结论\n\n**AMD 当前华尔街共识是\"评级高、空间小\"的典型组合：23 位分析师给出 3.96/5 的\"买入\"共识（86.96% 买入 + 4.35% 强烈买入，仅 2 家持有，无卖出），均值目标价 643.26 美元，相对最新价 605.53 美元只剩约 6.2% 上行空间。** 目标价与评级本身并不低，问题在于股价已经把目标价的大部分上调消化掉了——过去半年均值目标价翻了 2.27 倍（283.07 → 643.26），同期股价涨幅更大，导致\"共识买入\"与\"剩余空间\"出现明显脱节。行业维度上，AMD 在 77 家半导体公司中仅排第 38 位（评分 3.96，低于行业平均 4.00），属于\"被看多但不被当作最优选择\"的位置。\n\n## 关键证据与图表解读\n\n[[AIME_CHART:case:inspiration/business-wall_street_consensus/inspiration-real-business-wall_street_consensus-amd-zh.html]]\n\n**1）评级结构与目标价区间（图中\"共识评级 / 目标价 / 分析师分布\"区）**\n- 评级标签：买入；共识分数 3.96/5，样本 23 位分析师，窗口为最近 90 天的分析师动作，组件内标注更新至 2026-10-07。\n- 目标价三档：低 465 / 均值 643.26 / 高 800。**区间宽度达均值目标价的 52.1%**，说明覆盖 AMD 的分析师对估值锚的分歧很大，均值目标的参考性弱于分歧度本身。\n- 相对最新价 605.53：到均值目标 +6.2%、到最高目标 +32.1%、**到最低目标 −23.2%**。也就是说，最悲观的分析师目标价低于现价约两成，共识下限并不提供支撑。\n\n**2）评级分布在半年内完成一次\"减持持有、增持买入\"的迁移（图\"分析师分布\"与历史 Tab）**\n- 持有家数：2026-05 的 7 家 → 06 月 6 家 → 07 月 4 家 → 08/09/10 月稳定在 2 家；强烈买入从 08 月起出现 1 家，买入维持在 20–22 家。\n- 同期共识分数从 3.60 单调抬升到 3.96。**这是\"卖方逐步向多头聚拢\"的过程，不是一次性跳升**，说明评级上修是持续动作而非单一事件驱动。\n\n**3）目标价上修与股价赛跑（图\"目标价历史\"Tab 是本次最重要的一张）**\n- 均值目标价：2026-04-14 的 283.07 → 05 月 436 → 06 月 473.08 → 07 月 530.56 → 08 月 626.87 → 09 月 625.65 → 10 月 643.26。\n- 关键拐点在 08 月：目标价单月从约 531 跳到约 627，此后 09 月几乎走平（625.65），10 月仅回升 2.81%。**上修斜率明显放缓，而股价已到 605.53，目标价的\"领先优势\"被压缩到个位数百分比**——这正是共识买入但盈亏比变差的量化体现。\n\n**4）最新分析师动作全是\"维持评级、上调目标价\"（图 \"analyst actions\" 明细）**\n- 2026-10-06 Citigroup（Atif Malik）：维持买入，目标价 575 → 800（+225）。\n- 2026-10-06 Mizuho（Vijay Rakesh）：维持 Outperform，580 → 705（+125）。\n- 2026-10-05 Stifel（Ruben Roy）：维持买入，635 → 700（+65）。\n- 2026-09-29 StoneX 685、Rosenblatt 700：均为重申/维持，目标价未动。\n- 观察点：**近两周的推动力集中在目标价上调，没有评级上调**；且最高目标价 800 由 Citigroup 一家贡献，均值被单一机构拉动，需警惕均值目标的集中度风险。\n\n**5）行业排名是这份共识里最\"反直觉\"的一项**\n- 半导体行业 77 家公司中 AMD 排名第 38 位（中位水平），行业平均分 4.00 高于 AMD 的 3.96。\n- 对照榜内：英伟达 4.05 排第 1、GCT Semiconductor 4.00 排第 2、慧荣科技 4.00 排第 3。**AMD 的绝对评级不低，但相对同行并不占优**——把\"买入\"理解成\"行业首选\"会误读这份数据。\n\n## 风险、数据时间与口径\n\n- **数据时间**：数据来源为 AInvest 分析师评级接口与行情接口，NASDAQ（NASDAQ），快照生成于 2026-10-14；组件内标注的分析师动作窗口更新至 2026-10-07，评级/目标价统计窗口为最近 90 天，最新价为数据记录时点行情。\n- **口径**：共识分数为 1–5 分制（5 分为强烈买入）；上行空间 =（均值目标价 / 最新价 − 1），未计入股息与时间价值；行业排名基于同一接口的行业评分排序，非第三方分类。\n- **风险点**：① 均值目标价含 Citigroup 800 美元这一高点，去极值后上行空间会更小；② 目标价分歧区间宽达均值目标的 52%，\"均值\"本身不是可靠锚；③ 共识分数自 4 月以来持续上行，属于滞后确认型指标，股价已先于评级反映预期；④ 评级分布无卖出，缺少空头视角，共识存在系统性偏乐观的结构性偏差；⑤ 组件为单一标的快照，不含分析师目标价的时间加权，不能据此判断具体买卖时点。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -40,83 +40,69 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 2319
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 2720
+        "title": "Dump full payload structure",
+        "detail": "调用：bash\n结果：.type = 'wall-street-consensus'\n.name = '华尔街共识'\n.title = '华尔街共识'\n.code = 'NVDA'\n.market = '185'\n.marketLabel = 'NASDAQ'\n.ratingSummary.label = '强烈买入'\n.ratingSummary.score = 4.04761905\n.ratingSummary.analystCount = 21\n.ratingSummary.windowDays = 90\n.ratingSummary.lastUpdatedText = 'Updated Oct 1, 2026'\n.ratingSummary.sourceWindowText = 'Analyst actions in the last 90 days'\n.priceTarget.average = 344.0952381\n.priceTarget.low = 300\n.priceTarget.high = 515\n.lastPrice = 228.52\n.upside.amount = 115.5752381\n.upside.percent = 50.575546166637494\n.analystBreakdown[] len 5 dict\n.analystBreakdown[0].key = 'strongBuy'\n.analystBreakdown[0].label = '强烈买入'\n.analystBreakdown[0].count = 1\n.analystBreakdown[0].percent = 4.76\n.industryRank.name = 'Semiconductors'\n.industryRank.rank = 1\n.industryRank.companiesCovered = 77\n.industryRank.averageScore = 4\n.industryRank.leaders[] len 3 dict\n.industryRank.leaders[0].code = 'NVDA'\n.industryRank.leaders[0].market = '185'\n.industryRank.leaders[0].name = '英伟达'\n.ind\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 7872,
+        "durationMs": 1,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 3497
+        "title": "Attempt live AMD consensus fetch",
+        "detail": "调用：wall_street_consensus.py\n参数：--code AMD --output outputs/generated/inspiration-real-business-wall_street_consensus-amd-zh.html --payload-output outputs/generated/inspiration-real-business-wall_street_consensus-amd-payload.json\n结果：bash: timeout: command not found\nEXIT=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 9618,
+        "durationMs": 1,
+        "tool": "wall_street_consensus.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 5190
+        "title": "Attempt live AMD consensus fetch",
+        "detail": "调用：wall_street_consensus.py\n参数：--code AMD --output outputs/generated/inspiration-real-business-wall_street_consensus-amd-zh.html --payload-output outputs/generated/inspiration-real-business-wall_street_consensus-amd-payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/inspiration-real-business-wall_street_consensus-amd-zh.html\",\n  \"payloadOutput\": \"outputs/generated/inspiration-real-business-wall_street_consensus-amd-payload.json\"\n}\nEXIT=0\n耗时：8.69 秒",
+        "state": "done",
+        "elapsedMs": 19454,
+        "durationMs": 8689,
+        "tool": "wall_street_consensus.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 5634
+        "title": "Inspect live AMD payload",
+        "detail": "调用：bash\n结果：23076 outputs/generated/inspiration-real-business-wall_street_consensus-amd-zh.html\n    8194 outputs/generated/inspiration-real-business-wall_street_consensus-amd-payload.json\n   31270 total\n{\n \"type\": \"wall-street-consensus\",\n \"name\": \"华尔街共识\",\n \"title\": \"AMD 华尔街共识\",\n \"code\": \"AMD\",\n \"market\": \"185\",\n \"marketLabel\": \"NASDAQ\",\n \"ratingSummary\": {\n  \"label\": \"买入\",\n  \"score\": 3.95652174,\n  \"analystCount\": 23,\n  \"windowDays\": 90,\n  \"lastUpdatedText\": \"Updated Oct 7, 2026\",\n  \"sourceWindowText\": \"Analyst actions in the last 90 days\"\n },\n \"priceTarget\": {\n  \"average\": 643.26086957,\n  \"low\": 465,\n  \"high\": 800\n },\n \"lastPrice\": 605.53,\n \"upside\": {\n  \"amount\": 37.73086956999998,\n  \"percent\": 6.23104876224134\n },\n \"analystBreakdown\": [\n  {\n   \"key\": \"strongBuy\",\n   \"label\": \"强烈买入\",\n   \"count\": 1,\n   \"percent\": 4.35\n  },\n  {\n   \"key\": \"buy\",\n   \"label\": \"买入\",\n   \"count\": 20,\n   \"percent\": 86.96\n  },\n  {\n   \"key\": \"hold\",\n   \"label\": \"持有\",\n   \"count\": 2,\n   \"percent\": 8.7\n  },\n  {\n   \"key\": \"sel\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 21577,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 7872
+        "title": "Check current date and history data",
+        "detail": "调用：bash\n结果：Wed Oct 14 17:17:13 CST 2026\n## rating\n[\n{\n\"date\": \"2026-04-14\",\n\"averageRating\": 3.6,\n\"timestamp\": \"2026-04-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-05-14\",\n\"averageRating\": 3.70833333,\n\"timestamp\": \"2026-05-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-06-14\",\n\"averageRating\": 3.76,\n\"timestamp\": \"2026-06-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-07-14\",\n\"averageRating\": 3.8,\n\"timestamp\": \"2026-07-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-08-14\",\n\"averageRating\": 3.91304348,\n\"timestamp\": \"2026-08-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-09-13\",\n\"averageRating\": 3.95652174,\n\"timestamp\": \"2026-09-13T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-10-14\",\n\"averageRating\": 3.95652174,\n\"timestamp\": \"2026-10-14T00:00:00.000Z\"\n}\n]\n## priceTarget\n[\n{\n\"date\": \"2026-04-14\",\n\"averageTarget\": 283.06666667,\n\"timestamp\": \"2026-04-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-05-14\",\n\"averageTarget\": 436,\n\"timestamp\": \"2026-05-14T00:00:00.000Z\"\n},\n{\n\"date\": \"2026-06-14\",\n\"averageTarget\": 473.08,\n\"timestamp\": \"2026-06-14T00:00:00.000Z\"\n},\n{\n\"date\": \n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 23512,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 8263
+        "title": "Verify rendered AMD HTML content",
+        "detail": "调用：bash\n结果：bytes 22732\nhas data-theme: True | theme toggle: False\n  contains '643.26': True\n  contains '605.53': True\n  contains '3.96': False\n  contains '23': True\n  contains '超威半导体': True\n  contains '目标价': True\n  contains '行业排名': True\n  contains '465': True\n  contains '800': True\n  contains '6.2': True\n---TEXT---\n AMD 华尔街共识\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 29676,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 9618
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 19454
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 21577
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 23512
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 29676
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 31643
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 33594
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 35135
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 37303
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 37775
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 42462
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 44522
+        "title": "Compute verified AMD consensus metrics",
+        "detail": "调用：bash\n结果：avg target 643.26 low 465 high 800 last 605.53\nupside % 6.23 | to high % 32.12 | to low % -23.21\nrange width 52.1 % of avg\nbullish 21 of 23\ntarget 6M ago 283.06666667 -> 643.26086957 x 2.27\nrating 6M ago 3.6 -> 3.95652174\ntarget MoM 625.65217391 -> 643.26086957 2.81 %\nrank 38 / 77 avg 4 score 3.9565\nrank percentile top 49 %\n2026-10-06 Mizuho Maintains Outperform 705 (prev 580 ) Δ 125\n2026-10-06 Citigroup Maintains 买入 800 (prev 575 ) Δ 225\n2026-10-05 Stifel Maintains 买入 700 (prev 635 ) Δ 65\n2026-09-29 StoneX Reiterates 买入 685 (prev 685 ) Δ 0\n2026-09-29 Rosenblatt Maintains 买入 700 (prev 700 ) Δ 0\nholds over time: [('2026-05', 0, 17, 7), ('2026-06', 0, 20, 6), ('2026-07', 0, 22, 4), ('2026-08', 1, 21, 2), ('2026-09', 1, 20, 2), ('2026-10', 1, 20, 2)]\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 42462,
+        "durationMs": 0,
+        "tool": "bash"
       }
     ],
     "startedAt": 1791969410807,
@@ -130,7 +116,8 @@
         "endedAt": 1791969465838,
         "elapsedMs": 55031
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

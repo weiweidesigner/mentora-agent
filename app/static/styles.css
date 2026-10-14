@@ -3689,3 +3689,7 @@ p {
   .caseLane .caseCard h2 { font-size:15px; }
   .caseLane .caseCard p { font-size:12px; line-height:1.5; }
 }
+
+.activityStepDetail { white-space:pre-line; overflow-wrap:anywhere; }
+.mobileBrand { border:0; background:transparent; padding:0; font-family:inherit; cursor:pointer; }
+.reportGeneratedImageButton { cursor:default; }

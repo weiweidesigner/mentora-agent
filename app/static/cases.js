@@ -295,7 +295,7 @@
       article.classList.add("cachedCaseAnswer");
       const cachedSteps = cached.activity?.steps || [];
       if (cachedSteps.length && typeof appendStep === "function") {
-        cachedSteps.forEach((step, index) => appendStep(article, step.title, "原始案例的缓存执行记录", "done", `case-step-${index}`));
+        cachedSteps.forEach((step, index) => appendStep(article, step.title, step.detail || "此案例未保存该步骤的执行明细", step.state || "done", `case-step-${index}`));
         article.dataset.cachedActivityCount = String(cachedSteps.length);
         if (Number(cached.activity.elapsedMs) > 0) article.dataset.cachedElapsedMs = String(cached.activity.elapsedMs);
         article.dataset.thinkingState = "done";
@@ -500,9 +500,10 @@
       window.veyaCases = [...window.veyaCases, ...catalog.cases.filter(row => !window.veyaCases.some(existing => existing.id === row.id))];
       const categories = [{ id: "all", title: "全部" }, ...catalog.categories];
       let active = categories[0]?.id;
+      let current = active;
       const render = () => {
         tabs.innerHTML = categories.map(category => {
-          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`;
+          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === current}" tabindex="${category.id === current ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`;
         }).join("");
         panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
         panel.innerHTML = catalog.categories.filter(category => active === "all" || category.id === active).map(category => {
@@ -514,6 +515,7 @@
         const tab = event.target.closest("[data-category]");
         if (!tab) return;
         active = tab.dataset.category;
+        current = active;
         render();
         const selected = tabs.querySelector('[aria-selected="true"]');
         selected.focus({ preventScroll: true });
@@ -524,9 +526,10 @@
       tabs.addEventListener("keydown", event => {
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
         event.preventDefault();
-        const index = categories.findIndex(category => category.id === active);
+        const index = categories.findIndex(category => category.id === current);
         const next = event.key === "Home" ? 0 : event.key === "End" ? categories.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + categories.length) % categories.length;
         active = categories[next].id;
+        current = active;
         render();
         const selected = tabs.querySelector('[aria-selected="true"]');
         selected.focus({ preventScroll: true });
@@ -534,6 +537,39 @@
           ? selected.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 12
           : Math.max(0, selected.getBoundingClientRect().right - tabs.getBoundingClientRect().right + 12);
       });
+      let scrollPending = false;
+      const updateCurrentCategory = () => {
+        scrollPending = false;
+        if (active !== "all" || selectedCase || !conversation.classList.contains("is-empty")) return;
+        const bounds = conversation.getBoundingClientRect();
+        const tabBounds = tabs.getBoundingClientRect();
+        if (tabBounds.top >= bounds.bottom) return;
+        const threshold = Math.max(bounds.top, tabBounds.bottom) + 30;
+        let next = "all";
+        panel.querySelectorAll('.inspirationCategory').forEach(section => {
+          if (section.getBoundingClientRect().top <= threshold) next = section.getAttribute('aria-labelledby').replace('inspiration-category-', '');
+        });
+        if (conversation.scrollTop + conversation.clientHeight >= conversation.scrollHeight - 2) {
+          next = catalog.categories[catalog.categories.length - 1]?.id || next;
+        }
+        if (next === current) return;
+        current = next;
+        tabs.querySelectorAll('[role="tab"]').forEach(tab => {
+          const selected = tab.dataset.category === current;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        panel.setAttribute('aria-labelledby', `inspiration-tab-${current}`);
+        const selected = tabs.querySelector('[aria-selected="true"]');
+        if (selected) tabs.scrollLeft += selected.getBoundingClientRect().left < tabBounds.left
+          ? selected.getBoundingClientRect().left - tabBounds.left - 12
+          : Math.max(0, selected.getBoundingClientRect().right - tabBounds.right + 12);
+      };
+      conversation.addEventListener('scroll', () => {
+        if (scrollPending) return;
+        scrollPending = true;
+        requestAnimationFrame(updateCurrentCategory);
+      }, {passive:true});
       panel.addEventListener("click", event => {
         const card = event.target.closest("[data-case]");
         if (card) showCase(card.dataset.case);

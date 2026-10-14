@@ -201,6 +201,8 @@ test('gallery summaries and replay questions are readable product copy',()=>{
     const cached=JSON.parse(readFileSync(new URL(row.id+'/conversation.json',root),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.answer.question,row.question);
+    assert.doesNotMatch(cached.answer.interpretation,/outputs\/|payload\.json|执行说明|实际生成产物|--sample/);
+    assert.ok(cached.activity.steps.some(step=>step.detail?.includes('调用：') || step.detail?.includes('本次加载：')));
   }
   for(const name of ['bar_chart','grouped_bar','line_chart','group_line','bar_line','pie','treemap','waterfall']){
     const marks=JSON.parse(readFileSync(new URL('analysis-'+name+'/markup.json',root),'utf8'));

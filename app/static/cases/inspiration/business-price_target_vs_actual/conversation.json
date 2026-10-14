@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "已完成取数、核对、计算与渲染。以下是分析结论。\n\n## 核心结论\n\n**AMD 当前平均目标价 643.26 美元，高于最新实际股价 605.53 美元，价差 +37.73 美元（+6.23%）**——但这个\"低估\"幅度是过去一年里最小的一段，而不是常态。过去 12 个月目标价与股价几乎同步上涨（目标价 +177.3%、股价 +177.7%），**价差本身从未稳定，而是在 −7.5% 到 +47.4% 之间来回摆动，一年中位数高达 16.5%**。这意味着该组件的价差更适合当作\"分析师修订滞后程度\"的测量尺，而不是可依赖的上行空间。最新缺口重新张开，是股价从 10 月初 633.91 回落 4.5%、而目标价同期被上调 2.81% 共同造成的。\n\n## 图表解读（原生业务组件，默认 6M 视图）\n\n[[AIME_CHART:case:inspiration/business-price_target_vs_actual/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html]]\n\n图中两条线回答的核心问题就是价差方向：**8 月 14 日平均目标价一次性垂直跳升 18.15%（530.56→626.87），而当天股价已回落到 514.39，形成 +21.87% 的最大缺口**；随后 9 月下旬股价冲上 615.52，两线在 9/25 几乎重合（价差 +0.1%）、10/04 甚至反超（−0.62%），最新一点股价回落、缺口重新张开到 +6.23%。可切换 1M/3M/6M/1Y 观察不同窗口，图例区分实际价格与平均目标价，悬浮可看单点数值。\n\n## 三个关键观察点\n\n**1. 价差是\"棘轮\"，追涨快、砍价慢。** 一年 11 次目标价修订中 8 次上调、仅 3 次下调，且下调幅度极小（−2.62%、−0.68%、−0.19%），最大单次上调达 +54.03%（5/14，283.07→436.00，当天股价 449.70 已在其上方）。目标价因此系统性落后于股价，而不是领先指标。\n\n**2. 唯一一次\"股价反超目标价\"出现在最快的上涨段。** 5–7 月股价连续站上平均目标价（−3.05%、−7.52%、−3.21%），13 次月度观测中仅这 3 次为负；其余 10 次都是目标价留在上方。2026-03-15 的反向极值更极端：股价跌到 193.39 时目标价仍停留在 285.00，价差 +47.37%。\n\n**3. 当前缺口的\"薄\"值得警惕。** 最新 +6.23% 低于 1Y 中位数 16.51%，13 次观测中只有 5 次比它更低，且其中 3 次是负值。也就是说，市场当前对这个共识目标价已经\"兑现\"了大部分距离；一旦股价再上行，很容易再次出现股价反超目标价的情形。\n\n## 风险、数据时间与口径\n\n- **数据时间**：快照日期 **2026-10-14**，最新实际价格对应 **2026-10-13 收盘（605.53 美元）**；本组件按周度采样（1M 5 点、3M 5 点、6M 7 点、1Y 13 点），非日频，图中不显示日内的 10-06 高点 649.42。\n- **口径**：价差 = 平均目标价 − 实际股价，价差百分比以实际股价为分母（+6.23% 即隐含上行幅度）。实际价格已用独立日线数据交叉核对，20 个观测点全部一致，最大偏差 0.00 美元。\n- **数据限制**：平均目标价为分析师共识均值，来自单一目标价历史来源，组件不展示目标价分布与覆盖分析师数量，均值可能被个别极端目标拉动；价差不等于收益预期，AMD 这类高波动标的的价差区间（−7.5%~+47.4%）本身就远大于当前 6.23%。\n- **验证情况**：已确认组件文件正常渲染（两条序列、图例、坐标轴、四个周期 Tab 与最新数值均正确显示，浅/深色主题运行时可切换，无空状态）。\n- 本次使用实时接口取得的 AMD 数据；题目附带的历史快照文件标的为 NVDA，与本次问题标的不一致，故未采用。",
+    "interpretation": "## 核心结论\n\n**AMD 当前平均目标价 643.26 美元，高于最新实际股价 605.53 美元，价差 +37.73 美元（+6.23%）**——但这个\"低估\"幅度是过去一年里最小的一段，而不是常态。过去 12 个月目标价与股价几乎同步上涨（目标价 +177.3%、股价 +177.7%），**价差本身从未稳定，而是在 −7.5% 到 +47.4% 之间来回摆动，一年中位数高达 16.5%**。这意味着该组件的价差更适合当作\"分析师修订滞后程度\"的测量尺，而不是可依赖的上行空间。最新缺口重新张开，是股价从 10 月初 633.91 回落 4.5%、而目标价同期被上调 2.81% 共同造成的。\n\n## 图表解读（原生业务组件，默认 6M 视图）\n\n[[AIME_CHART:case:inspiration/business-price_target_vs_actual/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html]]\n\n图中两条线回答的核心问题就是价差方向：**8 月 14 日平均目标价一次性垂直跳升 18.15%（530.56→626.87），而当天股价已回落到 514.39，形成 +21.87% 的最大缺口**；随后 9 月下旬股价冲上 615.52，两线在 9/25 几乎重合（价差 +0.1%）、10/04 甚至反超（−0.62%），最新一点股价回落、缺口重新张开到 +6.23%。可切换 1M/3M/6M/1Y 观察不同窗口，图例区分实际价格与平均目标价，悬浮可看单点数值。\n\n## 三个关键观察点\n\n**1. 价差是\"棘轮\"，追涨快、砍价慢。** 一年 11 次目标价修订中 8 次上调、仅 3 次下调，且下调幅度极小（−2.62%、−0.68%、−0.19%），最大单次上调达 +54.03%（5/14，283.07→436.00，当天股价 449.70 已在其上方）。目标价因此系统性落后于股价，而不是领先指标。\n\n**2. 唯一一次\"股价反超目标价\"出现在最快的上涨段。** 5–7 月股价连续站上平均目标价（−3.05%、−7.52%、−3.21%），13 次月度观测中仅这 3 次为负；其余 10 次都是目标价留在上方。2026-03-15 的反向极值更极端：股价跌到 193.39 时目标价仍停留在 285.00，价差 +47.37%。\n\n**3. 当前缺口的\"薄\"值得警惕。** 最新 +6.23% 低于 1Y 中位数 16.51%，13 次观测中只有 5 次比它更低，且其中 3 次是负值。也就是说，市场当前对这个共识目标价已经\"兑现\"了大部分距离；一旦股价再上行，很容易再次出现股价反超目标价的情形。\n\n## 风险、数据时间与口径\n\n- **数据时间**：快照日期 **2026-10-14**，最新实际价格对应 **2026-10-13 收盘（605.53 美元）**；本组件按周度采样（1M 5 点、3M 5 点、6M 7 点、1Y 13 点），非日频，图中不显示日内的 10-06 高点 649.42。\n- **口径**：价差 = 平均目标价 − 实际股价，价差百分比以实际股价为分母（+6.23% 即隐含上行幅度）。实际价格已用独立日线数据交叉核对，20 个观测点全部一致，最大偏差 0.00 美元。\n- **数据限制**：平均目标价为分析师共识均值，来自单一目标价历史来源，组件不展示目标价分布与覆盖分析师数量，均值可能被个别极端目标拉动；价差不等于收益预期，AMD 这类高波动标的的价差区间（−7.5%~+47.4%）本身就远大于当前 6.23%。\n- 本次使用实时接口取得的 AMD 数据；题目附带的历史快照文件标的为 NVDA，与本次问题标的不一致，故未采用。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -40,183 +40,125 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 2172
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall, code-interpreter, yahoo-data, vision-chart-analyst",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 2621
+        "title": "Read case conversation and payload metadata",
+        "detail": "调用：bash\n结果：{\n  \"question\": \"请展示 NVDA 的目标价与股价，解释主要指标和观察方法。\",\n  \"cachedAt\": \"2026-10-14T16:18:36.985853+08:00\",\n  \"answer\": {\n    \"question\": \"请展示 NVDA 的目标价与股价，解释主要指标和观察方法。\",\n    \"interpretation\": \"# NVDA · 目标价与股价\\n\\n这份案例用原生业务组件展示目标价与股价，可查看组件内的指标、周期、图例和明细。\\n\\n[[AIME_CHART:case:inspiration/business-price_target_vs_actual/chart.html]]\\n\\n## 阅读方法\\n\\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\\n\\n## 数据口径\\n\\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。\",\n    \"reportArtifacts\": [\n      {\n        \"path\": \"case:inspiration/business-price_target_vs_actual/chart.html\",\n        \"url\": \"/static/cases/inspiration/business-price_target_vs_actual/chart.html\"\n      }\n    ],\n    \"reportUrl\": \"/static/cases/inspiration/business-price_target_vs_actual/chart.html\",\n    \"sources\": [],\n    \"lang\": \"zh-CN\"\n  },\n  \"provenance\": {\n    \"renderer\": \"price_target_vs_actual.py\",\n    \"schema\": \"price_target_vs_actual.schema.json\",\n    \"dataDate\": \"2026-10-14\",\n    \"sample\": false\n  }\n}=== FULL PAYLOAD (\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 8573,
+        "durationMs": 2,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 3796
+        "title": "Attempt live AMD fetch via business component",
+        "detail": "调用：price_target_vs_actual.py\n参数：--code AMD --payload-output outputs/generated/deepseek-ptva-amd-live-payload.json --output outputs/generated/deepseek-ptva-amd-live.html\n结果：bash: timeout: command not found\nEXIT:0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 13386,
+        "durationMs": 0,
+        "tool": "price_target_vs_actual.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 4193
+        "title": "Run live AMD fetch via component",
+        "detail": "调用：price_target_vs_actual.py\n参数：--code AMD --payload-output outputs/generated/deepseek-ptva-amd-live-payload.json --output outputs/generated/deepseek-ptva-amd-live.html\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/deepseek-ptva-amd-live.html\",\n  \"payloadOutput\": \"outputs/generated/deepseek-ptva-amd-live-payload.json\"\n}\nEXIT:0\n耗时：7.36 秒",
+        "state": "done",
+        "elapsedMs": 23954,
+        "durationMs": 7359,
+        "tool": "price_target_vs_actual.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 5484
+        "title": "Compare Oct13 cached AMD payload with live",
+        "detail": "调用：bash\n结果：== 1M\n old: [('2026-09-13', 625.65, 516.13), ('2026-09-20', 625.65, 559.82), ('2026-09-28', 630.0, 607.87), ('2026-10-05', 632.83, 631.75), ('2026-10-13', 643.26, 594.24)]\n new: [('2026-09-25', 630.0, 630.63), ('2026-09-29', 630.0, 607.57), ('2026-10-04', 630.0, 633.91), ('2026-10-09', 643.26, 608.1), ('2026-10-14', 643.26, 605.53)]\n== 3M\n old: [('2026-07-13', 520.36, 534.39), ('2026-08-05', 599.92, 482.05), ('2026-08-28', 626.25, 465.58), ('2026-09-20', 625.65, 559.82), ('2026-10-13', 643.26, 594.24)]\n new: [('2026-07-14', 530.56, 548.13), ('2026-08-06', 602.15, 489.28), ('2026-08-29', 626.25, 465.58), ('2026-09-21', 625.65, 615.52), ('2026-10-14', 643.26, 605.53)]\n== 6M\n old: [('2026-04-14', 283.07, 255.07), ('2026-05-14', 436.0, 449.7), ('2026-06-13', 473.08, 511.57), ('2026-07-14', 530.56, 548.13), ('2026-08-13', 621.58, 483.01), ('2026-09-12', 623.54, 516.13), ('2026-10-13', 643.26, 594.24)]\n new: [('2026-04-14', 283.07, 255.07), ('2026-05-14', 436.0, 449.7), ('2026-06-14', 473.08\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 32080,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 5886
+        "title": "Fetch Yahoo AMD daily close for cross-check",
+        "detail": "调用：yahoo_data.py\n参数：--interval 1d --payload-output outputs/generated/inspiration-real-business-price_target_vs_actual-yahoo-amd-close-6mo.json\n结果：{\"ok\": true, \"source\": \"Nasdaq historical API\", \"rendered\": false, \"payloadOutput\": \"outputs/generated/inspiration-real-business-price_target_vs_actual-yahoo-amd-close-6mo.json\"}\n耗时：5.32 秒",
+        "state": "done",
+        "elapsedMs": 47914,
+        "durationMs": 5319,
+        "tool": "yahoo_data.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 8573
+        "title": "Run code-interpreter transform on AMD payload",
+        "detail": "调用：code_interpreter.py\n参数：--output outputs/generated/inspiration-real-business-price_target_vs_actual-calc.json --payload-output outputs/generated/inspiration-real-business-price_target_vs_actual-derived.json\n结果：Missing DEEPSEEK_API_KEY/ARK_API_KEY/VOLCANO_API_KEY/VOLCENGINE_API_KEY; cannot generate transform code.\n耗时：0.05 秒",
+        "state": "done",
+        "elapsedMs": 55224,
+        "durationMs": 46,
+        "tool": "code_interpreter.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 9031
+        "title": "Fetch AMD 1y daily closes for cross-check",
+        "detail": "调用：yahoo_data.py\n参数：--interval 1d --payload-output outputs/generated/inspiration-real-business-price_target_vs_actual-yahoo-amd-close-1y.json\n结果：{\"ok\": true, \"source\": \"Nasdaq historical API\", \"rendered\": false, \"payloadOutput\": \"outputs/generated/inspiration-real-business-price_target_vs_actual-yahoo-amd-close-1y.json\"}\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 96889,
+        "durationMs": 1,
+        "tool": "yahoo_data.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 10306
+        "title": "Render final component HTML from live payload",
+        "detail": "调用：price_target_vs_actual.py\n参数：--output outputs/generated/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html\",\n  \"payloadOutput\": null\n}\n-rw-r--r--@ 1 yunsa  staff  24442 Oct 14 17:03 outputs/generated/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 97325,
+        "durationMs": 1,
+        "tool": "price_target_vs_actual.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 10671
+        "title": "Merge payload and Nasdaq closes for cross-check",
+        "detail": "调用：bash\n结果：closes 254 {'date': '2025-10-09', 'close': 232.89} {'date': '2026-10-13', 'close': 605.53}\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 100423,
+        "durationMs": 1,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 12997
+        "title": "Cross-check actual price line vs Nasdaq closes",
+        "detail": "调用：inspiration-real-business-price_target_vs_actual-crosscheck-transform.py\n参数：--output outputs/generated/inspiration-real-business-price_target_vs_actual-crosscheck-artifact.json --payload-output outputs/generated/inspiration-real-business-price_target_vs_actual-crosscheck.json\n结果：{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-price_target_vs_actual-crosscheck-artifact.json\", \"mode\": \"data\", \"rows\": 0}\n{'code': 'AMD', 'crossCheckSource': 'Nasdaq historical API (US-listed daily fallback)', 'pointsCompared': 20, 'pointsTotal': 20, 'maxAbsDiff': 0.0, 'meanAbsDiff': 0.0, 'exactMatches': 20, 'title': 'AMD 实际股价交叉核对'}\n{'period': '1Y', 'payloadDate': '2025-10-14', 'payloadActual': 218.09, 'sourceDate': '2025-10-14', 'sourceClose': 218.09, 'diff': 0.0, 'absDiff': 0.0, 'lagDays': None}\n{'period': '1Y', 'payloadDate': '2025-11-13', 'payloadActual': 247.96, 'sourceDate': '2025-11-13', 'sourceClose': 247.96, 'diff': 0.0, 'absDiff': 0.0, 'lagDays': None}\n{'period': '1Y', 'payloadDate': '2025-12-13', 'payloadActual': 210.78, 'sourceDate': '2025-12-12', 'sourceClose': 210.78, 'diff': 0.0, 'absDiff': 0.0, 'lagDays': None}\n{'period': '1Y', 'payloadDate': '2026-01-13', 'payloadActual': 220.97, 'sourceDate': '2026-01-13', 'sourceClose': 220.97, 'diff': 0.0, 'ab\n…（结果摘要已截取）\n耗时：0.09 秒",
+        "state": "done",
+        "elapsedMs": 103686,
+        "durationMs": 94,
+        "tool": "inspiration-real-business-price_target_vs_actual-crosscheck-transform.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 13386
+        "title": "Screenshot the rendered chart HTML",
+        "detail": "调用：inspiration-real-business-price_target_vs_actual-shot.py\n结果：目标价与实际价格\n\n最新价差 37.73 (+6.23%)\n\n1M\n3M\n6M\n1Y\n690\n568\n445\n323\n200\n4月14日\n7月14日\n10月14日\n实际价格\n平均目标价\n-rw-r--r--@ 1 yunsa  staff  64880 Oct 14 17:03 outputs/generated/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.png\n耗时：1.74 秒",
+        "state": "done",
+        "elapsedMs": 110627,
+        "durationMs": 1741,
+        "tool": "inspiration-real-business-price_target_vs_actual-shot.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 23954
+        "title": "Run vision validation on rendered chart",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AMD --output outputs/generated/inspiration-real-business-price_target_vs_actual-vision.json\n结果：Traceback (most recent call last):\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ~~~~^^\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n                                                                    ~~~~~~~~~~~~~^^^^^^\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 262, in analyze_chart\n    client = model_client()\n  File \"app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\n耗时：1.81 秒",
+        "state": "error",
+        "elapsedMs": 116473,
+        "durationMs": 1809,
+        "tool": "vision_chart_analyst.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 24363
+        "title": "DOM-level render and theme-switch validation",
+        "detail": "调用：inspiration-real-business-price_target_vs_actual-domcheck.py\n结果：LIGHT {\"svgPresent\": true, \"svgWidth\": 1000, \"svgHeight\": 280, \"seriesNodeCount\": 2, \"seriesStrokes\": [\"rgb(59, 111, 224)\", \"rgb(20, 184, 166)\"], \"activeTab\": \"6M\", \"bodyTextHasEmpty\": false, \"theme\": \"light\"}\nDARK {\"themeAttr\": \"dark\", \"pageBg\": \"rgba(0, 0, 0, 0)\", \"textColor\": \"rgb(232, 237, 245)\"}\n-rw-r--r--@ 1 yunsa  staff  64039 Oct 14 17:04 outputs/generated/inspiration-real-business-price_target_vs_actual-amd-2026-10-14-dark.png\n耗时：1.86 秒",
+        "state": "done",
+        "elapsedMs": 123794,
+        "durationMs": 1863,
+        "tool": "inspiration-real-business-price_target_vs_actual-domcheck.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 26442
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 32080
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 32487
-      },
-      {
-        "title": "正在推进当前分析步骤",
-        "elapsedMs": 37344
-      },
-      {
-        "title": "正在获取分析所需的市场数据",
-        "elapsedMs": 37349
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 39422
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 42074
-      },
-      {
-        "title": "正在获取分析所需的市场数据",
-        "elapsedMs": 47914
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 49935
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 55224
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 57457
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 58418
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 61348
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 66408
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 70236
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 92580
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 92951
-      },
-      {
-        "title": "正在获取分析所需的市场数据",
-        "elapsedMs": 96889
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 97325
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 100423
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 103686
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 107429
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 108482
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 110627
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 112633
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 116473
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 123794
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 137038
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 140538
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 141288
+        "title": "Extend transform with spread distribution stats",
+        "detail": "调用：inspiration-real-business-price_target_vs_actual-transform.py\n参数：--output outputs/generated/inspiration-real-business-price_target_vs_actual-calc-artifact.json --payload-output outputs/generated/inspiration-real-business-price_target_vs_actual-derived.json\n结果：patched\n{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-price_target_vs_actual-calc-artifact.json\", \"mode\": \"data\", \"rows\": 0}\n1M median 3.69 mean 3.0 latest 6.23\n3M median 6.23 mean 12.45 latest 6.23\n6M median 6.23 mean 6.65 latest 6.23\n1Y median 16.51 mean 17.5 latest 6.23\n1Y series: [('2025-10-14', 6.38), ('2025-11-13', 16.51), ('2025-12-13', 37.06), ('2026-01-13', 31.6), ('2026-02-12', 42.11), ('2026-03-15', 47.37), ('2026-04-14', 10.98), ('2026-05-14', -3.05), ('2026-06-14', -7.52), ('2026-07-14', -3.21), ('2026-08-14', 21.87), ('2026-09-13', 21.22), ('2026-10-14', 6.23)]\n6M series: [('2026-04-14', 10.98), ('2026-05-14', -3.05), ('2026-06-14', -7.52), ('2026-07-14', -3.21), ('2026-08-14', 21.87), ('2026-09-13', 21.22), ('2026-10-14', 6.23)]\n耗时：0.07 秒",
+        "state": "done",
+        "elapsedMs": 137038,
+        "durationMs": 71,
+        "tool": "inspiration-real-business-price_target_vs_actual-transform.py"
       }
     ],
     "startedAt": 1791968528405,
@@ -230,7 +172,8 @@
         "endedAt": 1791968692063,
         "elapsedMs": 163658
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

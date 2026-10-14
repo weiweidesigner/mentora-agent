@@ -172,7 +172,15 @@ body.is-fullscreen.is-forced-landscape #wrap{
   #source{padding:54px 18px 24px}
 }
 </style>
-</head>
+<style data-flow-layout="intrinsic">
+html,body{height:auto!important;overflow:visible!important;}
+body:not(.is-fullscreen) #wrap{height:auto;overflow:visible;}
+body:not(.is-fullscreen) #title{position:relative;left:auto;right:auto;top:auto;white-space:normal;overflow:visible;line-height:1.4;margin:0 0 8px;padding-right:40px;}
+body:not(.is-fullscreen) #viewport{position:relative;inset:auto;overflow-x:auto;overflow-y:hidden;}
+body:not(.is-fullscreen) #diagram{min-height:0;min-width:100%;width:max-content;padding:12px 0;}
+body:not(.is-fullscreen) #diagram svg{height:auto!important;max-width:none!important;}
+:root[data-theme="dark"] .edgeLabel,:root[data-theme="dark"] .edgeLabel p,:root[data-theme="dark"] .edgeLabel span{color:#c1cad7!important;fill:#c1cad7!important;background:#10131a!important;}
+</style></head>
 <body>
 <div id="wrap">
   <div id="title">AAPL 主营业务收入 → 营业利润（Q3 FY2026，截至 2026-06-27，已披露口径）</div>
@@ -202,6 +210,7 @@ const fullscreenBtn = document.getElementById("fullscreenBtn");
 const exitFullscreenBtn = document.getElementById("exitFullscreenBtn");
 let svg = null;
 let naturalWidth = 0;
+let initiallyCentered = false;
 
 function moveEdgeLabelsAboveLine() {
   if (!svg) return;
@@ -247,7 +256,7 @@ function fitDiagram() {
   if (!svg || !naturalWidth) return;
   const isFullscreen = document.body.classList.contains("is-fullscreen");
   const horizontalPadding = isFullscreen ? 56 : (window.innerWidth <= 640 ? 36 : 64);
-  const availableWidth = Math.max(240, viewport.clientWidth - horizontalPadding);
+  const availableWidth = Math.max(720, viewport.clientWidth - horizontalPadding);
   const viewBox = svg.viewBox && svg.viewBox.baseVal;
   const naturalHeight = viewBox && viewBox.height
     ? viewBox.height
@@ -260,6 +269,14 @@ function fitDiagram() {
     ? Math.max(0.1, Math.min(widthScale, heightScale))
     : Math.min(1, widthScale);
   svg.style.width = `${Math.round(naturalWidth * scale)}px`;
+  if (!initiallyCentered && window.innerWidth <= 640 && !isFullscreen) {
+    const start = svg.querySelector('.node[id*="rev_total"]');
+    if (start) {
+      const nodeBounds = start.getBoundingClientRect(), frameBounds = viewport.getBoundingClientRect();
+      viewport.scrollLeft = Math.max(0, nodeBounds.left + nodeBounds.width / 2 - frameBounds.left - viewport.clientWidth / 2);
+      initiallyCentered = true;
+    }
+  }
 }
 
 function updateFullscreenLayout() {

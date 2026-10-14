@@ -37,10 +37,12 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "插画已生成并验证",
+        "title": "生成并验证插画",
+        "detail": "调用：flux-image\n输出图片：flux-2b463f83533d495187513910e0e1db64.png\n图片已生成并通过文件校验。\n耗时：15.95 秒",
+        "state": "done",
         "elapsedMs": 15947
       }
     ],
@@ -55,7 +57,8 @@
         "endedAt": 1791971948973,
         "elapsedMs": 15947
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

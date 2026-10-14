@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "已完成：用 `payout_ratio.py` 原生业务组件对 AAPL 重新实时取数、计算并渲染（非复制旧案例）。\n\n---\n\n## 核心结论\n\n**苹果的分红率正在刷新历史低位：FY2025 现金分红 152.76 亿美元、归母净利润 1,120.1 亿美元，分红率仅 13.64%，是 FY2013–FY2025 十三个完整财年中的最低值**——分红金额本身创历史新高，但分红率反而最低。**分红率下行的原因不是\"分红变少\"，而是\"利润涨得更快\"**：FY2012→FY2025 分红增长 515%（13 年 CAGR 15.0%），净利润只增长 168%（CAGR 7.9%），分母扩张速度远超分子，比率被利润稀释。\n\n更关键的是，这不是单年波动，而是一次**结构性台阶**：FY2013–FY2020 分红率年均 **25.32%**，FY2021–FY2025 年均 **14.94%**，中枢下移 **10.38 个百分点**。**FY2021 是分水岭——净利润同比 +64.9%，分红仅 +2.8%，分红率单年下滑 9.09pp，为全序列最大降幅。** 此后四年分红率被锁在 13.6%–16.1% 的窄区间内，FY2025 在净利润同比 +19.5% 的年份反而再降 2.44pp 至 13.64%，说明**分红政策的增量完全跟不上盈利的增量**。\n\n[[AIME_CHART:case:inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html]]\n\n**图表解读（柱=金额，线=分红率，默认窗口 2018–2025）**：图中最重要的视觉信号是 **2021 年蓝柱（净利润）一次性跳升而青柱（分红）几乎平走**，橙线（分红率）随即从 2020 年的 24.13% 断崖式下移至 15.03%，这一跳构成了此后四年的新平台。第二个信号是**青柱的斜率极其平坦**——2018–2025 年分红从 135.45 亿缓步增至 152.76 亿美元（八年仅 +12.8%，年均约 1.7%），而蓝柱在 595 亿→1,120 亿美元之间大幅波动。因此橙线的每一次反弹都来自利润回撤（2024 年净利润同比 −3.4%，分红率被动回升至 16.08%），而不是分派加码；**FY2025 利润创新高时橙线立刻回到区间底部**，印证分红率的方向由盈利周期主导。\n\n## 关键证据\n\n| 财年 | 归母净利润（B USD） | 现金分红（B USD） | 分红率 | 分红后留存 |\n|---|---|---|---|---|\n| 2013 | 37.04 | 10.62 | 28.66% | 26.42 |\n| 2020 | 57.41 | 13.85 | 24.13% | 43.56 |\n| 2021 | 94.68 | 14.23 | 15.03% | 80.45 |\n| 2024 | 93.74 | 15.07 | 16.08% | 78.66 |\n| **2025** | **112.01** | **15.28** | **13.64%** | **96.73** |\n\n- **分红可持续性充足，低分红率不等于分红风险**：FY2025 分红 152.76 亿美元仅消耗 1,120.1 亿美元净利润的 13.6%，分红后仍留存 967.3 亿美元，覆盖倍数约 7.3 倍。\n- **分红绝对额增长在近年明显钝化**：FY2021–FY2025 分红同比增速依次为 +2.8%、+2.7%、+1.4%、+1.7%、+1.3%，与 FY2013–FY2018 的 +327%、+4.7%、+3.1%、+4.5%、+5.0%、+7.8% 相比，已进入近乎\"象征性年增\"的阶段。\n- **对投资者的含义**：以分红率衡量，苹果是典型的**低派息、重留存**结构，把绝大部分利润留作内生投入与股东回报的其他形式；因此这个 13.64% **不能读作\"股东总回报率\"**，也不能用来比较高股息标的的收益率水平。\n\n## 风险、数据时间与口径\n\n- **口径**：分红率 = 现金分红总额 ÷ 归母净利润；金额单位 B USD；**财年口径**（苹果财年约于每年 9 月底结束），与自然年口径的分红统计不可直接混用。\n- **数据时间**：本次于 **2026-10-14** 通过 AInvest `abroad/finance/v2/dividend_programme` 接口实时重新取数，标的 AAPL（NASDAQ，market 185）。**实时返回值与 2026-07-29 快照逐字段完全一致**，说明这 2.5 个月内该数据集未更新。\n- **数据陈旧必须披露**：序列止于 **FY2025**。截至取数日，FY2026（2026 年 9 月底结束）尚未进入该数据集，因此最新年度与取数日之间存在**约一年的数据空档**，本文所有\"最新\"均指 FY2025，不代表 FY2026 已披露结果。\n- **FY2012 不可比**：苹果于 2012 年 8 月才恢复派息，该年仅含部分派息期，5.95% 的分红率是口径残缺所致，故分段均值一律从 FY2013 起算。\n- **组件覆盖范围限制**：该业务组件只覆盖现金分红，**不含股票回购**。苹果实际资本回报规模显著高于分红率所体现的水平，因此本文结论仅适用于\"现金分红政策\"这一维度，不能外推为完整股东回报评价。\n- **单年归母净利润存在波动**（FY2016 −14.4%、FY2019 −7.2%、FY2023 −2.8%、FY2024 −3.4%），分红率的阶段性反弹多由利润回撤被动造成，解读时不应视为政策转向。",
+    "interpretation": "---\n\n## 核心结论\n\n**苹果的分红率正在刷新历史低位：FY2025 现金分红 152.76 亿美元、归母净利润 1,120.1 亿美元，分红率仅 13.64%，是 FY2013–FY2025 十三个完整财年中的最低值**——分红金额本身创历史新高，但分红率反而最低。**分红率下行的原因不是\"分红变少\"，而是\"利润涨得更快\"**：FY2012→FY2025 分红增长 515%（13 年 CAGR 15.0%），净利润只增长 168%（CAGR 7.9%），分母扩张速度远超分子，比率被利润稀释。\n\n更关键的是，这不是单年波动，而是一次**结构性台阶**：FY2013–FY2020 分红率年均 **25.32%**，FY2021–FY2025 年均 **14.94%**，中枢下移 **10.38 个百分点**。**FY2021 是分水岭——净利润同比 +64.9%，分红仅 +2.8%，分红率单年下滑 9.09pp，为全序列最大降幅。** 此后四年分红率被锁在 13.6%–16.1% 的窄区间内，FY2025 在净利润同比 +19.5% 的年份反而再降 2.44pp 至 13.64%，说明**分红政策的增量完全跟不上盈利的增量**。\n\n[[AIME_CHART:case:inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html]]\n\n**图表解读（柱=金额，线=分红率，默认窗口 2018–2025）**：图中最重要的视觉信号是 **2021 年蓝柱（净利润）一次性跳升而青柱（分红）几乎平走**，橙线（分红率）随即从 2020 年的 24.13% 断崖式下移至 15.03%，这一跳构成了此后四年的新平台。第二个信号是**青柱的斜率极其平坦**——2018–2025 年分红从 135.45 亿缓步增至 152.76 亿美元（八年仅 +12.8%，年均约 1.7%），而蓝柱在 595 亿→1,120 亿美元之间大幅波动。因此橙线的每一次反弹都来自利润回撤（2024 年净利润同比 −3.4%，分红率被动回升至 16.08%），而不是分派加码；**FY2025 利润创新高时橙线立刻回到区间底部**，印证分红率的方向由盈利周期主导。\n\n## 关键证据\n\n| 财年 | 归母净利润（B USD） | 现金分红（B USD） | 分红率 | 分红后留存 |\n|---|---|---|---|---|\n| 2013 | 37.04 | 10.62 | 28.66% | 26.42 |\n| 2020 | 57.41 | 13.85 | 24.13% | 43.56 |\n| 2021 | 94.68 | 14.23 | 15.03% | 80.45 |\n| 2024 | 93.74 | 15.07 | 16.08% | 78.66 |\n| **2025** | **112.01** | **15.28** | **13.64%** | **96.73** |\n\n- **分红可持续性充足，低分红率不等于分红风险**：FY2025 分红 152.76 亿美元仅消耗 1,120.1 亿美元净利润的 13.6%，分红后仍留存 967.3 亿美元，覆盖倍数约 7.3 倍。\n- **分红绝对额增长在近年明显钝化**：FY2021–FY2025 分红同比增速依次为 +2.8%、+2.7%、+1.4%、+1.7%、+1.3%，与 FY2013–FY2018 的 +327%、+4.7%、+3.1%、+4.5%、+5.0%、+7.8% 相比，已进入近乎\"象征性年增\"的阶段。\n- **对投资者的含义**：以分红率衡量，苹果是典型的**低派息、重留存**结构，把绝大部分利润留作内生投入与股东回报的其他形式；因此这个 13.64% **不能读作\"股东总回报率\"**，也不能用来比较高股息标的的收益率水平。\n\n## 风险、数据时间与口径\n\n- **口径**：分红率 = 现金分红总额 ÷ 归母净利润；金额单位 B USD；**财年口径**（苹果财年约于每年 9 月底结束），与自然年口径的分红统计不可直接混用。\n- **数据时间**：本次于 **2026-10-14** 通过 AInvest `abroad/finance/v2/dividend_programme` 接口实时重新取数，标的 AAPL（NASDAQ，market 185）。\n- **数据陈旧必须披露**：序列止于 **FY2025**。截至取数日，FY2026（2026 年 9 月底结束）尚未进入该数据集，因此最新年度与取数日之间存在**约一年的数据空档**，本文所有\"最新\"均指 FY2025，不代表 FY2026 已披露结果。\n- **FY2012 不可比**：苹果于 2012 年 8 月才恢复派息，该年仅含部分派息期，5.95% 的分红率是口径残缺所致，故分段均值一律从 FY2013 起算。\n- **组件覆盖范围限制**：该业务组件只覆盖现金分红，**不含股票回购**。苹果实际资本回报规模显著高于分红率所体现的水平，因此本文结论仅适用于\"现金分红政策\"这一维度，不能外推为完整股东回报评价。\n- **单年归母净利润存在波动**（FY2016 −14.4%、FY2019 −7.2%、FY2023 −2.8%、FY2024 −3.4%），分红率的阶段性反弹多由利润回撤被动造成，解读时不应视为政策转向。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -40,119 +40,85 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 2326
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall, code-interpreter, advisor-text-generation",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 2696
+        "title": "Attempt live AAPL payout ratio fetch",
+        "detail": "调用：payout_ratio.py\n参数：--code AAPL --output outputs/generated/inspiration-real-business-payout_ratio-aapl-live.html --payload-output outputs/generated/inspiration-real-business-payout_ratio-aapl-live.payload.json\n结果：bash: timeout: command not found\nEXIT=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 8828,
+        "durationMs": 0,
+        "tool": "payout_ratio.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 3254
+        "title": "Run live payout ratio fetch",
+        "detail": "调用：payout_ratio.py\n参数：--code AAPL --output outputs/generated/inspiration-real-business-payout_ratio-aapl-live.html --payload-output outputs/generated/inspiration-real-business-payout_ratio-aapl-live.payload.json\n结果：{\"ok\": true, \"code\": \"AAPL\", \"output\": \"outputs/generated/inspiration-real-business-payout_ratio-aapl-live.html\"}\nEXIT=0\n耗时：7.51 秒",
+        "state": "done",
+        "elapsedMs": 18217,
+        "durationMs": 7508,
+        "tool": "payout_ratio.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 5526
+        "title": "Check date and diff live vs snapshot data",
+        "detail": "调用：bash\n结果：Wed Oct 14 17:01:28 CST 2026\n=== DIFF live vs snapshot ===\nyears live: ['2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025']\nyears snap: ['2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025']\nidentical: True\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 24588,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 5973
+        "title": "Verify HTML theme support and live fetch path",
+        "detail": "调用：payout_ratio.py\n结果：--- theme switching evidence ---\ndata-theme=\"dark\" 1\nsetTheme 0\nprefers-color-scheme 0\ntoggle 0\n--- series/payload tags ---\nparent_holder_net_profit 16\ndividend_cash_total 16\npay_out_ratio 16\n归母净利润 2\n现金分红总额 2\n派息率 6\nAAPL 5\n--- closing ---\n- state.end)) state.start = Math.min(idx, state.end);\n        else state.end = Math.max(idx, state.start);\n        render();\n      });\n    }\n    initLegend();\n    bindRange();\n    render();\n    window.addEventListener('resize', () => window.requestAnimationFrame(render));\n  \n\n\n=== live fetch code check ===\n26:DIVIDEND_URL = \"https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/finance/v2/dividend_programme\"\n181:                \"endpoint\": DIVIDEND_URL,\n196:async def fetch_ainvest_payout_ratio(symbol: str, market: str = \"185\") -> dict[str, Any]:\n199:        f\"{DIVIDEND_URL}?code={code}&currency=USD&language=en&from=2010-01-01\"\n223:            \"Boolean(window.thsc_overseafront_http_request && window.thsc_overseafront_http_request.install)\"\n225:  \n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 31754,
+        "durationMs": 0,
+        "tool": "payout_ratio.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 7037
+        "title": "Probe raw_data shape",
+        "detail": "调用：probe.py\n参数：--output probe.html --payload-output probe.json\n结果：Traceback (most recent call last):\n  File \"app/skills/code-interpreter/scripts/code_interpreter.py\", line 1663, in \n    raise SystemExit(main())\n                     ~~~~^^\n  File \"app/skills/code-interpreter/scripts/code_interpreter.py\", line 1611, in main\n    chart_payload = run_transform(code, raw_data, args.question, chart_mode=chart_mode)\n  File \"app/skills/code-interpreter/scripts/code_interpreter.py\", line 486, in run_transform\n    result = transform(raw_data, question)\n  File \"\", line 2, in transform\nNameError: name 'type' is not defined. Did you mean: 'tuple'?\n---\n[stderr]\nTraceback (most recent call last):\n  File \"\", line 1, in \n    import json;d=json.load(open('probe.json'));print(json.dumps(d,ensure_ascii=False)[:800])\n                            ~~~~^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'probe.json'\n[exit code: 1]\n耗时：0.03 秒",
+        "state": "error",
+        "elapsedMs": 50892,
+        "durationMs": 34,
+        "tool": "probe.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 7501
+        "title": "Probe payload shape with allowed builtins",
+        "detail": "调用：probe2.py\n参数：--output probe.html --payload-output probe.json\n结果：工具返回了代码或检查记录；已完成。\n耗时：0.17 秒",
+        "state": "done",
+        "elapsedMs": 53925,
+        "durationMs": 167,
+        "tool": "probe2.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 8828
+        "title": "Run payout ratio calculations with payload flag",
+        "detail": "调用：code_interpreter.py\n参数：--output outputs/generated/inspiration-real-business-payout_ratio-calc-artifact.html --payload-output outputs/generated/inspiration-real-business-payout_ratio-derived.json\n结果：{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-payout_ratio-calc-artifact.html\", \"mode\": \"data\", \"rows\": 0}\n=== RESULT ===\n{\n \"span\": [\n  2012,\n  2025\n ],\n \"n_years\": 14,\n \"first\": {\n  \"year\": 2012,\n  \"ni\": 41.733,\n  \"div\": 2.4841259,\n  \"ratio\": 0.05952425897970431\n },\n \"latest\": {\n  \"year\": 2025,\n  \"ni\": 112.01,\n  \"div\": 15.27629016,\n  \"ratio\": 0.1363832707793947\n },\n \"ni_growth_pct\": 168.39671243380542,\n \"div_growth_pct\": 514.9563578883019,\n \"ni_cagr_pct\": 7.890414329941442,\n \"div_cagr_pct\": 14.995363520284076,\n \"full_year_lowest_ratio\": {\n  \"year\": 2025,\n  \"ni\": 112.01,\n  \"div\": 15.27629016,\n  \"ratio\": 0.1363832707793947\n },\n \"full_year_highest_ratio\": {\n  \"year\": 2013,\n  \"ni\": 37.037,\n  \"div\": 10.6151328,\n  \"ratio\": 0.2866088722088722\n },\n \"avg_ratio_2013_2020_pct\": 25.31703670312835,\n \"avg_ratio_2021_2025_pct\": 14.937057259176717,\n \"avg_ratio_shift_pp\": -10.379979443951632,\n \"biggest_ratio_drop\": {\n  \"year\": 2021,\n  \"ni_yoy_pct\": 64.9161310550243,\n  \"div_yoy_p\n…（结果摘要已截取）\n耗时：0.08 秒",
+        "state": "done",
+        "elapsedMs": 59690,
+        "durationMs": 79,
+        "tool": "code_interpreter.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 18217
+        "title": "Headless render verification with screenshots",
+        "detail": "调用：render_check.py\n结果：{\n \"info\": {\n  \"svgCount\": 1,\n  \"svgShapes\": 72,\n  \"canvasCount\": 0,\n  \"bodyText\": \"派息率\\n30.75%\\n129.93B\\n21.68%\\n92.97B\\n12.60%\\n56.00B\\n3.53%\\n19.04B\\n-5.55%\\n-17.92B\\n22.75%\\n2018\\n25.21%\\n2019\\n24.13%\\n2020\\n15.03%\\n2021\\n14.65%\\n2022\\n15.28%\\n2023\\n16.08%\\n2024\\n13.64%\\n2025\\n归母净利润\\n现金分红总额\\n派息率\",\n  \"theme\": \"light\"\n },\n \"errors\": []\n}\n耗时：3.48 秒",
+        "state": "done",
+        "elapsedMs": 71210,
+        "durationMs": 3481,
+        "tool": "render_check.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 20441
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 24588
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 24948
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 31754
-      },
-      {
-        "title": "正在推进当前分析步骤",
-        "elapsedMs": 31755
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 33552
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 33969
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 35212
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 42162
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 47862
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 50892
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 53925
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 56992
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 59690
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 71210
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 75686
-      },
-      {
-        "title": "正在汇总结论与关键证据",
-        "elapsedMs": 85736
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 86138
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 87361
+        "title": "Print full series table for reference",
+        "detail": "调用：bash\n结果：2012 NI 41.73 DIV 2.484 PAYOUT % 5.95\n2013 NI 37.04 DIV 10.615 PAYOUT % 28.66\n2014 NI 39.51 DIV 11.113 PAYOUT % 28.13\n2015 NI 53.39 DIV 11.455 PAYOUT % 21.45\n2016 NI 45.69 DIV 11.976 PAYOUT % 26.21\n2017 NI 48.35 DIV 12.569 PAYOUT % 25.99\n2018 NI 59.53 DIV 13.545 PAYOUT % 22.75\n2019 NI 55.26 DIV 13.929 PAYOUT % 25.21\n2020 NI 57.41 DIV 13.851 PAYOUT % 24.13\n2021 NI 94.68 DIV 14.235 PAYOUT % 15.03\n2022 NI 99.8 DIV 14.619 PAYOUT % 14.65\n2023 NI 97.0 DIV 14.825 PAYOUT % 15.28\n2024 NI 93.74 DIV 15.073 PAYOUT % 16.08\n2025 NI 112.01 DIV 15.276 PAYOUT % 13.64\n\n2018-2025 view (component default window):\n2018 NI 59.53 DIV 13.545 PAYOUT % 22.75 retained 45.99\n2019 NI 55.26 DIV 13.929 PAYOUT % 25.21 retained 41.33\n2020 NI 57.41 DIV 13.851 PAYOUT % 24.13 retained 43.56\n2021 NI 94.68 DIV 14.235 PAYOUT % 15.03 retained 80.45\n2022 NI 99.8 DIV 14.619 PAYOUT % 14.65 retained 85.18\n2023 NI 97.0 DIV 14.825 PAYOUT % 15.28 retained 82.17\n2024 NI 93.74 DIV 15.073 PAYOUT % 16.08 retained 78.66\n2025 NI 112.01 D\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 86138,
+        "durationMs": 1,
+        "tool": "bash"
       }
     ],
     "startedAt": 1791968464332,
@@ -166,7 +132,8 @@
         "endedAt": 1791968561587,
         "elapsedMs": 97255
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

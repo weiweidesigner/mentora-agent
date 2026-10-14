@@ -19,7 +19,7 @@
       }
     ],
     "payloadUrl": null,
-    "interpretation": "## AAPL 议员交易：卖压极度集中，披露时差“中枢守规、尾部失控”\n\n**核心结论：AAPL 议员交易是两个独立事实的组合——金额面是极少数大额申报主导的净卖出（13 个季度卖出 5,269.7 万美元对买入 653.1 万美元，8.07 倍），时差面则是中位 27 天的合规中枢加上一条由小额交易和批量补报构成的长尾（最长 481 天）。** 更关键的反差在于：**最大的两笔 $5M-$25M 卖出只用了 24–30 天就申报，而 16 笔超 45 天法定窗口的迟到申报里有 12 笔是 $1K-$15K 的小额单**，说明这套数据的时效风险不在“大钱跑得快”，而在小额交易的漏报与事后批量补报。\n\n组件读取的是 2026-10-14 实时接口数据，非 2026-07-29 旧快照：同一窗口卖出总额由快照的 5,177.2 万美元上修至 **5,269.7 万美元（+1.8%）**，2024 Q4 单季卖出由 1,565.1 万修正为 1,600.8 万美元，证明本次为重新取数与重新渲染。\n\n[[AIME_CHART:case:inspiration/business-congress_trades/inspiration-real-business-congress_trades_aapl.html]]\n\n上图（AAPL 议员交易业务组件，季度买卖金额柱 + 股价线 + 最近 20 笔明细表）中最重要的变化只有一处：**2025 Q4 的卖出柱孤峰式抬升到 3,076.5 万美元，占 13 个季度卖出总额的 58.4%**；2024 Q4 的 1,600.8 万美元再占 30.4%，**两个季度合计 88.8%**，其余 11 个季度卖出均在百万美元级。同时买入柱从未超过 2024 Q2 的 170.4 万美元，**卖出与买入笔数却接近（95 卖 / 84 买）**——不对称来自单笔规模而非交易频率。股价线同期从 187.65 升至 319.70 美元（+70.4%），即议员整体是“边涨边卖”，但这既不是择时证据，也不构成基本面看空信号。\n\n拆解峰值来源可确认这不是“群体性抛售”：**2025 Q4 的卖压几乎全部来自 Nancy Pelosi 两笔 $5M-$25M 卖出（成交 2025-12-24、2025-12-30，2026-01-23 申报）**，按申报区间中点计约 3,000 万美元，占该季 97.5%，且两笔时差仅 24 天与 30 天，均在 45 天窗口内。因此“议员大举卖出 AAPL”这一直观印象，实质是 1 位议员 2 笔大额减仓的会计放大。\n\n### 披露时差（申报日 − 成交日）：最近 200 笔明细\n\n以最近 200 笔申报（去重后 130 个独立事件）逐笔重算，**结果与数据源 reporting_gap 字段 100% 一致（0 例不符）**，口径可靠。\n\n| 口径 | 样本 | 中位 | 均值 | P90 | 最长 | 超 45 天 |\n| --- | --- | --- | --- | --- | --- | --- |\n| 逐笔 | 200 | 27.0 天 | 42.1 天 | 57 天 | 481 天 | 21 笔（10.5%） |\n| 事件去重 | 130 | 27.0 天 | 48.6 天 | 80 天 | 481 天 | 16 笔（12.3%） |\n\n| 时差区间 | 0-7 天 | 8-14 天 | 15-30 天 | 31-45 天 | 46-90 天 | 91-365 天 | >365 天 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| 事件数 | 13 | 15 | 54 | 32 | 3 | 11 | 2 |\n| 占比 | 10.0% | 11.5% | 41.5% | 24.6% | 2.3% | 8.5% | 1.5% |\n\n三个可直接使用的观察点：\n\n1. **中枢合格、均值失真。** 87.7% 的事件在 45 天内完成申报，15–45 天是绝对主区间（66.2%）；但均值被长尾抬到 48.6 天，**读数时应以中位 27 天而非均值判断常规时效**。\n2. **长尾高度集中，属“批量补报”而非普遍违规。** 16 个超期事件只涉及 9 位议员，其中 **Ed Case 于 2026-04-06 一次性补报产生 4 个超期事件（144–417 天）、Katie Boyd Britt 于 2026-01-26 补报产生 3 个（80–287 天）**，两批即占 7/16。极端值 Tim Walberg 481 天（2025-02-07 买入，2026-06-03 申报）与 Ed Case 417 天均为单次补报，而非持续拖延。\n3. **时差与申报金额反向，小额才是超期源头。** $1K-$15K 中位 28.0 天、12/74 事件超期；$100K-$250K 中位 23.5 天、仅 1/14 超期；两笔 $5M-$25M 均未超期。方向上无系统性差异（买入中位 27.0 天、卖出 27.5 天），党派差异同样不显著（共和党 28.0 天 / 59 事件、民主党 27.0 天 / 71 事件），但超期笔数共和党 10 对民主党 6，样本量不足以支撑党派结论。\n\n近端时效在改善：成交日 2026-04-01 之后的 17 个事件中位 20 天、最长 45 天，明显低于 2025 上半年的中位 29.5 天、最长 481 天。**但这里存在右删失**——8–9 月成交的申报可能尚未到期，最新样本天然“看起来更合规”，不能据此断言违规率下降；同时组件表格中最近 20 笔（2026-06 至 2026-09）中位 14 天、最长 28 天，也受同一偏差影响。\n\n### 风险、口径与限制\n\n- **金额为估值而非实额**：数据源按申报区间中点加总（如 $5M-$25M 计 1,500 万），区间跨度极大，季度金额只能用于量级与结构判断，不能当作实际成交额。\n- **样本边界**：时差统计覆盖最近 200 笔（该标的共有 579 笔明细），2024 Q4 的 1,600.8 万美元大额卖出不在明细样本内，其申报时效未被验证。\n- **45 天为参考阈值**：《STOCK Act》规定的申报期限，数据源未提供合规判定字段，超期不等于违法（可申请延期）。\n- **数据时间与窗口**：实时拉取于 2026-10-14；季度汇总窗口 2023-08-31 至 2026-08-30（2023 Q3–2026 Q3 共 13 个季度）；时差样本成交日 2025-01-17 至 2026-09-22、申报日 2025-02-10 至 2026-10-01；组件为浅色主题、简体中文，支持运行时浅深切换，数据来源为 AInvest 聚合的议员交易汇总与明细接口。\n- **投资含义**：议员交易是延迟、粗颗粒、区间化的仓位信号，只能作为情绪与关注度的旁证，不能替代 AAPL 的经营、估值或技术面证据；下一验证点是后续季度是否再现类似 2025 Q4 的单笔大额集中申报。\n\n产物文件（均在 outputs/generated/）：图表 `inspiration-real-business-congress_trades_aapl.html`，组件 payload、200 笔明细数据、时差分析结果与文字报告同前缀保存。",
+    "interpretation": "## AAPL 议员交易：卖压极度集中，披露时差“中枢守规、尾部失控”\n\n**核心结论：AAPL 议员交易是两个独立事实的组合——金额面是极少数大额申报主导的净卖出（13 个季度卖出 5,269.7 万美元对买入 653.1 万美元，8.07 倍），时差面则是中位 27 天的合规中枢加上一条由小额交易和批量补报构成的长尾（最长 481 天）。** 更关键的反差在于：**最大的两笔 $5M-$25M 卖出只用了 24–30 天就申报，而 16 笔超 45 天法定窗口的迟到申报里有 12 笔是 $1K-$15K 的小额单**，说明这套数据的时效风险不在“大钱跑得快”，而在小额交易的漏报与事后批量补报。\n\n[[AIME_CHART:case:inspiration/business-congress_trades/inspiration-real-business-congress_trades_aapl.html]]\n\n上图（AAPL 议员交易业务组件，季度买卖金额柱 + 股价线 + 最近 20 笔明细表）中最重要的变化只有一处：**2025 Q4 的卖出柱孤峰式抬升到 3,076.5 万美元，占 13 个季度卖出总额的 58.4%**；2024 Q4 的 1,600.8 万美元再占 30.4%，**两个季度合计 88.8%**，其余 11 个季度卖出均在百万美元级。同时买入柱从未超过 2024 Q2 的 170.4 万美元，**卖出与买入笔数却接近（95 卖 / 84 买）**——不对称来自单笔规模而非交易频率。股价线同期从 187.65 升至 319.70 美元（+70.4%），即议员整体是“边涨边卖”，但这既不是择时证据，也不构成基本面看空信号。\n\n拆解峰值来源可确认这不是“群体性抛售”：**2025 Q4 的卖压几乎全部来自 Nancy Pelosi 两笔 $5M-$25M 卖出（成交 2025-12-24、2025-12-30，2026-01-23 申报）**，按申报区间中点计约 3,000 万美元，占该季 97.5%，且两笔时差仅 24 天与 30 天，均在 45 天窗口内。因此“议员大举卖出 AAPL”这一直观印象，实质是 1 位议员 2 笔大额减仓的会计放大。\n\n### 披露时差（申报日 − 成交日）：最近 200 笔明细\n\n以最近 200 笔申报（去重后 130 个独立事件）逐笔重算，**结果与数据源 reporting_gap 字段 100% 一致（0 例不符）**，口径可靠。\n\n| 口径 | 样本 | 中位 | 均值 | P90 | 最长 | 超 45 天 |\n| --- | --- | --- | --- | --- | --- | --- |\n| 逐笔 | 200 | 27.0 天 | 42.1 天 | 57 天 | 481 天 | 21 笔（10.5%） |\n| 事件去重 | 130 | 27.0 天 | 48.6 天 | 80 天 | 481 天 | 16 笔（12.3%） |\n\n| 时差区间 | 0-7 天 | 8-14 天 | 15-30 天 | 31-45 天 | 46-90 天 | 91-365 天 | >365 天 |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| 事件数 | 13 | 15 | 54 | 32 | 3 | 11 | 2 |\n| 占比 | 10.0% | 11.5% | 41.5% | 24.6% | 2.3% | 8.5% | 1.5% |\n\n三个可直接使用的观察点：\n\n1. **中枢合格、均值失真。** 87.7% 的事件在 45 天内完成申报，15–45 天是绝对主区间（66.2%）；但均值被长尾抬到 48.6 天，**读数时应以中位 27 天而非均值判断常规时效**。\n2. **长尾高度集中，属“批量补报”而非普遍违规。** 16 个超期事件只涉及 9 位议员，其中 **Ed Case 于 2026-04-06 一次性补报产生 4 个超期事件（144–417 天）、Katie Boyd Britt 于 2026-01-26 补报产生 3 个（80–287 天）**，两批即占 7/16。极端值 Tim Walberg 481 天（2025-02-07 买入，2026-06-03 申报）与 Ed Case 417 天均为单次补报，而非持续拖延。\n3. **时差与申报金额反向，小额才是超期源头。** $1K-$15K 中位 28.0 天、12/74 事件超期；$100K-$250K 中位 23.5 天、仅 1/14 超期；两笔 $5M-$25M 均未超期。方向上无系统性差异（买入中位 27.0 天、卖出 27.5 天），党派差异同样不显著（共和党 28.0 天 / 59 事件、民主党 27.0 天 / 71 事件），但超期笔数共和党 10 对民主党 6，样本量不足以支撑党派结论。\n\n近端时效在改善：成交日 2026-04-01 之后的 17 个事件中位 20 天、最长 45 天，明显低于 2025 上半年的中位 29.5 天、最长 481 天。**但这里存在右删失**——8–9 月成交的申报可能尚未到期，最新样本天然“看起来更合规”，不能据此断言违规率下降；同时组件表格中最近 20 笔（2026-06 至 2026-09）中位 14 天、最长 28 天，也受同一偏差影响。\n\n### 风险、口径与限制\n\n- **金额为估值而非实额**：数据源按申报区间中点加总（如 $5M-$25M 计 1,500 万），区间跨度极大，季度金额只能用于量级与结构判断，不能当作实际成交额。\n- **样本边界**：时差统计覆盖最近 200 笔（该标的共有 579 笔明细），2024 Q4 的 1,600.8 万美元大额卖出不在明细样本内，其申报时效未被验证。\n- **45 天为参考阈值**：《STOCK Act》规定的申报期限，数据源未提供合规判定字段，超期不等于违法（可申请延期）。\n- **数据时间与窗口**：实时拉取于 2026-10-14；季度汇总窗口 2023-08-31 至 2026-08-30（2023 Q3–2026 Q3 共 13 个季度）；时差样本成交日 2025-01-17 至 2026-09-22、申报日 2025-02-10 至 2026-10-01；组件为浅色主题、简体中文，支持运行时浅深切换，数据来源为 AInvest 聚合的议员交易汇总与明细接口。\n- **投资含义**：议员交易是延迟、粗颗粒、区间化的仓位信号，只能作为情绪与关注度的旁证，不能替代 AAPL 的经营、估值或技术面证据；下一验证点是后续季度是否再现类似 2025 Q4 的单笔大额集中申报。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -40,215 +40,149 @@
     }
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 2326
+        "title": "加载技能与数据契约",
+        "detail": "本次加载：business-chart-recall, advisor-text-generation, code-interpreter, vision-chart-analyst",
+        "state": "done",
+        "elapsedMs": 0
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 3806
+        "title": "Preview payload structure",
+        "detail": "调用：bash\n结果：{\"type\": \"congress-trades\", \"name\": \"Congress Trades\", \"title\": \"Congress Trades\", \"code\": \"AAPL\", \"market\": \"185\", \"period\": \"3Y\", \"volumeSeries\": [{\"label\": \"2023 Q2\", \"buy\": 619507.0, \"sell\": 1165003.5, \"buyAmount\": 619507.0, \"sellAmount\": 1165003.5, \"raw\": {\"period\": 596004, \"sell_count\": 5, \"year\": 2023, \"buy_count\": 7, \"sell_amount\": 1165003.5, \"buy_amount\": 619507}}, {\"label\": \"2023 Q3\", \"buy\": 156002.5, \"sell\": 162004.0, \"buyAmount\": 156002.5, \"sellAmount\": 162004.0, \"raw\": {\"period\": 596005, \"sell_count\": 6, \"year\": 2023, \"buy_count\": 5, \"sell_amount\": 162004, \"buy_amount\": 156002.5}}, {\"label\": \"2023 Q4\", \"buy\": 40002.5, \"sell\": 105003.5, \"buyAmount\": 40002.5, \"sellAmount\": 105003.5, \"raw\": {\"period\": 596006, \"sell_count\": 6, \"year\": 2023, \"buy_count\": 5, \"sell_amount\": 105003.5, \"buy_amount\": 40002.5}}, {\"label\": \"2024 Q1\", \"buy\": 198862.5, \"sell\": 715009.5, \"buyAmount\": 198862.5, \"sellAmount\": 715009.5, \"raw\": {\"period\": 596003, \"sell_count\": 9, \"year\": 2024, \"buy_count\": 4\n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 9779,
+        "durationMs": 2,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 3806
+        "title": "Attempt live congress trades fetch",
+        "detail": "调用：congress_trades.py\n参数：--code AAPL --period 3Y --output aapl_congress_live.html --payload-output aapl_congress_live.json\n结果：bash: timeout: command not found\nEXIT=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 11293,
+        "durationMs": 1,
+        "tool": "congress_trades.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 4376
+        "title": "Attempt live congress trades fetch (no timeout cmd)",
+        "detail": "调用：congress_trades.py\n参数：--code AAPL --period 3Y --output aapl_congress_live.html --payload-output aapl_congress_live.json\n结果：{\n  \"ok\": true,\n  \"output\": \"aapl_congress_live.html\",\n  \"payloadOutput\": \"aapl_congress_live.json\"\n}\nEXIT=0\n耗时：2.24 秒",
+        "state": "done",
+        "elapsedMs": 19635,
+        "durationMs": 2243,
+        "tool": "congress_trades.py"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 6256
+        "title": "Wide details pull for lag statistics",
+        "detail": "调用：congress_trades.py\n参数：--code AAPL --period 3Y --output aapl_congress_wide.html --payload-output outputs/generated/inspiration-real-business-congress_trades_aapl_details_wide.json\n结果：{\n  \"ok\": true,\n  \"output\": \"aapl_congress_wide.html\",\n  \"payloadOutput\": \"outputs/generated/inspiration-real-business-congress_trades_aapl_details_wide.json\"\n}\nEXIT=0\nrows 200 total 579\ndateRange {'from': '2023-08-31', 'to': '2026-08-30'}\n耗时：6.09 秒",
+        "state": "done",
+        "elapsedMs": 58164,
+        "durationMs": 6093,
+        "tool": "congress_trades.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 8138
+        "title": "Quick look at gaps in wide sample",
+        "detail": "调用：bash\n结果：n 200\ngap values Counter({'30 Days': 19, '14 Days': 18, '27 Days': 11, '17 Days': 10, '20 Days': 8, '29 Days': 8, '39 Days': 8, '28 Days': 7, '38 Days': 7, '22 Days': 6, '12 Days': 5, '1 Days': 5, '13 Days': 4, '32 Days': 4, '21 Days': 4, '6 Days': 4, '2 Days': 4, '37 Days': 4, '0 Days': 3, '23 Days': 3, '15 Days': 3, '8 Days': 3, '31 Days': 3, '24 Days': 3, '4 Days': 3, '33 Days': 3, '35 Days': 3, '45 Days': 2, '34 Days': 2, '41 Days': 2, '40 Days': 2, '57 Days': 2, '65 Days': 2, '98 Days': 2, '44 Days': 2, '201 Days': 2, '190 Days': 2, '5 Days': 1, '42 Days': 1, '216 Days': 1, '18 Days': 1, '144 Days': 1, '80 Days': 1, '235 Days': 1, '326 Days': 1, '257 Days': 1, '271 Days': 1, '287 Days': 1, '11 Days': 1, '36 Days': 1, '10 Days': 1, '417 Days': 1, '481 Days': 1, '347 Days': 1})\ntraded range Apr 10, 2025 Sep 8, 2026\nfiled range Apr 10, 2025 Sep 30, 2025\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 60936,
+        "durationMs": 4,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 9779
+        "title": "Read reference case conversation metadata",
+        "detail": "调用：bash\n结果：{\n  \"question\": \"请展示 AAPL 的议员交易观察，解释主要指标和观察方法。\",\n  \"cachedAt\": \"2026-10-14T16:18:36.985853+08:00\",\n  \"answer\": {\n    \"question\": \"请展示 AAPL 的议员交易观察，解释主要指标和观察方法。\",\n    \"interpretation\": \"# AAPL · 议员交易观察\\n\\n这份案例用原生业务组件展示议员交易观察，可查看组件内的指标、周期、图例和明细。\\n\\n[[AIME_CHART:case:inspiration/business-congress_trades/chart.html]]\\n\\n## 阅读方法\\n\\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\\n\\n## 数据口径\\n\\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。\",\n    \"reportArtifacts\": [\n      {\n        \"path\": \"case:inspiration/business-congress_trades/chart.html\",\n        \"url\": \"/static/cases/inspiration/business-congress_trades/chart.html\"\n      }\n    ],\n    \"reportUrl\": \"/static/cases/inspiration/business-congress_trades/chart.html\",\n    \"sources\": [],\n    \"lang\": \"zh-CN\"\n  },\n  \"provenance\": {\n    \"renderer\": \"congress_trades.py\",\n    \"schema\": \"congress_trades.schema.json\",\n    \"dataDate\": \"2026-07-29\",\n    \"sample\": false\n  }\n}\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 63323,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 10917
+        "title": "Run lag analysis via code-interpreter",
+        "detail": "调用：code_interpreter.py\n参数：--output outputs/generated/inspiration-real-business-congress_trades_aapl_lag_execution.json --payload-output outputs/generated/inspiration-real-business-congress_trades_aapl_lag_analysis.json\n结果：{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-congress_trades_aapl_lag_execution.json\", \"mode\": \"data\", \"rows\": 0}\nEXIT=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 92543,
+        "durationMs": 0,
+        "tool": "code_interpreter.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 11293
+        "title": "Check price series presence in both pulls",
+        "detail": "调用：bash\n结果：inspiration-real-business-congress_trades_aapl_details_wide.json priceSeries 0 volumeSeries 13\n price []\n src keys ['provider', 'summaryEndpoint', 'detailsEndpoint', 'klineEndpoint', 'dateRange', 'rawSummary', 'rawDetails']\nlive20 priceSeries 13\n[{'label': '2023 Q3', 'date': '2023-08-30', 'price': 187.65}, {'label': '2023 Q4', 'date': '2023-11-29', 'price': 189.37}, {'label': '2024 Q1', 'date': '2024-02-29', 'price': 180.75}] [{'label': '2026 Q1', 'date': '2026-03-02', 'price': 264.72}, {'label': '2026 Q2', 'date': '2026-05-29', 'price': 312.06}, {'label': '2026 Q3', 'date': '2026-08-28', 'price': 319.7}]\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 101299,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 11870
+        "title": "Render deliverable congress trades component",
+        "detail": "调用：congress_trades.py\n参数：--code AAPL --period 3Y --output outputs/generated/inspiration-real-business-congress_trades_aapl.html --payload-output outputs/generated/inspiration-real-business-congress_trades_aapl_component_payload.json\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/inspiration-real-business-congress_trades_aapl.html\",\n  \"payloadOutput\": \"outputs/generated/inspiration-real-business-congress_trades_aapl_component_payload.json\"\n}\nEXIT=0\n-rw-r--r--@ 1 yunsa  staff  42191 Oct 14 16:41 outputs/generated/inspiration-real-business-congress_trades_aapl.html\npriceSeries 13 volume 13 trades 20\nprice first/last {'label': '2023 Q3', 'date': '2023-08-30', 'price': 187.65} {'label': '2026 Q3', 'date': '2026-08-28', 'price': 319.7}\ndateRange {'from': '2023-08-31', 'to': '2026-08-30'}\nfirst trade {'id': 'H002476543202609220001', 'politician': 'Pete Sessions', 'party': '共和党', 'state': 'TX', 'avatarUrl': 'https://cdn.ainvest.com/icon/ownership/H002476543.png', 'type': '卖出', 'tone': 'sell', 'size': '$100K-$250K', 'filed': 'Sep 22, 2026', 'traded': 'Sep 22, 2026', 'reportingGap': '0 Days'}\n耗时：4.92 秒",
+        "state": "done",
+        "elapsedMs": 120252,
+        "durationMs": 4924,
+        "tool": "congress_trades.py"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 19635
+        "title": "Run analysis on wide and component payloads",
+        "detail": "调用：code_interpreter.py\n参数：--output outputs/generated/inspiration-real-business-congress_trades_aapl_lag_execution.json --payload-output outputs/generated/inspiration-real-business-congress_trades_aapl_lag_analysis.json --output outputs/generated/inspiration-real-business-congress_trades_aapl_component_execution.json --payload-output outputs/generated/inspiration-real-business-congress_trades_aapl_component_analysis.json\n结果：{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-congress_trades_aapl_lag_execution.json\", \"mode\": \"data\", \"rows\": 0}\n---\n{\"ok\": true, \"output\": \"outputs/generated/inspiration-real-business-congress_trades_aapl_component_execution.json\", \"mode\": \"data\", \"rows\": 0}\n耗时：0.47 秒",
+        "state": "done",
+        "elapsedMs": 125398,
+        "durationMs": 472,
+        "tool": "code_interpreter.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 22308
+        "title": "Run visual validation on rendered component",
+        "detail": "调用：vision_chart_analyst.py\n参数：--code AAPL --output outputs/generated/inspiration-real-business-congress_trades_aapl_vision.json\n结果：Traceback (most recent call last):\n  File \".dependencies/vision-chart-analyst/app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 424, in \n    raise SystemExit(main())\n                     ~~~~^^\n  File \".dependencies/vision-chart-analyst/app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 413, in main\n    result = analyze_uploaded(args) if args.mode == \"uploaded\" else analyze_chart(args)\n                                                                    ~~~~~~~~~~~~~^^^^^^\n  File \".dependencies/vision-chart-analyst/app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 262, in analyze_chart\n    client = model_client()\n  File \".dependencies/vision-chart-analyst/app/skills/vision-chart-analyst/scripts/vision_chart_analyst.py\", line 92, in model_client\n    raise RuntimeError(\"未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\")\nRuntimeError: 未配置 VISION_API_KEY（或兼容模型密钥），无法执行图像理解。\nEXIT=1\n耗时：2.12 秒",
+        "state": "error",
+        "elapsedMs": 142544,
+        "durationMs": 2125,
+        "tool": "vision_chart_analyst.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 27315
+        "title": "Headless render check of component HTML",
+        "detail": "调用：render_check.py\n结果：\"tableRows\": 20,\n  \"tableHeaders\": [\n   \"议员\",\n   \"类型\",\n   \"金额范围\",\n   \"披露日期\",\n   \"交易日期\"\n  ],\n  \"firstRow\": [\n   \"Pete Sessions共和党 · TX\",\n   \"卖出\",\n   \"$100K-$250K\",\n   \"Sep 22, 2026\",\n   \"Sep 22, 2026\"\n  ],\n  \"legend\": [\n   \"AAPL\",\n   \"买入\",\n   \"卖出\"\n  ],\n  \"axisTexts\": [\n   \"331\",\n   \"40.00M\",\n   \"291\",\n   \"30.00M\",\n   \"250\",\n   \"20.00M\",\n   \"210\",\n   \"10.00M\"\n  ],\n  \"empty\": 0,\n  \"bodyText\": \"AAPL\\n买入\\n卖出\\n331\\n40.00M\\n291\\n30.00M\\n250\\n20.00M\\n210\\n10.00M\\n170\\n0\\n2023 Q3\\n2025 Q1\\n2026 Q3\\n议员\\t类型\\t金额范围\\t披露日期\\t交易日期\\n\\nPete Sessions\\n共和党 · TX\\n\\t卖出\\t$100K-$250K\\tSep 22, 2026\\tSep 22, 2026\\n\\nKevin Hern\\n共和党 · OK\\n\\t卖出\\t$1K-$15K\\tSep 25, 2026\\tSep 8, 2026\\n\\nKevin Hern\\n共和党 · OK\\n\\t卖出\\t$1K-$15K\\tSep 25, 2026\\tSep 8, 2026\\n\\nCleo Fields\\n民主党 · LA\\n\\t买入\\t$1K-$15K\\tOct 1, 2026\\tSep 8, 2026\\n\\nScott Franklin\\n共和党 · FL\\n\\t卖出\\t$1K-$15K\\tSep 17, 2026\\tAug 20, 2026\\n\\nEd Case\\n民主党 · HI\\n\\t买入\\t$1K-$15K\\tAug 18, 2026\\tAug 13, 2026\\n\\nCleo Fields\\n民主党 · LA\\n\\t买入\\t$1K-$15K\\tSep 2, 2026\\tAug 13, 2026\\\n…（结果摘要已截取）\n耗时：4.12 秒",
+        "state": "done",
+        "elapsedMs": 153028,
+        "durationMs": 4122,
+        "tool": "render_check.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 33894
+        "title": "Confirm chart primitives rendered",
+        "detail": "调用：render_check.py\n结果：{\n \"info\": {\n  \"svgCount\": 1,\n  \"buyRects\": 27,\n  \"pricePath\": 1,\n  \"tableRows\": 20,\n  \"tableHeaders\": [\n   \"议员\",\n   \"类型\",\n   \"金额范围\",\n   \"披露日期\",\n   \"交易日期\"\n-rw-r--r--@    1 yunsa  staff     2667 Oct 14 16:38 inspiration-real-business-about_company-NVDA-payload.json\n-rw-r--r--@    1 yunsa  staff     6241 Oct 14 16:38 inspiration-real-business-about_company-NVDA.html\n-rw-r--r--@    1 yunsa  staff      305 Oct 14 16:39 inspiration-real-business-average_rating_history.compute.json\n-rw-r--r--@    1 yunsa  staff    15904 Oct 14 16:38 inspiration-real-business-average_rating_history.html\n-rw-r--r--@    1 yunsa  staff    14622 Oct 14 16:39 inspiration-real-business-average_rating_history.metrics.json\n-rw-r--r--@    1 yunsa  staff     4861 Oct 14 16:38 inspiration-real-business-average_rating_history.payload.json\n-rw-r--r--@    1 yunsa  staff    47826 Oct 14 16:39 inspiration-real-business-average_rating_history.preview.dark.png\n-rw-r--r--@    1 yunsa  staff    47114 Oct 14 16:39 inspiration-rea\n…（结果摘要已截取）\n耗时：3.73 秒",
+        "state": "done",
+        "elapsedMs": 161197,
+        "durationMs": 3729,
+        "tool": "render_check.py"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 34896
+        "title": "Compute quarter-level concentration and size buckets",
+        "detail": "调用：bash\n结果：aligned price/volume:\n  2023 Q3  price= 187.65 date=2023-08-30  buy=     156,002 sell=       162,004  counts=5/6\n  2023 Q4  price= 189.37 date=2023-11-29  buy=      40,002 sell=       105,004  counts=5/6\n  2024 Q1  price= 180.75 date=2024-02-29  buy=     458,866 sell=     1,040,014  counts=5/9\n  2024 Q2  price= 191.29 date=2024-05-30  buy=   1,704,008 sell=       316,008  counts=5/6\n  2024 Q3  price= 226.49 date=2024-08-28  buy=     217,509 sell=       324,506  counts=9/7\n  2024 Q4  price= 235.06 date=2024-11-26  buy=     234,507 sell=    16,008,012  counts=8/6\n  2025 Q1  price= 238.03 date=2025-03-03  buy=     170,004 sell=       960,014  counts=8/10\n  2025 Q2  price= 200.85 date=2025-05-30  buy=   1,416,515 sell=     1,921,516  counts=12/13\n  2025 Q3  price= 232.14 date=2025-08-29  buy=     812,506 sell=       251,006  counts=4/8\n  2025 Q4  price= 277.55 date=2025-11-26  buy=   1,046,508 sell=    30,765,010  counts=9/8\n  2026 Q1  price= 264.72 date=2026-03-02  buy=      88,504 sell= \n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 170154,
+        "durationMs": 3,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 38265
+        "title": "Inspect large-sized trades",
+        "detail": "调用：bash\n结果：$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-06-03 |filed 2025-07-01 |gap 28 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-06-25 |filed 2025-07-01 |gap 6 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-06-30 |filed 2025-07-01 |gap 1 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-07-29 |filed 2025-08-06 |gap 8 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-09-03 |filed 2025-09-30 |gap 27 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-09-03 |filed 2025-09-30 |gap 27 Days\n$100K-$250K | Cleo Fields | 民主党 | 买入 |traded 2025-10-23 |filed 2025-11-12 |gap 20 Days\n$100K-$250K | Jefferson Shreve | 共和党 | 买入 |traded 2025-04-07 |filed 2025-05-08 |gap 31 Days\n$100K-$250K | Jefferson Shreve | 共和党 | 卖出 |traded 2025-05-12 |filed 2025-06-22 |gap 41 Days\n$100K-$250K | Markwayne Mullin | 共和党 | 买入 |traded 2025-12-29 |filed 2026-01-16 |gap 18 Days\n$100K-$250K | Michael T. McCaul | 共和党 | 卖出 |traded 2025-01-30 |filed 2025-02-11 |gap 12 Days\n$100K-$250K | Michael T. \n…（结果摘要已截取）\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 172795,
+        "durationMs": 0,
+        "tool": "bash"
       },
       {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 41414
+        "title": "Lag by disclosed size bucket",
+        "detail": "调用：bash\n结果：late event sizes Counter({'$1K-$15K': 12, '$15K-$50K': 3, '$100K-$250K': 1})\nlate event tones Counter({'buy': 11, 'sell': 5})\n$1K-$15K     n= 74 median=  28.0 max= 417 over45=12\n$15K-$50K    n= 32 median=  27.5 max= 481 over45=3\n$100K-$250K  n= 14 median=  23.5 max= 216 over45=1\n$50K-$100K   n=  6 median=  20.5 max=  29 over45=0\n$5M-$25M     n=  2 median=  27.0 max=  30 over45=0\n$250K-$500K  n=  1 median=  13.0 max=  13 over45=0\n$500K-$1M    n=  1 median=  45.0 max=  45 over45=0\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 178828,
+        "durationMs": 2,
+        "tool": "bash"
       },
       {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 58164
-      },
-      {
-        "title": "正在汇总结论与关键证据",
-        "elapsedMs": 58171
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 60503
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 60936
-      },
-      {
-        "title": "正在推进当前分析步骤",
-        "elapsedMs": 62536
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 63323
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 65548
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 66278
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 68314
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 74163
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 75867
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 77466
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 90495
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 92543
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 95479
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 101299
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 110476
-      },
-      {
-        "title": "正在把分析结果转换为图表",
-        "elapsedMs": 120252
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 125398
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 129072
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 135675
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 139652
-      },
-      {
-        "title": "正在确认组件规范与数据契约",
-        "elapsedMs": 140054
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 142544
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 145137
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 153028
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 161197
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 170154
-      },
-      {
-        "title": "正在整理数据并统一分析口径",
-        "elapsedMs": 172795
-      },
-      {
-        "title": "正在计算关键指标与对比关系",
-        "elapsedMs": 178828
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 192986
-      },
-      {
-        "title": "正在检查图表表达是否准确",
-        "elapsedMs": 193384
-      },
-      {
-        "title": "正在确认项目与运行环境",
-        "elapsedMs": 193818
-      },
-      {
-        "title": "正在汇总结论与关键证据",
-        "elapsedMs": 208170
-      },
-      {
-        "title": "正在汇总结论与关键证据",
-        "elapsedMs": 214790
+        "title": "Confirm no sample data in deliverable",
+        "detail": "调用：bash\n结果：0\ntrades in html payload? 20\nPete Sessions in html: True\n2025 Q4 sell value in html: True\n耗时：0.00 秒",
+        "state": "done",
+        "elapsedMs": 193384,
+        "durationMs": 0,
+        "tool": "bash"
       }
     ],
     "startedAt": 1791967197475,
@@ -262,7 +196,8 @@
         "endedAt": 1791967424904,
         "elapsedMs": 227429
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",

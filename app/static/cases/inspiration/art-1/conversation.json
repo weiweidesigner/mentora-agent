@@ -37,11 +37,13 @@
     "lang": "zh-CN"
   },
   "activity": {
-    "label": "实际生成记录",
+    "label": "执行记录",
     "steps": [
       {
-        "title": "本地图片已生成并验证",
-        "elapsedMs": 17007
+        "title": "生成并验证插画",
+        "detail": "调用：flux-image\n输出图片：flux-03519cc9ac004231b13115ad7a5ce91c.png\n图片已生成并通过文件校验。\n耗时：17.01 秒",
+        "state": "done",
+        "elapsedMs": 17008
       }
     ],
     "startedAt": 1791967071365,
@@ -55,7 +57,8 @@
         "endedAt": 1791967088373,
         "elapsedMs": 17008
       }
-    ]
+    ],
+    "detailSource": "cached-tool-results"
   },
   "provenance": {
     "generation": "actual-veya-chat-stream",
