@@ -23,6 +23,10 @@
     :root[data-theme="dark"] #speedBtn,
     :root[data-theme="dark"] #empty { color: #c1cad7; }
     :root[data-theme="dark"] .bar-label { fill: #8294ff; }
+    :root[data-theme="dark"] #radar circle[fill="none"] { stroke: #334052; stroke-width: 1; }
+    :root[data-theme="dark"] #radar line { stroke: #334052; stroke-width: 1; }
+    :root[data-theme="dark"] #radar path { fill: rgba(255, 138, 24, .22); stroke-width: 3; }
+
   `;
   document.documentElement.appendChild(palette);
 
