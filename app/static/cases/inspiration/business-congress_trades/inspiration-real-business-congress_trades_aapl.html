@@ -12,7 +12,7 @@
 html,body{margin:0;background:transparent;color:var(--business-text-111827);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
 body{padding:0}
 .wrap{max-width:1750px;margin:0;background:transparent}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.72fr);gap:46px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(720px,1fr);gap:32px;align-items:start}
 .chart-panel{min-width:0}
 .legend{height:26px;display:flex;align-items:center;gap:28px;color:var(--business-text-70757d);font-size:15px;font-weight:500;margin-bottom:4px}
 .legend-item{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
@@ -53,7 +53,7 @@ td:first-child{text-align:left;font-size:13px;font-weight:400}
 .tip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-d0d0d0)}
 .tip-dot{width:8px;height:8px;border-radius:50%;flex:none}
 .tip-value{color:var(--business-text-fff);font-weight:750;font-variant-numeric:tabular-nums}
-@media(max-width:980px){
+@media(max-width:1280px){
   body{padding:0}
   .layout{display:block}
   .legend{height:16px;gap:12px;font-size:11px;margin-bottom:0}
@@ -72,6 +72,19 @@ td:first-child{text-align:left;font-size:13px;font-weight:400}
   .sub{font-size:10px}
   table{min-width:680px}
 }
+
+.table-wrap{overflow-x:auto;overscroll-behavior-x:contain}
+table{min-width:720px}
+th,td{white-space:nowrap}
+th{font-weight:600}
+th:first-child{width:34%}
+th:nth-child(2){width:9%}
+th:nth-child(3){width:21%}
+th:nth-child(4),th:nth-child(5){width:18%}
+.person .min{min-width:0;flex:1;overflow:hidden}
+.avatar{position:relative;display:grid;place-items:center}
+.avatar svg{width:70%;height:70%;fill:none;stroke:var(--business-text-a6abb3);stroke-width:1.8}
+.avatar img{position:absolute;inset:0}
 </style>
 <script data-business-theme-runtime>
     (() => {
@@ -96,7 +109,9 @@ function compact(v,d=2){
 }
 function personCell(t){
   const sub = [t.party, t.state].filter(Boolean).join(' · ');
-  const avatar = t.avatarUrl ? `<span class="avatar"><img src="${esc(t.avatarUrl)}" alt=""></span>` : '';
+  const fallback = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 22v-2a8 8 0 0 1 16 0v2"></path></svg>';
+  const photo = t.avatarUrl ? `<img src="${esc(t.avatarUrl)}" alt="" loading="lazy" onerror="this.remove()">` : '';
+  const avatar = `<span class="avatar">${fallback}${photo}</span>`;
   return `<div class="person">${avatar}<div class="min"><span class="main">${esc(t.politician || '--')}</span><span class="sub">${esc(sub)}</span></div></div>`;
 }
 const state = { start: 0, end: 1, dragging: null, lastChartWidth: 0 };

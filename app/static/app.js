@@ -76,7 +76,7 @@ const SUPPORTED_FRAMEWORKS = new Set(["deepseek", "codex"]);
 const DEFAULT_REASONING_FRAMEWORK = SUPPORTED_FRAMEWORKS.has(window.AIME_CHAT_CONFIG?.reasoningFramework)
   ? window.AIME_CHAT_CONFIG.reasoningFramework : "deepseek";
 const DEFAULT_INFERENCE_MODEL = "deepseek-v4-flash";
-const storedThemeMode = localStorage.getItem(THEME_STORAGE_KEY) === "dark" ? "dark" : "light";
+const storedThemeMode = localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
 
 function currentThemeMode() {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -2697,6 +2697,7 @@ function sanitizeUserFacingInsight(value) {
     }
   }
   return source
+    .replace(/[（(][^（）\n()]*\b(?:assets_total|total_debt|holder_equity_total|other_cost|requested_field_unavailable|stream_id)[^（）\n()]*[）)]/gi, "")
     .replace(/^(#{1,6}[^\n]+)$/gm, line => line.replace(/[（(][^（）\n()]*(?:本次.*(?:抓取|取数)|组件字段|组件内)[^（）\n()]*[）)]/g, ""))
     .replace(/^.*(?:All charts render|Final artifacts are in place|structural verification).*$/gim, "")
     .replace(/[（(]`?[^（）\n()]*?(?:financial_reports_visual\/|abroad\/finance\/)[^（）\n()]*[）)]/g, "")

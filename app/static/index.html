@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Veya</title>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-video-background" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-table-polish" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261014-intrinsic-height" />
   </head>
   <body>
@@ -165,7 +166,7 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261014-intrinsic-height"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261014-video-background"></script>
+    <script src="/static/app.js?v=interface-20261014-table-polish"></script>
     <script src="/static/home-background.js?v=20261014-video-background"></script>
     <script src="/static/cases.js?v=20261014-video-background"></script>
   </body>
