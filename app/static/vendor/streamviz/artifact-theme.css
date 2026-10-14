@@ -148,9 +148,9 @@
 [data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
 [data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
 
-/* Reports flow into the conversation: metric groups are typography, not panels. */
+/* Report sections stay open; compact metrics have their own outlined cards. */
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
-:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border:0!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;box-shadow:none!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
@@ -176,3 +176,11 @@
 /* Place the dot's centre on the centre of the 1px connector, independent of radius. */
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{--sv-timeline-inset:20px;padding-left:var(--sv-timeline-inset)!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event::before{left:calc(-1 * var(--sv-timeline-inset) - .5px)!important;transform:translateX(-50%);background:var(--sv-chart-series-1)!important}
+
+/* Compact metric cards tile across the available width and wrap as a group. */
+:root :is([data-aime-streamviz-root],[data-visualize-root]) :is([data-sv-metric],.metrics>.insight){box-sizing:border-box;min-width:0!important;padding:var(--sv-card-padding)!important;margin:0!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;background:transparent!important;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){align-items:stretch!important}
+@media(max-width:640px){
+  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))!important;gap:12px!important}
+  :root :is([data-aime-streamviz-root],[data-visualize-root]) :is(.stat-value,.sv-metric strong){font-size:22px!important}
+}
