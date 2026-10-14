@@ -3467,11 +3467,15 @@ p {
 .caseCard h2 { margin: 0 0 7px; font-size: 14px; line-height: 1.45; font-weight: 650; }
 .caseCard p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.65; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .caseDetailHeader[hidden], .caseActionBar[hidden] { display: none; }
-.caseDetailHeader { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; padding: 18px 24px 8px; gap: 12px; }
-.caseBackButton { border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 0; }
+.caseDetailHeader { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; align-items: center; flex: 0 0 auto; padding: 8px 24px; gap: 4px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.caseBackButton { grid-column: 3; grid-row: 1; width: 40px; height: 40px; padding: 8px; display: grid; place-items: center; border-radius: 10px; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; }
 .caseBackButton span { margin-right: 6px; }
-.caseCloseIcon { display: none; }
-.caseCacheDate { color: var(--muted); font-size: 11px; }
+.caseBackLabel { display: none; }
+.caseCloseIcon { display: block; width: 24px; height: 24px; }
+.caseCacheDate { grid-column: 2; grid-row: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-align: center; font-size: 16px; font-weight: 600; line-height: 1.4; color: var(--ink); }
+.caseTitleText { display: inline-block; white-space: nowrap; }
+.caseCacheDate.is-marquee { text-align: left; }
+.caseCacheDate.is-marquee .caseTitleText { animation: caseTitleMarquee var(--case-title-duration,8s) linear infinite alternate; }
 .conversation.is-case .composer, .conversation.is-case .homeCases { display: none; }
 .conversation.is-case .messages { padding-bottom: 118px; }
 .conversation.is-case .message.user .userActions, .conversation.is-case .shareResultButton { display: none; }
@@ -3505,7 +3509,7 @@ p {
 @keyframes caseOverlayEnter { from { opacity: .6; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes caseTitleMarquee { 0%, 18% { transform: translateX(0); } 82%, 100% { transform: translateX(var(--case-title-travel)); } }
 @media(prefers-reduced-motion:reduce) { .conversation.is-case { animation: none; } }
-@media(max-width:760px) and (prefers-reduced-motion:reduce) {
+@media(prefers-reduced-motion:reduce) {
   .caseCacheDate.is-marquee { overflow-x: auto; scrollbar-width: none; }
   .caseCacheDate.is-marquee .caseTitleText { animation: none; }
 }

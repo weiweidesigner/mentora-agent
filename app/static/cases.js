@@ -15,9 +15,9 @@
   const responseCache = new Map();
   function updateCaseTitle(measure = false) {
     const bubble = messages.querySelector(".message.user .userBubble");
-    const showQuestion = !!selectedCase && isMobileLayout() && !!bubble && messages.scrollTop > 0
+    const showQuestion = !!selectedCase && !!bubble && messages.scrollTop > 0
       && bubble.getBoundingClientRect().bottom <= messages.getBoundingClientRect().top + 4;
-    const title = selectedCase ? (showQuestion ? selectedCase.question : "案例回放 · " + selectedCase.cachedDate) : "";
+    const title = selectedCase ? (showQuestion ? selectedCase.question : (isMobileLayout() ? "案例回放 · " : "案例回放：") + selectedCase.cachedDate) : "";
     date.classList.toggle("is-question", showQuestion);
     let text = date.querySelector(".caseTitleText");
     if (!text || text.textContent !== title) {
@@ -51,7 +51,7 @@
     }
     const sidebar = document.querySelector("#appSidebar");
     if (sidebar) sidebar.inert = mobile;
-    back?.setAttribute("aria-label", mobile ? "关闭案例回放" : "返回首页");
+    back?.setAttribute("aria-label", "关闭案例回放");
     updateCaseTitle(true);
   }
   window.addEventListener("resize", syncCaseOverlay);
@@ -253,7 +253,7 @@
   }
   back?.addEventListener("click", closeCase);
   window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && selectedCase && isMobileLayout() && !document.querySelector(".activityDrawer.is-open")) closeCase();
+    if (event.key === "Escape" && selectedCase && !document.querySelector(".activityDrawer.is-open")) closeCase();
   });
   ask?.addEventListener("click", () => {
     if (!selectedCase) return;
