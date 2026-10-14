@@ -1,0 +1,43 @@
+{
+  "question": "用柱折图展示营收与利润率，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用柱折图展示营收与利润率，使用清楚标注的金融演示数据。",
+    "interpretation": "# 营收与利润率\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-bar_line/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-bar_line/chart.html",
+        "url": "/static/cases/inspiration/analysis-bar_line/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-bar_line/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "bar_line.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "bar_line.py"
+      ],
+      "primary_script": "bar_line.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.97,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "trend-and-inflection",
+      "semantic_lens_confidence": 0.58,
+      "primary_purpose": "{\"chartType\": \"bar-line\", \"script\": \"bar_line.py\", \"purpose\": \"Show one or more scale metrics as bars with one or more rate/change metrics as lines on a shared x-axis.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Raw rows may use any key names. The model must infer semantic field roles from the user request, field names, values, and units.\"}, \"semanticChannels\": [{\"channel\": \"x\", \"payloadField\": \"xField\", \"required\": true, \"acceptedTypes\": [\"string\", \"date\", \"number\"], \"semantics\": \"category, period, date, quarter, month, year\"}, {\"channel\": \"bar.y\", \"payloadField\": \"columnSeries[].field\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"volume, count, revenue, amount, value, absolute scale metric\"}, {\"channel\": \"line.y\", \"payloadField\": \"lineSeries[].field\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"rate, ratio, margin, conversion, growth, return, percentage\"}, {\"channel\": \"bar.label\", \"payloadField\": \"columnSeries[].label\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"reader-facing bar series name\"}, {\"channel\": \"line.label\", \"payloadField\": \"lineSeries[].label\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantic",
+      "supporting_purpose": "",
+      "visual_encoding": "driver-outcome-dual-axis",
+      "visual_encoding_confidence": 0.61,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.99,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.55
+    },
+    "jevError": null
+  }
+}

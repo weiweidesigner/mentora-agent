@@ -1,0 +1,22 @@
+{
+  "question": "画一张金融分析主题插画：以光河连接城市，表达全球资本流动的概念。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "画一张金融分析主题插画：以光河连接城市，表达全球资本流动的概念。",
+    "interpretation": "# 全球资金流动的想象\n\n以光河连接城市，表达全球资本流动的概念。\n\n[[AIME_CHART:case:inspiration/art-2/chart.html]]\n\n## 创作说明\n\n由本地 FLUX.2 [klein] 4B 生成，属于金融主题艺术表达。画面中的形象与关系是视觉隐喻，不代表真实行情、数据或预测。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/art-2/chart.html",
+        "url": "/static/cases/inspiration/art-2/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/art-2/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "flux-image",
+    "model": "FLUX.2 [klein] 4B",
+    "seed": 20261015
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "type": "key-statistics",
+  "name": "关键统计数据",
+  "items": [
+    {
+      "key": "Latest Price",
+      "value": "340.08",
+      "unit": "USD"
+    },
+    {
+      "key": "Market Cap",
+      "value": "4.95T",
+      "unit": "USD"
+    },
+    {
+      "key": "P/E(TTM)",
+      "value": "40.79"
+    },
+    {
+      "key": "Diluted EPS(TTM)",
+      "value": "8.26",
+      "unit": "USD"
+    },
+    {
+      "key": "Revenue(FY 2025)",
+      "value": "416.16B",
+      "unit": "USD"
+    },
+    {
+      "key": "Net Income(FY 2025)",
+      "value": "112.01B",
+      "unit": "USD"
+    },
+    {
+      "key": "Net Margin(FY 2025)",
+      "value": "26.92%"
+    },
+    {
+      "key": "Exchange",
+      "value": "NasdaqGS"
+    }
+  ],
+  "maxColumns": 4,
+  "source": {
+    "provider": "Yahoo Finance historical cached snapshot",
+    "symbol": "AAPL"
+  },
+  "language": "zh-CN"
+}

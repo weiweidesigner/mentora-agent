@@ -1,0 +1,23 @@
+{
+  "question": "请展示 AAPL 的利润与分红率，解释主要指标和观察方法。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "请展示 AAPL 的利润与分红率，解释主要指标和观察方法。",
+    "interpretation": "# AAPL · 利润与分红率\n\n这份案例用原生业务组件展示利润与分红率，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-payout_ratio/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/business-payout_ratio/chart.html",
+        "url": "/static/cases/inspiration/business-payout_ratio/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/business-payout_ratio/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "payout_ratio.py",
+    "schema": "payout_ratio.schema.json",
+    "dataDate": "2026-07-29",
+    "sample": false
+  }
+}

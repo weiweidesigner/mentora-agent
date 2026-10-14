@@ -1,0 +1,97 @@
+{
+  "chartName": "dynamic_bubble",
+  "title": "收益、风险与规模（演示数据）",
+  "encode": {
+    "time": "quarter",
+    "x": "risk",
+    "y": "return",
+    "size": "size",
+    "name": "name"
+  },
+  "data": [
+    {
+      "quarter": "Q1",
+      "name": "成长组合",
+      "risk": 20,
+      "return": 12,
+      "size": 100
+    },
+    {
+      "quarter": "Q1",
+      "name": "均衡组合",
+      "risk": 12,
+      "return": 8,
+      "size": 80
+    },
+    {
+      "quarter": "Q1",
+      "name": "稳健组合",
+      "risk": 6,
+      "return": 4,
+      "size": 60
+    },
+    {
+      "quarter": "Q2",
+      "name": "成长组合",
+      "risk": 21,
+      "return": 14,
+      "size": 110
+    },
+    {
+      "quarter": "Q2",
+      "name": "均衡组合",
+      "risk": 13,
+      "return": 10,
+      "size": 90
+    },
+    {
+      "quarter": "Q2",
+      "name": "稳健组合",
+      "risk": 7,
+      "return": 6,
+      "size": 70
+    },
+    {
+      "quarter": "Q3",
+      "name": "成长组合",
+      "risk": 22,
+      "return": 16,
+      "size": 120
+    },
+    {
+      "quarter": "Q3",
+      "name": "均衡组合",
+      "risk": 14,
+      "return": 12,
+      "size": 100
+    },
+    {
+      "quarter": "Q3",
+      "name": "稳健组合",
+      "risk": 8,
+      "return": 8,
+      "size": 80
+    },
+    {
+      "quarter": "Q4",
+      "name": "成长组合",
+      "risk": 23,
+      "return": 18,
+      "size": 130
+    },
+    {
+      "quarter": "Q4",
+      "name": "均衡组合",
+      "risk": 15,
+      "return": 14,
+      "size": 110
+    },
+    {
+      "quarter": "Q4",
+      "name": "稳健组合",
+      "risk": 9,
+      "return": 10,
+      "size": 90
+    }
+  ]
+}

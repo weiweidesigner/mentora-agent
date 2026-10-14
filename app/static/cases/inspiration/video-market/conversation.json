@@ -1,0 +1,61 @@
+{
+  "question": "找关于美股市场收盘复盘的金融分析视频，展示来源、发布日期和观看链接。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "找关于美股市场收盘复盘的金融分析视频，展示来源、发布日期和观看链接。",
+    "interpretation": "# 美股市场收盘复盘\n\n这是视频搜索能力曾检索到的金融主题视频，点击封面或链接可查看原内容。\n\n[[AIME_CHART:case:inspiration/video-market/chart.html]]\n\n## 视频口径\n\n标题：Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26\n\n发布时间：2026-08-11。本次从既有视频搜索缓存中筛选，未重新验证原视频可播放性。视频为观点材料，标题不能单独作为财报或行情依据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/video-market/chart.html",
+        "url": "/static/cases/inspiration/video-market/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/video-market/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "video-search",
+    "article": {
+      "title": "Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26",
+      "url": "https://www.ainvest.com/news/video-market-close-stocks-iran-oman-talks-home-sales-drop-8-11-26-2608/",
+      "published_at": "2026-08-11T17:27:28-04:00",
+      "published_date": "2026-08-11",
+      "source": "category:videos",
+      "author": "Featured Youtube Videos",
+      "summary": "",
+      "content_text": "Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26",
+      "image": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/KcbH71E_F3k.jpg",
+      "audio_url": "",
+      "duration_seconds": 0,
+      "video_url": "https://www.youtube.com/embed/KcbH71E_F3k",
+      "video_time_seconds": 228,
+      "matched_topics": [
+        "MA",
+        "MARKET"
+      ],
+      "semantic_terms": [
+        "MA",
+        "HEIGHT",
+        "LIMIT",
+        "APIKEY",
+        "RANGE",
+        "DATA",
+        "CODE",
+        "MARKET",
+        "OUTPUT",
+        "CN",
+        "分析一下BABA近期的技术表现",
+        "执行错误反馈",
+        "kline.py",
+        "up_red_down",
+        "red_up_green_down",
+        "--up-color",
+        "UP_COLOR",
+        "--down-color"
+      ],
+      "relevance_score": 9.0
+    },
+    "retrieval": "historical-cache"
+  }
+}

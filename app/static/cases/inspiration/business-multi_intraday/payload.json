@@ -1,0 +1,28 @@
+{
+  "type": "multi-intraday",
+  "title": "",
+  "mode": "multi-symbol-same-date",
+  "cards": [
+    {
+      "symbol": "AAPL",
+      "name": "AAPL",
+      "date": "2026-10-13",
+      "barCount": 390,
+      "source": "ainvest"
+    },
+    {
+      "symbol": "MSFT",
+      "name": "MSFT",
+      "date": "2026-10-13",
+      "barCount": 390,
+      "source": "ainvest"
+    },
+    {
+      "symbol": "NVDA",
+      "name": "NVDA",
+      "date": "2026-10-13",
+      "barCount": 390,
+      "source": "ainvest"
+    }
+  ]
+}

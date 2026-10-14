@@ -1,0 +1,50 @@
+{
+  "title": "营收增长与利润率（演示数据）",
+  "xField": "period",
+  "data": [
+    {
+      "period": "Q1",
+      "revenue": 100,
+      "profit": 20,
+      "margin": 20.0
+    },
+    {
+      "period": "Q2",
+      "revenue": 120,
+      "profit": 26,
+      "margin": 21.7
+    },
+    {
+      "period": "Q3",
+      "revenue": 135,
+      "profit": 30,
+      "margin": 22.2
+    },
+    {
+      "period": "Q4",
+      "revenue": 150,
+      "profit": 36,
+      "margin": 24.0
+    }
+  ],
+  "columnSeries": [
+    {
+      "field": "revenue",
+      "label": "营收",
+      "axis": "right"
+    }
+  ],
+  "lineSeries": [
+    {
+      "field": "margin",
+      "label": "净利率"
+    }
+  ],
+  "leftAxis": {
+    "label": "营收"
+  },
+  "rightAxis": {
+    "label": "净利率",
+    "suffix": "%"
+  }
+}

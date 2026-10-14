@@ -1,0 +1,467 @@
+{
+  "type": "key-financial-indicators",
+  "name": "关键财务指标",
+  "title": "关键财务指标",
+  "code": "GOOGL",
+  "metrics": [
+    {
+      "key": "balanced_eps",
+      "label": "每股收益",
+      "unit": "",
+      "decimals": 2,
+      "scale": 1
+    },
+    {
+      "key": "balanced_net_assets",
+      "label": "每股净资产",
+      "unit": "",
+      "decimals": 2,
+      "scale": 1
+    },
+    {
+      "key": "index_weighted_avg_roe",
+      "label": "ROE",
+      "unit": "%",
+      "decimals": 2,
+      "scale": 100
+    },
+    {
+      "key": "total_assets_net_ratio",
+      "label": "ROA",
+      "unit": "%",
+      "decimals": 2,
+      "scale": 100
+    },
+    {
+      "key": "sale_net_interest_ratio",
+      "label": "净利率",
+      "unit": "%",
+      "decimals": 2,
+      "scale": 100
+    },
+    {
+      "key": "current_ratio",
+      "label": "流动比率",
+      "unit": "",
+      "decimals": 2,
+      "scale": 1
+    },
+    {
+      "key": "quick_ratio",
+      "label": "速动比率",
+      "unit": "",
+      "decimals": 2,
+      "scale": 1
+    },
+    {
+      "key": "assets_debt_ratio",
+      "label": "资产负债率",
+      "unit": "%",
+      "decimals": 2,
+      "scale": 100
+    }
+  ],
+  "defaultMetric": "balanced_eps",
+  "defaultView": "annual",
+  "views": {
+    "quarterly": {
+      "label": "季度",
+      "records": [
+        {
+          "key": "2025_596004",
+          "label": "Q2 '25",
+          "compareKey": "596004",
+          "values": {
+            "balanced_eps": 2.33,
+            "balanced_net_assets": 29.98314607,
+            "index_weighted_avg_roe": 7.9629140000000005,
+            "total_assets_net_ratio": 5.769433,
+            "sale_net_interest_ratio": 29.240469999999995,
+            "current_ratio": 1.9037452799999999,
+            "quick_ratio": 1.9037452799999999,
+            "assets_debt_ratio": 27.713608
+          },
+          "yoy": {
+            "balanced_eps": 0.21989528795811528,
+            "balanced_net_assets": 0.22842440786129817,
+            "index_weighted_avg_roe": 0.0006270479587391336,
+            "total_assets_net_ratio": 0.0040996352689067535,
+            "sale_net_interest_ratio": 0.04911125129333873,
+            "current_ratio": -0.08437602501442343,
+            "quick_ratio": -0.08437602501442343,
+            "assets_debt_ratio": 0.008163093513305993
+          }
+        },
+        {
+          "key": "2025_596005",
+          "label": "Q3 '25",
+          "compareKey": "596005",
+          "values": {
+            "balanced_eps": 2.89,
+            "balanced_net_assets": 32.03336921,
+            "index_weighted_avg_roe": 9.330433,
+            "total_assets_net_ratio": 6.736304,
+            "sale_net_interest_ratio": 34.177203,
+            "current_ratio": 1.7473330000000002,
+            "quick_ratio": 1.7473330000000002,
+            "assets_debt_ratio": 27.88642
+          },
+          "yoy": {
+            "balanced_eps": 0.35046728971962615,
+            "balanced_net_assets": 0.2506637292307197,
+            "index_weighted_avg_roe": 0.09064715858688126,
+            "total_assets_net_ratio": 0.08216778498476418,
+            "sale_net_interest_ratio": 0.1470109077313955,
+            "current_ratio": -0.10379045113607292,
+            "quick_ratio": -0.10379045113607292,
+            "assets_debt_ratio": 0.033051098955180394
+          }
+        },
+        {
+          "key": "2025_596006",
+          "label": "Q4 '25",
+          "compareKey": "596006",
+          "values": {
+            "balanced_eps": 2.85,
+            "balanced_net_assets": 34.35349107,
+            "index_weighted_avg_roe": 8.590855,
+            "total_assets_net_ratio": 6.088801,
+            "sale_net_interest_ratio": 30.269354,
+            "current_ratio": 2.0053335899999998,
+            "quick_ratio": 1.98159521,
+            "assets_debt_ratio": 30.240508
+          },
+          "yoy": {
+            "balanced_eps": 0.31336405529953926,
+            "balanced_net_assets": 0.29040641645281257,
+            "index_weighted_avg_roe": 0.03468873301183688,
+            "total_assets_net_ratio": 0.010198041123986224,
+            "sale_net_interest_ratio": 0.10041239261661693,
+            "current_ratio": 0.09167581870504236,
+            "quick_ratio": 0.07875297357321016,
+            "assets_debt_ratio": 0.08778081872476746
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "compareKey": "596003",
+          "values": {
+            "balanced_eps": 5.17,
+            "balanced_net_assets": 39.51353582,
+            "index_weighted_avg_roe": 13.99938,
+            "total_assets_net_ratio": 9.633313,
+            "sale_net_interest_ratio": 56.942928,
+            "current_ratio": 1.92244667,
+            "quick_ratio": 1.92244667,
+            "assets_debt_ratio": 31.988482
+          },
+          "yoy": {
+            "balanced_eps": 0.8204225352112676,
+            "balanced_net_assets": 0.3910597536187375,
+            "index_weighted_avg_roe": 0.35849717939235415,
+            "total_assets_net_ratio": 0.2908054039749298,
+            "sale_net_interest_ratio": 0.4876051556583539,
+            "current_ratio": 0.0873048577230751,
+            "quick_ratio": 0.0873048577230751,
+            "assets_debt_ratio": 0.1687681987013379
+          }
+        },
+        {
+          "key": "2026_596004",
+          "label": "Q2 '26",
+          "compareKey": "596004",
+          "values": {
+            "balanced_eps": 9.23,
+            "balanced_net_assets": 50.89591169,
+            "index_weighted_avg_roe": 20.032951,
+            "total_assets_net_ratio": 13.800709,
+            "sale_net_interest_ratio": 93.653377,
+            "current_ratio": 2.72398125,
+            "quick_ratio": 2.6447573999999996,
+            "assets_debt_ratio": 30.532342
+          },
+          "yoy": {
+            "balanced_eps": 2.96137339055794,
+            "balanced_net_assets": 0.6974840322351803,
+            "index_weighted_avg_roe": 1.5157814086652197,
+            "total_assets_net_ratio": 1.3920390443913635,
+            "sale_net_interest_ratio": 2.2028683875464394,
+            "current_ratio": 0.43085384300992213,
+            "quick_ratio": 0.3892391108121354,
+            "assets_debt_ratio": 0.10170938406864956
+          }
+        }
+      ]
+    },
+    "annual": {
+      "label": "年度",
+      "records": [
+        {
+          "key": "2021_596001",
+          "label": "2021",
+          "compareKey": "annual",
+          "values": {
+            "balanced_eps": 5.69,
+            "balanced_net_assets": 19.00219144,
+            "index_weighted_avg_roe": 32.069324,
+            "total_assets_net_ratio": 22.399408,
+            "sale_net_interest_ratio": 29.511677,
+            "current_ratio": 2.9281134200000003,
+            "quick_ratio": 2.90990444,
+            "assets_debt_ratio": 29.958972
+          },
+          "yoy": {
+            "balanced_eps": 0.9222972972972975,
+            "balanced_net_assets": 0.1530931145992711,
+            "index_weighted_avg_roe": 0.6882644302140108,
+            "total_assets_net_ratio": 0.656287459243345,
+            "sale_net_interest_ratio": 0.33767358286047533,
+            "current_ratio": -0.045208163980919654,
+            "quick_ratio": -0.04716590032822376,
+            "assets_debt_ratio": -0.01358097997704805
+          }
+        },
+        {
+          "key": "2022_596001",
+          "label": "2022",
+          "compareKey": "annual",
+          "values": {
+            "balanced_eps": 4.59,
+            "balanced_net_assets": 19.93493657,
+            "index_weighted_avg_roe": 23.6213,
+            "total_assets_net_ratio": 16.554686,
+            "sale_net_interest_ratio": 21.203807,
+            "current_ratio": 2.37799423,
+            "quick_ratio": 2.37799423,
+            "assets_debt_ratio": 29.874282999999995
+          },
+          "yoy": {
+            "balanced_eps": -0.19332161687170482,
+            "balanced_net_assets": 0.04908618739818362,
+            "index_weighted_avg_roe": -0.2634300617000845,
+            "total_assets_net_ratio": -0.260931985345327,
+            "sale_net_interest_ratio": -0.28151128111086327,
+            "current_ratio": -0.18787495943377772,
+            "quick_ratio": -0.18279301639197468,
+            "assets_debt_ratio": -0.0028268326429893675
+          }
+        },
+        {
+          "key": "2023_596001",
+          "label": "2023",
+          "compareKey": "annual",
+          "values": {
+            "balanced_eps": 5.84,
+            "balanced_net_assets": 22.74309791,
+            "index_weighted_avg_roe": 27.355646,
+            "total_assets_net_ratio": 19.22606,
+            "sale_net_interest_ratio": 24.006649,
+            "current_ratio": 2.09658494,
+            "quick_ratio": 2.09658494,
+            "assets_debt_ratio": 29.576383
+          },
+          "yoy": {
+            "balanced_eps": 0.27233115468409586,
+            "balanced_net_assets": 0.14086632932787896,
+            "index_weighted_avg_roe": 0.15809231498689735,
+            "total_assets_net_ratio": 0.16136663661273914,
+            "sale_net_interest_ratio": 0.13218579097612038,
+            "current_ratio": -0.11833892885433958,
+            "quick_ratio": -0.11833892885433958,
+            "assets_debt_ratio": -0.009971787440053205
+          }
+        },
+        {
+          "key": "2024_596001",
+          "label": "2024",
+          "compareKey": "annual",
+          "values": {
+            "balanced_eps": 8.13,
+            "balanced_net_assets": 26.62222586,
+            "index_weighted_avg_roe": 32.908492,
+            "total_assets_net_ratio": 23.484017,
+            "sale_net_interest_ratio": 28.603672000000003,
+            "current_ratio": 1.8369314,
+            "quick_ratio": 1.8369314,
+            "assets_debt_ratio": 27.800185
+          },
+          "yoy": {
+            "balanced_eps": 0.39212328767123306,
+            "balanced_net_assets": 0.17056286550542318,
+            "index_weighted_avg_roe": 0.20298720052160357,
+            "total_assets_net_ratio": 0.22146799708312576,
+            "sale_net_interest_ratio": 0.19148957440915657,
+            "current_ratio": -0.12384594348941567,
+            "quick_ratio": -0.12384594348941567,
+            "assets_debt_ratio": -0.06005460505430975
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "compareKey": "annual",
+          "values": {
+            "balanced_eps": 10.91,
+            "balanced_net_assets": 34.35349107,
+            "index_weighted_avg_roe": 35.704782,
+            "total_assets_net_ratio": 25.282702,
+            "sale_net_interest_ratio": 32.809878,
+            "current_ratio": 2.0053335899999998,
+            "quick_ratio": 1.98159521,
+            "assets_debt_ratio": 30.240508
+          },
+          "yoy": {
+            "balanced_eps": 0.3419434194341942,
+            "balanced_net_assets": 0.29040641645281257,
+            "index_weighted_avg_roe": 0.08497168451231368,
+            "total_assets_net_ratio": 0.0765918794897823,
+            "sale_net_interest_ratio": 0.14705125971238917,
+            "current_ratio": 0.09167581870504236,
+            "quick_ratio": 0.07875297357321016,
+            "assets_debt_ratio": 0.08778081872476746
+          }
+        }
+      ]
+    },
+    "cumulative": {
+      "label": "累计",
+      "records": [
+        {
+          "key": "2025_596002",
+          "label": "H1 '25",
+          "compareKey": "cumulative",
+          "values": {
+            "balanced_eps": 9.47,
+            "balanced_net_assets": 29.983146,
+            "index_weighted_avg_roe": 34.8285,
+            "total_assets_net_ratio": 25.2116,
+            "sale_net_interest_ratio": 31.118299999999998,
+            "current_ratio": 1.9037452799999999,
+            "quick_ratio": 1.9037452799999999,
+            "assets_debt_ratio": 27.713608
+          },
+          "yoy": {
+            "balanced_eps": 0.04525386313465785,
+            "balanced_net_assets": 0.0555458077823937,
+            "index_weighted_avg_roe": 0.0011382941110526657,
+            "total_assets_net_ratio": 0.002509095969938509,
+            "sale_net_interest_ratio": 0.00847463119960586,
+            "current_ratio": 0.07672765289836393,
+            "quick_ratio": 0.07672765289836393,
+            "assets_debt_ratio": 0.01257645491508437
+          }
+        },
+        {
+          "key": "2025_596007",
+          "label": "9M '25",
+          "compareKey": "cumulative",
+          "values": {
+            "balanced_eps": 10.23,
+            "balanced_net_assets": 32.033369,
+            "index_weighted_avg_roe": 35.4504,
+            "total_assets_net_ratio": 25.705299999999998,
+            "sale_net_interest_ratio": 32.2331,
+            "current_ratio": 1.7473330000000002,
+            "quick_ratio": 1.7473330000000002,
+            "assets_debt_ratio": 27.88642
+          },
+          "yoy": {
+            "balanced_eps": 0.08025343189017949,
+            "balanced_net_assets": 0.06837918209116545,
+            "index_weighted_avg_roe": 0.01785606615271986,
+            "total_assets_net_ratio": 0.01958225578701855,
+            "sale_net_interest_ratio": 0.03582457910618519,
+            "current_ratio": -0.08216029825166507,
+            "quick_ratio": -0.08216029825166507,
+            "assets_debt_ratio": 0.006235637019907347
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "FY '25",
+          "compareKey": "cumulative",
+          "values": {
+            "balanced_eps": 10.91,
+            "balanced_net_assets": 34.353491,
+            "index_weighted_avg_roe": 35.7048,
+            "total_assets_net_ratio": 25.282700000000002,
+            "sale_net_interest_ratio": 32.8099,
+            "current_ratio": 2.0053335899999998,
+            "quick_ratio": 1.98159521,
+            "assets_debt_ratio": 30.240508
+          },
+          "yoy": {
+            "balanced_eps": 0.06647116324535676,
+            "balanced_net_assets": 0.07242828564176305,
+            "index_weighted_avg_roe": 0.00717622368153806,
+            "total_assets_net_ratio": -0.016440189377287785,
+            "sale_net_interest_ratio": 0.01789464866860459,
+            "current_ratio": 0.14765393316557263,
+            "quick_ratio": 0.13406844030302167,
+            "assets_debt_ratio": 0.08441700297133864
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "compareKey": "cumulative",
+          "values": {
+            "balanced_eps": 13.24,
+            "balanced_net_assets": 39.513536,
+            "index_weighted_avg_roe": 38.884800000000006,
+            "total_assets_net_ratio": 27.1702,
+            "sale_net_interest_ratio": 37.9192,
+            "current_ratio": 1.92244667,
+            "quick_ratio": 1.92244667,
+            "assets_debt_ratio": 31.988482
+          },
+          "yoy": {
+            "balanced_eps": 0.21356553620531624,
+            "balanced_net_assets": 0.15020438534179842,
+            "index_weighted_avg_roe": 0.08906365530684969,
+            "total_assets_net_ratio": 0.07465579230066406,
+            "sale_net_interest_ratio": 0.15572433930002827,
+            "current_ratio": -0.04133323274159077,
+            "quick_ratio": -0.029848951845215667,
+            "assets_debt_ratio": 0.05780240199668613
+          }
+        },
+        {
+          "key": "2026_596002",
+          "label": "H1 '26",
+          "compareKey": "cumulative",
+          "values": {
+            "balanced_eps": 20.16,
+            "balanced_net_assets": 50.895912,
+            "index_weighted_avg_roe": 49.548500000000004,
+            "total_assets_net_ratio": 34.2976,
+            "sale_net_interest_ratio": null,
+            "current_ratio": 2.72398125,
+            "quick_ratio": 2.6447573999999996,
+            "assets_debt_ratio": 30.532342
+          },
+          "yoy": {
+            "balanced_eps": 0.5226586102719033,
+            "balanced_net_assets": 0.2880627033733453,
+            "index_weighted_avg_roe": 0.2742382627659136,
+            "total_assets_net_ratio": 0.2623241639737654,
+            "sale_net_interest_ratio": null,
+            "current_ratio": 0.41693462425150135,
+            "quick_ratio": 0.37572471646248556,
+            "assets_debt_ratio": -0.04552075962841879
+          }
+        }
+      ]
+    }
+  },
+  "source": "AInvest financial_reports_visual/seo/v1/financial_statistics",
+  "language": "zh-CN",
+  "uiLabels": {
+    "yoy": "同比",
+    "timeRangeFilter": "时间范围筛选",
+    "startPeriod": "起始期间",
+    "endPeriod": "结束期间"
+  },
+  "theme": "light"
+}

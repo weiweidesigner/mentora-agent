@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>华尔街共识</title>
+<style>
+:root{color-scheme:light;--business-bg-ffffff:#ffffff;--business-text-111827:#111827;--business-text-6b7280:#6b7280;--business-border-e5e7eb:#e5e7eb;--business-bg-f3f4f6:#f3f4f6;--business-bg-f7f8fb:#f7f8fb;--business-bg-e8ebf0:#e8ebf0;--business-bg-e9f8f1:#e9f8f1;--business-bg-0f1720:#0f1720;--business-text-eef4f8:#eef4f8;--business-text-8f9aa8:#8f9aa8;--business-border-263241:#263241;--business-bg-172231:#172231;--business-bg-070b10:#070b10;--business-bg-222e3b:#222e3b;}
+:root[data-theme="dark"]{color-scheme:dark;--business-bg-ffffff:#202b3a;--business-text-111827:#e8edf5;--business-text-6b7280:#a8b3c4;--business-border-e5e7eb:#293646;--business-bg-f3f4f6:#202b3a;--business-bg-f7f8fb:#202b3a;--business-bg-e8ebf0:#293648;--business-bg-e9f8f1:#202b3a;--business-bg-0f1720:#263242;--business-text-eef4f8:#f5f7fb;--business-text-8f9aa8:#a8b3c4;--business-border-263241:#566477;--business-bg-172231:#263242;--business-bg-070b10:#263242;--business-bg-222e3b:#263242;}
+
+*{box-sizing:border-box}
+:root{
+  --wsc-bg:var(--business-bg-ffffff);
+  --wsc-text:var(--business-text-111827);
+  --wsc-muted:var(--business-text-6b7280);
+  --wsc-border:var(--business-border-e5e7eb);
+  --wsc-soft:var(--business-bg-f3f4f6);
+  --wsc-up:#00a866;
+  --wsc-down:#e8454f;
+  --wsc-page-bg:var(--business-bg-f7f8fb);
+  --wsc-price-track:var(--business-bg-e8ebf0);
+  --wsc-price-fill:linear-gradient(90deg,#dbe9e7,#4eb995);
+  --wsc-dot-bg:var(--business-bg-ffffff);
+  --wsc-self-bg:var(--business-bg-e9f8f1);
+  --wsc-outer-x:6px;
+  --wsc-outer-y:6px;
+  --wsc-safe-x:14px;
+  --wsc-safe-y:6px;
+  --wsc-col-gap:clamp(40px,3.6vw,64px);
+  --wsc-gauge-safe:clamp(18px,1.8vw,30px);
+}
+:root[data-theme="dark"]{
+  --wsc-bg:var(--business-bg-0f1720);
+  --wsc-text:var(--business-text-eef4f8);
+  --wsc-muted:var(--business-text-8f9aa8);
+  --wsc-border:var(--business-border-263241);
+  --wsc-soft:var(--business-bg-172231);
+  --wsc-up:#18c184;
+  --wsc-down:#ff625d;
+  --wsc-page-bg:var(--business-bg-070b10);
+  --wsc-price-track:var(--business-bg-222e3b);
+  --wsc-price-fill:linear-gradient(90deg,#1f3f3b,#20b486);
+  --wsc-dot-bg:var(--business-bg-0f1720);
+  --wsc-self-bg:rgba(24,193,132,.14);
+}
+html,body{margin:0;background:transparent;color:var(--wsc-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;overflow-x:hidden}
+body{padding:0}
+.wsc-card{width:auto;max-width:none;margin:0;background:transparent;border:0;border-radius:0;padding:0;box-shadow:none;overflow:hidden}
+.wsc-inner{padding:0}
+.wsc-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:4px var(--wsc-col-gap);margin-bottom:6px}
+.wsc-title{margin:0;font-size:16px;line-height:1;font-weight:800;letter-spacing:0;color:var(--wsc-text)}
+.wsc-updated{justify-self:end;max-width:100%;margin-right:14px;font-size:13px;line-height:1.1;color:var(--wsc-muted);white-space:nowrap;text-align:right}
+.wsc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px var(--wsc-col-gap)}
+.wsc-grid > section:nth-of-type(even){padding-left:14px;padding-right:14px}
+.wsc-block-title{margin:0 0 6px;color:var(--wsc-muted);font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.wsc-rating{font-size:34px;line-height:1;font-weight:850;color:var(--wsc-up);margin-bottom:8px}
+.wsc-sub{font-size:14px;color:var(--wsc-muted);margin-bottom:8px}
+.gauge{height:34px;padding:0 var(--wsc-gauge-safe);overflow:visible}
+.gauge.is-rating{padding-left:0}
+.gauge.is-price-range{padding-left:7px;padding-right:7px}
+.gauge.is-price-range .gauge-labels{margin-left:-7px;margin-right:-7px}
+.gauge-track{height:7px;border-radius:999px;background:linear-gradient(90deg,#df4540 0%,#e0a23b 42%,#1fa77b 100%);position:relative}
+.gauge-track.is-price{background:var(--wsc-price-track)}
+.gauge-fill{position:absolute;left:0;top:0;height:7px;border-radius:999px;background:var(--wsc-price-fill)}
+.gauge-dot{position:absolute;top:50%;width:13px;height:13px;border:2px solid var(--wsc-text);border-radius:50%;background:var(--wsc-dot-bg);transform:translate(-50%,-50%)}
+.gauge-dot.is-hollow{border-color:var(--wsc-up);background:var(--wsc-dot-bg)}
+.gauge-labels{display:flex;justify-content:space-between;gap:16px;margin-top:8px;color:var(--wsc-muted);font-size:12px;line-height:1.2}
+.gauge-labels span{min-width:0;max-width:45%;overflow-wrap:anywhere}
+.gauge-labels span:last-child{text-align:right}
+.target-value{font-size:34px;line-height:1;font-weight:850;margin:0 0 8px;color:var(--wsc-text)}
+.target-upside{font-size:14px;color:var(--wsc-up);margin-bottom:8px}
+.divider{grid-column:1/-1;height:1px;background:var(--wsc-border);margin:0}
+.breakdown-wrap{display:grid;grid-template-columns:140px minmax(0,1fr);gap:10px;align-items:center}
+.donut{position:relative;width:132px;height:132px}
+.donut svg{width:132px;height:132px;display:block}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.donut-total{font-size:24px;font-weight:850;line-height:1;color:var(--wsc-text)}
+.donut-label{font-size:12px;font-weight:650;color:var(--wsc-muted)}
+.legend{display:grid;gap:7px;font-size:14px}
+.legend-row{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}
+.legend-swatch{width:10px;height:10px;border-radius:3px}
+.legend-count{font-weight:800;color:var(--wsc-text)}
+.rank-main{display:grid;grid-template-columns:minmax(0,1fr) 176px;gap:clamp(28px,4vw,72px);align-items:start}
+.rank-copy{font-size:14px;line-height:1.3}
+.rank-symbol{font-weight:850}
+.rank-big{display:inline-flex;align-items:flex-start;gap:2px;color:var(--wsc-up);font-weight:900;font-size:38px;line-height:.9;margin:3px 6px 0 0}
+.rank-suffix{font-size:18px;line-height:1;color:var(--wsc-up);margin-top:3px}
+.rank-muted{color:var(--wsc-muted)}
+.rank-industry{margin:6px 0 8px;font-weight:850;font-size:15px;max-width:300px}
+.rank-avg{font-size:13px;color:var(--wsc-muted)}
+.rank-avg strong{color:var(--wsc-text)}
+.leader-list{border-left:1px solid var(--wsc-border);padding-left:20px;padding-right:12px;display:grid;gap:6px;font-size:14px}
+.leader{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:4px 8px;border-radius:8px}
+.leader.is-self{background:var(--wsc-self-bg);color:var(--wsc-up);font-weight:850}
+.leader-rank{color:var(--wsc-muted)}
+.leader.is-self .leader-rank{color:var(--wsc-up)}
+.leader-code{font-weight:800}
+.leader-score{font-weight:850}
+@media(max-width:820px){
+  :root{--wsc-outer-x:6px;--wsc-outer-y:6px;--wsc-safe-x:16px;--wsc-safe-y:6px;--wsc-col-gap:24px;--wsc-gauge-safe:24px}
+  .wsc-head{display:block;margin-bottom:8px}
+  .wsc-title{font-size:16px;margin-bottom:6px}
+  .wsc-updated{display:block;justify-self:start;text-align:left;font-size:12px;line-height:1.1;white-space:normal}
+  .wsc-grid{grid-template-columns:1fr;gap:8px}
+  .wsc-grid > section:nth-of-type(even){padding-left:0;padding-right:0}
+  .divider{grid-column:auto;margin:0}
+  .target-value,.wsc-rating{font-size:32px}
+  .gauge.is-rating{padding-left:0;padding-right:0}
+  .gauge.is-rating .gauge-labels{margin-left:0;margin-right:0}
+  .gauge.is-price-range{padding-left:7px;padding-right:7px}
+  .gauge.is-price-range .gauge-labels{margin-left:-7px;margin-right:-7px}
+  .breakdown-wrap{grid-template-columns:132px minmax(0,1fr);gap:14px;align-items:center}
+  .rank-main{grid-template-columns:1fr;gap:8px}
+  .wsc-grid > section:nth-of-type(4){margin-top:0}
+  .donut{margin:0}
+  .legend{gap:6px}
+  .rank-copy{margin-bottom:0}
+  .leader-list{border-left:0;border-top:1px solid var(--wsc-border);padding-left:0;padding-right:0;padding-top:8px}
+  .leader{padding-left:0;padding-right:0}
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body class="theme-light">
+<main id="app"></main>
+<script>
+const payload = {"type": "wall-street-consensus", "name": "华尔街共识", "title": "华尔街共识", "code": "NVDA", "market": "185", "marketLabel": "NASDAQ", "ratingSummary": {"label": "强烈买入", "score": 4.04761905, "analystCount": 21, "windowDays": 90, "lastUpdatedText": "Updated Oct 1, 2026", "sourceWindowText": "Analyst actions in the last 90 days"}, "priceTarget": {"average": 344.0952381, "low": 300, "high": 515}, "lastPrice": 228.52, "upside": {"amount": 115.5752381, "percent": 50.575546166637494}, "analystBreakdown": [{"key": "strongBuy", "label": "强烈买入", "count": 1, "percent": 4.76}, {"key": "buy", "label": "买入", "count": 20, "percent": 95.24}, {"key": "hold", "label": "持有", "count": 0, "percent": 0}, {"key": "sell", "label": "卖出", "count": 0, "percent": 0}, {"key": "strongSell", "label": "强烈卖出", "count": 0, "percent": 0}], "industryRank": {"name": "Semiconductors", "rank": 1, "companiesCovered": 77, "averageScore": 4, "leaders": [{"code": "NVDA", "market": "185", "name": "英伟达", "score": 4.047619, "rank": 1, "self": true}, {"code": "GCTS", "market": "169", "name": "GCT Semiconductor", "score": 4, "rank": 2, "self": false}, {"code": "SIMO", "market": "185", "name": "慧荣科技", "score": 4, "rank": 3, "self": false}]}, "history": {"rating": [{"date": "2026-04-16", "averageRating": 4.10526316, "timestamp": "2026-04-16T00:00:00.000Z"}, {"date": "2026-05-16", "averageRating": 4.05, "timestamp": "2026-05-16T00:00:00.000Z"}, {"date": "2026-06-15", "averageRating": 4.04545455, "timestamp": "2026-06-15T00:00:00.000Z"}, {"date": "2026-07-15", "averageRating": 4.04545455, "timestamp": "2026-07-15T00:00:00.000Z"}, {"date": "2026-08-14", "averageRating": 4.04545455, "timestamp": "2026-08-14T00:00:00.000Z"}, {"date": "2026-09-13", "averageRating": 4.04761905, "timestamp": "2026-09-13T00:00:00.000Z"}, {"date": "2026-10-14", "averageRating": 4.04761905, "timestamp": "2026-10-14T00:00:00.000Z"}], "priceTarget": [{"date": "2026-04-16", "averageTarget": 285.26315789, "timestamp": "2026-04-16T00:00:00.000Z"}, {"date": "2026-05-16", "averageTarget": 287.6, "timestamp": "2026-05-16T00:00:00.000Z"}, {"date": "2026-06-15", "averageTarget": 324.95454545, "timestamp": "2026-06-15T00:00:00.000Z"}, {"date": "2026-07-15", "averageTarget": 325.86363636, "timestamp": "2026-07-15T00:00:00.000Z"}, {"date": "2026-08-14", "averageTarget": 325.86363636, "timestamp": "2026-08-14T00:00:00.000Z"}, {"date": "2026-09-13", "averageTarget": 344.0952381, "timestamp": "2026-09-13T00:00:00.000Z"}, {"date": "2026-10-14", "averageTarget": 344.0952381, "timestamp": "2026-10-14T00:00:00.000Z"}], "recommendations": [{"month": "2026-05", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-05-31T00:00:00.000Z"}, {"month": "2026-06", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-06-30T00:00:00.000Z"}, {"month": "2026-07", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-07-31T00:00:00.000Z"}, {"month": "2026-08", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-08-31T00:00:00.000Z"}, {"month": "2026-09", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-09-30T00:00:00.000Z"}, {"month": "2026-10", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "timestamp": "2026-10-14T00:00:00.000Z"}]}, "analystActions": [{"firm": "Cantor Fitzgerald", "analyst": "C.J. Muse", "action": "Reiterates", "rating": "Overweight", "previousRating": "Overweight", "priceTarget": 350, "previousPriceTarget": 350, "date": "2026-10-01"}, {"firm": "Rosenblatt", "analyst": "Kevin Cassidy", "action": "Maintains", "rating": "买入", "previousRating": "Buy", "priceTarget": 390, "previousPriceTarget": 390, "date": "2026-09-29"}, {"firm": "Piper Sandler", "analyst": "David O'Connor", "action": "Initiates Coverage on", "rating": "Overweight", "previousRating": null, "priceTarget": 300, "previousPriceTarget": null, "date": "2026-09-10"}, {"firm": "Needham", "analyst": "N. Quinn Bolton", "action": "Reiterates", "rating": "买入", "previousRating": "Buy", "priceTarget": 300, "previousPriceTarget": 300, "date": "2026-09-04"}, {"firm": "Keybanc", "analyst": "John Vinh", "action": "Reiterates", "rating": "Overweight", "previousRating": "Overweight", "priceTarget": 330, "previousPriceTarget": 330, "date": "2026-08-27"}], "peers": [{"market": "185", "code": "MSFT"}, {"market": "185", "code": "AMZN"}, {"market": "185", "code": "NVDA"}, {"market": "185", "code": "META"}, {"market": "185", "code": "TSLA"}], "source": {"overview": "https://fundamental.ainvest.com/bff/analyst-rating/overview", "quote": "https://quote.ainvest.com/quote/fuyao/common_hq_aggr/quote/v1/single_kline"}, "language": "zh-CN", "labels": {"title": "华尔街共识", "updated": "近 {days} 天 | {text}", "consensusRating": "共识评级", "priceTarget": "目标价", "analystsBreakdown": "分析师分布", "industryRank": "行业排名", "scoreSummary": "{score} / 5，来自 {count} 位分析师", "analysts": "位分析师", "upsideFrom": "相对当前价", "low": "低", "high": "高", "ranks": "排名", "ofCompaniesIn": "共 {count} 家", "industryAvg": "行业平均", "noRank": "暂无行业排名数据。", "updatedPrefix": "更新于", "locale": "zh-CN", "ratings": {"strongbuy": "强烈买入", "buy": "买入", "hold": "持有", "sell": "卖出", "strongsell": "强烈卖出"}}, "componentUi": {"Industry": "行业", "Business": "主营业务", "Type": "类型", "Buy": "买入", "Sell": "卖出", "Stock": "股票", "Rating": "评级", "Value": "价值", "Breakdown": "拆解", "Price": "价格", "Strong Buy": "强烈买入", "Hold": "持有", "Strong Sell": "强烈卖出", "Wall Street Consensus": "华尔街共识", "Age": "年龄"}, "theme": "light"};
+
+function money(v, digits = 2) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '--';
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+function num(v, digits = 2) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '--';
+  return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+function percent(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '--';
+  return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+const bundle = payload.labels || {};
+function t(key, fallback) {
+  return bundle[key] || fallback;
+}
+function normalizeRatingKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z]/g, '');
+}
+function ratingText(value, fallback = '') {
+  if (Object.values(bundle.ratings || {}).includes(value)) return value;
+  if (Object.values(bundle.ratings || {}).includes(value)) return value;
+  const key = normalizeRatingKey(value);
+  return (bundle.ratings && bundle.ratings[key]) || fallback || value || '--';
+}
+function fmtTemplate(template, values) {
+  return String(template || '').replace(/\{(\w+)\}/g, (_, key) => values[key] ?? '');
+}
+function localizedUpdatedText(value) {
+  const text = String(value || '').trim();
+  const match = text.match(/^Updated\s+(.+)$/i);
+  if (!match || payload.language === 'en') return text;
+  const date = new Date(`${match[1]} UTC`);
+  const dateText = Number.isNaN(date.getTime())
+    ? match[1]
+    : date.toLocaleDateString(t('locale', 'zh-CN'), { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  return `${t('updatedPrefix', '更新于')} ${dateText}`;
+}
+function ordinal(n) {
+  const x = Number(n);
+  if (!Number.isFinite(x)) return '';
+  const mod100 = x % 100;
+  if (mod100 >= 11 && mod100 <= 13) return 'th';
+  return ({1:'st',2:'nd',3:'rd'}[x % 10] || 'th');
+}
+function point(cx, cy, r, angle) {
+  const rad = angle * Math.PI / 180;
+  return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+}
+function arcPath(cx, cy, outer, inner, start, end) {
+  const [sx, sy] = point(cx, cy, outer, start);
+  const [ex, ey] = point(cx, cy, outer, end);
+  const [isx, isy] = point(cx, cy, inner, end);
+  const [iex, iey] = point(cx, cy, inner, start);
+  const large = end - start > 180 ? 1 : 0;
+  return `M ${sx.toFixed(3)} ${sy.toFixed(3)} A ${outer} ${outer} 0 ${large} 1 ${ex.toFixed(3)} ${ey.toFixed(3)} L ${isx.toFixed(3)} ${isy.toFixed(3)} A ${inner} ${inner} 0 ${large} 0 ${iex.toFixed(3)} ${iey.toFixed(3)} Z`;
+}
+const colors = { strongBuy:'#189e6e', buy:'#5fbf8c', hold:'#e0a23b', sell:'#e8745b', strongSell:'#d8453f' };
+const order = ['strongBuy','buy','hold','sell','strongSell'];
+const labelByKey = { strongBuy:'Strong Buy', buy:'Buy', hold:'Hold', sell:'Sell', strongSell:'Strong Sell' };
+function donut(data) {
+  const rows = order.map(k => ({ key:k, ...(data.find(x => x.key === k) || {}) }));
+  const total = rows.reduce((s, x) => s + Number(x.count || 0), 0);
+  let start = -90;
+  const paths = rows.filter(x => Number(x.count || 0) > 0).map(x => {
+    const end = start + Number(x.count || 0) / Math.max(1, total) * 360;
+    const path = `<path d="${arcPath(110, 110, 108, 80, start, end - 1.5)}" fill="${colors[x.key]}"></path>`;
+    start = end;
+    return path;
+  }).join('');
+  return `<div class="donut"><svg viewBox="0 0 220 220">${paths}</svg><div class="donut-center"><div class="donut-total">${total}</div><div class="donut-label">${esc(t('analysts', 'analysts'))}</div></div></div>`;
+}
+function render() {
+  const rs = payload.ratingSummary || {};
+  const pt = payload.priceTarget || {};
+  const breakdown = payload.analystBreakdown || [];
+  const rank = payload.industryRank || null;
+  const analystCount = Number(rs.analystCount || 0);
+  const score = Number(rs.score || 0);
+  const ratingPct = Math.max(0, Math.min(100, score / 5 * 100));
+  const low = Number(pt.low);
+  const high = Number(pt.high);
+  const avg = Number(pt.average);
+  const last = Number(payload.lastPrice);
+  const range = high - low || 1;
+  const currentPct = Number.isFinite(last) ? Math.max(0, Math.min(100, (last - low) / range * 100)) : 50;
+  const avgPct = Number.isFinite(avg) ? Math.max(0, Math.min(100, (avg - low) / range * 100)) : 50;
+  const fillStart = Math.min(currentPct, avgPct);
+  const fillWidth = Math.abs(avgPct - currentPct);
+  const leaders = rank?.leaders || [];
+  const updatedText = fmtTemplate(t('updated', 'last {days} days | {text}'), { days: rs.windowDays || 90, text: localizedUpdatedText(rs.lastUpdatedText) });
+  const scoreSummary = fmtTemplate(t('scoreSummary', '{score} of 5 from {count} analysts'), { score: num(score), count: analystCount });
+  document.getElementById('app').innerHTML = `
+    <section class="wsc-card">
+      <div class="wsc-inner">
+        <header class="wsc-head">
+          <h1 class="wsc-title">${esc(payload.title || t('title', 'Wall Street Consensus'))}</h1>
+          <div class="wsc-updated">${esc(updatedText)}</div>
+        </header>
+        <div class="wsc-grid">
+          <section>
+            <h2 class="wsc-block-title">${esc(t('consensusRating', 'Consensus Rating'))}</h2>
+            <div class="wsc-rating">${esc(ratingText(rs.label))}</div>
+            <div class="wsc-sub">${esc(scoreSummary)}</div>
+            <div class="gauge is-rating">
+              <div class="gauge-track"><span class="gauge-dot" style="left:${ratingPct}%"></span></div>
+              <div class="gauge-labels"><span>${esc(ratingText('Strong Sell'))}</span><span>${esc(ratingText('Sell'))}</span><span>${esc(ratingText('Hold'))}</span><span>${esc(ratingText('Buy'))}</span><span>${esc(ratingText('Strong Buy'))}</span></div>
+            </div>
+          </section>
+          <section>
+            <h2 class="wsc-block-title">${esc(t('priceTarget', 'Price Target'))}</h2>
+            <div class="target-value">${money(avg)}</div>
+            <div class="target-upside">${money(payload.upside?.amount)} (${percent(payload.upside?.percent)}) ${esc(t('upsideFrom', 'upside from'))} ${money(last)}</div>
+            <div class="gauge is-price-range">
+              <div class="gauge-track is-price">
+                <span class="gauge-fill" style="left:${fillStart}%;width:${fillWidth}%"></span>
+                <span class="gauge-dot" style="left:${currentPct}%"></span>
+                <span class="gauge-dot is-hollow" style="left:${avgPct}%"></span>
+              </div>
+              <div class="gauge-labels"><span>${esc(t('low', 'Low'))} ${money(low, 0)}</span><span>${esc(t('high', 'High'))} ${money(high, 0)}</span></div>
+            </div>
+          </section>
+          <div class="divider"></div>
+          <section>
+            <h2 class="wsc-block-title">${esc(t('analystsBreakdown', 'Analysts Breakdown'))}</h2>
+            <div class="breakdown-wrap">
+              ${donut(breakdown)}
+              <div class="legend">
+                ${order.map(k => {
+                  const item = breakdown.find(x => x.key === k) || {};
+                  return `<div class="legend-row"><span class="legend-swatch" style="background:${colors[k]}"></span><span>${esc(ratingText(item.label || labelByKey[k], labelByKey[k]))}</span><span class="legend-count">${Number(item.count || 0)}</span></div>`;
+                }).join('')}
+              </div>
+            </div>
+          </section>
+          <section>
+            <h2 class="wsc-block-title">${esc(t('industryRank', 'Industry Rank'))}</h2>
+            ${rank ? `<div class="rank-main">
+              <div class="rank-copy">
+                <div><span class="rank-symbol">${esc(payload.code)}</span> <span class="rank-muted">${esc(t('ranks', 'ranks'))}</span></div>
+                <div><span class="rank-big">${esc(rank.rank)}<span class="rank-suffix">${payload.language === 'en' ? ordinal(rank.rank) : ''}</span></span><span class="rank-muted">${esc(fmtTemplate(t('ofCompaniesIn', 'of {count} in'), { count: rank.companiesCovered }))}</span></div>
+                <div class="rank-industry">${esc(rank.name)}</div>
+                <div class="rank-avg">${esc(t('industryAvg', 'Industry avg'))} <strong>${num(rank.averageScore)}</strong></div>
+              </div>
+              <div class="leader-list">
+                ${leaders.map(x => `<div class="leader ${x.self ? 'is-self' : ''}"><span class="leader-rank">${esc(x.rank)}</span><span class="leader-code">${esc(x.code)}</span><span class="leader-score">${num(x.score)}</span></div>`).join('')}
+              </div>
+            </div>` : `<p class="rank-muted">${esc(t('noRank', 'No industry rank data.'))}</p>`}
+          </section>
+        </div>
+      </div>
+    </section>`;
+}
+render();
+
+</script>
+</body>
+</html>

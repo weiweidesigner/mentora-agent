@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>现金流</title>
+  <style>
+:root{color-scheme:light;--business-text-16181c:#16181c;--business-text-6f7378:#6f7378;--business-border-e8e8e8:#e8e8e8;--business-border-767b84:#767b84;--business-bg-f3f3f3:#f3f3f3;--business-text-22252a:#22252a;--business-text-202226:#202226;--business-bg-f2f2f2:#f2f2f2;--business-text-1c1d20:#1c1d20;--business-bg-fff:#fff;--business-text-858585:#858585;--business-text-777:#777;--business-text-666:#666;--business-text-8a8a8a:#8a8a8a;--business-text-2e3034:#2e3034;--business-text-fff:#fff;--business-bg-f1f1f1:#f1f1f1;--business-bg-5f5f5f:#5f5f5f;--business-text-8e8e8e:#8e8e8e;--business-bg-9b9b9b:#9b9b9b;--business-text-d8d8d8:#d8d8d8;--business-text-f5f5f5:#f5f5f5;--business-border-ddd:#ddd;--business-border-9b9b9b:#9b9b9b;--business-border-d7d7d7:#d7d7d7;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-16181c:#e8edf5;--business-text-6f7378:#a8b3c4;--business-border-e8e8e8:#293646;--business-border-767b84:#566477;--business-bg-f3f3f3:#202b3a;--business-text-22252a:#e8edf5;--business-text-202226:#e8edf5;--business-bg-f2f2f2:#202b3a;--business-text-1c1d20:#e8edf5;--business-bg-fff:#202b3a;--business-text-858585:#a8b3c4;--business-text-777:#a8b3c4;--business-text-666:#a8b3c4;--business-text-8a8a8a:#a8b3c4;--business-text-2e3034:#e8edf5;--business-text-fff:#f5f7fb;--business-bg-f1f1f1:#202b3a;--business-bg-5f5f5f:#263242;--business-text-8e8e8e:#a8b3c4;--business-bg-9b9b9b:#516078;--business-text-d8d8d8:#a8b3c4;--business-text-f5f5f5:#f5f7fb;--business-border-ddd:#293646;--business-border-9b9b9b:#566477;--business-border-d7d7d7:#293646;}
+
+    :root {
+      --blue:#2863f4;
+      --orange:#ff6845;
+      --green:#2ab7a1;
+      --pink:#ff3d7f;
+      --total-blue:#3477ed;
+      --text:var(--business-text-16181c);
+      --muted:var(--business-text-6f7378);
+      --grid:var(--business-border-e8e8e8);
+      --axis:var(--business-border-767b84);
+      --tab-bg:var(--business-bg-f3f3f3);
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; margin: 0; }
+    body {
+      background: transparent;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .cash-flow {
+      width: min(100%, 2048px);
+      margin: 0;
+      padding: 0;
+      overflow: visible;
+    }
+    .page-title {
+      display: block;
+      margin: 0 0 12px;
+      font-size: 16px;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: normal;
+    }
+    .description {
+      width: 100%;
+      max-width: clamp(980px, calc(100vw - 72px), 1560px);
+      margin: 12px 0 12px;
+      color:var(--business-text-22252a);
+      font-size: 14px;
+      line-height: 1.45;
+      text-wrap: pretty;
+    }
+    .panels {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(34px, 4vw, 70px);
+      align-items: start;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      min-height: 30px;
+      margin-bottom: 0;
+    }
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .panels > section:first-child > .panel-title { margin-bottom: 6px; }
+    .metric-tabs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .metric-tabs::-webkit-scrollbar { display: none; }
+    .metric-tab {
+      border: 0;
+      background: transparent;
+      color:var(--business-text-202226);
+      font: inherit;
+      font-size: 14px;
+      line-height: 1;
+      padding: 9px 14px;
+      min-height: 32px;
+      border-radius: 6px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .metric-tab.active { background: var(--tab-bg); font-weight: 800; }
+    .chart-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      min-height: 34px;
+      margin: 2px 0 6px;
+    }
+    .segmented {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 18px;
+      background:var(--business-bg-f2f2f2);
+    }
+    .segment {
+      border: 0;
+      background: transparent;
+      color:var(--business-text-1c1d20);
+      font: inherit;
+      font-size: 13px;
+      line-height: 1;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+    .segment.active { background:var(--business-bg-fff); box-shadow: 0 1px 4px rgba(0, 0, 0, .05); }
+    .trend-stage {
+      position: relative;
+      width: 100%;
+      height: 224px;
+      overflow: visible;
+    }
+    .chart-svg { display: block; width: 100%; min-width: 0; height: 100%; overflow: visible; }
+    .waterfall-svg { display: block; width: 100%; height: 232px; overflow: visible; }
+    .legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      width: 100%;
+      min-height: 24px;
+      margin: 0;
+      color:var(--business-text-858585);
+      font-size: 13px;
+      text-align: center;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); flex: 0 0 auto; }
+    .grid { stroke: var(--grid); stroke-width: 1; }
+    .axis { stroke: var(--axis); stroke-width: 1.2; }
+    .axis-label { fill:var(--business-text-777); font-size: 12px; }
+    .x-label { fill:var(--business-text-666); font-size: 12px; }
+    .bar-label { fill: var(--blue); font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .line-label { fill: var(--orange); font-size: 11px; font-weight: 700; text-anchor: middle; }
+    .hover-band { fill:var(--business-text-8a8a8a); fill-opacity: .08; opacity: 0; transition: opacity .12s ease; pointer-events: none; }
+    .hover-band.active { opacity: 1; }
+    .hover-zone { fill: rgba(0,0,0,.001); pointer-events: all; cursor: pointer; touch-action: manipulation; }
+    .trend-stage,
+    .waterfall-svg {
+      touch-action: manipulation;
+    }
+    .waterfall-label { fill:var(--business-text-2e3034); font-size: 13px; font-weight: 700; text-anchor: middle; }
+    .waterfall-x { fill:var(--business-text-777); font-size: 12px; text-anchor: middle; }
+    .badge-text { fill:var(--business-text-fff); font-size: 11px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+    .selected-period {
+      color:var(--business-text-777);
+      font-size: 1em;
+      font-weight: 800;
+      white-space: nowrap;
+      margin-left: 4px;
+    }
+    .range-shell {
+      --handle-size: 32px;
+      height: var(--handle-size);
+      margin: 6px 0 0;
+      padding: 0 calc(var(--handle-size) / 2) 0;
+      position: relative;
+      touch-action: none;
+    }
+    .range-track { position: relative; width: 100%; height: var(--handle-size); }
+    .range-track::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(var(--handle-size) / 2);
+      height: 3px;
+      background:var(--business-bg-f1f1f1);
+      border-radius: 999px;
+      transform: translateY(-50%);
+    }
+    .range-selection {
+      position: absolute;
+      top: calc(var(--handle-size) / 2);
+      height: 3px;
+      background:var(--business-bg-5f5f5f);
+      border-radius: 999px;
+      transform: translateY(-50%);
+    }
+    .range-handle {
+      appearance: none;
+      position: absolute;
+      top: calc(var(--handle-size) / 2);
+      width: var(--handle-size);
+      height: var(--handle-size);
+      border-radius: 50%;
+      border: 1px solid var(--business-border-ddd);
+      background:var(--business-bg-fff);
+      box-shadow: 0 1px 5px rgba(0,0,0,.14);
+      display: grid;
+      place-items: center;
+      color:var(--business-text-8e8e8e);
+      cursor: ew-resize;
+      transform: translate(-50%, -50%);
+      user-select: none;
+      padding: 0;
+    }
+    .range-handle::before,
+    .range-handle::after {
+      content: "";
+      display: block;
+      width: 2px;
+      height: 12px;
+      background:var(--business-bg-9b9b9b);
+      border-radius: 2px;
+      box-shadow: 5px 0 0 var(--business-border-9b9b9b), -5px 0 0 #9b9b9b;
+    }
+    .range-handle::after { display: none; }
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      min-width: 190px;
+      max-width: min(340px, calc(100vw - 20px));
+      border-radius: 6px;
+      background: rgba(59, 59, 59, .96);
+      color:var(--business-text-fff);
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .08s ease;
+      white-space: nowrap;
+    }
+    .tooltip.visible { opacity: 1; visibility: visible; }
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      left: var(--arrow-left, 50%);
+      bottom: -7px;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid rgba(59, 59, 59, .96);
+    }
+    .tooltip.below::after {
+      top: -7px;
+      bottom: auto;
+      border-top: 0;
+      border-bottom: 8px solid rgba(59, 59, 59, .96);
+    }
+    .tip-title { color:var(--business-text-d8d8d8); margin-bottom: 6px; font-size: 12px; }
+    .tip-row { display: flex; align-items: center; gap: 8px; min-height: 22px; }
+    .tip-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+    .tip-name { color:var(--business-text-f5f5f5); min-width: 82px; }
+    .tip-value { margin-left: auto; color:var(--business-text-fff); font-weight: 700; font-variant-numeric: tabular-nums; }
+    .tip-value.good { color:#24c9b0; }
+    .tip-value.bad { color:#ff6a7e; }
+    @media (max-width: 1180px) {
+      .cash-flow { padding: 0; }
+      .description { margin: 12px 0 12px; }
+      .panels { grid-template-columns: 1fr; gap: 12px; }
+      .waterfall-svg { height: 228px; }
+    }
+    @media (max-width: 720px) {
+      .metric-tabs { gap: 8px; margin-bottom: 10px; }
+      .metric-tab { font-size: 13px; padding: 8px 10px; min-height: 29px; }
+      .segment { padding: 7px 12px; }
+      .chart-toolbar { justify-content: flex-start; min-height: 32px; }
+      .trend-stage { height: 214px; }
+      .waterfall-svg { height: 222px; }
+    }
+  </style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+  <main class="cash-flow" id="cashFlow">
+    <h1 class="page-title">现金流</h1>
+    <div class="panels">
+      <section>
+        <h2 class="panel-title">趋势</h2>
+        <div class="metric-tabs" id="metricTabs"></div>
+        <div class="chart-toolbar"><div class="segmented" id="periodTabs"></div></div>
+        <div class="trend-stage" id="trendStage"><svg class="chart-svg" id="trendSvg" role="img"></svg></div>
+        <div class="legend" id="trendLegend"></div>
+        <div class="range-shell" id="rangeShell"><div class="range-track" id="rangeTrack"><div class="range-selection" id="rangeSelection"></div><button class="range-handle" id="leftHandle" aria-label="起始周期"></button><button class="range-handle" id="rightHandle" aria-label="结束周期"></button></div></div>
+      </section>
+      <section>
+        <div class="panel-head"><h2 class="panel-title">拆解 <span class="selected-period" id="selectedPeriod"></span></h2></div>
+        <svg class="waterfall-svg" id="waterfallSvg" role="img"></svg>
+      </section>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+  </main>
+  <script id="payload" type="application/json">{"type": "cash-flow", "name": "现金流", "title": "现金流", "code": "NVDA", "description": "NVDA's cash flow trends over recent years, visualized with a waterfall chart to illustrate changes in its operating, investing, and financing cash flows.", "trendMetrics": [{"key": "act_cash_flow_net", "label": "经营", "bars": [{"key": "act_cash_flow_net", "label": "经营", "color": "#2863f4"}], "line": {"key": "yoy_act_cash_flow_net", "label": "同比", "unit": "%", "color": "#ff6845"}}, {"key": "invest_cash_flow_net", "label": "投资", "bars": [{"key": "invest_cash_flow_net", "label": "投资", "color": "#2863f4"}], "line": {"key": "yoy_invest_cash_flow_net", "label": "同比", "unit": "%", "color": "#ff6845"}}, {"key": "financing_cash_flow_net", "label": "融资", "bars": [{"key": "financing_cash_flow_net", "label": "融资", "color": "#2863f4"}], "line": {"key": "yoy_financing_cash_flow_net", "label": "同比", "unit": "%", "color": "#ff6845"}}, {"key": "cash_equivalents_net_addition", "label": "净现金", "bars": [{"key": "cash_equivalents_net_addition", "label": "净现金", "color": "#2863f4"}], "line": {"key": "yoy_cash_equivalents_net_addition", "label": "同比", "unit": "%", "color": "#ff6845"}}], "waterfallItems": [{"key": "act_cash_flow_net", "label": "经营", "sign": "", "kind": "delta"}, {"key": "invest_cash_flow_net", "label": "投资", "sign": "+", "kind": "delta"}, {"key": "financing_cash_flow_net", "label": "融资", "sign": "+", "kind": "delta"}, {"key": "other_cash", "label": "其他", "sign": "+", "kind": "delta"}, {"key": "cash_equivalents_net_addition", "label": "净现金", "sign": "=", "kind": "total"}], "defaultMetric": "act_cash_flow_net", "defaultView": "quarterly", "views": {"quarterly": {"label": "季度", "trendRecords": [{"key": "2026_596003", "label": "Q1,2026", "endDate": "2025-04-27", "period": "596003", "compareKey": "596003", "values": {"act_cash_flow_net": 27.414, "invest_cash_flow_net": -5.216, "financing_cash_flow_net": -15.553, "cash_equivalents_net_addition": 6.645}, "lines": {"yoy_act_cash_flow_net": 0.7865102639296188, "yoy_invest_cash_flow_net": 0.0837871069734761, "yoy_financing_cash_flow_net": -0.6643124665596576, "yoy_cash_equivalents_net_addition": 20.644951140065146}}, {"key": "2026_596004", "label": "Q2,2026", "endDate": "2025-07-27", "period": "596004", "compareKey": "596004", "values": {"act_cash_flow_net": 15.365, "invest_cash_flow_net": -7.127, "financing_cash_flow_net": -11.833, "cash_equivalents_net_addition": -3.595}, "lines": {"yoy_act_cash_flow_net": 0.0605328547763667, "yoy_invest_cash_flow_net": -1.2383793969849244, "yoy_financing_cash_flow_net": -0.14660852713178293, "yoy_cash_equivalents_net_addition": -4.653455284552846}}, {"key": "2026_596005", "label": "Q3,2026", "endDate": "2025-10-26", "period": "596005", "compareKey": "596005", "values": {"act_cash_flow_net": 23.75, "invest_cash_flow_net": -9.025, "financing_cash_flow_net": -14.878, "cash_equivalents_net_addition": -0.153}, "lines": {"yoy_act_cash_flow_net": 0.34736483803256374, "yoy_invest_cash_flow_net": -1.0771001150747987, "yoy_financing_cash_flow_net": -0.1670850329463446, "yoy_cash_equivalents_net_addition": -1.2854477611940298}}, {"key": "2026_596006", "label": "Q4,2026", "endDate": "2026-01-25", "period": "596006", "compareKey": "596006", "values": {"act_cash_flow_net": 36.19, "invest_cash_flow_net": -30.861, "financing_cash_flow_net": -6.21, "cash_equivalents_net_addition": -0.881}, "lines": {"yoy_act_cash_flow_net": 1.1764493625210486, "yoy_invest_cash_flow_net": -3.287440955821061, "yoy_financing_cash_flow_net": 0.37575392038600725, "yoy_cash_equivalents_net_addition": -0.7007722007722007}}, {"key": "2027_596003", "label": "Q1,2027", "endDate": "2026-04-26", "period": "596003", "compareKey": "596003", "values": {"act_cash_flow_net": 50.344, "invest_cash_flow_net": -26.429, "financing_cash_flow_net": -21.283, "cash_equivalents_net_addition": 2.632}, "lines": {"yoy_act_cash_flow_net": 0.8364339388633545, "yoy_invest_cash_flow_net": -4.066909509202453, "yoy_financing_cash_flow_net": -0.3684176686169871, "yoy_cash_equivalents_net_addition": -0.6039127163280662}}], "waterfallRecords": [{"key": "2026_596003", "label": "Q1,2026", "endDate": "2025-04-27", "period": "596003", "values": {"act_cash_flow_net": 27.414, "invest_cash_flow_net": -5.216, "financing_cash_flow_net": -15.553, "other_cash": 0.0, "cash_equivalents_net_addition": 6.645}, "yoy": {"act_cash_flow_net": 0.7865102639296189, "invest_cash_flow_net": 0.08378710697347619, "financing_cash_flow_net": -0.6643124665596577, "other_cash": null, "cash_equivalents_net_addition": 20.644951140065146}}, {"key": "2026_596004", "label": "Q2,2026", "endDate": "2025-07-27", "period": "596004", "values": {"act_cash_flow_net": 15.365, "invest_cash_flow_net": -7.127, "financing_cash_flow_net": -11.833, "other_cash": 0.0, "cash_equivalents_net_addition": -3.595}, "yoy": {"act_cash_flow_net": 0.06053285477636665, "invest_cash_flow_net": -1.2383793969849246, "financing_cash_flow_net": -0.14660852713178293, "other_cash": null, "cash_equivalents_net_addition": -4.653455284552845}}, {"key": "2026_596005", "label": "Q3,2026", "endDate": "2025-10-26", "period": "596005", "values": {"act_cash_flow_net": 23.75, "invest_cash_flow_net": -9.025, "financing_cash_flow_net": -14.878, "other_cash": 0.0, "cash_equivalents_net_addition": -0.153}, "yoy": {"act_cash_flow_net": 0.3473648380325637, "invest_cash_flow_net": -1.0771001150747985, "financing_cash_flow_net": -0.16708503294634455, "other_cash": -1.0, "cash_equivalents_net_addition": -1.2854477611940296}}, {"key": "2026_596006", "label": "Q4,2026", "endDate": "2026-01-25", "period": "596006", "values": {"act_cash_flow_net": 36.19, "invest_cash_flow_net": -30.861, "financing_cash_flow_net": -6.21, "other_cash": 0.0, "cash_equivalents_net_addition": -0.881}, "yoy": {"act_cash_flow_net": 1.1764493625210488, "invest_cash_flow_net": -3.287440955821062, "financing_cash_flow_net": 0.37575392038600725, "other_cash": null, "cash_equivalents_net_addition": -0.7007722007722008}}, {"key": "2027_596003", "label": "Q1,2027", "endDate": "2026-04-26", "period": "596003", "values": {"act_cash_flow_net": 50.344, "invest_cash_flow_net": -26.429, "financing_cash_flow_net": -21.283, "other_cash": 0.0, "cash_equivalents_net_addition": 2.632}, "yoy": {"act_cash_flow_net": 0.8364339388633545, "invest_cash_flow_net": -4.066909509202454, "financing_cash_flow_net": -0.3684176686169871, "other_cash": null, "cash_equivalents_net_addition": -0.6039127163280662}}]}, "annual": {"label": "年度", "trendRecords": [{"key": "2022_596001", "label": "2022", "endDate": "2022-01-30", "period": "596001", "compareKey": "annual", "values": {"act_cash_flow_net": 9.108, "invest_cash_flow_net": -9.83, "financing_cash_flow_net": 1.865, "cash_equivalents_net_addition": 1.143}, "lines": {"yoy_act_cash_flow_net": 0.5644108553761594, "yoy_invest_cash_flow_net": 0.5003811944091486, "yoy_financing_cash_flow_net": -0.509726603575184, "yoy_cash_equivalents_net_addition": 1.1137426609612897}}, {"key": "2023_596001", "label": "2023", "endDate": "2023-01-29", "period": "596001", "compareKey": "annual", "values": {"act_cash_flow_net": 5.641, "invest_cash_flow_net": 7.375, "financing_cash_flow_net": -11.617, "cash_equivalents_net_addition": 1.399}, "lines": {"yoy_act_cash_flow_net": -0.3806543697848046, "yoy_invest_cash_flow_net": 1.7502543234994912, "yoy_financing_cash_flow_net": -7.228954423592494, "yoy_cash_equivalents_net_addition": 0.22397200349956256}}, {"key": "2024_596001", "label": "2024", "endDate": "2024-01-28", "period": "596001", "compareKey": "annual", "values": {"act_cash_flow_net": 28.09, "invest_cash_flow_net": -10.566, "financing_cash_flow_net": -13.633, "cash_equivalents_net_addition": 3.891}, "lines": {"yoy_act_cash_flow_net": 3.9796135436979254, "yoy_invest_cash_flow_net": -2.432677966101695, "yoy_financing_cash_flow_net": -0.17353877937505363, "yoy_cash_equivalents_net_addition": 1.7812723373838455}}, {"key": "2025_596001", "label": "2025", "endDate": "2025-01-26", "period": "596001", "compareKey": "annual", "values": {"act_cash_flow_net": 64.089, "invest_cash_flow_net": -20.421, "financing_cash_flow_net": -42.359, "cash_equivalents_net_addition": 1.309}, "lines": {"yoy_act_cash_flow_net": 1.2815592737629047, "yoy_invest_cash_flow_net": -0.9327086882453149, "yoy_financing_cash_flow_net": -2.1070930829604637, "yoy_cash_equivalents_net_addition": -0.6635826265741455}}, {"key": "2026_596001", "label": "2026", "endDate": "2026-01-25", "period": "596001", "compareKey": "annual", "values": {"act_cash_flow_net": 102.718, "invest_cash_flow_net": -52.228, "financing_cash_flow_net": -48.474, "cash_equivalents_net_addition": 2.016}, "lines": {"yoy_act_cash_flow_net": 0.6027399397712557, "yoy_invest_cash_flow_net": -1.557563292688899, "yoy_financing_cash_flow_net": -0.14436129275950788, "yoy_cash_equivalents_net_addition": 0.5401069518716578}}], "waterfallRecords": [{"key": "2022_596001", "label": "2022", "endDate": "2022-01-30", "period": "596001", "values": {"act_cash_flow_net": 9.108, "invest_cash_flow_net": -9.83, "financing_cash_flow_net": 1.865, "other_cash": 0.0, "cash_equivalents_net_addition": 1.143}, "yoy": {"act_cash_flow_net": 0.5644108553761594, "invest_cash_flow_net": 0.5003811944091486, "financing_cash_flow_net": -0.5097266035751841, "other_cash": null, "cash_equivalents_net_addition": 1.1137426609612897}}, {"key": "2023_596001", "label": "2023", "endDate": "2023-01-29", "period": "596001", "values": {"act_cash_flow_net": 5.641, "invest_cash_flow_net": 7.375, "financing_cash_flow_net": -11.617, "other_cash": 0.0, "cash_equivalents_net_addition": 1.399}, "yoy": {"act_cash_flow_net": -0.38065436978480455, "invest_cash_flow_net": 1.7502543234994914, "financing_cash_flow_net": -7.228954423592494, "other_cash": null, "cash_equivalents_net_addition": 0.2239720034995626}}, {"key": "2024_596001", "label": "2024", "endDate": "2024-01-28", "period": "596001", "values": {"act_cash_flow_net": 28.09, "invest_cash_flow_net": -10.566, "financing_cash_flow_net": -13.633, "other_cash": 0.0, "cash_equivalents_net_addition": 3.891}, "yoy": {"act_cash_flow_net": 3.9796135436979254, "invest_cash_flow_net": -2.432677966101695, "financing_cash_flow_net": -0.1735387793750538, "other_cash": null, "cash_equivalents_net_addition": 1.7812723373838455}}, {"key": "2025_596001", "label": "2025", "endDate": "2025-01-26", "period": "596001", "values": {"act_cash_flow_net": 64.089, "invest_cash_flow_net": -20.421, "financing_cash_flow_net": -42.359, "other_cash": 0.0, "cash_equivalents_net_addition": 1.309}, "yoy": {"act_cash_flow_net": 1.281559273762905, "invest_cash_flow_net": -0.9327086882453152, "financing_cash_flow_net": -2.1070930829604637, "other_cash": null, "cash_equivalents_net_addition": -0.6635826265741455}}, {"key": "2026_596001", "label": "2026", "endDate": "2026-01-25", "period": "596001", "values": {"act_cash_flow_net": 102.718, "invest_cash_flow_net": -52.228, "financing_cash_flow_net": -48.474, "other_cash": 0.0, "cash_equivalents_net_addition": 2.016}, "yoy": {"act_cash_flow_net": 0.6027399397712556, "invest_cash_flow_net": -1.5575632926888985, "financing_cash_flow_net": -0.14436129275950801, "other_cash": null, "cash_equivalents_net_addition": 0.5401069518716578}}]}, "cumulative": {"label": "累计", "trendRecords": [{"key": "2026_596003", "label": "Q1,2026", "endDate": "2025-04-27", "period": "596003", "compareKey": "cumulative", "values": {"act_cash_flow_net": 27.414, "invest_cash_flow_net": -5.216, "financing_cash_flow_net": -15.553, "cash_equivalents_net_addition": 6.645}, "lines": {"yoy_act_cash_flow_net": -0.5722510883302907, "yoy_invest_cash_flow_net": 0.7445766612800547, "yoy_financing_cash_flow_net": 0.6328289147524729, "yoy_cash_equivalents_net_addition": 4.076394194041253}}, {"key": "2026_596002", "label": "H1,2026", "endDate": "2025-07-27", "period": "596002", "compareKey": "cumulative", "values": {"act_cash_flow_net": 42.779, "invest_cash_flow_net": -12.343, "financing_cash_flow_net": -27.386, "cash_equivalents_net_addition": 3.05}, "lines": {"yoy_act_cash_flow_net": 0.5604800466914716, "yoy_invest_cash_flow_net": -1.366372699386503, "yoy_financing_cash_flow_net": -0.7608178486465632, "yoy_cash_equivalents_net_addition": -0.5410082768999247}}, {"key": "2026_596007", "label": "9M,2026", "endDate": "2025-10-26", "period": "596007", "compareKey": "cumulative", "values": {"act_cash_flow_net": 66.53, "invest_cash_flow_net": -21.367, "financing_cash_flow_net": -42.266, "cash_equivalents_net_addition": 2.897}, "lines": {"yoy_act_cash_flow_net": 0.5552023188947848, "yoy_invest_cash_flow_net": -0.7311026492748928, "yoy_financing_cash_flow_net": -0.5433433141020959, "yoy_cash_equivalents_net_addition": -0.05016393442622952}}, {"key": "2026_596001", "label": "2026", "endDate": "2026-01-25", "period": "596001", "compareKey": "cumulative", "values": {"act_cash_flow_net": 102.718, "invest_cash_flow_net": -52.228, "financing_cash_flow_net": -48.474, "cash_equivalents_net_addition": 2.016}, "lines": {"yoy_act_cash_flow_net": 0.5439350668871186, "yoy_invest_cash_flow_net": -1.4443300416530163, "yoy_financing_cash_flow_net": -0.1468792883168504, "yoy_cash_equivalents_net_addition": -0.3041076976182257}}, {"key": "2027_596003", "label": "Q1,2027", "endDate": "2026-04-26", "period": "596003", "compareKey": "cumulative", "values": {"act_cash_flow_net": 50.344, "invest_cash_flow_net": -26.429, "financing_cash_flow_net": -21.283, "cash_equivalents_net_addition": 2.632}, "lines": {"yoy_act_cash_flow_net": -0.5098814229249012, "yoy_invest_cash_flow_net": 0.49396875239335225, "yoy_financing_cash_flow_net": 0.5609398852993357, "yoy_cash_equivalents_net_addition": 0.3055555555555556}}], "waterfallRecords": [{"key": "2026_596003", "label": "Q1,2026", "endDate": "2025-04-27", "period": "596003", "values": {"act_cash_flow_net": 27.414, "invest_cash_flow_net": -5.216, "financing_cash_flow_net": -15.553, "other_cash": 0.0, "cash_equivalents_net_addition": 6.645}, "yoy": {"act_cash_flow_net": 0.7865102639296189, "invest_cash_flow_net": 0.08378710697347619, "financing_cash_flow_net": -0.6643124665596577, "other_cash": null, "cash_equivalents_net_addition": 20.644951140065146}}, {"key": "2026_596002", "label": "H1,2026", "endDate": "2025-07-27", "period": "596002", "values": {"act_cash_flow_net": 42.779, "invest_cash_flow_net": -12.343, "financing_cash_flow_net": -27.386, "other_cash": 0.0, "cash_equivalents_net_addition": 3.05}, "yoy": {"act_cash_flow_net": 0.43394898267019744, "invest_cash_flow_net": -0.39044722316097785, "financing_cash_flow_net": -0.39262649377065856, "other_cash": null, "cash_equivalents_net_addition": 1.3625096824167313}}, {"key": "2026_596007", "label": "9M,2026", "endDate": "2025-10-26", "period": "596007", "values": {"act_cash_flow_net": 66.53, "invest_cash_flow_net": -21.367, "financing_cash_flow_net": -42.266, "other_cash": 0.0, "cash_equivalents_net_addition": 2.897}, "yoy": {"act_cash_flow_net": 0.40181205225453015, "invest_cash_flow_net": -0.615896543900779, "financing_cash_flow_net": -0.3041036717062635, "other_cash": null, "cash_equivalents_net_addition": 0.5856595511767926}}, {"key": "2026_596001", "label": "2026", "endDate": "2026-01-25", "period": "596001", "values": {"act_cash_flow_net": 102.718, "invest_cash_flow_net": -52.228, "financing_cash_flow_net": -48.474, "other_cash": 0.0, "cash_equivalents_net_addition": 2.016}, "yoy": {"act_cash_flow_net": 0.6027399397712556, "invest_cash_flow_net": -1.5575632926888985, "financing_cash_flow_net": -0.14436129275950801, "other_cash": null, "cash_equivalents_net_addition": 0.5401069518716578}}, {"key": "2027_596003", "label": "Q1,2027", "endDate": "2026-04-26", "period": "596003", "values": {"act_cash_flow_net": 50.344, "invest_cash_flow_net": -26.429, "financing_cash_flow_net": -21.283, "other_cash": 0.0, "cash_equivalents_net_addition": 2.632}, "yoy": {"act_cash_flow_net": 0.8364339388633545, "invest_cash_flow_net": -4.066909509202454, "financing_cash_flow_net": -0.3684176686169871, "other_cash": null, "cash_equivalents_net_addition": -0.6039127163280662}}]}}, "source": "AInvest financials Cash Flow module", "language": "zh-CN", "labels": {"trend": "趋势", "breakdown": "拆解", "yoy": "同比"}, "theme": "light", "componentUi": {"Business": "主营业务", "Type": "类型", "Stock": "股票", "Value": "价值", "Quarterly": "季度", "Annual": "年度", "Cumulative": "累计", "YoY": "同比", "Trend": "趋势", "Breakdown": "拆解", "range start": "起始周期", "range end": "结束周期", "Cash Flow": "现金流"}}</script>
+  <script>
+    const payload = JSON.parse(document.getElementById('payload').textContent);
+    const i18n = payload.labels || {};
+    const state = {
+      view: payload.defaultView || 'quarterly',
+      metric: payload.defaultMetric || payload.trendMetrics[0].key,
+      start: 0,
+      end: 0,
+      selectedKey: null,
+      selectedIndex: null,
+      selectedEndDate: null,
+      selectedPeriod: null,
+      dragging: null,
+      rangeInitialized: false
+    };
+    const colors = {
+      blue: '#2863f4',
+      orange: '#ff6845',
+      green: '#2ab7a1',
+      pink: '#ff3d7f',
+      total: '#3477ed',
+      grid: 'var(--business-border-e8e8e8)',
+      axis: 'var(--business-border-767b84)'
+    };
+    const els = {
+      root: document.getElementById('cashFlow'),
+      metricTabs: document.getElementById('metricTabs'),
+      periodTabs: document.getElementById('periodTabs'),
+      trendLegend: document.getElementById('trendLegend'),
+      trendStage: document.getElementById('trendStage'),
+      trendSvg: document.getElementById('trendSvg'),
+      waterfallSvg: document.getElementById('waterfallSvg'),
+      selectedPeriod: document.getElementById('selectedPeriod'),
+      tooltip: document.getElementById('tooltip'),
+      rangeShell: document.getElementById('rangeShell'),
+      rangeTrack: document.getElementById('rangeTrack'),
+      rangeSelection: document.getElementById('rangeSelection'),
+      leftHandle: document.getElementById('leftHandle'),
+      rightHandle: document.getElementById('rightHandle')
+    };
+
+    function fmtB(v) {
+      if (v == null || Number.isNaN(Number(v))) return '-';
+      const sign = Number(v) < 0 ? '-' : '';
+      return sign + Math.abs(Number(v)).toFixed(2) + 'B';
+    }
+    function fmtPct(v) {
+      if (v == null || Number.isNaN(Number(v))) return '-';
+      const sign = Number(v) > 0 ? '+' : '';
+      return sign + (Number(v) * 100).toFixed(2) + '%';
+    }
+    function displayPeriodLabel(label) {
+      return String(label || '').replace(/(Q[1-4]|H1|9M),(\d{4})/g, (_, p, y) => `${p} '${String(y).slice(-2)}`);
+    }
+    function compactPeriodLabel(label) { return displayPeriodLabel(label).replace(/\s+/g, ''); }
+    function metric() { return payload.trendMetrics.find(item => item.key === state.metric) || payload.trendMetrics[0]; }
+    function view() { return payload.views[state.view] || payload.views.quarterly; }
+    function allTrendRecords() {
+      const m = metric();
+      return (view().trendRecords || []).filter(record => record.values && (m.bars || []).some(bar => record.values[bar.key] != null));
+    }
+    function visibleRecords() { return allTrendRecords().slice(state.start, state.end + 1); }
+    function svgEl(name, attrs = {}, parent) {
+      const node = document.createElementNS('http://www.w3.org/2000/svg', name);
+      for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+      if (parent) parent.appendChild(node);
+      return node;
+    }
+    function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+    function isCoarsePointerEvent(event) {
+      return event.pointerType === 'touch' || event.pointerType === 'pen';
+    }
+    function clearAllHoverBands() {
+      document.querySelectorAll('.hover-band.active').forEach(node => node.classList.remove('active'));
+    }
+    function bindHoverAndTouch(zone, activate, deactivate) {
+      zone.addEventListener('pointerenter', event => {
+        if (!isCoarsePointerEvent(event)) activate(event);
+      });
+      zone.addEventListener('pointermove', event => {
+        if (!isCoarsePointerEvent(event)) activate(event);
+      });
+      zone.addEventListener('pointerleave', event => {
+        if (!isCoarsePointerEvent(event)) deactivate(event);
+      });
+      zone.addEventListener('pointercancel', event => {
+        if (!isCoarsePointerEvent(event)) deactivate(event);
+      });
+      zone.addEventListener('pointerdown', event => {
+        activate(event);
+        if (isCoarsePointerEvent(event)) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      });
+      zone.addEventListener('click', event => {
+        activate(event);
+        event.stopPropagation();
+      });
+    }
+    function defaultWindow() { return 8; }
+
+    function initTabs() {
+      payload.trendMetrics.forEach(item => {
+        const button = document.createElement('button');
+        button.className = 'metric-tab';
+        button.type = 'button';
+        button.textContent = item.label;
+        button.onclick = () => { state.metric = item.key; render(); };
+        els.metricTabs.appendChild(button);
+      });
+      Object.entries(payload.views).forEach(([key, item]) => {
+        const button = document.createElement('button');
+        button.className = 'segment';
+        button.type = 'button';
+        button.textContent = item.label;
+        button.onclick = () => {
+          state.view = key;
+          const count = allTrendRecords().length;
+          const preset = payload.defaultRanges?.[key];
+          if (preset) {
+            state.start = Number(preset.start || 0);
+            state.end = Number(preset.end || 0);
+          } else {
+            state.start = Math.max(0, count - defaultWindow());
+            state.end = Math.max(0, count - 1);
+          }
+          state.rangeInitialized = true;
+          state.selectedKey = null;
+          state.selectedIndex = null;
+          state.selectedEndDate = null;
+          state.selectedPeriod = null;
+          render();
+        };
+        els.periodTabs.appendChild(button);
+      });
+    }
+    function ensureRange() {
+      const count = allTrendRecords().length;
+      if (!count) { state.start = 0; state.end = 0; return; }
+      if (!state.rangeInitialized) {
+        const preset = payload.defaultRanges?.[state.view];
+        if (preset) {
+          state.start = Number(preset.start || 0);
+          state.end = Number(preset.end || 0);
+        } else {
+          state.start = Math.max(0, count - defaultWindow());
+          state.end = count - 1;
+        }
+        state.rangeInitialized = true;
+      }
+      state.start = Math.max(0, Math.min(state.start, count - 1));
+      state.end = Math.max(state.start, Math.min(state.end, count - 1));
+    }
+    function updateTabs() {
+      [...els.metricTabs.children].forEach((button, idx) => button.classList.toggle('active', payload.trendMetrics[idx].key === state.metric));
+      [...els.periodTabs.children].forEach((button, idx) => button.classList.toggle('active', Object.keys(payload.views)[idx] === state.view));
+      const m = metric();
+      els.trendLegend.innerHTML = '';
+      (m.bars || []).forEach(item => addLegend(item.label, item.color || colors.blue));
+      if (m.line) addLegend(m.line.label || 'YoY', m.line.color || colors.orange);
+    }
+    function addLegend(label, color) {
+      const item = document.createElement('span');
+      item.className = 'legend-item';
+      item.innerHTML = `<span class="dot" style="background:${color}"></span><span>${label}</span>`;
+      els.trendLegend.appendChild(item);
+    }
+    function updateRangeUI() {
+      const records = allTrendRecords();
+      const count = records.length;
+      if (count <= 1) { els.rangeShell.style.display = 'none'; return; }
+      els.rangeShell.style.display = 'block';
+      const left = state.start / (count - 1) * 100;
+      const right = state.end / (count - 1) * 100;
+      els.rangeSelection.style.left = left + '%';
+      els.rangeSelection.style.width = Math.max(0, right - left) + '%';
+      els.leftHandle.style.left = left + '%';
+      els.rightHandle.style.left = right + '%';
+    }
+    function rangeIndexFromClientX(clientX, count) {
+      const rect = els.rangeTrack.getBoundingClientRect();
+      const innerLeft = rect.left + 16;
+      const innerWidth = Math.max(1, rect.width - 32);
+      const ratio = Math.max(0, Math.min(1, (clientX - innerLeft) / innerWidth));
+      return Math.round(ratio * (count - 1));
+    }
+    function updateRangeByIndex(idx) {
+      if (state.dragging === 'left') state.start = Math.min(idx, state.end);
+      if (state.dragging === 'right') state.end = Math.max(idx, state.start);
+      render();
+    }
+    function setTooltipPosition(clientX, clientTopY, preferBelow = false) {
+      const tip = els.tooltip;
+      tip.classList.toggle('below', preferBelow);
+      const margin = 8;
+      const width = tip.offsetWidth || 220;
+      const height = tip.offsetHeight || 80;
+      let left = Math.max(margin, Math.min(window.innerWidth - width - margin, clientX - width / 2));
+      let top = preferBelow ? clientTopY + 12 : clientTopY - height - 14;
+      if (top < margin) {
+        top = clientTopY + 12;
+        tip.classList.add('below');
+      }
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      tip.style.setProperty('--arrow-left', Math.max(14, Math.min(width - 14, clientX - left)) + 'px');
+    }
+    function setTooltipPositionOutsideChart(clientX, chartTopY) {
+      const tip = els.tooltip;
+      tip.classList.remove('below');
+      const margin = 8;
+      const width = tip.offsetWidth || 220;
+      const height = tip.offsetHeight || 80;
+      let left = Math.max(margin, Math.min(window.innerWidth - width - margin, clientX - width / 2));
+      let top = chartTopY - height - 12;
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+      tip.style.setProperty('--arrow-left', Math.max(14, Math.min(width - 14, clientX - left)) + 'px');
+    }
+    function showTrendTooltip(clientX, topY, record) {
+      const m = metric();
+      const rows = [`<div class="tip-title">${displayPeriodLabel(record.label)}</div>`];
+      (m.bars || []).forEach(bar => {
+        rows.push(`<div class="tip-row"><span class="tip-dot" style="background:${bar.color || colors.blue}"></span><span class="tip-name">${bar.label}</span><span class="tip-value">${fmtB(record.values?.[bar.key])}</span></div>`);
+      });
+      if (m.line) {
+        const lineValue = record.lines?.[m.line.key];
+        const cls = (Number(lineValue) || 0) >= 0 ? 'good' : 'bad';
+        rows.push(`<div class="tip-row"><span class="tip-dot" style="background:${m.line.color || colors.orange}"></span><span class="tip-name">${m.line.label}</span><span class="tip-value ${cls}">${fmtPct(lineValue)}</span></div>`);
+      }
+      els.tooltip.innerHTML = rows.join('');
+      els.tooltip.classList.add('visible');
+      setTooltipPosition(clientX, topY, false);
+    }
+    function showWaterfallTooltip(clientX, chartTopY, record, step) {
+      const item = step.item;
+      const yoy = record.yoy?.[item.key];
+      const cls = (Number(yoy) || 0) >= 0 ? 'good' : 'bad';
+      els.tooltip.innerHTML = `
+        <div class="tip-title">${displayPeriodLabel(record.label)}</div>
+        <div class="tip-row"><span class="tip-dot" style="background:${step.color}"></span><span class="tip-name">${step.label}</span><span class="tip-value">${fmtB(step.displayValue)}</span></div>
+        <div class="tip-row"><span class="tip-dot" style="background:${colors.orange}"></span><span class="tip-name">${i18n.yoy || 'YoY'}</span><span class="tip-value ${cls}">${fmtPct(yoy)}</span></div>`;
+      els.tooltip.classList.add('visible');
+      setTooltipPositionOutsideChart(clientX, chartTopY);
+    }
+    function hideTooltip() {
+      els.tooltip.classList.remove('visible', 'below');
+      clearAllHoverBands();
+    }
+
+    function renderTrend() {
+      const svg = els.trendSvg;
+      clear(svg);
+      const records = visibleRecords();
+      const m = metric();
+      const bars = m.bars || [];
+      const line = m.line;
+      const width = Math.max(360, Math.round(els.trendStage.clientWidth || svg.clientWidth || 720));
+      const height = Math.max(200, Math.round(els.trendStage.clientHeight || svg.clientHeight || 224));
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      if (!records.length) return;
+      const margin = { top: 16, right: 58, bottom: 44, left: 66 };
+      const chartW = Math.max(1, width - margin.left - margin.right);
+      const chartH = Math.max(1, height - margin.top - margin.bottom);
+      const values = [];
+      records.forEach(r => bars.forEach(b => { const v = r.values?.[b.key]; if (v != null && Number.isFinite(Number(v))) values.push(Number(v)); }));
+      const lines = line ? records.map(r => r.lines?.[line.key]).filter(v => v != null && Number.isFinite(Number(v))).map(Number) : [];
+      const rawMinValue = Math.min(0, ...values);
+      const rawMaxValue = Math.max(0, ...values);
+      const valuePad = Math.max(.4, (rawMaxValue - rawMinValue) * .14);
+      const valueMin = rawMinValue - valuePad;
+      const valueMax = rawMaxValue + valuePad;
+      const minLine = Math.min(0, ...lines);
+      const maxLine = Math.max(.01, ...lines);
+      const linePad = Math.max(.05, (maxLine - minLine) * .18);
+      const lineMin = minLine - linePad;
+      const lineMax = maxLine + linePad;
+      const valueY = value => margin.top + (valueMax - Number(value || 0)) / Math.max(valueMax - valueMin, .0001) * chartH;
+      const lineY = value => margin.top + (lineMax - Number(value || 0)) / Math.max(lineMax - lineMin, .0001) * chartH;
+      const axisY = valueY(0);
+      const gridLayer = svgEl('g', {}, svg);
+      const hoverLayer = svgEl('g', {}, svg);
+      const barLayer = svgEl('g', {}, svg);
+      const lineLayer = svgEl('g', {}, svg);
+      const labelLayer = svgEl('g', {}, svg);
+      const zoneLayer = svgEl('g', {}, svg);
+      for (let i = 0; i < 5; i++) {
+        const y = margin.top + chartH * i / 4;
+        svgEl('line', { x1: margin.left, y1: y, x2: width - margin.right, y2: y, class: Math.abs(y - axisY) < 1 ? 'axis' : 'grid' }, gridLayer);
+        const v = valueMax - (valueMax - valueMin) * i / 4;
+        const pct = lineMax - (lineMax - lineMin) * i / 4;
+        svgEl('text', { x: margin.left - 10, y: y + 4, 'text-anchor': 'end', class: 'axis-label' }, gridLayer).textContent = Math.abs(v) < .005 ? '0' : fmtB(v);
+        svgEl('text', { x: width - margin.right + 10, y: y + 4, class: 'axis-label' }, gridLayer).textContent = fmtPct(pct).replace('+', '');
+      }
+      const xStep = chartW / Math.max(1, records.length);
+      const gap = 4;
+      const groupW = Math.min(64, xStep * .62);
+      const barW = Math.max(2, Math.min(34, groupW / Math.max(1, bars.length) - gap));
+      const linePoints = [];
+      const canShowAllLabels = records.length <= 1 || xStep >= 74;
+      const canShowValues = xStep >= 54;
+      const canShowDots = xStep >= 22;
+      function clearHoverBands() { hoverLayer.querySelectorAll('.hover-band').forEach(node => node.classList.remove('active')); }
+      records.forEach((record, idx) => {
+        const cx = margin.left + xStep * idx + xStep / 2;
+        const bandLeft = margin.left + xStep * idx;
+        const hoverBand = svgEl('rect', { x: bandLeft, y: margin.top, width: xStep, height: chartH, class: 'hover-band' }, hoverLayer);
+        bars.forEach((bar, bidx) => {
+          const value = Number(record.values?.[bar.key] || 0);
+          const vy = valueY(value);
+          const y = Math.min(vy, axisY);
+          const h = Math.abs(axisY - vy);
+          const x = cx - (barW * bars.length + gap * (bars.length - 1)) / 2 + bidx * (barW + gap);
+          svgEl('rect', { x, y, width: barW, height: Math.max(1, h), fill: bar.color || colors.blue }, barLayer);
+          if (canShowValues && bars.length === 1) {
+            const labelY = value >= 0 ? Math.max(12, y - 6) : Math.min(height - 8, y + h + 14);
+            svgEl('text', { x: cx, y: labelY, class: 'bar-label' }, labelLayer).textContent = fmtB(value);
+          }
+        });
+        if (line) {
+          const lv = record.lines?.[line.key];
+          if (lv != null && Number.isFinite(Number(lv))) {
+            const yy = lineY(lv);
+            linePoints.push({ x: cx, y: yy, value: Number(lv), record });
+          }
+        }
+        const showLabel = canShowAllLabels || idx === 0 || idx === records.length - 1 || idx === Math.floor((records.length - 1) / 2);
+        if (showLabel) {
+          svgEl('text', { x: cx, y: height - 8, class: 'x-label', 'text-anchor': 'middle' }, labelLayer).textContent = displayPeriodLabel(record.label);
+        }
+        const zone = svgEl('rect', { x: bandLeft, y: margin.top, width: xStep, height: chartH, class: 'hover-zone' }, zoneLayer);
+        const activate = () => {
+          clearHoverBands();
+          hoverBand.classList.add('active');
+          const selectedIndex = state.start + idx;
+          const changed =
+            state.selectedKey !== record.key ||
+            state.selectedIndex !== selectedIndex ||
+            state.selectedEndDate !== record.endDate ||
+            state.selectedPeriod !== record.period;
+          state.selectedKey = record.key;
+          state.selectedIndex = selectedIndex;
+          state.selectedEndDate = record.endDate || null;
+          state.selectedPeriod = record.period || null;
+          if (changed) renderWaterfall();
+
+          const liveRect = svg.getBoundingClientRect();
+          const liveX = liveRect.left + (cx / width) * liveRect.width;
+          const liveTopGridY = liveRect.top + (margin.top / height) * liveRect.height;
+          showTrendTooltip(liveX, liveTopGridY, record);
+        };
+        bindHoverAndTouch(
+          zone,
+          activate,
+          () => { hoverBand.classList.remove('active'); hideTooltip(); }
+        );
+      });
+      if (linePoints.length) {
+        const d = linePoints.map((point, idx) => `${idx ? 'L' : 'M'}${point.x},${point.y}`).join('');
+        svgEl('path', { d, fill: 'none', stroke: line.color || colors.orange, 'stroke-width': 2 }, lineLayer);
+        if (canShowDots) linePoints.forEach(point => svgEl('circle', { cx: point.x, cy: point.y, r: 4, fill: line.color || colors.orange }, lineLayer));
+      }
+      svg.addEventListener('mouseleave', () => { clearHoverBands(); hideTooltip(); });
+    }
+
+    function waterfallRecord() {
+      const records = view().waterfallRecords || [];
+      if (!records.length) return null;
+      if (state.selectedKey) {
+        const matched = records.find(item => item.key === state.selectedKey);
+        if (matched) return matched;
+      }
+      if (state.selectedEndDate) {
+        const matched = records.find(item => item.endDate === state.selectedEndDate || item.end_date === state.selectedEndDate);
+        if (matched) return matched;
+      }
+      if (state.selectedIndex != null && records[state.selectedIndex]) {
+        return records[state.selectedIndex];
+      }
+      if (state.selectedPeriod) {
+        const periodMatches = records.filter(item => item.period === state.selectedPeriod);
+        if (periodMatches.length) return periodMatches[periodMatches.length - 1];
+      }
+      return records[records.length - 1];
+    }
+    function waterfallSteps(record) {
+      let running = 0;
+      return (payload.waterfallItems || []).map(item => {
+        const value = Number(record.values?.[item.key] || 0);
+        if (item.kind === 'total') return { item, label: item.label, kind: 'total', start: 0, end: value, value, color: colors.total, displayValue: value };
+        const start = running;
+        running += value;
+        return { item, label: item.label, kind: 'delta', start, end: running, value, color: value >= 0 ? colors.green : colors.pink, displayValue: value };
+      });
+    }
+    function renderWaterfall() {
+      const svg = els.waterfallSvg;
+      clear(svg);
+      const record = waterfallRecord();
+      if (!record) return;
+      els.selectedPeriod.textContent = `(${compactPeriodLabel(record.label)})`;
+      const width = Math.max(360, Math.round(svg.clientWidth || 620));
+      const height = Math.max(200, Math.round(svg.clientHeight || 232));
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      const margin = { top: 12, right: 30, bottom: 52, left: 34 };
+      const chartW = Math.max(1, width - margin.left - margin.right);
+      const chartH = Math.max(1, height - margin.top - margin.bottom);
+      const steps = waterfallSteps(record);
+      const domainValues = steps.flatMap(step => [step.start, step.end, 0]);
+      const minValue = Math.min(0, ...domainValues);
+      const maxValue = Math.max(0, ...domainValues);
+      const pad = Math.max((maxValue - minValue) * .16, 1);
+      const yMin = minValue - pad;
+      const yMax = maxValue + pad;
+      const y = value => margin.top + (yMax - value) / Math.max(yMax - yMin, .0001) * chartH;
+      const zeroY = y(0);
+      const xs = steps.map((_, i) => margin.left + chartW * (i + .5) / steps.length);
+      const slot = chartW / steps.length;
+      const barW = Math.max(22, Math.min(74, slot * .46));
+      const gridYs = Array.from({ length: 5 }, (_, i) => margin.top + chartH * i / 4);
+      const zeroGridIndex = gridYs.reduce((best, gy, i) => Math.abs(gy - zeroY) < Math.abs(gridYs[best] - zeroY) ? i : best, 0);
+      gridYs.forEach((gy, i) => {
+        svgEl('line', { x1: margin.left, y1: gy, x2: width - margin.right, y2: gy, class: i === zeroGridIndex ? 'axis' : 'grid' }, svg);
+      });
+      const hoverLayer = svgEl('g', {}, svg);
+      const barLayer = svgEl('g', {}, svg);
+      const connectorLayer = svgEl('g', {}, svg);
+      const labelLayer = svgEl('g', {}, svg);
+      const zoneLayer = svgEl('g', {}, svg);
+      function clearWaterfallHoverBands() { hoverLayer.querySelectorAll('.hover-band').forEach(node => node.classList.remove('active')); }
+      steps.forEach((step, idx) => {
+        const cx = xs[idx];
+        const y1 = y(step.start);
+        const y2 = y(step.end);
+        const top = Math.min(y1, y2);
+        const bottom = Math.max(y1, y2);
+        const h = Math.max(2, bottom - top);
+        const bandLeft = cx - slot / 2;
+        const hoverBand = svgEl('rect', { x: bandLeft, y: margin.top, width: slot, height: chartH, class: 'hover-band' }, hoverLayer);
+        svgEl('rect', { x: cx - barW / 2, y: top, width: barW, height: h, fill: step.color, rx: 0 }, barLayer);
+        if (idx < steps.length - 1) {
+          const nextCx = xs[idx + 1];
+          svgEl('line', { x1: cx + barW / 2, y1: y(step.end), x2: nextCx - barW / 2, y2: y(step.end), stroke: 'var(--business-border-d7d7d7)', 'stroke-width': 1, 'stroke-dasharray': '3 3' }, connectorLayer);
+        }
+        labelWaterfall(labelLayer, cx, top, step.displayValue, record.yoy?.[step.item.key]);
+        svgEl('text', { x: cx, y: height - 18, class: 'waterfall-x' }, labelLayer).textContent = step.label;
+        const zone = svgEl('rect', { x: bandLeft, y: margin.top, width: slot, height: chartH, class: 'hover-zone', 'pointer-events': 'all' }, zoneLayer);
+        const activate = () => {
+          clearWaterfallHoverBands();
+          hoverBand.classList.add('active');
+          const liveRect = svg.getBoundingClientRect();
+          const liveX = liveRect.left + (cx / width) * liveRect.width;
+          const liveChartTopY = liveRect.top;
+          showWaterfallTooltip(liveX, liveChartTopY, record, step);
+        };
+        bindHoverAndTouch(
+          zone,
+          activate,
+          () => { hoverBand.classList.remove('active'); hideTooltip(); }
+        );
+      });
+      svg.addEventListener('mouseleave', () => { clearWaterfallHoverBands(); hideTooltip(); });
+      function labelWaterfall(parent, cx, top, value, yoy) {
+        const labelY = Math.max(12, top - 22);
+        svgEl('text', { x: cx, y: labelY, class: 'waterfall-label' }, parent).textContent = fmtB(value);
+        if (yoy != null && Number.isFinite(Number(yoy))) {
+          const text = fmtPct(yoy).replace('+', '');
+          const w = Math.max(46, text.length * 7 + 12);
+          const x = cx - w / 2;
+          const badgeY = Math.max(16, top - 18);
+          const fill = Number(yoy) >= 0 ? '#2dbd86' : '#f05b5b';
+          svgEl('rect', { x, y: badgeY, width: w, height: 16, rx: 3, fill }, parent);
+          svgEl('text', { x: cx, y: badgeY + 8, class: 'badge-text' }, parent).textContent = text;
+        }
+      }
+    }
+
+    function setupRangeDrag() {
+      const startDrag = which => event => {
+        state.dragging = which;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+      };
+      els.leftHandle.addEventListener('pointerdown', startDrag('left'));
+      els.rightHandle.addEventListener('pointerdown', startDrag('right'));
+      els.rangeTrack.addEventListener('pointerdown', event => {
+        if (event.target.closest('.range-handle')) return;
+        const records = allTrendRecords();
+        if (records.length <= 1) return;
+        const idx = rangeIndexFromClientX(event.clientX, records.length);
+        state.dragging = Math.abs(idx - state.start) <= Math.abs(idx - state.end) ? 'left' : 'right';
+        updateRangeByIndex(idx);
+        event.preventDefault();
+      });
+      window.addEventListener('pointermove', event => {
+        if (!state.dragging) return;
+        const records = allTrendRecords();
+        if (records.length <= 1) return;
+        updateRangeByIndex(rangeIndexFromClientX(event.clientX, records.length));
+      });
+      window.addEventListener('pointerup', () => { state.dragging = null; });
+    }
+    function render() {
+      ensureRange();
+      updateTabs();
+      updateRangeUI();
+      renderTrend();
+      renderWaterfall();
+    }
+    initTabs();
+    setupRangeDrag();
+    document.addEventListener('pointerdown', event => {
+      if (
+        !event.target.closest('#trendStage') &&
+        !event.target.closest('#waterfallSvg') &&
+        !event.target.closest('#tooltip') &&
+        !event.target.closest('#rangeShell')
+      ) {
+        hideTooltip();
+      }
+    });
+    render();
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(render).observe(els.trendStage);
+    }
+    window.addEventListener('resize', render);
+  </script>
+</body>
+</html>

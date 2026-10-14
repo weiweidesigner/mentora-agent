@@ -1,0 +1,193 @@
+{
+  "type": "average-rating-history",
+  "name": "Average Rating History",
+  "title": "Average Rating History",
+  "code": "NVDA",
+  "market": "185",
+  "defaultPeriod": "6M",
+  "views": {
+    "1M": [
+      {
+        "date": "2026-09-29",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-09-29T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-02",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-02T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-06",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-06T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-10",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-10T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "3M": [
+      {
+        "date": "2026-07-14",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-07-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-06",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-08-06T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-29",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-08-29T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-21",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-09-21T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "6M": [
+      {
+        "date": "2026-04-16",
+        "averageRating": 4.10526316,
+        "timestamp": "2026-04-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-16",
+        "averageRating": 4.05,
+        "timestamp": "2026-05-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-06-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "1Y": [
+      {
+        "date": "2025-10-15",
+        "averageRating": 4.0,
+        "timestamp": "2025-10-15T00:00:00.000Z"
+      },
+      {
+        "date": "2025-11-14",
+        "averageRating": 4.0,
+        "timestamp": "2025-11-14T00:00:00.000Z"
+      },
+      {
+        "date": "2025-12-14",
+        "averageRating": 3.96551724,
+        "timestamp": "2025-12-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-01-14",
+        "averageRating": 4.0,
+        "timestamp": "2026-01-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-02-13",
+        "averageRating": 4.0,
+        "timestamp": "2026-02-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-03-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-03-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-04-15",
+        "averageRating": 4.10526316,
+        "timestamp": "2026-04-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-15",
+        "averageRating": 4.05,
+        "timestamp": "2026-05-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-14",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-06-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ]
+  },
+  "source": {
+    "ratingHistory": "https://fundamental.ainvest.com/bff/analyst-rating/rating-history"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "平均评级历史",
+    "subtitle": "一致预期评分 | 1 = 强烈卖出，5 = 强烈买入",
+    "period": "周期",
+    "empty": "暂无平均评级历史数据。",
+    "averageRating": "平均评级",
+    "locale": "zh-CN"
+  },
+  "componentUi": {
+    "Business": "主营业务",
+    "Type": "类型",
+    "Buy": "买入",
+    "Sell": "卖出",
+    "Stock": "股票",
+    "Rating": "评级",
+    "Value": "价值",
+    "Strong Buy": "强烈买入",
+    "Strong Sell": "强烈卖出",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>财报研究日程（演示计划）</title>
+<style>
+:root{
+  --tl-page-bg:transparent;
+  --tl-surface:transparent;
+  --tl-text:#0F172A;
+  --tl-muted:#64748B;
+  --tl-line:#2563EB;
+  --tl-button-bg:rgba(255,255,255,.94);
+  --tl-button-border:rgba(15,23,42,.12);
+  --tl-shadow:0 7px 20px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  min-height:0;
+  background:var(--tl-page-bg);
+  color:var(--tl-text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  overflow-x:hidden;
+  overflow-y:visible;
+}
+#container{
+  position:relative;
+  width:100%;
+  height:auto;
+  min-height:0;
+  overflow:visible;
+  background:var(--tl-surface);
+}
+#title{
+  position:relative;
+  top:auto;
+  left:auto;
+  right:auto;
+  width:auto;
+  margin:0 52px 0 16px;
+  padding-top:16px;
+  z-index:10;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:18px;
+  line-height:28px;
+  font-weight:760;
+  letter-spacing:-.01em;
+  pointer-events:none;
+}
+#fullscreenBtn,#exitFullscreenBtn{
+  position:absolute;
+  z-index:30;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  padding:0;
+  border:1px solid var(--tl-button-border);
+  border-radius:7px;
+  background:var(--tl-button-bg);
+  color:#334155;
+  box-shadow:var(--tl-shadow);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+#fullscreenBtn{right:14px;top:17px}
+#exitFullscreenBtn{right:14px;top:14px}
+#fullscreenBtn svg,#exitFullscreenBtn svg{
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#viewport{
+  position:relative;
+  inset:auto;
+  width:100%;
+  padding:8px 0 24px 16px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#root{
+  width:100%;
+  min-width:0;
+  display:block;
+  text-align:left;
+}
+.timeline{
+  --axis-x:88px;
+  --gap-x:18px;
+  --content-width:560px;
+  position:relative;
+  width:fit-content;
+  min-width:0;
+  margin:0;
+  padding:4px 0 16px;
+  transform:none;
+}
+.timeline-line{
+  position:absolute;
+  left:calc(var(--axis-x) + var(--gap-x)/2);
+  top:0;
+  width:2px;
+  height:0;
+  border-radius:2px;
+  background:#2563EB;
+  transform:translateX(-1px);
+}
+.entry{
+  --title-line:21px;
+  position:relative;
+  display:grid;
+  grid-template-columns:var(--axis-x) var(--gap-x) var(--content-width, 560px);
+  align-items:start;
+  min-height:58px;
+  margin:16px 0;
+}
+.date{
+  grid-column:1;
+  padding-right:8px;
+  color:var(--tl-muted);
+  text-align:right;
+  font-size:13px;
+  line-height:var(--title-line);
+  font-weight:600;
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:clip;
+}
+.axis{grid-column:2;position:relative;height:100%;min-height:var(--title-line)}
+.dot{
+  position:absolute;
+  left:50%;
+  top:calc(var(--title-line)/2);
+  width:12px;
+  height:12px;
+  border:3px solid #2563EB;
+  border-radius:50%;
+  background:#FFFFFF;
+  box-shadow:0 0 0 4px rgba(37,99,235,.10);
+  transform:translate(-50%,-50%);
+}
+.content{
+  grid-column:3;
+  min-width:0;
+  margin-left:8px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.item-title{
+  color:var(--tl-text);
+  font-size:14px;
+  line-height:var(--title-line);
+  font-weight:720;
+  overflow-wrap:anywhere;
+}
+.description{
+  margin-top:4px;
+  color:#475569;
+  font-size:13px;
+  line-height:1.6;
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.description:empty{display:none}
+.empty{
+  width:100%;
+  margin:8px 0;
+  padding:22px;
+  border:1px dashed #CBD5E1;
+  border-radius:10px;
+  color:var(--tl-muted);
+  text-align:center;
+  font-size:13px;
+  background:rgba(248,250,252,.66);
+}
+@media(max-width:720px){
+  #container{height:auto;min-height:0;max-height:none}
+  #title{margin:0 46px 0 0;padding-top:10px;font-size:16px;line-height:26px}
+  #fullscreenBtn{display:inline-flex;top:10px;right:8px}
+  #viewport{inset:auto;padding:6px 0 18px 0}
+  .timeline{--axis-x:80px;--gap-x:18px;--content-width:220px}
+  .entry{min-height:54px;margin:14px 0}
+  .date{padding-right:8px;font-size:12px}
+  .content{margin-left:8px;padding:0;width:100%}
+  .item-title{font-size:13px}
+  .description{font-size:12px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+  .dot{width:11px;height:11px}
+}
+@media(max-width:420px){
+  .timeline{--axis-x:80px;--gap-x:18px}
+  .date{font-size:11px}
+}
+@media(min-width:721px){#fullscreenBtn{display:none!important}}
+body.is-fullscreen{
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:#F8FAFC;
+}
+body.is-fullscreen #container{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  width:100vw;
+  height:100vh;
+  min-height:0;
+  max-height:none;
+  background:#FFFFFF;
+}
+body.is-fullscreen #title{
+  position:absolute;
+  top:14px;
+  left:0;
+  right:52px;
+  width:auto;
+  margin:0;
+  padding:0;
+  transform:none;
+  font-size:16px;
+}
+body.is-fullscreen #fullscreenBtn{display:none!important}
+body.is-fullscreen #exitFullscreenBtn{display:inline-flex}
+body.is-fullscreen #viewport{
+  position:absolute;
+  inset:52px 0 0;
+  width:auto;
+  padding:8px 0 24px 0;
+  overflow:auto;
+}
+body.is-fullscreen .timeline{
+  width:fit-content;
+  margin:0;
+  --axis-x:88px;
+  --gap-x:18px;
+}
+body.is-fullscreen.is-forced-landscape #container{
+  width:100vh;
+  height:100vw;
+  left:50%;
+  top:50%;
+  right:auto;
+  bottom:auto;
+  transform:translate(-50%,-50%) rotate(90deg);
+  transform-origin:center center;
+}
+</style>
+</head>
+<body>
+<div id="container" data-timeline-container="true">
+  <div id="title">财报研究日程（演示计划）</div>
+  <button id="fullscreenBtn" type="button" aria-label="横屏全屏浏览" title="横屏全屏浏览">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M3 16v5h5"></path></svg>
+  </button>
+  <button id="exitFullscreenBtn" type="button" aria-label="退出全屏" title="退出全屏">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3"></path><path d="M15 3v6h6"></path><path d="M21 15h-6v6"></path><path d="M3 15h6v6"></path></svg>
+  </button>
+  <div id="viewport"><div id="root"></div></div>
+</div>
+<script>
+const items=[{"date": "2026-10-14", "title": "整理公司资料", "description": "建立财务数据口径", "colorIndex": null, "style": {}}, {"date": "2026-10-15", "title": "比较经营质量", "description": "检查利润与现金流", "colorIndex": null, "style": {}}, {"date": "2026-10-16", "title": "复核估值假设", "description": "记录风险与观察条件", "colorIndex": null, "style": {}}];
+const config={"palette": [{"accent": "#2563EB", "soft": "#EFF6FF", "border": "#BFDBFE", "title": "#1E3A8A"}, {"accent": "#059669", "soft": "#ECFDF5", "border": "#A7F3D0", "title": "#065F46"}, {"accent": "#EA580C", "soft": "#FFF7ED", "border": "#FED7AA", "title": "#9A3412"}, {"accent": "#7C3AED", "soft": "#F5F3FF", "border": "#DDD6FE", "title": "#5B21B6"}, {"accent": "#DB2777", "soft": "#FDF2F8", "border": "#FBCFE8", "title": "#9D174D"}, {"accent": "#0891B2", "soft": "#ECFEFF", "border": "#A5F3FC", "title": "#155E75"}], "colorMode": "byOrder", "emptyText": "暂无时间轴数据"};
+const root=document.getElementById("root");
+const container=document.getElementById("container");
+const viewport=document.getElementById("viewport");
+const fullscreenBtn=document.getElementById("fullscreenBtn");
+const exitFullscreenBtn=document.getElementById("exitFullscreenBtn");
+
+function safeColor(value,fallback){
+  return typeof value==="string"&&/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(value)?value:fallback;
+}
+function styleForItem(item,index){
+  const palette=Array.isArray(config.palette)&&config.palette.length?config.palette:[{}];
+  let paletteIndex=0;
+  if(config.colorMode!=="single"){
+    paletteIndex=Number.isInteger(item.colorIndex)?item.colorIndex:index;
+  }
+  const base=palette[((paletteIndex%palette.length)+palette.length)%palette.length]||{};
+  const override=item&&item.style&&typeof item.style==="object"?item.style:{};
+  return {
+    accent:safeColor(override.accent,safeColor(base.accent,"#2563EB")),
+    soft:safeColor(override.soft,safeColor(base.soft,"#EFF6FF")),
+    border:safeColor(override.border,safeColor(base.border,"#BFDBFE")),
+    title:safeColor(override.title,safeColor(base.title,"#1E3A8A"))
+  };
+}
+function makeElement(tag,className,text){
+  const element=document.createElement(tag);
+  if(className) element.className=className;
+  if(text!==undefined&&text!==null) element.textContent=String(text);
+  return element;
+}
+function alignTimelineLine(){
+  const timeline=root.querySelector(".timeline");
+  const line=timeline?timeline.querySelector(".timeline-line"):null;
+  const dots=timeline?[...timeline.querySelectorAll(".dot")]:[];
+  if(!timeline||!line||!dots.length) return;
+  const timelineRect=timeline.getBoundingClientRect();
+  const firstRect=dots[0].getBoundingClientRect();
+  const lastRect=dots[dots.length-1].getBoundingClientRect();
+  const firstCenter=firstRect.top+firstRect.height/2-timelineRect.top;
+  const lastCenter=lastRect.top+lastRect.height/2-timelineRect.top;
+  line.style.top=`${firstCenter}px`;
+  line.style.height=`${Math.max(0,lastCenter-firstCenter)}px`;
+}
+function intrinsicTextWidth(element){
+  if(!element) return 0;
+  try{
+    const range=document.createRange();
+    range.selectNodeContents(element);
+    const width=range.getBoundingClientRect().width;
+    if(Number.isFinite(width)&&width>0) return Math.ceil(width);
+  }catch(e){}
+  const text=element.textContent||"";
+  const canvas=intrinsicTextWidth.canvas||(intrinsicTextWidth.canvas=document.createElement("canvas"));
+  const context=canvas.getContext("2d");
+  if(!context) return 0;
+  const styles=getComputedStyle(element);
+  context.font=`${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+  return Math.ceil(context.measureText(text).width);
+}
+function updateTimelineSizing(){
+  const timeline=root.querySelector(".timeline");
+  if(!timeline||!viewport) return;
+
+  const dates=[...timeline.querySelectorAll(".date")];
+  const mobile=viewport.clientWidth<=720;
+  if(dates.length){
+    // Measure the text itself instead of the grid cell width. Measuring
+    // scrollWidth caused a feedback loop where every resize made the date
+    // column wider again, producing the large blank area before the axis.
+    const widestDate=Math.max(...dates.map(intrinsicTextWidth));
+    const axisPadding=mobile?8:10;
+    const axisWidth=Math.max(1,widestDate+axisPadding);
+    timeline.style.setProperty("--axis-x",`${axisWidth}px`);
+  }else{
+    timeline.style.removeProperty("--axis-x");
+  }
+
+  const styles=getComputedStyle(timeline);
+  const axisWidth=parseFloat(styles.getPropertyValue("--axis-x"))||88;
+  const gapWidth=parseFloat(styles.getPropertyValue("--gap-x"))||18;
+  const contentMargin=8;
+  const outerAllowance=mobile?8:16;
+  const available=Math.max(160,viewport.clientWidth-axisWidth-gapWidth-contentMargin-outerAllowance);
+  timeline.style.setProperty("--content-width",`${available}px`);
+}
+function renderTimeline(){
+  root.replaceChildren();
+  if(!Array.isArray(items)||!items.length){
+    root.appendChild(makeElement("div","empty",config.emptyText||"暂无时间轴数据"));
+    sendTimelineHeight();
+    return;
+  }
+  const timeline=makeElement("div","timeline");
+  timeline.appendChild(makeElement("div","timeline-line"));
+  items.forEach((item,index)=>{
+    const entry=makeElement("article","entry");
+
+    entry.appendChild(makeElement("div","date",item.date||""));
+    const axis=makeElement("div","axis");
+    axis.appendChild(makeElement("div","dot"));
+    entry.appendChild(axis);
+
+    const content=makeElement("div","content");
+    content.appendChild(makeElement("div","item-title",item.title||item.date||`事件 ${index+1}`));
+    content.appendChild(makeElement("div","description",item.description||""));
+    entry.appendChild(content);
+    timeline.appendChild(entry);
+  });
+  root.appendChild(timeline);
+  requestAnimationFrame(()=>{
+    updateTimelineSizing();
+    alignTimelineLine();
+    sendTimelineHeight();
+  });
+}
+function sendTimelineHeight(){
+  if(document.body.classList.contains("is-fullscreen")) return;
+  // The document and body heights are at least as tall as the iframe viewport.
+  // Reading them here makes an oversized iframe self perpetuating. The
+  // container is height:auto, so its border box is the actual timeline height.
+  const rect=container?container.getBoundingClientRect():null;
+  const height=Math.ceil(Math.max(rect?rect.height:0,1));
+  try{parent.postMessage({type:"analysis-planner-report-height",height},"*");}catch(e){}
+}
+function updateFullscreenLayout(){
+  const active=document.body.classList.contains("is-fullscreen");
+  const needsForcedLandscape=active&&window.innerHeight>window.innerWidth;
+  document.body.classList.toggle("is-forced-landscape",needsForcedLandscape);
+}
+function lockLandscape(){
+  try{
+    const orientation=screen.orientation;
+    if(orientation&&typeof orientation.lock==="function") orientation.lock("landscape").catch(()=>{});
+  }catch(e){}
+}
+function unlockOrientation(){
+  try{
+    const orientation=screen.orientation;
+    if(orientation&&typeof orientation.unlock==="function") orientation.unlock();
+  }catch(e){}
+}
+function refreshLayout(){
+  updateFullscreenLayout();
+  requestAnimationFrame(()=>{
+    updateTimelineSizing();
+    alignTimelineLine();
+    sendTimelineHeight();
+  });
+}
+async function enterFullscreen(){
+  document.body.classList.add("is-fullscreen");
+  updateFullscreenLayout();
+  const target=document.documentElement||document.body;
+  try{
+    if(target.requestFullscreen) await target.requestFullscreen();
+    else if(target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+  }catch(e){}
+  lockLandscape();
+  setTimeout(refreshLayout,80);
+  setTimeout(refreshLayout,320);
+}
+function exitFullscreen(){
+  document.body.classList.remove("is-fullscreen","is-forced-landscape");
+  unlockOrientation();
+  try{
+    if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen();
+    else if(document.webkitFullscreenElement&&document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }catch(e){}
+  setTimeout(refreshLayout,80);
+  setTimeout(refreshLayout,320);
+}
+fullscreenBtn.addEventListener("click",enterFullscreen);
+exitFullscreenBtn.addEventListener("click",exitFullscreen);
+document.addEventListener("fullscreenchange",()=>{
+  if(!document.fullscreenElement){
+    document.body.classList.remove("is-fullscreen","is-forced-landscape");
+    unlockOrientation();
+    refreshLayout();
+  }
+});
+document.addEventListener("webkitfullscreenchange",()=>{
+  if(!document.webkitFullscreenElement){
+    document.body.classList.remove("is-fullscreen","is-forced-landscape");
+    unlockOrientation();
+    refreshLayout();
+  }
+});
+window.addEventListener("resize",refreshLayout);
+window.addEventListener("orientationchange",()=>{setTimeout(refreshLayout,120);setTimeout(refreshLayout,420)});
+renderTimeline();
+setTimeout(refreshLayout,120);
+setTimeout(refreshLayout,500);
+setTimeout(sendTimelineHeight,900);
+if(document.fonts&&document.fonts.ready){
+  document.fonts.ready.then(()=>{refreshLayout();sendTimelineHeight();}).catch(()=>{});
+}
+if("ResizeObserver" in window){
+  try{
+    const heightObserver=new ResizeObserver(()=>{
+      requestAnimationFrame(()=>{
+        alignTimelineLine();
+        sendTimelineHeight();
+      });
+    });
+    heightObserver.observe(root);
+  }catch(e){}
+}
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

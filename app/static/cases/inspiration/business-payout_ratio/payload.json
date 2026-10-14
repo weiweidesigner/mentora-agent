@@ -1,0 +1,154 @@
+{
+  "type": "payout-ratio",
+  "name": "Payout Ratio",
+  "title": "派息率",
+  "code": "AAPL",
+  "series": [
+    {
+      "key": "parent_holder_net_profit",
+      "label": "归母净利润",
+      "type": "bar",
+      "color": "#2863f4"
+    },
+    {
+      "key": "dividend_cash_total",
+      "label": "现金分红总额",
+      "type": "bar",
+      "color": "#39c2e6"
+    },
+    {
+      "key": "pay_out_ratio",
+      "label": "派息率",
+      "type": "line",
+      "color": "#ff6845"
+    }
+  ],
+  "records": [
+    {
+      "label": "2012",
+      "year": "2012",
+      "parent_holder_net_profit": 41.733,
+      "dividend_cash_total": 2.4841259,
+      "pay_out_ratio": 0.05952425897970431
+    },
+    {
+      "label": "2013",
+      "year": "2013",
+      "parent_holder_net_profit": 37.037,
+      "dividend_cash_total": 10.6151328,
+      "pay_out_ratio": 0.2866088722088722
+    },
+    {
+      "label": "2014",
+      "year": "2014",
+      "parent_holder_net_profit": 39.51,
+      "dividend_cash_total": 11.11300833,
+      "pay_out_ratio": 0.28127077524677296
+    },
+    {
+      "label": "2015",
+      "year": "2015",
+      "parent_holder_net_profit": 53.394,
+      "dividend_cash_total": 11.4552574,
+      "pay_out_ratio": 0.2145420346855452
+    },
+    {
+      "label": "2016",
+      "year": "2016",
+      "parent_holder_net_profit": 45.687,
+      "dividend_cash_total": 11.97590004,
+      "pay_out_ratio": 0.2621292717840961
+    },
+    {
+      "label": "2017",
+      "year": "2017",
+      "parent_holder_net_profit": 48.351,
+      "dividend_cash_total": 12.56875905,
+      "pay_out_ratio": 0.2599482751132345
+    },
+    {
+      "label": "2018",
+      "year": "2018",
+      "parent_holder_net_profit": 59.531,
+      "dividend_cash_total": 13.54514147,
+      "pay_out_ratio": 0.2275308909643715
+    },
+    {
+      "label": "2019",
+      "year": "2019",
+      "parent_holder_net_profit": 55.256,
+      "dividend_cash_total": 13.92889129,
+      "pay_out_ratio": 0.2520792545605907
+    },
+    {
+      "label": "2020",
+      "year": "2020",
+      "parent_holder_net_profit": 57.411,
+      "dividend_cash_total": 13.85060823,
+      "pay_out_ratio": 0.24125356168678477
+    },
+    {
+      "label": "2021",
+      "year": "2021",
+      "parent_holder_net_profit": 94.68,
+      "dividend_cash_total": 14.23484443,
+      "pay_out_ratio": 0.15034689934516265
+    },
+    {
+      "label": "2022",
+      "year": "2022",
+      "parent_holder_net_profit": 99.803,
+      "dividend_cash_total": 14.61854895,
+      "pay_out_ratio": 0.1464740433654299
+    },
+    {
+      "label": "2023",
+      "year": "2023",
+      "parent_holder_net_profit": 96.995,
+      "dividend_cash_total": 14.82501888,
+      "pay_out_ratio": 0.15284312469714934
+    },
+    {
+      "label": "2024",
+      "year": "2024",
+      "parent_holder_net_profit": 93.736,
+      "dividend_cash_total": 15.07326667,
+      "pay_out_ratio": 0.16080552477169924
+    },
+    {
+      "label": "2025",
+      "year": "2025",
+      "parent_holder_net_profit": 112.01,
+      "dividend_cash_total": 15.27629016,
+      "pay_out_ratio": 0.1363832707793947
+    }
+  ],
+  "source": {
+    "provider": "AInvest abroad/finance/v2/dividend_programme",
+    "symbol": "AAPL",
+    "unit": {
+      "money": "B USD",
+      "ratio": "ratio"
+    },
+    "rawExtends": {
+      "market": "185",
+      "sec_id": "S000007526",
+      "code": "AAPL",
+      "org_id": "T000038499",
+      "trade_target": null,
+      "code_hq": "AAPL",
+      "ths_code": "AAPL.O",
+      "category": "usa"
+    }
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "派息率",
+    "series": {
+      "parent_holder_net_profit": "归母净利润",
+      "dividend_cash_total": "现金分红总额",
+      "pay_out_ratio": "派息率"
+    }
+  },
+  "theme": "light"
+}

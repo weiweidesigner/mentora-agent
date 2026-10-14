@@ -1,0 +1,90 @@
+{
+  "type": "about-company",
+  "name": "公司资料",
+  "title": "公司资料",
+  "code": "NVDA",
+  "market": "185",
+  "exchange": "NASDAQ",
+  "companyName": "Nvidia Corporation",
+  "tagline": "The world leader in Artificial Intelligence Computing",
+  "fields": [
+    {
+      "key": "industry",
+      "label": "行业",
+      "value": "Semiconductor"
+    },
+    {
+      "key": "establishedDate",
+      "label": "成立日期",
+      "value": "--"
+    },
+    {
+      "key": "listingDate",
+      "label": "上市日期",
+      "value": "01/22/1999"
+    },
+    {
+      "key": "exchange",
+      "label": "交易所",
+      "value": "NASDAQ Stock Exchange"
+    },
+    {
+      "key": "employees",
+      "label": "全职员工",
+      "value": "42,000"
+    },
+    {
+      "key": "fiscalYearEnds",
+      "label": "财年结束日",
+      "value": "01-31"
+    },
+    {
+      "key": "website",
+      "label": "网站",
+      "value": "www.nvidia.com;investor.nvidia.com",
+      "href": "www.nvidia.com;investor.nvidia.com"
+    },
+    {
+      "key": "securityType",
+      "label": "证券类型",
+      "value": "Common stock"
+    }
+  ],
+  "wideFields": [
+    {
+      "key": "officeAddress",
+      "label": "办公地址",
+      "value": "2788 San Tomas Expressway, Santa Clara, CA 95051"
+    },
+    {
+      "key": "business",
+      "label": "主营业务",
+      "value": "Provides accelerated computing and graphics solutions."
+    }
+  ],
+  "introduction": "Nvidia Corporation was incorporated in California in April 1993 and re-incorporated in Delaware in April 1998. The company pioneered accelerated computing to help solve the most challenging computing problems. The company's two main businesses — GPU and Tegra processors — are based on a single underlying architecture. Nvidia has a platform strategy that brings together hardware, system software, programmable algorithms, libraries, systems and services to create unique value for the market it serves.",
+  "source": {
+    "provider": "AInvest stock page __NEXT_DATA__",
+    "url": "https://www.ainvest.com/stocks/NASDAQ-NVDA/"
+  },
+  "language": "zh-CN",
+  "componentUi": {
+    "About Company": "公司资料",
+    "Industry": "行业",
+    "Established Date": "成立日期",
+    "Listing Date": "上市日期",
+    "Exchange": "交易所",
+    "Full-time Employees": "全职员工",
+    "Fiscal Year Ends": "财年结束日",
+    "Website": "网站",
+    "Security Type": "证券类型",
+    "Office address": "办公地址",
+    "Business": "主营业务",
+    "Introduction": "公司介绍",
+    "Type": "类型",
+    "Stock": "股票",
+    "Value": "价值",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

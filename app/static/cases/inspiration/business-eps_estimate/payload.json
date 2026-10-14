@@ -1,0 +1,74 @@
+{
+  "name": "收益预估",
+  "title": "收益预估",
+  "code": "GOOGL",
+  "companyName": "Alphabet A",
+  "nextDate": "Sep 30, 2026",
+  "unit": "USD",
+  "data": [
+    {
+      "label": "Q3'25",
+      "statusKey": "Beat",
+      "status": "超预期",
+      "actual": 2.87,
+      "estimate": 2.2636,
+      "date": "Oct 29, 2025",
+      "surprise": 0.6064,
+      "surprisePercent": 0.26789185
+    },
+    {
+      "label": "Q4'25",
+      "statusKey": "Beat",
+      "status": "超预期",
+      "actual": 2.82,
+      "estimate": 2.6349,
+      "date": "Feb 4, 2026",
+      "surprise": 0.1851,
+      "surprisePercent": 0.070249345
+    },
+    {
+      "label": "Q1'26",
+      "statusKey": "Beat",
+      "status": "超预期",
+      "actual": 5.11,
+      "estimate": 2.6281,
+      "date": "Apr 29, 2026",
+      "surprise": 2.4819,
+      "surprisePercent": 0.94437046
+    },
+    {
+      "label": "Q2'26",
+      "statusKey": "Beat",
+      "status": "超预期",
+      "actual": 9.11,
+      "estimate": 2.8774,
+      "date": "Jul 22, 2026",
+      "surprise": 6.2326,
+      "surprisePercent": 2.1660527
+    },
+    {
+      "label": "Q3'26",
+      "statusKey": "Upcoming",
+      "status": "待披露",
+      "actual": null,
+      "estimate": 3.0181,
+      "date": "Sep 30, 2026",
+      "surprise": null,
+      "surprisePercent": null
+    }
+  ],
+  "source": "AInvest financial_reports_visual forecast",
+  "language": "zh-CN",
+  "actualLabel": "实际值",
+  "estimateLabel": "预估值",
+  "labels": {
+    "title": "收益预估",
+    "nextReport": "下次披露",
+    "noData": "暂无数据",
+    "date": "日期",
+    "upcoming": "待披露",
+    "above": "高于预期",
+    "below": "低于预期"
+  },
+  "theme": "light"
+}

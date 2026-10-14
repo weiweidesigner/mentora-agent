@@ -1,0 +1,682 @@
+{
+  "version": 1,
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "categories": [
+    {
+      "id": "reports",
+      "title": "市场报告",
+      "subtitle": "把市场线索整理成一页报告，连接证据与洞见。"
+    },
+    {
+      "id": "charts",
+      "title": "金融图表",
+      "subtitle": "33 个业务图表案例，从行情、财报到估值与资金。"
+    },
+    {
+      "id": "analysis",
+      "title": "数据分析",
+      "subtitle": "从问题到图表，探索趋势、对比、结构与研究过程。"
+    },
+    {
+      "id": "videos",
+      "title": "金融视频",
+      "subtitle": "从市场复盘和行业观点中寻找新的观察角度。"
+    },
+    {
+      "id": "art",
+      "title": "艺术绘图",
+      "subtitle": "用金融主题插画，把抽象想法变成可见的灵感。"
+    }
+  ],
+  "cases": [
+    {
+      "id": "business-about_company",
+      "title": "NVDA · 公司档案",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的公司档案，解释主要指标和观察方法。",
+      "preview": "通过公司档案理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-about_company/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-analyst_recommendations",
+      "title": "NVDA · 分析师推荐分布",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的分析师推荐分布，解释主要指标和观察方法。",
+      "preview": "通过分析师推荐分布理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-analyst_recommendations/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-average_rating_history",
+      "title": "NVDA · 历史评级趋势",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的历史评级趋势，解释主要指标和观察方法。",
+      "preview": "通过历史评级趋势理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-average_rating_history/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-balance_sheet",
+      "title": "GOOGL · 资产负债结构",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的资产负债结构，解释主要指标和观察方法。",
+      "preview": "通过资产负债结构理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-balance_sheet/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-capital_structure",
+      "title": "AAPL · 企业资本结构",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的企业资本结构，解释主要指标和观察方法。",
+      "preview": "通过企业资本结构理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-capital_structure/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-cash_flow",
+      "title": "NVDA · 现金流质量",
+      "tag": "历史快照",
+      "question": "请展示 NVDA 的现金流质量，解释主要指标和观察方法。",
+      "preview": "通过现金流质量理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-cash_flow/conversation.json",
+      "category": "charts",
+      "featured": true
+    },
+    {
+      "id": "business-congress_trades",
+      "title": "AAPL · 议员交易观察",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的议员交易观察，解释主要指标和观察方法。",
+      "preview": "通过议员交易观察理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-congress_trades/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-dividend_yield",
+      "title": "AAPL · 股息率走势",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的股息率走势，解释主要指标和观察方法。",
+      "preview": "通过股息率走势理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-dividend_yield/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-eps_estimate",
+      "title": "GOOGL · 每股收益预期",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的每股收益预期，解释主要指标和观察方法。",
+      "preview": "通过每股收益预期理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-eps_estimate/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-executive_profile",
+      "title": "AAPL · 管理层与董事会",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的管理层与董事会，解释主要指标和观察方法。",
+      "preview": "通过管理层与董事会理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-executive_profile/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-fundamental_investment_rating",
+      "title": "AAPL · 基本面五维评分",
+      "tag": "演示数据",
+      "question": "请展示 AAPL 的基本面五维评分，解释主要指标和观察方法。",
+      "preview": "通过基本面五维评分理解公司或行情的一个侧面，查看指标与交互明细。（演示数据）",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-fundamental_investment_rating/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-income_statement",
+      "title": "AAPL · 营收与利润",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的营收与利润，解释主要指标和观察方法。",
+      "preview": "通过营收与利润理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-income_statement/conversation.json",
+      "category": "charts",
+      "featured": true
+    },
+    {
+      "id": "business-insider_trades",
+      "title": "NVDA · 内部人交易",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的内部人交易，解释主要指标和观察方法。",
+      "preview": "通过内部人交易理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-insider_trades/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-institution_trades",
+      "title": "AAPL · 机构交易",
+      "tag": "演示数据",
+      "question": "请展示 AAPL 的机构交易，解释主要指标和观察方法。",
+      "preview": "通过机构交易理解公司或行情的一个侧面，查看指标与交互明细。（演示数据）",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-institution_trades/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-investment_rating",
+      "title": "GOOGL · 投资综合评级",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的投资综合评级，解释主要指标和观察方法。",
+      "preview": "通过投资综合评级理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-investment_rating/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-key_financial_indicators",
+      "title": "GOOGL · 关键财务指标",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的关键财务指标，解释主要指标和观察方法。",
+      "preview": "通过关键财务指标理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-key_financial_indicators/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-key_statistics",
+      "title": "AAPL · 关键统计数据",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的关键统计数据，解释主要指标和观察方法。",
+      "preview": "通过关键统计数据理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-key_statistics/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-key_stats",
+      "title": "NVDA · 行情关键指标",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的行情关键指标，解释主要指标和观察方法。",
+      "preview": "通过行情关键指标理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-key_stats/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-kline",
+      "title": "NVDA · 价格与成交量",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的价格与成交量，解释主要指标和观察方法。",
+      "preview": "通过价格与成交量理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-kline/conversation.json",
+      "category": "charts",
+      "featured": true
+    },
+    {
+      "id": "business-multi_intraday",
+      "title": "AAPL / MSFT / NVDA · 多股分时对比",
+      "tag": "行情快照",
+      "question": "请展示 AAPL / MSFT / NVDA 的多股分时对比，解释主要指标和观察方法。",
+      "preview": "通过多股分时对比理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-multi_intraday/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-payout_ratio",
+      "title": "AAPL · 利润与分红率",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的利润与分红率，解释主要指标和观察方法。",
+      "preview": "通过利润与分红率理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-payout_ratio/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-price_target_vs_actual",
+      "title": "NVDA · 目标价与股价",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的目标价与股价，解释主要指标和观察方法。",
+      "preview": "通过目标价与股价理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-price_target_vs_actual/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-related_section",
+      "title": "AAPL · 公司关联主题",
+      "tag": "演示数据",
+      "question": "请展示 AAPL 的公司关联主题，解释主要指标和观察方法。",
+      "preview": "通过公司关联主题理解公司或行情的一个侧面，查看指标与交互明细。（演示数据）",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-related_section/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-revenue_estimate",
+      "title": "GOOGL · 营收预期与实际",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的营收预期与实际，解释主要指标和观察方法。",
+      "preview": "通过营收预期与实际理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-revenue_estimate/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-revenue_expenses",
+      "title": "NVDA · 收入与成本流向",
+      "tag": "历史快照",
+      "question": "请展示 NVDA 的收入与成本流向，解释主要指标和观察方法。",
+      "preview": "通过收入与成本流向理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-revenue_expenses/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-revenue_geography",
+      "title": "NVDA · 收入地域分布",
+      "tag": "历史快照",
+      "question": "请展示 NVDA 的收入地域分布，解释主要指标和观察方法。",
+      "preview": "通过收入地域分布理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-revenue_geography/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-revenue_sources",
+      "title": "GOOGL · 业务收入拆分",
+      "tag": "历史快照",
+      "question": "请展示 GOOGL 的业务收入拆分，解释主要指标和观察方法。",
+      "preview": "通过业务收入拆分理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-revenue_sources/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-seasonals",
+      "title": "NVDA · 季节性表现",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的季节性表现，解释主要指标和观察方法。",
+      "preview": "通过季节性表现理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-seasonals/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-shareholder_returns",
+      "title": "AAPL · 股东回报比较",
+      "tag": "历史快照",
+      "question": "请展示 AAPL 的股东回报比较，解释主要指标和观察方法。",
+      "preview": "通过股东回报比较理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-shareholder_returns/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-trade_flow",
+      "title": "NVDA · 买卖资金流",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的买卖资金流，解释主要指标和观察方法。",
+      "preview": "通过买卖资金流理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-trade_flow/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-valuation",
+      "title": "NVDA · 估值全景",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的估值全景，解释主要指标和观察方法。",
+      "preview": "通过估值全景理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-valuation/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-volume_profile",
+      "title": "NVDA · 成交量价格分布",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的成交量价格分布，解释主要指标和观察方法。",
+      "preview": "通过成交量价格分布理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-volume_profile/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "business-wall_street_consensus",
+      "title": "NVDA · 华尔街共识",
+      "tag": "行情快照",
+      "question": "请展示 NVDA 的华尔街共识，解释主要指标和观察方法。",
+      "preview": "通过华尔街共识理解公司或行情的一个侧面，查看指标与交互明细。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/business-wall_street_consensus/conversation.json",
+      "category": "charts",
+      "featured": false
+    },
+    {
+      "id": "analysis-bar_chart",
+      "title": "季度营收对比",
+      "tag": "柱状图",
+      "question": "用柱状图展示季度营收对比，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为柱状图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-bar_chart/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-line_chart",
+      "title": "季度利润趋势",
+      "tag": "折线图",
+      "question": "用折线图展示季度利润趋势，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为折线图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-line_chart/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-group_line",
+      "title": "营收与利润趋势",
+      "tag": "分组折线图",
+      "question": "用分组折线图展示营收与利润趋势，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为分组折线图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-group_line/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-grouped_bar",
+      "title": "多指标并列比较",
+      "tag": "分组柱状图",
+      "question": "用分组柱状图展示多指标并列比较，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为分组柱状图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-grouped_bar/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-bar_line",
+      "title": "营收与利润率",
+      "tag": "柱折图",
+      "question": "用柱折图展示营收与利润率，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为柱折图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-bar_line/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-pie",
+      "title": "投资组合配置",
+      "tag": "饼图",
+      "question": "用饼图展示投资组合配置，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为饼图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-pie/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-double_ring_pie",
+      "title": "仓位与风险预算",
+      "tag": "双环图",
+      "question": "用双环图展示仓位与风险预算，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为双环图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-double_ring_pie/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-treemap",
+      "title": "资产权重矩形图",
+      "tag": "矩形图",
+      "question": "用矩形图展示资产权重矩形图，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为矩形图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-treemap/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-waterfall",
+      "title": "收入到利润的拆解",
+      "tag": "瀑布图",
+      "question": "用瀑布图展示收入到利润的拆解，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为瀑布图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-waterfall/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-dynamic_line",
+      "title": "财务指标动态演进",
+      "tag": "动态折线图",
+      "question": "用动态折线图展示财务指标动态演进，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为动态折线图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-dynamic_line/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-dynamic_bar",
+      "title": "行业排名动态变化",
+      "tag": "动态柱状图",
+      "question": "用动态柱状图展示行业排名动态变化，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为动态柱状图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-dynamic_bar/conversation.json",
+      "category": "analysis",
+      "featured": true
+    },
+    {
+      "id": "analysis-dynamic_bubble",
+      "title": "收益风险动态气泡",
+      "tag": "动态气泡图",
+      "question": "用动态气泡图展示收益风险动态气泡，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为动态气泡图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-dynamic_bubble/conversation.json",
+      "category": "analysis",
+      "featured": true
+    },
+    {
+      "id": "analysis-mind_map",
+      "title": "公司研究证据框架",
+      "tag": "思维导图",
+      "question": "用思维导图展示公司研究证据框架，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为思维导图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-mind_map/conversation.json",
+      "category": "analysis",
+      "featured": true
+    },
+    {
+      "id": "analysis-flowchart",
+      "title": "投研决策证据流程",
+      "tag": "流程图",
+      "question": "用流程图展示投研决策证据流程，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为流程图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-flowchart/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-journey",
+      "title": "从研究到复盘",
+      "tag": "旅程图",
+      "question": "用旅程图展示从研究到复盘，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为旅程图，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-journey/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-timeline",
+      "title": "财报研究日程",
+      "tag": "时间线",
+      "question": "用时间线展示财报研究日程，使用清楚标注的金融演示数据。",
+      "preview": "把分析问题转为时间线，探索趋势、对比、结构或过程。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-timeline/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "analysis-kline",
+      "title": "OHLCV 数据与 K线",
+      "tag": "K线",
+      "question": "把已提供的 OHLCV 数据展示成 K线，保留成交量与周期交互。",
+      "preview": "用开、高、低、收与成交量映射原生 K线，理解价格与成交量。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/analysis-kline/conversation.json",
+      "category": "analysis",
+      "featured": false
+    },
+    {
+      "id": "report-ashare",
+      "title": "A 股市场一页报告",
+      "tag": "市场全景",
+      "question": "分析 A 股市场表现，做成一页报告。",
+      "preview": "用指数、市场宽度、板块结构和成交分层复盘市场。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/report-ashare/conversation.json",
+      "category": "reports",
+      "featured": true
+    },
+    {
+      "id": "report-amd",
+      "title": "AMD 分析师共识报告",
+      "tag": "一页报告",
+      "question": "用一页报告梳理 AMD 分析师共识和目标价分歧。",
+      "preview": "以推荐分布、参考价格和目标价区间梳理机构预期。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/report-amd/conversation.json",
+      "category": "reports",
+      "featured": true
+    },
+    {
+      "id": "report-cashflow",
+      "title": "NVDA 现金流研究报告",
+      "tag": "一页报告",
+      "question": "用一页报告梳理 NVDA 的现金流来源与用途。",
+      "preview": "把经营、投资和融资现金流整理成一页研究报告。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/report-cashflow/conversation.json",
+      "category": "reports",
+      "featured": true
+    },
+    {
+      "id": "video-ai",
+      "title": "AI 行业与芯片投资",
+      "tag": "视频观点",
+      "question": "找关于AI 行业与芯片投资的金融分析视频，展示来源、发布日期和观看链接。",
+      "preview": "比较 AI 芯片竞争与财报观察点。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/video-ai/conversation.json",
+      "category": "videos",
+      "featured": true
+    },
+    {
+      "id": "video-market",
+      "title": "美股市场收盘复盘",
+      "tag": "视频观点",
+      "question": "找关于美股市场收盘复盘的金融分析视频，展示来源、发布日期和观看链接。",
+      "preview": "通过收盘评论梳理市场叙事与观察方向。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/video-market/conversation.json",
+      "category": "videos",
+      "featured": true
+    },
+    {
+      "id": "video-megacaps",
+      "title": "科技龙头观点比较",
+      "tag": "视频观点",
+      "question": "找关于科技龙头观点比较的金融分析视频，展示来源、发布日期和观看链接。",
+      "preview": "围绕苹果、Meta 和英伟达查看观点差异。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/video-megacaps/conversation.json",
+      "category": "videos",
+      "featured": true
+    },
+    {
+      "id": "art-1",
+      "title": "牛熊博弈的市场隐喻",
+      "tag": "金融主题插画",
+      "question": "画一张金融分析主题插画：用牛与熊的对峙表达市场情绪与风险的张力。",
+      "preview": "用牛与熊的对峙表达市场情绪与风险的张力。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/art-1/conversation.json",
+      "category": "art",
+      "featured": true
+    },
+    {
+      "id": "art-2",
+      "title": "全球资金流动的想象",
+      "tag": "金融主题插画",
+      "question": "画一张金融分析主题插画：以光河连接城市，表达全球资本流动的概念。",
+      "preview": "以光河连接城市，表达全球资本流动的概念。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/art-2/conversation.json",
+      "category": "art",
+      "featured": true
+    },
+    {
+      "id": "art-3",
+      "title": "AI 产业的研究视角",
+      "tag": "金融主题插画",
+      "question": "画一张金融分析主题插画：将芯片、分析师与投资景观组合成金融主题插画。",
+      "preview": "将芯片、分析师与投资景观组合成金融主题插画。",
+      "cachedDate": "2026-10-14",
+      "conversationUrl": "/static/cases/inspiration/art-3/conversation.json",
+      "category": "art",
+      "featured": true
+    }
+  ]
+}

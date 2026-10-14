@@ -1,0 +1,302 @@
+{
+  "type": "analyst-recommendations",
+  "name": "Recommendations",
+  "title": "Recommendations",
+  "code": "NVDA",
+  "market": "185",
+  "defaultPeriod": "6M",
+  "views": {
+    "1M": [
+      {
+        "month": "2026-10",
+        "timestamp": "2026-10-14T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      }
+    ],
+    "3M": [
+      {
+        "month": "2026-08",
+        "timestamp": "2026-08-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-09",
+        "timestamp": "2026-09-30T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-10",
+        "timestamp": "2026-10-14T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      }
+    ],
+    "6M": [
+      {
+        "month": "2026-05",
+        "timestamp": "2026-05-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-06",
+        "timestamp": "2026-06-30T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 22
+      },
+      {
+        "month": "2026-07",
+        "timestamp": "2026-07-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 22
+      },
+      {
+        "month": "2026-08",
+        "timestamp": "2026-08-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-09",
+        "timestamp": "2026-09-30T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-10",
+        "timestamp": "2026-10-14T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      }
+    ],
+    "1Y": [
+      {
+        "month": "2026-05",
+        "timestamp": "2026-05-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-06",
+        "timestamp": "2026-06-30T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 22
+      },
+      {
+        "month": "2026-07",
+        "timestamp": "2026-07-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 22
+      },
+      {
+        "month": "2026-08",
+        "timestamp": "2026-08-31T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-09",
+        "timestamp": "2026-09-30T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      },
+      {
+        "month": "2026-10",
+        "timestamp": "2026-10-14T00:00:00.000Z",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "total": 21
+      }
+    ]
+  },
+  "analystActions": [
+    {
+      "firm": "Cantor Fitzgerald",
+      "analyst": "C.J. Muse",
+      "action": "Reiterates",
+      "rating": "Overweight",
+      "previousRating": "Overweight",
+      "priceTarget": 350.0,
+      "previousPriceTarget": 350.0,
+      "priceTargetDelta": 0.0,
+      "date": "2026-10-01"
+    },
+    {
+      "firm": "Rosenblatt",
+      "analyst": "Kevin Cassidy",
+      "action": "Maintains",
+      "rating": "买入",
+      "previousRating": "Buy",
+      "priceTarget": 390.0,
+      "previousPriceTarget": 390.0,
+      "priceTargetDelta": 0.0,
+      "date": "2026-09-29"
+    },
+    {
+      "firm": "Piper Sandler",
+      "analyst": "David O'Connor",
+      "action": "Initiates Coverage on",
+      "rating": "Overweight",
+      "previousRating": null,
+      "priceTarget": 300.0,
+      "previousPriceTarget": null,
+      "priceTargetDelta": null,
+      "date": "2026-09-10"
+    },
+    {
+      "firm": "Needham",
+      "analyst": "N. Quinn Bolton",
+      "action": "Reiterates",
+      "rating": "买入",
+      "previousRating": "Buy",
+      "priceTarget": 300.0,
+      "previousPriceTarget": 300.0,
+      "priceTargetDelta": 0.0,
+      "date": "2026-09-04"
+    },
+    {
+      "firm": "Keybanc",
+      "analyst": "John Vinh",
+      "action": "Reiterates",
+      "rating": "Overweight",
+      "previousRating": "Overweight",
+      "priceTarget": 330.0,
+      "previousPriceTarget": 330.0,
+      "priceTargetDelta": 0.0,
+      "date": "2026-08-27"
+    }
+  ],
+  "source": {
+    "recommendations": "https://fundamental.ainvest.com/bff/analyst-rating/recommendations",
+    "actions": "https://fundamental.ainvest.com/bff/analyst-rating/actions"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "分析师推荐",
+    "subtitle": "月度推荐评级分布",
+    "period": "周期",
+    "legend": {
+      "strongBuy": "强烈买入",
+      "buy": "买入",
+      "hold": "持有",
+      "sell": "卖出",
+      "strongSell": "强烈卖出"
+    },
+    "actionsTitle": "近期分析师动作",
+    "firm": "机构",
+    "analyst": "分析师",
+    "action": "动作",
+    "rating": "评级",
+    "priceTarget": "目标价",
+    "date": "日期",
+    "emptyRecommendations": "暂无推荐评级分布数据。",
+    "emptyActions": "暂无近期分析师动作。",
+    "locale": "zh-CN",
+    "actions": {
+      "maintains": "维持",
+      "upgrades": "上调",
+      "downgrades": "下调",
+      "reiterates": "重申",
+      "initiates": "首次覆盖",
+      "raises": "上调目标价",
+      "lowers": "下调目标价"
+    },
+    "ratings": {
+      "strong buy": "强烈买入",
+      "buy": "买入",
+      "hold": "持有",
+      "sell": "卖出",
+      "strong sell": "强烈卖出",
+      "outperform": "跑赢大盘",
+      "overweight": "增持",
+      "neutral": "中性",
+      "underweight": "减持",
+      "sector weight": "行业权重",
+      "equal weight": "等权重"
+    }
+  },
+  "componentUi": {
+    "Industry": "行业",
+    "Business": "主营业务",
+    "Type": "类型",
+    "Buy": "买入",
+    "Sell": "卖出",
+    "Neutral": "中性",
+    "Stock": "股票",
+    "Rating": "评级",
+    "Value": "价值",
+    "Price": "价格",
+    "Total": "合计",
+    "Strong Buy": "强烈买入",
+    "Hold": "持有",
+    "Strong Sell": "强烈卖出",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

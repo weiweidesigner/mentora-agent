@@ -1,0 +1,53 @@
+{
+  "question": "找关于AI 行业与芯片投资的金融分析视频，展示来源、发布日期和观看链接。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "找关于AI 行业与芯片投资的金融分析视频，展示来源、发布日期和观看链接。",
+    "interpretation": "# AI 行业与芯片投资\n\n这是视频搜索能力曾检索到的金融主题视频，点击封面或链接可查看原内容。\n\n[[AIME_CHART:case:inspiration/video-ai/chart.html]]\n\n## 视频口径\n\n标题：AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings\n\n发布时间：2026-07-28。本次从既有视频搜索缓存中筛选，未重新验证原视频可播放性。视频为观点材料，标题不能单独作为财报或行情依据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/video-ai/chart.html",
+        "url": "/static/cases/inspiration/video-ai/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/video-ai/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "video-search",
+    "article": {
+      "title": "AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings",
+      "url": "https://www.ainvest.com/news/video-amd-helios-offers-edge-nvda-watch-earnings-2607/",
+      "published_at": "2026-07-28T14:34:27-04:00",
+      "published_date": "2026-07-28",
+      "source": "category:videos",
+      "author": "Featured Youtube Videos",
+      "summary": "",
+      "content_text": "AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings",
+      "image": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/pK1o5U1vOko.jpg",
+      "audio_url": "",
+      "duration_seconds": 0,
+      "video_url": "https://www.youtube.com/embed/pK1o5U1vOko",
+      "video_time_seconds": 594,
+      "matched_topics": [
+        "AI",
+        "NVDA"
+      ],
+      "semantic_terms": [
+        "NVDA",
+        "Jensen",
+        "Huang",
+        "Sees",
+        "AI",
+        "Driving",
+        "Chip",
+        "Boom",
+        "demand",
+        "outlook"
+      ],
+      "relevance_score": 8.0
+    },
+    "retrieval": "historical-cache"
+  }
+}

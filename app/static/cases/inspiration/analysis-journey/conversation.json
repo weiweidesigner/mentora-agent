@@ -1,0 +1,43 @@
+{
+  "question": "用旅程图展示从研究到复盘，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用旅程图展示从研究到复盘，使用清楚标注的金融演示数据。",
+    "interpretation": "# 从研究到复盘\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-journey/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-journey/chart.html",
+        "url": "/static/cases/inspiration/analysis-journey/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-journey/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "journey.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "journey.py"
+      ],
+      "primary_script": "journey.py",
+      "supporting_script": null,
+      "primary_confidence": 0.99,
+      "supporting_confidence": 0.88,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "events-and-causality",
+      "semantic_lens_confidence": 0.51,
+      "primary_purpose": "{\"chartType\": \"journey\", \"script\": \"journey.py\", \"purpose\": \"Render staged user, customer, product, or business journeys.\", \"rawDataContract\": {\"shape\": \"array<object>|object|string\", \"notes\": \"The model maps source information into ordered stages with actions, touchpoints, pain points, or outcomes.\"}, \"semanticChannels\": [{\"channel\": \"stage\", \"payloadField\": \"stages[].title\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"ordered journey phase\"}, {\"channel\": \"step.detail\", \"payloadField\": \"stages[].items[]\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"actions, thoughts, touchpoints, pain points, outcomes\"}], \"payloadShape\": {\"title\": \"string\", \"stages\": [{\"title\": \"string\", \"items\": [\"string\"]}]}, \"modelInstructions\": [\"Use 4-7 stages unless the user specifies otherwise.\", \"Keep each item short and action-oriented.\"]}",
+      "supporting_purpose": "",
+      "visual_encoding": "flow-and-relationship",
+      "visual_encoding_confidence": 0.97,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.98,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.54
+    },
+    "jevError": null
+  }
+}

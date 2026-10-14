@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recommendations</title>
+<style>
+:root{color-scheme:light;--business-text-171717:#171717;--business-text-697181:#697181;--business-text-404040:#404040;--business-bg-f1f1f1:#f1f1f1;--business-border-ececec:#ececec;--business-border-777:#777;--business-text-303236:#303236;--business-text-35373b:#35373b;--business-text-8a8a8a:#8a8a8a;--business-bg-303030:#303030;--business-text-f2f2f2:#f2f2f2;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-bg-e5e7eb:#e5e7eb;--business-bg-e7f8f0:#e7f8f0;--business-border-303030:#303030;--business-border-e5e7eb:#e5e7eb;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-171717:#e8edf5;--business-text-697181:#a8b3c4;--business-text-404040:#e8edf5;--business-bg-f1f1f1:#202b3a;--business-border-ececec:#293646;--business-border-777:#566477;--business-text-303236:#e8edf5;--business-text-35373b:#e8edf5;--business-text-8a8a8a:#a8b3c4;--business-bg-303030:#263242;--business-text-f2f2f2:#f5f7fb;--business-text-fff:#f5f7fb;--business-text-d8d8d8:#a8b3c4;--business-bg-e5e7eb:#293648;--business-bg-e7f8f0:#293648;--business-border-303030:#566477;--business-border-e5e7eb:#293646;}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;color:var(--business-text-171717);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+body{padding:0}
+.card{
+  width:100%;
+  max-width:none;
+  margin:0;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  padding:0;
+  box-shadow:none;
+}
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:0}
+.title{margin:0 0 4px;font-size:16px;line-height:1.2;font-weight:800;color:var(--business-text-171717);letter-spacing:0}
+.subtitle{margin:0;color:var(--business-text-697181);font-size:12px;line-height:1.25;font-weight:500}
+.tabs{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;padding:0;color:var(--business-text-171717);flex:none;width:max-content;max-width:100%;white-space:nowrap}
+.tab{
+  appearance:none;
+  border:0;
+  background:transparent;
+  color:var(--business-text-404040);
+  font:inherit;
+  font-size:14px;
+  font-weight:400;
+  line-height:1;
+  cursor:pointer;
+  white-space:nowrap;
+  border-radius:10px;
+  transition:background-color .14s ease,color .14s ease;
+  min-width:58px;
+  height:30px;
+  padding:0 13px;
+}
+.tab.active{background:var(--business-bg-f1f1f1);color:var(--business-text-171717);font-weight:700;box-shadow:none}
+.tab:focus-visible{outline:2px solid #4387f5;outline-offset:2px}
+.legend{
+  display:flex;
+  width:100%;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:10px 16px;
+  flex-wrap:wrap;
+  color:var(--business-text-697181);
+  font-size:12px;
+  line-height:1.2;
+  margin:-6px auto 0;
+}
+.legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.swatch{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.chart-wrap{position:relative;height:auto;margin-top:0;overflow:visible}
+svg{display:block;width:100%;height:280px;overflow:visible}
+.grid line{stroke:var(--business-border-ececec);stroke-width:1}
+.axis{stroke:var(--business-border-777);stroke-width:1.15}
+.axis-label{fill:var(--business-text-303236);font-size:10px;font-weight:400}
+.x-label{fill:var(--business-text-35373b);font-size:10px;font-weight:400}
+.area{opacity:.92}
+.hover-band{fill:var(--business-text-8a8a8a);fill-opacity:.08;opacity:0;transition:opacity .12s ease;pointer-events:none}
+.hover-band.active{opacity:1}
+.hover-zone{fill:rgba(0,0,0,.001);pointer-events:all;cursor:pointer}
+.tooltip{
+  --arrow-x:50%;
+  position:fixed;
+  pointer-events:none;
+  z-index:50;
+  min-width:210px;
+  border-radius:6px;
+  background:var(--business-bg-303030);
+  color:var(--business-text-f2f2f2);
+  padding:9px 11px;
+  font-size:12px;
+  line-height:1.45;
+  opacity:0;
+  transition:opacity .08s ease;
+  white-space:nowrap;
+}
+.tooltip::after{
+  content:"";
+  position:absolute;
+  left:var(--arrow-x);
+  bottom:-6px;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:6px solid var(--business-bg-303030);
+}
+.tooltip.show{opacity:1}
+.tip-title{color:var(--business-text-fff);font-weight:800;margin-bottom:5px}
+.tip-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:4px;min-width:188px}
+.tip-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.tip-label{color:var(--business-text-d8d8d8);font-size:12px;line-height:1.2}
+.tip-value{margin-left:auto;color:var(--business-text-fff);font-size:12px;font-weight:700;line-height:1.2}
+.divider{height:1px;background:var(--business-bg-e5e7eb);margin:10px 0 12px}
+.actions-title{margin:0 0 8px;font-size:16px;font-weight:800;color:var(--business-text-171717)}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:760px;border-collapse:collapse;table-layout:fixed}
+th{padding:0 10px 8px;text-align:left;color:var(--business-text-697181);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--business-border-e5e7eb);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--business-border-e5e7eb);font-size:12px;line-height:1.24;vertical-align:middle;color:var(--business-text-171717)}
+td:first-child,th:first-child{padding-left:0}
+th:nth-child(1),td:nth-child(1){width:22%}
+th:nth-child(2),td:nth-child(2){width:18%}
+th:nth-child(3),td:nth-child(3){width:14%}
+th:nth-child(4),td:nth-child(4){width:20%}
+th:nth-child(5),td:nth-child(5){width:14%;text-align:right}
+th:nth-child(6),td:nth-child(6){width:12%;text-align:right;padding-right:0}
+td:nth-child(1),td:nth-child(2){white-space:normal;word-break:break-word}
+td:nth-child(4){white-space:nowrap}
+td:nth-child(3),td:nth-child(5),td:nth-child(6){white-space:nowrap}
+.firm{font-weight:800}
+.tag{display:inline-flex;align-items:center;min-height:22px;padding:3px 8px;border-radius:8px;background:var(--business-bg-f1f1f1);color:var(--business-text-697181);font-weight:700;font-size:12px}
+.tag.up{background:var(--business-bg-e7f8f0);color:#00a866}
+.rating-up{color:#00a866}
+.rating-muted{color:var(--business-text-697181)}
+.arrow{color:var(--business-text-697181);margin:0 6px}
+.price{font-weight:650;white-space:nowrap}
+.delta{display:block;margin-top:3px;color:#00a866;font-size:11px;font-weight:700}
+.date{white-space:nowrap}
+.empty{height:220px;display:flex;align-items:center;justify-content:center;color:var(--business-text-697181);font-size:14px}
+@media(max-width:860px){
+  .card{padding:0}
+  .head{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:0}
+  .title{font-size:16px}
+  .subtitle{font-size:12px;margin-bottom:0}
+  .tabs{width:max-content;max-width:100%;overflow:auto}
+  .tab{min-width:58px;height:30px;font-size:14px}
+  .legend{justify-content:center;gap:6px 12px;margin:-8px auto 0}
+  .chart-wrap{height:auto}
+  svg{height:240px}
+  .axis-label,.x-label{font-size:10px}
+  .divider{margin:8px 0 10px}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:720px;display:table}
+  thead{display:table-header-group}
+  tbody{display:table-row-group}
+  tr{display:table-row}
+  th,td{display:table-cell;width:auto}
+  th:nth-child(5),td:nth-child(5),
+  th:nth-child(6),td:nth-child(6){text-align:right}
+  td::before{content:none}
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<main id="app"></main>
+<script>
+const payload = {"type": "analyst-recommendations", "name": "Recommendations", "title": "Recommendations", "code": "NVDA", "market": "185", "defaultPeriod": "6M", "views": {"1M": [{"month": "2026-10", "timestamp": "2026-10-14T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}], "3M": [{"month": "2026-08", "timestamp": "2026-08-31T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-09", "timestamp": "2026-09-30T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-10", "timestamp": "2026-10-14T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}], "6M": [{"month": "2026-05", "timestamp": "2026-05-31T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-06", "timestamp": "2026-06-30T00:00:00.000Z", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "total": 22}, {"month": "2026-07", "timestamp": "2026-07-31T00:00:00.000Z", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "total": 22}, {"month": "2026-08", "timestamp": "2026-08-31T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-09", "timestamp": "2026-09-30T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-10", "timestamp": "2026-10-14T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}], "1Y": [{"month": "2026-05", "timestamp": "2026-05-31T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-06", "timestamp": "2026-06-30T00:00:00.000Z", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "total": 22}, {"month": "2026-07", "timestamp": "2026-07-31T00:00:00.000Z", "strongBuy": 1, "buy": 21, "hold": 0, "sell": 0, "strongSell": 0, "total": 22}, {"month": "2026-08", "timestamp": "2026-08-31T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-09", "timestamp": "2026-09-30T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}, {"month": "2026-10", "timestamp": "2026-10-14T00:00:00.000Z", "strongBuy": 1, "buy": 20, "hold": 0, "sell": 0, "strongSell": 0, "total": 21}]}, "analystActions": [{"firm": "Cantor Fitzgerald", "analyst": "C.J. Muse", "action": "Reiterates", "rating": "Overweight", "previousRating": "Overweight", "priceTarget": 350.0, "previousPriceTarget": 350.0, "priceTargetDelta": 0.0, "date": "2026-10-01"}, {"firm": "Rosenblatt", "analyst": "Kevin Cassidy", "action": "Maintains", "rating": "买入", "previousRating": "Buy", "priceTarget": 390.0, "previousPriceTarget": 390.0, "priceTargetDelta": 0.0, "date": "2026-09-29"}, {"firm": "Piper Sandler", "analyst": "David O'Connor", "action": "Initiates Coverage on", "rating": "Overweight", "previousRating": null, "priceTarget": 300.0, "previousPriceTarget": null, "priceTargetDelta": null, "date": "2026-09-10"}, {"firm": "Needham", "analyst": "N. Quinn Bolton", "action": "Reiterates", "rating": "买入", "previousRating": "Buy", "priceTarget": 300.0, "previousPriceTarget": 300.0, "priceTargetDelta": 0.0, "date": "2026-09-04"}, {"firm": "Keybanc", "analyst": "John Vinh", "action": "Reiterates", "rating": "Overweight", "previousRating": "Overweight", "priceTarget": 330.0, "previousPriceTarget": 330.0, "priceTargetDelta": 0.0, "date": "2026-08-27"}], "source": {"recommendations": "https://fundamental.ainvest.com/bff/analyst-rating/recommendations", "actions": "https://fundamental.ainvest.com/bff/analyst-rating/actions"}, "language": "zh-CN", "labels": {"title": "分析师推荐", "subtitle": "月度推荐评级分布", "period": "周期", "legend": {"strongBuy": "强烈买入", "buy": "买入", "hold": "持有", "sell": "卖出", "strongSell": "强烈卖出"}, "actionsTitle": "近期分析师动作", "firm": "机构", "analyst": "分析师", "action": "动作", "rating": "评级", "priceTarget": "目标价", "date": "日期", "emptyRecommendations": "暂无推荐评级分布数据。", "emptyActions": "暂无近期分析师动作。", "locale": "zh-CN", "actions": {"maintains": "维持", "upgrades": "上调", "downgrades": "下调", "reiterates": "重申", "initiates": "首次覆盖", "raises": "上调目标价", "lowers": "下调目标价"}, "ratings": {"strong buy": "强烈买入", "buy": "买入", "hold": "持有", "sell": "卖出", "strong sell": "强烈卖出", "outperform": "跑赢大盘", "overweight": "增持", "neutral": "中性", "underweight": "减持", "sector weight": "行业权重", "equal weight": "等权重"}}, "componentUi": {"Industry": "行业", "Business": "主营业务", "Type": "类型", "Buy": "买入", "Sell": "卖出", "Neutral": "中性", "Stock": "股票", "Rating": "评级", "Value": "价值", "Price": "价格", "Total": "合计", "Strong Buy": "强烈买入", "Hold": "持有", "Strong Sell": "强烈卖出", "Age": "年龄"}, "theme": "light"};
+
+const periods = ['1M', '3M', '6M', '1Y'];
+const keys = ['strongBuy', 'buy', 'hold', 'sell', 'strongSell'];
+const bundle = payload.labels || {};
+const labels = bundle.legend || { strongBuy:'Strong Buy', buy:'Buy', hold:'Hold', sell:'Sell', strongSell:'Strong Sell' };
+const locale = bundle.locale || 'en-US';
+const colors = { strongBuy:'#189e6e', buy:'#69c393', hold:'#e3aa3e', sell:'#e8745b', strongSell:'#d8453f' };
+let active = payload.defaultPeriod || '6M';
+
+function t(key, fallback) {
+  return bundle[key] || fallback;
+}
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fmtMonth(value) {
+  const d = new Date(`${value}-01T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return String(value || '');
+  return d.toLocaleDateString(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+function fmtDate(value) {
+  const d = new Date(`${String(value || '').slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return String(value || '');
+  return d.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+}
+function money(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '--';
+  return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+function signedMoney(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n === 0) return '';
+  return `${n > 0 ? '+' : '-'}${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+}
+function actionTone(action) {
+  return /upgrade|raise|initiates|reinstates/i.test(action || '') ? 'up' : '';
+}
+function actionLabel(action) {
+  const raw = String(action || '');
+  return bundle.actions?.[raw.toLowerCase()] || raw || '--';
+}
+function ratingLabel(value) {
+  const raw = String(value || '');
+  return bundle.ratings?.[raw.toLowerCase()] || raw;
+}
+function ratingHtml(prev, next) {
+  const tone = (v) => /buy|outperform|overweight|positive/i.test(v || '') ? 'rating-up' : 'rating-muted';
+  if (prev) return `<span class="${tone(prev)}">${esc(ratingLabel(prev))}</span><span class="arrow">→</span><span class="${tone(next)}">${esc(ratingLabel(next) || '--')}</span>`;
+  return `<span class="${tone(next)}">${esc(ratingLabel(next) || '--')}</span>`;
+}
+
+function draw() {
+  const rows = payload.views?.[active] || [];
+  const tabs = periods.map((p) => `<button class="tab ${p === active ? 'active' : ''}" type="button" role="tab" aria-selected="${p === active ? 'true' : 'false'}" data-period="${p}">${p}</button>`).join('');
+  const legend = keys.map((k) => `<span class="legend-item"><span class="swatch" style="background:${colors[k]}"></span>${labels[k]}</span>`).join('');
+
+  document.getElementById('app').innerHTML = `
+    <section class="card">
+      <header class="head">
+        <div>
+          <h1 class="title">${esc(t('title', 'Recommendations'))}</h1>
+          <p class="subtitle">${esc(t('subtitle', 'Monthly recommendation distribution'))}</p>
+        </div>
+        <nav class="tabs" role="tablist" aria-label="${esc(t('period', 'Period'))}">${tabs}</nav>
+      </header>
+      ${rows.length ? `<div class="chart-wrap"><svg id="chart" role="img"></svg><div class="legend" aria-label="Chart legend">${legend}</div><aside class="tooltip" id="tip"></aside></div>` : `<div class="empty">${esc(t('emptyRecommendations', 'No recommendation distribution data.'))}</div>`}
+      <div class="divider"></div>
+      <h2 class="actions-title">${esc(t('actionsTitle', 'Recent Analyst Actions'))}</h2>
+      ${renderActions(payload.analystActions || [])}
+    </section>`;
+
+  document.querySelectorAll('.tab').forEach((btn) => btn.addEventListener('click', () => {
+    active = btn.dataset.period;
+    draw();
+  }));
+
+  if (rows.length) drawChart(rows);
+}
+
+function renderActions(rows) {
+  if (!rows.length) return `<div class="empty">${esc(t('emptyActions', 'No recent analyst actions are available.'))}</div>`;
+  const body = rows.map((r) => `
+    <tr>
+      <td data-label="${esc(t('firm', 'Firm'))}" class="firm">${esc(r.firm)}</td>
+      <td data-label="${esc(t('analyst', 'Analyst'))}">${esc(r.analyst)}</td>
+      <td data-label="${esc(t('action', 'Action'))}"><span class="tag ${actionTone(r.action)}">${esc(actionLabel(r.action))}</span></td>
+      <td data-label="${esc(t('rating', 'Rating'))}">${ratingHtml(r.previousRating, r.rating)}</td>
+      <td data-label="${esc(t('priceTarget', 'Price Target'))}"><span class="price">${money(r.priceTarget)}</span><span class="delta">${signedMoney(r.priceTargetDelta)}</span></td>
+      <td data-label="${esc(t('date', 'Date'))}" class="date">${esc(fmtDate(r.date))}</td>
+    </tr>`).join('');
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>${esc(t('firm', 'Firm'))}</th><th>${esc(t('analyst', 'Analyst'))}</th><th>${esc(t('action', 'Action'))}</th><th>${esc(t('rating', 'Rating'))}</th><th>${esc(t('priceTarget', 'Price Target')).replace(' ', '<br>')}</th><th>${esc(t('date', 'Date'))}</th></tr></thead>
+    <tbody>${body}</tbody>
+  </table></div>`;
+}
+
+function areaPath(top, bottom) {
+  const a = top.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`);
+  const b = [...bottom].reverse().map((p) => `L${p.x.toFixed(2)},${p.y.toFixed(2)}`);
+  return [...a, ...b, 'Z'].join(' ');
+}
+
+function drawChart(rows) {
+  const svg = document.getElementById('chart');
+  const tip = document.getElementById('tip');
+  const wrap = svg.closest('.chart-wrap');
+  const W = Math.max(360, Math.round(wrap.clientWidth || 900));
+  const H = Math.max(220, Math.round(wrap.clientHeight || 280));
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+
+  const maxTotal = Math.max(1, ...rows.map((r) => keys.reduce((s, k) => s + Number(r[k] || 0), 0)));
+  const yMax = Math.max(1, Math.ceil(maxTotal / 5) * 5);
+  const ticks = Array.from({ length: 5 }, (_, i) => Math.round(yMax - yMax * i / 4));
+
+  const axisLabels = ticks.map(String);
+  const estimateTextWidth = (label) => String(label || '').length * 7.2;
+  const rightAxisWidth = Math.max(22, ...axisLabels.map(estimateTextWidth));
+  const axisInnerGap = 4;
+  const pad = {
+    top: 2,
+    right: Math.ceil(rightAxisWidth + axisInnerGap),
+    bottom: 44,
+    left: 0
+  };
+
+  const chartW = Math.max(1, W - pad.left - pad.right);
+  const chartH = Math.max(1, H - pad.top - pad.bottom);
+  const x = (i) => rows.length === 1 ? pad.left + chartW / 2 : pad.left + i / (rows.length - 1) * chartW;
+  const y = (v) => pad.top + (yMax - Number(v || 0)) / Math.max(1, yMax) * chartH;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const el = (name, attrs = {}, parent = svg) => {
+    const node = document.createElementNS(ns, name);
+    Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+    parent.appendChild(node);
+    return node;
+  };
+
+  const gridLayer = el('g', { class: 'grid' });
+  const areaLayer = el('g');
+  const hoverLayer = el('g');
+  const labelLayer = el('g');
+  const zoneLayer = el('g');
+
+  ticks.forEach((t, i) => {
+    const yy = pad.top + chartH * i / 4;
+    el('line', { x1: pad.left, y1: yy, x2: W - pad.right, y2: yy, class: i === ticks.length - 1 ? 'axis' : 'grid' }, gridLayer);
+    el('text', { x: W - 4, y: yy + 4, 'text-anchor': 'end', class: 'axis-label' }, gridLayer).textContent = axisLabels[i];
+  });
+
+  const baselines = rows.map(() => 0);
+  const areas = [];
+  for (const key of keys) {
+    const bottom = rows.map((_r, i) => ({ x: x(i), y: y(baselines[i]) }));
+    rows.forEach((r, i) => { baselines[i] += Number(r[key] || 0); });
+    const top = rows.map((_r, i) => ({ x: x(i), y: y(baselines[i]) }));
+    areas.push({ key, path: areaPath(top, bottom) });
+  }
+  areas.forEach((a) => el('path', { class: 'area', d: a.path, fill: colors[a.key] }, areaLayer));
+
+  const labelIndexes = [0, Math.floor((rows.length - 1) / 2), rows.length - 1];
+  labelIndexes.forEach((idx) => {
+    const row = rows[idx];
+    if (!row) return;
+    el('text', {
+      x: x(idx),
+      y: H - 10,
+      'text-anchor': idx === 0 ? 'start' : idx === rows.length - 1 ? 'end' : 'middle',
+      class: 'x-label'
+    }, labelLayer).textContent = fmtMonth(row.month);
+  });
+
+  function setTooltipPosition(clientX) {
+    const margin = 10;
+    const gap = 6;
+    const wrapRect = wrap.getBoundingClientRect();
+    const firstGridLine = svg.querySelector('.grid line');
+    const box = tip.getBoundingClientRect();
+    const width = box.width || 220;
+    const height = box.height || 120;
+    const left = Math.max(margin, Math.min(window.innerWidth - margin - width, clientX - width / 2));
+    const firstGridY = firstGridLine ? firstGridLine.getBoundingClientRect().top : wrapRect.top + (pad.top / H) * wrapRect.height;
+    const top = firstGridY - height - gap;
+    const arrowX = Math.max(12, Math.min(width - 12, clientX - left));
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+    tip.style.setProperty('--arrow-x', arrowX + 'px');
+  }
+
+  function showTooltip(clientX, row) {
+    tip.innerHTML = `
+      <div class="tip-title">${esc(fmtMonth(row.month))}</div>
+      ${keys.map((k) => `
+        <div class="tip-row">
+          <span class="tip-dot" style="background:${colors[k]}"></span>
+          <span class="tip-label">${labels[k]}</span>
+          <span class="tip-value">${Number(row[k] || 0)}</span>
+        </div>`).join('')}
+`;
+    tip.classList.add('show');
+    setTooltipPosition(clientX);
+  }
+
+  function hideTooltip() {
+    tip.classList.remove('show');
+  }
+
+  function clearBands() {
+    hoverLayer.querySelectorAll('.hover-band').forEach((node) => node.classList.remove('active'));
+  }
+
+  rows.forEach((row, index) => {
+    const cx = x(index);
+    const left = index === 0 ? pad.left : (x(index - 1) + cx) / 2;
+    const right = index === rows.length - 1 ? W - pad.right : (cx + x(index + 1)) / 2;
+    const band = el('rect', { x: left, y: pad.top, width: Math.max(1, right - left), height: chartH, class: 'hover-band' }, hoverLayer);
+    const zone = el('rect', { x: left, y: pad.top, width: Math.max(1, right - left), height: chartH, class: 'hover-zone' }, zoneLayer);
+
+    const activate = () => {
+      clearBands();
+      band.classList.add('active');
+      const rect = svg.getBoundingClientRect();
+      showTooltip(rect.left + (cx / W) * rect.width, row);
+    };
+
+    zone.addEventListener('pointerenter', activate);
+    zone.addEventListener('pointermove', activate);
+    zone.addEventListener('pointerleave', () => {
+      band.classList.remove('active');
+      hideTooltip();
+    });
+  });
+  let touchStart = null;
+  svg.style.touchAction = 'pan-y';
+  svg.onpointerdown = (event) => {
+    if (event.pointerType === 'touch') touchStart = { x:event.clientX,y:event.clientY };
+  };
+  svg.onpointermove = (event) => {
+    if (event.pointerType !== 'touch' || !touchStart) return;
+    const dx = Math.abs(event.clientX - touchStart.x), dy = Math.abs(event.clientY - touchStart.y);
+    if (dy > 6 && dy > dx) { clearBands(); hideTooltip(); return; }
+    const rect = svg.getBoundingClientRect();
+    const sx = (event.clientX - rect.left) * W / rect.width;
+    const last = rows.length - 1;
+    const nearest = last ? Math.max(0, Math.min(last, Math.round((sx - x(0)) / (x(last) - x(0)) * last))) : 0;
+    clearBands();
+    hoverLayer.querySelectorAll('.hover-band')[nearest]?.classList.add('active');
+    showTooltip(rect.left + x(nearest) / W * rect.width, rows[nearest]);
+  };
+  svg.onpointercancel = () => { touchStart = null; clearBands(); hideTooltip(); };
+  svg.onpointerup = () => { touchStart = null; };
+
+}
+
+window.addEventListener('resize', () => window.requestAnimationFrame(() => {
+  const rows = payload.views?.[active] || [];
+  if (rows.length) drawChart(rows);
+}));
+
+draw();
+
+</script>
+</body>
+</html>

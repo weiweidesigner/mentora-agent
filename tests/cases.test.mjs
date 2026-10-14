@@ -6,21 +6,23 @@ import { JSDOM } from 'jsdom';
 
 const source = readFileSync(new URL('../app/static/cases.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 20));
-function setup(url = 'https://example.com/', text = '完整缓存答案') {
-  const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section><header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
+function setup(url = 'https://example.com/', text = '完整缓存答案', catalog = null) {
+  const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section>${catalog ? '<section id="inspirationSquare"><div id="inspirationTabs"></div><div id="inspirationPanel"></div></section>' : ''}<header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
   const w = dom.window;
+  w.matchMedia = () => ({ matches: false, addEventListener() {} });
   const rows = [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
   const requests = [], sent = [];
   const conversation = w.document.querySelector('main'), input = w.document.querySelector('input'), messages = w.document.querySelector('#messages'), form = w.document.querySelector('form');
   form.requestSubmit = () => sent.push(input.value);
-  const context = vm.createContext({window:w, document:w.document, history:w.history, location:w.location, URL, URLSearchParams, structuredClone, requestAnimationFrame: fn => fn(), conversation, input, messages, form,
+  const context = vm.createContext({window:w, document:w.document, history:w.history, location:w.location, URL, URLSearchParams, structuredClone, performance,
+    ResizeObserver: class { observe() {} disconnect() {} }, requestAnimationFrame: fn => { if (fn.name !== 'moveLanes') fn(); }, conversation, input, messages, form,
     escapeHtml: value => value, isMobileLayout: () => false, closeActivityDrawer: () => {}, updateComposerState: () => {},
     startNewChat: () => {w.dispatchEvent(new w.Event('veya:chat-navigate')); messages.innerHTML=''; conversation.classList.add('is-empty'); input.value='';},
     addUserMessage: question => {const el=w.document.createElement('p');el.textContent=question;messages.append(el);},
     createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
     sanitizeUserFacingInsight: value => value, formatInsight: value => `<p>${value}</p>`,
     renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
-    fetch: async url => {requests.push(url); return {ok:true,json:async()=>url.endsWith('manifest.json')?rows:{question:rows[0].question,answer:{interpretation:text}}};},
+    fetch: async url => {requests.push(url); const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0]; return {ok:true,json:async()=>url.includes('/inspiration/manifest.json')?catalog:url.endsWith('manifest.json')?rows:{question:row.question,answer:{interpretation:text}}};},
   });
   vm.runInContext(source,context);
   return {w, requests, sent, conversation, messages};
@@ -65,16 +67,16 @@ test('cached answers reveal progressively and stop when leaving the case', async
 test('reduced motion shows the complete cached answer immediately', async () => {
   const text='完整答案'.repeat(100);
   const h=setup('https://example.com/',text);
-  h.w.matchMedia=()=>({matches:true});await tick();
+  h.w.matchMedia=()=>({matches:true,addEventListener(){}});await tick();
   h.w.document.querySelector('.caseCard').click();await tick();
   assert.ok(h.messages.textContent.includes(text));
   assert.equal(h.messages.querySelector('.cachedReplay'),null);
 });
 
-test('all six published cases have complete answers and portable cached charts', () => {
+test('published home cases have complete answers and portable cached charts', () => {
   const rows=JSON.parse(readFileSync(new URL('../app/static/cases/manifest.json',import.meta.url),'utf8'));
-  assert.equal(rows.length,6);
-  assert.equal(new Set(rows.map(row=>row.id)).size,6);
+  assert.equal(rows.length,7);
+  assert.equal(new Set(rows.map(row=>row.id)).size,rows.length);
   for (const row of rows) {
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
@@ -122,4 +124,48 @@ test('A-share case combines narrative analysis with one integrated StreamViz rep
   assert.equal(evidence.distribution.length,13);
   for (const groups of [evidence.distribution,evidence.boardComparison,evidence.turnoverTiers]) assert.equal(groups.reduce((total,row)=>total+row.count,0),evidence.validCount);
   assert.ok(evidence.rankings.every(group=>group.rows.length===10));
+});
+
+test('inspiration categories switch by click and keyboard and replay without inference', async () => {
+  const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
+  const h=setup('https://example.com/','缓存案例',catalog);await tick();
+  const tabs=h.w.document.querySelector('#inspirationTabs');
+  assert.equal(tabs.querySelector('[aria-selected="true"]').textContent,'推荐');
+  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,1);
+  tabs.querySelector('[data-category="art"]').click();
+  assert.equal(h.w.document.querySelector('#inspirationPanel h3').textContent,'艺术绘图');
+  tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
+  assert.equal(tabs.querySelector('[aria-selected="true"]').textContent,'金融图表');
+  const card=h.w.document.querySelector('#inspirationPanel .caseCard');card.focus();card.click();await tick();
+  assert.ok(h.messages.textContent.includes('查看财报'));
+  assert.equal(h.w.document.querySelectorAll('.caseOverlay #inspirationSquare').length,0);
+  h.w.document.querySelector('#caseBackButton').click();
+  assert.equal(h.w.document.activeElement,card);
+  assert.deepEqual(h.sent,[]);
+  assert.equal(h.w.document.querySelectorAll('main > #inspirationSquare').length,1);
+});
+
+test('all inspiration cards have portable, non-empty caches and complete component coverage', () => {
+  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
+  const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
+  assert.equal(catalog.cases.length,59);
+  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,59);
+  const counts={reports:3,charts:33,analysis:17,videos:3,art:3};
+  for(const [category,count] of Object.entries(counts))assert.equal(catalog.cases.filter(row=>row.category===category).length,count);
+  for(const row of catalog.cases){
+    const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
+    assert.equal(cached.question,row.question);
+    assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
+    assert.ok(cached.answer.interpretation.length>100);
+    for(const artifact of cached.answer.reportArtifacts){
+      const text=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
+      assert.ok(text.length>500);
+      assert.doesNotMatch(text,/\/Users\/|\/home\/ubuntu\//);
+      assert.ok(cached.answer.interpretation.includes(`[[AIME_CHART:${artifact.path}]]`));
+    }
+    if(row.category==='analysis')assert.ok(cached.provenance.jevDecision.primary_script);
+    if(cached.provenance.sample)assert.match(cached.answer.interpretation,/演示数据/);
+    if(row.category==='videos')assert.match(cached.provenance.article.video_url,/^https:\/\//);
+    if(row.category==='art')assert.ok(existsSync(new URL(row.id+'/'+row.id+'.png',root)));
+  }
 });

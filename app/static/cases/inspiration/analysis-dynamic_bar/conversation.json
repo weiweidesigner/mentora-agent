@@ -1,0 +1,43 @@
+{
+  "question": "用动态柱状图展示行业排名动态变化，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用动态柱状图展示行业排名动态变化，使用清楚标注的金融演示数据。",
+    "interpretation": "# 行业排名动态变化\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-dynamic_bar/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-dynamic_bar/chart.html",
+        "url": "/static/cases/inspiration/analysis-dynamic_bar/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-dynamic_bar/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "dynamic_bar.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "dynamic_bar.py"
+      ],
+      "primary_script": "dynamic_bar.py",
+      "supporting_script": null,
+      "primary_confidence": 0.96,
+      "supporting_confidence": 0.77,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "comparison-and-ranking",
+      "semantic_lens_confidence": 0.9,
+      "primary_purpose": "{\"chartType\": \"dynamic-bar\", \"script\": \"dynamic_bar.py\", \"purpose\": \"Show an animated horizontal ranking chart over time without parent-group classification.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Use one row per item per frame. Each row must contain a frame, an item name, and a numeric value.\"}, \"displayMode\": {\"mode\": \"flat\", \"behavior\": \"Do not show a legend. Assign each ranked item a stable color from the chart palette, and keep that item's color consistent across all frames.\"}, \"semanticChannels\": [{\"channel\": \"frame\", \"payloadField\": \"encode.time or encode.x\", \"required\": true, \"acceptedTypes\": [\"date\", \"string\", \"number\"], \"semantics\": \"animation frame or period\"}, {\"channel\": \"category\", \"payloadField\": \"encode.name or encode.category; legacy encode.series when no name/category is supplied\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"ranked bar/item name\"}, {\"channel\": \"value\", \"payloadField\": \"encode.value or encode.y\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"bar length and ranking value\"}], \"payloadShape\": {\"chartName\": \"dynamic_bar\", \"title\": \"string\", \"unit\": \"string\", \"topN\": \"number\", \"valueLabel\": \"string\", \"t",
+      "supporting_purpose": "",
+      "visual_encoding": "cross-sectional-comparison",
+      "visual_encoding_confidence": 0.99,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.98,
+      "mark_strategy": "leaders-laggards",
+      "mark_strategy_confidence": 0.72
+    },
+    "jevError": null
+  }
+}

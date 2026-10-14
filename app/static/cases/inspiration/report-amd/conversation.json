@@ -1,0 +1,21 @@
+{
+  "question": "用一页报告梳理 AMD 分析师共识和目标价分歧。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用一页报告梳理 AMD 分析师共识和目标价分歧。",
+    "interpretation": "# AMD 分析师共识报告\n\n共识买入与目标价分歧需要同时观察。\n\n[[AIME_CHART:case:inspiration/report-amd/chart.html]]\n\n## 数据口径\n\n数据来自已缓存 AMD 案例中的 AInvest 分析师评级；评级窗口与参考收盘价日期不同，完整口径见案例正文。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/report-amd/chart.html",
+        "url": "/static/cases/inspiration/report-amd/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/report-amd/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "streamviz",
+    "dataDate": "2026-10-13"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "type": "shareholder-returns",
+  "name": "Shareholder Returns",
+  "title": "股东回报",
+  "code": "AAPL",
+  "market": "185",
+  "exchange": "NASDAQ",
+  "stockHeader": "AAPL",
+  "returns": [
+    {
+      "period": "7 Day",
+      "stock": -0.2,
+      "industry": 4.0,
+      "market": -0.6,
+      "stockLabel": "-0.2%",
+      "industryLabel": "+4.0%",
+      "marketLabel": "-0.6%"
+    },
+    {
+      "period": "30 Day",
+      "stock": 13.6,
+      "industry": -6.7,
+      "market": 0.8,
+      "stockLabel": "+13.6%",
+      "industryLabel": "-6.7%",
+      "marketLabel": "+0.8%"
+    },
+    {
+      "period": "90 Day",
+      "stock": 22.9,
+      "industry": 36.7,
+      "market": 3.5,
+      "stockLabel": "+22.9%",
+      "industryLabel": "+36.7%",
+      "marketLabel": "+3.5%"
+    },
+    {
+      "period": "1 Year",
+      "stock": 55.8,
+      "industry": 134.2,
+      "market": 16.5,
+      "stockLabel": "+55.8%",
+      "industryLabel": "+134.2%",
+      "marketLabel": "+16.5%"
+    },
+    {
+      "period": "3 Year",
+      "stock": 83.0,
+      "industry": 173.4,
+      "market": 65.4,
+      "stockLabel": "+83.0%",
+      "industryLabel": "+173.4%",
+      "marketLabel": "+65.4%"
+    },
+    {
+      "period": "5 Year",
+      "stock": null,
+      "industry": null,
+      "market": null,
+      "stockLabel": "--",
+      "industryLabel": "--",
+      "marketLabel": "--"
+    }
+  ],
+  "question": "Is AAPL overvalued?",
+  "insights": [
+    {
+      "label": "Return vs Industry",
+      "text": "Return vs Industry: AAPL underperformed the Consumer Electronics industry which returned 134.2% over the past year.",
+      "tone": "negative"
+    },
+    {
+      "label": "Return vs Market",
+      "text": "Return vs Market: AAPL exceeded the US Market which returned 16.5% over the past year.",
+      "tone": "positive"
+    }
+  ],
+  "includeDividendReturns": false,
+  "source": {
+    "provider": "AInvest analysis page",
+    "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/analysis/"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "股东回报",
+    "subtitle": "按周期对比个股、行业与市场总回报",
+    "stockFallback": "个股",
+    "industry": "行业",
+    "market": "市场",
+    "empty": "暂无股东回报数据。",
+    "chartAria": "按周期对比股东回报的分组柱状图",
+    "periods": {
+      "7 Day": "7日",
+      "30 Day": "30日",
+      "90 Day": "90日",
+      "1 Year": "1年",
+      "3 Year": "3年",
+      "5 Year": "5年"
+    }
+  },
+  "theme": "light"
+}

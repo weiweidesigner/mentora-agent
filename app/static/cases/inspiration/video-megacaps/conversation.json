@@ -1,0 +1,52 @@
+{
+  "question": "找关于科技龙头观点比较的金融分析视频，展示来源、发布日期和观看链接。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "找关于科技龙头观点比较的金融分析视频，展示来源、发布日期和观看链接。",
+    "interpretation": "# 科技龙头观点比较\n\n这是视频搜索能力曾检索到的金融主题视频，点击封面或链接可查看原内容。\n\n[[AIME_CHART:case:inspiration/video-megacaps/chart.html]]\n\n## 视频口径\n\n标题：The Big 3: AAPL, META, NVDA\n\n发布时间：2026-07-28。本次从既有视频搜索缓存中筛选，未重新验证原视频可播放性。视频为观点材料，标题不能单独作为财报或行情依据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/video-megacaps/chart.html",
+        "url": "/static/cases/inspiration/video-megacaps/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/video-megacaps/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "video-search",
+    "article": {
+      "title": "The Big 3: AAPL, META, NVDA",
+      "url": "https://www.ainvest.com/news/video-big-3-aapl-meta-nvda-2607/",
+      "published_at": "2026-07-28T13:32:43-04:00",
+      "published_date": "2026-07-28",
+      "source": "category:videos",
+      "author": "Featured Youtube Videos",
+      "summary": "",
+      "content_text": "The Big 3: AAPL, META, NVDA",
+      "image": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/BjPKCEs-e3k.jpg",
+      "audio_url": "",
+      "duration_seconds": 0,
+      "video_url": "https://www.youtube.com/embed/BjPKCEs-e3k",
+      "video_time_seconds": 910,
+      "matched_topics": [
+        "AAPL",
+        "AI"
+      ],
+      "semantic_terms": [
+        "AAPL",
+        "苹果近期的",
+        "AI",
+        "战略",
+        "新品周期与重要公司动态",
+        "能否成为下一轮股价催化",
+        "结合华尔街一致预期",
+        "分析师评级与目标价空间",
+        "历史股东回报"
+      ],
+      "relevance_score": 7.5
+    },
+    "retrieval": "historical-cache"
+  }
+}

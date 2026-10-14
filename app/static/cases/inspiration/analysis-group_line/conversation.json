@@ -1,0 +1,43 @@
+{
+  "question": "用分组折线图展示营收与利润趋势，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用分组折线图展示营收与利润趋势，使用清楚标注的金融演示数据。",
+    "interpretation": "# 营收与利润趋势\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-group_line/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-group_line/chart.html",
+        "url": "/static/cases/inspiration/analysis-group_line/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-group_line/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "group_line.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "group_line.py"
+      ],
+      "primary_script": "group_line.py",
+      "supporting_script": null,
+      "primary_confidence": 0.99,
+      "supporting_confidence": 0.81,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "trend-and-inflection",
+      "semantic_lens_confidence": 0.99,
+      "primary_purpose": "{\"chartType\": \"group-line\", \"script\": \"group_line.py\", \"purpose\": \"Compare multiple numeric series over the same ordered x-axis.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Rows may be wide or tidy. Convert tidy rows to the payload style expected by the script if needed.\"}, \"semanticChannels\": [{\"channel\": \"x\", \"payloadField\": \"xField\", \"required\": true, \"acceptedTypes\": [\"date\", \"string\", \"number\"], \"semantics\": \"time, period, ordered category\"}, {\"channel\": \"line.y[]\", \"payloadField\": \"series[].field\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"multiple comparable numeric measures or entities\"}, {\"channel\": \"series.label\", \"payloadField\": \"series[].label\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"reader-facing series names\"}, {\"channel\": \"yAxis.name\", \"payloadField\": \"rightAxis.label\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"reader-facing y-axis description or metric name, such as 累计收益率; ordinary grouped-line charts should use the right y-axis only\"}], \"payloadShape\": {\"type\": \"group-line\", \"title\": \"string\", \"xField\": \"string\", \"data\": \"array<object>\", \"series\": [{\"field\": \"string\", \"label\": \"string\", \"ax",
+      "supporting_purpose": "",
+      "visual_encoding": "trend-and-inflection",
+      "visual_encoding_confidence": 0.67,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.99,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.74
+    },
+    "jevError": null
+  }
+}

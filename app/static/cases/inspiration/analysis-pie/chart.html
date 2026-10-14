@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pie</title>
+<style>
+:root{color-scheme:light;--business-text-151922:#151922;--business-text-687386:#687386;--business-text-fff:#fff;--business-text-4b5563:#4b5563;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-151922:#f1f5f9;--business-text-687386:#c1cad7;--business-text-fff:#f1f5f9;--business-text-4b5563:#c1cad7;}
+
+*{box-sizing:border-box}
+html,body{width:100%;min-height:0;margin:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--business-text-151922);overflow:hidden}
+.pie-component{position:relative;width:100%;min-height:360px;padding:0 1px 0 0;background:transparent;overflow:hidden;container-type:inline-size}
+.pie-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px;width:100%;margin:0 0 10px}
+.pie-heading{min-width:0}
+.pie-title{margin:0;padding:0;color:var(--business-text-151922);font-size:20px;font-weight:700;line-height:1.35;letter-spacing:-.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pie-title:empty{display:none}
+.pie-subtitle{margin:4px 0 0;padding:0;color:var(--business-text-687386);font-size:13px;font-weight:400;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pie-subtitle:empty{display:none}
+.pie-badge{align-self:start;margin:3px 0 0;padding:0;color:var(--business-text-687386);font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap}
+.pie-badge:empty{display:none}
+.pie-layout{display:grid;grid-template-columns:minmax(160px,220px) fit-content(360px);align-items:center;justify-content:start;gap:clamp(12px,4cqw,48px);width:100%;min-width:0}
+.pie-stage{position:relative;width:100%;height:210px;min-width:0;margin:0;overflow:visible}
+svg{display:block;width:100%;height:100%;overflow:visible}
+.pie-center{font-size:16px;font-weight:600;fill:var(--business-text-151922);text-anchor:middle;dominant-baseline:middle}
+.pie-slice{cursor:pointer;transition:opacity .12s ease}
+.pie-highlight{pointer-events:none;transition:opacity .12s ease}
+.pie-tooltip{position:absolute;z-index:5;min-width:150px;max-width:calc(100% - 2px);padding:9px 12px;background:rgba(21,25,34,.94);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease}
+.pie-tooltip::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:rgba(21,25,34,.94);transform:translateY(-50%) rotate(45deg)}
+.pie-tooltip[data-side="right"]::after{left:-5px}
+.pie-tooltip[data-side="left"]::after{right:-5px}
+.tooltip-title{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}
+.tooltip-title span{overflow:hidden;text-overflow:ellipsis}
+.tooltip-dot,.legend-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.tooltip-value{padding-left:16px;white-space:nowrap}
+.pie-tooltip.active{opacity:1;visibility:visible}
+.pie-legend{display:flex;flex-wrap:wrap;align-items:center;justify-self:start;gap:10px 18px;width:max-content;max-width:100%;min-width:0;margin:0;padding:0 1px 0 0;font-size:10px;line-height:1.25}
+.legend-entry{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.legend-label{display:flex;align-items:center;gap:8px;min-width:0;color:var(--business-text-4b5563)}
+.legend-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-value{color:var(--business-text-151922);font-weight:700;text-align:left;white-space:nowrap}
+.pie-component.legend-bottom .pie-layout{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px}
+.pie-component.legend-bottom .pie-stage{width:min(100%,320px);height:190px;margin:0 auto}
+.pie-component.legend-bottom .pie-legend{display:flex;justify-content:center;align-content:center;justify-self:center;gap:10px 18px;width:min(100%,720px);max-width:100%;padding-right:1px;font-size:10px}
+.pie-component.legend-bottom .legend-entry{display:inline-flex;align-items:center;gap:8px;max-width:100%}
+.pie-component.legend-bottom .legend-label{gap:7px}
+.pie-component.legend-bottom .legend-value{font-weight:600}
+@media(max-width:759px){
+ .pie-component{min-height:0}
+ .pie-header{margin-bottom:8px;column-gap:8px}
+ .pie-title{font-size:17px}
+ .pie-subtitle{margin-top:3px;font-size:12px}
+ .pie-badge{margin-top:2px;font-size:11px}
+ .pie-layout{grid-template-columns:1fr;justify-items:center;gap:8px}
+ .pie-stage{width:min(100%,260px);height:190px;margin:0 auto}
+ .pie-legend{justify-content:center;justify-self:center;gap:8px 14px;width:min(100%,360px);font-size:10px}
+ .legend-entry{gap:8px}
+ .pie-center{font-size:14px}
+ .pie-tooltip{min-width:140px;font-size:11px}
+ .pie-component.legend-bottom .pie-stage{width:min(100%,260px);height:178px}
+ .pie-component.legend-bottom .pie-legend{gap:8px;font-size:10px}
+}
+</style>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script></head>
+<body>
+<section class="pie-component" data-renderer-version="pie-spacing-v2" data-component-contract="{&quot;type&quot;: &quot;pie&quot;, &quot;name&quot;: &quot;pie&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;扇区列表&quot;, &quot;field&quot;: &quot;items&quot;, &quot;aliases&quot;: [&quot;slices&quot;, &quot;segments&quot;], &quot;visualChannel&quot;: &quot;pie.arc.angle&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;中心文本&quot;, &quot;field&quot;: &quot;centerLabel&quot;, &quot;aliases&quot;: [&quot;totalLabel&quot;], &quot;visualChannel&quot;: &quot;pie.center.label&quot;}, {&quot;semantic&quot;: &quot;环形宽度&quot;, &quot;field&quot;: &quot;ringWidth&quot;, &quot;aliases&quot;: [&quot;thickness&quot;], &quot;visualChannel&quot;: &quot;pie.ring.width&quot;, &quot;default&quot;: 28}, {&quot;semantic&quot;: &quot;右上角标记&quot;, &quot;field&quot;: &quot;badgeLabel&quot;, &quot;aliases&quot;: [&quot;yearLabel&quot;, &quot;periodLabel&quot;], &quot;visualChannel&quot;: &quot;badge.topRight&quot;}, {&quot;semantic&quot;: &quot;下标题&quot;, &quot;field&quot;: &quot;subtitle&quot;, &quot;aliases&quot;: [&quot;subTitle&quot;, &quot;caption&quot;], &quot;visualChannel&quot;: &quot;text.subtitle&quot;}, {&quot;semantic&quot;: &quot;标题&quot;, &quot;field&quot;: &quot;title&quot;, &quot;aliases&quot;: [&quot;name&quot;], &quot;visualChannel&quot;: &quot;text.title&quot;}, {&quot;semantic&quot;: &quot;图例位置&quot;, &quot;field&quot;: &quot;legendPosition&quot;, &quot;visualChannel&quot;: &quot;legend.layout&quot;, &quot;default&quot;: &quot;bottom&quot;, &quot;supportedValues&quot;: [&quot;bottom&quot;]}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;items[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.label&quot;}, {&quot;field&quot;: &quot;items[].value&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;pie.arc.angle&quot;}, {&quot;field&quot;: &quot;items[].displayValue&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.value&quot;}, {&quot;field&quot;: &quot;items[].color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;pie.arc.color&quot;}, {&quot;field&quot;: &quot;badgeLabel&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;badge.topRight&quot;}, {&quot;field&quot;: &quot;title&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.title&quot;}, {&quot;field&quot;: &quot;subtitle&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.subtitle&quot;}, {&quot;field&quot;: &quot;showLegendValues&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;legend.valueVisibility&quot;}, {&quot;field&quot;: &quot;showCenterLabel&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;pie.center.visibility&quot;}], &quot;builtInDataSources&quot;: []}">
+  <div class="pie-header">
+    <div class="pie-heading">
+      <h2 class="pie-title">投资组合配置（演示数据）</h2>
+      <div class="pie-subtitle"></div>
+    </div>
+    <div class="pie-badge"></div>
+  </div>
+  <div class="pie-layout">
+    <div class="pie-stage"><svg role="img" aria-label="pie"></svg><div class="pie-tooltip"></div></div>
+    <div class="pie-legend"></div>
+  </div>
+</section>
+<script>
+const config = {"items": [{"label": "股票", "value": 50.0, "displayValue": "50.00 (50.00%)", "color": "#ffad3d", "percent": 50.0}, {"label": "债券", "value": 30.0, "displayValue": "30.00 (30.00%)", "color": "#5a9bf0", "percent": 30.0}, {"label": "现金", "value": 20.0, "displayValue": "20.00 (20.00%)", "color": "#4bc3d5", "percent": 20.0}], "title": "投资组合配置（演示数据）", "centerLabel": "资产配置", "subtitle": "", "badgeLabel": "", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": true, "ringWidth": 28, "height": 360};
+const root = document.querySelector('.pie-component');
+const stage = root.querySelector('.pie-stage');
+const svg = root.querySelector('svg');
+const legend = root.querySelector('.pie-legend');
+const tooltip = root.querySelector('.pie-tooltip');
+const NS = 'http://www.w3.org/2000/svg';
+const total = config.items.reduce((sum,item) => sum + Number(item.value || 0), 0);
+root.classList.toggle('legend-bottom', config.legendPosition === 'bottom');
+
+const node = (name, attrs = {}, text = '') => {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key,value]) => el.setAttribute(key,value));
+  if (text !== '') el.textContent = text;
+  return el;
+};
+const polar = (cx, cy, r, angle) => {
+  const rad = (angle - 90) * Math.PI / 180;
+  return {x:cx + r * Math.cos(rad), y:cy + r * Math.sin(rad)};
+};
+const arcPath = (cx, cy, outerR, innerR, start, end) => {
+  const large = end - start > 180 ? 1 : 0;
+  const p1 = polar(cx, cy, outerR, start);
+  const p2 = polar(cx, cy, outerR, end);
+  const p3 = polar(cx, cy, innerR, end);
+  const p4 = polar(cx, cy, innerR, start);
+  return `M ${p1.x} ${p1.y} A ${outerR} ${outerR} 0 ${large} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${innerR} ${innerR} 0 ${large} 0 ${p4.x} ${p4.y} Z`;
+};
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+function render() {
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+  const width = svg.clientWidth || 320;
+  const height = svg.clientHeight || 250;
+  const safe = 8;
+  const cx = width / 2;
+  const cy = height / 2;
+  const outerR = Math.max(24, Math.min(88, Math.min(width, height) / 2 - safe));
+  const ringWidth = clamp(Number(config.ringWidth) || 28, 12, Math.max(12, outerR * 0.32));
+  const innerR = Math.max(20, outerR - ringWidth);
+  let angle = 0;
+
+  config.items.forEach((item, index) => {
+    const start = angle;
+    const end = angle + (total ? Number(item.value || 0) / total * 360 : 0);
+    angle = end;
+    if (end <= start) return;
+    const slice = node('path', {d:arcPath(cx,cy,outerR,innerR,start,end),fill:item.color,class:'pie-slice','data-index':index});
+    slice.addEventListener('mouseenter', event => showTooltip(event, item, index));
+    slice.addEventListener('mousemove', event => showTooltip(event, item, index));
+    slice.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(slice);
+    const highlight = node('path', {d:arcPath(cx,cy,outerR + 6,outerR,start,end),fill:item.color,class:'pie-highlight','data-index':index});
+    highlight.style.opacity = '0';
+    svg.appendChild(highlight);
+  });
+
+  if (config.showCenterLabel) {
+    const centerText = String(config.centerLabel || '');
+    const centerFontSize = centerText.length > 14 ? 11 : centerText.length > 9 ? 13 : 16;
+    svg.appendChild(node('text', {x:cx,y:cy,class:'pie-center','font-size':centerFontSize}, centerText));
+  }
+
+  config.items.forEach(item => {
+    const entry = document.createElement('div');
+    entry.className = 'legend-entry';
+    const label = document.createElement('div');
+    label.className = 'legend-label';
+    label.innerHTML = `<i class="legend-dot" style="background:${item.color}"></i><span>${item.label}</span>`;
+    entry.appendChild(label);
+    if (config.showLegendValues) {
+      const value = document.createElement('div');
+      value.className = 'legend-value';
+      value.textContent = item.displayValue;
+      entry.appendChild(value);
+    }
+    legend.appendChild(entry);
+  });
+  postChartHeight();
+}
+function setHighlight(index) {
+  svg.querySelectorAll('.pie-highlight').forEach(item => item.style.opacity = item.dataset.index == index ? '.22' : '0');
+}
+function showTooltip(event, item, index) {
+  setHighlight(index);
+  tooltip.innerHTML = `<div class="tooltip-title"><i class="tooltip-dot" style="background:${item.color}"></i><span>${item.label}</span></div><div class="tooltip-value">${item.displayValue}</div>`;
+  tooltip.classList.add('active');
+  const rect = stage.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const tooltipW = tooltip.offsetWidth;
+  const tooltipH = tooltip.offsetHeight;
+  const side = x < stage.clientWidth / 2 ? 'right' : 'left';
+  tooltip.dataset.side = side;
+  const proposedLeft = side === 'right' ? x + 14 : x - tooltipW - 14;
+  const safe = 1;
+  tooltip.style.left = `${clamp(proposedLeft, safe, Math.max(safe, stage.clientWidth - tooltipW - safe))}px`;
+  tooltip.style.top = `${clamp(y - tooltipH / 2, safe, Math.max(safe, stage.clientHeight - tooltipH - safe))}px`;
+}
+function hideTooltip() {
+  tooltip.classList.remove('active');
+  svg.querySelectorAll('.pie-highlight').forEach(item => item.style.opacity = '0');
+}
+function postChartHeight() {
+  const height = Math.ceil(Math.max(180, root.getBoundingClientRect().bottom || document.body.scrollHeight || 0)) + 2;
+  try { parent.postMessage({type:'analysis-planner-chart-height',height}, '*'); } catch (e) {}
+}
+window.addEventListener('resize', render);
+render();
+setTimeout(postChartHeight,80);
+setTimeout(postChartHeight,300);
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

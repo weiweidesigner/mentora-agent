@@ -1,0 +1,58 @@
+{
+  "type": "pie",
+  "name": "按地区收入明细",
+  "title": "按地区收入明细",
+  "language": "zh-CN",
+  "i18n": {
+    "name": "按地区收入明细",
+    "mix": "地区收入结构",
+    "periodPrefix": "期间：",
+    "latest": "最新",
+    "noData": "暂无数据",
+    "notDisclosed": "AInvest 未披露",
+    "noDisclosure": "AInvest 暂未披露地区收入明细",
+    "other": "其他",
+    "method": "使用 AInvest 财务页收入拆分数据，classify=2 表示地区收入。饼图仅展示正向地区收入切片；负向调整项保留在 source 元数据中，因为饼图无法表达负值。",
+    "emptyMethod": "AInvest 未返回该股票的地区收入明细；已生成无数据状态而不是执行失败。",
+    "regions": {
+      "United States": "美国",
+      "Europe, the Middle East and Africa": "欧洲、中东和非洲",
+      "Asia & Pacific": "亚太地区",
+      "Other Americas": "美洲其他地区",
+      "Hedging Gains (Losses)": "套期保值收益（损失）"
+    }
+  },
+  "noData": true,
+  "props": {
+    "height": 360,
+    "subtitle": "NVDA · AInvest 暂未披露地区收入明细 (result empty)",
+    "centerLabel": "暂无数据",
+    "showCenterLabel": true,
+    "showLegendValues": false,
+    "legendPosition": "bottom",
+    "badgeLabel": "暂无数据",
+    "ringWidth": 48,
+    "items": [
+      {
+        "label": "AInvest 未披露",
+        "value": 1,
+        "displayValue": "暂无数据",
+        "color": "#e5e7eb"
+      }
+    ]
+  },
+  "source": {
+    "provider": "AInvest abroad/operate/v2/lastest",
+    "symbol": "NVDA",
+    "company": "NVDA",
+    "period": {},
+    "unit": "millions USD",
+    "reportedTotalRevenue": null,
+    "adjustments": [],
+    "noData": true,
+    "status": 10001,
+    "statusMsg": "result empty",
+    "method": "AInvest 未返回该股票的地区收入明细；已生成无数据状态而不是执行失败。"
+  },
+  "theme": "light"
+}

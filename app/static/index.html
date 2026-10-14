@@ -6,7 +6,7 @@
     <title>Veya</title>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-34" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261014-inspiration" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261014-intrinsic-height" />
   </head>
   <body>
@@ -126,6 +126,16 @@
         <section id="homeCases" class="homeCases" aria-label="探索案例">
           <div id="caseGrid" class="caseGrid"></div>
         </section>
+        <section id="inspirationSquare" class="inspirationSquare" aria-labelledby="inspirationTitle">
+          <header class="inspirationHeader">
+            <h2 id="inspirationTitle">灵感广场</h2>
+            <p>从一个好问题出发，探索金融分析的更多可能</p>
+          </header>
+          <div id="inspirationTabs" class="inspirationTabs" role="tablist" aria-label="灵感分类"></div>
+          <div id="inspirationPanel" class="inspirationPanel" role="tabpanel" tabindex="0">
+            <p role="status">正在加载精选案例…</p>
+          </div>
+        </section>
         <div id="caseActionBar" class="caseActionBar" hidden>
           <button id="caseAskButton" class="caseAskButton" type="button">问一问</button>
         </div>
@@ -152,6 +162,6 @@
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261014-intrinsic-height"></script>
     <script src="/api/client-config.js"></script>
     <script src="/static/app.js?v=interface-20261014-34"></script>
-    <script src="/static/cases.js?v=20261014-34"></script>
+    <script src="/static/cases.js?v=20261014-inspiration"></script>
   </body>
 </html>

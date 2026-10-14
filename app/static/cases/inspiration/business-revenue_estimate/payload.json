@@ -1,0 +1,87 @@
+{
+  "type": "revenue-estimate",
+  "name": "收入",
+  "nextDate": "Sep 30, 2026",
+  "code": "GOOGL",
+  "companyName": "Alphabet A",
+  "defaultView": "quarterly",
+  "actualLabel": "实际值",
+  "estimateLabel": "预估值",
+  "views": {
+    "quarterly": {
+      "label": "季度",
+      "unit": "B",
+      "axisUnit": "B",
+      "decimals": 2,
+      "data": [
+        {
+          "label": "Q3'25",
+          "period": "Q3'25",
+          "status": "超预期",
+          "actual": 102.346,
+          "estimate": 99.940317768,
+          "date": "Oct 29, 2025",
+          "surprise": 2.4056822,
+          "surprisePercent": 0.024071188,
+          "statusKey": "Beat"
+        },
+        {
+          "label": "Q4'25",
+          "period": "Q4'25",
+          "status": "超预期",
+          "actual": 113.828,
+          "estimate": 111.332409294,
+          "date": "Feb 4, 2026",
+          "surprise": 2.4955907,
+          "surprisePercent": 0.022415671,
+          "statusKey": "Beat"
+        },
+        {
+          "label": "Q1'26",
+          "period": "Q1'26",
+          "status": "超预期",
+          "actual": 109.896,
+          "estimate": 106.976121949,
+          "date": "Apr 29, 2026",
+          "surprise": 2.9198781,
+          "surprisePercent": 0.027294672,
+          "statusKey": "Beat"
+        },
+        {
+          "label": "Q2'26",
+          "period": "Q2'26",
+          "status": "超预期",
+          "actual": 119.796,
+          "estimate": 117.065696006,
+          "date": "Jul 22, 2026",
+          "surprise": 2.730304,
+          "surprisePercent": 0.023322835,
+          "statusKey": "Beat"
+        },
+        {
+          "label": "Q3'26",
+          "period": "Q3'26",
+          "status": "待披露",
+          "actual": null,
+          "estimate": 126.315789637,
+          "date": "Sep 30, 2026",
+          "surprise": null,
+          "surprisePercent": null,
+          "statusKey": "Upcoming"
+        }
+      ]
+    }
+  },
+  "source": "AInvest financial_reports_visual/finance/v1/forecast",
+  "language": "zh-CN",
+  "title": "收入",
+  "labels": {
+    "nextReport": "下次披露",
+    "noData": "暂无数据",
+    "date": "日期",
+    "upcoming": "待披露",
+    "above": "高于预期",
+    "below": "低于预期"
+  },
+  "theme": "light"
+}

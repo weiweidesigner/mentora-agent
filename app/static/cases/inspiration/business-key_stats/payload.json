@@ -1,0 +1,283 @@
+{
+  "type": "key-stats",
+  "name": "关键统计数据",
+  "title": "关键统计数据",
+  "code": "NVDA",
+  "market": "185",
+  "fields": {
+    "current": 228.52,
+    "prevClose": 226.32,
+    "open": 224.34,
+    "high": 228.64,
+    "low": 223.0602,
+    "week52High": 243.37,
+    "week52Low": 164.27,
+    "rangePercent": 2.465447,
+    "volume": 84036941,
+    "turnover": 19047436190.103764,
+    "avgVol4w": 105580329.4,
+    "marketCap": 5507332000000,
+    "dividendYield": 0.228078,
+    "peTtm": 28.553152,
+    "epsTtm": 7.95,
+    "beta": 1.3966,
+    "sharesOutstanding": 24100000000,
+    "freeFloat": 23188176500,
+    "turnoverPercent": 0.362413,
+    "peDyn": 60.925858,
+    "pb": 24.051165,
+    "bvps": 9.482917,
+    "dividendPerShare": 0.521203
+  },
+  "ranges": {
+    "day": {
+      "label": "日内区间",
+      "low": 223.0602,
+      "high": 228.64,
+      "current": 228.52,
+      "lowLabel": "223.06",
+      "highLabel": "228.64",
+      "currentRatio": 0.9784938528262703,
+      "startRatio": 0.22936305960787118,
+      "endRatio": 0.9784938528262703,
+      "color": "#00a06a"
+    },
+    "week52": {
+      "label": "52周区间",
+      "low": 164.27,
+      "high": 243.37,
+      "current": 228.52,
+      "lowLabel": "164.27",
+      "highLabel": "243.37",
+      "currentRatio": 0.8122629582806574,
+      "startRatio": 0.8122629582806574,
+      "endRatio": 0.8122629582806574,
+      "color": "#00a06a"
+    }
+  },
+  "stats": [
+    {
+      "key": "open",
+      "label": "开盘",
+      "value": "224.34",
+      "raw": 224.34
+    },
+    {
+      "key": "prevClose",
+      "label": "前收",
+      "value": "226.32",
+      "raw": 226.32
+    },
+    {
+      "key": "rangePercent",
+      "label": "振幅",
+      "value": "2.47%",
+      "raw": 2.465447
+    },
+    {
+      "key": "turnover",
+      "label": "成交额",
+      "value": "19.05B",
+      "raw": 19047436190.103764
+    },
+    {
+      "key": "avgVol4w",
+      "label": "4周均量",
+      "value": "105.58M",
+      "raw": 105580329.4
+    },
+    {
+      "key": "marketCap",
+      "label": "市值",
+      "value": "5.51T",
+      "raw": 5507332000000
+    },
+    {
+      "key": "dividendYield",
+      "label": "股息率",
+      "value": "0.23%",
+      "raw": 0.228078
+    },
+    {
+      "key": "peTtm",
+      "label": "市盈率(TTM)",
+      "value": "28.55",
+      "raw": 28.553152
+    },
+    {
+      "key": "epsTtm",
+      "label": "每股收益(TTM)",
+      "value": "7.95",
+      "raw": 7.95
+    },
+    {
+      "key": "beta",
+      "label": "Beta",
+      "value": "1.4",
+      "raw": 1.3966
+    },
+    {
+      "key": "freeFloat",
+      "label": "自由流通股",
+      "value": "23.19B",
+      "raw": 23188176500
+    },
+    {
+      "key": "sharesOutstanding",
+      "label": "总股本",
+      "value": "24.10B",
+      "raw": 24100000000
+    },
+    {
+      "key": "turnoverPercent",
+      "label": "换手率",
+      "value": "0.36%",
+      "raw": 0.362413
+    },
+    {
+      "key": "peDyn",
+      "label": "动态市盈率",
+      "value": "60.93",
+      "raw": 60.925858
+    },
+    {
+      "key": "pb",
+      "label": "市净率",
+      "value": "24.05",
+      "raw": 24.051165
+    },
+    {
+      "key": "bvps",
+      "label": "每股净资产",
+      "value": "9.48",
+      "raw": 9.482917
+    },
+    {
+      "key": "high",
+      "label": "最高",
+      "value": "228.64",
+      "raw": 228.64
+    },
+    {
+      "key": "low",
+      "label": "最低",
+      "value": "223.06",
+      "raw": 223.0602
+    },
+    {
+      "key": "week52High",
+      "label": "52周高点",
+      "value": "243.37",
+      "raw": 243.37
+    },
+    {
+      "key": "week52Low",
+      "label": "52周低点",
+      "value": "164.27",
+      "raw": 164.27
+    }
+  ],
+  "source": {
+    "provider": "AInvest index query",
+    "endpoint": "https://extquote.ainvest.com/index_api/v1/query",
+    "indexes": [
+      {
+        "index_id": "6"
+      },
+      {
+        "index_id": "7"
+      },
+      {
+        "index_id": "8"
+      },
+      {
+        "index_id": "9"
+      },
+      {
+        "index_id": "10"
+      },
+      {
+        "index_id": "inr-high_price-max",
+        "index_attr": {
+          "time_period": "week_52"
+        }
+      },
+      {
+        "index_id": "inr-low_price-min",
+        "index_attr": {
+          "time_period": "week_52"
+        }
+      },
+      {
+        "index_id": "price_amplitude_ratio_pct",
+        "index_attr": {
+          "trade_class": "intraday"
+        }
+      },
+      {
+        "index_id": "13"
+      },
+      {
+        "index_id": "19"
+      },
+      {
+        "index_id": "inr-volume-avg",
+        "index_attr": {
+          "time_period": "day_20",
+          "trade_class": "intraday"
+        }
+      },
+      {
+        "index_id": "total_market_value"
+      },
+      {
+        "index_id": "dividend_ratio_pct_ttm"
+      },
+      {
+        "index_id": "pe_ttm"
+      },
+      {
+        "index_id": "1002"
+      },
+      {
+        "index_id": "beta"
+      },
+      {
+        "index_id": "402"
+      },
+      {
+        "index_id": "flow_capital"
+      },
+      {
+        "index_id": "turnover_ratio_pct"
+      },
+      {
+        "index_id": "pe_mrq"
+      },
+      {
+        "index_id": "pb_mrq"
+      },
+      {
+        "index_id": "1005"
+      },
+      {
+        "index_id": "per_share_dividend_ttm"
+      }
+    ]
+  },
+  "language": "zh-CN",
+  "componentUi": {
+    "Business": "主营业务",
+    "Type": "类型",
+    "Stock": "股票",
+    "Value": "价值",
+    "BVPS": "每股净资产",
+    "Key Statistics": "关键统计数据",
+    "Market Cap": "市值",
+    "P/E Ratio": "市盈率",
+    "Ratio": "占比",
+    "Key Stats": "关键指标",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

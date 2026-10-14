@@ -1,0 +1,21 @@
+{
+  "question": "用一页报告梳理 NVDA 的现金流来源与用途。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用一页报告梳理 NVDA 的现金流来源与用途。",
+    "interpretation": "# NVDA 现金流研究报告\n\n从经营、投资和融资三类现金流观察现金来源与用途。\n\n[[AIME_CHART:case:inspiration/report-cashflow/chart.html]]\n\n## 数据口径\n\n来源：AInvest financials Cash Flow module；金额单位 B USD。数据为历史缓存，不随当前日期更新；缺失字段保持缺失。\n\n季度标签沿用数据源财年口径，不等同于自然年季度。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/report-cashflow/chart.html",
+        "url": "/static/cases/inspiration/report-cashflow/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/report-cashflow/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "streamviz",
+    "dataDate": "2026-08-14"
+  }
+}

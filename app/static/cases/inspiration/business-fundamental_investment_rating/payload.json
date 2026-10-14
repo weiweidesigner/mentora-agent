@@ -1,0 +1,69 @@
+{
+  "type": "fundamental-investment-rating",
+  "name": "Fundamental Investment Rating",
+  "title": "Fundamental Investment Rating",
+  "code": "AAPL",
+  "market": "185",
+  "exchange": "NASDAQ",
+  "overallScore": 5.4,
+  "overallScoreLabel": "5.40 / 10",
+  "rating": "Neutral",
+  "dimensions": [
+    {
+      "key": "value",
+      "label": "Value",
+      "score": 1.7
+    },
+    {
+      "key": "future",
+      "label": "Future",
+      "score": 7.4
+    },
+    {
+      "key": "past",
+      "label": "Past",
+      "score": 5.6
+    },
+    {
+      "key": "health",
+      "label": "Health",
+      "score": 4.8
+    },
+    {
+      "key": "dividend",
+      "label": "Dividend",
+      "score": 7.4
+    }
+  ],
+  "insights": [
+    {
+      "kind": "value",
+      "tone": "bearish",
+      "text": "The overall valuation of AAPL is reasonable."
+    },
+    {
+      "kind": "future",
+      "tone": "bullish",
+      "text": "AAPL's revenue will have seen strong growth in the next few years."
+    },
+    {
+      "kind": "past",
+      "tone": "bullish",
+      "text": "AAPL's primary product is iPhone, with iPhone accounting for 50.4% of total revenue."
+    },
+    {
+      "kind": "health",
+      "tone": "bearish",
+      "text": "AAPL has a debt-to-equity ratio of 248.5%, indicating a relatively high debt risk."
+    },
+    {
+      "kind": "dividend",
+      "tone": "bullish",
+      "text": "AAPL's current dividend payout ratio is at the bottom of the industry."
+    }
+  ],
+  "source": {
+    "provider": "sample"
+  },
+  "language": "zh-CN"
+}

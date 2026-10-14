@@ -1,0 +1,59 @@
+{
+  "type": "waterfall",
+  "name": "资本结构",
+  "title": "资本结构",
+  "props": {
+    "unit": " USD",
+    "height": 320,
+    "gridCount": 5,
+    "items": [
+      {
+        "label": "市值",
+        "value": 4994.87602848,
+        "displayValue": "4.99 T",
+        "type": "delta",
+        "color": "#2ab7a1"
+      },
+      {
+        "label": "负债",
+        "value": 82.714,
+        "displayValue": "82.71 B",
+        "type": "delta",
+        "stackWithPrevious": true,
+        "color": "#ffad2f"
+      },
+      {
+        "label": "现金等价物",
+        "value": -45.572,
+        "displayValue": "45.57 B",
+        "type": "delta",
+        "color": "#ff3d7f"
+      },
+      {
+        "label": "企业价值",
+        "value": 5032.01802848,
+        "displayValue": "5.03 T",
+        "type": "total",
+        "color": "#3477ed"
+      }
+    ]
+  },
+  "source": {
+    "provider": "Yahoo chart/fundamentals + SEC fallback after yfinance info rate limit",
+    "symbol": "AAPL",
+    "company": "Apple Inc.",
+    "currency": "USD",
+    "method": "marketCap + totalDebt - totalCash, with enterpriseValue from Yahoo Finance as the final total",
+    "raw": {
+      "marketCap": 4994876028480.0,
+      "totalDebt": 82714000000.0,
+      "totalCash": 45572000000.0,
+      "enterpriseValue": 5032018028480.0,
+      "currency": "USD",
+      "shortName": "Apple Inc.",
+      "source": "Yahoo chart/fundamentals + SEC fallback after yfinance info rate limit"
+    }
+  },
+  "language": "zh-CN",
+  "theme": "light"
+}

@@ -1,0 +1,75 @@
+{
+  "chartName": "dynamic_bar",
+  "title": "行业资金规模排名（演示数据）",
+  "unit": "",
+  "topN": 3,
+  "valueLabel": "资金规模",
+  "timeLabel": "季度",
+  "encode": {
+    "time": "time",
+    "name": "name",
+    "value": "value"
+  },
+  "data": [
+    {
+      "time": "Q1",
+      "name": "科技",
+      "value": 100
+    },
+    {
+      "time": "Q1",
+      "name": "消费",
+      "value": 80.0
+    },
+    {
+      "time": "Q1",
+      "name": "金融",
+      "value": 60.0
+    },
+    {
+      "time": "Q2",
+      "name": "科技",
+      "value": 120
+    },
+    {
+      "time": "Q2",
+      "name": "消费",
+      "value": 96.0
+    },
+    {
+      "time": "Q2",
+      "name": "金融",
+      "value": 72.0
+    },
+    {
+      "time": "Q3",
+      "name": "科技",
+      "value": 135
+    },
+    {
+      "time": "Q3",
+      "name": "消费",
+      "value": 108.0
+    },
+    {
+      "time": "Q3",
+      "name": "金融",
+      "value": 81.0
+    },
+    {
+      "time": "Q4",
+      "name": "科技",
+      "value": 150
+    },
+    {
+      "time": "Q4",
+      "name": "消费",
+      "value": 120.0
+    },
+    {
+      "time": "Q4",
+      "name": "金融",
+      "value": 90.0
+    }
+  ]
+}

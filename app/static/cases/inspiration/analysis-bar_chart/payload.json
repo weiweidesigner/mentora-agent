@@ -1,0 +1,41 @@
+{
+  "title": "季度营收对比（演示数据）",
+  "xField": "period",
+  "yField": "revenue",
+  "series": [
+    {
+      "field": "revenue",
+      "label": "营收",
+      "axis": "right"
+    }
+  ],
+  "data": [
+    {
+      "period": "Q1",
+      "revenue": 100,
+      "profit": 20,
+      "margin": 20.0
+    },
+    {
+      "period": "Q2",
+      "revenue": 120,
+      "profit": 26,
+      "margin": 21.7
+    },
+    {
+      "period": "Q3",
+      "revenue": 135,
+      "profit": 30,
+      "margin": 22.2
+    },
+    {
+      "period": "Q4",
+      "revenue": 150,
+      "profit": 36,
+      "margin": 24.0
+    }
+  ],
+  "axis": {
+    "label": "营收"
+  }
+}

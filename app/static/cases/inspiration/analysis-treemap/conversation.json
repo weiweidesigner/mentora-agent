@@ -1,0 +1,43 @@
+{
+  "question": "用矩形图展示资产权重矩形图，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用矩形图展示资产权重矩形图，使用清楚标注的金融演示数据。",
+    "interpretation": "# 资产权重矩形图\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-treemap/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-treemap/chart.html",
+        "url": "/static/cases/inspiration/analysis-treemap/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-treemap/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "treemap.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "treemap.py"
+      ],
+      "primary_script": "treemap.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.94,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "composition-and-drivers",
+      "semantic_lens_confidence": 1.0,
+      "primary_purpose": "{\"type\": \"treemap\", \"name\": \"treemap\", \"visualChannelMappings\": [{\"semantic\": \"矩形列表\", \"field\": \"items\", \"aliases\": [\"data\", \"nodes\", \"segments\"], \"visualChannel\": \"treemap.rect.area\", \"required\": true}, {\"semantic\": \"分类名称\", \"field\": \"items[].label\", \"aliases\": [\"name\", \"category\"], \"visualChannel\": \"treemap.rect.label\", \"required\": true}, {\"semantic\": \"面积数值\", \"field\": \"items[].value\", \"aliases\": [\"size\", \"amount\"], \"visualChannel\": \"treemap.rect.area\", \"required\": true}, {\"semantic\": \"展示值\", \"field\": \"items[].displayValue\", \"aliases\": [\"formattedValue\"], \"visualChannel\": \"treemap.rect.valueLabel\"}, {\"semantic\": \"矩形颜色\", \"field\": \"items[].color\", \"aliases\": [\"fill\"], \"visualChannel\": \"treemap.rect.color\"}, {\"semantic\": \"子节点\", \"field\": \"items[].children\", \"aliases\": [\"children\", \"items\"], \"visualChannel\": \"treemap.hierarchy.children\"}, {\"semantic\": \"标题\", \"field\": \"title\", \"aliases\": [\"name\"], \"visualChannel\": \"text.title\"}, {\"semantic\": \"下标题\", \"field\": \"subtitle\", \"aliases\": [\"subTitle\", \"caption\"], \"visualChannel\": \"text.subtitle\"}, {\"semantic\": \"图例显示\", \"field\": \"showLegend\", \"visualChannel\": \"legend.visibility\", \"default\": true}], \"dataContract\": [{\"field\": \"items[].label\", \"type\": \"",
+      "supporting_purpose": "",
+      "visual_encoding": "composition-and-contribution",
+      "visual_encoding_confidence": 1.0,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.99,
+      "mark_strategy": "contribution-focus",
+      "mark_strategy_confidence": 0.42
+    },
+    "jevError": null
+  }
+}

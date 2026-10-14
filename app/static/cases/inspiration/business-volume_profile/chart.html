@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>成交分布</title>
+<style>:root{--business-text-8a8a8a:#8a8a8a;}:root[data-theme="dark"]{--business-text-8a8a8a:#a8b3c4;}
+
+:root{color-scheme:light;--business-text-171717:#171717;--business-bg-f6f7f8:#f6f7f8;--business-text-697181:#697181;--business-bg-fff:#fff;--business-bg-f1f2f4:#f1f2f4;--business-bg-303030:#303030;--business-text-f2f2f2:#f2f2f2;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-bg-697181:#697181;--business-bg-8a8a8a:#8a8a8a;--business-border-e5e7eb:#e5e7eb;--business-border-303030:#303030;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-171717:#e8edf5;--business-bg-f6f7f8:#202b3a;--business-text-697181:#a8b3c4;--business-bg-fff:#202b3a;--business-bg-f1f2f4:#202b3a;--business-bg-303030:#263242;--business-text-f2f2f2:#f5f7fb;--business-text-fff:#f5f7fb;--business-text-d8d8d8:#a8b3c4;--business-bg-697181:#516078;--business-bg-8a8a8a:#516078;--business-border-e5e7eb:#293646;--business-border-303030:#566477;}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;color:var(--business-text-171717);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+body{padding:0}
+.vp{
+  width:100%;
+  margin:0;
+  background:transparent;
+  padding:0;
+}
+.title{
+  margin:0 0 18px;
+  font-size:16px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:0;
+  color:var(--business-text-171717);
+}
+.grid{
+  display:grid;
+  grid-template-columns:minmax(320px,.9fr) minmax(500px,1.1fr);
+  gap:32px;
+  align-items:start;
+}
+.summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  background:var(--business-bg-f6f7f8);
+  border-radius:10px;
+  margin-bottom:22px;
+  overflow:hidden;
+}
+.metric{padding:14px 16px;text-align:left}
+.metric-label{display:block;color:var(--business-text-697181);font-size:12px;font-weight:600;margin-bottom:5px;line-height:1.2}
+.metric-value{display:block;color:var(--business-text-171717);font-size:14px;line-height:1.2;font-weight:700}
+.metric-value.green{color:#05a66b}
+.donut-wrap{
+  min-height:260px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.donut{width:min(420px,100%);height:280px}
+.donut text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.table-wrap{
+  width:100%;
+  max-height:360px;
+  overflow:auto;
+  padding-right:0;
+}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{
+  position:sticky;
+  top:0;
+  background:var(--business-bg-fff);
+  z-index:1;
+  padding:0 10px 12px;
+  text-align:left;
+  color:var(--business-text-697181);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  border-bottom:1px solid var(--business-border-e5e7eb);
+  white-space:nowrap;
+}
+td{
+  padding:13px 10px;
+  border-bottom:1px solid var(--business-border-e5e7eb);
+  font-size:12px;
+  line-height:1.35;
+  color:var(--business-text-171717);
+  vertical-align:middle;
+}
+td:first-child,th:first-child{padding-left:0}
+th:nth-child(1),td:nth-child(1){width:17%}
+th:nth-child(2),td:nth-child(2),
+th:nth-child(3),td:nth-child(3){width:18%}
+th:nth-child(4),td:nth-child(4){width:33%}
+th:nth-child(5),td:nth-child(5){width:14%;text-align:right;padding-right:0}
+.buy{color:#05a66b;font-weight:650}
+.sell{color:#ff3b25;font-weight:650}
+.ratio-bar{
+  height:8px;
+  background:var(--business-bg-f1f2f4);
+  border-radius:999px;
+  position:relative;
+  overflow:hidden;
+  min-width:14px;
+}
+.ratio-fill{
+  height:100%;
+  width:100%;
+  min-width:14px;
+  display:flex;
+  border-radius:999px;
+  overflow:hidden;
+}
+.ratio-segment{height:100%;flex:0 0 auto}
+.ratio-buy{background:#05a66b;min-width:2px}
+.ratio-sell{background:#ff3b25;min-width:2px}
+.ratio-text{font-variant-numeric:tabular-nums;color:var(--business-text-171717)}
+.tooltip{
+  --arrow-x:50%;
+  position:fixed;
+  z-index:50;
+  pointer-events:none;
+  min-width:190px;
+  border-radius:6px;
+  background:var(--business-bg-303030);
+  color:var(--business-text-f2f2f2);
+  padding:9px 11px;
+  font-size:12px;
+  line-height:1.45;
+  opacity:0;
+  transition:opacity .08s ease;
+  white-space:nowrap;
+}
+.tooltip::after{
+  content:"";
+  position:absolute;
+  left:var(--arrow-x);
+  bottom:-6px;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:6px solid var(--business-bg-303030);
+}
+.tooltip.show{opacity:1}
+.tip-title{color:var(--business-text-fff);font-weight:800;margin-bottom:5px}
+.tip-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:4px;min-width:168px}
+.tip-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.tip-label{color:var(--business-text-d8d8d8);font-size:12px;line-height:1.2}
+.tip-value{margin-left:auto;color:var(--business-text-fff);font-size:12px;font-weight:700;line-height:1.2}
+.muted{color:var(--business-text-d8d8d8)}
+@media(max-width:860px){
+  .vp{padding:0}
+  .title{font-size:16px;margin-bottom:16px}
+  .grid{display:block}
+  .summary{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px}
+  .metric{padding:12px 10px}
+  .metric-label{font-size:11px}
+  .metric-value{font-size:13px}
+  .donut-wrap{min-height:220px}
+  .donut{height:240px}
+  .table-wrap{max-height:none;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:20px}
+  table{min-width:620px}
+  th{font-size:10px;padding:0 8px 10px}
+  td{font-size:12px;padding:12px 8px}
+  th:nth-child(4),td:nth-child(4){display:table-cell}
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<main class="vp" id="app"></main>
+<div class="tooltip" id="tooltip"></div>
+<script>
+const payload = {"type": "volume-profile", "name": "成交分布", "title": "成交分布", "code": "NVDA", "market": "185", "averagePrice": 226.7724860730985, "averagePriceLabel": "226.77", "transactions": 1241217, "transactionsLabel": "1.24M", "volume": 65009788.0, "volumeLabel": "65.01M", "buyTotal": 19573654.0, "sellTotal": 35078594.0, "neutralTotal": 10357540.0, "buyTotalLabel": "19.57M", "sellTotalLabel": "35.08M", "neutralTotalLabel": "10.36M", "rows": [{"price": 228.52, "priceLabel": "228.52", "buy": 949550.0, "sell": 14493734.0, "neutral": 2030431.0, "total": 17473715.0, "transactions": 1779, "ratio": 26.878590959256783, "barRatio": 1.0, "buyLabel": "949.55K", "sellLabel": "14.49M", "neutralLabel": "2.03M"}, {"price": 224.4, "priceLabel": "224.4", "buy": 1150443.0, "sell": 24391.0, "neutral": 7593.0, "total": 1182427.0, "transactions": 19793, "ratio": 1.8188445715282135, "barRatio": 0.06766889582438537, "buyLabel": "1.15M", "sellLabel": "24.39K", "neutralLabel": "7.59K"}, {"price": 225.98, "priceLabel": "225.98", "buy": 425479.0, "sell": 39116.0, "neutral": 11242.0, "total": 475837.0, "transactions": 1275, "ratio": 0.731946703164145, "barRatio": 0.02723158755879903, "buyLabel": "425.48K", "sellLabel": "39.12K", "neutralLabel": "11.24K"}, {"price": 224.0, "priceLabel": "224", "buy": 20360.0, "sell": 297620.0, "neutral": 46761.0, "total": 364741.0, "transactions": 2138, "ratio": 0.5610555136712644, "barRatio": 0.020873695147254033, "buyLabel": "20.36K", "sellLabel": "297.62K", "neutralLabel": "46.76K"}, {"price": 228.0, "priceLabel": "228", "buy": 93517.0, "sell": 90114.0, "neutral": 49504.0, "total": 233135.0, "transactions": 2065, "ratio": 0.3586152288329259, "barRatio": 0.01334203974369503, "buyLabel": "93.52K", "sellLabel": "90.11K", "neutralLabel": "49.50K"}, {"price": 225.96, "priceLabel": "225.96", "buy": 117105.0, "sell": 40886.0, "neutral": 13717.0, "total": 171708.0, "transactions": 1308, "ratio": 0.2641263804767368, "barRatio": 0.009826645335579755, "buyLabel": "117.11K", "sellLabel": "40.89K", "neutralLabel": "13.72K"}, {"price": 226.0, "priceLabel": "226", "buy": 70272.0, "sell": 66651.0, "neutral": 33252.0, "total": 170175.0, "transactions": 1900, "ratio": 0.2617682740328272, "barRatio": 0.009738913562456524, "buyLabel": "70.27K", "sellLabel": "66.65K", "neutralLabel": "33.25K"}, {"price": 225.0, "priceLabel": "225", "buy": 74480.0, "sell": 60328.0, "neutral": 31874.0, "total": 166682.0, "transactions": 2302, "ratio": 0.2563952369756997, "barRatio": 0.00953901331228076, "buyLabel": "74.48K", "sellLabel": "60.33K", "neutralLabel": "31.87K"}, {"price": 224.8, "priceLabel": "224.8", "buy": 51730.0, "sell": 75795.0, "neutral": 36156.0, "total": 163681.0, "transactions": 2250, "ratio": 0.25177900903168615, "barRatio": 0.009367269638997774, "buyLabel": "51.73K", "sellLabel": "75.80K", "neutralLabel": "36.16K"}, {"price": 225.85, "priceLabel": "225.85", "buy": 55632.0, "sell": 76632.0, "neutral": 29741.0, "total": 162005.0, "transactions": 2009, "ratio": 0.24920093571140395, "barRatio": 0.009271354145354894, "buyLabel": "55.63K", "sellLabel": "76.63K", "neutralLabel": "29.74K"}, {"price": 227.1, "priceLabel": "227.1", "buy": 105032.0, "sell": 47824.0, "neutral": 7470.0, "total": 160326.0, "transactions": 1065, "ratio": 0.24661824770140767, "barRatio": 0.009175266965267546, "buyLabel": "105.03K", "sellLabel": "47.82K", "neutralLabel": "7.47K"}, {"price": 227.3, "priceLabel": "227.3", "buy": 58277.0, "sell": 51993.0, "neutral": 36163.0, "total": 146433.0, "transactions": 1001, "ratio": 0.22524761963536935, "barRatio": 0.008380187040935485, "buyLabel": "58.28K", "sellLabel": "51.99K", "neutralLabel": "36.16K"}, {"price": 227.4, "priceLabel": "227.4", "buy": 71259.0, "sell": 53944.0, "neutral": 18725.0, "total": 143928.0, "transactions": 1671, "ratio": 0.22139435372408844, "barRatio": 0.00823682885980457, "buyLabel": "71.26K", "sellLabel": "53.94K", "neutralLabel": "18.73K"}, {"price": 227.32, "priceLabel": "227.32", "buy": 31777.0, "sell": 93442.0, "neutral": 14660.0, "total": 139879.0, "transactions": 1113, "ratio": 0.2151660608399461, "barRatio": 0.008005109388587372, "buyLabel": "31.78K", "sellLabel": "93.44K", "neutralLabel": "14.66K"}, {"price": 226.85, "priceLabel": "226.85", "buy": 49217.0, "sell": 57710.0, "neutral": 26977.0, "total": 133904.0, "transactions": 1429, "ratio": 0.2059751371593459, "barRatio": 0.007663167220021616, "buyLabel": "49.22K", "sellLabel": "57.71K", "neutralLabel": "26.98K"}, {"price": 224.1, "priceLabel": "224.1", "buy": 17675.0, "sell": 101981.0, "neutral": 13530.0, "total": 133186.0, "transactions": 1078, "ratio": 0.2048706880877692, "barRatio": 0.007622076930978902, "buyLabel": "17.68K", "sellLabel": "101.98K", "neutralLabel": "13.53K"}, {"price": 227.45, "priceLabel": "227.45", "buy": 60074.0, "sell": 57374.0, "neutral": 15119.0, "total": 132567.0, "transactions": 1714, "ratio": 0.20391852377675806, "barRatio": 0.007586652294603638, "buyLabel": "60.07K", "sellLabel": "57.37K", "neutralLabel": "15.12K"}, {"price": 224.82, "priceLabel": "224.82", "buy": 50786.0, "sell": 55974.0, "neutral": 22379.0, "total": 129139.0, "transactions": 1775, "ratio": 0.1986454716634363, "barRatio": 0.00739047191739135, "buyLabel": "50.79K", "sellLabel": "55.97K", "neutralLabel": "22.38K"}, {"price": 225.88, "priceLabel": "225.88", "buy": 46474.0, "sell": 60709.0, "neutral": 21798.0, "total": 128981.0, "transactions": 1947, "ratio": 0.19840243133849322, "barRatio": 0.0073814297646493604, "buyLabel": "46.47K", "sellLabel": "60.71K", "neutralLabel": "21.80K"}, {"price": 225.84, "priceLabel": "225.84", "buy": 33678.0, "sell": 73921.0, "neutral": 19620.0, "total": 127219.0, "transactions": 1727, "ratio": 0.19569207024640656, "barRatio": 0.007280592592931726, "buyLabel": "33.68K", "sellLabel": "73.92K", "neutralLabel": "19.62K"}], "source": {"provider": "AInvest trade distribution", "endpoint": "https://extquote.ainvest.com/extquote-trade-distribution/distribution/ticker", "request": {"market": "185", "code": "NVDA", "offset_day": 0, "trade_period": "ALL", "combine": 0, "count": 20}}, "language": "zh-CN", "componentUi": {"Business": "主营业务", "Type": "类型", "Buy": "买入", "Sell": "卖出", "Neutral": "中性", "Stock": "股票", "Value": "价值", "Volume Profile": "成交分布", "Average Price": "平均价格", "Transactions": "成交笔数", "Volume": "成交量", "Price": "价格", "Ratio": "占比", "Total": "合计", "Age": "年龄"}, "theme": "light"};
+
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fmtPct(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? `${n.toFixed(2)}%` : '--';
+}
+function rowBar(row) {
+  const total = Math.max(Number(row.total || 0), 1);
+  const buyValue = Math.max(0, Number(row.buy || 0));
+  const sellValue = Math.max(0, Number(row.sell || 0));
+  const parts = [
+    { cls: 'ratio-buy', value: buyValue },
+    { cls: 'ratio-sell', value: sellValue },
+  ].filter(item => item.value > 0);
+  const width = Math.max(14, Number(row.barRatio || 0) * 100);
+
+  if (!parts.length) {
+    return `<div class="ratio-bar" style="width:${width}%"><div class="ratio-fill"></div></div>`;
+  }
+
+  const html = parts.map(item => {
+    const pct = item.value / total * 100;
+    return `<span class="ratio-segment ${item.cls}" style="width:${Math.max(0.8, pct)}%"></span>`;
+  }).join('');
+
+  return `<div class="ratio-bar" style="width:${width}%"><div class="ratio-fill">${html}</div></div>`;
+}
+function polar(cx, cy, r, angle) {
+  const rad = (angle - 90) * Math.PI / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+function arcPath(cx, cy, rOuter, rInner, start, end) {
+  const full = Math.abs(end - start) >= 359.999;
+  if (full) {
+    const mid = start + 180;
+    return `${arcPath(cx, cy, rOuter, rInner, start, mid)} ${arcPath(cx, cy, rOuter, rInner, mid, end)}`;
+  }
+  const p1 = polar(cx, cy, rOuter, start);
+  const p2 = polar(cx, cy, rOuter, end);
+  const p3 = polar(cx, cy, rInner, end);
+  const p4 = polar(cx, cy, rInner, start);
+  const large = end - start > 180 ? 1 : 0;
+  return `M${p1.x},${p1.y} A${rOuter},${rOuter} 0 ${large} 1 ${p2.x},${p2.y} L${p3.x},${p3.y} A${rInner},${rInner} 0 ${large} 0 ${p4.x},${p4.y} Z`;
+}
+function labelLine(cx, cy, r, start, end, name, value, color, anchorHint) {
+  const angle = (start + end) / 2;
+  const p1 = polar(cx, cy, r + 3, angle);
+  const p2 = polar(cx, cy, r + 18, angle);
+  const side = anchorHint || (Math.cos((angle - 90) * Math.PI / 180) >= 0 ? 1 : -1);
+  const p3 = { x: p2.x + side * 22, y: p2.y };
+  const textX = p3.x + side * 6;
+  const anchor = side > 0 ? 'start' : 'end';
+  return `<path d="M${p1.x},${p1.y} L${p2.x},${p2.y} L${p3.x},${p3.y}" fill="none" stroke="${color}" stroke-width="1.2"/>
+    <text x="${textX}" y="${p3.y - 7}" text-anchor="${anchor}" fill="var(--business-text-697181)" font-size="12" font-weight="600">${esc(name)}</text>
+    <text x="${textX}" y="${p3.y + 12}" text-anchor="${anchor}" fill="var(--business-text-171717)" font-size="14" font-weight="700">${esc(value)}</text>`;
+}
+function donutSvg() {
+  const cx = 250, cy = 140, ro = 74, ri = 42;
+  const parts = [
+    { key:'buy', name:"买入", value:Number(payload.buyTotal || 0), label:payload.buyTotalLabel, color:'#05a66b', side:1 },
+    { key:'sell', name:"卖出", value:Number(payload.sellTotal || 0), label:payload.sellTotalLabel, color:'#ff3b25', side:-1 },
+    { key:'neutral', name:"中性", value:Number(payload.neutralTotal || 0), label:payload.neutralTotalLabel, color:'var(--business-text-8a8a8a)', side:-1 },
+  ];
+  const total = Math.max(parts.reduce((s, p) => s + p.value, 0), 1);
+  let start = 0;
+  const arcs = parts.map((p) => {
+    const end = start + p.value / total * 360;
+    const path = `<path class="arc" data-name="${esc(p.name)}" data-value="${esc(p.label)}" d="${arcPath(cx, cy, ro, ri, start, end)}" fill="${p.color}"></path>`;
+    const line = labelLine(cx, cy, ro, start, end, p.name, p.label, p.color, p.side);
+    start = end;
+    return path + line;
+  }).join('');
+  return `<svg class="donut" viewBox="0 0 500 280" aria-label="Volume profile donut">
+    ${arcs}
+    <text x="${cx}" y="${cy - 6}" text-anchor="middle" fill="var(--business-text-697181)" font-size="12">合计</text>
+    <text x="${cx}" y="${cy + 18}" text-anchor="middle" fill="var(--business-text-171717)" font-size="16" font-weight="700">${esc(payload.volumeLabel)}</text>
+  </svg>`;
+}
+function render() {
+  const rows = payload.rows || [];
+  document.getElementById('app').innerHTML = `
+    <h1 class="title">成交分布</h1>
+    <section class="grid">
+      <div>
+        <div class="summary">
+          <div class="metric"><span class="metric-label">平均价格</span><span class="metric-value">${esc(payload.averagePriceLabel)}</span></div>
+          <div class="metric"><span class="metric-label">成交笔数</span><span class="metric-value">${esc(payload.transactionsLabel)}</span></div>
+          <div class="metric"><span class="metric-label">成交量</span><span class="metric-value green">${esc(payload.volumeLabel)}</span></div>
+        </div>
+        <div class="donut-wrap">${donutSvg()}</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>价格</th><th>买入</th><th>卖出</th><th>成交量</th><th>占比</th></tr></thead>
+          <tbody>${rows.map((r) => `
+            <tr data-price="${esc(r.priceLabel)}" data-buy="${esc(r.buyLabel)}" data-sell="${esc(r.sellLabel)}" data-neutral="${esc(r.neutralLabel)}" data-ratio="${fmtPct(r.ratio)}">
+              <td>${esc(r.priceLabel)}</td>
+              <td class="buy">${esc(r.buyLabel)}</td>
+              <td class="sell">${esc(r.sellLabel)}</td>
+              <td>${rowBar(r)}</td>
+              <td class="ratio-text">${fmtPct(r.ratio)}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </section>`;
+  bindTooltip();
+}
+function setTooltipPosition(tip, clientX, topY) {
+  const margin = 10;
+  const gap = 12;
+  const box = tip.getBoundingClientRect();
+  const width = box.width || 200;
+  const height = box.height || 96;
+  const left = Math.max(margin, Math.min(window.innerWidth - margin - width, clientX - width / 2));
+  const top = Math.max(margin, topY - height - gap);
+  const arrowX = Math.max(12, Math.min(width - 12, clientX - left));
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  tip.style.setProperty('--arrow-x', arrowX + 'px');
+}
+function bindTooltip() {
+  const tip = document.getElementById('tooltip');
+  document.querySelectorAll('tbody tr,.arc').forEach((el) => {
+    el.addEventListener('mousemove', (event) => {
+      if (el.classList.contains('arc')) {
+        tip.innerHTML = `
+          <div class="tip-title">${el.dataset.name}</div>
+          <div class="tip-row"><span class="tip-dot" style="background:var(--business-bg-697181)"></span><span class="tip-label">成交量</span><span class="tip-value">${el.dataset.value}</span></div>`;
+      } else {
+        tip.innerHTML = `
+          <div class="tip-title">Price ${el.dataset.price}</div>
+          <div class="tip-row"><span class="tip-dot" style="background:#05a66b"></span><span class="tip-label">买入</span><span class="tip-value">${el.dataset.buy}</span></div>
+          <div class="tip-row"><span class="tip-dot" style="background:#ff3b25"></span><span class="tip-label">卖出</span><span class="tip-value">${el.dataset.sell}</span></div>
+          <div class="tip-row"><span class="tip-dot" style="background:var(--business-bg-8a8a8a)"></span><span class="tip-label">中性</span><span class="tip-value">${el.dataset.neutral}</span></div>
+          <div class="tip-row"><span></span><span class="tip-label">占比</span><span class="tip-value">${el.dataset.ratio}</span></div>`;
+      }
+      tip.classList.add('show');
+      setTooltipPosition(tip, event.clientX, event.clientY);
+    });
+    el.addEventListener('mouseleave', () => tip.classList.remove('show'));
+  });
+}
+render();
+
+</script>
+</body>
+</html>

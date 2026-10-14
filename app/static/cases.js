@@ -24,7 +24,7 @@
     home.setAttribute("aria-hidden", "true");
     origin.before(home);
     const moved = [];
-    conversation.querySelectorAll(":scope > .homeHero,:scope > #chatForm,:scope > #homeCases").forEach(node => {
+    conversation.querySelectorAll(":scope > .homeHero,:scope > #chatForm,:scope > #homeCases,:scope > #inspirationSquare").forEach(node => {
       const slot = document.createComment("home component location");
       node.before(slot);
       moved.push([node, slot]);
@@ -117,6 +117,13 @@
     '<rect x="3" y="9" width="6" height="6" rx="1"/><path d="M9 12h5V5h6M14 12h6M14 12v7h6"/>',
     '<path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="6" width="4" height="7" rx="1"/><rect x="10" y="10" width="4" height="6" rx="1"/><rect x="16" y="5" width="4" height="9" rx="1"/>',
   ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
+
+  const cardHtml = (row, index) => `
+      <button class="caseCard" type="button" data-case="${escapeHtml(row.id)}" style="--case-accent:${["#6d5efc", "#2784df", "#c17632", "#358a73", "#9661cb", "#5272b7"][index % 6]}">
+        <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
+        <h2>${escapeHtml(row.title)}</h2>
+        <p>${escapeHtml(row.preview)}</p>
+      </button>`;
 
   function setScrollHidden(hidden) {
     bar.classList.toggle("is-scroll-hidden", hidden);
@@ -233,7 +240,7 @@
   async function showCase(id, navigate = true) {
     const row = (window.veyaCases || []).find((item) => item.id === id);
     if (!row) return;
-    returnFocus = gallery.querySelector(`[data-case="${id}"]`);
+    returnFocus = document.activeElement?.matches(`[data-case="${id}"]`) ? document.activeElement : document.querySelector(`[data-case="${id}"]`);
     openingCase = true;
     try { startNewChat(false, false); } finally { openingCase = false; }
     mountCaseOverlay();
@@ -344,12 +351,7 @@
     return response.json();
   }).then((rows) => {
     window.veyaCases = rows;
-    const cardHtml = (row, index) => `
-      <button class="caseCard" type="button" data-case="${escapeHtml(row.id)}" style="--case-accent:${["#6d5efc", "#2784df", "#c17632", "#358a73", "#9661cb", "#5272b7"][index % 6]}">
-        <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
-        <h2>${escapeHtml(row.title)}</h2>
-        <p>${escapeHtml(row.preview)}</p>
-      </button>`;
+    loadInspiration(cardHtml);
     const desktop = window.matchMedia("(min-width:761px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
     let lanes = [], hovered = false, suppressClickUntil = 0;
@@ -450,5 +452,55 @@
     if (id) showCase(id, false);
   }).catch(() => {
     document.querySelector("#homeCases").hidden = true;
+    window.veyaCases = [];
+    loadInspiration(cardHtml);
   });
+
+  async function loadInspiration(cardHtml) {
+    const square = document.querySelector("#inspirationSquare");
+    if (!square) return;
+    const tabs = square.querySelector("#inspirationTabs");
+    const panel = square.querySelector("#inspirationPanel");
+    try {
+      const response = await fetch("/static/cases/inspiration/manifest.json", { cache: "no-store" });
+      if (!response.ok) throw new Error("灵感案例暂时无法加载");
+      const catalog = await response.json();
+      window.veyaCases = [...window.veyaCases, ...catalog.cases.filter(row => !window.veyaCases.some(existing => existing.id === row.id))];
+      const categories = [{ id: "recommended", title: "推荐" }, ...catalog.categories];
+      let active = "recommended";
+      const render = () => {
+        tabs.innerHTML = categories.map(category => `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`).join("");
+        panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
+        panel.innerHTML = catalog.categories.filter(category => active === "recommended" || category.id === active).map(category => {
+          const rows = catalog.cases.filter(row => row.category === category.id && (active !== "recommended" || row.featured));
+          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3><p>${escapeHtml(category.subtitle)}</p></header><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
+        }).join("");
+      };
+      tabs.addEventListener("click", event => {
+        const tab = event.target.closest("[data-category]");
+        if (!tab) return;
+        active = tab.dataset.category;
+        render();
+        tabs.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+      });
+      tabs.addEventListener("keydown", event => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        const index = categories.findIndex(category => category.id === active);
+        const next = event.key === "Home" ? 0 : event.key === "End" ? categories.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + categories.length) % categories.length;
+        active = categories[next].id;
+        render();
+        tabs.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+      });
+      panel.addEventListener("click", event => {
+        const card = event.target.closest("[data-case]");
+        if (card) showCase(card.dataset.case);
+      });
+      render();
+      const id = new URLSearchParams(location.search).get("case");
+      if (catalog.cases.some(row => row.id === id)) showCase(id, false);
+    } catch {
+      panel.innerHTML = '<p role="alert">灵感案例暂时无法加载，请刷新页面重试。</p>';
+    }
+  }
 })();

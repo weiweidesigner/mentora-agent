@@ -1,0 +1,727 @@
+{
+  "type": "cash-flow",
+  "name": "现金流",
+  "title": "现金流",
+  "code": "NVDA",
+  "description": "NVDA's cash flow trends over recent years, visualized with a waterfall chart to illustrate changes in its operating, investing, and financing cash flows.",
+  "trendMetrics": [
+    {
+      "key": "act_cash_flow_net",
+      "label": "经营",
+      "bars": [
+        {
+          "key": "act_cash_flow_net",
+          "label": "经营",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_act_cash_flow_net",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "invest_cash_flow_net",
+      "label": "投资",
+      "bars": [
+        {
+          "key": "invest_cash_flow_net",
+          "label": "投资",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_invest_cash_flow_net",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "financing_cash_flow_net",
+      "label": "融资",
+      "bars": [
+        {
+          "key": "financing_cash_flow_net",
+          "label": "融资",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_financing_cash_flow_net",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "cash_equivalents_net_addition",
+      "label": "净现金",
+      "bars": [
+        {
+          "key": "cash_equivalents_net_addition",
+          "label": "净现金",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_cash_equivalents_net_addition",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    }
+  ],
+  "waterfallItems": [
+    {
+      "key": "act_cash_flow_net",
+      "label": "经营",
+      "sign": "",
+      "kind": "delta"
+    },
+    {
+      "key": "invest_cash_flow_net",
+      "label": "投资",
+      "sign": "+",
+      "kind": "delta"
+    },
+    {
+      "key": "financing_cash_flow_net",
+      "label": "融资",
+      "sign": "+",
+      "kind": "delta"
+    },
+    {
+      "key": "other_cash",
+      "label": "其他",
+      "sign": "+",
+      "kind": "delta"
+    },
+    {
+      "key": "cash_equivalents_net_addition",
+      "label": "净现金",
+      "sign": "=",
+      "kind": "total"
+    }
+  ],
+  "defaultMetric": "act_cash_flow_net",
+  "defaultView": "quarterly",
+  "views": {
+    "quarterly": {
+      "label": "季度",
+      "trendRecords": [
+        {
+          "key": "2026_596003",
+          "label": "Q1,2026",
+          "endDate": "2025-04-27",
+          "period": "596003",
+          "compareKey": "596003",
+          "values": {
+            "act_cash_flow_net": 27.414,
+            "invest_cash_flow_net": -5.216,
+            "financing_cash_flow_net": -15.553,
+            "cash_equivalents_net_addition": 6.645
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.7865102639296188,
+            "yoy_invest_cash_flow_net": 0.0837871069734761,
+            "yoy_financing_cash_flow_net": -0.6643124665596576,
+            "yoy_cash_equivalents_net_addition": 20.644951140065146
+          }
+        },
+        {
+          "key": "2026_596004",
+          "label": "Q2,2026",
+          "endDate": "2025-07-27",
+          "period": "596004",
+          "compareKey": "596004",
+          "values": {
+            "act_cash_flow_net": 15.365,
+            "invest_cash_flow_net": -7.127,
+            "financing_cash_flow_net": -11.833,
+            "cash_equivalents_net_addition": -3.595
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.0605328547763667,
+            "yoy_invest_cash_flow_net": -1.2383793969849244,
+            "yoy_financing_cash_flow_net": -0.14660852713178293,
+            "yoy_cash_equivalents_net_addition": -4.653455284552846
+          }
+        },
+        {
+          "key": "2026_596005",
+          "label": "Q3,2026",
+          "endDate": "2025-10-26",
+          "period": "596005",
+          "compareKey": "596005",
+          "values": {
+            "act_cash_flow_net": 23.75,
+            "invest_cash_flow_net": -9.025,
+            "financing_cash_flow_net": -14.878,
+            "cash_equivalents_net_addition": -0.153
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.34736483803256374,
+            "yoy_invest_cash_flow_net": -1.0771001150747987,
+            "yoy_financing_cash_flow_net": -0.1670850329463446,
+            "yoy_cash_equivalents_net_addition": -1.2854477611940298
+          }
+        },
+        {
+          "key": "2026_596006",
+          "label": "Q4,2026",
+          "endDate": "2026-01-25",
+          "period": "596006",
+          "compareKey": "596006",
+          "values": {
+            "act_cash_flow_net": 36.19,
+            "invest_cash_flow_net": -30.861,
+            "financing_cash_flow_net": -6.21,
+            "cash_equivalents_net_addition": -0.881
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 1.1764493625210486,
+            "yoy_invest_cash_flow_net": -3.287440955821061,
+            "yoy_financing_cash_flow_net": 0.37575392038600725,
+            "yoy_cash_equivalents_net_addition": -0.7007722007722007
+          }
+        },
+        {
+          "key": "2027_596003",
+          "label": "Q1,2027",
+          "endDate": "2026-04-26",
+          "period": "596003",
+          "compareKey": "596003",
+          "values": {
+            "act_cash_flow_net": 50.344,
+            "invest_cash_flow_net": -26.429,
+            "financing_cash_flow_net": -21.283,
+            "cash_equivalents_net_addition": 2.632
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.8364339388633545,
+            "yoy_invest_cash_flow_net": -4.066909509202453,
+            "yoy_financing_cash_flow_net": -0.3684176686169871,
+            "yoy_cash_equivalents_net_addition": -0.6039127163280662
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2026_596003",
+          "label": "Q1,2026",
+          "endDate": "2025-04-27",
+          "period": "596003",
+          "values": {
+            "act_cash_flow_net": 27.414,
+            "invest_cash_flow_net": -5.216,
+            "financing_cash_flow_net": -15.553,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 6.645
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.7865102639296189,
+            "invest_cash_flow_net": 0.08378710697347619,
+            "financing_cash_flow_net": -0.6643124665596577,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 20.644951140065146
+          }
+        },
+        {
+          "key": "2026_596004",
+          "label": "Q2,2026",
+          "endDate": "2025-07-27",
+          "period": "596004",
+          "values": {
+            "act_cash_flow_net": 15.365,
+            "invest_cash_flow_net": -7.127,
+            "financing_cash_flow_net": -11.833,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": -3.595
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.06053285477636665,
+            "invest_cash_flow_net": -1.2383793969849246,
+            "financing_cash_flow_net": -0.14660852713178293,
+            "other_cash": null,
+            "cash_equivalents_net_addition": -4.653455284552845
+          }
+        },
+        {
+          "key": "2026_596005",
+          "label": "Q3,2026",
+          "endDate": "2025-10-26",
+          "period": "596005",
+          "values": {
+            "act_cash_flow_net": 23.75,
+            "invest_cash_flow_net": -9.025,
+            "financing_cash_flow_net": -14.878,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": -0.153
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.3473648380325637,
+            "invest_cash_flow_net": -1.0771001150747985,
+            "financing_cash_flow_net": -0.16708503294634455,
+            "other_cash": -1.0,
+            "cash_equivalents_net_addition": -1.2854477611940296
+          }
+        },
+        {
+          "key": "2026_596006",
+          "label": "Q4,2026",
+          "endDate": "2026-01-25",
+          "period": "596006",
+          "values": {
+            "act_cash_flow_net": 36.19,
+            "invest_cash_flow_net": -30.861,
+            "financing_cash_flow_net": -6.21,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": -0.881
+          },
+          "yoy": {
+            "act_cash_flow_net": 1.1764493625210488,
+            "invest_cash_flow_net": -3.287440955821062,
+            "financing_cash_flow_net": 0.37575392038600725,
+            "other_cash": null,
+            "cash_equivalents_net_addition": -0.7007722007722008
+          }
+        },
+        {
+          "key": "2027_596003",
+          "label": "Q1,2027",
+          "endDate": "2026-04-26",
+          "period": "596003",
+          "values": {
+            "act_cash_flow_net": 50.344,
+            "invest_cash_flow_net": -26.429,
+            "financing_cash_flow_net": -21.283,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 2.632
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.8364339388633545,
+            "invest_cash_flow_net": -4.066909509202454,
+            "financing_cash_flow_net": -0.3684176686169871,
+            "other_cash": null,
+            "cash_equivalents_net_addition": -0.6039127163280662
+          }
+        }
+      ]
+    },
+    "annual": {
+      "label": "年度",
+      "trendRecords": [
+        {
+          "key": "2022_596001",
+          "label": "2022",
+          "endDate": "2022-01-30",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "act_cash_flow_net": 9.108,
+            "invest_cash_flow_net": -9.83,
+            "financing_cash_flow_net": 1.865,
+            "cash_equivalents_net_addition": 1.143
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.5644108553761594,
+            "yoy_invest_cash_flow_net": 0.5003811944091486,
+            "yoy_financing_cash_flow_net": -0.509726603575184,
+            "yoy_cash_equivalents_net_addition": 1.1137426609612897
+          }
+        },
+        {
+          "key": "2023_596001",
+          "label": "2023",
+          "endDate": "2023-01-29",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "act_cash_flow_net": 5.641,
+            "invest_cash_flow_net": 7.375,
+            "financing_cash_flow_net": -11.617,
+            "cash_equivalents_net_addition": 1.399
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": -0.3806543697848046,
+            "yoy_invest_cash_flow_net": 1.7502543234994912,
+            "yoy_financing_cash_flow_net": -7.228954423592494,
+            "yoy_cash_equivalents_net_addition": 0.22397200349956256
+          }
+        },
+        {
+          "key": "2024_596001",
+          "label": "2024",
+          "endDate": "2024-01-28",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "act_cash_flow_net": 28.09,
+            "invest_cash_flow_net": -10.566,
+            "financing_cash_flow_net": -13.633,
+            "cash_equivalents_net_addition": 3.891
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 3.9796135436979254,
+            "yoy_invest_cash_flow_net": -2.432677966101695,
+            "yoy_financing_cash_flow_net": -0.17353877937505363,
+            "yoy_cash_equivalents_net_addition": 1.7812723373838455
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-01-26",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "act_cash_flow_net": 64.089,
+            "invest_cash_flow_net": -20.421,
+            "financing_cash_flow_net": -42.359,
+            "cash_equivalents_net_addition": 1.309
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 1.2815592737629047,
+            "yoy_invest_cash_flow_net": -0.9327086882453149,
+            "yoy_financing_cash_flow_net": -2.1070930829604637,
+            "yoy_cash_equivalents_net_addition": -0.6635826265741455
+          }
+        },
+        {
+          "key": "2026_596001",
+          "label": "2026",
+          "endDate": "2026-01-25",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "act_cash_flow_net": 102.718,
+            "invest_cash_flow_net": -52.228,
+            "financing_cash_flow_net": -48.474,
+            "cash_equivalents_net_addition": 2.016
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.6027399397712557,
+            "yoy_invest_cash_flow_net": -1.557563292688899,
+            "yoy_financing_cash_flow_net": -0.14436129275950788,
+            "yoy_cash_equivalents_net_addition": 0.5401069518716578
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2022_596001",
+          "label": "2022",
+          "endDate": "2022-01-30",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 9.108,
+            "invest_cash_flow_net": -9.83,
+            "financing_cash_flow_net": 1.865,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 1.143
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.5644108553761594,
+            "invest_cash_flow_net": 0.5003811944091486,
+            "financing_cash_flow_net": -0.5097266035751841,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 1.1137426609612897
+          }
+        },
+        {
+          "key": "2023_596001",
+          "label": "2023",
+          "endDate": "2023-01-29",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 5.641,
+            "invest_cash_flow_net": 7.375,
+            "financing_cash_flow_net": -11.617,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 1.399
+          },
+          "yoy": {
+            "act_cash_flow_net": -0.38065436978480455,
+            "invest_cash_flow_net": 1.7502543234994914,
+            "financing_cash_flow_net": -7.228954423592494,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 0.2239720034995626
+          }
+        },
+        {
+          "key": "2024_596001",
+          "label": "2024",
+          "endDate": "2024-01-28",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 28.09,
+            "invest_cash_flow_net": -10.566,
+            "financing_cash_flow_net": -13.633,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 3.891
+          },
+          "yoy": {
+            "act_cash_flow_net": 3.9796135436979254,
+            "invest_cash_flow_net": -2.432677966101695,
+            "financing_cash_flow_net": -0.1735387793750538,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 1.7812723373838455
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-01-26",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 64.089,
+            "invest_cash_flow_net": -20.421,
+            "financing_cash_flow_net": -42.359,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 1.309
+          },
+          "yoy": {
+            "act_cash_flow_net": 1.281559273762905,
+            "invest_cash_flow_net": -0.9327086882453152,
+            "financing_cash_flow_net": -2.1070930829604637,
+            "other_cash": null,
+            "cash_equivalents_net_addition": -0.6635826265741455
+          }
+        },
+        {
+          "key": "2026_596001",
+          "label": "2026",
+          "endDate": "2026-01-25",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 102.718,
+            "invest_cash_flow_net": -52.228,
+            "financing_cash_flow_net": -48.474,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 2.016
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.6027399397712556,
+            "invest_cash_flow_net": -1.5575632926888985,
+            "financing_cash_flow_net": -0.14436129275950801,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 0.5401069518716578
+          }
+        }
+      ]
+    },
+    "cumulative": {
+      "label": "累计",
+      "trendRecords": [
+        {
+          "key": "2026_596003",
+          "label": "Q1,2026",
+          "endDate": "2025-04-27",
+          "period": "596003",
+          "compareKey": "cumulative",
+          "values": {
+            "act_cash_flow_net": 27.414,
+            "invest_cash_flow_net": -5.216,
+            "financing_cash_flow_net": -15.553,
+            "cash_equivalents_net_addition": 6.645
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": -0.5722510883302907,
+            "yoy_invest_cash_flow_net": 0.7445766612800547,
+            "yoy_financing_cash_flow_net": 0.6328289147524729,
+            "yoy_cash_equivalents_net_addition": 4.076394194041253
+          }
+        },
+        {
+          "key": "2026_596002",
+          "label": "H1,2026",
+          "endDate": "2025-07-27",
+          "period": "596002",
+          "compareKey": "cumulative",
+          "values": {
+            "act_cash_flow_net": 42.779,
+            "invest_cash_flow_net": -12.343,
+            "financing_cash_flow_net": -27.386,
+            "cash_equivalents_net_addition": 3.05
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.5604800466914716,
+            "yoy_invest_cash_flow_net": -1.366372699386503,
+            "yoy_financing_cash_flow_net": -0.7608178486465632,
+            "yoy_cash_equivalents_net_addition": -0.5410082768999247
+          }
+        },
+        {
+          "key": "2026_596007",
+          "label": "9M,2026",
+          "endDate": "2025-10-26",
+          "period": "596007",
+          "compareKey": "cumulative",
+          "values": {
+            "act_cash_flow_net": 66.53,
+            "invest_cash_flow_net": -21.367,
+            "financing_cash_flow_net": -42.266,
+            "cash_equivalents_net_addition": 2.897
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.5552023188947848,
+            "yoy_invest_cash_flow_net": -0.7311026492748928,
+            "yoy_financing_cash_flow_net": -0.5433433141020959,
+            "yoy_cash_equivalents_net_addition": -0.05016393442622952
+          }
+        },
+        {
+          "key": "2026_596001",
+          "label": "2026",
+          "endDate": "2026-01-25",
+          "period": "596001",
+          "compareKey": "cumulative",
+          "values": {
+            "act_cash_flow_net": 102.718,
+            "invest_cash_flow_net": -52.228,
+            "financing_cash_flow_net": -48.474,
+            "cash_equivalents_net_addition": 2.016
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": 0.5439350668871186,
+            "yoy_invest_cash_flow_net": -1.4443300416530163,
+            "yoy_financing_cash_flow_net": -0.1468792883168504,
+            "yoy_cash_equivalents_net_addition": -0.3041076976182257
+          }
+        },
+        {
+          "key": "2027_596003",
+          "label": "Q1,2027",
+          "endDate": "2026-04-26",
+          "period": "596003",
+          "compareKey": "cumulative",
+          "values": {
+            "act_cash_flow_net": 50.344,
+            "invest_cash_flow_net": -26.429,
+            "financing_cash_flow_net": -21.283,
+            "cash_equivalents_net_addition": 2.632
+          },
+          "lines": {
+            "yoy_act_cash_flow_net": -0.5098814229249012,
+            "yoy_invest_cash_flow_net": 0.49396875239335225,
+            "yoy_financing_cash_flow_net": 0.5609398852993357,
+            "yoy_cash_equivalents_net_addition": 0.3055555555555556
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2026_596003",
+          "label": "Q1,2026",
+          "endDate": "2025-04-27",
+          "period": "596003",
+          "values": {
+            "act_cash_flow_net": 27.414,
+            "invest_cash_flow_net": -5.216,
+            "financing_cash_flow_net": -15.553,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 6.645
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.7865102639296189,
+            "invest_cash_flow_net": 0.08378710697347619,
+            "financing_cash_flow_net": -0.6643124665596577,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 20.644951140065146
+          }
+        },
+        {
+          "key": "2026_596002",
+          "label": "H1,2026",
+          "endDate": "2025-07-27",
+          "period": "596002",
+          "values": {
+            "act_cash_flow_net": 42.779,
+            "invest_cash_flow_net": -12.343,
+            "financing_cash_flow_net": -27.386,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 3.05
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.43394898267019744,
+            "invest_cash_flow_net": -0.39044722316097785,
+            "financing_cash_flow_net": -0.39262649377065856,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 1.3625096824167313
+          }
+        },
+        {
+          "key": "2026_596007",
+          "label": "9M,2026",
+          "endDate": "2025-10-26",
+          "period": "596007",
+          "values": {
+            "act_cash_flow_net": 66.53,
+            "invest_cash_flow_net": -21.367,
+            "financing_cash_flow_net": -42.266,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 2.897
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.40181205225453015,
+            "invest_cash_flow_net": -0.615896543900779,
+            "financing_cash_flow_net": -0.3041036717062635,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 0.5856595511767926
+          }
+        },
+        {
+          "key": "2026_596001",
+          "label": "2026",
+          "endDate": "2026-01-25",
+          "period": "596001",
+          "values": {
+            "act_cash_flow_net": 102.718,
+            "invest_cash_flow_net": -52.228,
+            "financing_cash_flow_net": -48.474,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 2.016
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.6027399397712556,
+            "invest_cash_flow_net": -1.5575632926888985,
+            "financing_cash_flow_net": -0.14436129275950801,
+            "other_cash": null,
+            "cash_equivalents_net_addition": 0.5401069518716578
+          }
+        },
+        {
+          "key": "2027_596003",
+          "label": "Q1,2027",
+          "endDate": "2026-04-26",
+          "period": "596003",
+          "values": {
+            "act_cash_flow_net": 50.344,
+            "invest_cash_flow_net": -26.429,
+            "financing_cash_flow_net": -21.283,
+            "other_cash": 0.0,
+            "cash_equivalents_net_addition": 2.632
+          },
+          "yoy": {
+            "act_cash_flow_net": 0.8364339388633545,
+            "invest_cash_flow_net": -4.066909509202454,
+            "financing_cash_flow_net": -0.3684176686169871,
+            "other_cash": null,
+            "cash_equivalents_net_addition": -0.6039127163280662
+          }
+        }
+      ]
+    }
+  },
+  "source": "AInvest financials Cash Flow module",
+  "language": "zh-CN",
+  "labels": {
+    "trend": "趋势",
+    "breakdown": "拆解",
+    "yoy": "同比"
+  },
+  "theme": "light"
+}

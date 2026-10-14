@@ -1,0 +1,784 @@
+{
+  "type": "balance-sheet",
+  "name": "Balance Sheet",
+  "title": "资产负债表",
+  "code": "GOOGL",
+  "description": "GOOGL's asset and liability trends over recent years, visualized with a waterfall chart to illustrate changes in its asset-liability structure.",
+  "trendMetrics": [
+    {
+      "key": "debt_ratio",
+      "label": "债务比率",
+      "bars": [
+        {
+          "key": "assets_total",
+          "label": "资产",
+          "color": "#2863f4"
+        },
+        {
+          "key": "total_debt",
+          "label": "负债",
+          "color": "#3fc8ed"
+        }
+      ],
+      "line": {
+        "key": "assets_debt_ratio",
+        "label": "债务比率",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "assets_total",
+      "label": "资产",
+      "bars": [
+        {
+          "key": "assets_total",
+          "label": "资产",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_assets_total",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "total_debt",
+      "label": "负债",
+      "bars": [
+        {
+          "key": "total_debt",
+          "label": "负债",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_total_debt",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    },
+    {
+      "key": "holder_equity_total",
+      "label": "权益",
+      "bars": [
+        {
+          "key": "holder_equity_total",
+          "label": "权益",
+          "color": "#2863f4"
+        }
+      ],
+      "line": {
+        "key": "yoy_holder_equity_total",
+        "label": "同比",
+        "unit": "%",
+        "color": "#ff6845"
+      }
+    }
+  ],
+  "waterfallItems": [
+    {
+      "key": "assets_total",
+      "label": "资产",
+      "sign": "",
+      "kind": "total"
+    },
+    {
+      "key": "total_debt",
+      "label": "负债",
+      "sign": "-",
+      "kind": "delta"
+    },
+    {
+      "key": "holder_equity_total",
+      "label": "权益",
+      "sign": "=",
+      "kind": "total"
+    }
+  ],
+  "defaultMetric": "debt_ratio",
+  "defaultView": "annual",
+  "views": {
+    "quarterly": {
+      "label": "季度",
+      "trendRecords": [
+        {
+          "key": "2025_596004",
+          "label": "Q2 '25",
+          "endDate": "2025-06-30",
+          "period": "596004",
+          "compareKey": "596004",
+          "values": {
+            "assets_total": 502.053,
+            "total_debt": 139.137,
+            "holder_equity_total": 362.916
+          },
+          "lines": {
+            "assets_debt_ratio": 0.27713608,
+            "yoy_assets_total": 0.21043710972346125,
+            "yoy_total_debt": 0.22031802275099333,
+            "yoy_holder_equity_total": 0.20669120507526115
+          }
+        },
+        {
+          "key": "2025_596005",
+          "label": "Q3 '25",
+          "endDate": "2025-09-30",
+          "period": "596005",
+          "compareKey": "596005",
+          "values": {
+            "assets_total": 536.469,
+            "total_debt": 149.602,
+            "holder_equity_total": 386.867
+          },
+          "lines": {
+            "assets_debt_ratio": 0.2788642,
+            "yoy_assets_total": 0.24683103010695714,
+            "yoy_total_debt": 0.2880401560091952,
+            "yoy_holder_equity_total": 0.23159375905309765
+          }
+        },
+        {
+          "key": "2025_596006",
+          "label": "Q4 '25",
+          "endDate": "2025-12-31",
+          "period": "596006",
+          "compareKey": "596006",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "lines": {
+            "assets_debt_ratio": 0.30240508,
+            "yoy_assets_total": 0.32209454177179203,
+            "yoy_total_debt": 0.43814910682900327,
+            "yoy_holder_equity_total": 0.2774083006238387
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "endDate": "2026-03-31",
+          "period": "596003",
+          "compareKey": "596003",
+          "values": {
+            "assets_total": 703.919,
+            "total_debt": 225.173,
+            "holder_equity_total": 478.746
+          },
+          "lines": {
+            "assets_debt_ratio": 0.31988482,
+            "yoy_assets_total": 0.4807688262294529,
+            "yoy_total_debt": 0.7306755209173987,
+            "yoy_holder_equity_total": 0.3865964601308552
+          }
+        },
+        {
+          "key": "2026_596004",
+          "label": "Q2 '26",
+          "endDate": "2026-06-30",
+          "period": "596004",
+          "compareKey": "596004",
+          "values": {
+            "assets_total": 921.983,
+            "total_debt": 281.503,
+            "holder_equity_total": 640.48
+          },
+          "lines": {
+            "assets_debt_ratio": 0.30532342,
+            "yoy_assets_total": 0.8364256363371994,
+            "yoy_total_debt": 1.0232073424035302,
+            "yoy_holder_equity_total": 0.7648161006954778
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2025_596004",
+          "label": "Q2 '25",
+          "endDate": "2025-06-30",
+          "period": "596004",
+          "values": {
+            "assets_total": 502.053,
+            "total_debt": 139.137,
+            "holder_equity_total": 362.916
+          },
+          "yoy": {
+            "assets_total": 0.2104371097234612,
+            "total_debt": 0.22031802275099327,
+            "holder_equity_total": 0.2066912050752611
+          }
+        },
+        {
+          "key": "2025_596005",
+          "label": "Q3 '25",
+          "endDate": "2025-09-30",
+          "period": "596005",
+          "values": {
+            "assets_total": 536.469,
+            "total_debt": 149.602,
+            "holder_equity_total": 386.867
+          },
+          "yoy": {
+            "assets_total": 0.2468310301069571,
+            "total_debt": 0.28804015600919525,
+            "holder_equity_total": 0.2315937590530977
+          }
+        },
+        {
+          "key": "2025_596006",
+          "label": "Q4 '25",
+          "endDate": "2025-12-31",
+          "period": "596006",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "yoy": {
+            "assets_total": 0.32209454177179203,
+            "total_debt": 0.43814910682900327,
+            "holder_equity_total": 0.27740830062383875
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "endDate": "2026-03-31",
+          "period": "596003",
+          "values": {
+            "assets_total": 703.919,
+            "total_debt": 225.173,
+            "holder_equity_total": 478.746
+          },
+          "yoy": {
+            "assets_total": 0.480768826229453,
+            "total_debt": 0.7306755209173987,
+            "holder_equity_total": 0.3865964601308553
+          }
+        },
+        {
+          "key": "2026_596004",
+          "label": "Q2 '26",
+          "endDate": "2026-06-30",
+          "period": "596004",
+          "values": {
+            "assets_total": 921.983,
+            "total_debt": 281.503,
+            "holder_equity_total": 640.48
+          },
+          "yoy": {
+            "assets_total": 0.8364256363371995,
+            "total_debt": 1.0232073424035304,
+            "holder_equity_total": 0.7648161006954779
+          }
+        }
+      ]
+    },
+    "annual": {
+      "label": "年度",
+      "trendRecords": [
+        {
+          "key": "2021_596001",
+          "label": "2021",
+          "endDate": "2021-12-31",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "assets_total": 359.268,
+            "total_debt": 107.633,
+            "holder_equity_total": 251.635
+          },
+          "lines": {
+            "assets_debt_ratio": 0.29958972,
+            "yoy_assets_total": 0.12406137364837802,
+            "yoy_total_debt": 0.10879553321246077,
+            "yoy_holder_equity_total": 0.13072021712560203
+          }
+        },
+        {
+          "key": "2022_596001",
+          "label": "2022",
+          "endDate": "2022-12-31",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "assets_total": 365.264,
+            "total_debt": 109.12,
+            "holder_equity_total": 256.144
+          },
+          "lines": {
+            "assets_debt_ratio": 0.29874282999999996,
+            "yoy_assets_total": 0.0166894908536247,
+            "yoy_total_debt": 0.013815465517081276,
+            "yoy_holder_equity_total": 0.01791881097621561
+          }
+        },
+        {
+          "key": "2023_596001",
+          "label": "2023",
+          "endDate": "2023-12-31",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "assets_total": 402.392,
+            "total_debt": 119.013,
+            "holder_equity_total": 283.379
+          },
+          "lines": {
+            "assets_debt_ratio": 0.29576383,
+            "yoy_assets_total": 0.10164702790310566,
+            "yoy_total_debt": 0.0906616568914956,
+            "yoy_holder_equity_total": 0.106326909863202
+          }
+        },
+        {
+          "key": "2024_596001",
+          "label": "2024",
+          "endDate": "2024-12-31",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "assets_total": 450.256,
+            "total_debt": 125.172,
+            "holder_equity_total": 325.084
+          },
+          "lines": {
+            "assets_debt_ratio": 0.27800185,
+            "yoy_assets_total": 0.11894868685262126,
+            "yoy_total_debt": 0.05175064908875494,
+            "yoy_holder_equity_total": 0.14717039724185624
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-12-31",
+          "period": "596001",
+          "compareKey": "annual",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "lines": {
+            "assets_debt_ratio": 0.30240508,
+            "yoy_assets_total": 0.32209454177179203,
+            "yoy_total_debt": 0.43814910682900327,
+            "yoy_holder_equity_total": 0.2774083006238387
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2021_596001",
+          "label": "2021",
+          "endDate": "2021-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 359.268,
+            "total_debt": 107.633,
+            "holder_equity_total": 251.635
+          },
+          "yoy": {
+            "assets_total": 0.12406137364837805,
+            "total_debt": 0.10879553321246085,
+            "holder_equity_total": 0.13072021712560214
+          }
+        },
+        {
+          "key": "2022_596001",
+          "label": "2022",
+          "endDate": "2022-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 365.264,
+            "total_debt": 109.12,
+            "holder_equity_total": 256.144
+          },
+          "yoy": {
+            "assets_total": 0.016689490853624592,
+            "total_debt": 0.013815465517081193,
+            "holder_equity_total": 0.01791881097621555
+          }
+        },
+        {
+          "key": "2023_596001",
+          "label": "2023",
+          "endDate": "2023-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 402.392,
+            "total_debt": 119.013,
+            "holder_equity_total": 283.379
+          },
+          "yoy": {
+            "assets_total": 0.1016470279031057,
+            "total_debt": 0.0906616568914956,
+            "holder_equity_total": 0.10632690986320195
+          }
+        },
+        {
+          "key": "2024_596001",
+          "label": "2024",
+          "endDate": "2024-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 450.256,
+            "total_debt": 125.172,
+            "holder_equity_total": 325.084
+          },
+          "yoy": {
+            "assets_total": 0.11894868685262132,
+            "total_debt": 0.05175064908875501,
+            "holder_equity_total": 0.14717039724185632
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "yoy": {
+            "assets_total": 0.32209454177179203,
+            "total_debt": 0.43814910682900327,
+            "holder_equity_total": 0.27740830062383875
+          }
+        }
+      ]
+    },
+    "cumulative": {
+      "label": "累计",
+      "trendRecords": [
+        {
+          "key": "2025_596002",
+          "label": "H1 '25",
+          "endDate": "2025-06-30",
+          "period": "596002",
+          "compareKey": "cumulative",
+          "values": {
+            "assets_total": 502.053,
+            "total_debt": 139.137,
+            "holder_equity_total": 362.916
+          },
+          "lines": {
+            "assets_debt_ratio": 0.27713608,
+            "yoy_assets_total": 0.056122126998952346,
+            "yoy_total_debt": 0.06940441329059928,
+            "yoy_holder_equity_total": 0.051116961655762065
+          }
+        },
+        {
+          "key": "2025_596007",
+          "label": "9M '25",
+          "endDate": "2025-09-30",
+          "period": "596007",
+          "compareKey": "cumulative",
+          "values": {
+            "assets_total": 536.469,
+            "total_debt": 149.602,
+            "holder_equity_total": 386.867
+          },
+          "lines": {
+            "assets_debt_ratio": 0.2788642,
+            "yoy_assets_total": 0.06855053151758889,
+            "yoy_total_debt": 0.07521363835644009,
+            "yoy_holder_equity_total": 0.06599598805233173
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-12-31",
+          "period": "596001",
+          "compareKey": "cumulative",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "lines": {
+            "assets_debt_ratio": 0.30240508,
+            "yoy_assets_total": 0.10962795613539625,
+            "yoy_total_debt": 0.20329942113073346,
+            "yoy_holder_equity_total": 0.07340507202733747
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "endDate": "2026-03-31",
+          "period": "596003",
+          "compareKey": "cumulative",
+          "values": {
+            "assets_total": 703.919,
+            "total_debt": 225.173,
+            "holder_equity_total": 478.746
+          },
+          "lines": {
+            "assets_debt_ratio": 0.31988482,
+            "yoy_assets_total": 0.18249868549474962,
+            "yoy_total_debt": 0.25084992445115994,
+            "yoy_holder_equity_total": 0.1528686501390678
+          }
+        },
+        {
+          "key": "2026_596002",
+          "label": "H1 '26",
+          "endDate": "2026-06-30",
+          "period": "596002",
+          "compareKey": "cumulative",
+          "values": {
+            "assets_total": 921.983,
+            "total_debt": 281.503,
+            "holder_equity_total": 640.48
+          },
+          "lines": {
+            "assets_debt_ratio": 0.30532342,
+            "yoy_assets_total": 0.30978564295039623,
+            "yoy_total_debt": 0.2501632078446349,
+            "yoy_holder_equity_total": 0.33782841005460107
+          }
+        }
+      ],
+      "waterfallRecords": [
+        {
+          "key": "2025_596002",
+          "label": "H1 '25",
+          "endDate": "2025-06-30",
+          "period": "596002",
+          "values": {
+            "assets_total": 502.053,
+            "total_debt": 139.137,
+            "holder_equity_total": 362.916
+          },
+          "yoy": {
+            "assets_total": 0.2104371097234612,
+            "total_debt": 0.22031802275099327,
+            "holder_equity_total": 0.2066912050752611
+          }
+        },
+        {
+          "key": "2025_596007",
+          "label": "9M '25",
+          "endDate": "2025-09-30",
+          "period": "596007",
+          "values": {
+            "assets_total": 536.469,
+            "total_debt": 149.602,
+            "holder_equity_total": 386.867
+          },
+          "yoy": {
+            "assets_total": 0.2468310301069571,
+            "total_debt": 0.28804015600919525,
+            "holder_equity_total": 0.2315937590530977
+          }
+        },
+        {
+          "key": "2025_596001",
+          "label": "2025",
+          "endDate": "2025-12-31",
+          "period": "596001",
+          "values": {
+            "assets_total": 595.281,
+            "total_debt": 180.016,
+            "holder_equity_total": 415.265
+          },
+          "yoy": {
+            "assets_total": 0.32209454177179203,
+            "total_debt": 0.43814910682900327,
+            "holder_equity_total": 0.27740830062383875
+          }
+        },
+        {
+          "key": "2026_596003",
+          "label": "Q1 '26",
+          "endDate": "2026-03-31",
+          "period": "596003",
+          "values": {
+            "assets_total": 703.919,
+            "total_debt": 225.173,
+            "holder_equity_total": 478.746
+          },
+          "yoy": {
+            "assets_total": 0.480768826229453,
+            "total_debt": 0.7306755209173987,
+            "holder_equity_total": 0.3865964601308553
+          }
+        },
+        {
+          "key": "2026_596002",
+          "label": "H1 '26",
+          "endDate": "2026-06-30",
+          "period": "596002",
+          "values": {
+            "assets_total": 921.983,
+            "total_debt": 281.503,
+            "holder_equity_total": 640.48
+          },
+          "yoy": {
+            "assets_total": 0.8364256363371995,
+            "total_debt": 1.0232073424035304,
+            "holder_equity_total": 0.7648161006954779
+          }
+        }
+      ]
+    }
+  },
+  "hasData": true,
+  "diagnostics": [
+    {
+      "code": "GOOGL",
+      "view": "quarterly",
+      "source": "trend",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 94,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v2/query",
+      "request": {
+        "strategy": "period",
+        "from": "1970-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "5",
+        "category": "indicator",
+        "ids": "assets_debt_ratio,assets_total,total_debt,holder_equity_total"
+      }
+    },
+    {
+      "code": "GOOGL",
+      "view": "quarterly",
+      "source": "waterfall",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 66,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v1/product/data",
+      "request": {
+        "strategy": "period",
+        "from": "2010-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "5",
+        "category": "product",
+        "ids": "usa_finance_assets_debt_waterfall"
+      }
+    },
+    {
+      "code": "GOOGL",
+      "view": "annual",
+      "source": "trend",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 25,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v2/query",
+      "request": {
+        "strategy": "period",
+        "from": "1970-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "4",
+        "category": "indicator",
+        "ids": "assets_debt_ratio,assets_total,total_debt,holder_equity_total"
+      }
+    },
+    {
+      "code": "GOOGL",
+      "view": "annual",
+      "source": "waterfall",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 16,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v1/product/data",
+      "request": {
+        "strategy": "period",
+        "from": "2010-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "4",
+        "category": "product",
+        "ids": "usa_finance_assets_debt_waterfall"
+      }
+    },
+    {
+      "code": "GOOGL",
+      "view": "cumulative",
+      "source": "trend",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 96,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v2/query",
+      "request": {
+        "strategy": "period",
+        "from": "1970-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "0",
+        "category": "indicator",
+        "ids": "assets_debt_ratio,assets_total,total_debt,holder_equity_total"
+      }
+    },
+    {
+      "code": "GOOGL",
+      "view": "cumulative",
+      "source": "waterfall",
+      "status": "ok",
+      "statusCode": 0,
+      "statusMsg": "success",
+      "rowCount": 66,
+      "message": "",
+      "url": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/assets/v1/product/data",
+      "request": {
+        "strategy": "period",
+        "from": "2010-01-01",
+        "code": "185-GOOGL",
+        "currency": "USD",
+        "language": "en",
+        "period": "0",
+        "category": "product",
+        "ids": "usa_finance_assets_debt_waterfall"
+      }
+    }
+  ],
+  "source": "AInvest financials Balance Sheet module",
+  "language": "zh-CN",
+  "i18n": {
+    "trend": "趋势",
+    "breakdown": "拆解",
+    "yoy": "同比",
+    "quarterly": "季度",
+    "annual": "年度",
+    "cumulative": "累计",
+    "componentTitle": "资产负债表",
+    "noTrendData": "暂无趋势数据",
+    "noBreakdownData": "暂无拆解数据",
+    "noAinvestData": "AInvest 未返回数据。",
+    "timeRangeFilter": "时间范围筛选",
+    "rangeStart": "开始周期",
+    "rangeEnd": "结束周期"
+  },
+  "theme": "light"
+}

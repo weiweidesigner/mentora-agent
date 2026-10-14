@@ -1,0 +1,43 @@
+{
+  "question": "用双环图展示仓位与风险预算，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用双环图展示仓位与风险预算，使用清楚标注的金融演示数据。",
+    "interpretation": "# 仓位与风险预算\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-double_ring_pie/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-double_ring_pie/chart.html",
+        "url": "/static/cases/inspiration/analysis-double_ring_pie/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-double_ring_pie/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "double_ring_pie.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "double_ring_pie.py"
+      ],
+      "primary_script": "double_ring_pie.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.89,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "composition-and-drivers",
+      "semantic_lens_confidence": 0.72,
+      "primary_purpose": "{\"type\": \"double-ring-pie\", \"script\": \"double_ring_pie.py\", \"purpose\": \"Compare two related values against one common total using concentric progress rings, with optional summary metrics.\", \"visualChannelMappings\": [{\"semantic\": \"中心文本\", \"field\": \"centerLabel\", \"aliases\": [\"marketCapLabel\", \"totalLabel\"], \"visualChannel\": \"doubleRing.center.label\", \"required\": true}, {\"semantic\": \"基准环\", \"field\": \"base\", \"aliases\": [\"track\", \"marketCap\"], \"visualChannel\": \"doubleRing.track\", \"required\": true}, {\"semantic\": \"双环系列\", \"field\": \"rings\", \"aliases\": [\"series\"], \"visualChannel\": \"doubleRing.arc.progress\", \"required\": true}, {\"semantic\": \"底部指标\", \"field\": \"metrics\", \"aliases\": [\"fields\", \"keyValues\"], \"visualChannel\": \"metricList.items\"}], \"payloadShape\": {\"type\": \"double-ring-pie\", \"title\": \"string\", \"centerLabel\": \"string\", \"base\": {\"label\": \"string\", \"value\": \"number\", \"displayValue\": \"string\", \"color\": \"string\", \"trackColor\": \"string\"}, \"rings\": [{\"label\": \"string\", \"value\": \"number\", \"total\": \"number\", \"displayValue\": \"string\", \"color\": \"string\"}], \"metrics\": [{\"label\": \"string\", \"value\": \"string\"}]}, \"dataContract\": [{\"field\": \"centerLabel\", \"type\": \"string\", \"channel\": \"doubleRing.cente",
+      "supporting_purpose": "",
+      "visual_encoding": "composition-and-contribution",
+      "visual_encoding_confidence": 0.85,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.99,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.51
+    },
+    "jevError": null
+  }
+}

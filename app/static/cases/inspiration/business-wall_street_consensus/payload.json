@@ -1,0 +1,345 @@
+{
+  "type": "wall-street-consensus",
+  "name": "华尔街共识",
+  "title": "华尔街共识",
+  "code": "NVDA",
+  "market": "185",
+  "marketLabel": "NASDAQ",
+  "ratingSummary": {
+    "label": "强烈买入",
+    "score": 4.04761905,
+    "analystCount": 21,
+    "windowDays": 90,
+    "lastUpdatedText": "Updated Oct 1, 2026",
+    "sourceWindowText": "Analyst actions in the last 90 days"
+  },
+  "priceTarget": {
+    "average": 344.0952381,
+    "low": 300,
+    "high": 515
+  },
+  "lastPrice": 228.52,
+  "upside": {
+    "amount": 115.5752381,
+    "percent": 50.575546166637494
+  },
+  "analystBreakdown": [
+    {
+      "key": "strongBuy",
+      "label": "强烈买入",
+      "count": 1,
+      "percent": 4.76
+    },
+    {
+      "key": "buy",
+      "label": "买入",
+      "count": 20,
+      "percent": 95.24
+    },
+    {
+      "key": "hold",
+      "label": "持有",
+      "count": 0,
+      "percent": 0
+    },
+    {
+      "key": "sell",
+      "label": "卖出",
+      "count": 0,
+      "percent": 0
+    },
+    {
+      "key": "strongSell",
+      "label": "强烈卖出",
+      "count": 0,
+      "percent": 0
+    }
+  ],
+  "industryRank": {
+    "name": "Semiconductors",
+    "rank": 1,
+    "companiesCovered": 77,
+    "averageScore": 4,
+    "leaders": [
+      {
+        "code": "NVDA",
+        "market": "185",
+        "name": "英伟达",
+        "score": 4.047619,
+        "rank": 1,
+        "self": true
+      },
+      {
+        "code": "GCTS",
+        "market": "169",
+        "name": "GCT Semiconductor",
+        "score": 4,
+        "rank": 2,
+        "self": false
+      },
+      {
+        "code": "SIMO",
+        "market": "185",
+        "name": "慧荣科技",
+        "score": 4,
+        "rank": 3,
+        "self": false
+      }
+    ]
+  },
+  "history": {
+    "rating": [
+      {
+        "date": "2026-04-16",
+        "averageRating": 4.10526316,
+        "timestamp": "2026-04-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-16",
+        "averageRating": 4.05,
+        "timestamp": "2026-05-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-06-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "averageRating": 4.04545455,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageRating": 4.04761905,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "priceTarget": [
+      {
+        "date": "2026-04-16",
+        "averageTarget": 285.26315789,
+        "timestamp": "2026-04-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-16",
+        "averageTarget": 287.6,
+        "timestamp": "2026-05-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-15",
+        "averageTarget": 324.95454545,
+        "timestamp": "2026-06-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "averageTarget": 325.86363636,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "averageTarget": 325.86363636,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "averageTarget": 344.0952381,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "averageTarget": 344.0952381,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "recommendations": [
+      {
+        "month": "2026-05",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-05-31T00:00:00.000Z"
+      },
+      {
+        "month": "2026-06",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-06-30T00:00:00.000Z"
+      },
+      {
+        "month": "2026-07",
+        "strongBuy": 1,
+        "buy": 21,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-07-31T00:00:00.000Z"
+      },
+      {
+        "month": "2026-08",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-08-31T00:00:00.000Z"
+      },
+      {
+        "month": "2026-09",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-09-30T00:00:00.000Z"
+      },
+      {
+        "month": "2026-10",
+        "strongBuy": 1,
+        "buy": 20,
+        "hold": 0,
+        "sell": 0,
+        "strongSell": 0,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ]
+  },
+  "analystActions": [
+    {
+      "firm": "Cantor Fitzgerald",
+      "analyst": "C.J. Muse",
+      "action": "Reiterates",
+      "rating": "Overweight",
+      "previousRating": "Overweight",
+      "priceTarget": 350,
+      "previousPriceTarget": 350,
+      "date": "2026-10-01"
+    },
+    {
+      "firm": "Rosenblatt",
+      "analyst": "Kevin Cassidy",
+      "action": "Maintains",
+      "rating": "买入",
+      "previousRating": "Buy",
+      "priceTarget": 390,
+      "previousPriceTarget": 390,
+      "date": "2026-09-29"
+    },
+    {
+      "firm": "Piper Sandler",
+      "analyst": "David O'Connor",
+      "action": "Initiates Coverage on",
+      "rating": "Overweight",
+      "previousRating": null,
+      "priceTarget": 300,
+      "previousPriceTarget": null,
+      "date": "2026-09-10"
+    },
+    {
+      "firm": "Needham",
+      "analyst": "N. Quinn Bolton",
+      "action": "Reiterates",
+      "rating": "买入",
+      "previousRating": "Buy",
+      "priceTarget": 300,
+      "previousPriceTarget": 300,
+      "date": "2026-09-04"
+    },
+    {
+      "firm": "Keybanc",
+      "analyst": "John Vinh",
+      "action": "Reiterates",
+      "rating": "Overweight",
+      "previousRating": "Overweight",
+      "priceTarget": 330,
+      "previousPriceTarget": 330,
+      "date": "2026-08-27"
+    }
+  ],
+  "peers": [
+    {
+      "market": "185",
+      "code": "MSFT"
+    },
+    {
+      "market": "185",
+      "code": "AMZN"
+    },
+    {
+      "market": "185",
+      "code": "NVDA"
+    },
+    {
+      "market": "185",
+      "code": "META"
+    },
+    {
+      "market": "185",
+      "code": "TSLA"
+    }
+  ],
+  "source": {
+    "overview": "https://fundamental.ainvest.com/bff/analyst-rating/overview",
+    "quote": "https://quote.ainvest.com/quote/fuyao/common_hq_aggr/quote/v1/single_kline"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "华尔街共识",
+    "updated": "近 {days} 天 | {text}",
+    "consensusRating": "共识评级",
+    "priceTarget": "目标价",
+    "analystsBreakdown": "分析师分布",
+    "industryRank": "行业排名",
+    "scoreSummary": "{score} / 5，来自 {count} 位分析师",
+    "analysts": "位分析师",
+    "upsideFrom": "相对当前价",
+    "low": "低",
+    "high": "高",
+    "ranks": "排名",
+    "ofCompaniesIn": "共 {count} 家",
+    "industryAvg": "行业平均",
+    "noRank": "暂无行业排名数据。",
+    "updatedPrefix": "更新于",
+    "locale": "zh-CN",
+    "ratings": {
+      "strongbuy": "强烈买入",
+      "buy": "买入",
+      "hold": "持有",
+      "sell": "卖出",
+      "strongsell": "强烈卖出"
+    }
+  },
+  "componentUi": {
+    "Industry": "行业",
+    "Business": "主营业务",
+    "Type": "类型",
+    "Buy": "买入",
+    "Sell": "卖出",
+    "Stock": "股票",
+    "Rating": "评级",
+    "Value": "价值",
+    "Breakdown": "拆解",
+    "Price": "价格",
+    "Strong Buy": "强烈买入",
+    "Hold": "持有",
+    "Strong Sell": "强烈卖出",
+    "Wall Street Consensus": "华尔街共识",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

@@ -1,0 +1,522 @@
+{
+  "type": "congress-trades",
+  "name": "Congress Trades",
+  "title": "Congress Trades",
+  "code": "AAPL",
+  "market": "185",
+  "period": "3Y",
+  "volumeSeries": [
+    {
+      "label": "2023 Q2",
+      "buy": 619507.0,
+      "sell": 1165003.5,
+      "buyAmount": 619507.0,
+      "sellAmount": 1165003.5,
+      "raw": {
+        "period": 596004,
+        "sell_count": 5,
+        "year": 2023,
+        "buy_count": 7,
+        "sell_amount": 1165003.5,
+        "buy_amount": 619507
+      }
+    },
+    {
+      "label": "2023 Q3",
+      "buy": 156002.5,
+      "sell": 162004.0,
+      "buyAmount": 156002.5,
+      "sellAmount": 162004.0,
+      "raw": {
+        "period": 596005,
+        "sell_count": 6,
+        "year": 2023,
+        "buy_count": 5,
+        "sell_amount": 162004,
+        "buy_amount": 156002.5
+      }
+    },
+    {
+      "label": "2023 Q4",
+      "buy": 40002.5,
+      "sell": 105003.5,
+      "buyAmount": 40002.5,
+      "sellAmount": 105003.5,
+      "raw": {
+        "period": 596006,
+        "sell_count": 6,
+        "year": 2023,
+        "buy_count": 5,
+        "sell_amount": 105003.5,
+        "buy_amount": 40002.5
+      }
+    },
+    {
+      "label": "2024 Q1",
+      "buy": 198862.5,
+      "sell": 715009.5,
+      "buyAmount": 198862.5,
+      "sellAmount": 715009.5,
+      "raw": {
+        "period": 596003,
+        "sell_count": 9,
+        "year": 2024,
+        "buy_count": 4,
+        "sell_amount": 715009.5,
+        "buy_amount": 198862.5
+      }
+    },
+    {
+      "label": "2024 Q2",
+      "buy": 1704008.5,
+      "sell": 316007.5,
+      "buyAmount": 1704008.5,
+      "sellAmount": 316007.5,
+      "raw": {
+        "period": 596004,
+        "sell_count": 6,
+        "year": 2024,
+        "buy_count": 5,
+        "sell_amount": 316007.5,
+        "buy_amount": 1704008.5
+      }
+    },
+    {
+      "label": "2024 Q3",
+      "buy": 185008.5,
+      "sell": 194504.5,
+      "buyAmount": 185008.5,
+      "sellAmount": 194504.5,
+      "raw": {
+        "period": 596005,
+        "sell_count": 7,
+        "year": 2024,
+        "buy_count": 8,
+        "sell_amount": 194504.5,
+        "buy_amount": 185008.5
+      }
+    },
+    {
+      "label": "2024 Q4",
+      "buy": 234507.0,
+      "sell": 15650506.5,
+      "buyAmount": 234507.0,
+      "sellAmount": 15650506.5,
+      "raw": {
+        "period": 596006,
+        "sell_count": 6,
+        "year": 2024,
+        "buy_count": 8,
+        "sell_amount": 15650506.5,
+        "buy_amount": 234507
+      }
+    },
+    {
+      "label": "2025 Q1",
+      "buy": 170004.5,
+      "sell": 797511.0,
+      "buyAmount": 170004.5,
+      "sellAmount": 797511.0,
+      "raw": {
+        "period": 596003,
+        "sell_count": 10,
+        "year": 2025,
+        "buy_count": 8,
+        "sell_amount": 797511,
+        "buy_amount": 170004.5
+      }
+    },
+    {
+      "label": "2025 Q2",
+      "buy": 1384014.5,
+      "sell": 1466509.5,
+      "buyAmount": 1384014.5,
+      "sellAmount": 1466509.5,
+      "raw": {
+        "period": 596004,
+        "sell_count": 13,
+        "year": 2025,
+        "buy_count": 11,
+        "sell_amount": 1466509.5,
+        "buy_amount": 1384014.5
+      }
+    },
+    {
+      "label": "2025 Q3",
+      "buy": 812506.5,
+      "sell": 251006.5,
+      "buyAmount": 812506.5,
+      "sellAmount": 251006.5,
+      "raw": {
+        "period": 596005,
+        "sell_count": 8,
+        "year": 2025,
+        "buy_count": 4,
+        "sell_amount": 251006.5,
+        "buy_amount": 812506.5
+      }
+    },
+    {
+      "label": "2025 Q4",
+      "buy": 821506.0,
+      "sell": 30527507.5,
+      "buyAmount": 821506.0,
+      "sellAmount": 30527507.5,
+      "raw": {
+        "period": 596006,
+        "sell_count": 8,
+        "year": 2025,
+        "buy_count": 8,
+        "sell_amount": 30527507.5,
+        "buy_amount": 821506
+      }
+    },
+    {
+      "label": "2026 Q1",
+      "buy": 88504.0,
+      "sell": 89002.5,
+      "buyAmount": 88504.0,
+      "sellAmount": 89002.5,
+      "raw": {
+        "period": 596003,
+        "sell_count": 4,
+        "year": 2026,
+        "buy_count": 7,
+        "sell_amount": 89002.5,
+        "buy_amount": 88504
+      }
+    },
+    {
+      "label": "2026 Q2",
+      "buy": 162004.0,
+      "sell": 332507.0,
+      "buyAmount": 162004.0,
+      "sellAmount": 332507.0,
+      "raw": {
+        "period": 596004,
+        "sell_count": 6,
+        "year": 2026,
+        "buy_count": 5,
+        "sell_amount": 332507,
+        "buy_amount": 162004
+      }
+    }
+  ],
+  "priceSeries": [
+    {
+      "label": "2023 Q2",
+      "date": "2023-06-14",
+      "price": 183.95
+    },
+    {
+      "label": "2023 Q3",
+      "date": "2023-09-14",
+      "price": 175.74
+    },
+    {
+      "label": "2023 Q4",
+      "date": "2023-12-12",
+      "price": 194.71
+    },
+    {
+      "label": "2024 Q1",
+      "date": "2024-03-14",
+      "price": 173.0
+    },
+    {
+      "label": "2024 Q2",
+      "date": "2024-06-12",
+      "price": 213.07
+    },
+    {
+      "label": "2024 Q3",
+      "date": "2024-09-12",
+      "price": 222.77
+    },
+    {
+      "label": "2024 Q4",
+      "date": "2024-12-11",
+      "price": 246.49
+    },
+    {
+      "label": "2025 Q1",
+      "date": "2025-03-14",
+      "price": 213.49
+    },
+    {
+      "label": "2025 Q2",
+      "date": "2025-06-13",
+      "price": 196.45
+    },
+    {
+      "label": "2025 Q3",
+      "date": "2025-09-12",
+      "price": 234.07
+    },
+    {
+      "label": "2025 Q4",
+      "date": "2025-12-11",
+      "price": 278.03
+    },
+    {
+      "label": "2026 Q1",
+      "date": "2026-03-13",
+      "price": 250.12
+    },
+    {
+      "label": "2026 Q2",
+      "date": "2026-06-12",
+      "price": 291.13
+    }
+  ],
+  "trades": [
+    {
+      "id": "H002482591202606240002",
+      "politician": "Sheldon Whitehouse",
+      "party": "Democrat",
+      "state": "RI",
+      "avatarUrl": "https://cdn.ainvest.com/icon/ownership/H002482591.png",
+      "type": "Sell",
+      "tone": "sell",
+      "size": "$15K-$50K",
+      "filed": "Jul 8, 2026",
+      "traded": "Jun 24, 2026",
+      "reportingGap": "14 Days",
+      "raw": {
+        "human_id": "H002482591",
+        "size": "$15K-$50K",
+        "reporting_gap": "14 Days",
+        "name": "Sheldon Whitehouse",
+        "trade_type": "sell",
+        "field_date": "2026-07-08",
+        "id": "H002482591202606240002",
+        "state": "RI",
+        "trade_date": "2026-06-24",
+        "party": "Democrat"
+      }
+    },
+    {
+      "id": "H002482591202606240003",
+      "politician": "Sheldon Whitehouse",
+      "party": "Democrat",
+      "state": "RI",
+      "avatarUrl": "https://cdn.ainvest.com/icon/ownership/H002482591.png",
+      "type": "Sell",
+      "tone": "sell",
+      "size": "$15K-$50K",
+      "filed": "Jul 8, 2026",
+      "traded": "Jun 24, 2026",
+      "reportingGap": "14 Days",
+      "raw": {
+        "human_id": "H002482591",
+        "size": "$15K-$50K",
+        "reporting_gap": "14 Days",
+        "name": "Sheldon Whitehouse",
+        "trade_type": "sell",
+        "field_date": "2026-07-08",
+        "id": "H002482591202606240003",
+        "state": "RI",
+        "trade_date": "2026-06-24",
+        "party": "Democrat"
+      }
+    },
+    {
+      "id": "H002482591202606240006",
+      "politician": "Sheldon Whitehouse",
+      "party": "Democrat",
+      "state": "RI",
+      "avatarUrl": "https://cdn.ainvest.com/icon/ownership/H002482591.png",
+      "type": "Buy",
+      "tone": "buy",
+      "size": "$15K-$50K",
+      "filed": "Jul 8, 2026",
+      "traded": "Jun 24, 2026",
+      "reportingGap": "14 Days",
+      "raw": {
+        "human_id": "H002482591",
+        "size": "$15K-$50K",
+        "reporting_gap": "14 Days",
+        "name": "Sheldon Whitehouse",
+        "trade_type": "buy",
+        "field_date": "2026-07-08",
+        "id": "H002482591202606240006",
+        "state": "RI",
+        "trade_date": "2026-06-24",
+        "party": "Democrat"
+      }
+    }
+  ],
+  "source": {
+    "provider": "AInvest",
+    "summaryEndpoint": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/holder/v1/congress_trade_summary_dj",
+    "detailsEndpoint": "https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/abroad/holder/v1/congress_trade_details",
+    "klineEndpoint": "https://quote.ainvest.com/quote/fuyao/common_hq_aggr/quote/v1/single_kline",
+    "dateRange": {
+      "from": "2023-06-15",
+      "to": "2026-06-14"
+    },
+    "rawSummary": {
+      "status_message": "success",
+      "status_code": 0,
+      "data": {
+        "quarter_summary": [
+          {
+            "period": 596004,
+            "sell_count": 5,
+            "year": 2023,
+            "buy_count": 7,
+            "sell_amount": 1165003.5,
+            "buy_amount": 619507
+          },
+          {
+            "period": 596005,
+            "sell_count": 6,
+            "year": 2023,
+            "buy_count": 5,
+            "sell_amount": 162004,
+            "buy_amount": 156002.5
+          },
+          {
+            "period": 596006,
+            "sell_count": 6,
+            "year": 2023,
+            "buy_count": 5,
+            "sell_amount": 105003.5,
+            "buy_amount": 40002.5
+          },
+          {
+            "period": 596003,
+            "sell_count": 9,
+            "year": 2024,
+            "buy_count": 4,
+            "sell_amount": 715009.5,
+            "buy_amount": 198862.5
+          },
+          {
+            "period": 596004,
+            "sell_count": 6,
+            "year": 2024,
+            "buy_count": 5,
+            "sell_amount": 316007.5,
+            "buy_amount": 1704008.5
+          },
+          {
+            "period": 596005,
+            "sell_count": 7,
+            "year": 2024,
+            "buy_count": 8,
+            "sell_amount": 194504.5,
+            "buy_amount": 185008.5
+          },
+          {
+            "period": 596006,
+            "sell_count": 6,
+            "year": 2024,
+            "buy_count": 8,
+            "sell_amount": 15650506.5,
+            "buy_amount": 234507
+          },
+          {
+            "period": 596003,
+            "sell_count": 10,
+            "year": 2025,
+            "buy_count": 8,
+            "sell_amount": 797511,
+            "buy_amount": 170004.5
+          },
+          {
+            "period": 596004,
+            "sell_count": 13,
+            "year": 2025,
+            "buy_count": 11,
+            "sell_amount": 1466509.5,
+            "buy_amount": 1384014.5
+          },
+          {
+            "period": 596005,
+            "sell_count": 8,
+            "year": 2025,
+            "buy_count": 4,
+            "sell_amount": 251006.5,
+            "buy_amount": 812506.5
+          },
+          {
+            "period": 596006,
+            "sell_count": 8,
+            "year": 2025,
+            "buy_count": 8,
+            "sell_amount": 30527507.5,
+            "buy_amount": 821506
+          },
+          {
+            "period": 596003,
+            "sell_count": 4,
+            "year": 2026,
+            "buy_count": 7,
+            "sell_amount": 89002.5,
+            "buy_amount": 88504
+          },
+          {
+            "period": 596004,
+            "sell_count": 6,
+            "year": 2026,
+            "buy_count": 5,
+            "sell_amount": 332507,
+            "buy_amount": 162004
+          }
+        ],
+        "total_buy_amount": 6576438,
+        "total_sell_amount": 51772083,
+        "total_buy_count": 85,
+        "total_sell_count": 94
+      }
+    },
+    "rawDetails": {
+      "status_message": "success",
+      "status_code": 0,
+      "data": {
+        "total": 503,
+        "data": [
+          {
+            "human_id": "H002482591",
+            "size": "$15K-$50K",
+            "reporting_gap": "14 Days",
+            "name": "Sheldon Whitehouse",
+            "trade_type": "sell",
+            "field_date": "2026-07-08",
+            "id": "H002482591202606240002",
+            "state": "RI",
+            "trade_date": "2026-06-24",
+            "party": "Democrat"
+          },
+          {
+            "human_id": "H002482591",
+            "size": "$15K-$50K",
+            "reporting_gap": "14 Days",
+            "name": "Sheldon Whitehouse",
+            "trade_type": "sell",
+            "field_date": "2026-07-08",
+            "id": "H002482591202606240003",
+            "state": "RI",
+            "trade_date": "2026-06-24",
+            "party": "Democrat"
+          },
+          {
+            "human_id": "H002482591",
+            "size": "$15K-$50K",
+            "reporting_gap": "14 Days",
+            "name": "Sheldon Whitehouse",
+            "trade_type": "buy",
+            "field_date": "2026-07-08",
+            "id": "H002482591202606240006",
+            "state": "RI",
+            "trade_date": "2026-06-24",
+            "party": "Democrat"
+          }
+        ]
+      }
+    }
+  },
+  "language": "zh-CN",
+  "theme": "light"
+}

@@ -1,0 +1,68 @@
+{
+  "type": "double-ring-pie",
+  "name": "估值",
+  "title": "NVDA 估值 基本面摘要",
+  "noData": true,
+  "props": {
+    "centerCaption": "市值",
+    "centerLabel": "暂无数据",
+    "height": 430,
+    "base": {
+      "label": "市值",
+      "value": 1,
+      "displayValue": "暂无数据",
+      "color": "#9b9b9b",
+      "trackColor": "#f0f0f0"
+    },
+    "rings": [
+      {
+        "label": "收入",
+        "value": 0,
+        "total": 1,
+        "displayValue": "暂无数据",
+        "color": "#4285f4"
+      },
+      {
+        "label": "盈利",
+        "value": 0,
+        "total": 1,
+        "displayValue": "暂无数据",
+        "color": "#4bc3d5"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "市盈率",
+        "value": "--"
+      },
+      {
+        "label": "市销率",
+        "value": "--"
+      },
+      {
+        "label": "市净率",
+        "value": "--"
+      }
+    ]
+  },
+  "source": {
+    "provider": "AInvest analysis page",
+    "symbol": "NVDA",
+    "noData": true,
+    "statusMsg": "Page.goto: Timeout 12000ms exceeded.\nCall log:\n  - navigating to \"https://www.ainvest.com/stocks/AMEX-NVDA/analysis/\", waiting until \"load\"\n",
+    "method": "AInvest valuation summary was unavailable; rendered a no-data state instead of failing."
+  },
+  "language": "zh-CN",
+  "componentUi": {
+    "Size": "金额范围",
+    "Buy": "买入",
+    "Stock": "股票",
+    "No data": "暂无数据",
+    "No Data": "暂无数据",
+    "Value": "价值",
+    "Market Cap": "市值",
+    "P/E Ratio": "市盈率",
+    "Ratio": "占比"
+  },
+  "theme": "light"
+}

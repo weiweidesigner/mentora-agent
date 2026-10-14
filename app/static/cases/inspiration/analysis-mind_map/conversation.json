@@ -1,0 +1,43 @@
+{
+  "question": "用思维导图展示公司研究证据框架，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用思维导图展示公司研究证据框架，使用清楚标注的金融演示数据。",
+    "interpretation": "# 公司研究证据框架\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-mind_map/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-mind_map/chart.html",
+        "url": "/static/cases/inspiration/analysis-mind_map/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-mind_map/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "mind_map.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "mind_map.py"
+      ],
+      "primary_script": "mind_map.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.98,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "evidence-led",
+      "semantic_lens_confidence": 0.95,
+      "primary_purpose": "{\"chartType\": \"mind-map\", \"script\": \"mind_map.py\", \"purpose\": \"Render a structured concept, summary, or framework as a mind map.\", \"rawDataContract\": {\"shape\": \"object|string|array<object>\", \"notes\": \"The model converts source notes or rows into concise Markdown hierarchy.\"}, \"semanticChannels\": [{\"channel\": \"root\", \"payloadField\": \"data.content h1\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"central topic\"}, {\"channel\": \"branch\", \"payloadField\": \"data.content h2\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"major branches\"}, {\"channel\": \"detail\", \"payloadField\": \"data.content list items\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"supporting facts or subpoints\"}], \"payloadShape\": {\"title\": \"string\", \"data\": {\"content\": \"markdown string\"}, \"theme\": \"light|dark\"}, \"modelInstructions\": [\"Generate concise Markdown with one h1 root and 4-6 h2 branches when the evidence supports it.\", \"The h1 root title must be specific to the user's topic and evidence; do not use generic titles such as 思维导图, 今日市场热点, Mind Map, Summary, or Market Hotspots.\", \"Do not create branches or leaves for 数据来源, 来源, 日期, 参考, source, date, references, or methodolo",
+      "supporting_purpose": "",
+      "visual_encoding": "flow-and-relationship",
+      "visual_encoding_confidence": 1.0,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.93,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.99
+    },
+    "jevError": null
+  }
+}

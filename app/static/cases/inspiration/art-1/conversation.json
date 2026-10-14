@@ -1,0 +1,22 @@
+{
+  "question": "画一张金融分析主题插画：用牛与熊的对峙表达市场情绪与风险的张力。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "画一张金融分析主题插画：用牛与熊的对峙表达市场情绪与风险的张力。",
+    "interpretation": "# 牛熊博弈的市场隐喻\n\n用牛与熊的对峙表达市场情绪与风险的张力。\n\n[[AIME_CHART:case:inspiration/art-1/chart.html]]\n\n## 创作说明\n\n由本地 FLUX.2 [klein] 4B 生成，属于金融主题艺术表达。画面中的形象与关系是视觉隐喻，不代表真实行情、数据或预测。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/art-1/chart.html",
+        "url": "/static/cases/inspiration/art-1/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/art-1/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "skill": "flux-image",
+    "model": "FLUX.2 [klein] 4B",
+    "seed": 20261014
+  }
+}

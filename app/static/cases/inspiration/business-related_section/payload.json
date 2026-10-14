@@ -1,0 +1,148 @@
+{
+  "type": "related-section",
+  "name": "Related Section",
+  "code": "AAPL",
+  "market": "185",
+  "exchange": "NASDAQ",
+  "items": [
+    {
+      "name": "TV Broadcasting",
+      "changePercent": -0.089,
+      "displayChange": "-0.089%",
+      "initial": "T",
+      "iconUrl": ""
+    },
+    {
+      "name": "MLB Concept",
+      "changePercent": -0.14,
+      "displayChange": "-0.14%",
+      "initial": "M",
+      "iconUrl": ""
+    },
+    {
+      "name": "Chip Stocks",
+      "changePercent": -0.27,
+      "displayChange": "-0.27%",
+      "initial": "C",
+      "iconUrl": ""
+    },
+    {
+      "name": "Streaming",
+      "changePercent": -0.31,
+      "displayChange": "-0.31%",
+      "initial": "S",
+      "iconUrl": ""
+    },
+    {
+      "name": "5G",
+      "changePercent": -0.39,
+      "displayChange": "-0.39%",
+      "initial": "5G",
+      "iconUrl": ""
+    },
+    {
+      "name": "Virtual Reality",
+      "changePercent": -0.42,
+      "displayChange": "-0.42%",
+      "initial": "V",
+      "iconUrl": ""
+    },
+    {
+      "name": "US Tech",
+      "changePercent": -0.49,
+      "displayChange": "-0.49%",
+      "initial": "US",
+      "iconUrl": ""
+    },
+    {
+      "name": "Autonomous Vehicles",
+      "changePercent": -0.51,
+      "displayChange": "-0.51%",
+      "initial": "AV",
+      "iconUrl": ""
+    },
+    {
+      "name": "Nancy Pelosi Portfolio",
+      "changePercent": -0.55,
+      "displayChange": "-0.55%",
+      "initial": "N",
+      "iconUrl": ""
+    },
+    {
+      "name": "Artificial Intelligence",
+      "changePercent": -0.58,
+      "displayChange": "-0.58%",
+      "initial": "AI",
+      "iconUrl": ""
+    },
+    {
+      "name": "Metaverse",
+      "changePercent": -0.58,
+      "displayChange": "-0.58%",
+      "initial": "M",
+      "iconUrl": ""
+    },
+    {
+      "name": "Wearable Technology",
+      "changePercent": -0.62,
+      "displayChange": "-0.62%",
+      "initial": "WT",
+      "iconUrl": ""
+    },
+    {
+      "name": "Smart Home",
+      "changePercent": -0.63,
+      "displayChange": "-0.63%",
+      "initial": "S",
+      "iconUrl": ""
+    },
+    {
+      "name": "AI terminals",
+      "changePercent": -0.66,
+      "displayChange": "-0.66%",
+      "initial": "AI",
+      "iconUrl": ""
+    },
+    {
+      "name": "MAG7 index",
+      "changePercent": -0.69,
+      "displayChange": "-0.69%",
+      "initial": "M",
+      "iconUrl": ""
+    },
+    {
+      "name": "Digital Music",
+      "changePercent": -0.73,
+      "displayChange": "-0.73%",
+      "initial": "D",
+      "iconUrl": ""
+    },
+    {
+      "name": "AR",
+      "changePercent": -0.79,
+      "displayChange": "-0.79%",
+      "initial": "AR",
+      "iconUrl": ""
+    },
+    {
+      "name": "Wireless Charging",
+      "changePercent": -0.98,
+      "displayChange": "-0.98%",
+      "initial": "WC",
+      "iconUrl": ""
+    },
+    {
+      "name": "Technology Hardware, Storage & Peripherals",
+      "changePercent": -1.67,
+      "displayChange": "-1.67%",
+      "initial": "TH",
+      "iconUrl": ""
+    }
+  ],
+  "source": {
+    "provider": "AInvest profile page",
+    "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/profile/",
+    "endpoint": "https://api.ainvest.com/gw/midquote/v1/block/stockRelatedThemes"
+  },
+  "language": "zh-CN"
+}

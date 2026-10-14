@@ -1,0 +1,43 @@
+{
+  "question": "把已提供的 OHLCV 数据展示成 K线，保留成交量与周期交互。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "把已提供的 OHLCV 数据展示成 K线，保留成交量与周期交互。",
+    "interpretation": "# OHLCV 数据与 K线\n\n将 NVDA 缓存 OHLCV 数据传入原生 K线内核，体验价格、成交量与周期交互。\n\n[[AIME_CHART:case:inspiration/analysis-kline/chart.html]]\n\n## 数据口径\n\n行情为本次保存的历史快照，具体交易时间以图中记录为准。此案例复用业务 K线内核，打开时不发起行情请求。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-kline/chart.html",
+        "url": "/static/cases/inspiration/analysis-kline/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-kline/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "kline.py",
+    "dataDate": "2026-10-14",
+    "sample": false,
+    "jevDecision": {
+      "selected_scripts": [
+        "kline.py"
+      ],
+      "primary_script": "kline.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.96,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 1,
+      "semantic_lens": "technical-confirmation",
+      "semantic_lens_confidence": 0.99,
+      "primary_purpose": "{\"type\": \"kline\", \"visualChannelMappings\": [{\"semantic\": \"代码\", \"field\": \"code\", \"aliases\": [\"symbol\", \"ticker\", \"证券代码\", \"数字币代码\"], \"visualChannel\": \"quote.identity.symbol\", \"payloadPath\": \"symbol\", \"required\": true, \"default\": \"\"}, {\"semantic\": \"数据类型\", \"field\": \"dataType\", \"aliases\": [\"frequency\", \"periodType\", \"周期\", \"K线周期\"], \"visualChannel\": \"xAxis.timeGranularity\", \"payloadPath\": \"period\", \"required\": true, \"default\": \"1d\", \"supportedValues\": [\"1m\", \"5m\", \"15m\", \"30m\", \"1h\", \"2h\", \"4h\", \"1d\", \"1w\", \"1M\", \"3M\"]}, {\"semantic\": \"K线颜色\", \"field\": \"candleColors\", \"aliases\": [\"candleColorMode\", \"colors\", \"涨跌色\"], \"visualChannel\": \"candle.color\", \"payloadPath\": \"candleColorMode / chartOptions.candleColors\", \"default\": \"green_up_red_down\"}, {\"semantic\": \"K线类型\", \"field\": \"klineType\", \"aliases\": [\"candleType\", \"displayType\", \"形态\"], \"visualChannel\": \"candle.shape\", \"payloadPath\": \"chartOptions.klineType\", \"default\": \"candle-hollow\", \"supportedValues\": [\"candle-hollow\", \"candle-solid\", \"line\"]}, {\"semantic\": \"时间区间\", \"field\": \"timeRange\", \"aliases\": [\"range\", \"dateRange\", \"时间范围\"], \"visualChannel\": \"xAxis.visibleRange\", \"payloadPath\": \"timeRange\", \"default\": {}}, {\"semantic\": \"副图指标\", \"field\": \"su",
+      "supporting_purpose": "",
+      "visual_encoding": "technical-price-volume",
+      "visual_encoding_confidence": 1.0,
+      "evidence_strategy": "structured-data-first",
+      "evidence_strategy_confidence": 0.53,
+      "mark_strategy": "no-mark",
+      "mark_strategy_confidence": 0.82
+    }
+  }
+}

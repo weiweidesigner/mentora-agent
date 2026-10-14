@@ -1,0 +1,290 @@
+{
+  "type": "price-target-vs-actual",
+  "name": "目标价与实际股价",
+  "title": "目标价与实际价格",
+  "code": "NVDA",
+  "market": "185",
+  "defaultPeriod": "6M",
+  "latestSpread": {
+    "amount": 115.5752381,
+    "percent": 50.575546166637494
+  },
+  "views": {
+    "1M": [
+      {
+        "date": "2026-09-29",
+        "target": 344.0952381,
+        "actual": 227.21,
+        "spread": 116.88523810000001,
+        "spreadPercent": 51.4437032260904,
+        "timestamp": "2026-09-29T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-02",
+        "target": 344.0952381,
+        "actual": 233.95,
+        "spread": 110.14523810000003,
+        "spreadPercent": 47.080674545843145,
+        "timestamp": "2026-10-02T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-06",
+        "target": 344.0952381,
+        "actual": 239.24,
+        "spread": 104.85523810000001,
+        "spreadPercent": 43.82847270523324,
+        "timestamp": "2026-10-06T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-10",
+        "target": 344.0952381,
+        "actual": 229.28,
+        "spread": 114.81523810000002,
+        "spreadPercent": 50.07642973656665,
+        "timestamp": "2026-10-10T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "target": 344.0952381,
+        "actual": 228.52,
+        "spread": 115.5752381,
+        "spreadPercent": 50.575546166637494,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "3M": [
+      {
+        "date": "2026-07-14",
+        "target": 325.86363636,
+        "actual": 211.8,
+        "spread": 114.06363635999998,
+        "spreadPercent": 53.85440810198298,
+        "timestamp": "2026-07-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-06",
+        "target": 325.86363636,
+        "actual": 218.99,
+        "spread": 106.87363635999998,
+        "spreadPercent": 48.8029756427234,
+        "timestamp": "2026-08-06T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-29",
+        "target": 345.0,
+        "actual": 217.55,
+        "spread": 127.44999999999999,
+        "spreadPercent": 58.58423350953803,
+        "timestamp": "2026-08-29T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-21",
+        "target": 344.0952381,
+        "actual": 227.38,
+        "spread": 116.71523810000002,
+        "spreadPercent": 51.330476778960346,
+        "timestamp": "2026-09-21T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "target": 344.0952381,
+        "actual": 228.52,
+        "spread": 115.5752381,
+        "spreadPercent": 50.575546166637494,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "6M": [
+      {
+        "date": "2026-04-16",
+        "target": 285.26315789,
+        "actual": 198.35,
+        "spread": 86.91315789000001,
+        "spreadPercent": 43.81807808923621,
+        "timestamp": "2026-04-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-16",
+        "target": 287.6,
+        "actual": 225.32,
+        "spread": 62.28000000000003,
+        "spreadPercent": 27.64068879815375,
+        "timestamp": "2026-05-16T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-15",
+        "target": 324.95454545,
+        "actual": 212.45,
+        "spread": 112.50454545000002,
+        "spreadPercent": 52.95577568839729,
+        "timestamp": "2026-06-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "target": 325.86363636,
+        "actual": 212.5,
+        "spread": 113.36363635999999,
+        "spreadPercent": 53.34759358117647,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "target": 325.86363636,
+        "actual": 225.16,
+        "spread": 100.70363635999999,
+        "spreadPercent": 44.72536701012613,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "target": 344.0952381,
+        "actual": 218.29,
+        "spread": 125.80523810000003,
+        "spreadPercent": 57.63215818406708,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "target": 344.0952381,
+        "actual": 228.52,
+        "spread": 115.5752381,
+        "spreadPercent": 50.575546166637494,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ],
+    "1Y": [
+      {
+        "date": "2025-10-15",
+        "target": 227.03703704,
+        "actual": 179.83,
+        "spread": 47.20703703999999,
+        "spreadPercent": 26.25092422843796,
+        "timestamp": "2025-10-15T00:00:00.000Z"
+      },
+      {
+        "date": "2025-11-14",
+        "target": 243.14814815,
+        "actual": 190.17,
+        "spread": 52.97814815000001,
+        "spreadPercent": 27.85831001209445,
+        "timestamp": "2025-11-14T00:00:00.000Z"
+      },
+      {
+        "date": "2025-12-14",
+        "target": 265.24137931,
+        "actual": 175.02,
+        "spread": 90.22137931,
+        "spreadPercent": 51.549182556279284,
+        "timestamp": "2025-12-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-01-14",
+        "target": 269.73333333,
+        "actual": 183.14,
+        "spread": 86.59333333000001,
+        "spreadPercent": 47.28258891012341,
+        "timestamp": "2026-01-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-02-13",
+        "target": 267.11111111,
+        "actual": 182.81,
+        "spread": 84.30111111000002,
+        "spreadPercent": 46.11405891909634,
+        "timestamp": "2026-02-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-03-15",
+        "target": 278.09090909,
+        "actual": 180.25,
+        "spread": 97.84090909000003,
+        "spreadPercent": 54.280670785020824,
+        "timestamp": "2026-03-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-04-15",
+        "target": 285.26315789,
+        "actual": 198.87,
+        "spread": 86.39315789,
+        "spreadPercent": 43.44202639412681,
+        "timestamp": "2026-04-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-05-15",
+        "target": 287.6,
+        "actual": 225.32,
+        "spread": 62.28000000000003,
+        "spreadPercent": 27.64068879815375,
+        "timestamp": "2026-05-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-06-14",
+        "target": 324.95454545,
+        "actual": 205.19,
+        "spread": 119.76454545000001,
+        "spreadPercent": 58.36763265753693,
+        "timestamp": "2026-06-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-07-15",
+        "target": 325.86363636,
+        "actual": 212.5,
+        "spread": 113.36363635999999,
+        "spreadPercent": 53.34759358117647,
+        "timestamp": "2026-07-15T00:00:00.000Z"
+      },
+      {
+        "date": "2026-08-14",
+        "target": 325.86363636,
+        "actual": 225.16,
+        "spread": 100.70363635999999,
+        "spreadPercent": 44.72536701012613,
+        "timestamp": "2026-08-14T00:00:00.000Z"
+      },
+      {
+        "date": "2026-09-13",
+        "target": 344.0952381,
+        "actual": 218.29,
+        "spread": 125.80523810000003,
+        "spreadPercent": 57.63215818406708,
+        "timestamp": "2026-09-13T00:00:00.000Z"
+      },
+      {
+        "date": "2026-10-14",
+        "target": 344.0952381,
+        "actual": 228.52,
+        "spread": 115.5752381,
+        "spreadPercent": 50.575546166637494,
+        "timestamp": "2026-10-14T00:00:00.000Z"
+      }
+    ]
+  },
+  "source": {
+    "priceTargetHistory": "https://fundamental.ainvest.com/bff/analyst-rating/price-target-history",
+    "actualPrice": "https://quote.ainvest.com/quote/fuyao/common_hq_aggr/quote/v1/single_kline"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "title": "目标价与实际价格",
+    "latestSpread": "最新价差",
+    "period": "周期",
+    "chartLegend": "图例",
+    "actualPrice": "实际价格",
+    "averagePriceTarget": "平均目标价",
+    "spread": "价差",
+    "empty": "暂无目标价历史数据。",
+    "locale": "zh-CN"
+  },
+  "componentUi": {
+    "Business": "主营业务",
+    "Type": "类型",
+    "Stock": "股票",
+    "Value": "价值",
+    "Average Price": "平均价格",
+    "Price": "价格",
+    "Actual": "实际值",
+    "Price Target vs Actual Price": "目标价与实际股价",
+    "Age": "年龄"
+  },
+  "theme": "light"
+}

@@ -1,0 +1,61 @@
+{
+  "type": "pie",
+  "name": "按来源/业务收入明细",
+  "title": "按来源/业务收入明细",
+  "props": {
+    "height": 360,
+    "subtitle": "GOOGL · 按业务收入结构 · Q2 '26",
+    "centerLabel": "",
+    "showCenterLabel": false,
+    "showLegendValues": false,
+    "legendPosition": "bottom",
+    "badgeLabel": "期间: Q2 '26",
+    "ringWidth": 48,
+    "items": [
+      {
+        "label": "Google 服务",
+        "value": 94540.0,
+        "displayValue": "94.54 B (78.92%)",
+        "color": "#4387f5"
+      },
+      {
+        "label": "Google 云",
+        "value": 24768.0,
+        "displayValue": "24.77 B (20.68%)",
+        "color": "#4bc3d5"
+      },
+      {
+        "label": "其他业务",
+        "value": 382.0,
+        "displayValue": "0.38 B (0.32%)",
+        "color": "#f9730c"
+      },
+      {
+        "label": "套期保值收益（损失）",
+        "value": 106.0,
+        "displayValue": "0.11 B (0.09%)",
+        "color": "#8b5cf6"
+      }
+    ],
+    "title": "按来源/业务收入明细"
+  },
+  "source": {
+    "provider": "AInvest financial_reports_visual/usa/v1/sankey",
+    "symbol": "GOOGL",
+    "company": "Google A ",
+    "period": {
+      "sourceCode": "596004",
+      "period": "Q2",
+      "year": "2026",
+      "endDate": "2026-06-30",
+      "name": "Google A ",
+      "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"
+    },
+    "unit": "millions USD",
+    "reportedTotalRevenue": 119796.0,
+    "adjustments": [],
+    "method": "Uses AInvest Financials Revenue Breakdown data from the USA sankey endpoint. Pie slices include positive business revenue sources only; negative adjustments are retained in source metadata because pie slices cannot represent negative values."
+  },
+  "language": "zh-CN",
+  "theme": "light"
+}

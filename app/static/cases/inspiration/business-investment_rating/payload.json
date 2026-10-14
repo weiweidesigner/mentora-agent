@@ -1,0 +1,61 @@
+{
+  "type": "investment-rating",
+  "name": "投资评级",
+  "title": "投资评级",
+  "code": "GOOGL",
+  "market": "185",
+  "exchange": "NASDAQ",
+  "overallScore": 7.19,
+  "overallScoreLabel": "7.19 / 10",
+  "rating": "跑赢",
+  "dimensions": [
+    {
+      "key": "fundamental",
+      "label": "Fundamental",
+      "score": 6.8
+    },
+    {
+      "key": "technical",
+      "label": "Technical",
+      "score": 6.38
+    },
+    {
+      "key": "sentiment",
+      "label": "Sentiment",
+      "score": 8.38
+    }
+  ],
+  "insights": [
+    {
+      "kind": "fundamental",
+      "tone": "bullish",
+      "text": "GOOGL 综合评分为 7.19/10，当前评级为跑赢；基本面 6.80/10、情绪 8.38/10 是主要观察项。"
+    },
+    {
+      "kind": "technical",
+      "tone": "bearish",
+      "text": "技术面评分为 6.38/10，若低于其他维度，说明近期走势与交易信号仍需继续验证。"
+    }
+  ],
+  "source": {
+    "provider": "AInvest analysis page",
+    "url": "https://www.ainvest.com/stocks/NASDAQ-GOOGL/analysis/",
+    "snapshotEndpoint": "https://extquote.ainvest.com/index_api/indicator/v2/snapshot"
+  },
+  "language": "zh-CN",
+  "labels": {
+    "rating": "评级",
+    "rewards": "亮点",
+    "risks": "风险分析",
+    "emptyRisk": "当前模块未突出显示主要风险提示。",
+    "emptyReward": "暂无亮点信号。",
+    "axes": {
+      "value": "价值",
+      "future": "未来",
+      "past": "过往",
+      "health": "健康",
+      "dividend": "分红"
+    }
+  },
+  "theme": "light"
+}

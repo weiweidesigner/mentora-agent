@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>营收增长与利润率（演示数据）</title>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script>
+<style>
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;background:transparent;color:#171717}
+:root[data-theme="dark"] body,body.theme-dark{background:transparent;color:#f1f5f9}
+.chart-component{position:relative;width:100%;container-type:inline-size;height:clamp(340px,calc(100cqw / 2.8),420px);padding:0;background:transparent;overflow:visible}
+.chart-title{min-height:22px;max-height:42px;margin:0;font-size:16px;font-weight:800;line-height:1.25;color:#16181c;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.chart-tabs{position:absolute;z-index:3;top:8px;right:18px;display:flex;align-items:center;gap:4px}
+.chart-tab{appearance:none;border:0;background:transparent;color:#404040;height:36px;min-width:58px;padding:0 13px;border-radius:10px;font:inherit;font-size:14px;cursor:pointer}
+.chart-tab[aria-selected="true"]{background:#f1f1f1;color:#171717;font-weight:700}
+:root[data-theme="dark"] .chart-tab,body.theme-dark .chart-tab{color:#c1cad7}
+:root[data-theme="dark"] .chart-tab[aria-selected="true"],body.theme-dark .chart-tab[aria-selected="true"]{background:#202733;color:#f1f5f9}
+.chart-stage{position:relative;width:100%;height:calc(100% - 50px);margin-top:8px;overflow:visible}
+.chart-component.has-range .chart-stage{height:calc(100% - 90px)}
+svg{display:block;width:100%;height:100%;overflow:visible}
+.grid-line{stroke:#e8e8e8;stroke-width:1}
+.axis-line{stroke:#a3a8b0;stroke-width:1}
+.axis-label{fill:#777;font-size:10px;font-weight:400}
+.x-label{fill:#666;font-size:10px;font-weight:400;text-anchor:middle}
+.bar{rx:0;cursor:crosshair}
+.bar-label{fill:#2863f4;font-size:11px;font-weight:700;text-anchor:middle}
+.line-path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.point{fill:#fff;stroke-width:2;cursor:crosshair}
+:root[data-theme="dark"] .point,body.theme-dark .point{fill:#181e28}
+.hover-zone{fill:transparent;cursor:crosshair}
+.highlight{fill:#8a8a8a;pointer-events:none}
+.chart-legend{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 18px;position:absolute;left:8px;right:8px;bottom:4px;min-height:24px;color:#858585;font-size:10px;line-height:1.2;text-align:center;pointer-events:none}
+:root[data-theme="dark"] .chart-legend,body.theme-dark .chart-legend{color:#c1cad7}
+.legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.chart-tooltip{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:6px 8px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font-size:10px;line-height:1.35;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:nowrap;transition:opacity .08s ease}
+.chart-tooltip::after{content:"";display:var(--tooltip-arrow-display,block);position:absolute;left:var(--arrow-left,50%);bottom:-5px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid var(--tooltip-bg,rgba(59,59,59,.96))}
+.chart-tooltip.active{opacity:1;visibility:visible}
+.tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:9px;font-weight:400;line-height:1.2}
+.tooltip-row{display:flex;align-items:center;gap:8px;min-height:17px}
+.tooltip-label{display:flex;align-items:center;gap:5px;color:#f5f5f5;min-width:0}
+.tooltip-dot{width:7px;height:7px;border-radius:50%;flex:none}
+.tooltip-value{margin-left:auto;color:#fff;font-weight:650;font-variant-numeric:tabular-nums}
+.range-shell{display:none;--handle-size:32px;height:var(--handle-size);margin:6px 0 0;padding:0 calc(var(--handle-size) / 2);position:relative;touch-action:pan-y}
+.chart-component.has-range .range-shell{display:block}
+.range-shell[hidden]{display:none}
+.range-track{position:relative;width:100%;height:var(--handle-size)}
+.range-track::before{content:"";position:absolute;left:0;right:0;top:calc(var(--handle-size) / 2);height:3px;background:#f1f1f1;border-radius:999px;transform:translateY(-50%)}
+.range-selection{position:absolute;top:calc(var(--handle-size) / 2);height:3px;background:#5f5f5f;border-radius:999px;transform:translateY(-50%)}
+.range-handle{appearance:none;position:absolute;top:calc(var(--handle-size) / 2);width:var(--handle-size);height:var(--handle-size);border-radius:50%;border:1px solid #d5d5d5;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;cursor:grab;z-index:2;padding:0;user-select:none}
+.range-handle:active{cursor:grabbing}
+.range-handle::before{content:"";width:2px;height:13px;border-radius:999px;background:#8a8a8a;box-shadow:-5px 0 0 #8a8a8a,5px 0 0 #8a8a8a;opacity:.9}
+:root[data-theme="dark"] .range-track::before,body.theme-dark .range-track::before{background:#2b3544}
+:root[data-theme="dark"] .range-selection,body.theme-dark .range-selection{background:#93a0b3}
+:root[data-theme="dark"] .range-handle,body.theme-dark .range-handle{border-color:#334052;background:#181e28;box-shadow:0 1px 5px rgba(0,0,0,.35)}
+:root[data-theme="dark"] .range-handle::before,body.theme-dark .range-handle::before{background:#c1cad7;box-shadow:-5px 0 0 #c1cad7,5px 0 0 #c1cad7}
+@media(min-width:1200px){.chart-component{height:420px}}
+@media(max-width:680px){.chart-component{height:clamp(248px,calc(100cqw / 2.8),320px);padding:0}.chart-component.has-range{height:clamp(286px,calc((100cqw / 2.8) + 38px),358px)}.chart-title{min-height:18px;max-height:38px;font-size:14px;line-height:1.28;padding:0}.chart-tabs{top:4px;right:0;gap:2px}.chart-tab{height:30px;min-width:44px;padding:0 8px;border-radius:8px;font-size:12px}.chart-stage{height:calc(100% - 50px);margin-top:6px}.chart-component.has-range .chart-stage{height:calc(100% - 88px)}.axis-label,.x-label{font-size:10px}.bar-label{display:none}.chart-legend{left:0;right:0;bottom:0;gap:8px 12px;min-height:30px;font-size:10px;align-content:center}.legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}.legend-dot{width:8px;height:8px}.chart-tooltip{min-width:0;max-width:220px;font-size:10px;padding:6px 8px;white-space:normal}.tooltip-label{min-width:0}.range-shell{--handle-size:24px;margin-top:4px;padding:0 calc(var(--handle-size) / 2)}.range-handle::before{height:11px;box-shadow:-4px 0 0 #8a8a8a,4px 0 0 #8a8a8a}}
+.chart-component{display:flex;flex-direction:column}.chart-title{flex:none}.chart-stage,.chart-component.has-range .chart-stage{flex:1;min-height:0;height:auto!important}.range-shell{flex:none;order:2;margin-top:10px}.chart-legend{position:static;flex:none;order:3;margin-top:12px;padding:0 4px 4px;min-height:24px}.legend-item{white-space:normal;max-width:100%!important;overflow:visible;line-height:1.4}
+</style>
+</head>
+<body class="theme-light">
+<section class="chart-component">
+  <h2 class="chart-title">营收增长与利润率（演示数据）</h2>
+  <div class="chart-tabs" role="tablist"></div>
+  <div class="chart-stage"><svg role="img" aria-label="营收增长与利润率（演示数据）"></svg></div>
+  <div class="chart-legend"></div>
+  <div class="range-shell" hidden aria-label="Time range filter"><div class="range-track"><div class="range-selection"></div><button class="range-handle" type="button" data-range-handle="left" aria-label="range start"></button><button class="range-handle" type="button" data-range-handle="right" aria-label="range end"></button></div></div>
+  <div class="chart-tooltip"></div>
+</section>
+<script>
+const config = {"type": "bar-line", "title": "营收增长与利润率（演示数据）", "xField": "period", "data": [{"period": "Q1", "revenue": 100, "profit": 20, "margin": 20.0}, {"period": "Q2", "revenue": 120, "profit": 26, "margin": 21.7}, {"period": "Q3", "revenue": 135, "profit": 30, "margin": 22.2}, {"period": "Q4", "revenue": 150, "profit": 36, "margin": 24.0}], "views": {}, "defaultView": "", "columnSeries": [{"field": "revenue", "label": "营收", "color": "#2863f4", "axis": "right", "suffix": ""}], "lineSeries": [{"field": "margin", "label": "净利率", "color": "#ff6845", "axis": "left", "suffix": ""}], "leftAxis": {"label": "营收"}, "rightAxis": {"label": "净利率", "suffix": "%"}, "height": 420, "aspectRatio": 2.8, "themeMode": "light", "visualStyle": {}, "renderStyle": {"background": "#ffffff", "bodyBackground": "#ffffff", "titleColor": "#16181c", "titleSize": 16, "gridColor": "#e8e8e8", "axisColor": "#777", "xAxisColor": "#666", "hoverColor": "#8a8a8a", "hoverOpacity": 0.08, "gridCount": 5, "margin": {}}};
+const root = document.querySelector('.chart-component');
+const svg = root.querySelector('svg');
+const legend = root.querySelector('.chart-legend');
+const tooltip = root.querySelector('.chart-tooltip');
+const tabs = root.querySelector('.chart-tabs');
+const rangeShell = root.querySelector('.range-shell');
+const rangeTrack = root.querySelector('.range-track');
+const rangeSelection = root.querySelector('.range-selection');
+const leftHandle = root.querySelector('[data-range-handle="left"]');
+const rightHandle = root.querySelector('[data-range-handle="right"]');
+const NS = 'http://www.w3.org/2000/svg';
+const COLUMN_PALETTE = ["#2863f4", "#4bc3d5", "#2ab7a1", "#8b5cf6", "#ff3d7f"];
+const LINE_PALETTE = ["#ff6845", "#8b5cf6", "#2ab7a1", "#ff3d7f", "#4bc3d5"];
+let activeView = config.defaultView;
+let rangeStart = null;
+let rangeEnd = null;
+let draggingRangeHandle = null;
+let tooltipPortalAckUntil = 0;
+const isObject = value => value && typeof value === 'object' && !Array.isArray(value);
+const deepMerge = (base, patch) => {
+  const result = {...(base || {})};
+  Object.entries(patch || {}).forEach(([key, value]) => {
+    result[key] = isObject(value) && isObject(result[key]) ? deepMerge(result[key], value) : value;
+  });
+  return result;
+};
+const toNumber = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+const DEFAULT_STYLE = {
+  margin: {top: 28, right: 0, bottom: 46, left: 0},
+  grid: {visible: true, count: 5, color: '#e8e8e8', width: 1, dasharray: '', opacity: 1},
+  xAxis: {visible: true, color: '#666', fontSize: 10, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1},
+  yAxis: {position: 'both', labelPlacement: 'reserved', paddingRatio: 0.08, color: '#747474', fontSize: 10, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1, digits: 0},
+  bar: {borderRadius: 0, opacity: 1, maxWidth: 42, gap: 10, showLabels: true},
+  line: {showPoints: 'auto', strokeWidth: 2, opacity: 1, strokeLinecap: 'round', strokeLinejoin: 'round'},
+  point: {visible: true, radius: 3.2, outerRadius: 0, fill: 'background', strokeWidth: 1.6},
+  legend: {visible: true, gap: 18, color: '#858585', fontSize: 10, markerSize: 8, markerShape: 'circle'},
+  tooltip: {visible: true, placement: 'aboveFirstGrid', offsetY: 0, gap: 8, background: 'rgba(59,59,59,.96)', color: '#fff', borderRadius: 6, padding: '6px 8px', fontSize: 10, maxWidth: 220, arrow: true},
+  hover: {bandColor: '#8a8a8a', bandOpacity: 0.08},
+  range: {threshold: 10, count: 10},
+  seriesStyle: [],
+};
+const DARK_STYLE = {
+  grid: {color: '#2b3544', opacity: 1},
+  xAxis: {color: '#c1cad7', lineColor: '#334052'},
+  yAxis: {color: '#c1cad7', lineColor: '#334052'},
+  legend: {color: '#c1cad7'},
+  tooltip: {background: '#202733', color: '#f1f5f9'},
+  hover: {bandColor: '#c1cad7', bandOpacity: 0.08},
+};
+const isDark = document.documentElement.dataset.theme === 'dark' || config.themeMode === 'dark';
+const visual = deepMerge(deepMerge(DEFAULT_STYLE, isDark ? DARK_STYLE : {}), config.visualStyle || {});
+const DARK_COLOR_ALIASES = {'#2863f4':'#8294ff','#4bc3d5':'#34d3ad','#2ab7a1':'#34d3ad','#8b5cf6':'#d19dff','#ff3d7f':'#ff7188','#ff6845':'#ff9592','#00b899':'#34d3ad','#ff2f57':'#ff7188','#94a3b8':'#93a0b3'};
+const chartColor = color => isDark ? (DARK_COLOR_ALIASES[String(color || '').toLowerCase()] || color) : color;
+(config.columnSeries || []).forEach(series => { series.color = chartColor(series.color); });
+(config.lineSeries || []).forEach(series => { series.color = chartColor(series.color); });
+function matchesColorRule(value, condition) {
+  const match = String(condition || '').trim().match(/^(<=|>=|==|=|<|>)\s*(-?(?:\d+(?:\.\d*)?|\.\d+))$/);
+  if (!match || !Number.isFinite(Number(value))) return false;
+  const threshold = Number(match[2]);
+  return match[1] === '<' ? value < threshold
+    : match[1] === '<=' ? value <= threshold
+    : match[1] === '>' ? value > threshold
+    : match[1] === '>=' ? value >= threshold
+    : value === threshold;
+}
+function barMarkColor(row, series, value) {
+  const explicit = row?.__markColors?.[series.field];
+  if (explicit) return chartColor(explicit);
+  const rules = Array.isArray(visual.colorRules) ? visual.colorRules : [];
+  const matched = rules.find(rule => (!rule?.field || String(rule.field) === String(series.field)) && matchesColorRule(value, rule?.condition));
+  return chartColor(matched?.color || series.color);
+}
+if (visual.customCss || visual.css) {
+  const style = document.createElement('style');
+  style.dataset.visualStyle = 'bar-line';
+  style.textContent = String(visual.customCss || visual.css);
+  document.head.appendChild(style);
+}
+tooltip.style.background = visual.tooltip.background;
+tooltip.style.color = visual.tooltip.color;
+tooltip.style.borderRadius = `${toNumber(visual.tooltip.borderRadius, 6)}px`;
+tooltip.style.padding = visual.tooltip.padding || '6px 8px';
+tooltip.style.fontSize = `${toNumber(visual.tooltip.fontSize, 10)}px`;
+tooltip.style.maxWidth = `${toNumber(visual.tooltip.maxWidth, 220)}px`;
+tooltip.style.setProperty('--tooltip-arrow-display', visual.tooltip.arrow === false ? 'none' : 'block');
+tooltip.style.setProperty('--tooltip-bg', visual.tooltip.background);
+function parentTooltipContext() {
+  try {
+    if (!window.frameElement || !window.parent?.document) {
+      return {doc: document, win: window, offsetLeft: 0, offsetTop: 0, frameRect: {left: 0, top: 0}};
+    }
+    let currentWindow = window;
+    let targetWindow = window.parent;
+    let offsetLeft = 0;
+    let offsetTop = 0;
+    let depth = 0;
+    while (currentWindow.frameElement && targetWindow?.document && depth < 8) {
+      const frameRect = currentWindow.frameElement.getBoundingClientRect();
+      offsetLeft += frameRect.left;
+      offsetTop += frameRect.top;
+      currentWindow = targetWindow;
+      if (!currentWindow.frameElement || !currentWindow.parent || currentWindow.parent === currentWindow) break;
+      targetWindow = currentWindow.parent;
+      depth += 1;
+    }
+    return {doc: currentWindow.document, win: currentWindow, offsetLeft, offsetTop};
+  } catch (error) {
+    return null;
+  }
+}
+function chartEmbedKey() {
+  try {
+    const frame = window.frameElement;
+    if (!frame) {
+      if (!root.dataset.chartEmbed) root.dataset.chartEmbed = `chart-${Math.random().toString(36).slice(2, 10)}`;
+      return root.dataset.chartEmbed;
+    }
+    if (!frame.dataset.chartEmbed) frame.dataset.chartEmbed = `chart-${Math.random().toString(36).slice(2, 10)}`;
+    return frame.dataset.chartEmbed;
+  } catch (error) {
+    return 'active';
+  }
+}
+function ensureParentTooltipStyle(doc) {
+  if (doc.getElementById('bar-line-tooltip-portal-style')) return;
+  const style = doc.createElement('style');
+  style.id = 'bar-line-tooltip-portal-style';
+  style.textContent = `
+    .bar-line-tooltip-portal{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:6px 8px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font:10px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:normal;transition:opacity .08s ease}
+    .bar-line-tooltip-portal.active{opacity:1;visibility:visible}
+    .bar-line-tooltip-portal .tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:9px;font-weight:400;line-height:1.2}
+    .bar-line-tooltip-portal .tooltip-row{display:flex;align-items:center;gap:8px;min-height:17px}
+    .bar-line-tooltip-portal .tooltip-label{display:flex;align-items:center;gap:5px;color:#f5f5f5;min-width:0}
+    .bar-line-tooltip-portal .tooltip-dot{width:7px;height:7px;border-radius:50%;flex:none}
+    .bar-line-tooltip-portal .tooltip-value{margin-left:auto;color:#fff;font-weight:650;font-variant-numeric:tabular-nums}
+    .bar-line-tooltip-portal .tooltip-arrow{position:absolute;left:var(--arrow-left,50%);bottom:-5px;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid var(--tooltip-bg,rgba(59,59,59,.96))}
+  `;
+  doc.head.appendChild(style);
+}
+function parentTooltipElement(ctx) {
+  ensureParentTooltipStyle(ctx.doc);
+  const id = 'bar-line-tooltip-portal-' + chartEmbedKey();
+  let element = ctx.doc.getElementById(id);
+  if (!element) {
+    element = ctx.doc.createElement('div');
+    element.id = id;
+    element.className = 'bar-line-tooltip-portal';
+    ctx.doc.body.appendChild(element);
+  }
+  element.style.background = visual.tooltip.background;
+  element.style.color = visual.tooltip.color;
+  element.style.borderRadius = `${toNumber(visual.tooltip.borderRadius, 6)}px`;
+  element.style.padding = visual.tooltip.padding || '6px 8px';
+  element.style.fontSize = `${toNumber(visual.tooltip.fontSize, 10)}px`;
+  element.style.maxWidth = `${toNumber(visual.tooltip.maxWidth, 220)}px`;
+  element.style.setProperty('--tooltip-bg', visual.tooltip.background);
+  return element;
+}
+function postTooltipPortal(action, payload = {}) {
+  try {
+    if (!window.parent || window.parent === window) return false;
+    window.parent.postMessage({
+      type: 'bar-line-tooltip-portal',
+      action,
+      chartEmbed: chartEmbedKey(),
+      ...payload
+    }, '*');
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+window.addEventListener('message', event => {
+  if (event.data?.type !== 'bar-line-tooltip-portal-ack') return;
+  tooltipPortalAckUntil = Date.now() + 250;
+  if (event.data.action === 'show') tooltip.classList.remove('active');
+});
+const node = (name, attrs = {}, text = '') => {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key,value]) => el.setAttribute(key,value));
+  if (text !== '') el.textContent = text;
+  return el;
+};
+const asNumber = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+const asFiniteNumber = value => Number.isFinite(Number(value)) ? Number(value) : null;
+function applyView(viewKey) {
+  if (!config.views?.[viewKey]) return;
+  activeView = viewKey;
+  const view = config.views[viewKey];
+  config.data = view.data || config.data;
+  config.leftAxis = view.leftAxis || config.leftAxis;
+  config.rightAxis = view.rightAxis || config.rightAxis;
+  tabs.querySelectorAll('.chart-tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.value === viewKey)));
+  rangeStart = null;
+  rangeEnd = null;
+  hideTooltip();
+  render();
+}
+Object.entries(config.views || {}).forEach(([key, view]) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'chart-tab';
+  button.role = 'tab';
+  button.dataset.value = key;
+  button.textContent = view.label || key;
+  button.setAttribute('aria-selected', String(key === activeView));
+  button.addEventListener('click', () => applyView(key));
+  tabs.appendChild(button);
+});
+if (activeView && config.views?.[activeView]) {
+  const view = config.views[activeView];
+  config.data = view.data || config.data;
+  config.leftAxis = view.leftAxis || config.leftAxis;
+  config.rightAxis = view.rightAxis || config.rightAxis;
+}
+const rangeThreshold = () => Math.max(10, Math.round(toNumber(visual.range?.threshold, 10)));
+const visibleCount = total => Math.min(total, Math.max(10, Math.round(toNumber(visual.range?.count, 10))));
+const fullRows = () => Array.isArray(config.data) ? config.data : [];
+function ensureRangeState() {
+  const rows = fullRows();
+  const count = visibleCount(rows.length);
+  if (rows.length < rangeThreshold()) {
+    rangeStart = 0;
+    rangeEnd = Math.max(0, rows.length - 1);
+    return;
+  }
+  if (rangeStart == null || rangeEnd == null) {
+    rangeEnd = Math.max(0, rows.length - 1);
+    rangeStart = Math.max(0, rangeEnd - count + 1);
+  }
+  rangeStart = Math.max(0, Math.min(rows.length - 1, Number(rangeStart) || 0));
+  rangeEnd = Math.max(rangeStart, Math.min(rows.length - 1, Number(rangeEnd) || rangeStart));
+}
+const visibleRows = () => {
+  const rows = fullRows();
+  if (rows.length < rangeThreshold()) return rows;
+  ensureRangeState();
+  return rows.slice(rangeStart, rangeEnd + 1);
+};
+function syncRangeControls() {
+  const rows = fullRows();
+  const enabled = rows.length >= rangeThreshold();
+  root.classList.toggle('has-range', enabled);
+  rangeShell.hidden = !enabled;
+  if (!enabled) return;
+  ensureRangeState();
+  const denominator = Math.max(1, rows.length - 1);
+  const left = rangeStart / denominator * 100;
+  const right = rangeEnd / denominator * 100;
+  rangeSelection.style.left = `${left}%`;
+  rangeSelection.style.width = `${Math.max(0, right - left)}%`;
+  leftHandle.style.left = `${left}%`;
+  rightHandle.style.left = `${right}%`;
+  leftHandle.setAttribute('aria-label', `Start period ${rows[rangeStart]?.[config.xField] ?? ''}`);
+  rightHandle.setAttribute('aria-label', `End period ${rows[rangeEnd]?.[config.xField] ?? ''}`);
+}
+function rangeIndexFromClientX(clientX, count) {
+  const rect = rangeTrack.getBoundingClientRect();
+  const ratio = rect.width <= 0 ? 0 : Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return Math.round(ratio * Math.max(0, count - 1));
+}
+function updateRangeByIndex(index) {
+  if (draggingRangeHandle === 'left') rangeStart = Math.min(index, rangeEnd ?? index);
+  if (draggingRangeHandle === 'right') rangeEnd = Math.max(index, rangeStart ?? index);
+  hideTooltip();
+  render();
+}
+function setupRangeDrag() {
+  let origin = null;
+  const rememberTouch = event => { origin = event.pointerType === 'touch' ? {x:event.clientX,y:event.clientY} : null; };
+  const startDrag = handle => event => {
+    rememberTouch(event);
+    draggingRangeHandle = handle;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    if (event.pointerType !== 'touch') event.preventDefault();
+  };
+  leftHandle.addEventListener('pointerdown', startDrag('left'));
+  rightHandle.addEventListener('pointerdown', startDrag('right'));
+  rangeTrack.addEventListener('pointerdown', event => {
+    if (event.target.closest('.range-handle')) return;
+    rememberTouch(event);
+    const rows = fullRows();
+    if (rows.length < rangeThreshold()) return;
+    ensureRangeState();
+    const index = rangeIndexFromClientX(event.clientX, rows.length);
+    draggingRangeHandle = Math.abs(index - rangeStart) <= Math.abs(index - rangeEnd) ? 'left' : 'right';
+    if (!origin) updateRangeByIndex(index);
+    if (event.pointerType !== 'touch') event.preventDefault();
+  });
+  window.addEventListener('pointermove', event => {
+    if (!draggingRangeHandle) return;
+    if (origin) {
+      const dx=Math.abs(event.clientX-origin.x),dy=Math.abs(event.clientY-origin.y);
+      if(dy>6&&dy>dx){draggingRangeHandle=null;return;}
+      if(dx<6)return;
+    }
+    const rows = fullRows();
+    if (rows.length < rangeThreshold()) return;
+    updateRangeByIndex(rangeIndexFromClientX(event.clientX, rows.length));
+  });
+  window.addEventListener('pointerup', event => { if(draggingRangeHandle&&origin)updateRangeByIndex(rangeIndexFromClientX(event.clientX,fullRows().length));draggingRangeHandle=null;origin=null; });
+  window.addEventListener('pointercancel', () => {draggingRangeHandle=null;origin=null;});
+}
+setupRangeDrag();
+function fmt(value, axis) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return String(value ?? '');
+  const suffix = axis?.suffix || '';
+  if (numeric === 0) return '0.00' + suffix;
+  const useCompact = axis?.compact !== false && !suffix.includes('%');
+  const localeText = [
+    config.locale,
+    config.language,
+    config.title,
+    ...(config.columnSeries || []).map(item => item.label || item.name || item.field || ''),
+    ...(config.lineSeries || []).map(item => item.label || item.name || item.field || '')
+  ].filter(Boolean).join(' ');
+  const locale = /[一-鿿]/.test(localeText) ? 'zh-CN'
+    : /[぀-ヿ]/.test(localeText) ? 'ja-JP'
+    : /[가-힯]/.test(localeText) ? 'ko-KR'
+    : 'en-US';
+  const cjkUnits = locale === 'ja-JP'
+    ? [['兆', 1e12], ['億', 1e8], ['万', 1e4]]
+    : locale === 'ko-KR'
+      ? [['조', 1e12], ['억', 1e8], ['만', 1e4]]
+      : locale === 'zh-CN'
+        ? [['万亿', 1e12], ['亿', 1e8], ['万', 1e4]]
+        : null;
+  const abs = Math.abs(numeric);
+  let scaled = numeric;
+  let unit = '';
+  if (useCompact) {
+    if (cjkUnits) {
+      const matched = cjkUnits.find(([, threshold]) => abs >= threshold);
+      if (matched) { unit = matched[0]; scaled = numeric / matched[1]; }
+    } else if (abs >= 1e4) {
+      if (abs >= 1e12) { scaled = numeric / 1e12; unit = 'T'; }
+      else if (abs >= 1e9) { scaled = numeric / 1e9; unit = 'B'; }
+      else if (abs >= 1e6) { scaled = numeric / 1e6; unit = 'M'; }
+      else { scaled = numeric / 1e3; unit = 'K'; }
+    }
+  }
+  const explicitDigits = Number(axis?.digits);
+  const digits = Number.isFinite(explicitDigits) ? Math.max(2, explicitDigits) : 2;
+  const formatted = scaled.toLocaleString(locale, {minimumFractionDigits:digits,maximumFractionDigits:digits});
+  return formatted + unit + suffix;
+}
+function uniqueFormattedTicks(ticks, axis) {
+  const formatted = ticks.map(value => fmt(value, axis));
+  if (new Set(formatted).size === formatted.length) return formatted;
+  const expandedAxis = {...(axis || {})};
+  for (let digits = 2; digits <= 4; digits += 1) {
+    expandedAxis.digits = digits;
+    const retry = ticks.map(value => fmt(value, expandedAxis));
+    if (new Set(retry).size === retry.length) return retry;
+  }
+  return ticks.map(value => String(Number(value).toPrecision(4)) + (axis?.suffix || ''));
+}
+function estimateAxisWidth(labels) {
+  const widthFor = label => Array.from(String(label || '')).reduce((total, char) => {
+    if (/[一-鿿぀-ヿ가-힯]/.test(char)) return total + 11;
+    if (/[A-Z]/.test(char)) return total + 7;
+    if (/[-0-9.%,+]/.test(char)) return total + 6;
+    return total + 6.5;
+  }, 4);
+  return Math.max(28, Math.min(86, Math.ceil(Math.max(...labels.map(widthFor), 0)) + 1));
+}
+function measureAxisWidth(labels, fontSize, fontWeight) {
+  try {
+    const canvas = measureAxisWidth.canvas || (measureAxisWidth.canvas = document.createElement('canvas'));
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight || 400} ${toNumber(fontSize, 10)}px -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif`;
+    const widths = labels.map(label => ctx.measureText(String(label || '')).width);
+    return Math.max(0, Math.ceil(Math.max(...widths, 0)));
+  } catch (error) {
+    return estimateAxisWidth(labels);
+  }
+}
+function axisLegendText(axis) {
+  const explicit = axis?.description || axis?.label || axis?.title || axis?.name || axis?.axisLabel;
+  return explicit ? String(explicit) : '';
+}
+function niceStep(range, count = 4) {
+  const rough = Math.max(range / count, 0.0001);
+  const power = 10 ** Math.floor(Math.log10(rough));
+  const normalized = rough / power;
+  const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return factor * power;
+}
+function makeRange(values, count = 5) {
+  const positive = values.filter(value => Number.isFinite(Number(value))).map(Number);
+  let min = Math.min(0, ...positive);
+  let max = Math.max(0, ...positive);
+  if (min === max) { min -= 1; max += 1; }
+  const maxStep = niceStep(Math.abs(max) / Math.max(1, count - 1), count - 1);
+  const minStep = niceStep(Math.abs(min) / Math.max(1, count - 1), count - 1);
+  max = Math.ceil(max / maxStep) * maxStep;
+  min = Math.floor(min / minStep) * minStep;
+  if (min >= 0) min = 0;
+  const step = (max - min) / Math.max(1, count - 1);
+  const ticks = Array.from({length: count}, (_, index) => Number((max - step * index).toFixed(10)));
+  return {min, max, ticks};
+}
+function zeroRatio(range) {
+  if (range.min >= 0) return 1;
+  if (range.max <= 0) return 0;
+  return range.max / (range.max - range.min);
+}
+function snapZeroTarget(ratio) {
+  if (ratio <= 0.125) return 0;
+  if (ratio >= 0.875) return 1;
+  return Math.max(0.25, Math.min(0.75, Math.round(ratio * 4) / 4));
+}
+function niceCeil(value) {
+  const step = niceStep(Math.max(Math.abs(value), 0.0001), 4);
+  return Math.max(step, Math.ceil(Math.abs(value) / step) * step);
+}
+function alignedTicks(min, max, count) {
+  return Array.from({length: count}, (_, index) => Number((max - (max - min) * index / Math.max(1, count - 1)).toFixed(10)));
+}
+function alignRangeToZero(range, targetRatio, count = 5) {
+  if (targetRatio <= 0) {
+    const span = niceCeil(Math.max(Math.abs(range.min), 1));
+    return {min:-span,max:0,ticks:alignedTicks(-span, 0, count)};
+  }
+  if (targetRatio >= 1) {
+    const span = niceCeil(Math.max(Math.abs(range.max), 1));
+    return {min:0,max:span,ticks:alignedTicks(0, span, count)};
+  }
+  const positive = Math.max(0, range.max);
+  const negative = Math.max(0, -range.min);
+  const span = Math.max(positive / targetRatio, negative / (1 - targetRatio), 1);
+  const min = -span * (1 - targetRatio);
+  const max = span * targetRatio;
+  return {min,max,ticks:alignedTicks(min, max, count)};
+}
+function alignZeroRanges(left, right, count = 5) {
+  const leftMixed = left.min < 0 && left.max > 0;
+  const rightMixed = right.min < 0 && right.max > 0;
+  const leftPositive = left.min >= 0;
+  const rightPositive = right.min >= 0;
+  const leftNegative = left.max <= 0;
+  const rightNegative = right.max <= 0;
+  let target = 0.5;
+  if (leftPositive && rightPositive) target = 1;
+  else if (leftNegative && rightNegative) target = 0;
+  else if (leftMixed && rightMixed) target = (zeroRatio(left) + zeroRatio(right)) / 2;
+  else if (leftMixed) target = zeroRatio(left);
+  else if (rightMixed) target = zeroRatio(right);
+  if (target > 0 && target < 1) target = snapZeroTarget(target);
+  return {left: alignRangeToZero(left, target, count), right: alignRangeToZero(right, target, count)};
+}
+function scale(range, top, height) {
+  return value => top + height - (asNumber(value) - range.min) / (range.max - range.min) * height;
+}
+function sampledXAxisIndexes(labels, slot, fontSize = 10, fontWeight = 400) {
+  const count = labels.length;
+  if (count <= 0) return new Set();
+  const gap = 8;
+  const widths = labels.map(label => measureAxisWidth([label], fontSize, fontWeight) + gap);
+  const centers = labels.map((_, index) => slot * index + slot / 2);
+  const overlaps = (leftIndex, rightIndex) => (
+    centers[rightIndex] - widths[rightIndex] / 2 < centers[leftIndex] + widths[leftIndex] / 2 + gap
+  );
+  let canShowAll = true;
+  for (let index = 1; index < count; index += 1) {
+    if (overlaps(index - 1, index)) {
+      canShowAll = false;
+      break;
+    }
+  }
+  if (canShowAll) return new Set(Array.from({length: count}, (_, index) => index));
+  const selected = [0];
+  for (let index = 1; index < count - 1; index += 1) {
+    const previous = selected[selected.length - 1];
+    if (!overlaps(previous, index)) selected.push(index);
+  }
+  if (count > 1) {
+    const last = count - 1;
+    while (selected.length > 1 && overlaps(selected[selected.length - 1], last)) selected.pop();
+    if (!overlaps(selected[selected.length - 1], last)) selected.push(last);
+  }
+  return new Set(selected);
+}
+function tooltipPosition(anchorX, preferredTop, tooltipWidth, tooltipHeight, viewport = {}) {
+  const viewportLeft = Number.isFinite(Number(viewport.left)) ? Number(viewport.left) : 0;
+  const viewportTop = Number.isFinite(Number(viewport.top)) ? Number(viewport.top) : 0;
+  const viewportRight = Number.isFinite(Number(viewport.right)) ? Number(viewport.right) : window.innerWidth;
+  const viewportBottom = Number.isFinite(Number(viewport.bottom)) ? Number(viewport.bottom) : window.innerHeight;
+  const minLeft = viewportLeft;
+  const maxLeft = viewportRight - tooltipWidth;
+  const left = maxLeft >= minLeft ? Math.min(maxLeft, Math.max(minLeft, anchorX - tooltipWidth / 2)) : minLeft;
+  const top = preferredTop;
+  const arrowLeft = Math.min(tooltipWidth - 14, Math.max(14, anchorX - left));
+  return { left, top, arrowLeft };
+}
+function titleRectInContext(ctx) {
+  const title = root.querySelector('.chart-title');
+  if (!title) return null;
+  const range = document.createRange();
+  range.selectNodeContents(title);
+  const rect = range.getBoundingClientRect();
+  return { left: ctx.offsetLeft + rect.left, right: ctx.offsetLeft + rect.right, top: ctx.offsetTop + rect.top, bottom: ctx.offsetTop + rect.bottom };
+}
+function avoidTitleOverlap(bounds, tooltipWidth, tooltipHeight, titleRect, anchorX, viewportLeft, viewportRight, safeDistance = 0) {
+  if (!titleRect) return bounds;
+  const tooltipRect = { left: bounds.left, right: bounds.left + tooltipWidth, top: bounds.top, bottom: bounds.top + tooltipHeight };
+  const overlaps = tooltipRect.left < titleRect.right && tooltipRect.right > titleRect.left && tooltipRect.top < titleRect.bottom && tooltipRect.bottom > titleRect.top;
+  if (!overlaps) return bounds;
+  const aboveTitleTop = titleRect.top - tooltipHeight - safeDistance;
+  if (aboveTitleTop >= safeDistance) {
+    return { ...bounds, top: aboveTitleTop, arrowLeft: Math.min(tooltipWidth - 14, Math.max(14, anchorX - bounds.left)) };
+  }
+  const minLeft = viewportLeft + safeDistance;
+  const maxLeft = viewportRight - tooltipWidth - safeDistance;
+  const candidates = [titleRect.right + safeDistance, titleRect.left - tooltipWidth - safeDistance].filter(value => (
+    value >= minLeft &&
+    value <= maxLeft &&
+    anchorX >= value + 14 &&
+    anchorX <= value + tooltipWidth - 14
+  ));
+  if (!candidates.length) return bounds;
+  const left = candidates.reduce((best, value) => Math.abs(value - bounds.left) < Math.abs(best - bounds.left) ? value : best, candidates[0]);
+  return { ...bounds, left, arrowLeft: Math.min(tooltipWidth - 14, Math.max(14, anchorX - left)) };
+}
+function showTooltip(anchorX, rows, xLabel, gridTop) {
+  if (visual.tooltip.visible === false) return;
+  const tooltipHtml = `<div class="tooltip-title">${xLabel}</div>` + rows.map(row => `<div class="tooltip-row"><span class="tooltip-label"><i class="tooltip-dot" style="background:${row.color}"></i>${row.label}</span><span class="tooltip-value">${row.text}</span></div>`).join('');
+  const stage = root.querySelector('.chart-stage');
+  const stageRect = stage.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
+  const ctx = parentTooltipContext();
+  const tooltipGap = toNumber(visual.tooltip.gap, 12);
+  const offsetY = toNumber(visual.tooltip.offsetY, 0);
+
+  if (ctx) {
+    tooltip.classList.remove('active');
+    const portal = parentTooltipElement(ctx);
+    portal.innerHTML = tooltipHtml + (visual.tooltip.arrow === false ? '' : '<span class="tooltip-arrow"></span>');
+    const parentWidth = ctx.win?.innerWidth || ctx.doc.defaultView?.innerWidth || ctx.doc.documentElement.clientWidth || 0;
+    const parentHeight = ctx.win?.innerHeight || ctx.doc.defaultView?.innerHeight || ctx.doc.documentElement.clientHeight || 0;
+    const absoluteAnchorX = ctx.offsetLeft + stageRect.left + anchorX;
+    const absoluteRootLeft = ctx.offsetLeft + rootRect.left;
+    const absoluteRootRight = ctx.offsetLeft + rootRect.right;
+    const availableRootWidth = Math.max(0, absoluteRootRight - absoluteRootLeft);
+    portal.style.minWidth = '0';
+    portal.style.maxWidth = `${Math.min(toNumber(visual.tooltip.maxWidth, 220), availableRootWidth)}px`;
+    const firstGridTop = ctx.offsetTop + stageRect.top + gridTop;
+    const preferredTop = firstGridTop - portal.offsetHeight - tooltipGap + offsetY;
+    let bounds = tooltipPosition(
+      absoluteAnchorX,
+      preferredTop,
+      portal.offsetWidth,
+      portal.offsetHeight,
+      {
+        left: absoluteRootLeft,
+        top: 0,
+        right: absoluteRootRight,
+        bottom: parentHeight,
+      }
+    );
+    if (portal.offsetWidth > 0 && parentWidth > 0) {
+      portal.style.left = `${bounds.left}px`;
+      portal.style.top = `${bounds.top}px`;
+      portal.style.setProperty('--arrow-left', `${bounds.arrowLeft}px`);
+      portal.classList.add('active');
+      postChartHeight();
+      return;
+    }
+  }
+
+  if (window.parent && window.parent !== window) {
+    tooltip.classList.remove('active');
+    postTooltipPortal('show', {
+      html: tooltipHtml + (visual.tooltip.arrow === false ? '' : '<span class="tooltip-arrow"></span>'),
+      anchorX,
+      stageLeft: stageRect.left,
+      stageTop: stageRect.top,
+      rootLeft: rootRect.left,
+      rootRight: rootRect.right,
+      gridTop,
+      gap: tooltipGap,
+      offsetY,
+      maxWidth: toNumber(visual.tooltip.maxWidth, 220),
+      background: visual.tooltip.background,
+      color: visual.tooltip.color,
+      borderRadius: toNumber(visual.tooltip.borderRadius, 6),
+      padding: visual.tooltip.padding || '6px 8px',
+      fontSize: toNumber(visual.tooltip.fontSize, 10),
+    });
+    const fallbackTime = Date.now();
+    setTimeout(() => {
+      if (tooltipPortalAckUntil >= fallbackTime) return;
+      tooltip.innerHTML = tooltipHtml;
+      tooltip.classList.add('active');
+      const absoluteAnchorX = stageRect.left + anchorX;
+      const availableRootWidth = Math.max(0, rootRect.right - rootRect.left);
+      tooltip.style.minWidth = '0';
+      tooltip.style.maxWidth = `${Math.min(toNumber(visual.tooltip.maxWidth, 220), availableRootWidth)}px`;
+      const preferredTop = stageRect.top + gridTop - tooltip.offsetHeight - tooltipGap + offsetY;
+      const bounds = tooltipPosition(
+        absoluteAnchorX,
+        preferredTop,
+        tooltip.offsetWidth,
+        tooltip.offsetHeight,
+        {
+          left: rootRect.left,
+          top: 0,
+          right: rootRect.right,
+          bottom: window.innerHeight,
+        }
+      );
+      tooltip.style.left = `${bounds.left}px`;
+      tooltip.style.top = `${bounds.top}px`;
+      tooltip.style.setProperty('--arrow-left', `${bounds.arrowLeft}px`);
+      postChartHeight();
+    }, 60);
+    postChartHeight();
+    return;
+  }
+
+  tooltip.innerHTML = tooltipHtml;
+  tooltip.classList.add('active');
+  const absoluteAnchorX = stageRect.left + anchorX;
+  const availableRootWidth = Math.max(0, rootRect.right - rootRect.left);
+  tooltip.style.minWidth = '0';
+  tooltip.style.maxWidth = `${Math.min(toNumber(visual.tooltip.maxWidth, 220), availableRootWidth)}px`;
+  const preferredTop = stageRect.top + gridTop - tooltip.offsetHeight - tooltipGap + offsetY;
+  const bounds = tooltipPosition(
+    absoluteAnchorX,
+    preferredTop,
+    tooltip.offsetWidth,
+    tooltip.offsetHeight,
+    {
+      left: rootRect.left,
+      top: 0,
+      right: rootRect.right,
+      bottom: window.innerHeight,
+    }
+  );
+  tooltip.style.left = `${bounds.left}px`;
+  tooltip.style.top = `${bounds.top}px`;
+  tooltip.style.setProperty('--arrow-left', `${bounds.arrowLeft}px`);
+  postChartHeight();
+}
+function hideTooltip() {
+  tooltip.classList.remove('active');
+  const ctx = parentTooltipContext();
+  const portal = ctx ? parentTooltipElement(ctx) : null;
+  if (portal) portal.classList.remove('active');
+  postTooltipPortal('hide');
+  postChartHeight();
+}
+function postChartHeight() {
+  const nodes = [root.querySelector('.chart-stage'), svg, root].filter(Boolean);
+  const height = Math.ceil(Math.max(80, ...nodes.map(node => node.getBoundingClientRect().bottom || 0)));
+  try {
+    if (window.frameElement) {
+      window.frameElement.style.height = `${height}px`;
+      window.frameElement.style.minHeight = '0';
+    }
+  } catch (e) {}
+  try { parent.postMessage({type:'analysis-planner-chart-height', height}, '*'); } catch (e) {}
+}
+function setHighlight(index) {
+  svg.querySelectorAll('[data-highlight-index]').forEach(item => item.setAttribute('opacity', Number(item.dataset.highlightIndex) === index ? String(visual.hover.bandOpacity) : '0'));
+}
+function clearHighlight() { svg.querySelectorAll('[data-highlight-index]').forEach(item => item.setAttribute('opacity', '0')); }
+function render() {
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+  syncRangeControls();
+  const width = svg.clientWidth || 900;
+  const height = svg.clientHeight || 300;
+  const isMobile = width < 680;
+  const rows = visibleRows();
+  const columnSeries = config.columnSeries || [];
+  const lineSeries = config.lineSeries || [];
+  const margin = {...(width >= 1200 ? {top:28,right:0,bottom:46,left:0} : isMobile ? {top:18,right:0,bottom:30,left:0} : visual.margin)};
+  const customMargin = config.renderStyle?.margin || {};
+  ['top','right','bottom','left'].forEach(key => {
+    if (Number.isFinite(Number(customMargin[key])) && Number(customMargin[key]) > 0) margin[key] = Number(customMargin[key]);
+  });
+  ['top','right','bottom','left'].forEach(key => margin[key] = Math.max(0, Number(margin[key]) || 0));
+  const gridCount = Math.max(2, Number(visual.grid?.count || config.renderStyle?.gridCount || 5));
+  let leftRange = makeRange(rows.flatMap(row => lineSeries.map(series => asFiniteNumber(row[series.field]))), gridCount);
+  let rightRange = makeRange(rows.flatMap(row => columnSeries.map(series => asNumber(row[series.field]))), gridCount);
+  const aligned = alignZeroRanges(leftRange, rightRange, gridCount);
+  leftRange = aligned.left;
+  rightRange = aligned.right;
+  const leftTickLabels = uniqueFormattedTicks(leftRange.ticks, config.leftAxis);
+  const rightTickLabels = uniqueFormattedTicks(rightRange.ticks, config.rightAxis);
+  const leftAxisLegend = axisLegendText(config.leftAxis);
+  const rightAxisLegend = axisLegendText(config.rightAxis);
+  const rightAxisGap = isMobile ? 8 : 10;
+  const leftAxisGap = isMobile ? 8 : 12;
+  const leftTickWidth = measureAxisWidth(leftTickLabels, visual.yAxis.fontSize, visual.yAxis.fontWeight);
+  const rightTickWidth = measureAxisWidth(rightTickLabels, visual.yAxis.fontSize, visual.yAxis.fontWeight);
+  margin.left = Math.max(margin.left, leftTickWidth + leftAxisGap + 2);
+  margin.right = Math.max(0, rightTickWidth + rightAxisGap);
+  if (leftAxisLegend || rightAxisLegend) {
+    const axisFontSize = toNumber(visual.yAxis.fontSize, 10);
+    margin.top = Math.max(margin.top, axisFontSize * 2 + 12);
+  }
+  const plotW = Math.max(isMobile ? 96 : 140, width - margin.left - margin.right);
+  const plotH = Math.max(isMobile ? 96 : 110, height - margin.top - margin.bottom);
+  const rightAxisX = margin.left + plotW + rightAxisGap + rightTickWidth;
+  const yLeft = scale(leftRange, margin.top, plotH);
+  const yRight = scale(rightRange, margin.top, plotH);
+  leftRange.ticks.forEach((value, index) => {
+    const gy = yLeft(value);
+    if (visual.grid.visible !== false) svg.appendChild(node('line', {x1:margin.left,y1:gy,x2:margin.left+plotW,y2:gy,class:'grid-line',stroke:visual.grid.color,'stroke-width':visual.grid.width,'stroke-dasharray':visual.grid.dasharray || '',opacity:visual.grid.opacity}));
+    svg.appendChild(node('text', {x:margin.left-leftAxisGap,y:gy+4,class:'axis-label','text-anchor':'end'}, leftTickLabels[index] ?? fmt(value, config.leftAxis)));
+    const rightValue = rightRange.ticks[index] ?? '';
+    if (rightValue !== '') svg.appendChild(node('text', {x:rightAxisX,y:gy+4,class:'axis-label','text-anchor':'end'}, rightTickLabels[index] ?? fmt(rightValue, config.rightAxis)));
+  });
+  if (leftAxisLegend) {
+    const axisFontSize = toNumber(visual.yAxis.fontSize, 10);
+    const leftLegendX = Math.max(0, margin.left - leftAxisGap - leftTickWidth);
+    svg.appendChild(node('text', {x:leftLegendX,y:margin.top-axisFontSize-6,class:'axis-label y-axis-legend','text-anchor':'start'}, leftAxisLegend));
+  }
+  if (rightAxisLegend) {
+    const axisFontSize = toNumber(visual.yAxis.fontSize, 10);
+    svg.appendChild(node('text', {x:rightAxisX,y:margin.top-axisFontSize-6,class:'axis-label y-axis-legend','text-anchor':'end'}, rightAxisLegend));
+  }
+  svg.appendChild(node('line', {x1:margin.left,y1:yLeft(0),x2:margin.left+plotW,y2:yLeft(0),class:'axis-line'}));
+  const rowCount = rows.length;
+  const slot = plotW / Math.max(rowCount, 1);
+  const xCenter = index => margin.left + slot * index + slot / 2;
+  const xLabels = rows.map(row => row[config.xField]);
+  const xLabelIndexes = sampledXAxisIndexes(xLabels, slot, visual.xAxis.fontSize, visual.xAxis.fontWeight);
+  rows.forEach((row, index) => {
+    if (xLabelIndexes.has(index)) {
+      svg.appendChild(node('text', {x:xCenter(index),y:margin.top+plotH+20,class:'x-label'}, row[config.xField]));
+    }
+  });
+  const barCount = Math.max(1, columnSeries.length);
+  const barGap = barCount > 1 ? 1 : 0;
+  const maxBarW = Math.max(12, toNumber(visual.bar.maxWidth, isMobile ? 28 : 42));
+  const minBarW = isMobile ? 3 : 5;
+  const targetGroupW = Math.max(minBarW * barCount + barGap * Math.max(0, barCount - 1), slot * 2 / 3);
+  let barW = (targetGroupW - barGap * Math.max(0, barCount - 1)) / barCount;
+  barW = Math.max(minBarW, Math.min(maxBarW, barW));
+  const groupW = barW * barCount + barGap * Math.max(0, barCount - 1);
+  const bandW = Math.min(slot, Math.max(groupW + (isMobile ? 16 : 28), 44));
+  rows.forEach((row, rowIndex) => {
+    const groupX = xCenter(rowIndex) - groupW / 2;
+    const highlight = node('rect', {x:xCenter(rowIndex) - bandW / 2,y:margin.top,width:bandW,height:plotH,class:'highlight',opacity:0,'data-highlight-index':rowIndex});
+    svg.insertBefore(highlight, svg.firstChild);
+    columnSeries.forEach((series, seriesIndex) => {
+      const value = asNumber(row[series.field]);
+      const y0 = yRight(0);
+      const y1 = yRight(value);
+      const bar = node('rect', {x:groupX + seriesIndex * (barW + barGap),y:Math.min(y0,y1),width:barW,height:Math.max(1,Math.abs(y0-y1)),fill:barMarkColor(row, series, value),opacity:series.opacity ?? visual.bar.opacity,class:'bar',rx:toNumber(visual.bar.borderRadius, 0)});
+      svg.appendChild(bar);
+      const canShowBarValue = visual.bar.showLabels !== false && columnSeries.length === 1 && slot >= 48 && barW >= 16;
+      if (canShowBarValue) {
+        const labelY = value >= 0 ? Math.max(12, Math.min(y0,y1) - 7) : Math.min(margin.top + plotH - 4, Math.max(y0,y1) + 14);
+        svg.appendChild(node('text', {x:groupX + seriesIndex * (barW + barGap) + barW / 2,y:labelY,class:'bar-label'}, fmt(value, config.rightAxis)));
+      }
+    });
+  });
+  lineSeries.forEach(series => {
+    const points = rows.map((row, index) => {
+      const value = asFiniteNumber(row[series.field]);
+      return value === null ? null : [xCenter(index), yLeft(value), value];
+    });
+    const pathData = points.map((point, index) => {
+      if (!point) return '';
+      const previousPoint = points.slice(0, index).reverse().find(Boolean);
+      return `${previousPoint ? 'L' : 'M'}${point[0]} ${point[1]}`;
+    }).filter(Boolean).join(' ');
+    if (pathData) svg.appendChild(node('path', {d:pathData,class:'line-path',stroke:series.color,'stroke-width':series.strokeWidth || visual.line.strokeWidth,opacity:series.opacity ?? visual.line.opacity}));
+    const canShowDots = slot >= 18;
+    if (visual.point.visible !== false && (visual.line.showPoints === true || (visual.line.showPoints !== false && canShowDots))) {
+      points.forEach(point => {
+        if (!point) return;
+        const fill = visual.point.fill === 'transparent' ? 'transparent' : (visual.point.fill === 'background' || visual.point.fill === 'series' ? '#ffffff' : (visual.point.fill || '#ffffff'));
+        svg.appendChild(node('circle', {cx:point[0],cy:point[1],r:toNumber(visual.point.radius, 3.2),class:'point',fill,stroke:series.color,'stroke-width':toNumber(visual.point.strokeWidth, 1.6)}));
+      });
+    }
+  });
+  rows.forEach((row, rowIndex) => {
+    const rows = [
+      ...columnSeries.map(series => { const value = asNumber(row[series.field]); return {label:series.label,color:barMarkColor(row, series, value),text:fmt(value, config.rightAxis)}; }),
+      ...lineSeries.map(series => {
+        const value = asFiniteNumber(row[series.field]);
+        return {label:series.label,color:series.color,text:value === null ? (row.yoy_note || '缺少基期') : fmt(value, config.leftAxis)};
+      })
+    ];
+    const hit = node('rect', {x:margin.left + slot * rowIndex,y:margin.top,width:slot,height:plotH,class:'hover-zone'});
+    hit.addEventListener('mouseenter', () => { setHighlight(rowIndex); showTooltip(xCenter(rowIndex), rows, row[config.xField], margin.top); });
+    hit.addEventListener('mousemove', () => { setHighlight(rowIndex); showTooltip(xCenter(rowIndex), rows, row[config.xField], margin.top); });
+    hit.addEventListener('mouseleave', () => { clearHighlight(); hideTooltip(); });
+    svg.appendChild(hit);
+  });
+  [...columnSeries, ...lineSeries].forEach(series => {
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    item.innerHTML = `<i class="legend-dot" style="width:${visual.legend.markerSize}px;height:${visual.legend.markerSize}px;border-radius:${visual.legend.markerShape === 'square' ? 2 : 999}px;background:${series.color}"></i>${series.label}`;
+    item.style.color = visual.legend.color;
+    item.style.fontSize = `${visual.legend.fontSize}px`;
+    legend.appendChild(item);
+  });
+}
+new ResizeObserver(() => { render(); postChartHeight(); }).observe(svg);
+render();
+postChartHeight();
+setTimeout(postChartHeight, 80);
+setTimeout(postChartHeight, 300);
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

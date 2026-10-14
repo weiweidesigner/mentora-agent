@@ -1,0 +1,43 @@
+{
+  "question": "用瀑布图展示收入到利润的拆解，使用清楚标注的金融演示数据。",
+  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "answer": {
+    "question": "用瀑布图展示收入到利润的拆解，使用清楚标注的金融演示数据。",
+    "interpretation": "# 收入到利润的拆解\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-waterfall/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/analysis-waterfall/chart.html",
+        "url": "/static/cases/inspiration/analysis-waterfall/chart.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/analysis-waterfall/chart.html",
+    "sources": [],
+    "lang": "zh-CN"
+  },
+  "provenance": {
+    "renderer": "waterfall.py",
+    "sample": true,
+    "jevDecision": {
+      "selected_scripts": [
+        "waterfall.py"
+      ],
+      "primary_script": "waterfall.py",
+      "supporting_script": null,
+      "primary_confidence": 1.0,
+      "supporting_confidence": 0.8,
+      "provider_model": "jev-1.13.0",
+      "candidate_count": 16,
+      "semantic_lens": "composition-and-drivers",
+      "semantic_lens_confidence": 0.79,
+      "primary_purpose": "{\"type\": \"waterfall\", \"name\": \"waterfall\", \"visualChannelMappings\": [{\"semantic\": \"横轴步骤\", \"field\": \"items[].label\", \"aliases\": [\"category\", \"dimension\", \"name\"], \"visualChannel\": \"xAxis.category\", \"required\": true}, {\"semantic\": \"瀑布值\", \"field\": \"items[].value\", \"aliases\": [\"amount\", \"delta\"], \"visualChannel\": \"waterfall.bar.height\", \"required\": true}, {\"semantic\": \"柱类型\", \"field\": \"items[].type\", \"aliases\": [\"barType\"], \"visualChannel\": \"waterfall.bar.baseline\", \"default\": \"delta\", \"supportedValues\": [\"delta\", \"total\"]}, {\"semantic\": \"堆叠到上一柱\", \"field\": \"items[].stackWithPrevious\", \"aliases\": [\"stack\", \"stacked\"], \"visualChannel\": \"waterfall.bar.stack\", \"default\": false}, {\"semantic\": \"颜色\", \"field\": \"items[].color\", \"aliases\": [\"fill\"], \"visualChannel\": \"waterfall.bar.color\"}], \"dataContract\": [{\"field\": \"items[].label\", \"type\": \"string\", \"channel\": \"legend.label\"}, {\"field\": \"items[].value\", \"type\": \"number\", \"channel\": \"waterfall.bar.height\"}, {\"field\": \"items[].displayValue\", \"type\": \"string\", \"channel\": \"legend.value\"}, {\"field\": \"items[].type\", \"type\": \"delta|total\", \"channel\": \"waterfall.bar.baseline\"}, {\"field\": \"items[].stackWithPrevious\", \"type\": \"boolean\", \"channel\": \"water",
+      "supporting_purpose": "",
+      "visual_encoding": "flow-and-relationship",
+      "visual_encoding_confidence": 0.61,
+      "evidence_strategy": "user-data-only",
+      "evidence_strategy_confidence": 0.98,
+      "mark_strategy": "signed-direction",
+      "mark_strategy_confidence": 0.91
+    },
+    "jevError": null
+  }
+}

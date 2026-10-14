@@ -1,0 +1,52 @@
+{
+  "chartName": "dynamic_line",
+  "title": "财务指标演进（演示数据）",
+  "unit": "",
+  "encode": {
+    "x": "time",
+    "series": "name",
+    "y": "value"
+  },
+  "data": [
+    {
+      "time": "Q1",
+      "name": "营收",
+      "value": 100
+    },
+    {
+      "time": "Q1",
+      "name": "净利润",
+      "value": 20
+    },
+    {
+      "time": "Q2",
+      "name": "营收",
+      "value": 120
+    },
+    {
+      "time": "Q2",
+      "name": "净利润",
+      "value": 26
+    },
+    {
+      "time": "Q3",
+      "name": "营收",
+      "value": 135
+    },
+    {
+      "time": "Q3",
+      "name": "净利润",
+      "value": 30
+    },
+    {
+      "time": "Q4",
+      "name": "营收",
+      "value": 150
+    },
+    {
+      "time": "Q4",
+      "name": "净利润",
+      "value": 36
+    }
+  ]
+}
