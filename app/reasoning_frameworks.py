@@ -1357,6 +1357,8 @@ class LocalAgentFrameworks:
                         observed_skills.append(skill_name)
             if event_type == "item.completed" and item.get("type") == "agent_message":
                 answer = str(item.get("text") or answer)
+                if answer and item.get("channel") != "analysis":
+                    yield "answer_text", {"text": answer, "replace": True}
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
                 message = str(error.get("message") or "Codex 执行失败")
@@ -1611,6 +1613,14 @@ class LocalAgentFrameworks:
                         if path not in runtime_html_paths:
                             runtime_html_paths.append(path)
                         yield "module", module
+            elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
+                data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                message = data.get("message") if isinstance(data.get("message"), dict) else data
+                content = message.get("content")
+                if message.get("channel") != "analysis" and isinstance(content, list):
+                    text = "".join(str(block.get("text") or "") for block in content if isinstance(block, dict) and block.get("type") == "text")
+                    if text.strip():
+                        yield "answer_text", {"text": text, "replace": True}
             elif method in {"subagent.started", "subagent.finished"}:
                 yield "agent_event", {
                     "engine": FRAMEWORKS["deepseek"],

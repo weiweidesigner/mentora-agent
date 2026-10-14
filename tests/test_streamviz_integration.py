@@ -31,7 +31,7 @@ def test_streamviz_uses_pinned_repository_source_and_shared_theme() -> None:
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     lock = json.loads((ROOT / "package-lock.json").read_text(encoding="utf-8"))
     dependency = package["dependencies"]["streamviz-react"]
-    assert dependency.endswith("bbbf1fcc47125f31ae5600ea734c54e9ff3c2bb1")
+    assert dependency.endswith("e3a0c79741b3b26510b72e4ec1159237e77ccde0")
     assert lock["packages"]["node_modules/streamviz-react"]["resolved"] == dependency
     config = (ROOT / "vite.streamviz.config.js").read_text(encoding="utf-8")
     assert "node_modules/streamviz-react/src/index.ts" in config
@@ -360,7 +360,7 @@ def test_streamviz_compact_spacing_and_centered_line_dots() -> None:
     assert '.card>h2:has(+.sv-responsive-line)' not in css
 
 
-def test_final_artifacts_stream_before_final_answer(tmp_path, monkeypatch) -> None:
+def test_final_artifacts_are_not_replayed_as_fake_deltas(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
     monkeypatch.setenv("AICHART_STREAMVIZ_FRAME_DELAY", "0")
     (tmp_path / "final-chart.html").write_text(
@@ -381,9 +381,11 @@ def test_final_artifacts_stream_before_final_answer(tmp_path, monkeypatch) -> No
     )
 
     assert response.status_code == 200
-    assert response.text.index("event: visualization") < response.text.index("event: final")
-    assert '"delta"' in response.text
-    assert '"final": true' in response.text
+    assert "event: visualization" not in response.text
+    assert "event: final" in response.text
+    assert '"delta"' not in response.text
+    payload=json.loads(next(line[6:] for line in response.text.splitlines() if line.startswith("data: ")))
+    assert payload["reportArtifacts"][0]["url"]=="/generated/final-chart.html"
 
 
 def test_prefixed_cloud_artifacts_remain_visible_in_shared_report(monkeypatch):
@@ -396,3 +398,17 @@ def test_prefixed_cloud_artifacts_remain_visible_in_shared_report(monkeypatch):
     assert 'src="/share-artifact/cloud-check.html?theme=dark"' in markup
     assert presentation.canonical_host_url("/veya/generated/chart.html") == "/generated/chart.html"
     assert presentation.canonical_host_url("https://example.com/veya/generated/chart.html").startswith("https://example.com/")
+
+
+def test_chat_stream_preserves_public_text_and_real_widget_events_without_batch_replay(monkeypatch):
+    def events(_payload):
+        yield "module", {"htmlUrl":"/generated/evidence.html"}
+        yield "answer_text", {"text":"公开分析正文", "replace":True}
+        yield "visualization", {"id":"native-widget", "delta":"<p>actual model delta</p>"}
+        yield "final", {"interpretation":"公开分析正文", "reportArtifacts":[{"url":"/generated/evidence.html"}]}
+    monkeypatch.setattr(presentation, "framework_events", events)
+    monkeypatch.setattr(presentation, "streamviz_events_for_module", lambda _: (_ for _ in ()).throw(AssertionError("Batch HTML must never be replayed")))
+    response=TestClient(presentation.app).post("/api/chat/stream",json={"question":"test", "reasoningFramework":"deepseek"})
+    assert response.status_code==200
+    names=[line[7:] for line in response.text.splitlines() if line.startswith('event: ')]
+    assert names==["module", "answer_text", "visualization", "final"]

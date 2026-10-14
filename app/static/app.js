@@ -410,6 +410,10 @@ function handleStreamEvent(article, eventName, data) {
     appendToolStep(article, data);
     return;
   }
+  if (eventName === "answer_text") {
+    renderStreamAnswerText(article, data);
+    return;
+  }
   if (eventName === "module") {
     appendStreamVisualizationModule(article, data);
     return;
@@ -901,28 +905,25 @@ function appendStreamVisualizationModule(article, data = {}) {
       title: data.label || data.title || "",
     });
   }
-  if (data.streamvizCompatible === true) {
-    const host = article.querySelector(`[data-visualization-id="${CSS.escape(data.streamvizId || "")}"]`);
-    if (host) host.dataset.artifactUrl = url;
-    return;
+  // Tool completion registers evidence, not an answer position. The final
+  // narrative places each chart beside its explanation using AIME_CHART markers.
+}
+
+function renderStreamAnswerText(article, data = {}) {
+  const target = article.querySelector(".finalAnswer");
+  if (!target || article.activityEnded) return;
+  const raw = String(data.text || "");
+  const text = sanitizeUserFacingInsight(raw.replace(/\[\[AIME_CHART:[\s\S]*?(?:\]\]|$)/g, ""));
+  if (!text.trim()) return;
+  let preview = target.querySelector(".streamAnswerPreview");
+  if (!preview) {
+    preview = document.createElement("div");
+    preview.className = "streamAnswerPreview streamingAnswer reportInterpretation";
+    target.prepend(preview);
   }
-  const lane = streamVisualizationLane(article);
-  if (!lane || lane.querySelector(`[data-artifact-url="${CSS.escape(url)}"]`)) return;
-  if (data.streamvizCompatible === false) {
-    lane.appendChild(createArtifactFallbackFrame({ url }, Number(data.index || lane.children.length + 1) - 1));
-    keepScrollPosition(isNearBottom());
-    return;
-  }
-  const host = createStreamVisualizationArtifact({
-    url,
-    title: data.label || data.title || "",
-    label: data.label,
-  }, Number(data.index || lane.children.length + 1) - 1, {
-    live: true,
-    loadingMessage: `正在呈现${data.label || "图表"}`,
-  });
-  lane.appendChild(host);
-  keepScrollPosition(isNearBottom());
+  const stick = isNearBottom();
+  preview.innerHTML = formatInsight(text);
+  keepScrollPosition(stick);
 }
 
 function upsertStreamVisualization(article, data = {}) {

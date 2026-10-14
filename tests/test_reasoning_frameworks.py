@@ -615,7 +615,7 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
 
     names = [name for name, _data in events]
     final = next(data for name, data in events if name == "final")
-    assert names == ["status", "agent_event", "tool_step", "agent_event", "final"]
+    assert names == ["status", "agent_event", "tool_step", "answer_text", "agent_event", "final"]
     assert final["engineSessionId"] == "thread-123"
     assert final["interpretation"] == "完成"
 
@@ -750,3 +750,27 @@ def test_deepseek_stuck_run_times_out_and_closes_runtime(
     with pytest.raises(ReasoningFrameworkError, match="已终止卡住的会话"):
         list(client.stream("deepseek", "测试", [], session_key="session-timeout"))
     assert closed.is_set()
+
+
+def test_deepseek_streams_only_root_public_text_before_final(tmp_path, monkeypatch):
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    monkeypatch.setenv("DSH_HOME", str(tmp_path / "dsh"))
+
+    class Harness:
+        def __init__(self, **kwargs): pass
+        def run(self, prompt, *, session_id, on_notification):
+            for owner, blocks in [
+                ("subagent-session", [{"type":"text","text":"private child message"}]),
+                (session_id, [{"type":"thinking","text":"private reasoning"},{"type":"text","text":"公开分析正文"}]),
+            ]:
+                on_notification(SimpleNamespace(method="session.event", payload={"sessionId":owner,"event":{"type":"assistant/message","data":{"message":{"content":blocks}}}}))
+            return SimpleNamespace(session_id=session_id, final_response="公开分析正文", events=[], notifications=[])
+        def close(self): pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=Harness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+    events = list(client.stream("deepseek", "测试", [], session_key="stream-public-text"))
+    snapshots = [data for kind,data in events if kind=="answer_text"]
+    assert snapshots == [{"text":"公开分析正文","replace":True}]
+    assert next(i for i,(kind,_) in enumerate(events) if kind=="answer_text") < next(i for i,(kind,_) in enumerate(events) if kind=="final")

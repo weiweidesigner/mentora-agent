@@ -419,38 +419,11 @@ def chat_stream(payload: ChatRequest) -> StreamingResponse:
         raise HTTPException(status_code=400, detail="问题不能为空")
 
     def stream() -> Iterator[str]:
-        streamed_visualizations: set[str] = set()
         try:
             for event_name, data in framework_events(payload):
-                if event_name == "visualization" and data.get("final") and data.get("htmlUrl"):
-                    streamed_visualizations.add(str(data["htmlUrl"]))
-                if event_name == "module":
-                    html_url = str(data.get("htmlUrl") or "")
-                    for streamviz_event, streamviz_data in streamviz_events_for_module(data):
-                        yield sse_event(streamviz_event, streamviz_data)
-                    if html_url and data.get("streamvizCompatible"):
-                        streamed_visualizations.add(html_url)
-                    continue
-                if event_name == "final":
-                    artifacts = data.get("reportArtifacts") if isinstance(data, dict) else []
-                    for index, artifact in enumerate(artifacts if isinstance(artifacts, list) else [], start=1):
-                        if not isinstance(artifact, dict):
-                            continue
-                        html_url = str(artifact.get("url") or artifact.get("htmlUrl") or "")
-                        if not html_url or html_url in streamed_visualizations:
-                            continue
-                        module_data = {
-                            "index": index,
-                            "htmlUrl": html_url,
-                            "label": artifact.get("title") or artifact.get("label") or "",
-                        }
-                        for streamviz_event, streamviz_data in streamviz_events_for_module(module_data):
-                            if streamviz_event == "visualization":
-                                yield sse_event(streamviz_event, streamviz_data)
-                        if module_data.get("streamvizCompatible"):
-                            streamed_visualizations.add(html_url)
-                    yield sse_event(event_name, data)
-                    continue
+                # Batch HTML is completed tool evidence. Do not cut it into
+                # artificial visualization deltas before the model's prose.
+                # Genuine model-native widget deltas keep their own protocol.
                 yield sse_event(event_name, data)
         except (StudioAgentError, ReasoningFrameworkError) as exc:
             yield sse_event("error", {"detail": str(exc), "status_code": 502, "lang": "zh-CN"})
