@@ -111,7 +111,15 @@ function renderTable(rows){
     </tr>`).join('')}</tbody></table>`;
 }
 const state={start:0,end:1,dragging:null,lastChartWidth:0};
-function brushMetrics(){const compact=window.matchMedia && window.matchMedia('(max-width: 980px)').matches; return compact ? {pad:10, handle:20} : {pad:16, handle:32};}
+function brushMetrics(){
+  const brush=document.getElementById('brush');
+  const handle=brush?.querySelector('.handle');
+  const size=handle?.getBoundingClientRect().width || 32;
+  const pad=Math.ceil(size / 2) + 2;
+  // Keep the rail and pointer mapping aligned with the rendered handle size.
+  brush?.style.setProperty('--track-pad', `${pad}px`, 'important');
+  return {pad, handle:size};
+}
 function chartPadding(){const compact=window.matchMedia && window.matchMedia('(max-width: 980px)').matches; return compact ? {l:22,r:58,t:10,b:26} : {l:48,r:76,t:24,b:42};}
 function setupBrush(){
   const brush=document.getElementById('brush');

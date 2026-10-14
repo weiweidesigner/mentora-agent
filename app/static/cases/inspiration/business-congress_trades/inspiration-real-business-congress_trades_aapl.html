@@ -173,8 +173,13 @@ function updateBrush(){
   selected.style.width=`${Math.max(0,r-l)}px`;
 }
 function brushMetrics(){
-  const compactLayout=window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
-  return compactLayout ? {pad:10, handle:20} : {pad:16, handle:32};
+  const brush=document.getElementById('brush');
+  const handle=brush?.querySelector('.handle');
+  const size=handle?.getBoundingClientRect().width || 32;
+  const pad=Math.ceil(size / 2) + 2;
+  // Keep the rail and pointer mapping aligned with the rendered handle size.
+  brush?.style.setProperty('--track-pad', `${pad}px`, 'important');
+  return {pad, handle:size};
 }
 function chartPadding(){
   const compactLayout=window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
