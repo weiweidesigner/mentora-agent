@@ -39,7 +39,8 @@
       "conversationUrl": "/static/cases/inspiration/business-about_company/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "NVDA 公司档案"
     },
     {
       "id": "business-analyst_recommendations",
@@ -51,7 +52,8 @@
       "conversationUrl": "/static/cases/inspiration/business-analyst_recommendations/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 分析师推荐"
     },
     {
       "id": "business-average_rating_history",
@@ -63,7 +65,8 @@
       "conversationUrl": "/static/cases/inspiration/business-average_rating_history/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 评级趋势"
     },
     {
       "id": "business-balance_sheet",
@@ -75,7 +78,8 @@
       "conversationUrl": "/static/cases/inspiration/business-balance_sheet/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 资产负债表"
     },
     {
       "id": "business-capital_structure",
@@ -87,7 +91,8 @@
       "conversationUrl": "/static/cases/inspiration/business-capital_structure/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 资本结构"
     },
     {
       "id": "business-cash_flow",
@@ -99,7 +104,8 @@
       "conversationUrl": "/static/cases/inspiration/business-cash_flow/conversation.json",
       "category": "charts",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 现金流"
     },
     {
       "id": "business-congress_trades",
@@ -111,7 +117,8 @@
       "conversationUrl": "/static/cases/inspiration/business-congress_trades/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 议员交易"
     },
     {
       "id": "business-dividend_yield",
@@ -123,7 +130,8 @@
       "conversationUrl": "/static/cases/inspiration/business-dividend_yield/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 股息率"
     },
     {
       "id": "business-eps_estimate",
@@ -135,7 +143,8 @@
       "conversationUrl": "/static/cases/inspiration/business-eps_estimate/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 盈利预期"
     },
     {
       "id": "business-executive_profile",
@@ -147,7 +156,8 @@
       "conversationUrl": "/static/cases/inspiration/business-executive_profile/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 管理层"
     },
     {
       "id": "business-fundamental_investment_rating",
@@ -159,7 +169,8 @@
       "conversationUrl": "/static/cases/inspiration/business-fundamental_investment_rating/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "NVDA 基本面评级"
     },
     {
       "id": "business-income_statement",
@@ -171,7 +182,8 @@
       "conversationUrl": "/static/cases/inspiration/business-income_statement/conversation.json",
       "category": "charts",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 利润表"
     },
     {
       "id": "business-insider_trades",
@@ -183,7 +195,8 @@
       "conversationUrl": "/static/cases/inspiration/business-insider_trades/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 内部人交易"
     },
     {
       "id": "business-institution_trades",
@@ -195,7 +208,8 @@
       "conversationUrl": "/static/cases/inspiration/business-institution_trades/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 机构交易"
     },
     {
       "id": "business-investment_rating",
@@ -207,7 +221,8 @@
       "conversationUrl": "/static/cases/inspiration/business-investment_rating/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 投资评级"
     },
     {
       "id": "business-key_financial_indicators",
@@ -219,7 +234,8 @@
       "conversationUrl": "/static/cases/inspiration/business-key_financial_indicators/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 财务指标"
     },
     {
       "id": "business-key_statistics",
@@ -231,7 +247,8 @@
       "conversationUrl": "/static/cases/inspiration/business-key_statistics/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 关键统计"
     },
     {
       "id": "business-key_stats",
@@ -243,7 +260,8 @@
       "conversationUrl": "/static/cases/inspiration/business-key_stats/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "NVDA 行情指标"
     },
     {
       "id": "business-kline",
@@ -255,7 +273,8 @@
       "conversationUrl": "/static/cases/inspiration/business-kline/conversation.json",
       "category": "charts",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "JPM 技术分析"
     },
     {
       "id": "business-multi_intraday",
@@ -267,7 +286,8 @@
       "conversationUrl": "/static/cases/inspiration/business-multi_intraday/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "多股分时对比"
     },
     {
       "id": "business-payout_ratio",
@@ -279,7 +299,8 @@
       "conversationUrl": "/static/cases/inspiration/business-payout_ratio/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 分红比例"
     },
     {
       "id": "business-price_target_vs_actual",
@@ -291,7 +312,8 @@
       "conversationUrl": "/static/cases/inspiration/business-price_target_vs_actual/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 目标价对照"
     },
     {
       "id": "business-related_section",
@@ -303,7 +325,8 @@
       "conversationUrl": "/static/cases/inspiration/business-related_section/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 关联主题"
     },
     {
       "id": "business-revenue_estimate",
@@ -315,7 +338,8 @@
       "conversationUrl": "/static/cases/inspiration/business-revenue_estimate/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 营收预期"
     },
     {
       "id": "business-revenue_expenses",
@@ -327,7 +351,8 @@
       "conversationUrl": "/static/cases/inspiration/business-revenue_expenses/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "GOOGL 成本拆解"
     },
     {
       "id": "business-revenue_geography",
@@ -339,7 +364,8 @@
       "conversationUrl": "/static/cases/inspiration/business-revenue_geography/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 地域收入"
     },
     {
       "id": "business-revenue_sources",
@@ -351,7 +377,8 @@
       "conversationUrl": "/static/cases/inspiration/business-revenue_sources/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 业务收入"
     },
     {
       "id": "business-seasonals",
@@ -363,7 +390,8 @@
       "conversationUrl": "/static/cases/inspiration/business-seasonals/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 季节性"
     },
     {
       "id": "business-shareholder_returns",
@@ -375,7 +403,8 @@
       "conversationUrl": "/static/cases/inspiration/business-shareholder_returns/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 股东回报"
     },
     {
       "id": "business-trade_flow",
@@ -387,7 +416,8 @@
       "conversationUrl": "/static/cases/inspiration/business-trade_flow/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "NVDA 资金流"
     },
     {
       "id": "business-valuation",
@@ -399,7 +429,8 @@
       "conversationUrl": "/static/cases/inspiration/business-valuation/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 估值分析"
     },
     {
       "id": "business-volume_profile",
@@ -411,7 +442,8 @@
       "conversationUrl": "/static/cases/inspiration/business-volume_profile/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "NVDA 成交分布"
     },
     {
       "id": "business-wall_street_consensus",
@@ -423,7 +455,8 @@
       "conversationUrl": "/static/cases/inspiration/business-wall_street_consensus/conversation.json",
       "category": "charts",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 华尔街共识"
     },
     {
       "id": "analysis-bar_chart",
@@ -435,7 +468,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-bar_chart/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 营收对比"
     },
     {
       "id": "analysis-line_chart",
@@ -447,7 +481,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-line_chart/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "SPY 价格走势"
     },
     {
       "id": "analysis-group_line",
@@ -459,7 +494,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-group_line/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "科技股走势"
     },
     {
       "id": "analysis-grouped_bar",
@@ -471,7 +507,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-grouped_bar/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "科技股财务"
     },
     {
       "id": "analysis-bar_line",
@@ -483,7 +520,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-bar_line/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 盈利趋势"
     },
     {
       "id": "analysis-pie",
@@ -495,7 +533,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-pie/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 产品收入"
     },
     {
       "id": "analysis-double_ring_pie",
@@ -507,7 +546,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-double_ring_pie/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 利润率"
     },
     {
       "id": "analysis-treemap",
@@ -519,7 +559,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-treemap/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 收入权重"
     },
     {
       "id": "analysis-waterfall",
@@ -531,7 +572,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-waterfall/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 利润拆解"
     },
     {
       "id": "analysis-dynamic_line",
@@ -543,7 +585,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-dynamic_line/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "科技股价演进"
     },
     {
       "id": "analysis-dynamic_bar",
@@ -555,7 +598,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-dynamic_bar/conversation.json",
       "category": "analysis",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "科技营收排名"
     },
     {
       "id": "analysis-dynamic_bubble",
@@ -567,7 +611,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-dynamic_bubble/conversation.json",
       "category": "analysis",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "收益与风险"
     },
     {
       "id": "analysis-mind_map",
@@ -579,7 +624,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-mind_map/conversation.json",
       "category": "analysis",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 经营驱动"
     },
     {
       "id": "analysis-flowchart",
@@ -591,7 +637,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-flowchart/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 利润链路"
     },
     {
       "id": "analysis-journey",
@@ -603,7 +650,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-journey/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 四季经营"
     },
     {
       "id": "analysis-timeline",
@@ -615,7 +663,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-timeline/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 财报日历"
     },
     {
       "id": "analysis-kline",
@@ -627,7 +676,8 @@
       "conversationUrl": "/static/cases/inspiration/analysis-kline/conversation.json",
       "category": "analysis",
       "featured": false,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "SPY K线走势"
     },
     {
       "id": "report-ashare",
@@ -639,7 +689,8 @@
       "conversationUrl": "/static/cases/inspiration/report-ashare/conversation.json",
       "category": "reports",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "A股市场报告"
     },
     {
       "id": "report-amd",
@@ -651,7 +702,8 @@
       "conversationUrl": "/static/cases/inspiration/report-amd/conversation.json",
       "category": "reports",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AMD 共识报告"
     },
     {
       "id": "report-cashflow",
@@ -663,7 +715,8 @@
       "conversationUrl": "/static/cases/inspiration/report-cashflow/conversation.json",
       "category": "reports",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AAPL 财务报告"
     },
     {
       "id": "video-ai",
@@ -675,7 +728,8 @@
       "conversationUrl": "/static/cases/inspiration/video-ai/conversation.json",
       "category": "videos",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "AI与芯片投资"
     },
     {
       "id": "video-market",
@@ -687,7 +741,8 @@
       "conversationUrl": "/static/cases/inspiration/video-market/conversation.json",
       "category": "videos",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "美股收盘复盘"
     },
     {
       "id": "video-megacaps",
@@ -699,7 +754,8 @@
       "conversationUrl": "/static/cases/inspiration/video-megacaps/conversation.json",
       "category": "videos",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "科技龙头观点"
     },
     {
       "id": "art-1",
@@ -711,7 +767,8 @@
       "conversationUrl": "/static/cases/inspiration/art-1/conversation.json",
       "category": "art",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "牛熊博弈"
     },
     {
       "id": "art-2",
@@ -723,7 +780,8 @@
       "conversationUrl": "/static/cases/inspiration/art-2/conversation.json",
       "category": "art",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "猫咪拉面店"
     },
     {
       "id": "art-3",
@@ -735,7 +793,8 @@
       "conversationUrl": "/static/cases/inspiration/art-3/conversation.json",
       "category": "art",
       "featured": true,
-      "generation": "actual-veya-chat-stream"
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "月球音乐节"
     }
   ],
   "counts": {

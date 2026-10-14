@@ -133,7 +133,7 @@
   const cardHtml = (row, index) => `
       <button class="caseCard" type="button" data-case="${escapeHtml(row.id)}" style="--case-accent:${["#6d5efc", "#2784df", "#c17632", "#358a73", "#9661cb", "#5272b7"][index % 6]}">
         <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
-        <h2>${escapeHtml(row.title)}</h2>
+        <h2>${row.mobileTitle ? `<span class="caseCardTitleFull">${escapeHtml(row.title)}</span><span class="caseCardTitleMobile">${escapeHtml(row.mobileTitle)}</span>` : escapeHtml(row.title)}</h2>
         <p>${escapeHtml(row.preview)}</p>
       </button>`;
 

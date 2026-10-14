@@ -482,7 +482,7 @@
 
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
-      contentInset = width < 700 ? 12 : 22;
+      contentInset = width < 700 ? 0 : 22;
       tooltipTop = width < 700 ? -82 : -96;
 
       document.documentElement.style.setProperty("--content-inset", `${contentInset}px`);

@@ -3713,3 +3713,10 @@ p {
  .inspirationGrid .caseCard h4{margin-bottom:5px;font-size:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
  .inspirationGrid .caseCard p{font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 }
+
+.caseCardTitleMobile{display:none}
+@media(max-width:760px){
+ .inspirationGrid .caseCard h4{display:block;white-space:nowrap;text-overflow:ellipsis;-webkit-line-clamp:unset}
+ .inspirationGrid .caseCardTitleFull{display:none}
+ .inspirationGrid .caseCardTitleMobile{display:inline}
+}
