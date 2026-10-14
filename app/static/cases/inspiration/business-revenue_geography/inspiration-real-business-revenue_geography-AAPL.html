@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pie</title>
+<style>
+:root{color-scheme:light;--business-text-151922:#151922;--business-text-687386:#687386;--business-text-fff:#fff;--business-text-4b5563:#4b5563;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-151922:#e8edf5;--business-text-687386:#a8b3c4;--business-text-fff:#f5f7fb;--business-text-4b5563:#a8b3c4;}
+
+*{box-sizing:border-box}
+html,body{width:100%;min-height:0;margin:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--business-text-151922);overflow:hidden}
+.pie-component{position:relative;width:100%;min-height:360px;padding:0 1px 0 0;background:transparent;overflow:hidden;container-type:inline-size}
+.pie-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px;width:100%;margin:0 0 10px}
+.pie-heading{min-width:0}
+.pie-title{margin:0;padding:0;color:var(--business-text-151922);font-size:20px;font-weight:700;line-height:1.35;letter-spacing:-.15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pie-title:empty{display:none}
+.pie-subtitle{margin:4px 0 0;padding:0;color:var(--business-text-687386);font-size:13px;font-weight:400;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pie-subtitle:empty{display:none}
+.pie-badge{align-self:start;margin:3px 0 0;padding:0;color:var(--business-text-687386);font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap}
+.pie-badge:empty{display:none}
+.pie-layout{display:grid;grid-template-columns:minmax(160px,220px) fit-content(360px);align-items:center;justify-content:start;gap:clamp(12px,4cqw,48px);width:100%;min-width:0}
+.pie-stage{position:relative;width:100%;height:210px;min-width:0;margin:0;overflow:visible}
+svg{display:block;width:100%;height:100%;overflow:visible}
+.pie-center{font-size:16px;font-weight:600;fill:var(--business-text-151922);text-anchor:middle;dominant-baseline:middle}
+.pie-slice{cursor:pointer;transition:opacity .12s ease}
+.pie-highlight{pointer-events:none;transition:opacity .12s ease}
+.pie-tooltip{position:absolute;z-index:5;min-width:150px;max-width:calc(100% - 2px);padding:9px 12px;background:rgba(21,25,34,.94);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease}
+.pie-tooltip::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:rgba(21,25,34,.94);transform:translateY(-50%) rotate(45deg)}
+.pie-tooltip[data-side="right"]::after{left:-5px}
+.pie-tooltip[data-side="left"]::after{right:-5px}
+.tooltip-title{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap}
+.tooltip-title span{overflow:hidden;text-overflow:ellipsis}
+.tooltip-dot,.legend-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.tooltip-value{padding-left:16px;white-space:nowrap}
+.pie-tooltip.active{opacity:1;visibility:visible}
+.pie-legend{display:flex;flex-wrap:wrap;align-items:center;justify-self:start;gap:10px 18px;width:max-content;max-width:100%;min-width:0;margin:0;padding:0 1px 0 0;font-size:10px;line-height:1.25}
+.legend-entry{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.legend-label{display:flex;align-items:center;gap:8px;min-width:0;color:var(--business-text-4b5563)}
+.legend-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-value{color:var(--business-text-151922);font-weight:700;text-align:left;white-space:nowrap}
+.pie-component.legend-bottom .pie-layout{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px}
+.pie-component.legend-bottom .pie-stage{width:min(100%,320px);height:190px;margin:0 auto}
+.pie-component.legend-bottom .pie-legend{display:flex;justify-content:center;align-content:center;justify-self:center;gap:10px 18px;width:min(100%,720px);max-width:100%;padding-right:1px;font-size:10px}
+.pie-component.legend-bottom .legend-entry{display:inline-flex;align-items:center;gap:8px;max-width:100%}
+.pie-component.legend-bottom .legend-label{gap:7px}
+.pie-component.legend-bottom .legend-value{font-weight:600}
+@media(max-width:759px){
+ .pie-component{min-height:0}
+ .pie-header{margin-bottom:8px;column-gap:8px}
+ .pie-title{font-size:17px}
+ .pie-subtitle{margin-top:3px;font-size:12px}
+ .pie-badge{margin-top:2px;font-size:11px}
+ .pie-layout{grid-template-columns:1fr;justify-items:center;gap:8px}
+ .pie-stage{width:min(100%,260px);height:190px;margin:0 auto}
+ .pie-legend{justify-content:center;justify-self:center;gap:8px 14px;width:min(100%,360px);font-size:10px}
+ .legend-entry{gap:8px}
+ .pie-center{font-size:14px}
+ .pie-tooltip{min-width:140px;font-size:11px}
+ .pie-component.legend-bottom .pie-stage{width:min(100%,260px);height:178px}
+ .pie-component.legend-bottom .pie-legend{gap:8px;font-size:10px}
+}
+</style>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script><script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<section class="pie-component" data-renderer-version="pie-spacing-v2" data-component-contract="{&quot;type&quot;: &quot;pie&quot;, &quot;name&quot;: &quot;pie&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;扇区列表&quot;, &quot;field&quot;: &quot;items&quot;, &quot;aliases&quot;: [&quot;slices&quot;, &quot;segments&quot;], &quot;visualChannel&quot;: &quot;pie.arc.angle&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;中心文本&quot;, &quot;field&quot;: &quot;centerLabel&quot;, &quot;aliases&quot;: [&quot;totalLabel&quot;], &quot;visualChannel&quot;: &quot;pie.center.label&quot;}, {&quot;semantic&quot;: &quot;环形宽度&quot;, &quot;field&quot;: &quot;ringWidth&quot;, &quot;aliases&quot;: [&quot;thickness&quot;], &quot;visualChannel&quot;: &quot;pie.ring.width&quot;, &quot;default&quot;: 28}, {&quot;semantic&quot;: &quot;右上角标记&quot;, &quot;field&quot;: &quot;badgeLabel&quot;, &quot;aliases&quot;: [&quot;yearLabel&quot;, &quot;periodLabel&quot;], &quot;visualChannel&quot;: &quot;badge.topRight&quot;}, {&quot;semantic&quot;: &quot;下标题&quot;, &quot;field&quot;: &quot;subtitle&quot;, &quot;aliases&quot;: [&quot;subTitle&quot;, &quot;caption&quot;], &quot;visualChannel&quot;: &quot;text.subtitle&quot;}, {&quot;semantic&quot;: &quot;标题&quot;, &quot;field&quot;: &quot;title&quot;, &quot;aliases&quot;: [&quot;name&quot;], &quot;visualChannel&quot;: &quot;text.title&quot;}, {&quot;semantic&quot;: &quot;图例位置&quot;, &quot;field&quot;: &quot;legendPosition&quot;, &quot;visualChannel&quot;: &quot;legend.layout&quot;, &quot;default&quot;: &quot;bottom&quot;, &quot;supportedValues&quot;: [&quot;bottom&quot;]}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;items[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.label&quot;}, {&quot;field&quot;: &quot;items[].value&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;pie.arc.angle&quot;}, {&quot;field&quot;: &quot;items[].displayValue&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.value&quot;}, {&quot;field&quot;: &quot;items[].color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;pie.arc.color&quot;}, {&quot;field&quot;: &quot;badgeLabel&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;badge.topRight&quot;}, {&quot;field&quot;: &quot;title&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.title&quot;}, {&quot;field&quot;: &quot;subtitle&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.subtitle&quot;}, {&quot;field&quot;: &quot;showLegendValues&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;legend.valueVisibility&quot;}, {&quot;field&quot;: &quot;showCenterLabel&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;pie.center.visibility&quot;}], &quot;builtInDataSources&quot;: []}">
+  <div class="pie-header">
+    <div class="pie-heading">
+      <h2 class="pie-title">按地区收入明细</h2>
+      <div class="pie-subtitle">AAPL · 地区收入结构 · 2026 Q3</div>
+    </div>
+    <div class="pie-badge">期间： 2026 Q3</div>
+  </div>
+  <div class="pie-layout">
+    <div class="pie-stage"><svg role="img" aria-label="pie"></svg><div class="pie-tooltip"></div></div>
+    <div class="pie-legend"></div>
+  </div>
+</section>
+<script>
+const config = {"items": [{"label": "美洲", "value": 45781.0, "displayValue": "45.78 B (41.84%)", "color": "#4387f5", "percent": 41.84084740031256}, {"label": "欧洲", "value": 29395.0, "displayValue": "29.39 B (26.87%)", "color": "#4bc3d5", "percent": 26.865112368279153}, {"label": "大中华区", "value": 18816.0, "displayValue": "18.82 B (17.20%)", "color": "#f9730c", "percent": 17.196596506941333}, {"label": "日本", "value": 6554.0, "displayValue": "6.55 B (5.99%)", "color": "#8b5cf6", "percent": 5.989928438908031}, {"label": "其他亚太地区", "value": 8871.0, "displayValue": "8.87 B (8.11%)", "color": "#2ab7a1", "percent": 8.107515285558916}], "title": "按地区收入明细", "centerLabel": "按地区收入明细", "subtitle": "AAPL · 地区收入结构 · 2026 Q3", "badgeLabel": "期间： 2026 Q3", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": false, "ringWidth": 48, "height": 360};
+const root = document.querySelector('.pie-component');
+const stage = root.querySelector('.pie-stage');
+const svg = root.querySelector('svg');
+const legend = root.querySelector('.pie-legend');
+const tooltip = root.querySelector('.pie-tooltip');
+const NS = 'http://www.w3.org/2000/svg';
+const total = config.items.reduce((sum,item) => sum + Number(item.value || 0), 0);
+root.classList.toggle('legend-bottom', config.legendPosition === 'bottom');
+
+const node = (name, attrs = {}, text = '') => {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key,value]) => el.setAttribute(key,value));
+  if (text !== '') el.textContent = text;
+  return el;
+};
+const polar = (cx, cy, r, angle) => {
+  const rad = (angle - 90) * Math.PI / 180;
+  return {x:cx + r * Math.cos(rad), y:cy + r * Math.sin(rad)};
+};
+const arcPath = (cx, cy, outerR, innerR, start, end) => {
+  const large = end - start > 180 ? 1 : 0;
+  const p1 = polar(cx, cy, outerR, start);
+  const p2 = polar(cx, cy, outerR, end);
+  const p3 = polar(cx, cy, innerR, end);
+  const p4 = polar(cx, cy, innerR, start);
+  return `M ${p1.x} ${p1.y} A ${outerR} ${outerR} 0 ${large} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${innerR} ${innerR} 0 ${large} 0 ${p4.x} ${p4.y} Z`;
+};
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+function render() {
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+  const width = svg.clientWidth || 320;
+  const height = svg.clientHeight || 250;
+  const safe = 8;
+  const cx = width / 2;
+  const cy = height / 2;
+  const outerR = Math.max(24, Math.min(88, Math.min(width, height) / 2 - safe));
+  const ringWidth = clamp(Number(config.ringWidth) || 28, 12, Math.max(12, outerR * 0.32));
+  const innerR = Math.max(20, outerR - ringWidth);
+  let angle = 0;
+
+  config.items.forEach((item, index) => {
+    const start = angle;
+    const end = angle + (total ? Number(item.value || 0) / total * 360 : 0);
+    angle = end;
+    if (end <= start) return;
+    const slice = node('path', {d:arcPath(cx,cy,outerR,innerR,start,end),fill:item.color,class:'pie-slice','data-index':index});
+    slice.addEventListener('mouseenter', event => showTooltip(event, item, index));
+    slice.addEventListener('mousemove', event => showTooltip(event, item, index));
+    slice.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(slice);
+    const highlight = node('path', {d:arcPath(cx,cy,outerR + 6,outerR,start,end),fill:item.color,class:'pie-highlight','data-index':index});
+    highlight.style.opacity = '0';
+    svg.appendChild(highlight);
+  });
+
+  if (config.showCenterLabel) {
+    const centerText = String(config.centerLabel || '');
+    const centerFontSize = centerText.length > 14 ? 11 : centerText.length > 9 ? 13 : 16;
+    svg.appendChild(node('text', {x:cx,y:cy,class:'pie-center','font-size':centerFontSize}, centerText));
+  }
+
+  config.items.forEach(item => {
+    const entry = document.createElement('div');
+    entry.className = 'legend-entry';
+    const label = document.createElement('div');
+    label.className = 'legend-label';
+    label.innerHTML = `<i class="legend-dot" style="background:${item.color}"></i><span>${item.label}</span>`;
+    entry.appendChild(label);
+    if (config.showLegendValues) {
+      const value = document.createElement('div');
+      value.className = 'legend-value';
+      value.textContent = item.displayValue;
+      entry.appendChild(value);
+    }
+    legend.appendChild(entry);
+  });
+  postChartHeight();
+}
+function setHighlight(index) {
+  svg.querySelectorAll('.pie-highlight').forEach(item => item.style.opacity = item.dataset.index == index ? '.22' : '0');
+}
+function showTooltip(event, item, index) {
+  setHighlight(index);
+  tooltip.innerHTML = `<div class="tooltip-title"><i class="tooltip-dot" style="background:${item.color}"></i><span>${item.label}</span></div><div class="tooltip-value">${item.displayValue}</div>`;
+  tooltip.classList.add('active');
+  const rect = stage.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const tooltipW = tooltip.offsetWidth;
+  const tooltipH = tooltip.offsetHeight;
+  const side = x < stage.clientWidth / 2 ? 'right' : 'left';
+  tooltip.dataset.side = side;
+  const proposedLeft = side === 'right' ? x + 14 : x - tooltipW - 14;
+  const safe = 1;
+  tooltip.style.left = `${clamp(proposedLeft, safe, Math.max(safe, stage.clientWidth - tooltipW - safe))}px`;
+  tooltip.style.top = `${clamp(y - tooltipH / 2, safe, Math.max(safe, stage.clientHeight - tooltipH - safe))}px`;
+}
+function hideTooltip() {
+  tooltip.classList.remove('active');
+  svg.querySelectorAll('.pie-highlight').forEach(item => item.style.opacity = '0');
+}
+function postChartHeight() {
+  const height = Math.ceil(Math.max(180, root.getBoundingClientRect().bottom || document.body.scrollHeight || 0)) + 2;
+  try { parent.postMessage({type:'analysis-planner-chart-height',height}, '*'); } catch (e) {}
+}
+window.addEventListener('resize', render);
+render();
+setTimeout(postChartHeight,80);
+setTimeout(postChartHeight,300);
+</script>
+</body>
+</html>

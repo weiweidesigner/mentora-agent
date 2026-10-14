@@ -1,23 +1,167 @@
 {
-  "question": "请展示 GOOGL 的资产负债结构，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的资产、负债、权益及偿债结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:39:57.473000+08:00",
   "answer": {
-    "question": "请展示 GOOGL 的资产负债结构，解释主要指标和观察方法。",
-    "interpretation": "# GOOGL · 资产负债结构\n\n这份案例用原生业务组件展示资产负债结构，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-balance_sheet/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-30 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的资产、负债、权益及偿债结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,vision-chart-analyst,advisor-text-generation",
+      "label": "business-chart-recall + vision-chart-analyst + advisor-text-generation",
+      "script": "business-chart-recall + vision-chart-analyst + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html",
+    "reportUrl": "/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-balance_sheet/chart.html",
-        "url": "/static/cases/inspiration/business-balance_sheet/chart.html"
+        "path": "case:inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html",
+        "url": "/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-balance_sheet/chart.html",
+    "payloadUrl": null,
+    "interpretation": "我已完成本次真实取数与重渲染。以下是分析。\n\n## 核心结论\n\n**AAPL 的偿债结构在最近三个财季出现了过去五年最明显的一次改善：负债率（总负债/总资产）从 FY2022 峰值 85.64% 降至 FY2026 Q3（期末 2026-06-27）的 71.95%，权益扩张而非负债收缩是主要驱动。**\n\n## 关键证据（本次实时取数，口径：B USD）\n\n| 期间（期末） | 总资产 | 总负债 | 股东权益 | 负债率 | 权益同比 |\n|---|---|---|---|---|---|\n| FY2022（2022-09-24） | 352.76 | 302.08 | 50.67 | **85.64%** | -19.68% |\n| FY2024（2024-09-28） | 364.98 | 308.03 | 56.95 | 84.40% | -8.36% |\n| FY2025（2025-09-27） | 359.24 | 285.51 | 73.73 | 79.48% | +29.47% |\n| FY2026 Q2（2026-03-28） | 371.08 | 264.59 | 106.49 | **71.30%** | +59.43% |\n| FY2026 Q3（2026-06-27） | 383.27 | 275.75 | 107.52 | 71.95% | **+63.33%** |\n\n三个可直接验证的观察点：\n\n1. **结构性拐点出现在 FY2026 Q1—Q2**：负债率连续两季从 79.48%（FY2025 年报口径）降至 76.75%、再降至 71.30%，是 2021 年以来 22 个季度样本中的最低值；Q3 小幅回抬 0.65 个百分点至 71.95%，属区间内波动而非趋势反转。同期总负债同比仅 +0.58%（Q2）、+3.79%（Q3），而权益同比 +59.43%、+63.33%——改善来自权益端，不是去杠杆式的债务压降。\n\n2. **资产扩张主要由权益承接**：Q3 同比资产 +15.62%、负债 +3.79%、权益 +63.33%。增量资产几乎全部由权益与内部留存覆盖，杠杆扩张的边际贡献很小。这也意味着当前负债率下行对资产端的依赖度低，稳健性优于“缩表降杠杆”。\n\n3. **权益规模回到多年高位**：Q3 权益 107.52B，较 FY2025 同期 65.83B 增长逾六成，也远高于 FY2022 低点 50.67B。以负债率衡量的财务弹性是近五年最好水平。\n\n[[AIME_CHART:case:inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html]]\n\n组件默认落在「负债比率」指标 + 季度视图：柱为资产与负债，折线为负债率，可切换资产／负债／权益（各带同比折线）以及季度／年度／累计三档周期；下方「拆解 (Q3'26)」瀑布图显示 383.27B 资产 = 275.75B 负债 + 107.52B 权益，并标注各项同比（+15.62% / +3.79% / +63.33%）。\n\n## 风险与口径限制\n\n- **本组件仅提供三个总量字段**（assets_total / total_debt / holder_equity_total）。这里的「负债」是**全部负债**，不只是有息债务，因此 71.95% 不能直接等同于有息负债率；同时**缺少流动/非流动资产与短期/长期负债拆分**，无法计算流动比率、速动比率或有息债务/EBITDA，**流动性偿债能力无法从本图直接判断**——上述结论只适用于整体财务结构与杠杆水平，不构成短期偿付能力评估。\n- 季度视图数据结构存在早期空值（1990 年代若干季度三个字段均为 null），故所有比率观察均基于 2021 年以后、字段完整的样本。\n- AAPL 财年 9 月底结束，季度期末日为财季末（如 Q3'26 = 2026-06-27），与自然季度不完全对齐，跨公司比较时需注意。\n\n## 数据时间与执行说明\n\n- 数据来源：AInvest 财报 Balance Sheet 模块，**本次运行实时取数**（6 次请求全部返回 `status: ok`：季度/年度/累计 × 趋势/瀑布），非快照复用、非示例数据。\n- 数据覆盖与新鲜度：季度趋势 134 条（FY1993 Q4—FY2026 Q3）、年度趋势 34 条（FY1992—FY2025）、累计趋势 135 条；最新可得财务期末为 **2026-06-27**，本次生成时间为 **2026-10-14**。用户提到的 2026-07-30 快照文件未作为输入（实时接口取数成功），正文按实时运行日期标注。\n- 生成与校验：使用原生 `balance_sheet.py`（主题 light、语言 zh-CN，保留组件默认样式与浅深主题运行时切换），HTML 204KB 非空；已用无头浏览器实际渲染确认图正常出图（趋势图与瀑布图两个 SVG 均有高度，图中读数 383.27B / 275.75B / 107.52B / +15.62% / +3.79% / +63.33% 与 payload 完全一致）。视觉理解 Skill 因本机未配置 `VISION_API_KEY` 未能调用，故降级为本地渲染文本与图形结构校验，未使用图像模型读数。\n- 产物：`outputs/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html`（图表）、`inspiration-real-business-balance_sheet-aapl-payload.json`（结构化数据）、`inspiration-real-business-balance_sheet-aapl-render-check.png`（渲染校验图）。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-balance_sheet-b723d64fb4d54dfa80dfab0df7de22de",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-balance_sheet-b723d64fb4d54dfa80dfab0df7de22de",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399059247402b55f7bf6c4ab42b9)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3789
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4251
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5588
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6689
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7615
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8873
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10594
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10999
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 13387
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 20399
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22994
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28821
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29925
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 30453
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 33692
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 35092
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 35504
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36737
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 39854
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 46757
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 49174
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 55143
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 63502
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65472
+      }
+    ],
+    "startedAt": 1791967121847,
+    "endedAt": 1791967197473,
+    "elapsedMs": 75626,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967121847,
+        "endedAt": 1791967197473,
+        "elapsedMs": 75626
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-balance_sheet-b723d64fb4d54dfa80dfab0df7de22de",
     "renderer": "balance_sheet.py",
-    "schema": "balance_sheet.schema.json",
-    "dataDate": "2026-07-30",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399059247402b55f7bf6c4ab42b9)",
+      "candidateCount": 45
+    }
   }
 }

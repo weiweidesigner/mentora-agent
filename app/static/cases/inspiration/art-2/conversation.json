@@ -1,22 +1,67 @@
 {
-  "question": "画一张金融分析主题插画：以光河连接城市，表达全球资本流动的概念。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "画一张金融杂志风格插画：全球资本流动化为金色光河，连接地球上透明的金融城市，深蓝与金色，优雅的全球资金网络意象，没有文字和数字。",
+  "cachedAt": "2026-10-14T16:38:23.878000+08:00",
   "answer": {
-    "question": "画一张金融分析主题插画：以光河连接城市，表达全球资本流动的概念。",
-    "interpretation": "# 全球资金流动的想象\n\n以光河连接城市，表达全球资本流动的概念。\n\n[[AIME_CHART:case:inspiration/art-2/chart.html]]\n\n## 创作说明\n\n由本地 FLUX.2 [klein] 4B 生成，属于金融主题艺术表达。画面中的形象与关系是视觉隐喻，不代表真实行情、数据或预测。",
+    "question": "画一张金融杂志风格插画：全球资本流动化为金色光河，连接地球上透明的金融城市，深蓝与金色，优雅的全球资金网络意象，没有文字和数字。",
+    "code": "",
+    "selectedSkill": {
+      "key": "flux-image",
+      "label": "flux-image",
+      "script": "flux-image",
+      "reason": "Veya 直接执行并验证了本地 flux-image Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
+    "reportUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/art-2/chart.html",
-        "url": "/static/cases/inspiration/art-2/chart.html"
+        "path": "case:inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
+        "url": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html",
+        "imageUrl": "/static/cases/inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.png",
+        "mediaType": "image",
+        "alt": "全球资金流动的想象"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/art-2/chart.html",
+    "payloadUrl": null,
+    "interpretation": "[[AIME_CHART:case:inspiration/art-2/flux-aa370401cd9d4c0bb06ce6b6a750940d.html]]",
+    "status": [
+      "FLUX.2 [klein] 4B 已生成图片"
+    ],
+    "agentRunId": "flux-173bcc40413d467783de14fab7131b81",
+    "studioSessionId": null,
+    "engineSessionId": "",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "",
     "sources": [],
+    "videos": [],
+    "actionLinks": [],
     "lang": "zh-CN"
   },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "本地图片已生成并验证",
+        "elapsedMs": 15503
+      }
+    ],
+    "startedAt": 1791967088374,
+    "endedAt": 1791967103878,
+    "elapsedMs": 15504,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967088374,
+        "endedAt": 1791967103878,
+        "elapsedMs": 15504
+      }
+    ]
+  },
   "provenance": {
-    "skill": "flux-image",
-    "model": "FLUX.2 [klein] 4B",
-    "seed": 20261015
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-art-2-84ce4b1af7bf4fd78815b2d2b62186f9",
+    "renderer": null,
+    "sample": false,
+    "visualRoute": null
   }
 }

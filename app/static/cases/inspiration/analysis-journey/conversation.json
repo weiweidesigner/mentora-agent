@@ -1,43 +1,451 @@
 {
-  "question": "用旅程图展示从研究到复盘，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "基于 AAPL 最近四份已披露财报，用旅程图展示从产品增长、利润变化到现金回报的经营变化。",
+  "cachedAt": "2026-10-14T17:05:58.965000+08:00",
   "answer": {
-    "question": "用旅程图展示从研究到复盘，使用清楚标注的金融演示数据。",
-    "interpretation": "# 从研究到复盘\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-journey/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "基于 AAPL 最近四份已披露财报，用旅程图展示从产品增长、利润变化到现金回报的经营变化。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,generic-chart,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + generic-chart + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + generic-chart + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-journey/inspiration-real-analysis-journey-aapl.html",
+    "reportUrl": "/static/cases/inspiration/analysis-journey/inspiration-real-analysis-journey-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-journey/chart.html",
-        "url": "/static/cases/inspiration/analysis-journey/chart.html"
+        "path": "case:inspiration/analysis-journey/inspiration-real-analysis-journey-aapl.html",
+        "url": "/static/cases/inspiration/analysis-journey/inspiration-real-analysis-journey-aapl.html"
+      },
+      {
+        "path": "case:inspiration/analysis-journey/inspiration-real-analysis-journey-aapl-kline.html",
+        "url": "/static/cases/inspiration/analysis-journey/inspiration-real-analysis-journey-aapl-kline.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-journey/chart.html",
+    "payloadUrl": null,
+    "interpretation": "All charts render and pass structural verification. Final artifacts are in place.\n\n## 核心结论\n\n**AAPL 最近四份财报（FY2025 Q4 → FY2026 Q3）呈现的是一条“毛利率逐季抬升、利润增速跑赢收入、现金回报几乎吞掉全部净利”的经营链条。** 季度收入从 1,024.7 亿美元升至最新季度的 1,094.2 亿美元，**毛利率连续四季从 47.2% 抬到 50.1%（+2.9 个百分点）**；最新季度净利同比 **+27.1%，明显快于收入 +16.4%**；四个季度融资净流出合计 1,220.6 亿美元，**相当于同期净利润的 94.7%**。同期股价自四财季窗口起点累计 **+33.6%**，说明经营改善在股价上被持续定价，而不是一次性反应。\n\n---\n\n## 一、经营旅程：从产品增长到股东现金回报\n\n下面这张旅程图把四份财报串成一条链路：**产品与需求 → 收入与毛利 → 利润与效率 → 现金创造 → 股东现金回报**。每个阶段的标签直接写出四个财季的实测序列，箭头两端就是本次分析窗口的起点与终点。\n\n[[AIME_CHART:case:inspiration/analysis-journey/inspiration-real-analysis-journey-aapl.html]]\n\n图中最重要的三处变化：\n\n- **毛利率是这条链路的“主线”，而不是收入。** 收入在 Q1 FY2026 冲到 1,437.6 亿美元的假日季峰值后回落到 1,094.2 亿美元，但毛利率 47.2% → 48.2% → 49.3% → 50.1% 一路抬升，说明**利润改善来自结构而非单纯的规模扩张**。结构上，最新季度 iPhone 占 49.6%、服务占 28.1%，与毛利率抬升方向一致；但收入拆分接口只提供最新一期，无法拆分各产品线的利润率贡献，因此这只能作为方向性印证，不构成因果证据。\n- **利润的拐点在最新季度。** 净利 274.7 → 421.0 → 295.8 → 297.9 亿美元，**Q3 FY2026 净利同比 +27.1%，比收入同比高出约 10.7 个百分点**，意味着这一季的增量收入更多落在了利润端。\n- **现金回报是终点，也是最容易被忽略的一环。** 融资净流出 274.8 → 396.6 → 222.8 → 326.4 亿美元，四季合计 1,220.6 亿美元，**约为同期净利 1,289.4 亿美元的 94.7%**；最新季度单季覆盖净利 1.10 倍。\n\n## 二、把四条数据序列摊开看\n\n| 财季（期末日） | 收入 | 毛利率 | 净利 | 净利率 | 经营现金流 | 现金含量 | 融资净流出 |\n|---|---|---|---|---|---|---|---|\n| Q4 FY2025 · 2025-09-27 | 1,024.7 | 47.2% | 274.7 | 26.8% | 297.3 | 1.08 倍 | 274.8 |\n| Q1 FY2026 · 2025-12-27 | 1,437.6 | 48.2% | 421.0 | 29.3% | 539.2 | 1.28 倍 | 396.6 |\n| Q2 FY2026 · 2026-03-28 | 1,111.8 | 49.3% | 295.8 | 26.6% | 287.0 | 0.97 倍 | 222.8 |\n| Q3 FY2026 · 2026-06-27 | 1,094.2 | 50.1% | 297.9 | 27.2% | 343.7 | 1.15 倍 | 326.4 |\n\n单位：亿美元；现金含量 = 经营现金流 ÷ 净利；融资净流出为融资活动现金流净额的绝对值。\n\n**现金含量的两个低点是这条链路上唯一的杂音**：Q2 FY2026 经营现金流 287.0 亿美元低于同期净利 295.8 亿美元（0.97 倍），是四季中唯一“利润没完全变成现金”的季度；四季合计口径为 1.14 倍，最新季度已回到 1.15 倍，说明这是一次季度波动而非趋势性恶化。\n\n## 三、市场对这条链路的定价\n\n同一窗口的股价路径回答了另一个问题：经营改善有没有被市场认可。\n\n[[AIME_CHART:case:inspiration/analysis-journey/inspiration-real-analysis-journey-aapl-kline.html]]\n\nAAPL 收盘价在四个财季期末分别为 255.46 → 273.40 → 248.80 → 283.78 美元（Q4 FY25 期末至 Q3 FY26 期末 **+11.1%**），窗口内低点 243.42 美元出现在 2026-01-20，高点 317.40 美元出现在 2026-06-08。**最关键的是窗口之后：最新交易日 2026-10-13 收 341.27 美元，自四财季窗口起点累计 +33.6%，其中自最后一份财报以来又上涨 20.3%**——说明这份“毛利率 50.1%、净利同比 +27.1%”的财报并没有成为利好出尽的终点，市场定价仍在延续经营改善的方向。\n\n## 四、风险与需要继续验证的点\n\n- **毛利率能否守在 50% 上方是首要验证点。** 四季连升 2.9 个百分点是本次最强的证据，但一旦 Q4 FY2026 毛利率回落，整条“结构改善”逻辑会被削弱。\n- **现金转化存在季度波动。** Q2 FY2026 的 0.97 倍说明 1.1 倍以上的现金含量并非每季都能兑现。\n- **净利率仍未回到峰值。** 最新季度净利率 27.2%，低于 Q1 FY2026 的 29.3%；收入在假日季峰值后的回落使利润端缺少规模助推。\n- **“现金回报”是代理口径。** 本文以融资活动现金流净额的绝对值衡量股东现金回报，其中同时包含回购、分红及其他融资项，**并非精确的回购与分红拆分**；若公司调整回购节奏，该指标会直接变化。\n- **产品维度证据偏薄。** 收入拆分数据只有最新一期，无法验证各产品线四个季度的增长贡献，产品增长结论以总收入同比为主。\n\n## 数据口径说明\n\n- 数据为本次实时拉取（2026-10-14），来源为 AInvest 财报模块（利润表、现金流、收入拆分）与 AInvest 日线行情，**未使用任何缓存的示例或演示数值**。\n- 四个财季为 Q4 FY2025（期末 2025-09-27）、Q1 FY2026（2025-12-27）、Q2 FY2026（2026-03-28）、Q3 FY2026（2026-06-27），即 AAPL 最近四个已披露财季。缓存案例目录中可用的 revenue_sources 与 cash_flow 数据分别属于 GOOGL 与 NVDA，与 AAPL 口径不符，本次未采用，所有财务与行情数据均为即时获取。\n- 派生指标（毛利率、营业利润率、净利率、现金含量、股东回报代理值、窗口涨跌幅）由可审计的独立计算步骤产出，并落盘保存。\n- 已知限制：**多模态视觉复核未执行**（当前环境未配置图像理解所需的密钥）。作为替代，两张图均通过无头浏览器实际渲染校验：旅程图 SVG 含全部 5 个阶段、10 条标签与 4 个图例角色，文字节点全部落在画布边界内、无溢出截断，缩放比例 0.60（与项目参考旅程图 0.66 相当）；K 线画布 1440×716 正常绘制，页面无运行时报错。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-journey-33e338ed241d4a9b903c87da692cf826",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-journey-33e338ed241d4a9b903c87da692cf826",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "journey.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "journey.py",
+      "supporting": null,
+      "selectedScripts": [
         "journey.py"
       ],
-      "primary_script": "journey.py",
-      "supporting_script": null,
-      "primary_confidence": 0.99,
-      "supporting_confidence": 0.88,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "events-and-causality",
-      "semantic_lens_confidence": 0.51,
-      "primary_purpose": "{\"chartType\": \"journey\", \"script\": \"journey.py\", \"purpose\": \"Render staged user, customer, product, or business journeys.\", \"rawDataContract\": {\"shape\": \"array<object>|object|string\", \"notes\": \"The model maps source information into ordered stages with actions, touchpoints, pain points, or outcomes.\"}, \"semanticChannels\": [{\"channel\": \"stage\", \"payloadField\": \"stages[].title\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"ordered journey phase\"}, {\"channel\": \"step.detail\", \"payloadField\": \"stages[].items[]\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"actions, thoughts, touchpoints, pain points, outcomes\"}], \"payloadShape\": {\"title\": \"string\", \"stages\": [{\"title\": \"string\", \"items\": [\"string\"]}]}, \"modelInstructions\": [\"Use 4-7 stages unless the user specifies otherwise.\", \"Keep each item short and action-oriented.\"]}",
-      "supporting_purpose": "",
-      "visual_encoding": "flow-and-relationship",
-      "visual_encoding_confidence": 0.97,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.98,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.54
-    },
-    "jevError": null
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.64,
+      "semanticLens": "relationship-and-flow",
+      "semanticLensConfidence": 0.38,
+      "primaryPurpose": "Render staged user, customer, product, or business journeys. schema semantics=ordered journey phase; actions, thoughts, touchpoints, pain points, outcomes",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 0.92,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.38,
+      "markStrategy": "turning-points",
+      "markStrategyConfidence": 0.25,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6526
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7009
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7842
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7842
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8243
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8255
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13873
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14503
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16026
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16931
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17603
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18471
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21073
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24432
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28400
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 30412
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31126
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 31594
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 32401
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 36935
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 42877
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 47355
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 49364
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 55699
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57462
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 58188
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 59556
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 60006
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 62770
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 70199
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 71885
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 92673
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 98111
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 109601
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 156230
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 167630
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 168238
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 204497
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 204503
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 205638
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 206076
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 208946
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 210147
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 219405
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 225439
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 226568
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 256351
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 258690
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 261512
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 265201
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 268291
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 275368
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 280394
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 282062
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 284479
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 286796
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 287257
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 292192
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 292915
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 298022
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 311286
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 323716
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 333130
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 342907
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 344168
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 351691
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 368837
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 375591
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 376827
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 383209
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 409754
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 462852
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 503937
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 507135
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 518270
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 541171
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 556660
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 569242
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 572280
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 574377
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 580009
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 586833
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 590566
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 780
+      }
+    ],
+    "startedAt": 1791968139524,
+    "endedAt": 1791968758965,
+    "elapsedMs": 620221,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968139524,
+        "endedAt": 1791968758965,
+        "elapsedMs": 619441
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791968840483,
+        "endedAt": 1791968841263,
+        "elapsedMs": 780
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-journey-33e338ed241d4a9b903c87da692cf826",
+    "renderer": "journey.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "journey.py",
+      "supporting": null,
+      "selectedScripts": [
+        "journey.py"
+      ],
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.64,
+      "semanticLens": "relationship-and-flow",
+      "semanticLensConfidence": 0.38,
+      "primaryPurpose": "Render staged user, customer, product, or business journeys. schema semantics=ordered journey phase; actions, thoughts, touchpoints, pain points, outcomes",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 0.92,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.38,
+      "markStrategy": "turning-points",
+      "markStrategyConfidence": 0.25,
+      "candidateCount": 45
+    }
   }
 }

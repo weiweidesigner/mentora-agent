@@ -1,61 +1,303 @@
 {
-  "question": "找关于美股市场收盘复盘的金融分析视频，展示来源、发布日期和观看链接。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "搜索并展示关于美股市场复盘与宏观投资观点的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果。",
+  "cachedAt": "2026-10-14T16:42:30.825000+08:00",
   "answer": {
-    "question": "找关于美股市场收盘复盘的金融分析视频，展示来源、发布日期和观看链接。",
-    "interpretation": "# 美股市场收盘复盘\n\n这是视频搜索能力曾检索到的金融主题视频，点击封面或链接可查看原内容。\n\n[[AIME_CHART:case:inspiration/video-market/chart.html]]\n\n## 视频口径\n\n标题：Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26\n\n发布时间：2026-08-11。本次从既有视频搜索缓存中筛选，未重新验证原视频可播放性。视频为观点材料，标题不能单独作为财报或行情依据。",
-    "reportArtifacts": [
+    "question": "搜索并展示关于美股市场复盘与宏观投资观点的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果。",
+    "code": "",
+    "selectedSkill": {
+      "key": "video-search,streamviz",
+      "label": "video-search + streamviz",
+      "script": "video-search + streamviz",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "",
+    "reportUrl": "",
+    "reportArtifacts": [],
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n美股最新的「复盘 + 宏观观点」视频供给集中在 **2026-10-12 至 2026-10-14** 这 3 个交易日，共取回 12 条有效视频，全部来自 AInvest Videos 内容流的 Featured YouTube 来源。从标题与时长结构看，当前内容明显分成两层：\n\n1. **短时盘面复盘**（1–4 分钟）：`Market Open • 10/13`、`Market Midday • 10/13` 这类带交易日戳的快评，是唯一具备「当日复盘」属性和固定时间锚的内容，主题是银行财报混合、指数涨跌互现、Tudor Jones \"像 1999 年\" 的表述。\n2. **宏观与配置观点访谈**（6–48 分钟）：容量大、观点密度高，主线高度收敛在三个议题上——**AI 交易的市场集中度与\"是否见顶\"、国债收益率/债券市场承压、2027 年市场环境判断**。最长的 48 分 47 秒是 ASML 上调展望的访谈，最短的 2 分 02 秒是同一事件的快讯版，说明同一催化事件会出现\"长访谈 + 短快讯\"成对发布。\n\n这意味着：若要跟踪叙事演变，**盘前/盘中的短快评负责\"当天发生了什么\"，机构访谈负责\"为什么会这样\"**，两者时间戳互补；但访谈类内容普遍滞后于事件 1–2 天，不能当作实时信号。\n\n## 关键证据\n\n| 维度 | 实测值 |\n|---|---|\n| 结果数 | 12 条（要求 ≥3） |\n| 发布时间范围 | 2026-10-12 19:41 → 2026-10-14 04:15 ET |\n| 时长范围 | 2:02 – 48:47 |\n| 来源 | Featured YouTube Videos（经 AInvest Videos 分类流，stream_id=416） |\n| 字段完整度 | 标题/封面/链接/发布日期/时长 12/12 无缺失 |\n\n三条代表性的原生卡片（完整 12 张在页面内）：\n\n- **Paul Tudor Jones: 2027 is going to be really challenging for the stock market** — 2026-10-13 09:45 ET，8:11，宏观人物访谈。\n- **Market Midday: Stocks Lower, Tudor Jones Sees Midterm Pop, Bank Results Mixed • 10/13/26** — 2026-10-13 13:48 ET，3:01，唯一带明确\"午盘\"交易时点的复盘。\n- **The AI Trade Is BREAKING The Bond Market** — 2026-10-13 10:57 ET，11:00，把 AI 交易与债券市场压力直接挂钩的核心叙事。\n\n## 相关视频\n\n\n## 风险、口径与限制\n\n- **数据时间**：抓取于 2026-10-14 16:42 ET（本轮会话时点），时区统一为 America/New_York，页面内所有时间均为 ET，非用户本地时间。\n- **口径**：时长取自 AInvest 内容流字段 `video_time_seconds`，可能与平台当前显示值存在秒级差异；`duration_seconds`（音频时长）在视频类候选中为 0，未使用。\n- **未做的核验**：视频内容未逐条转录或观看核验，标题只代表发布方观点，不能作为基本面或价格证据，也不构成本机构对任何证券的判断。封面与链接均来自来源方，若原视频下架则卡片链接可能失效。\n- **覆盖范围限制**：video-search Skill 仅覆盖美股与美国上市证券，结果全部来自 AInvest 的 Videos 分类流（Featured YouTube），未包含 Shorts 流；如需短视频情绪样本，需另行按 `--category shorts` 单独取数，本次未执行。\n- **降级说明**：无降级。12 条结果字段完整，无空图或示例数据替代；其中 1 张封面首次下载因 TLS 中断失败，已重试成功后内嵌，非缺失。\n\n产物文件（均在 `outputs/generated/`）：`inspiration-real-video-market-streamviz.html`（展示页，封面已内嵌，可离线查看）、`inspiration-real-video-market-cards.json`（含格式化日期与时长）、`inspiration-real-video-market-raw.json`（video-search 原始输出）。\n\n",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-video-market-aa6d8fb6e050493ebbda81be34bf6c9a",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-video-market-aa6d8fb6e050493ebbda81be34bf6c9a",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [],
+    "videos": [
       {
-        "path": "case:inspiration/video-market/chart.html",
-        "url": "/static/cases/inspiration/video-market/chart.html"
+        "title": "Stock Market in \"Collapsing\" AI Trade? Gareth Soloway on Memory Rotation, \"Topping\" Yields",
+        "summary": "",
+        "publishedAt": "2026-10-13T16:21:16-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-stock-market-collapsing-ai-trade-gareth-soloway-memory-rotation-topping-yields-2610/",
+        "videoUrl": "https://www.youtube.com/embed/Cp1oXlxGlcE",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/Cp1oXlxGlcE.jpg",
+        "durationSeconds": 496,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Legendary investor Paul Tudor Jones: 2027 is going to be really challenging for the stock market",
+        "summary": "",
+        "publishedAt": "2026-10-13T09:45:14-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-legendary-investor-paul-tudor-jones-2027-challenging-stock-market-2610/",
+        "videoUrl": "https://www.youtube.com/embed/__msRgEFFXo",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/__msRgEFFXo.jpg",
+        "durationSeconds": 491,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Asia The Pain Point for AI Jitters: Market Analysis",
+        "summary": "",
+        "publishedAt": "2026-10-14T04:15:38-04:00",
+        "publishedDate": "2026-10-14",
+        "url": "https://www.ainvest.com/news/video-asia-pain-point-ai-jitters-market-analysis-2610/",
+        "videoUrl": "https://www.youtube.com/embed/9mmojiEJLHA",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/9mmojiEJLHA.jpg",
+        "durationSeconds": 186,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "ASML Boosts Outlook as Demand Outpaces Supply",
+        "summary": "",
+        "publishedAt": "2026-10-14T03:19:22-04:00",
+        "publishedDate": "2026-10-14",
+        "url": "https://www.ainvest.com/news/video-asml-boosts-outlook-demand-outpaces-supply-2610/",
+        "videoUrl": "https://www.youtube.com/embed/IAcTULoJosQ",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/IAcTULoJosQ.jpg",
+        "durationSeconds": 2927,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "ASML Raises Full-Year Sales Outlook",
+        "summary": "",
+        "publishedAt": "2026-10-14T02:15:34-04:00",
+        "publishedDate": "2026-10-14",
+        "url": "https://www.ainvest.com/news/video-asml-raises-full-year-sales-outlook-2610/",
+        "videoUrl": "https://www.youtube.com/embed/Iau0A24dans",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/Iau0A24dans.jpg",
+        "durationSeconds": 122,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Market concentration concerns: The Investment Committee's strategy",
+        "summary": "",
+        "publishedAt": "2026-10-13T15:49:01-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-market-concentration-concerns-investment-committee-strategy-2610/",
+        "videoUrl": "https://www.youtube.com/embed/YkYSP9-qm5o",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/YkYSP9-qm5o.jpg",
+        "durationSeconds": 716,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Market Midday: Stocks Lower, Tudor Jones Sees Midterm Pop, Bank Results Mixed • 10/13/26",
+        "summary": "",
+        "publishedAt": "2026-10-13T13:48:01-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-market-midday-stocks-tudor-jones-sees-midterm-pop-bank-results-mixed-10-13-26-2610/",
+        "videoUrl": "https://www.youtube.com/embed/gm7NMqhNruE",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/gm7NMqhNruE.jpg",
+        "durationSeconds": 181,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "UNH Earnings Beat & Raise Not Enough for Wall Street: Are Investors Underpricing Stock?",
+        "summary": "",
+        "publishedAt": "2026-10-13T12:19:30-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-unh-earnings-beat-raise-wall-street-investors-underpricing-stock-2610/",
+        "videoUrl": "https://www.youtube.com/embed/54KBW8KZwPM",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/54KBW8KZwPM.jpg",
+        "durationSeconds": 394,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "The AI Trade Is BREAKING The Bond Market",
+        "summary": "",
+        "publishedAt": "2026-10-13T10:57:28-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-ai-trade-breaking-bond-market-2610/",
+        "videoUrl": "https://www.youtube.com/embed/XP3PzPZ1Kto",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/XP3PzPZ1Kto.jpg",
+        "durationSeconds": 660,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Market Open: Stocks Mixed, Bank Earnings Mixed, Paul Tudor Jones: “It’s Like 1999” • 10/13/26",
+        "summary": "",
+        "publishedAt": "2026-10-13T10:44:53-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-market-open-stocks-mixed-bank-earnings-mixed-paul-tudor-jones-1999-10-13-26-2610/",
+        "videoUrl": "https://www.youtube.com/embed/9M8csMxt7Uo",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/9M8csMxt7Uo.jpg",
+        "durationSeconds": 229,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "South Korean Tech Weakness Hits U.S., Cooling Crude & Yields Add Macro Muscle",
+        "summary": "",
+        "publishedAt": "2026-10-13T10:17:54-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-south-korean-tech-weakness-hits-cooling-crude-yields-add-macro-muscle-2610/",
+        "videoUrl": "https://www.youtube.com/embed/XC5hwjuZib4",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/XC5hwjuZib4.jpg",
+        "durationSeconds": 413,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Citi's Scott Chronert on getting the S&P 500 to 8,100: We need both parts of the market performing",
+        "summary": "",
+        "publishedAt": "2026-10-12T19:41:40-04:00",
+        "publishedDate": "2026-10-12",
+        "url": "https://www.ainvest.com/news/video-citi-scott-chronert-500-8-100-parts-market-performing-2610/",
+        "videoUrl": "https://www.youtube.com/embed/pP2bdnrtNCw",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/pP2bdnrtNCw.jpg",
+        "durationSeconds": 279,
+        "siteName": "AInvest Videos"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/video-market/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991e97e7f0d92d639a997025d5b)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 4912
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5300
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6915
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 6915
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8230
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8672
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11036
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11503
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11912
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17565
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 46761
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 48470
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 50180
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 52566
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 53561
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 55531
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60078
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 61786
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 65227
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 90677
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 94694
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 108055
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 112254
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 113304
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 114351
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 117078
+      }
+    ],
+    "startedAt": 1791967223009,
+    "endedAt": 1791967350825,
+    "elapsedMs": 127816,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967223009,
+        "endedAt": 1791967350825,
+        "elapsedMs": 127816
+      }
+    ]
   },
   "provenance": {
-    "skill": "video-search",
-    "article": {
-      "title": "Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26",
-      "url": "https://www.ainvest.com/news/video-market-close-stocks-iran-oman-talks-home-sales-drop-8-11-26-2608/",
-      "published_at": "2026-08-11T17:27:28-04:00",
-      "published_date": "2026-08-11",
-      "source": "category:videos",
-      "author": "Featured Youtube Videos",
-      "summary": "",
-      "content_text": "Market Close: Stocks Lower, Iran-Oman Talks, Home Sales Drop • 8/11/26",
-      "image": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/KcbH71E_F3k.jpg",
-      "audio_url": "",
-      "duration_seconds": 0,
-      "video_url": "https://www.youtube.com/embed/KcbH71E_F3k",
-      "video_time_seconds": 228,
-      "matched_topics": [
-        "MA",
-        "MARKET"
-      ],
-      "semantic_terms": [
-        "MA",
-        "HEIGHT",
-        "LIMIT",
-        "APIKEY",
-        "RANGE",
-        "DATA",
-        "CODE",
-        "MARKET",
-        "OUTPUT",
-        "CN",
-        "分析一下BABA近期的技术表现",
-        "执行错误反馈",
-        "kline.py",
-        "up_red_down",
-        "red_up_green_down",
-        "--up-color",
-        "UP_COLOR",
-        "--down-color"
-      ],
-      "relevance_score": 9.0
-    },
-    "retrieval": "historical-cache"
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-video-market-aa6d8fb6e050493ebbda81be34bf6c9a",
+    "renderer": "ainvest_video_search.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991e97e7f0d92d639a997025d5b)",
+      "candidateCount": 45
+    }
   }
 }

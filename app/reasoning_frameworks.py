@@ -244,13 +244,18 @@ class LocalAgentFrameworks:
             except (OSError, json.JSONDecodeError):
                 schema = None
             if isinstance(schema, dict):
-                compact_schema = {
-                    key: schema.get(key)
-                    for key in ("semanticChannels", "visualChannelMappings", "modelInstructions", "payloadShape", "builtInDataSources")
-                    if schema.get(key)
-                }
-                semantic_contract = json.dumps(compact_schema, ensure_ascii=False, separators=(",", ":"))[:900]
-            description = str(item.get("description") or "")
+                channels = schema.get("semanticChannels") or schema.get("visualChannelMappings") or []
+                if isinstance(channels, list):
+                    semantic_contract = "; ".join(
+                        str(channel.get("semantics") or channel.get("semantic") or channel.get("channel") or "")
+                        for channel in channels[:6] if isinstance(channel, dict)
+                    )[:220]
+                elif isinstance(channels, dict):
+                    semantic_contract = "; ".join(f"{key}:{value}" for key, value in channels.items())[:220]
+            # JEV receives this catalog in both criteria and state. Payload/CLI
+            # contracts belong in the subsequent skill read, not twice in routing.
+            purpose = schema.get("purpose") if isinstance(schema, dict) else ""
+            description = str(purpose or item.get("description") or "")[:140]
             if semantic_contract:
                 description = f"{description} schema semantics={semantic_contract}"
             candidates.append({

@@ -1,43 +1,669 @@
 {
-  "question": "用思维导图展示公司研究证据框架，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "基于 AAPL 最近一份已披露财报，梳理经营驱动、现金质量和风险的思维导图。",
+  "cachedAt": "2026-10-14T17:06:27.005000+08:00",
   "answer": {
-    "question": "用思维导图展示公司研究证据框架，使用清楚标注的金融演示数据。",
-    "interpretation": "# 公司研究证据框架\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-mind_map/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "基于 AAPL 最近一份已披露财报，梳理经营驱动、现金质量和风险的思维导图。",
+    "code": "",
+    "selectedSkill": {
+      "key": "generic-chart,business-chart-recall,code-interpreter,external-search,internal-search,yahoo-data,vision-chart-analyst,advisor-text-generation",
+      "label": "generic-chart + business-chart-recall + code-interpreter + external-search + internal-search + yahoo-data + vision-chart-analyst + advisor-text-generation",
+      "script": "generic-chart + business-chart-recall + code-interpreter + external-search + internal-search + yahoo-data + vision-chart-analyst + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
+    "reportUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-mind_map/chart.html",
-        "url": "/static/cases/inspiration/analysis-mind_map/chart.html"
+        "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
+        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html"
+      },
+      {
+        "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html",
+        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html"
+      },
+      {
+        "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-cash-flow-aapl.html",
+        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-cash-flow-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-mind_map/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "mind_map.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "payloadUrl": null,
+    "interpretation": "已完成。以下是基于 AAPL 最近一份已披露财报的真实数据分析。\n\n## 核心结论\n\n**AAPL 最近一份已披露财报是 FY2026 第三财季（截至 2026-06-27，2026-07-30 披露）：报表端\"收入提速 + 毛利率首次站上 50%\"双双超预期，现金转化 1.15 倍仍属健康；但增长质量被两处折扣削弱，现金端已从\"厚\"转向\"紧\"，市场用单日 -7.35% 为\"强报表 + 弱指引\"定价。**\n\n三个判断的量化支撑：营收 1,094.17 亿美元、同比 **+16.36%**，净利润 297.89 亿、同比 **+27.12%**；经营现金流 343.69 亿美元，是净利润的 **1.15 倍**，未出现利润\"纸面化\"；但融资净流出 326.40 亿美元，**约等于经营现金流的 95%**，净现金变动由去年同期的 +81.07 亿转为 **-60.28 亿美元**。真正触发抛售的不是当季数字，而是 9 月季度指引——营收 +9%~11%、毛利率 47%~48%，后者较本季 50.06% 明显回落。\n\n## 分析框架\n\n经营驱动、现金质量与风险三条主线及其下钻节点如下。需要注意其中最关键的一条限定：本季 50.06% 的毛利率**含约 2 个百分点的关税退款**，剔除后约 48.1%，这直接决定了\"利润率扩张\"能在多大程度上延续。\n\n[[AIME_CHART:case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html]]\n\n## 经营驱动：成本剪刀差是毛利率扩张的第一来源\n\n最值得关注的不是 +16.4% 的营收增速本身，而是**收入与营业成本的增速差**：营业成本仅 +8.60%，不到收入增速的一半，直接把毛利率从去年同期的 46.49% 推到 **50.06%（+3.57 个百分点）**。这带来两个结果：毛利 +25.28%、营业利润 +26.57%、净利润 +27.12%，**利润增速全面快于收入增速**，经营杠杆确实在释放。\n\n结构上，iPhone 542.52 亿美元（占 49.58%，同比 +21.7%）与服务 307.39 亿美元（占 28.09%）构成双支柱；Mac 103.52 亿（+28.7%）超预期，iPad 61.91 亿不及预期。地区上美洲 457.81 亿（41.84%）、欧洲 293.95 亿（26.87%）、大中华 188.16 亿（17.20%，同比 +22.4% 但低于买方约 196.7 亿的预期）。\n\n[[AIME_CHART:case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html]]\n\n图中最重要的变化在右端：**毛利率在 Q3'26 突破 50%，为本窗口内最高**，且是连续第四个季度环比抬升（48.16% → 49.27% → 50.06%）。但结合关税退款口径，这条上行斜率的\"真实斜率\"应打约 2 个百分点的折扣。\n\n## 现金质量：转化率没问题，缓冲变薄才是问题\n\n现金质量要分两层看。**第一层（利润含金量）依然过关**：经营现金流 343.69 亿美元，现金转化 1.15 倍（去年同期 1.19 倍），近四季合计 1,467.24 亿，为净利润的 1.14 倍——说明利润确实收到了现金。\n\n**第二层（现金分配）已经偏紧**：投资现金流 -77.57 亿美元，而去年同期是 **+50.73 亿**，由净流入转为净流出；融资净流出 326.40 亿美元（回购与分红），对经营现金流的覆盖度从 Q1'26 的 0.74 升至 **0.95**。结果是单季净现金变动 -60.28 亿美元。近四季净现金仍为正（+32.75 亿），说明尚未真正失血，但\"几乎全部经营现金流被股东回报消耗\"意味着**用于把握新机会或缓冲成本冲击的余量在收窄**。\n\n[[AIME_CHART:case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-cash-flow-aapl.html]]\n\n## 风险与分歧：市场定价的是下一季，而不是这一季\n\n最关键的分歧点在 2026-07-31：财报披露次日单日 **-7.35%**，成交 1.325 亿股，约为 60 日均量（约 4,403 万股）的 **3 倍**，盘中最低 300.00 美元；财报后一周股价从 340.08（07-28）回落至 311.00（08-05），约 -8.6%。盘后最初报道跌幅约 5.5%~6%，收盘口径为 -7.35%。\n\n抛售逻辑可归为四点：**指引落差**（9 月季度收入 +9%~11%，低于市场 +12%；iPhone 指引 mid-teens，低于华尔街 17.6%）；**毛利率质量与成本冲击**（本季 50.06% 含约 2pp 关税退款；管理层将下季回落主要归因于内存成本，并称先进制程供给是瓶颈）；**当季强劲的可持续性存疑**（EPS 含约 0.11 美元关税退款收益，且大中华区仍不及买方预期）；**外部不确定性**（汇率对下季增长约 -2.5 个百分点拖累、内存供应链的政策压力、以及管理层交接）。\n\n图中标注了三个由数据与已核实事件共同确定的位置：**财报前高点 344.57**（07-29）、**财报后低点 300.00**（07-31 盘中）、以及 **07-31 的 -7.35% 放量缺口**。截至 10-13 收盘 341.27 美元，价格已收复财报后跌幅并重新逼近财报前高点，说明市场对\"当季强、指引弱\"的定价已被后续信息部分修正——但这属于报告期后的价格信息，不能反过来证明基本面已改善。\n\n## 其余风险清单\n\n- **费用刚性**：三费（other_cost）249.81 亿美元，同比 +23.16%，快于收入 +16.36%，费用率升至 22.83%。\n- **集中度**：iPhone 占收入 49.58%；大中华区占 17.20%，对政策与供应链政治压力敏感。\n- **财务结构**：总负债 2,757.46 亿美元，占总资产 71.95%。\n- **口径提示**：资产负债表数据中股东权益同比 +63.3%，与公司持续回购的表观逻辑不一致，本文因此**只使用负债/资产比率**，未据此推导偿付能力结论。\n\n## 数据时间、口径与限制\n\n- **财报口径**：FY2026 Q3，报告期截至 2026-06-27，2026-07-30（美东）披露；这是截至 2026-10-14 的**最近一份已披露财报**，FY26 Q4（截至 2026-09-27）尚未披露。\n- **财务数据来源与单位**：结构化财务数据取自 AInvest 财报模块（利润表、现金流、资产负债表、收入/地区拆分），原始单位十亿美元，正文换算为亿美元；毛利率、净利率、现金转化率、股东回报覆盖度等派生指标由本地受限计算环境从原始字段计算得出。\n- **行情口径**：AInvest 日线，2026-03-11 至 2026-10-13，共 150 个交易日，最新收盘 341.27 美元。\n- **降级与不可用说明**：Yahoo 基本面接口的季度与年度营收字段均返回\"不可用\"，**未能用于交叉验证**，本次财务口径为单一来源；AInvest 端内新闻检索返回的是 10 月最新文章，未覆盖 7 月财报窗口，因此关于下季指引、关税退款、内存成本与管理层表态的细节来自外部检索到的 Apple 官方新闻稿与主流财经报道，属于**外部证据而非端内结构化数据**。上述两类限制会同时影响\"指引落差\"与\"毛利率质量\"两条结论的稳健性。\n- **前瞻性声明**：本文不构成买卖建议，所有结论强度以已披露数据与已核实事件为限。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-mind_map-f25af80bccb343ac84fc08c46609a6a6",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-mind_map-f25af80bccb343ac84fc08c46609a6a6",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [
+      {
+        "siteName": "investor.apple.com",
+        "url": "https://investor.apple.com/investor-relations/default.aspx",
+        "title": "Apple Investor Relations — News and Results / FY 26 Third Quarter Results",
+        "summary": "\"answer\": \"Apple 已在 2026-07-30（周四） 发布 fiscal Q3 2026 业绩，并于当天 2:00 p.m. PT 举行财报电话会；财报对应报告期为 quarter ended June 27, 2026。电话会文字稿提到相关 Form 8-K 于当天提交、Form 10-Q 于次日提交；Apple IR 页面也列有 “FY 26 Third Quarter Results … quarter ended",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "finance.yahoo.com",
+        "url": "https://finance.yahoo.com/quote/AAPL/earnings/AAPL-Q3-2026-earnings_call-658553.html/",
+        "title": "Yahoo Finance — AAPL Q3 FY2026 earnings call transcript, 2026-07-30",
+        "summary": "\"answer\": \"Apple 已在 2026-07-30（周四） 发布 fiscal Q3 2026 业绩，并于当天 2:00 p.m. PT 举行财报电话会；财报对应报告期为 quarter ended June 27, 2026。电话会文字稿提到相关 Form 8-K 于当天提交、Form 10-Q 于次日提交；Apple IR 页面也列有 “FY 26 Third Quarter Results … quarter ended",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "stocktitan.net",
+        "url": "https://www.stocktitan.net/news/AAPL/apple-reports-third-quarter-2dx2t0k3wwbr.html",
+        "title": "StockTitan — “Apple reports third quarter results”, 2026-07-30",
+        "summary": "\"answer\": \"Apple 已在 2026-07-30（周四） 发布 fiscal Q3 2026 业绩，并于当天 2:00 p.m. PT 举行财报电话会；财报对应报告期为 quarter ended June 27, 2026。电话会文字稿提到相关 Form 8-K 于当天提交、Form 10-Q 于次日提交；Apple IR 页面也列有 “FY 26 Third Quarter Results … quarter ended",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple 官方新闻稿",
+        "url": "https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/",
+        "title": "Apple 官方新闻稿",
+        "summary": "AAPL 在 2026-07-31 跌约 7%，核心不是当季爆雷，而是“财报好但指引差”。2026 财年 Q3（截至 2026-06-27） Apple 于 7/30 盘后公布：收入 US$109.4B、同比 +16%；摊薄 EPS US$2.02、同比 +29%，但含 US$0.11 关税退款收益；毛利率 50.1% 也含约 2 个百分点关税退款利好，剔除后约 48.1%。净利润据 CNBC 为 US$29.79B。（Apple 官方",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "CNBC",
+        "url": "https://www.cnbc.com/2026/07/30/apple-earnings-live-updates.html",
+        "title": "CNBC",
+        "summary": "AAPL 在 2026-07-31 跌约 7%，核心不是当季爆雷，而是“财报好但指引差”。2026 财年 Q3（截至 2026-06-27） Apple 于 7/30 盘后公布：收入 US$109.4B、同比 +16%；摊薄 EPS US$2.02、同比 +29%，但含 US$0.11 关税退款收益；毛利率 50.1% 也含约 2 个百分点关税退款利好，剔除后约 48.1%。净利润据 CNBC 为 US$29.79B。（Apple 官方",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Reuters",
+        "url": "https://www.reuters.com/business/retail-consumer/apple-revenue-profits-beat-expectations-iphone-mac-sales-2026-07-30/",
+        "title": "Reuters",
+        "summary": "1. 9 月季度指引低于预期：CFO Kevan Parekh 预计收入同比 +9%–11%，低于 LSEG 预期的 +12%；iPhone 收入指引 mid-teens，低于华尔街 17.6%；毛利率指引 47%–48%，意味着利润率明显回落。（Reuters）",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "INDmoney 复盘",
+        "url": "https://www.indmoney.com/blog/us-stocks/apple-q3-earnings-results-why-aapl-stock-drop-analysis",
+        "title": "INDmoney 复盘",
+        "summary": "4. 宏观/政策与领导层过渡放大不确定性：报道提到 FX 对 Q4 增长约 2.5 个百分点拖累、围绕中国内存供应商 CXMT/YMTC 的政治压力，以及 Tim Cook 最后一次财报电话会、John Ternus 接任带来的过渡关注。（INDmoney 复盘；Yahoo 电话会文字稿）",
+        "iconUrl": ""
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "mind_map.py",
+      "supporting": null,
+      "selectedScripts": [
         "mind_map.py"
       ],
-      "primary_script": "mind_map.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.98,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "evidence-led",
-      "semantic_lens_confidence": 0.95,
-      "primary_purpose": "{\"chartType\": \"mind-map\", \"script\": \"mind_map.py\", \"purpose\": \"Render a structured concept, summary, or framework as a mind map.\", \"rawDataContract\": {\"shape\": \"object|string|array<object>\", \"notes\": \"The model converts source notes or rows into concise Markdown hierarchy.\"}, \"semanticChannels\": [{\"channel\": \"root\", \"payloadField\": \"data.content h1\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"central topic\"}, {\"channel\": \"branch\", \"payloadField\": \"data.content h2\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"major branches\"}, {\"channel\": \"detail\", \"payloadField\": \"data.content list items\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"supporting facts or subpoints\"}], \"payloadShape\": {\"title\": \"string\", \"data\": {\"content\": \"markdown string\"}, \"theme\": \"light|dark\"}, \"modelInstructions\": [\"Generate concise Markdown with one h1 root and 4-6 h2 branches when the evidence supports it.\", \"The h1 root title must be specific to the user's topic and evidence; do not use generic titles such as 思维导图, 今日市场热点, Mind Map, Summary, or Market Hotspots.\", \"Do not create branches or leaves for 数据来源, 来源, 日期, 参考, source, date, references, or methodolo",
-      "supporting_purpose": "",
-      "visual_encoding": "flow-and-relationship",
-      "visual_encoding_confidence": 1.0,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.93,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.99
-    },
-    "jevError": null
+      "primaryConfidence": 0.99,
+      "supportingConfidence": 0.49,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.85,
+      "primaryPurpose": "Render a structured concept, summary, or framework as a mind map. schema semantics=central topic; major branches; supporting facts or subpoints",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 0.97,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.29,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.62,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10683
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11871
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 11872
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11873
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13310
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14077
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14907
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16479
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 17967
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 18801
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 19330
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21363
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 21776
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22175
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 25308
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 29180
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 29588
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31436
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 32827
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 33605
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 36610
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 43146
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 43811
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 44323
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 44741
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 46168
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 51838
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 53964
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 70683
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 73134
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79227
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79639
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 80051
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 91593
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 103353
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 106618
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 108317
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 111206
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 112784
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 117751
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 119157
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 122982
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 124856
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 125349
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 127030
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 131889
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 134050
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 141812
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 143244
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 143866
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 145323
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 145931
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 146685
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 147654
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 148086
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 149145
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 153873
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 154674
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 209392
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 391865
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 395141
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 396996
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 399890
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 451650
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 454630
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 459850
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 461177
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 461680
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 509036
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 510848
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 515657
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 516033
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 521153
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 521954
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 524851
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 526851
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 528661
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 539162
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 541134
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 544096
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 545861
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 548068
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 549808
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 552590
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 555767
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 558201
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 559597
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 562458
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 566581
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 576770
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 577171
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 587832
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 589871
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 590893
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 596852
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 597263
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 606382
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 609101
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 614548
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 620667
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 623175
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 625914
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 628716
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 635289
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 642584
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 645672
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 647804
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 662029
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 664030
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 678049
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 679901
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 680776
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 682606
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 684483
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 727859
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 730113
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 786952
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 789134
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 789529
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 790782
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 793567
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 801112
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 804780
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 813700
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 776
+      }
+    ],
+    "startedAt": 1791967960653,
+    "endedAt": 1791968787005,
+    "elapsedMs": 827128,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967960653,
+        "endedAt": 1791968787005,
+        "elapsedMs": 826352
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791968840480,
+        "endedAt": 1791968841256,
+        "elapsedMs": 776
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-mind_map-f25af80bccb343ac84fc08c46609a6a6",
+    "renderer": "mind_map.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "mind_map.py",
+      "supporting": null,
+      "selectedScripts": [
+        "mind_map.py"
+      ],
+      "primaryConfidence": 0.99,
+      "supportingConfidence": 0.49,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.85,
+      "primaryPurpose": "Render a structured concept, summary, or framework as a mind map. schema semantics=central topic; major branches; supporting facts or subpoints",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 0.97,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.29,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.62,
+      "candidateCount": 45
+    }
   }
 }

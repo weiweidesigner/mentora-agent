@@ -1,43 +1,427 @@
 {
-  "question": "用流程图展示投研决策证据流程，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "根据 AAPL 最新已披露产品收入和成本信息，用流程图梳理主营业务收入如何形成营业利润，节点注明已披露事实，不伪造成本归属。",
+  "cachedAt": "2026-10-14T17:00:41.526000+08:00",
   "answer": {
-    "question": "用流程图展示投研决策证据流程，使用清楚标注的金融演示数据。",
-    "interpretation": "# 投研决策证据流程\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-flowchart/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "根据 AAPL 最新已披露产品收入和成本信息，用流程图梳理主营业务收入如何形成营业利润，节点注明已披露事实，不伪造成本归属。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,generic-chart,code-interpreter,vision-chart-analyst,advisor-text-generation",
+      "label": "business-chart-recall + generic-chart + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "script": "business-chart-recall + generic-chart + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html",
+    "reportUrl": "/static/cases/inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-flowchart/chart.html",
-        "url": "/static/cases/inspiration/analysis-flowchart/chart.html"
+        "path": "case:inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html",
+        "url": "/static/cases/inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html"
+      },
+      {
+        "path": "case:inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-kline-context.html",
+        "url": "/static/cases/inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-kline-context.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-flowchart/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成全链路：JEV 路由 → 原生取数 → 口径转换与恒等式校验 → 流程图渲染 → 视觉复核。\n\n## 核心结论：AAPL 收入到营业利润的链条在“毛利”处发生口径断裂\n\nAAPL 最新已披露财季为 **2026 财年第三财季（Q3 FY2026，期末 2026-06-27）**：**总净收入 1,094.17 亿美元（同比 +16.36%）→ 销售成本 546.47 亿美元（同比仅 +8.60%）→ 毛利 547.70 亿美元 → 营业费用 190.75 亿美元 → 营业利润 356.95 亿美元（同比 +26.57%，营业利润率 32.62%，+2.63pp）**。\n\n关键判断有两条：**第一，产品线只披露到收入为止**——iPhone 542.52 亿、服务 307.39 亿、Mac 103.52 亿、其他产品 78.83 亿、iPad 61.91 亿，五项合计正好等于 1,094.17 亿；**但销售成本、毛利、研发与销管费用、所得税只在合并口径披露**，所以把 546.47 亿成本或 190.75 亿费用分摊到 iPhone／服务上，属于伪造成本归属，本次分析明确拒绝该做法。**第二，本轮利润弹性几乎全部来自毛利端而非费用端**：毛利同比增加 110.52 亿，营业费用同比增加 35.59 亿，两者相抵后营业利润增加 74.93 亿；费用占收入比重反而同比上升 0.93pp 至 17.43%。\n\n[[AIME_CHART:case:inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html]]\n\n**图中看点**：蓝色主链是合并口径的利润形成路径（①收入 → ③销售成本 → ④毛利 → ⑤营业费用 → ⑥营业利润 → ⑨净利润），紫色①为收入起点；②产品线拆分是**唯一带产品颗粒度的节点，但它只连到收入**，并通过虚线导向粉色“⚠ 未披露·禁止分摊”节点，再以虚线标出它到⑥之间是**不可归属的缺口**，而不是一条成本路径。橙色⑦⑧是营业利润之后的营业外项与税项，把营业利润桥接到净利润 297.89 亿（356.95 − 5.72 − 64.78 = 297.89，恒等式精确闭合）。\n\n## 关键证据：毛利率首次站上 50%，成本增速与收入增速的剪刀差是主因\n\n| 环节（亿美元 / 比率） | Q3 FY2026（2026-06-27） | Q3 FY2025 | 同比变动 |\n|---|---|---|---|\n| 总净收入 | 1,094.17 | 940.36 | **+16.36%** |\n| 销售成本 | 546.47 | 503.18 | **+8.60%（远慢于收入）** |\n| 毛利 / 毛利率 | 547.70 / **50.06%** | 437.18 / 46.49% | +25.28% / **+3.57pp** |\n| 营业费用 / 费用率 | 190.75 / 17.43% | 155.16 / 16.50% | +22.94% / +0.93pp |\n| ├ 研发费用 | 117.29（占收入 10.72%） | 88.66（9.43%） | **+32.29%** |\n| └ 销售及管理 | 73.46（占收入 6.71%） | 66.50（7.07%） | +10.47% |\n| 营业利润 / 营业利润率 | 356.95 / **32.62%** | 282.02 / 29.99% | +26.57% / +2.63pp |\n| 营业外及其他项净额 | −5.72 | +1.71 | 转负 |\n| 所得税费用 | 64.78 | 45.97 | +40.92% |\n| 净利润 / 净利率 | 297.89 / 27.23% | 234.34 / 24.92% | +27.12% / +2.31pp |\n\n**毛利率是连续三个季度上台阶**：48.16%（Q1 FY2026）→ 49.27%（Q2 FY2026）→ **50.06%（Q3 FY2026）**，而此前八个季度一直在 45.87%–47.18% 之间震荡。**研发是唯一明显加速的成本项**：+32.29% 的增速既快于收入（+16.36%），也快于营业费用整体（+22.94%），费用率上行基本由研发贡献（销管费用率反而下降 0.36pp），这是判断后续营业利润率能否守住 32%–33% 的首要观察项。\n\n## 补充维度：产品收入结构与企业披露成本的对应关系\n\n收入端的产品结构本身也是权重信息——**iPhone 占 49.58%、服务占 28.09%**，两者合计接近八成；同比上 Mac（+28.66%）与 iPhone（+21.69%）最快，iPad 是唯一负增长（−5.93%）。**但由于成本不按产品线披露，以上结构变化无法换算成毛利率贡献**；本图刻意不给出“哪条产品线更赚钱”的结论。\n\n[[AIME_CHART:case:inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-kline-context.html]]\n\n本图为行情侧佐证（原生 K 线内核，日线 2023-08-08 至 **2026-10-13** 最新交易日），用于把上述经营改善放到市场定价的时间轴上；**它是价格与成交量证据，不能反过来验证利润拆分口径**。\n\n## 风险、数据时间与口径\n\n- **数据时间**：2026-10-14 实时取数。财报口径最新为 **Q3 FY2026（期末 2026-06-27）**；产品线季度记录覆盖 **Q1 FY2024 至 Q3 FY2026 共 11 个季度**，年度记录覆盖 **FY2017–FY2025**；行情覆盖至 2026-10-13。\n- **口径边界（最重要）**：**无产品线成本、毛利、营业利润、地区成本**。成本与费用只在合并口径可得，因此本图把产品线节点明确终止在收入环节；\"费用\"在部分损益表组件里是毛利减净利润的残差项，本次不用该残差替代真实的研发与销管费用。\n- **恒等式已逐项校验并全部闭合**：收入 − 销售成本 − 毛利 = 0；研发 + 销管 − 营业费用 = 0；毛利 − 营业费用 − 营业利润 = 0；营业利润 + 营业外项 − 所得税 − 净利润 = 0；五项产品收入合计 − 总收入 = 0。\n- **口径提示**：营业外及其他项为已含税费影响的**净额**口径（本季为负）；营业利润率与净利率均为占收入的比值，不是同比增速。\n- **前瞻验证点**：Q4 FY2026（9 月末结束财季）尚未进入数据源；下一确认点是该季度的毛利率能否维持在 50% 附近，以及研发费用增速是否回落至收入增速之内。\n- **复核方式**：已完成浏览器级渲染复核（12 个节点、12 条边、零控制台错误、零节点重叠、标签无溢出）与图表视觉解读复核，两者一致。\n\n[[AIME_CHART:case:inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-revenue-to-operating-profit-q3fy2026.html]]",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-flowchart-52ea7013c3084581b74062e5dea3d740",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-flowchart-52ea7013c3084581b74062e5dea3d740",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "flowchart.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "flowchart.py",
+      "supporting": null,
+      "selectedScripts": [
         "flowchart.py"
       ],
-      "primary_script": "flowchart.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.95,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "relationship-and-flow",
-      "semantic_lens_confidence": 0.73,
-      "primary_purpose": "{\"schemaVersion\": \"2.0.0\", \"chartType\": \"flowchart\", \"script\": \"flowchart.py\", \"purpose\": \"Render process steps, decisions, system calls, or causal chains with configurable node and edge colors.\", \"rawDataContract\": {\"shape\": \"array<object>|object|string\", \"notes\": \"The model maps source content to nodes and directed edges. Color can be assigned automatically from a palette, by node type, or explicitly per node and edge.\"}, \"semanticChannels\": [{\"channel\": \"node.id\", \"payloadField\": \"nodes[].id\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"stable node identifier\"}, {\"channel\": \"node.label\", \"payloadField\": \"nodes[].label\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"visible step or decision label\"}, {\"channel\": \"node.type\", \"payloadField\": \"nodes[].type\", \"required\": false, \"acceptedTypes\": [\"string\"], \"acceptedValues\": [\"process\", \"decision\", \"terminal\", \"input\", \"database\", \"subroutine\"], \"semantics\": \"semantic node category used for shape and optional type-based color\"}, {\"channel\": \"node.colorKey\", \"payloadField\": \"nodes[].colorKey\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"references a named style in nodeStyles\"}, {\"channe",
-      "supporting_purpose": "",
-      "visual_encoding": "flow-and-relationship",
-      "visual_encoding_confidence": 1.0,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.94,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.87
-    },
-    "jevError": null
+      "primaryConfidence": 0.94,
+      "supportingConfidence": 0.71,
+      "semanticLens": "relationship-and-flow",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Render process steps, decisions, system calls, or causal chains with configurable node and edge colors. schema semantics=stable node identifier; visible step or decision label; semantic node category used for shape and optional type-based color; references a named style in nodeStyles; selects a color from palette by index; per-node visual",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.54,
+      "markStrategy": "contribution-focus",
+      "markStrategyConfidence": 0.36,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2275
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2725
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5944
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6438
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 6438
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8947
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11342
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11950
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13484
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13939
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18344
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20110
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20740
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21387
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22305
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24351
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24915
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 26103
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 28187
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 28720
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34594
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 35628
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36907
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 37609
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 39723
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 40361
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 45405
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 54132
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56889
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57591
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60152
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60642
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 63671
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67301
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 73722
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 75111
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79009
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 79481
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79871
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 86634
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 101246
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 104449
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 110437
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 112455
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 113323
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 119080
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 129728
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 141446
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 146295
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 148660
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 150089
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 151350
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 163461
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 173004
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 177486
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 178784
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 179749
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 184243
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 185280
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 193806
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 202325
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 213561
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 221386
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 230672
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 233224
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 233620
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 235245
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 236628
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 250410
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 279340
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 283514
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 285441
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 289390
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 290570
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 290764
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 292494
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 295820
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 691
+      }
+    ],
+    "startedAt": 1791968132783,
+    "endedAt": 1791968441526,
+    "elapsedMs": 309434,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968132783,
+        "endedAt": 1791968441526,
+        "elapsedMs": 308743
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791968602236,
+        "endedAt": 1791968602927,
+        "elapsedMs": 691
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-flowchart-52ea7013c3084581b74062e5dea3d740",
+    "renderer": "flowchart.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "flowchart.py",
+      "supporting": null,
+      "selectedScripts": [
+        "flowchart.py"
+      ],
+      "primaryConfidence": 0.94,
+      "supportingConfidence": 0.71,
+      "semanticLens": "relationship-and-flow",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Render process steps, decisions, system calls, or causal chains with configurable node and edge colors. schema semantics=stable node identifier; visible step or decision label; semantic node category used for shape and optional type-based color; references a named style in nodeStyles; selects a color from palette by index; per-node visual",
+      "supportingPurpose": "",
+      "visualEncoding": "flow-and-relationship",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.54,
+      "markStrategy": "contribution-focus",
+      "markStrategyConfidence": 0.36,
+      "candidateCount": 45
+    }
   }
 }

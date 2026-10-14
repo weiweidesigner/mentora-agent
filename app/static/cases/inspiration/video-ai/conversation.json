@@ -1,53 +1,327 @@
 {
-  "question": "找关于AI 行业与芯片投资的金融分析视频，展示来源、发布日期和观看链接。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "搜索并展示关于 NVIDIA、AMD 与 AI 芯片投资的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果，不要编造标题、地址或时长。",
+  "cachedAt": "2026-10-14T16:45:08.038000+08:00",
   "answer": {
-    "question": "找关于AI 行业与芯片投资的金融分析视频，展示来源、发布日期和观看链接。",
-    "interpretation": "# AI 行业与芯片投资\n\n这是视频搜索能力曾检索到的金融主题视频，点击封面或链接可查看原内容。\n\n[[AIME_CHART:case:inspiration/video-ai/chart.html]]\n\n## 视频口径\n\n标题：AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings\n\n发布时间：2026-07-28。本次从既有视频搜索缓存中筛选，未重新验证原视频可播放性。视频为观点材料，标题不能单独作为财报或行情依据。",
-    "reportArtifacts": [
+    "question": "搜索并展示关于 NVIDIA、AMD 与 AI 芯片投资的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果，不要编造标题、地址或时长。",
+    "code": "",
+    "selectedSkill": {
+      "key": "video-search,streamviz",
+      "label": "video-search + streamviz",
+      "script": "video-search + streamviz",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "",
+    "reportUrl": "",
+    "reportArtifacts": [],
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\nAInvest 视频检索本次共得到 **73 条候选**（`category:videos` 40 条 + 语义过滤 28 条 + `videos`/`shorts` 定向 5 条，存在去重重叠），从中筛出 **8 条与 NVIDIA、AMD 及 AI 芯片投资直接相关**的视频，全部带封面、来源、发布日期与 feed 时长，均为**真实返回记录，未改写标题、未编造地址或时长**。\n\n这批结果有一个很清楚的共同特征：**当前视频舆论的主线不是\"英伟达/AMD 基本面\"，而是\"AI 交易是否见顶\"**。8 条里有 3 条直接讲芯片抛售与 AI 交易质疑，2 条讲半导体资本开支与设备股财报，1 条是 AMD 与其他大市值个股并列点评，2 条讲 AI 内存供给。这个分布本身说明：10 月中旬的芯片板块叙事已经从\"算力需求\"切换到\"估值与供给节奏\"。\n\n## 关键证据与产物\n\n以下 8 条为本次实际检索结果（时长取 feed 的 `video_time`，发布日期取 feed 发布时间）：\n\n| 主题 | 标题（原始） | 来源 | 发布日期 | 时长 |\n| --- | --- | --- | --- | --- |\n| AI 交易与芯片抛售 | Chip Selloff bleeds into Asia | Featured Youtube Videos | 2026-10-13 | 1:34:24 |\n| AI 交易与芯片抛售 | Stock Market in \"Collapsing\" AI Trade? Gareth Soloway on Memory Rotation, \"Topping\" Yields | Featured Youtube Videos | 2026-10-13 | 8:16 |\n| AI 交易与芯片抛售 | Chip Selloff Deepens as Investors Question AI Trade | Featured Youtube Videos | 2026-10-13 | 1:48 |\n| AMD 个股视角 | The Big 3: JPM, GOOGL, AMD | Featured Youtube Videos | 2026-10-13 | 12:56 |\n| 半导体资本开支与设备 | Bull v. Bear: ASML to Add AI Trade Clarity as Earnings Season Begins | Featured Youtube Videos | 2026-10-13 | 9:54 |\n| 半导体资本开支与设备 | Demmert: TSM & ASML Earnings Important to \"Sleepy\" AI Trade, CPI to Give Fed Relief | Featured Youtube Videos | 2026-10-12 | 5:03 |\n| AI 内存与算力供给 | CXMT Challenges MU, SNDK, Other AI Memory Stocks; Bank Stocks Retreat After Earnings | Featured Youtube Videos | 2026-10-13 | 7:57 |\n| AI 内存与算力供给 | Monday's Final Takeaways: INTC & AVGO CEOs Voice AI Capital Concerns | Featured Youtube Videos | 2026-10-12 | 2:22 |\n\n标题、封面、AInvest 来源页与 YouTube 观看链接已按原生视频卡片形式渲染在下方看板中，按主题分组、组内按时长从长到短排列，每张卡片同时给出 `时长 h:mm:ss` 与 `YYYY-MM-DD` 日期徽标。封面图片已逐一实测可访问（8/8 返回 HTTP 200）。\n\n\n\n## 相关视频\n\n\n## 风险、数据时间与口径\n\n- **数据时间**：feed 返回结果集中在 **2026-10-11 ~ 2026-10-13**，最近一条为 2026-10-13 16:21（美东）。本页不是实时行情证据。\n- **口径**：`source` 全部为 `category:videos`（Featured YouTube Videos）。时长字段为 feed 的 `video_time`（秒），`duration` 字段本轮为空，因此卡片时长以前者换算。\n- **相关性判定**：本次\"相关\"基于标题与 feed 返回的主题标签（如 `AI`、`chip`、`AMD`）匹配，匹配到的标签已逐条标注在卡片上。\n- **已披露的降级与限制**：① 检索接口只返回视频元数据、**不返回转写文本**，因此本回答不对任何单条视频的具体观点做事实断言，仅呈现标题级信息；② AInvest 详情页对脚本访问返回 **403**（疑似反爬），未做二次核验，卡片中的来源页链接为 feed 返回的原始 URL；③ YouTube 观看链接由 feed 返回的 embed ID 拼装，部分视频在本地网络实测不可达（环境网络限制），未验证播放状态；④ 本次**未执行视觉验证 Skill**——`vision-chart-analyst` 因未配置 `VISION_API_KEY` 报错退出，改用静态审计替代（卡片数 8、封面 8、日期 8、时长 8、YouTube 链接 16、AInvest 链接 8，正文无硬编码颜色，仅使用 `--sv-*` 主题变量，浅/深色由 StreamViz 双主题统一提供）。\n- **未使用模拟数据**：没有 `--sample`、没有示例数值、没有以空图占位；所有标题、地址、日期、时长均来自脚本真实返回。\n\n生成产物（均位于 `outputs/generated/`）：`inspiration-real-video-ai.html`（StreamViz 看板，37 KB）、`inspiration-real-video-ai-payload.json`、`inspiration-real-video-ai-evidence.json`（8 条结构化证据），以及三份原始检索结果 `video-ai-chips-*.json`。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-video-ai-05194429198c4cd296b1c3ab97f6469c",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-video-ai-05194429198c4cd296b1c3ab97f6469c",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [],
+    "videos": [
       {
-        "path": "case:inspiration/video-ai/chart.html",
-        "url": "/static/cases/inspiration/video-ai/chart.html"
+        "title": "Stock Market in \"Collapsing\" AI Trade? Gareth Soloway on Memory Rotation, \"Topping\" Yields",
+        "summary": "",
+        "publishedAt": "2026-10-13T16:21:16-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-stock-market-collapsing-ai-trade-gareth-soloway-memory-rotation-topping-yields-2610/",
+        "videoUrl": "https://www.youtube.com/embed/Cp1oXlxGlcE",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/Cp1oXlxGlcE.jpg",
+        "durationSeconds": 496,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Bull v. Bear: ASML to Add AI Trade Clarity as Earnings Season Begins",
+        "summary": "",
+        "publishedAt": "2026-10-13T15:24:23-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-bull-bear-asml-add-ai-trade-clarity-earnings-season-begins-2610/",
+        "videoUrl": "https://www.youtube.com/embed/2my6av4EjRo",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/2my6av4EjRo.jpg",
+        "durationSeconds": 594,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Chip Selloff Deepens as Investors Question AI Trade",
+        "summary": "",
+        "publishedAt": "2026-10-13T11:05:34-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-chip-selloff-deepens-investors-question-ai-trade-2610/",
+        "videoUrl": "https://www.youtube.com/embed/Uh3hKXq7p6I",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/Uh3hKXq7p6I.jpg",
+        "durationSeconds": 108,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "The Big 3: JPM, GOOGL, AMD",
+        "summary": "",
+        "publishedAt": "2026-10-13T13:21:37-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-big-3-jpm-googl-amd-2610/",
+        "videoUrl": "https://www.youtube.com/embed/_YJv9sz_8B4",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/_YJv9sz_8B4.jpg",
+        "durationSeconds": 776,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "CXMT Challenges MU, SNDK, Other AI Memory Stocks; Bank Stocks Retreat After Earnings",
+        "summary": "",
+        "publishedAt": "2026-10-13T11:19:12-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-cxmt-challenges-mu-sndk-ai-memory-stocks-bank-stocks-retreat-earnings-2610/",
+        "videoUrl": "https://www.youtube.com/embed/lQ3NaM_KQ48",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/lQ3NaM_KQ48.jpg",
+        "durationSeconds": 477,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Chip Selloff bleeds into Asia",
+        "summary": "",
+        "publishedAt": "2026-10-13T02:11:52-04:00",
+        "publishedDate": "2026-10-13",
+        "url": "https://www.ainvest.com/news/video-chip-selloff-bleeds-asia-2610/",
+        "videoUrl": "https://www.youtube.com/embed/9e3Lo5xpm-8",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/9e3Lo5xpm-8.jpg",
+        "durationSeconds": 5664,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Monday's Final Takeaways: INTC & AVGO CEOs Voice AI Capital Concerns",
+        "summary": "",
+        "publishedAt": "2026-10-12T17:17:55-04:00",
+        "publishedDate": "2026-10-12",
+        "url": "https://www.ainvest.com/news/video-monday-final-takeaways-intc-avgo-ceos-voice-ai-capital-concerns-2610/",
+        "videoUrl": "https://www.youtube.com/embed/ek4nMZDoMkE",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/ek4nMZDoMkE.jpg",
+        "durationSeconds": 142,
+        "siteName": "AInvest Videos"
+      },
+      {
+        "title": "Demmert: TSM & ASML Earnings Important to \"Sleepy\" AI Trade, CPI to Give Fed Relief",
+        "summary": "",
+        "publishedAt": "2026-10-12T11:18:41-04:00",
+        "publishedDate": "2026-10-12",
+        "url": "https://www.ainvest.com/news/video-demmert-tsm-asml-earnings-important-sleepy-ai-trade-cpi-give-fed-relief-2610/",
+        "videoUrl": "https://www.youtube.com/embed/n-cDPeSpvVk",
+        "coverUrl": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/n-cDPeSpvVk.jpg",
+        "durationSeconds": 303,
+        "siteName": "AInvest Videos"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/video-ai/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991e31e7ed5ad9aa2bb9c12ab6b)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 4148
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5248
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7297
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7706
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8137
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8543
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8928
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 45462
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 47084
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 96984
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 132970
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 134945
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 152074
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 154067
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 156498
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 157229
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 158035
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 160029
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 162921
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 166255
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 169644
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 174009
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 189231
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 191196
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 192129
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 195603
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 196312
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 201583
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 227913
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 228591
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 230876
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 245686
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 249442
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 255892
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 256334
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 258081
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 258503
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 259921
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 261548
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 265351
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 269869
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 270557
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 275572
+      }
+    ],
+    "startedAt": 1791967223009,
+    "endedAt": 1791967508038,
+    "elapsedMs": 285029,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967223009,
+        "endedAt": 1791967508038,
+        "elapsedMs": 285029
+      }
+    ]
   },
   "provenance": {
-    "skill": "video-search",
-    "article": {
-      "title": "AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings",
-      "url": "https://www.ainvest.com/news/video-amd-helios-offers-edge-nvda-watch-earnings-2607/",
-      "published_at": "2026-07-28T14:34:27-04:00",
-      "published_date": "2026-07-28",
-      "source": "category:videos",
-      "author": "Featured Youtube Videos",
-      "summary": "",
-      "content_text": "AMD Helios Offers New Edge Against NVDA & What to Watch in Earnings",
-      "image": "https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/pK1o5U1vOko.jpg",
-      "audio_url": "",
-      "duration_seconds": 0,
-      "video_url": "https://www.youtube.com/embed/pK1o5U1vOko",
-      "video_time_seconds": 594,
-      "matched_topics": [
-        "AI",
-        "NVDA"
-      ],
-      "semantic_terms": [
-        "NVDA",
-        "Jensen",
-        "Huang",
-        "Sees",
-        "AI",
-        "Driving",
-        "Chip",
-        "Boom",
-        "demand",
-        "outlook"
-      ],
-      "relevance_score": 8.0
-    },
-    "retrieval": "historical-cache"
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-video-ai-05194429198c4cd296b1c3ab97f6469c",
+    "renderer": "ainvest_video_search.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991e31e7ed5ad9aa2bb9c12ab6b)",
+      "candidateCount": 45
+    }
   }
 }

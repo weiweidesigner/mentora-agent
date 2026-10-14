@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>AAPL 主营业务收入 → 营业利润（Q3 FY2026，截至 2026-06-27，已披露口径）</title>
+<style>
+:root{--text:#0F172A;--fullscreen-bg:#FFFFFF}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:transparent!important;
+  color:var(--text);
+  overflow:hidden;
+}
+#wrap{
+  position:relative;
+  width:100%;
+  height:100vh;
+  overflow:hidden;
+  background:transparent;
+}
+#title{
+  position:absolute;
+  left:16px;
+  right:16px;
+  top:14px;
+  z-index:10;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:18px;
+  line-height:28px;
+  font-weight:720;
+  letter-spacing:-.01em;
+  text-align:left;
+  pointer-events:none;
+}
+#viewport{
+  position:absolute;
+  inset:0;
+  overflow:auto;
+  background:transparent;
+}
+#diagram{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  min-width:100%;
+  min-height:100%;
+  padding:60px 32px 32px;
+  background:transparent;
+}
+#diagram svg{
+  display:block;
+  max-width:none!important;
+  height:auto!important;
+  background:transparent!important;
+}
+#diagram .edgeLabel{background-color:transparent!important}
+#diagram .labelBkg{fill:transparent!important}
+#fullscreenBtn,#exitFullscreenBtn{
+  position:absolute;
+  z-index:30;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  padding:0;
+  border:1px solid rgba(15,23,42,.12);
+  border-radius:6px;
+  background:rgba(255,255,255,.92);
+  color:#334155;
+  box-shadow:0 6px 18px rgba(15,23,42,.10);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+#fullscreenBtn{right:14px;top:15px}
+#exitFullscreenBtn{right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));display:none}
+#fullscreenBtn svg,#exitFullscreenBtn svg{
+  display:block;
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#fullscreenBtn:hover,#exitFullscreenBtn:hover{background:#F8FAFC}
+#fullscreenBtn:active,#exitFullscreenBtn:active{transform:translateY(1px)}
+html.is-fullscreen-root,
+html.is-fullscreen-root body,
+body.is-fullscreen{
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:var(--fullscreen-bg)!important;
+}
+body.is-fullscreen #wrap{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:9999;
+  background:var(--fullscreen-bg)!important;
+}
+body.is-fullscreen #viewport,
+body.is-fullscreen #diagram{background:var(--fullscreen-bg)!important}
+body.is-fullscreen #title{
+  top:max(14px,env(safe-area-inset-top));
+  left:max(18px,env(safe-area-inset-left));
+  right:56px;
+  font-size:16px;
+}
+body.is-fullscreen #fullscreenBtn{display:none}
+body.is-fullscreen #exitFullscreenBtn{display:inline-flex}
+body.is-fullscreen #diagram{padding:58px 28px 20px}
+@media (orientation:portrait){
+  body.is-fullscreen #wrap{
+    width:100vh;
+    height:100vw;
+    left:50%;
+    top:50%;
+    right:auto;
+    bottom:auto;
+    transform:translate(-50%,-50%) rotate(90deg);
+    transform-origin:center center;
+  }
+}
+body.is-fullscreen.is-forced-landscape #wrap{
+  width:100vh;
+  height:100vw;
+  left:50%;
+  top:50%;
+  right:auto;
+  bottom:auto;
+  transform:translate(-50%,-50%) rotate(90deg);
+  transform-origin:center center;
+}
+#error{
+  display:none;
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:20px;
+  padding:12px 14px;
+  border:1px solid #FCA5A5;
+  border-radius:10px;
+  background:transparent;
+  color:#991B1B;
+  font-size:13px;
+  white-space:pre-wrap;
+}
+#source{
+  display:none;
+  margin:0;
+  padding:60px 24px 24px;
+  color:#334155;
+  background:transparent;
+  font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  white-space:pre-wrap;
+}
+@media (max-width:720px){
+  #title{left:12px;right:52px;top:10px;font-size:16px}
+  #fullscreenBtn{display:inline-flex;right:12px;top:10px}
+  #diagram{padding:54px 18px 24px}
+  #source{padding:54px 18px 24px}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="title">AAPL 主营业务收入 → 营业利润（Q3 FY2026，截至 2026-06-27，已披露口径）</div>
+  <button id="fullscreenBtn" type="button" aria-label="横屏全屏浏览" title="横屏全屏浏览">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M3 16v5h5"></path></svg>
+  </button>
+  <button id="exitFullscreenBtn" type="button" aria-label="退出全屏" title="退出全屏">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3"></path><path d="M15 3v6h6"></path><path d="M21 15h-6v6"></path><path d="M3 15h6v6"></path></svg>
+  </button>
+  <div id="viewport">
+    <div id="diagram"></div>
+    <pre id="source"></pre>
+    <div id="error"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+const code = "flowchart TB\n  rev_total[/\"①【已披露】总净收入 1,094.17<br/>亿美元 · Q3 FY2026，同比<br/>+16.36%\"/]\n  products[/\"②【已披露·仅收入】产品线拆分：iPho<br/>ne 542.52 亿（占<br/>49.58%）· 服务 307.39<br/>亿（28.09%）· Mac<br/>103.52 亿（9.46%）·<br/>其他产品 78.83 亿（7.2%）·<br/>iPad 61.91 亿（5.66%）\"/]\n  cogs[\"③【已披露】销售成本合计 546.47<br/>亿美元，同比 +8.6%\"]\n  gross_profit[\"④【已披露】毛利 547.7<br/>亿美元，毛利率 50.06%（去年同期<br/>46.49%，+3.57pp）\"]\n  opex[\"⑤【已披露】营业费用合计 190.75<br/>亿美元，占收入 17.43%（同比<br/>+0.93pp）\"]\n  rnd[\"研发费用 117.29 亿美元，占收入<br/>10.72%，同比 +32.29%\"]\n  sga[\"销售及管理费用 73.46<br/>亿美元，占收入 6.71%，同比<br/>+10.47%\"]\n  op_profit([\"⑥【已披露】营业利润 356.95<br/>亿美元，营业利润率<br/>32.62%（+2.63pp），同比<br/>+26.57%\"])\n  nonop[[\"⑦【已披露】营业外及其他项净额<br/>−5.72 亿美元\"]]\n  tax[[\"⑧【已披露】所得税费用 64.78<br/>亿美元，同比 +40.92%\"]]\n  net_profit([\"⑨【已披露】净利润 297.89<br/>亿美元，净利率 27.23%，同比<br/>+27.12%\"])\n  unallocated[(\"⚠【未披露·禁止分摊】产品线分口径成本／<br/>毛利／营业利润：数据源只按产品线披露收入<br/>；546.47 亿销售成本、190.75<br/>亿营业费用、所得税均只在合并口径披露，不<br/>能分摊到 iPhone／服务／Mac<br/>等产品线\")]\n  rev_total -->|按产品线披露收入| products\n  rev_total -->|合并口径列报| cogs\n  products -->|到此为止| unallocated\n  cogs -->|收入 − 销售成本| gross_profit\n  gross_profit -->|减营业费用| opex\n  opex --> rnd\n  opex --> sga\n  opex -->|−190.75 亿| op_profit\n  op_profit --> nonop\n  nonop --> tax\n  tax -->|−64.78 亿| net_profit\n  unallocated -->|不可归属（非成本项）| op_profit\n  class rev_total nodeStyle1\n  class products nodeStyle2\n  class cogs nodeStyle3\n  class gross_profit nodeStyle4\n  class opex nodeStyle5\n  class rnd nodeStyle6\n  class sga nodeStyle7\n  class op_profit nodeStyle8\n  class nonop nodeStyle9\n  class tax nodeStyle10\n  class net_profit nodeStyle11\n  class unallocated nodeStyle12\n  classDef nodeStyle1 fill:#F5F3FF,stroke:#A78BFA,color:#2E1065,stroke-width:1.6px\n  classDef nodeStyle2 fill:#F5F3FF,stroke:#A78BFA,color:#2E1065,stroke-width:1.6px\n  classDef nodeStyle3 fill:#EFF6FF,stroke:#60A5FA,color:#172554,stroke-width:1.6px\n  classDef nodeStyle4 fill:#EFF6FF,stroke:#60A5FA,color:#172554,stroke-width:1.6px\n  classDef nodeStyle5 fill:#EFF6FF,stroke:#60A5FA,color:#172554,stroke-width:1.6px\n  classDef nodeStyle6 fill:#EFF6FF,stroke:#60A5FA,color:#172554,stroke-width:1.6px\n  classDef nodeStyle7 fill:#EFF6FF,stroke:#60A5FA,color:#172554,stroke-width:1.6px\n  classDef nodeStyle8 fill:#ECFDF5,stroke:#34D399,color:#064E3B,stroke-width:1.8px\n  classDef nodeStyle9 fill:#FFF7ED,stroke:#FB923C,color:#431407,stroke-width:1.6px\n  classDef nodeStyle10 fill:#FFF7ED,stroke:#FB923C,color:#431407,stroke-width:1.6px\n  classDef nodeStyle11 fill:#ECFDF5,stroke:#34D399,color:#064E3B,stroke-width:1.8px\n  classDef nodeStyle12 fill:#FDF2F8,stroke:#F472B6,color:#500724,stroke-width:1.6px\n  linkStyle 2 stroke-dasharray:7 5\n  linkStyle 11 stroke-dasharray:7 5";
+const config = {"startOnLoad": false, "theme": "base", "securityLevel": "strict", "themeVariables": {"fontFamily": "-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"PingFang SC\",\"Microsoft YaHei\",sans-serif", "fontSize": "15px", "primaryColor": "#EFF6FF", "primaryTextColor": "#0F172A", "primaryBorderColor": "#60A5FA", "lineColor": "#64748B", "tertiaryColor": "#F8FAFC", "clusterBkg": "#F8FAFC", "clusterBorder": "#CBD5E1", "edgeLabelBackground": "transparent"}, "flowchart": {"htmlLabels": true, "useMaxWidth": false, "curve": "basis", "nodeSpacing": 44, "rankSpacing": 58, "padding": 14}};
+const nodePalette = [{"fillColor": "#EFF6FF", "strokeColor": "#60A5FA", "textColor": "#172554", "strokeWidth": 1.5}, {"fillColor": "#ECFDF5", "strokeColor": "#34D399", "textColor": "#064E3B", "strokeWidth": 1.5}, {"fillColor": "#FFF7ED", "strokeColor": "#FB923C", "textColor": "#431407", "strokeWidth": 1.5}, {"fillColor": "#F5F3FF", "strokeColor": "#A78BFA", "textColor": "#2E1065", "strokeWidth": 1.5}, {"fillColor": "#FDF2F8", "strokeColor": "#F472B6", "textColor": "#500724", "strokeWidth": 1.5}, {"fillColor": "#F0FDFA", "strokeColor": "#2DD4BF", "textColor": "#134E4A", "strokeWidth": 1.5}];
+const autoColorRawNodes = false;
+const diagram = document.getElementById("diagram");
+const viewport = document.getElementById("viewport");
+const errorBox = document.getElementById("error");
+const sourceBox = document.getElementById("source");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+const exitFullscreenBtn = document.getElementById("exitFullscreenBtn");
+let svg = null;
+let naturalWidth = 0;
+
+function moveEdgeLabelsAboveLine() {
+  if (!svg) return;
+  const edgeLabelOffset = window.innerWidth <= 720 ? 10 : 12;
+  svg.querySelectorAll("g.edgeLabel").forEach((label) => {
+    if (label.dataset.shiftedAboveLine === "true") return;
+    const transform = label.getAttribute("transform") || "";
+    const match = transform.match(/translate\(([-+0-9.eE]+)[ ,]+([-+0-9.eE]+)\)/);
+    if (!match) return;
+    const x = Number.parseFloat(match[1]);
+    const y = Number.parseFloat(match[2]);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    label.setAttribute(
+      "transform",
+      transform.replace(
+        /translate\(([-+0-9.eE]+)[ ,]+([-+0-9.eE]+)\)/,
+        `translate(${x},${y - edgeLabelOffset})`
+      )
+    );
+    label.dataset.shiftedAboveLine = "true";
+  });
+}
+
+function applyRawNodePalette() {
+  if (!svg || !autoColorRawNodes || !Array.isArray(nodePalette) || !nodePalette.length) return;
+  svg.querySelectorAll("g.node").forEach((node, index) => {
+    const style = nodePalette[index % nodePalette.length] || {};
+    node.querySelectorAll("rect,polygon,path,circle,ellipse").forEach((shape) => {
+      if (style.fillColor) shape.style.fill = style.fillColor;
+      if (style.strokeColor) shape.style.stroke = style.strokeColor;
+      if (style.strokeWidth) shape.style.strokeWidth = `${style.strokeWidth}px`;
+    });
+    node.querySelectorAll("text,tspan").forEach((textNode) => {
+      if (style.textColor) textNode.style.fill = style.textColor;
+    });
+    node.querySelectorAll("foreignObject div,foreignObject span,foreignObject p").forEach((htmlNode) => {
+      if (style.textColor) htmlNode.style.color = style.textColor;
+    });
+  });
+}
+
+function fitDiagram() {
+  if (!svg || !naturalWidth) return;
+  const isFullscreen = document.body.classList.contains("is-fullscreen");
+  const horizontalPadding = isFullscreen ? 56 : (window.innerWidth <= 640 ? 36 : 64);
+  const availableWidth = Math.max(240, viewport.clientWidth - horizontalPadding);
+  const viewBox = svg.viewBox && svg.viewBox.baseVal;
+  const naturalHeight = viewBox && viewBox.height
+    ? viewBox.height
+    : svg.getBoundingClientRect().height;
+  const verticalPadding = isFullscreen ? 78 : 92;
+  const availableHeight = Math.max(160, viewport.clientHeight - verticalPadding);
+  const widthScale = availableWidth / naturalWidth;
+  const heightScale = naturalHeight > 0 ? availableHeight / naturalHeight : 1;
+  const scale = isFullscreen
+    ? Math.max(0.1, Math.min(widthScale, heightScale))
+    : Math.min(1, widthScale);
+  svg.style.width = `${Math.round(naturalWidth * scale)}px`;
+}
+
+function updateFullscreenLayout() {
+  const active = document.body.classList.contains("is-fullscreen");
+  const needsForcedLandscape = active && window.innerHeight > window.innerWidth;
+  document.body.classList.toggle("is-forced-landscape", needsForcedLandscape);
+}
+
+function lockLandscape() {
+  try {
+    const orientation = screen.orientation;
+    if (orientation && typeof orientation.lock === "function") {
+      orientation.lock("landscape").catch(() => {});
+    }
+  } catch (e) {}
+}
+
+function unlockOrientation() {
+  try {
+    const orientation = screen.orientation;
+    if (orientation && typeof orientation.unlock === "function") orientation.unlock();
+  } catch (e) {}
+}
+
+function refitDiagram() {
+  updateFullscreenLayout();
+  requestAnimationFrame(fitDiagram);
+  setTimeout(fitDiagram, 80);
+  setTimeout(fitDiagram, 320);
+}
+
+async function enterFullscreen() {
+  document.documentElement.classList.add("is-fullscreen-root");
+  document.body.classList.add("is-fullscreen");
+  updateFullscreenLayout();
+  const target = document.documentElement || document.body;
+  try {
+    if (target.requestFullscreen) await target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+  } catch (e) {}
+  lockLandscape();
+  refitDiagram();
+}
+
+function exitFullscreen() {
+  document.documentElement.classList.remove("is-fullscreen-root");
+  document.body.classList.remove("is-fullscreen");
+  document.body.classList.remove("is-forced-landscape");
+  unlockOrientation();
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch (e) {}
+  refitDiagram();
+}
+
+fullscreenBtn.addEventListener("click", enterFullscreen);
+exitFullscreenBtn.addEventListener("click", exitFullscreen);
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.classList.remove("is-fullscreen-root");
+    document.body.classList.remove("is-fullscreen");
+    document.body.classList.remove("is-forced-landscape");
+    unlockOrientation();
+    refitDiagram();
+  }
+});
+
+document.addEventListener("webkitfullscreenchange", () => {
+  if (!document.webkitFullscreenElement) {
+    document.documentElement.classList.remove("is-fullscreen-root");
+    document.body.classList.remove("is-fullscreen");
+    document.body.classList.remove("is-forced-landscape");
+    unlockOrientation();
+    refitDiagram();
+  }
+});
+
+mermaid.initialize(config);
+(async () => {
+  try {
+    await mermaid.parse(code);
+    const result = await mermaid.render("flowchartSvg", code);
+    diagram.innerHTML = result.svg;
+    if (typeof result.bindFunctions === "function") result.bindFunctions(diagram);
+
+    svg = diagram.querySelector("svg");
+    if (!svg) throw new Error("Mermaid did not return an SVG element.");
+
+    const viewBox = svg.viewBox && svg.viewBox.baseVal;
+    naturalWidth = viewBox && viewBox.width
+      ? viewBox.width
+      : svg.getBoundingClientRect().width;
+
+    svg.removeAttribute("height");
+    svg.setAttribute("preserveAspectRatio", "xMidYMin meet");
+    applyRawNodePalette();
+    moveEdgeLabelsAboveLine();
+    refitDiagram();
+  } catch (err) {
+    errorBox.style.display = "block";
+    errorBox.textContent = `流程图渲染失败：${String(err?.message || err)}`;
+    diagram.style.display = "none";
+    sourceBox.style.display = "block";
+    sourceBox.textContent = code;
+  }
+})();
+
+window.addEventListener("resize", refitDiagram);
+window.addEventListener("orientationchange", () => {
+  setTimeout(refitDiagram, 120);
+  setTimeout(refitDiagram, 420);
+});
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

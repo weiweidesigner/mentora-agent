@@ -1,23 +1,295 @@
 {
-  "question": "请展示 AAPL 的股东回报比较，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的公司与市场、行业的股东回报比较，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:15:26.601000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的股东回报比较，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 股东回报比较\n\n这份案例用原生业务组件展示股东回报比较，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-shareholder_returns/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的公司与市场、行业的股东回报比较，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "deepseek",
+      "label": "DeepSeek Harness",
+      "script": "deepseek",
+      "reason": "由 DeepSeek Harness 自主规划并执行。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
+    "reportUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-shareholder_returns/chart.html",
-        "url": "/static/cases/inspiration/business-shareholder_returns/chart.html"
+        "path": "case:inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
+        "url": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-shareholder_returns/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
+    "payloadUrl": null,
+    "interpretation": "# AAPL 股东回报比较：赢了市场，输给行业\n\n**核心结论：AAPL 的股东回报并非\"跑赢或跑输\"的单一答案，而是分化取决于基准——3 年累计总回报 +83.0%，大幅领先美股市场（+65.4%）17.6 个百分点，却落后消费电子行业（+173.4%）90.4 个百分点。** 更值得警惕的是时间结构：个股相对行业的超额差在 **30 日窗口见顶（+20.3 个百分点）后连续四档走弱至 -13.8、-78.4、-90.4**，说明长周期收益主要由行业贝塔推动，个股自身的相对优势在持续流失。\n\n## 原生业务组件：股东回报对比\n\n[[AIME_CHART:case:inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html]]\n\n上图用 `shareholder_returns.py` 原生分组柱状图展示同一周期内 **个股（AAPL）／行业（消费电子）／美股市场** 三档总回报，可用右上按钮切换浅色与深色视图。图中最重要的读法是**柱高差的形状**而非单根柱高：7 日三档几乎贴合零轴，30 日仅个股独立走高，90 日起行业柱反超并逐级拉开，1 年与 3 年行业的领先幅度已是量级差异；5 年周期组以半透明占位，表示源组件未返回该周期数据。\n\n### 超额差值明细（个股回报减基准回报，百分点）\n\n| 周期 | AAPL | 行业（消费电子） | 美股市场 | 相对行业 | 相对市场 |\n|---|---|---|---|---|---|\n| 7 日 | -0.2% | +4.0% | -0.6% | **-4.2** | +0.4 |\n| 30 日 | +13.6% | -6.7% | +0.8% | **+20.3** | +12.8 |\n| 90 日 | +22.9% | +36.7% | +3.5% | **-13.8** | +19.4 |\n| 1 年 | +55.8% | +134.2% | +16.5% | **-78.4** | +39.3 |\n| 3 年 | +83.0% | +173.4% | +65.4% | **-90.4** | +17.6 |\n| 5 年 | -- | -- | -- | -- | -- |\n\n## 关键观察点\n\n1. **两个基准给出相反结论，这是本次比较的核心信息。** 相对市场，AAPL 在 30 日到 3 年的全部有效周期均为正超额；相对行业，只有 30 日为负、其余四档为负。**把\"跑赢大盘\"当作\"跑赢同行\"是本次数据最容易产生的误判**——3 年 +83.0% 的绝对回报本身相当可观，但行业中位数以上的回报是它的两倍多。\n\n2. **拐点出现在 30 日 → 90 日的切换。** 30 日个股 +13.6% 而行业 -6.7%，是样本内唯一由个股占优的短周期；到 90 日行业 +36.7% 反超个股 +22.9%，相对差值一次性翻转约 34 个百分点。这个翻转说明**30 日的领先更像短期扰动，而非趋势反转的起点**。\n\n3. **时间越长，缺口越大，且是单调扩大。** 相对行业差值走 -4.2 → +20.3 → -13.8 → -78.4 → -90.4：在 90 日以上区间没有任何一档收窄。若把 3 年累计回报按复利摊开，行业年化明显高于个股，**缺口扩大不是某一年的偶发事件，而是持续存在的相对收益差**。\n\n4. **相对市场的优势也在中期收窄。** 1 年领先市场 39.3 个百分点，到 3 年降至 17.6 个百分点，同期市场自身回报从 +16.5% 升到 +65.4%。**这说明个股相对大盘的超额有一部分来自早期建仓窗口，随基准补涨而被稀释**。\n\n5. **7 日一档是\"同步震荡\"而非信号。** 行业 +4.0% 而个股 -0.2%、市场 -0.6%，行业短期走强没有传导到个股，但幅度过小，不足以支撑方向判断。\n\n## 风险、数据时间与口径\n\n- **数据时间：本图为 2026-07-29 保存的数据快照，非实时行情。** 本次执行尝试用组件内置的 AInvest 取数链路实时重取，页面在无头浏览器中返回 403 拦截，无法取到渲染后的模块数据，因此按降级方案读取该快照并**重新渲染、重新计算**（未复用任何旧 HTML 或旧正文）。\n- **口径：** 组件来源为 AInvest 分析页的 Shareholder Returns 模块；行业基准为 Consumer Electronics，市场基准为美股整体，回报为**不含股息的总回报**（`includeDividendReturns: false`），因此股息贡献未计入，高分红标的会被系统性低估。\n- **完整性缺口：5 年周期三个基准均无数据**，跨完整周期的复利优势无法验证；本结论的\"单调扩大\"仅成立于 7 日至 3 日窗口。\n- **口径边界：** 股东回报只回答\"收益相对基准的表现\"，不含估值、盈利预期与现金流证据，**不能单独用于判断高估或低估**——源模块页面同时挂在估值语境下，但本组件的视觉通道不覆盖估值字段。\n- **验证情况：** 6 项一致性校验全部通过（周期序列完整、展示标签与数值逐项一致、空值仅出现在 5 年周期、行业口径 identifiable、1 年与 3 年超额差值与源数据自洽）；图面已做视觉复核，确认 18 根柱体全部渲染、中文周期与图例正确、5 年占位正常。\n- **下一步可确认的观察点：** 行业中位数超额是否见顶回落、以及 AAPL 相对行业的负向缺口在 90 日窗口能否首次收窄。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-shareholder_returns-960a1282b1c94e38a436e5efb33814d6",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-shareholder_returns-960a1282b1c94e38a436e5efb33814d6",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [
+      {
+        "siteName": "ainvest.com",
+        "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/analysis/",
+        "title": "ainvest.com",
+        "summary": "",
+        "iconUrl": ""
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139af7a177042aa1777a30fd6e6e2)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2480
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2865
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4284
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4655
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6114
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6505
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7504
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7893
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 9197
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9627
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11509
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11895
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13443
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13830
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16176
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16525
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 18370
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 28615
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 35187
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 35577
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 36613
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 36619
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 38436
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 38795
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 41591
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 42007
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 44493
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 46531
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 48506
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 49896
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 51085
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 52391
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 61306
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 71266
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 73356
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 75799
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 77069
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79559
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 82692
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 85825
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 86212
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 92357
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 92367
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 94156
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 96137
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 107363
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 112875
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 115904
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 118083
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 128903
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 137935
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 147349
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 149513
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 153939
+      }
+    ],
+    "startedAt": 1791969163218,
+    "endedAt": 1791969326601,
+    "elapsedMs": 163383,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791969163218,
+        "endedAt": 1791969326601,
+        "elapsedMs": 163383
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-shareholder_returns-960a1282b1c94e38a436e5efb33814d6",
     "renderer": "shareholder_returns.py",
-    "schema": "shareholder_returns.schema.json",
-    "dataDate": "2026-07-29",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139af7a177042aa1777a30fd6e6e2)",
+      "candidateCount": 45
+    }
   }
 }

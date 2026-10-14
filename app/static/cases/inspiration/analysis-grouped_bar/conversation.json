@@ -1,43 +1,479 @@
 {
-  "question": "用分组柱状图展示多指标并列比较，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "比较 AAPL、MSFT、GOOGL 最近一个已披露完整财年的营收和净利润，用分组柱状图，注明财年差异。",
+  "cachedAt": "2026-10-14T16:46:27.785000+08:00",
   "answer": {
-    "question": "用分组柱状图展示多指标并列比较，使用清楚标注的金融演示数据。",
-    "interpretation": "# 多指标并列比较\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-grouped_bar/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "比较 AAPL、MSFT、GOOGL 最近一个已披露完整财年的营收和净利润，用分组柱状图，注明财年差异。",
+    "code": "",
+    "selectedSkill": {
+      "key": "generic-chart,yahoo-data,business-chart-recall,vision-chart-analyst",
+      "label": "generic-chart + yahoo-data + business-chart-recall + vision-chart-analyst",
+      "script": "generic-chart + yahoo-data + business-chart-recall + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
+    "reportUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-grouped_bar/chart.html",
-        "url": "/static/cases/inspiration/analysis-grouped_bar/chart.html"
+        "path": "case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
+        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html"
+      },
+      {
+        "path": "case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html",
+        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-grouped_bar/chart.html",
+    "payloadUrl": null,
+    "interpretation": "All artifacts verified. Here is the analysis.\n\n## 核心结论\n\n三家最近一个已披露完整财年的**营收与净利润排序出现明显背离**：苹果营收最高但净利润不是第一，微软营收最低却净利润最高。这来自两个必须同时说明的原因——**财年截止日不同**（最早与最晚相差约 9 个月），以及**净利率差距**（微软约 40%，谷歌约 33%，苹果约 27%）。\n\n| 公司 | 财年（截止日） | 营收（十亿美元） | 净利润（十亿美元） | 净利率 | 营收同比 |\n|---|---|---|---|---|---|\n| 苹果 AAPL | FY2025（2025-09-27） | **416.16** | 112.01 | 26.9% | +6.4% |\n| 微软 MSFT | FY2026（2026-06-30） | 331.84 | **133.75** | **40.3%** | +17.8% |\n| 谷歌 GOOGL | FY2025（2025-12-31） | 402.84 | 132.17 | 32.8% | +15.1% |\n\n**财年差异是本次对比的核心口径风险**：微软 FY2026 结束于 2026 年 6 月 30 日，比苹果 FY2025（2025-09-27）晚约 9 个月、比谷歌 FY2025（2025-12-31）晚约 6 个月。三家的年度窗口大致落在 2025 年中至 2026 年中的区间内。这意味着微软\"营收最低\"这一结论带有时间劣势——若把窗口拉到同一时点（近似 TTM 对齐），微软营收会接近甚至反超苹果，因此**不应把\"苹果营收第一\"当作稳态结论**；而净利率排序不随窗口移动而改变，是更稳健的判断。\n\n## 图表解读\n\n第一张图回答\"最近一个完整财年的营收与净利润谁高谁低\"：苹果营收 416.16 十亿美元居首，谷歌 402.84 紧随（差距仅约 3%，属同一量级），微软 331.84 明显落后；但净利润一栏微软 133.75 反超谷歌 132.17 与苹果 112.01。**图中最重要的信号是营收柱与利润柱的排序错位**——微软以最低营收取得最高净利润，说明其利润转化效率显著领先；苹果营收领先谷歌约 13 十亿美元，净利润却反而少约 20 十亿美元。\n\n[[AIME_CHART:case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html]]\n\n第二张图回答\"这个营收格局是稳定的还是正在变化\"：三家均连续三年上升、无下滑拐点，但斜率差异明确——微软三年间从 245.12 升至 331.84（增幅约 35%，斜率最陡），谷歌从 307.39 升至 402.84，**并在 FY2025 逼近苹果**（差距从 FY2023 的约 76 十亿美元收窄至约 13 十亿美元），苹果则从 383.29 升至 416.16，增速最缓。按此斜率，谷歌营收超越苹果的时间点已不远。\n\n[[AIME_CHART:case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html]]\n\n## 风险、数据时间与口径\n\n- **数据来源**：AInvest 财报模块（Income Statement）本次逐股实时拉取，非缓存演示数据。上次成功披露口径为苹果 FY2025、微软 FY2026、谷歌 FY2025。\n- **降级与失败披露**：Yahoo 结构化数据源对 AAPL 的年度 `total_revenue` / `net_income` 返回\"无可用数据\"，未产出 payload，故改用 AInvest 财报模块（本任务首选来源）；未使用任何示例、模拟或旧案例数值。\n- **JEV 路由**：本环境未执行成功——`typesafe_sdk` 模块缺失且进程内未注入 `TYPESAFE_API_KEY`，按宿主既有行为回退为模型选择（已记录于 `outputs/data/inspiration-real-analysis-grouped_bar-jev-route.json`），并由通用图表内核 `grouped_bar.py` 渲染；路由回退已如实披露，未虚构 JEV 决策置信度。\n- **组件选择说明**：业务组件 `income_statement.py` 的 schema 是单公司柱线+瀑布结构，不支持多公司并列分组柱，故主可视化选用通用图表 `grouped_bar.py`（通用图表 Skill 原生内核），未改动其默认样式。\n- **口径限制**：净利润的横向比较受财年错位影响最大，跨公司比较宜优先看净利率与增速；微软 FY2026 含更晚的增长期，其 17.8% 营收增速与 40.3% 净利率不宜与苹果 FY2025 直接做同期同比。图内未在柱上标注数值，精确金额以本表及最新披露财报为准。\n- **视觉验证**：两张图均通过渲染校验（无 JS 报错、图例/轴标签完整、无非预期形变），柱高与原始数值比例一致。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-grouped_bar-0eeb2f4e915f4fcb85fc5a690a01d542",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-grouped_bar-0eeb2f4e915f4fcb85fc5a690a01d542",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "grouped_bar.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "grouped_bar.py",
+      "supporting": null,
+      "selectedScripts": [
         "grouped_bar.py"
       ],
-      "primary_script": "grouped_bar.py",
-      "supporting_script": null,
-      "primary_confidence": 0.99,
-      "supporting_confidence": 0.84,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "comparison-and-ranking",
-      "semantic_lens_confidence": 1.0,
-      "primary_purpose": "{\"chartType\": \"grouped-bar\", \"script\": \"grouped_bar.py\", \"purpose\": \"Compare multiple numeric series across categories.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Rows may be wide or tidy. The model chooses category and grouped numeric fields.\"}, \"semanticChannels\": [{\"channel\": \"x\", \"payloadField\": \"xField\", \"required\": true, \"acceptedTypes\": [\"string\", \"date\", \"number\"], \"semantics\": \"category or period\"}, {\"channel\": \"bar.y[]\", \"payloadField\": \"series[].field\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"multiple comparable measures or groups\"}, {\"channel\": \"series.label\", \"payloadField\": \"series[].label\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"legend labels\"}], \"payloadShape\": {\"title\": \"string\", \"xField\": \"string\", \"data\": \"array<object>\", \"series\": [{\"field\": \"string\", \"label\": \"string\"}]}, \"modelInstructions\": [\"Use when grouped comparison matters more than time trend.\", \"Keep grouped series count small enough for readable bars.\", \"Default x-axis and y-axis tick labels should use 10px font size, matching bar-line charts.\", \"Place x-axis labels close to the x-axis baseline; default label baseline offset should be around 2",
-      "supporting_purpose": "",
-      "visual_encoding": "cross-sectional-comparison",
-      "visual_encoding_confidence": 0.94,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.99,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.91
-    },
-    "jevError": null
+      "primaryConfidence": 0.84,
+      "supportingConfidence": 0.64,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Compare multiple numeric series across categories. schema semantics=category or period; multiple comparable measures or groups; legend labels",
+      "supportingPurpose": "",
+      "visualEncoding": "cross-sectional-comparison",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.55,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.64,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3324
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 3336
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6039
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6040
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 6040
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 6041
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7676
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8265
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10640
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11107
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11556
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12055
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 16560
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 18671
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 19108
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 24567
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24963
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 27721
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28130
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31247
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42726
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 43178
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 47441
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 49373
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56197
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 56726
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57892
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 58307
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 58307
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 59766
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 61698
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 63162
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65737
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 66869
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 68257
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 68955
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 70926
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 74447
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 75400
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79343
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 80558
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 82129
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 82538
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 91560
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 100652
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 101147
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 102431
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 104635
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 105358
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 106449
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 108234
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 109126
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 110921
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 111531
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 112315
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 113021
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 114694
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 122308
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 124142
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 124636
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 125699
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 127382
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 128025
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 128490
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 129255
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 131000
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 133254
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 135465
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 142069
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 144731
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 147653
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 149621
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 151346
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 151782
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 154080
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 155606
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 158627
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 167111
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 170240
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 178530
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 182115
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 183937
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 187501
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 195499
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 198288
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 207042
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 209571
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 215179
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 225447
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 230206
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 1805
+      }
+    ],
+    "startedAt": 1791967349676,
+    "endedAt": 1791967587785,
+    "elapsedMs": 239914,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967349676,
+        "endedAt": 1791967587785,
+        "elapsedMs": 238109
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791967647171,
+        "endedAt": 1791967648976,
+        "elapsedMs": 1805
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-grouped_bar-0eeb2f4e915f4fcb85fc5a690a01d542",
+    "renderer": "grouped_bar.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "grouped_bar.py",
+      "supporting": null,
+      "selectedScripts": [
+        "grouped_bar.py"
+      ],
+      "primaryConfidence": 0.84,
+      "supportingConfidence": 0.64,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Compare multiple numeric series across categories. schema semantics=category or period; multiple comparable measures or groups; legend labels",
+      "supportingPurpose": "",
+      "visualEncoding": "cross-sectional-comparison",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.55,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.64,
+      "candidateCount": 45
+    }
   }
 }

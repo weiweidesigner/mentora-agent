@@ -1,23 +1,139 @@
 {
-  "question": "请展示 NVDA 的公司档案，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 NVDA 的公司业务、行业与上市资料，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:38:41.845000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的公司档案，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 公司档案\n\n这份案例用原生业务组件展示公司档案，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-about_company/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 NVDA 的公司业务、行业与上市资料，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,advisor-text-generation",
+      "label": "business-chart-recall + advisor-text-generation",
+      "script": "business-chart-recall + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html",
+    "reportUrl": "/static/cases/inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-about_company/chart.html",
-        "url": "/static/cases/inspiration/business-about_company/chart.html"
+        "path": "case:inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html",
+        "url": "/static/cases/inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-about_company/chart.html",
+    "payloadUrl": null,
+    "interpretation": "# NVDA 公司档案：字段本身可信，但\"公司资料\"只解决身份识别问题，不构成经营或估值证据\n\n**核心结论：这份 NVDA 公司档案给出的是一个身份层快照——半导体行业分类、1999-01-22 在 NASDAQ 上市、42,000 名全职员工、1 月 31 日财年结束、特拉华注册＋加州圣克拉拉运营。其中\"上市日期 + 财年结束日\"是两个可以直接用于投资流程的硬字段，而\"成立日期\"字段为空、员工数无统计时点、主营业务描述粒度不足以刻画当前收入结构——这三处决定了该组件只能用于标的识别与会计日历校对，不能替代财报、估值或收入拆分模块。**\n\n## 关键证据（全部来自本次实时抓取的组件字段）\n\n**身份与上市结构：** 公司名 Nvidia Corporation，代码 NVDA，AInvest 市场标识 185 / NASDAQ，交易所字段为 NASDAQ Stock Exchange，证券类型 Common stock。上市日期 **01/22/1999**，截至本次数据日 2026-10-14 已上市 **10,127 天（约 27.7 年）**——这是组件中唯一可精确折算时间跨度的字段，也意味着 NVDA 完整穿越了互联网泡沫、2008 年周期与当前 AI 资本开支周期，任何\"新股/次新股\"框架都不适用。\n\n**行业分类：** 字段值为 **Semiconductor（半导体）**，单值、无二级子行业。它足以做板块归因的第一步（半导体 vs 软件 vs 硬件），但**无法区分 GPU、加速计算平台、数据中心系统与网络业务**，做同业对比时会与 IDM、模拟芯片、设备厂商混入同一格子，需要下游再接更细的行业或收入拆分口径。\n\n**财年结束日：01-31。** 这是本档案中对投资操作最有价值的字段。NVDA 采用**非自然年财年**，其 FY2027 第一个财季覆盖的是 2026 年 2 月—4 月。做跨公司同比、季度环比或\"最新一期财报\"定位时，若不先做这个日历对齐，极易把不同自然季度的数据当作同期比较。\n\n**全职员工：42,000。** 组件**未标注该数字的统计时点**，也没有给出与上一期的变化。这是全表中口径最模糊的字段：它既可能是最新 10-K 口径，也可能是第三方数据库的滞后值。在没有时点的情况下，不宜用它计算人均收入或人均利润——那会得到一个无法归因的比率。\n\n**办公地址：2788 San Tomas Expressway, Santa Clara, CA 95051。** 与简介中\"1993 年 4 月在加州注册成立、1998 年 4 月在特拉华州重新注册\"形成一致的法律—运营结构：**运营总部在加州，注册地在特拉华**。这一点对理解公司治理、股东诉讼管辖与州税安排有意义。\n\n**成立日期字段返回 \"--\"（空值）。** 这是本次渲染中唯一缺失的字段，且我未用任何估算值填充。成立时间需从简介原文取：\"incorporated in California in April 1993\"——即**成立于 1993 年 4 月，早于上市约 5 年 9 个月**。字段与简介不一致时，以简介原文为准，并把它当作已知缺口披露。\n\n**主营业务与简介的粒度差异：** 主营字段仅为一句 \"Provides accelerated computing and graphics solutions.\"；简介则补充了\"GPU 与 Tegra 两大业务基于同一底层架构\"，以及\"硬件＋系统软件＋可编程算法＋库＋系统＋服务\"的平台战略。两段文字都**未标注更新日期**，属于定性自我描述（tagline \"The world leader in Artificial Intelligence Computing\" 同为营销定位），**不含任何收入占比、地区分布或客户集中度信息**。按组件契约，这些内容只能回答\"这家公司做什么\"，不能回答\"钱从哪来、增长在哪一段\"。\n\n**网站字段：** 值为 \"www.nvidia.com;investor.nvidia.com\"，两个域名被合并进单个字段，href 也是同一合并串——组件不会把它拆成两个可点击入口，使用时需人工区分公司站与投资者关系站。\n\n[[AIME_CHART:case:inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html]]\n\n上图即本次生成的 NVDA 公司资料业务组件（原生 about_company 组件渲染，简体中文、浅色初始主题，支持运行时空/深色切换）。图中最需要盯住的不是公司名，而是 **\"成立日期\"一格显示为 \"--\"、\"财年结束日\"一格明确写着 01-31**：前者提示这个字段在本数据源上不可用，任何\"成立于 X 年\"的表述必须回到简介原文；后者则是可直接落到财报日历上的硬约束。把这两格与\"上市日期 01/22/1999\"并排看，就能得出本组件唯一可被量化的结论——**NVDA 是一家有 27.7 年上市历史、以 1 月底为财年末、注册于特拉华而运营于加州的半导体公司**，其余字段均为定性或未标时点的描述。\n\n## 对投资判断的含义与下一步确认点\n\n**这份档案能支撑什么：** 标的身份核验（避免同名/ADR 混淆）、板块初筛、财报日历对齐、以及作为其他模块（收入拆分、估值、评级、资金流）的统一键值入口。它的正确用法是**当作这些模块的前置条件，而不是结论**。\n\n**它明确不能支撑什么：** 任何关于增长、利润率、AI 收入占比、客户集中度或估值的判断。全员 42,000 若被直接用于人均指标，会因缺少时点而产生系统性偏差。\n\n**下一步应确认的三件事：** ① 员工数的统计时点（对应哪一份 10-K）；② 最新财季归属（在 01-31 财年制下明确是 FY 哪一季）；③ 收入结构口径（数据中心/游戏/专业可视化/汽车等分部占比），这需要收入来源拆分组件而非本档案。\n\n## 数据时间与口径披露\n\n- **数据日期：2026-10-14**（本次执行于 2026-10-14 16:38 CST 通过组件内置数据源实时抓取 AInvest 股票页摘要，`https://www.ainvest.com/stocks/NASDAQ-NVDA/`）。抓取结果与 2026-10-14 保存的同一份结构化快照**逐字段完全一致**，因此本次结论可视为 2026-10-14 当日有效。\n- **组件性质：** 静态公司档案，**不含财报期间、不含行情时间序列、不含派生比率**；除\"上市日期\"可折算上市时长外，其余字段无时间维度。\n- **缺失与降级：** \"成立日期\"为真实空值（组件原样渲染为 \"--\"），未做任何填充；\"全职员工 42,000\"未标注统计时点，属口径不完整数据，本回答仅作字段陈述、未用于派生计算。\n- 未使用示例数据、模拟数值或旧 HTML 复制；本次为重新取数与重新渲染产物。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-about_company-e121456e83494589816bf2845fedd689",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-about_company-e121456e83494589816bf2845fedd689",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398f92aa7661b36b6e90cfab99cc)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5087
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5477
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6517
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6928
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8014
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8571
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10396
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 10768
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 14246
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17179
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 22327
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 25327
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 33370
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34016
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 34757
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 38204
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 40420
+      }
+    ],
+    "startedAt": 1791967070201,
+    "endedAt": 1791967121845,
+    "elapsedMs": 51644,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967070201,
+        "endedAt": 1791967121845,
+        "elapsedMs": 51644
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-about_company-e121456e83494589816bf2845fedd689",
     "renderer": "about_company.py",
-    "schema": "about_company.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398f92aa7661b36b6e90cfab99cc)",
+      "candidateCount": 45
+    }
   }
 }

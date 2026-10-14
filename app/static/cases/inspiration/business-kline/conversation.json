@@ -1,23 +1,247 @@
 {
-  "question": "请展示 NVDA 的价格与成交量，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 JPM 的近期价格、成交量与趋势确认信号，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:01:04.332000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的价格与成交量，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 价格与成交量\n\n这份案例用原生业务组件展示价格与成交量，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-kline/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 JPM 的近期价格、成交量与趋势确认信号，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,yahoo-data,vision-chart-analyst",
+      "label": "business-chart-recall + yahoo-data + vision-chart-analyst",
+      "script": "business-chart-recall + yahoo-data + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
+    "reportUrl": "/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-kline/chart.html",
-        "url": "/static/cases/inspiration/business-kline/chart.html"
+        "path": "case:inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
+        "url": "/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-kline/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成 JPM 的取数、计算、原生业务组件渲染与视觉校验，以下是分析与产物。\n\n## 核心结论\n\nJPM 目前处于「中期高位回调、短期下跌动能衰减但趋势尚未确认反转」的状态。最新一个交易日（2026-10-13）出现**高位反转长上影 + 放量**，是最值得警惕的信号；同时 MACD 柱刚翻正，给出一线企稳线索，但缺量能配合，属于**弱确认**，不足以判定趋势反转。\n\n## 关键证据（日K，数据截至 2026-10-13）\n\n- **价格**：收 331.43，当日 −0.86%；开 339.97 → 最高 344.355 → 最低 331.17，全天振幅 3.97%，**几乎收在当日最低**，回吐全部涨幅。\n- **均线**：MA5 331.94 / MA10 331.98 / MA20 337.52 / MA60 349.64，收盘同时低于四条均线，且 MA5<MA20<MA60 空头排列未破坏，MA20 十日斜率向下（约 −11.6 点）。短期压力最近的是 MA10/MA20 区域（332–337.5）。\n- **成交量**：当日 1376 万股，为 20 日均量（847 万）的 **1.62 倍**、60 日均量的 1.95 倍，是近 20 日第二大量；但 5 日均量（791 万）仍低于 20 日均量，说明低位整体成交是缩量状态，**这一根放量属事件性放量，而非趋势性放量**。\n- **趋势确认信号**：MACD 柱 **+0.136**，由前一日 −0.081 翻正，是 8 月 17 日以来首次 DIF 上穿 DEA；但 DIF(−5.12)/DEA(−5.18) 仍在零轴下方深度负值区，只是「下行动能减弱」，**不是多头确认**。RSI(14)=37.3，处于弱势区但未超卖（近 20 日区间 31.6–48.1）。\n- **区间位置**：距 52 周高点 366.50（2026-08-13）−9.57%，距 52 周低点 279.10（2026-03-12）+18.75%；近 1 年 +10.15%、年初至今 +2.86%，中期结构尚未转坏。\n- **支撑/压力**：下方 325.07（10-07 低点，10-07、10-08 两次测试未破），上方 355.60（09-16 高点），再上为 349.64（MA60）与 366.50（52 周高点）。\n- **形态**：近 20 日高点低于前 20 日高点、低点也低于前 20 日低点，10-13 的 344.355 上冲未破 09-16 的 355.60，构成**更低的高点**。\n\n## 图表解读\n\n[[AIME_CHART:case:inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html]]\n\n图中三处标注（近期支撑 325.07、近期压力 355.60、MA5 331.94）由 JEV K线标记策略基于同一份已验证 OHLCV 生成（策略 threshold-reference，置信度 0.86），坐标未人工编造。\n\n- **主图最重要的一处变化**是最右侧一根 K 线：先冲高至 344.355、再收在 331.17 附近，长上影直接抹掉全部涨幅并在放量下收盘——这解释了为什么价格重新落回 MA5/MA10（332 附近）之下，而不是站稳。\n- **副图 VOL** 中可看到与 09-18（1831 万股、20 日均量 2.16 倍，当日收盘几乎持平）并列的两根量柱：放量并未带来有效上行突破，属于**放量滞涨/派发式成交**。\n- **副图 MACD** 柱由负转正、贴近零轴，与主图「价格仍被 MA20 压制」形成分歧：这是典型的「动能衰减但趋势未反转」，需要价格与量能来裁决。\n\n## 验证与操作含义（参考，非建议）\n\n向上确认需要**三个条件同时出现**：收盘站上 MA20 337.52、成交量放大到 20 日均量（约 850 万股）以上、MACD 柱连续为正并向零轴收敛。目前只满足第三项的一半。\n向下风险触发点是**放量收破 325.07**：一旦跌破，10-13 的长上影将被确认为更低的高点，20 日下行结构延续，下一参考为 3 月低点区域 279.10 上方区间。\n\n## 风险与口径说明\n\n- 数据来源为组件内置行情源（日K 共 799 根，2023-08-08 至 2026-10-13），组件同时提供分时/日/周/月/1H/2H/4H，可在图内切换周期核对。\n- 指标口径：MA 5/10/20/60、MACD(12,26,9)、RSI(14)、VOL 由组件原生计算；文中均线数值为同一 OHLCV 序列的近 N 日收盘均值，与图中显示可能存在末位四舍五入差异。\n- **降级/限制披露**：本机未配置 JEV 规划所需的模型密钥时无法自动选点，本次已正常完成自动规划；若需人工增删标记，图内仍保留画线工具。此外 MACD/RSI 属滞后指标，仅一个交易日的柱体翻正不构成趋势确认，缩量反弹最容易被 MA20 压制回落。\n- 结论强度：价格与均线结构证据充分（强），趋势反转判断证据不足（弱），因此按「动能衰减、趋势未确认」表述，不做方向性押注。\n- 视觉校验：已用多模态组件复读渲染结果，最新可见交易日 10/13、收盘 331.43 与 MA20 337.52、MA60 349.64、压力 355.60、支撑 325.07 均与计算结果一致。\n- 本文为技术面研究记录，不构成投资建议。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-kline-395891a52eab44f8854be66f767398b1",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-kline-395891a52eab44f8854be66f767398b1",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a243c57edbbe37ce061d4cc42f)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 23534
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 23541
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 25050
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 25069
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 27543
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28256
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29232
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 32246
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36353
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36794
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 37939
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 39402
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 39770
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 82794
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 85922
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 88105
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 89728
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 90858
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 92559
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 94698
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 98336
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 99577
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 101233
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 101976
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 104883
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 107648
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 108071
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 113480
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 114064
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 115842
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 117750
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 119686
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 122222
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 123376
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 124890
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 131067
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 133495
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 136193
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 148428
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 152985
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 155010
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 156444
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 166498
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 168333
+      }
+    ],
+    "startedAt": 1791968275687,
+    "endedAt": 1791968464332,
+    "elapsedMs": 188645,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968275687,
+        "endedAt": 1791968464332,
+        "elapsedMs": 188645
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-kline-395891a52eab44f8854be66f767398b1",
     "renderer": "kline.py",
-    "schema": "kline.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a243c57edbbe37ce061d4cc42f)",
+      "candidateCount": 45
+    }
   }
 }

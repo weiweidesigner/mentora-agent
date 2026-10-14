@@ -1,23 +1,243 @@
 {
-  "question": "请展示 GOOGL 的营收预期与实际，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AMD 的最近已披露营收与分析师预期差异，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:07:16.474000+08:00",
   "answer": {
-    "question": "请展示 GOOGL 的营收预期与实际，解释主要指标和观察方法。",
-    "interpretation": "# GOOGL · 营收预期与实际\n\n这份案例用原生业务组件展示营收预期与实际，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-revenue_estimate/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-30 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AMD 的最近已披露营收与分析师预期差异，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html",
+    "reportUrl": "/static/cases/inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-revenue_estimate/chart.html",
-        "url": "/static/cases/inspiration/business-revenue_estimate/chart.html"
+        "path": "case:inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html",
+        "url": "/static/cases/inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-revenue_estimate/chart.html",
+    "payloadUrl": null,
+    "interpretation": "**AMD 已连续四个季度营收超预期，但\"超预期的厚度\"正在快速变薄**：Q4'25 实际比预期高 **6.22%（+6.02 亿美元）**，到 Q2'26 只剩 **2.00%（+2.26 亿美元）**，而 Q3'26 一致预期 130.62 亿美元隐含环比 **+13.2%**、高于 Q2'26 实际实现的 +12.5%。也就是说，**市场对 AMD 的预期抬升速度快于其\"再超预期\"的能力**——这才是本次营收预期差数据里最值得关注的拐点，而不是\"又超预期\"这个表面结论。\n\n[[AIME_CHART:case:inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html]]\n\n上图（AInvest 收入组件：实心点＝实际值，空心点＝分析师预期，悬浮显示预期差）显示，**四个已披露季度的实际点全部位于预期点之上**，但两类点之间的垂直缝隙从左向右持续收窄：Q3'25 的 +5.59% 在 Q4'25 扩大到 +6.22% 后，Q1'26 降至 +3.57%，Q2'26 进一步降到 +2.00%。最右侧 Q3'26 只有一个空心预期点（13.06，标注\"待披露\"），组件右侧同时给出\"下次披露 Nov 3, 2026\"——**这条缝隙的下一步走向就是 11 月 3 日的检验点**。\n\n关键观察点：\n\n1. **超预期幅度连续三个季度收窄，绝对金额也同步缩小**。四个季度的预期差依次为 +0.49、+0.60、+0.35、+0.23 十亿美元，最近一期是窗口内最小值（最大值为 Q4'25）。**\"继续超预期\"的门槛已从 6 亿美元级别降到 2 亿美元级别**，同样幅度的超预期所能带来的正向惊喜明显减弱。\n2. **实际营收的环比动能其实在改善，与预期差收窄方向相反**。Q4'25 环比 +11.1%，Q1'26 几乎走平（**-0.17%，10.25 亿美元**），Q2'26 回升至 **+12.5%（115.36 亿美元）**。实际经营动能不弱，预期差变薄更多来自\"预期追得更快\"：Q3'26 的预期值本身较上一季度预期上修了 **15.5%**，是窗口内最大的一次上修。**这与\"公司变差\"是两回事，但确实压缩了估值对业绩的容错空间**。\n3. **下一期的门槛被抬得更高**。Q3'26 预期 130.62 亿美元对应环比 +13.2%、同比（对 Q3'25 实际 92.46 亿美元）**+41.3%**，这是本组数据中最高的一档隐含增速。若实际环比落在 13% 附近、即便小幅超预期，也可能被解读为动能未能再加速；反之若延续 Q2'26 的环比斜率并叠加超预期，预期差有重新扩大的可能。\n\n**风险与口径说明**：样本仅 4 个已披露季度，**不足以断定\"超预期能力趋势性下降\"**；连续收窄也可能源于分析师在财报前集中上修，本组件不提供公司自身指引区间，因此无法区分\"预期上修\"与\"实际不及内部计划\"。预期值为第三方分析师一致预期口径，实际值与预期值均按组件数据源归一化，与公司新闻稿可能存在四舍五入级差异。\n\n**数据时间与来源**：本次使用 `revenue_estimate.py` 原生业务组件的内置数据源**实时取数于 2026-10-14**（简体中文、浅色初始主题、运行时支持深浅切换），单位为十亿美元，季度口径为自然季度（如 Q2'26 披露日 2026-08-04）。您提供的历史快照（快照保存日期 **2026-07-30**）经读取后确认为 **GOOGL** 的存量 payload，与本次 AMD 请求标的不一致，且实时接口本次取数成功，故该快照未作为输入使用，**全部数值均来自 2026-10-14 的重新拉取与本次重新渲染**。\n\n**验证与降级披露**：产物已通过无头浏览器校验——渲染无 JS 报错，标题、图例（实际值/预估值）、单位（B）与最新预期值 13.06 均正常显示，截图已存盘；环境未配置多模态模型密钥，因此**自动化视觉复核未能执行（降级为 DOM/文本级校验）**，图表结论以组件数据与派生计算为准。分析中间产物：实时 payload、环比/同比/预期差派生结果分别存于 `outputs/generated/` 下同名 `-payload-2026-10-14.json` 与 `-derived.json`。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-revenue_estimate-8b5218b6a58b44ae92bfa66737554892",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-revenue_estimate-8b5218b6a58b44ae92bfa66737554892",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a849be79058e0ca9e039a1bf18)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2635
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2663
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4845
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5260
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8105
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8543
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9563
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 9989
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11716
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 12146
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14869
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 15268
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 21355
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23412
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 38190
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 38197
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40091
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40505
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 41976
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42382
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 44560
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 45010
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 45993
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 52108
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 53815
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 55254
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56440
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 58454
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60405
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67012
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 67433
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 76868
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 85036
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 87040
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 89543
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 90957
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 96630
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 98828
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 111966
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 117491
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 123146
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 129707
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 136377
+      }
+    ],
+    "startedAt": 1791968692063,
+    "endedAt": 1791968836474,
+    "elapsedMs": 144411,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968692063,
+        "endedAt": 1791968836474,
+        "elapsedMs": 144411
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-revenue_estimate-8b5218b6a58b44ae92bfa66737554892",
     "renderer": "revenue_estimate.py",
-    "schema": "revenue_estimate.schema.json",
-    "dataDate": "2026-07-30",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a849be79058e0ca9e039a1bf18)",
+      "candidateCount": 45
+    }
   }
 }

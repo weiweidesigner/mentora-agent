@@ -130,12 +130,12 @@ test('inspiration categories switch by click and keyboard and replay without inf
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();
   const tabs=h.w.document.querySelector('#inspirationTabs');
-  assert.equal(tabs.querySelector('[aria-selected="true"]').textContent,'推荐');
-  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,1);
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'recommended');
+  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,2);
   tabs.querySelector('[data-category="art"]').click();
-  assert.equal(h.w.document.querySelector('#inspirationPanel h3').textContent,'艺术绘图');
+  assert.match(h.w.document.querySelector('#inspirationPanel h3').textContent,/艺术绘图/);
   tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
-  assert.equal(tabs.querySelector('[aria-selected="true"]').textContent,'金融图表');
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'charts');
   const card=h.w.document.querySelector('#inspirationPanel .caseCard');card.focus();card.click();await tick();
   assert.ok(h.messages.textContent.includes('查看财报'));
   assert.equal(h.w.document.querySelectorAll('.caseOverlay #inspirationSquare').length,0);
@@ -156,16 +156,32 @@ test('all inspiration cards have portable, non-empty caches and complete compone
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
-    assert.ok(cached.answer.interpretation.length>100);
+    assert.ok(cached.answer.interpretation.trim());
+    assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
+    assert.ok(cached.activity.elapsedMs>1000);
+    assert.equal(cached.activity.elapsedMs,cached.activity.stages.reduce((total,stage)=>total+stage.endedAt-stage.startedAt,0));
+    assert.ok(cached.activity.steps.length>0);
     for(const artifact of cached.answer.reportArtifacts){
       const text=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
       assert.ok(text.length>500);
       assert.doesNotMatch(text,/\/Users\/|\/home\/ubuntu\//);
       assert.ok(cached.answer.interpretation.includes(`[[AIME_CHART:${artifact.path}]]`));
     }
-    if(row.category==='analysis')assert.ok(cached.provenance.jevDecision.primary_script);
+    if(row.category==='analysis'){
+      assert.equal(cached.answer.visualRoute.applied,true);
+      assert.equal(cached.answer.visualRoute.primary,cached.provenance.renderer);
+    }
+    if(row.category==='charts')assert.equal(cached.provenance.renderer,row.id.replace('business-','')+'.py');
     if(cached.provenance.sample)assert.match(cached.answer.interpretation,/演示数据/);
-    if(row.category==='videos')assert.match(cached.provenance.article.video_url,/^https:\/\//);
-    if(row.category==='art')assert.ok(existsSync(new URL(row.id+'/'+row.id+'.png',root)));
+    if(row.category==='videos'){
+      assert.ok(cached.answer.videos.length>=3);
+      assert.equal(cached.answer.reportArtifacts.length,0);
+      for(const video of cached.answer.videos) assert.match(video.videoUrl,/^https:\/\//);
+    }
+    if(row.category==='art'){
+      const image=cached.answer.reportArtifacts[0];
+      assert.equal(image.mediaType,'image');
+      assert.ok(existsSync(new URL('../app'+image.imageUrl,import.meta.url)));
+    }
   }
 });

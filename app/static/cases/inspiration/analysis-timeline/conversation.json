@@ -1,43 +1,762 @@
 {
-  "question": "用时间线展示财报研究日程，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "核验 AAPL 2026 年已发生的财报披露与重要公司公告，用时间线展示，必须有日期和来源。",
+  "cachedAt": "2026-10-14T17:14:06.351000+08:00",
   "answer": {
-    "question": "用时间线展示财报研究日程，使用清楚标注的金融演示数据。",
-    "interpretation": "# 财报研究日程\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-timeline/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "核验 AAPL 2026 年已发生的财报披露与重要公司公告，用时间线展示，必须有日期和来源。",
+    "code": "",
+    "selectedSkill": {
+      "key": "generic-chart,business-chart-recall,yahoo-data,external-search,internal-search,vision-chart-analyst",
+      "label": "generic-chart + business-chart-recall + yahoo-data + external-search + internal-search + vision-chart-analyst",
+      "script": "generic-chart + business-chart-recall + yahoo-data + external-search + internal-search + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026.html",
+    "reportUrl": "/static/cases/inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-timeline/chart.html",
-        "url": "/static/cases/inspiration/analysis-timeline/chart.html"
+        "path": "case:inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026.html",
+        "url": "/static/cases/inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026.html"
+      },
+      {
+        "path": "case:inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026-kline.html",
+        "url": "/static/cases/inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026-kline.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-timeline/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "timeline.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "payloadUrl": null,
+    "interpretation": "核验完成。以下是结论、证据与图表解读。\n\n## 核心结论\n\n**AAPL 在 2026 年内（截至 2026-10-14）已完成 3 次财报披露，无遗漏，Q4 FY2026 尚未发生。**\n\n1. **三个财季已披露**：Q1 FY2026 于 2026-01-29、Q2 于 2026-04-30、Q3 于 2026-07-30 发布。三次营收分别为 1,438 亿、1,112 亿、1,094 亿美元，**同比均为 +16%**。\n2. **股东回报两次动作**：2026-04-30 将季度股息由 0.26 上调至 0.27 美元/股（+4%），并**额外授权最高 1,000 亿美元回购**；当年已支付股息三次（02-12、05-14、08-13）。\n3. **一次治理级事件**：2026-04-20 公告 CEO 交接，**2026-09-01 John Ternus 正式接任**，Tim Cook 转任执行董事长。\n4. **市场只对 Q3 给出负反馈**：Q3 披露后首个交易日 **-7.35%**（333.43→308.91 美元），为年内最大单日跌幅；而 Q2 后 +3.24%、Q1 后仅 +0.46%。这说明**披露日期本身可核验，但价格反应并不随\"业绩好\"线性对应**。\n5. 股价 2026 年内累计约 **+25.9%**（至 10-13 收 341.27 美元，阶段高点 348.15 美元）。\n\n## 2026 年披露与公告时间线\n\n时间线覆盖 2026-01-12 至 2026-11-02 共 11 个节点，每个节点均带具体日期，并在条目内标注可核验出处（Apple Newsroom 业绩稿、SEC Form 8-K/10-Q、Apple Investor Relations）。颜色按类别区分：蓝色为财报披露、绿色为股息、橙色为公司治理、紫色为产品与活动。\n\n[[AIME_CHART:case:inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026.html]]\n\n图中最需要留意的两点：一是 **2026-04-30 一个节点同时承载\"财报 + 股息上调 + 千亿回购授权\"三重信息**，是全年信息密度最高的披露日；二是末端 **2026-11-02 的 Q4 电话会已排期但未发生**，已明确标注为未披露状态，未与已发生事件混同。\n\n## K 线与披露事件的对照\n\nK 线复用业务原生渲染内核（`kline.py`），数据为 2026-01-02 至 2026-10-13 共 196 个真实交易日，事件标注由 JEV 标记规划在已核验事件上选出 3 个财报节点。\n\n[[AIME_CHART:case:inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026-kline.html]]\n\n图中最重要的变化是 **7 月末的结构断裂**：Q3 披露前股价自 3 月低点 245.51 美元一路震荡上行至 333 美元上方，7-30 财报后次日直接下挫 7.35%，随后在 8–9 月才重新修复并创出 348.15 美元阶段高点。技术面看，现价 341.27 美元仍低于前高，MA5/MA10/MA20 在 336–339 一带粘合、MA60 位于 324.31，MACD 柱值 -0.06 刚由正转弱——**属于上行趋势中的动能放缓，而非趋势反转确认**。\n\n## 风险、数据时间与口径\n\n**数据时间**：价格数据截至 2026-10-13 收盘；事件核验截至 2026-10-14。\n\n**口径与降级披露（重要）**：\n- **价格**：Yahoo Finance 日线，实际走的是美股日线回退通道（Nasdaq historical API），仅提供未复权 OHLCV，`adj_close` 为空；因此除息日附近的涨跌幅含除息影响，不做复权修正。\n- **财务数值**：Yahoo 的季度营收/净利润序列本次返回**无可用数据**（结构化 `yahoo-data-unavailable`）；AInvest 利润表与关键财务指标的季度记录为空，营收费用模块返回 `security info is not found`。**因此季度营收与 EPS 采用 Apple Newsroom 业绩稿口径**，经两轮外部检索交叉一致。Q1 与 Q3 的**净利润为第三方摘要口径**，Apple 官方稿片段未列净利润，可靠性低于营收与 EPS 两项。\n- **WWDC 2026** 细节（iOS 27、改版 Siri 等）来自媒体报道，**不是公司业绩披露**，仅作事件标记，不构成财务证据。\n- **AInvest 端内新闻检索返回的条目缺少发布时间与正文**，未作为本次证据使用。\n- **Q4 FY2026 未披露**：业绩稿、对应 SEC 8-K 与 Q4 股息均未发布，任何 Q4 数值均不应出现在本时间线的\"已发生\"部分。\n\n**风险提示**：CEO 交接生效后的首个完整财季（Q4 FY2026）尚未披露，管理层过渡对毛利率与经营现金流的影响无法用现有数据评估；Q3 的毛利率与 EPS 含关税退款的一次性有利影响，剔除后增速会低于表面数字。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-timeline-4202a35773cf4484aa5500d03d2f357d",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-timeline-4202a35773cf4484aa5500d03d2f357d",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [
+      {
+        "siteName": "Apple Newsroom Q1",
+        "url": "https://www.apple.com/newsroom/2026/01/apple-reports-first-quarter-results/",
+        "title": "Apple Newsroom Q1",
+        "summary": "| Q1 FY2026 | 2026-01-29，电话会 2:00 p.m. PT | 财季截至 2025-12-27 | Apple 官方：营收 $143.8B，同比 +16%；摊薄 EPS $2.84，同比 +19%；iPhone 与 Services 创新高，活跃设备安装基数超 2.5B。净利润：$42.1B（第三方摘要 Quartr；Apple 官方返回片段未列净利润）。 | Apple Newsroom Q1 · Quartr",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Quartr 摘要",
+        "url": "https://quartr.com/events/apple-inc-aapl-q1-2026_3s71WCZV",
+        "title": "Quartr 摘要",
+        "summary": "| Q1 FY2026 | 2026-01-29，电话会 2:00 p.m. PT | 财季截至 2025-12-27 | Apple 官方：营收 $143.8B，同比 +16%；摊薄 EPS $2.84，同比 +19%；iPhone 与 Services 创新高，活跃设备安装基数超 2.5B。净利润：$42.1B（第三方摘要 Quartr；Apple 官方返回片段未列净利润）。 | Apple Newsroom Q1 · Quartr",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple Newsroom Q2",
+        "url": "https://www.apple.com/newsroom/2026/04/apple-reports-second-quarter-results/",
+        "title": "Apple Newsroom Q2",
+        "summary": "| Q2 FY2026 | 2026-04-30，电话会 2:00 p.m. PT | 2026 年 3 月季度 / 自然年 Q1 | 营收 $111.2B，净利润 $29.6B，摊薄 EPS $2.01；毛利率 49.3%；经营现金流超 $28B。官方公告确认股息与回购授权。 | Apple Newsroom Q2 · MacRumors 数值 |",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "MacRumors 数值",
+        "url": "https://www.macrumors.com/2026/04/30/apple-2q-2026-earnings/",
+        "title": "MacRumors 数值",
+        "summary": "| Q2 FY2026 | 2026-04-30，电话会 2:00 p.m. PT | 2026 年 3 月季度 / 自然年 Q1 | 营收 $111.2B，净利润 $29.6B，摊薄 EPS $2.01；毛利率 49.3%；经营现金流超 $28B。官方公告确认股息与回购授权。 | Apple Newsroom Q2 · MacRumors 数值 |",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple Newsroom Q3",
+        "url": "https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/",
+        "title": "Apple Newsroom Q3",
+        "summary": "| Q3 FY2026 | 2026-07-30，电话会 2:00 p.m. PT | 财季截至 2026-06-27 | Apple 官方：营收 $109.4B，同比 +16%；毛利率 50.1%，含约 2 个百分点关税退款有利影响；摊薄 EPS $2.02，同比 +29%，含 $0.11 关税退款有利影响。净利润：$29.8B（MacRumors 标题/报道）。 | Apple Newsroom Q3 · MacRumors 数值/",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "MacRumors 数值/电话会",
+        "url": "https://www.macrumors.com/2026/07/30/apple-3q-2026-earnings/",
+        "title": "MacRumors 数值/电话会",
+        "summary": "| Q3 FY2026 | 2026-07-30，电话会 2:00 p.m. PT | 财季截至 2026-06-27 | Apple 官方：营收 $109.4B，同比 +16%；毛利率 50.1%，含约 2 个百分点关税退款有利影响；摊薄 EPS $2.02，同比 +29%，含 $0.11 关税退款有利影响。净利润：$29.8B（MacRumors 标题/报道）。 | Apple Newsroom Q3 · MacRumors 数值/",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "jamessharp.co.uk",
+        "url": "https://www.jamessharp.co.uk/market-news/apple-reports-third-quarter-results/",
+        "title": "James Sharp 转引 Apple Q3 稿",
+        "summary": "- Q3 FY2026：维持 $0.27/股，2026-08-13 支付，2026-08-10 登记；未见再次上调。来源：James Sharp 转引 Apple Q3 稿",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Mashable WWDC 直播汇总",
+        "url": "https://mashable.com/tech/apple-wwdc-2026-keynote-live-updates",
+        "title": "Mashable WWDC 直播汇总",
+        "summary": "- 主题演讲：2026-06-08 10:00 a.m. PT，Apple Park；WWDC 会期至 2026-06-12。发布重点包括 iOS 27 / iPadOS 27 / macOS 27、改版 AI 版 Siri、Liquid Glass 可读性改进；多家现场报道称这是 Tim Cook 以 CEO 身份主持的最后一次 WWDC keynote。来源：Mashable WWDC 直播汇总",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple Services 年度更新",
+        "url": "https://www.apple.com/newsroom/2026/01/2025-marked-a-record-breaking-year-for-apple-services/",
+        "title": "Apple Services 年度更新",
+        "summary": "- Apple 官方 2026-01-12 更新：Services 2025 年创纪录；App Store 全球平均每周用户超 850M，开发者自 2008 年以来累计收入超 $550B；Apple Pay 覆盖 89 个市场。来源：Apple Services 年度更新",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Insider Finance",
+        "url": "https://www.insiderfinance.io/news/apple-ceo-transition",
+        "title": "Insider Finance",
+        "summary": "- CEO 交接需谨慎标注：本次返回结果中没有 Apple Newsroom/SEC 官方交接稿；仅有二级来源称 Apple 于 2026-04-20 宣布、John Ternus 2026-09-01 接任 CEO、Tim Cook 转任执行董事长。因缺少官方来源，建议待核验。来源示例：Insider Finance · Elephas",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Elephas",
+        "url": "https://elephas.app/resources/apple-new-ceo-john-ternus",
+        "title": "Elephas",
+        "summary": "- CEO 交接需谨慎标注：本次返回结果中没有 Apple Newsroom/SEC 官方交接稿；仅有二级来源称 Apple 于 2026-04-20 宣布、John Ternus 2026-09-01 接任 CEO、Tim Cook 转任执行董事长。因缺少官方来源，建议待核验。来源示例：Insider Finance · Elephas",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Bybit 日程说明",
+        "url": "https://www.bybit.com/en/wiki/article/apple-earnings-date-2026-aapl-reporting-schedule/",
+        "title": "Bybit 日程说明",
+        "summary": "补充：Q4 FY2026 不在用户要求的 Q1–Q3 范围内；第三方日程仅估计为约 2026-10-29，非 Apple 官方确认。来源：Bybit 日程说明",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "SEC EDGAR AAPL filings",
+        "url": "https://www.sec.gov/edgar/browse/?CIK=320193",
+        "title": "SEC EDGAR AAPL filings",
+        "summary": "| FY2026 季度股息：Board 宣告/支付 | Q1 FY26：Apple 于 2026-01-29 发布业绩并宣告股息；record date 2026-02-09，payable 2026-02-12。官方 Apple Newsroom：是；SEC：EDGAR 有 2026-01-29 8-K Item 2.02/9.01。来源：Apple Q1 FY26 results、SEC EDGAR AAPL filings。<br",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Q2 FY26 Form 10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000013/aapl-20260328.htm",
+        "title": "Q2 FY26 Form 10-Q",
+        "summary": "| FY2026 季度股息：Board 宣告/支付 | Q1 FY26：Apple 于 2026-01-29 发布业绩并宣告股息；record date 2026-02-09，payable 2026-02-12。官方 Apple Newsroom：是；SEC：EDGAR 有 2026-01-29 8-K Item 2.02/9.01。来源：Apple Q1 FY26 results、SEC EDGAR AAPL filings。<br",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Q3 FY26 Form 10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/aapl-20260627.htm",
+        "title": "Q3 FY26 Form 10-Q",
+        "summary": "| FY2026 季度股息：Board 宣告/支付 | Q1 FY26：Apple 于 2026-01-29 发布业绩并宣告股息；record date 2026-02-09，payable 2026-02-12。官方 Apple Newsroom：是；SEC：EDGAR 有 2026-01-29 8-K Item 2.02/9.01。来源：Apple Q1 FY26 results、SEC EDGAR AAPL filings。<br",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "apple.com",
+        "url": "https://www.apple.com/newsroom/2026/04/tim-cook-to-become-apple-executive-chairman-john-ternus-to-become-apple-ceo/",
+        "title": "Apple Newsroom CEO transition",
+        "summary": "| CEO succession：Tim Cook → John Ternus | 公告日：2026-04-20；生效日：2026-09-01。安排：Tim Cook 转任 executive chairman；John Ternus 任 CEO 并加入董事会；Arthur Levinson 于同日转为 lead independent director。Apple Newsroom：是；SEC：EDGAR 显示 2026-04-20",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple Earnings Call",
+        "url": "https://www.apple.com/investor/earnings-call/",
+        "title": "Apple Earnings Call",
+        "summary": "| Q4 FY2026 earnings date | Apple IR 页面列示：Monday, 2026-11-02，2:00 p.m. PT / 5:00 p.m. ET。截至 2026-10-14，Q4 FY26 业绩新闻稿与对应 SEC 8-K 尚未发布。来源：Apple Earnings Call、Apple Investor Relations。 | Apple IR/earnings-call 页面：是；Apple Ne",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "Apple Investor Relations",
+        "url": "https://investor.apple.com/investor-relations/default.aspx",
+        "title": "Apple Investor Relations",
+        "summary": "| Q4 FY2026 earnings date | Apple IR 页面列示：Monday, 2026-11-02，2:00 p.m. PT / 5:00 p.m. ET。截至 2026-10-14，Q4 FY26 业绩新闻稿与对应 SEC 8-K 尚未发布。来源：Apple Earnings Call、Apple Investor Relations。 | Apple IR/earnings-call 页面：是；Apple Ne",
+        "iconUrl": ""
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "timeline.py",
+      "supporting": null,
+      "selectedScripts": [
         "timeline.py"
       ],
-      "primary_script": "timeline.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.96,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "events-and-causality",
-      "semantic_lens_confidence": 0.97,
-      "primary_purpose": "{\"chartType\": \"timeline\", \"script\": \"timeline.py\", \"purpose\": \"Render dated events or milestones in chronological order.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Rows should include a date/period field and an event/label field.\"}, \"semanticChannels\": [{\"channel\": \"time\", \"payloadField\": \"items[].date or events[].date\", \"required\": true, \"acceptedTypes\": [\"date\", \"string\"], \"semantics\": \"event date or period\"}, {\"channel\": \"event.label\", \"payloadField\": \"items[].title or events[].title\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"event or milestone name\"}, {\"channel\": \"event.detail\", \"payloadField\": \"items[].description or events[].description\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"short supporting detail\"}], \"payloadShape\": {\"title\": \"string\", \"items\": [{\"date\": \"string\", \"title\": \"string\", \"description\": \"string\"}]}, \"modelInstructions\": [\"Sort events chronologically.\", \"Use concrete dates when available.\"]}",
-      "supporting_purpose": "",
-      "visual_encoding": "event-overlay",
-      "visual_encoding_confidence": 0.79,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.94,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.43
-    },
-    "jevError": null
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.81,
+      "semanticLens": "events-and-causality",
+      "semanticLensConfidence": 0.99,
+      "primaryPurpose": "Render dated events or milestones in chronological order. schema semantics=event date or period; event or milestone name; short supporting detail",
+      "supportingPurpose": "",
+      "visualEncoding": "event-overlay",
+      "visualEncodingConfidence": 0.96,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.48,
+      "markStrategy": "event-callouts",
+      "markStrategyConfidence": 0.67,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3965
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5034
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23978
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 24380
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 26061
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 26479
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 28169
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 28169
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29992
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 30394
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 32626
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33053
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34482
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34891
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 36595
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 37116
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 38690
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 39124
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42514
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42906
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 45769
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 46169
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 47967
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 48335
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 49643
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 50053
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 59392
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 60799
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 61187
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 63263
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 63682
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65865
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 68372
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 68770
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 72412
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 72808
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 74668
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 77893
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 79446
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 79886
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 81432
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 81432
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 83721
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 203365
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 204753
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 205183
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 351198
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 351585
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 354252
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 354684
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 356926
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 357306
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 425431
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 425885
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 428672
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 429076
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 431044
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 431492
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 435255
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 435767
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 437193
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 541429
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 543687
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 544087
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 548226
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 548593
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 550638
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 555730
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 556133
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 557893
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 558321
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 559100
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 559504
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 561499
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 561918
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 563193
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 567792
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 568236
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 569357
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 569775
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 570740
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 572192
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 575639
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 577379
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 632194
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 634049
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 634416
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 654649
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 655038
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 656230
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 657815
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 658235
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 659549
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 664054
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 667544
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 670125
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 670882
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 672301
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 672697
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 676575
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 687855
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 689385
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 692277
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 692686
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 696532
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 697126
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 699222
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 699600
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 709273
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 709656
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 711451
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 721213
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 721619
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 729594
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 731429
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 735874
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 740468
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 743111
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 743548
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 744392
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 745595
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 749955
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 750307
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 760387
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 778206
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 780159
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 782894
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 786796
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 787226
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 646
+      }
+    ],
+    "startedAt": 1791968441527,
+    "endedAt": 1791969246351,
+    "elapsedMs": 805470,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968441527,
+        "endedAt": 1791969246351,
+        "elapsedMs": 804824
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791969410208,
+        "endedAt": 1791969410854,
+        "elapsedMs": 646
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-timeline-4202a35773cf4484aa5500d03d2f357d",
+    "renderer": "timeline.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "timeline.py",
+      "supporting": null,
+      "selectedScripts": [
+        "timeline.py"
+      ],
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.81,
+      "semanticLens": "events-and-causality",
+      "semanticLensConfidence": 0.99,
+      "primaryPurpose": "Render dated events or milestones in chronological order. schema semantics=event date or period; event or milestone name; short supporting detail",
+      "supportingPurpose": "",
+      "visualEncoding": "event-overlay",
+      "visualEncodingConfidence": 0.96,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.48,
+      "markStrategy": "event-callouts",
+      "markStrategyConfidence": 0.67,
+      "candidateCount": 45
+    }
   }
 }

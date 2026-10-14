@@ -1,23 +1,183 @@
 {
-  "question": "请展示 AAPL 的利润与分红率，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的净利润、现金分红及分红率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:02:41.587000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的利润与分红率，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 利润与分红率\n\n这份案例用原生业务组件展示利润与分红率，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-payout_ratio/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的净利润、现金分红及分红率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html",
+    "reportUrl": "/static/cases/inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-payout_ratio/chart.html",
-        "url": "/static/cases/inspiration/business-payout_ratio/chart.html"
+        "path": "case:inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html",
+        "url": "/static/cases/inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-payout_ratio/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成：用 `payout_ratio.py` 原生业务组件对 AAPL 重新实时取数、计算并渲染（非复制旧案例）。\n\n---\n\n## 核心结论\n\n**苹果的分红率正在刷新历史低位：FY2025 现金分红 152.76 亿美元、归母净利润 1,120.1 亿美元，分红率仅 13.64%，是 FY2013–FY2025 十三个完整财年中的最低值**——分红金额本身创历史新高，但分红率反而最低。**分红率下行的原因不是\"分红变少\"，而是\"利润涨得更快\"**：FY2012→FY2025 分红增长 515%（13 年 CAGR 15.0%），净利润只增长 168%（CAGR 7.9%），分母扩张速度远超分子，比率被利润稀释。\n\n更关键的是，这不是单年波动，而是一次**结构性台阶**：FY2013–FY2020 分红率年均 **25.32%**，FY2021–FY2025 年均 **14.94%**，中枢下移 **10.38 个百分点**。**FY2021 是分水岭——净利润同比 +64.9%，分红仅 +2.8%，分红率单年下滑 9.09pp，为全序列最大降幅。** 此后四年分红率被锁在 13.6%–16.1% 的窄区间内，FY2025 在净利润同比 +19.5% 的年份反而再降 2.44pp 至 13.64%，说明**分红政策的增量完全跟不上盈利的增量**。\n\n[[AIME_CHART:case:inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html]]\n\n**图表解读（柱=金额，线=分红率，默认窗口 2018–2025）**：图中最重要的视觉信号是 **2021 年蓝柱（净利润）一次性跳升而青柱（分红）几乎平走**，橙线（分红率）随即从 2020 年的 24.13% 断崖式下移至 15.03%，这一跳构成了此后四年的新平台。第二个信号是**青柱的斜率极其平坦**——2018–2025 年分红从 135.45 亿缓步增至 152.76 亿美元（八年仅 +12.8%，年均约 1.7%），而蓝柱在 595 亿→1,120 亿美元之间大幅波动。因此橙线的每一次反弹都来自利润回撤（2024 年净利润同比 −3.4%，分红率被动回升至 16.08%），而不是分派加码；**FY2025 利润创新高时橙线立刻回到区间底部**，印证分红率的方向由盈利周期主导。\n\n## 关键证据\n\n| 财年 | 归母净利润（B USD） | 现金分红（B USD） | 分红率 | 分红后留存 |\n|---|---|---|---|---|\n| 2013 | 37.04 | 10.62 | 28.66% | 26.42 |\n| 2020 | 57.41 | 13.85 | 24.13% | 43.56 |\n| 2021 | 94.68 | 14.23 | 15.03% | 80.45 |\n| 2024 | 93.74 | 15.07 | 16.08% | 78.66 |\n| **2025** | **112.01** | **15.28** | **13.64%** | **96.73** |\n\n- **分红可持续性充足，低分红率不等于分红风险**：FY2025 分红 152.76 亿美元仅消耗 1,120.1 亿美元净利润的 13.6%，分红后仍留存 967.3 亿美元，覆盖倍数约 7.3 倍。\n- **分红绝对额增长在近年明显钝化**：FY2021–FY2025 分红同比增速依次为 +2.8%、+2.7%、+1.4%、+1.7%、+1.3%，与 FY2013–FY2018 的 +327%、+4.7%、+3.1%、+4.5%、+5.0%、+7.8% 相比，已进入近乎\"象征性年增\"的阶段。\n- **对投资者的含义**：以分红率衡量，苹果是典型的**低派息、重留存**结构，把绝大部分利润留作内生投入与股东回报的其他形式；因此这个 13.64% **不能读作\"股东总回报率\"**，也不能用来比较高股息标的的收益率水平。\n\n## 风险、数据时间与口径\n\n- **口径**：分红率 = 现金分红总额 ÷ 归母净利润；金额单位 B USD；**财年口径**（苹果财年约于每年 9 月底结束），与自然年口径的分红统计不可直接混用。\n- **数据时间**：本次于 **2026-10-14** 通过 AInvest `abroad/finance/v2/dividend_programme` 接口实时重新取数，标的 AAPL（NASDAQ，market 185）。**实时返回值与 2026-07-29 快照逐字段完全一致**，说明这 2.5 个月内该数据集未更新。\n- **数据陈旧必须披露**：序列止于 **FY2025**。截至取数日，FY2026（2026 年 9 月底结束）尚未进入该数据集，因此最新年度与取数日之间存在**约一年的数据空档**，本文所有\"最新\"均指 FY2025，不代表 FY2026 已披露结果。\n- **FY2012 不可比**：苹果于 2012 年 8 月才恢复派息，该年仅含部分派息期，5.95% 的分红率是口径残缺所致，故分段均值一律从 FY2013 起算。\n- **组件覆盖范围限制**：该业务组件只覆盖现金分红，**不含股票回购**。苹果实际资本回报规模显著高于分红率所体现的水平，因此本文结论仅适用于\"现金分红政策\"这一维度，不能外推为完整股东回报评价。\n- **单年归母净利润存在波动**（FY2016 −14.4%、FY2019 −7.2%、FY2023 −2.8%、FY2024 −3.4%），分红率的阶段性反弹多由利润回撤被动造成，解读时不应视为政策转向。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-payout_ratio-8322c0c571c548fd819829df86a1aa57",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-payout_ratio-8322c0c571c548fd819829df86a1aa57",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a4cffe76afa8dcf3d0557f58e6)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2326
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2696
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3254
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5526
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5973
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7037
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7501
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 8828
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 18217
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20441
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24588
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 24948
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31754
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 31755
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 33552
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 33969
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 35212
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 42162
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 47862
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 50892
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 53925
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56992
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 59690
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 71210
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 75686
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 85736
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 86138
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 87361
+      }
+    ],
+    "startedAt": 1791968464332,
+    "endedAt": 1791968561587,
+    "elapsedMs": 97255,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968464332,
+        "endedAt": 1791968561587,
+        "elapsedMs": 97255
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-payout_ratio-8322c0c571c548fd819829df86a1aa57",
     "renderer": "payout_ratio.py",
-    "schema": "payout_ratio.schema.json",
-    "dataDate": "2026-07-29",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a4cffe76afa8dcf3d0557f58e6)",
+      "candidateCount": 45
+    }
   }
 }

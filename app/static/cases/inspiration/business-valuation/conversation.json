@@ -1,23 +1,351 @@
 {
-  "question": "请展示 NVDA 的估值全景，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的市值、市盈率、市销率等估值指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:21:54.520000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的估值全景，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 估值全景\n\n这份案例用原生业务组件展示估值全景，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-valuation/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的市值、市盈率、市销率等估值指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,yahoo-data,code-interpreter",
+      "label": "business-chart-recall + yahoo-data + code-interpreter",
+      "script": "business-chart-recall + yahoo-data + code-interpreter",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-valuation/inspiration-real-business-valuation-aapl.html",
+    "reportUrl": "/static/cases/inspiration/business-valuation/inspiration-real-business-valuation-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-valuation/chart.html",
-        "url": "/static/cases/inspiration/business-valuation/chart.html"
+        "path": "case:inspiration/business-valuation/inspiration-real-business-valuation-aapl.html",
+        "url": "/static/cases/inspiration/business-valuation/inspiration-real-business-valuation-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-valuation/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成本次真实取数、计算、原生组件渲染与 DOM 级验证。\n\n## 核心结论\n\n以 **2026-10-13** 收盘为快照（本次执行时间 2026-10-14），苹果估值呈现\"盈利倍数扩张、账面倍数反而回落\"的组合：\n\n- **市值约 $4.98T**（341.27 美元 × 隐含股本 145.94 亿股），处于过去一年市值的**最高点**（一年区间 3.58T–4.98T，均值 4.18T），比均值高 19.0%。\n- **市盈率（TTM）约 38.6 倍、市销率（TTM）约 10.7 倍**，均高于一年前按 FY2025 口径的 32.3 倍与 8.7 倍；**市净率反而从 49.0 倍降到 46.3 倍**。\n- 拆解市值同比 **+37.8%** 的来源：盈利增长 ≈ 43.9%，**估值倍数扩张 ≈ 56.1%**——即过去一年市值涨幅中，**超过一半不是靠利润增长赚来的**，而是市场愿意付更高倍数。\n- 基本面本身不弱：TTM 净利率 27.6%、ROE 约 119.9%（受回购压缩的净资产基数放大），EPS(TTM) 8.83 美元。\n\n## 图表：AAPL 估值摘要（valuation.py 原生业务组件）\n\n[[AIME_CHART:case:inspiration/business-valuation/inspiration-real-business-valuation-aapl.html]]\n\n图中的核心判断：**双环以市值为 100% 标尺绘制，收入环仅覆盖约 9.4% 周长、盈利环仅约 2.6%**。这个\"两环都极短\"的形态，就是 P/S≈10.7、P/E≈38.6 的视觉表达——每 1 美元 TTM 收入被定价约 10.7 倍、每 1 美元 TTM 净利被定价约 38.6 倍。也就是说，当前近 5 万亿美元市值的支撑，绝大部分是对未来增长的预期，而不是当期利润与收入的规模本身。悬浮提示与图例（市值/收入/盈利）显示对应金额。\n\n## 关键证据（本次重新计算，非引用旧案例）\n\n| 指标 | 当前（TTM 截至 2026-06-27） | 一年前口径（FY2025，截至 2025-09-27） |\n|---|---|---|\n| 市值 | $4.98T（2026-10-13） | $3.61T（2025-10-13），同比 **+37.8%** |\n| 市盈率 | **38.63 倍** | 32.27 倍，同比 **+19.7%** |\n| 市销率 | **10.67 倍** | 8.69 倍 |\n| 市净率 | **46.32 倍** | 49.02 倍（**下降**） |\n| 收入 | $466.82B（同比 +12.2%） | $416.16B |\n| 净利 | $128.93B（同比 +15.1%） | $112.01B |\n| 股东权益 | $107.52B | $73.73B（+45.8%，9 个月） |\n\n三处值得注意的细节：\n\n1. **倍数扩张快于盈利增长**：净利 +15.1%、收入 +12.2%，但市值 +37.8%。P/E 一年内抬升 19.7%，且市值正好落在一年区间顶部（区间位置 100%），意味着估值容错空间比一年前更小。\n2. **P/B 逆势回落是回购的会计效应**：股东权益从 73.73B 增至 107.52B（+45.8%），增速快于市值，才使 P/B 从 49 倍降至 46.3 倍。用 P/B 判断苹果估值会严重失真——净资产基数被长期回购压得很薄，119.9% 的 ROE 也是同一原因放大出来的，不宜当作经营效率的直接证据。\n3. **一致性校验通过**：价格/EPS(TTM) = 341.27/8.83 = 38.63，与市值/净利 = 38.63 完全吻合；组件市值隐含股本 14,594,179,520 股，与 SEC 披露的 14,594,180,000 股（2026-07-17）误差仅 480 股，说明市值口径可靠。\n\n## 风险、数据时间与口径（含降级披露）\n\n- **数据时间**：行情与市值快照 2026-10-13 收盘；TTM 财务截至 2026-06-27（10-Q 于 2026-07-31 报送）；对比用的 FY2025 年度截至 2025-09-27。**两者相差约三个季度，同比倍数对比属口径近似**，不应视为严格同口径的倍数变化。\n- **数据源降级（重要）**：valuation.py 唯一内置数据源（AInvest 分析页）本次**连续 4 次失败**（页面正文节点为空、导航被销毁），组件因此回退为\"暂无数据\"，我**没有采用该空图**；用户提供的 `payload.json` 是 **NVDA 的 noData 状态**，不含 AAPL 任何数值，不能作为本次输入。因此本次改用 **Yahoo Finance**（市值、TTM 收入、TTM 净利）与 **SEC XBRL**（股东权益、股本）真实结构化数据，填入组件 dataContract 明确定义的字段（marketCap/revenue/earnings/ratios），再由 valuation.py 自身管线渲染，产物 payload 的 source 字段已如实标注降级来源。\n- **组件模板限制（影响可见性）**：double_ring_pie 模板中底部指标行样式为 `.metric-list{display:none}`，因此**市盈率/市销率/市净率数值存在于产物 DOM 与 payload 中（已用 DOM 校验确认：38.63 / 10.67 / 46.32），但默认不显示在画面上**。按 Skill 规定不修改业务组件样式，故上表以文字完整给出这三个比率，避免出现\"图上没有关键指标\"的误导。\n- **市值口径**：Yahoo 市值 = 收盘价 × 隐含股本，属估算口径，非交易所官方市值；未做企业价值、现金/债务调整。\n- **未能完成的交叉验证**：key_statistics.py 的 Yahoo key-statistics 接口本次持续返回 429 限流，无法取得官方已披露倍数做二次比对，已用上述两项内部一致性校验替代。\n- 本结果为估值口径的事实梳理，不构成买卖建议；TTM 数据未做一次性项目与非 GAAP 调整。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-valuation-abc26303e6994af0a2a4e9bac107f532",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-valuation-abc26303e6994af0a2a4e9bac107f532",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b1573b7bd887340bff4874827e)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2227
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2634
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4195
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4580
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6073
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6455
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7421
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 10585
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 10585
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 40003
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40020
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42404
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42794
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 45749
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 46109
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 50523
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 54492
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 54906
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60872
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 96163
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 100846
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 104580
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 113131
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 129165
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 137060
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 141077
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 148356
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 158849
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 162381
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 211054
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 215775
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 218324
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 226883
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 227898
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 235538
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 239223
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 241169
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 254983
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 263213
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 269419
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 270970
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 278053
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 285224
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 285644
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 289167
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 291077
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 292677
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 294624
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 302556
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 304380
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 305824
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 308960
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 311049
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 316991
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 327469
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 327881
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 332717
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 343743
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 346318
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 353166
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 358792
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 361395
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 364011
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 366480
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 370204
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 376139
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 377481
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 381587
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 408956
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 414451
+      }
+    ],
+    "startedAt": 1791969285367,
+    "endedAt": 1791969714520,
+    "elapsedMs": 429153,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791969285367,
+        "endedAt": 1791969714520,
+        "elapsedMs": 429153
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-valuation-abc26303e6994af0a2a4e9bac107f532",
     "renderer": "valuation.py",
-    "schema": "valuation.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b1573b7bd887340bff4874827e)",
+      "candidateCount": 45
+    }
   }
 }

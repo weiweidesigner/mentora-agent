@@ -1,23 +1,311 @@
 {
-  "question": "请展示 AAPL 的企业资本结构，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的市值、负债、现金和企业价值，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:56:12.541000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的企业资本结构，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 企业资本结构\n\n这份案例用原生业务组件展示企业资本结构，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-capital_structure/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的市值、负债、现金和企业价值，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,vision-chart-analyst",
+      "label": "business-chart-recall + vision-chart-analyst",
+      "script": "business-chart-recall + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html",
+    "reportUrl": "/static/cases/inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-capital_structure/chart.html",
-        "url": "/static/cases/inspiration/business-capital_structure/chart.html"
+        "path": "case:inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html",
+        "url": "/static/cases/inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-capital_structure/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成。以下是基于真实数据的分析与实际生成产物。\n\n## 核心结论\n\n**AAPL 的企业价值几乎完全由股权价值构成，负债与现金对估值的调节作用极小（合计仅约 2.7%）。** 2026-07-29 快照口径下：市值 **4.99 万亿美元**，总负债 **827.14 亿美元**，现金及等价物 **455.72 亿美元**，企业价值 **5.03 万亿美元**。瀑布图里\"负债\"柱几乎看不见、\"现金\"柱很薄，正是这一结构的直观体现——EV 与市值之间只差一个很小的净债务台阶。\n\n## 图表\n\n[[AIME_CHART:case:inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html]]\n\n瀑布图口径（组件内置算法）：市值 → +负债 → −现金等价物 → =企业价值，四项数值满足恒等式 `4.9949T + 0.0827T − 0.0456T = 5.0320T`（校验差值 = 0），即该快照中的企业价值与按\"市值＋负债−现金\"自行推导的结果完全一致，说明组件展示的是同一套自洽口径，而非拼接数据。\n\n## 关键观察点\n\n**1. EV 桥的每一步都很小，\"台阶\"只有 0.75%**\n净债务 = 827.14 − 455.72 = **371.42 亿美元**，仅相当于市值的 **0.744%**；企业价值 = 市值 × 1.0075。对投资者最实用的推论是：**对 AAPL 而言，企业价值倍数（EV/EBIT、EV/FCF）与市值口径倍数几乎等价**，用 P/E 或市值/自由现金流去近似判断估值，误差不到 1 个百分点——不需要为公司资本结构单独做溢价或折价调整。\n\n**2. 杠杆率处于极低水平，偿债风险不是当前定价变量**\n负债/市值仅 **1.66%**；现金/负债 = **0.55**，即账上现金只能覆盖约 55% 的债务。这个数字看似\"不宽裕\"，但这是绝对规模陷阱：827 亿美元债务对应近 5 万亿美元市值与超千亿美元级的年度经营现金流，利息覆盖能力远非\"55%\"所能反映，因此不应据此判断偿债压力。相反，**现金略低于债务意味着公司并非\"净现金\"公司**，这是与部分大型科技同行（净现金状态）的关键差异。\n\n**3. 现金口径是这张图最容易被误读的地方（重要）**\n组件所用数据源把\"现金及等价物\"记为 455.72 亿美元。用 SEC XBRL 实测交叉核对 Apple 最新一期 10-Q（期末 2026-06-27，2026-07-31 提交，accession 0000320193-26-000020）：现金及等价物为 **395.44 亿美元**，短期投资 228.55 亿美元，两者合计 **624.00 亿美元**。也就是说：\n- 快照的 455.72 亿与 SEC 的 395.44 亿相差约 60 亿，属于**现金/短期投资/受限现金的分类口径差异**；\n- 若把变现能力接近现金的短期投资计入，净债务将从 371 亿降至约 **199 亿**（≈市值的 0.4%），**结论方向不变，但力度更强**。\n因此第 1、2 点结论对口径不敏感，属于稳健结论；而\"现金覆盖率 55%\"这类比值对口径高度敏感，只能作为口径内比较使用。\n\n**4. 权益端变化的速度远高于债务端**\n同一批 SEC 数据显示，总债务从 2026 财年 Q1 的 827.00 亿美元微降至 Q3 的 823.47 亿美元，而流通股从 146.87 亿股降至 145.94 亿股（持续回购）。**在 EV 桥中唯一快速移动的变量是市值（股权价格与股本），债务与现金基本是缓慢变量**——这解释了为什么 AAPL 的 EV 走势在中短期几乎等同于股价走势。\n\n## 风险与限制（必须与结论一起读）\n\n- **数据时效性（重要）**：正文所有市场与财务数值均来自 **2026-07-29 保存的快照**。快照之后 Apple 已披露 2026 财年 Q3 报告（2026-07-31 提交），资产负债表已更新（现金 395.44 亿、总债务 823.47 亿），因此**当前实时快照与图中数值存在可预期差异**；请勿把图中数值当作实时市值。\n- **取数降级过程（已确认）**：本次执行优先调用组件内置实时取数，Yahoo 基本面接口在 `query1` 与 `query2` 两个主机上均返回 **HTTP 429（限流）**，组件原生链路不可用；因此按你的授权改用上述已真实获取的 2026-07-29 结构化快照，并通过组件原生渲染逻辑**重新渲染**（未复制旧 HTML、未复制旧正文）。SEC XBRL 与 Nasdaq 接口在同一时段可正常访问，用于上述交叉核对。\n- **组件契约限制**：`capital_structure.py` 只接受单一股票代码、不支持自定义数据源，因此无法把最新一期 SEC 数据直接注入同一组件重绘；SEC 数值仅作为文字层面的交叉验证，未混入图中。\n- **单点快照限制**：该组件不提供历史时间序列，无法用它观察资本结构随时间的变化；本文第 4 点的时间比较来自 SEC 多期数据，而非该图表。\n- **视觉验证状态**：视觉验证脚本因未配置视觉模型密钥（`VISION_API_KEY`）无法执行，**未完成模型级图像解读**。已改用结构化验证替代：无头 Chromium 渲染后 DOM 确认四个柱体与中文标签（市值／负债／现金等价物／企业价值）齐全，像素取色确认四色柱体（#2ab7a1／#ffad2f／#ff3d7f／#3477ed）真实绘制，并确认 `?theme=dark` 可运行时切换、根背景透明。\n- **构成提示**：现金抵扣按\"−455.72 亿\"参与瀑布，若改用含短期投资的口径，EV 与净债务都会下调，但不改变\"EV ≈ 市值\"的判断。\n\n## 数据时间与口径汇总\n\n| 项目 | 数值 | 口径/来源 |\n|---|---|---|\n| 数据日期 | 2026-07-29（快照）；本次重绘 2026-10-14 | 快照保存日期，非实时 |\n| 市值 | 4.99 万亿美元 | 快照原值 4,994,876,028,480 USD |\n| 总负债 | 827.14 亿美元 | 快照原值 82,714,000,000 USD |\n| 现金等价物 | 455.72 亿美元 | 快照原值 45,572,000,000 USD（口径见观察点 3） |\n| 企业价值 | 5.03 万亿美元 | 市值＋负债−现金，与快照 EV 校验一致（差值 0） |\n| 组件 | `app/skills/business-chart-recall/scripts/capital_structure.py` | 原生资本结构瀑布组件，语言 zh-CN，主题 light，支持运行时浅深切换 |\n\n产物文件（均在 `outputs/generated/`，文件名以 `inspiration-real-business-capital_structure` 开头）：渲染图 `...-aapl.html`、组件 payload `...-aapl-payload.json`、核验与降级记录 `...-aapl-evidence.json`、无头渲染截图 `...-aapl-render.png`。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-capital_structure-26e80a5954c94367a17f02e6d429affa",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-capital_structure-26e80a5954c94367a17f02e6d429affa",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13990973978bab464931a153786b1)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2257
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3684
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4320
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6036
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6871
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9191
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10749
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11547
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12006
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 61947
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 64991
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 68196
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 73037
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 77847
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 84510
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 85515
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 89341
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 91778
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 95657
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 98077
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 101184
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 102895
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 108237
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 117348
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 119111
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 127970
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 130171
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 134895
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 137341
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 183827
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 787382
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 801987
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 803143
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 808384
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 808955
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 810885
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 814755
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 876422
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 880229
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 883496
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 938086
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 940423
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 954987
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 962891
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 967253
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 969957
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 972195
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 972643
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 975361
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 980146
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 981534
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 983318
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 988911
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 990397
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 998112
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 1001155
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 1004505
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 1012436
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 1014393
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 1018578
+      }
+    ],
+    "startedAt": 1791967139029,
+    "endedAt": 1791968172541,
+    "elapsedMs": 1033512,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967139029,
+        "endedAt": 1791968172541,
+        "elapsedMs": 1033512
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-capital_structure-26e80a5954c94367a17f02e6d429affa",
     "renderer": "capital_structure.py",
-    "schema": "capital_structure.schema.json",
-    "dataDate": "2026-07-29",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13990973978bab464931a153786b1)",
+      "candidateCount": 45
+    }
   }
 }

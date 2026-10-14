@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN" data-sv-preview="light" data-financial-market="US">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AAPL 股东回报 · 个股 / 行业 / 市场对比</title>
+<style>
+:root{color-scheme:light;--sv-surface-primary:#ffffff;--sv-surface-secondary:#f4f6f9;--sv-text-primary:#101828;--sv-text-secondary:#5a6679;--sv-border-subtle:#e3e8ef;--sv-price-up:#12805c;--sv-price-down:#c0392b;--sv-price-flat:#7a8699;}
+@media (prefers-color-scheme: dark){:root{color-scheme:dark;--sv-surface-primary:#151b24;--sv-surface-secondary:#1e2530;--sv-text-primary:#eef2f8;--sv-text-secondary:#9aa7ba;--sv-border-subtle:#2c3644;--sv-price-up:#2fbf85;--sv-price-down:#f0736a;--sv-price-flat:#9aa7ba;}}
+html[data-sv-preview="dark"]{color-scheme:dark;--sv-surface-primary:#151b24;--sv-surface-secondary:#1e2530;--sv-text-primary:#eef2f8;--sv-text-secondary:#9aa7ba;--sv-border-subtle:#2c3644;--sv-price-up:#2fbf85;--sv-price-down:#f0736a;--sv-price-flat:#9aa7ba;}
+html[data-sv-preview="light"]{color-scheme:light;--sv-surface-primary:#ffffff;--sv-surface-secondary:#f4f6f9;--sv-text-primary:#101828;--sv-text-secondary:#5a6679;--sv-border-subtle:#e3e8ef;--sv-price-up:#12805c;--sv-price-down:#c0392b;--sv-price-flat:#7a8699;}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;color:var(--sv-text-primary);background:transparent;padding:18px 16px 24px}
+.wrap{max-width:1080px;margin:0 auto}
+.bar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.bar h2{margin:0;font-size:17px;line-height:1.25;font-weight:800;color:var(--sv-text-primary)}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;background:var(--sv-surface-secondary);color:var(--sv-text-secondary);font-size:12px;line-height:1.3}
+button{font:inherit;font-size:12.5px;color:var(--sv-text-primary);background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:8px;padding:7px 13px;cursor:pointer}
+button:hover{border-color:var(--sv-text-secondary)}
+.surface{background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:12px;padding:10px}
+.frame{display:block;width:100%;height:600px;border:0;background:transparent;border-radius:8px}
+.caption{margin:8px 2px 0;color:var(--sv-text-secondary);font-size:12px;line-height:1.6}
+h3{margin:22px 0 8px;font-size:14.5px;font-weight:800;color:var(--sv-text-primary)}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+caption{caption-side:top;text-align:left;color:var(--sv-text-secondary);font-size:12px;padding:0 0 8px;line-height:1.6}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--sv-border-subtle);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;color:var(--sv-text-primary);font-weight:600}
+thead th{color:var(--sv-text-secondary);font-weight:600;font-size:12px}
+td.up,th.up{color:var(--sv-price-up)}
+td.down,th.down{color:var(--sv-price-down)}
+td.flat{color:var(--sv-price-flat)}
+.tbl-scroll{overflow-x:auto;background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:12px;padding:12px 14px}
+</style>
+</head>
+<body data-financial-market="US">
+<div class="wrap">
+  <div class="bar">
+    <div>
+      <h2>AAPL 股东回报：个股 vs 行业 vs 美股市场</h2>
+      <div class="badges">
+        <span class="badge">AAPL · NASDAQ</span>
+        <span class="badge">数据快照 2026-07-29</span>
+        <span class="badge">行业口径 Consumer Electronics</span>
+        <span class="badge">总回报 %（不含股息）</span>
+      </div>
+    </div>
+    <button id="toggle" type="button" aria-live="polite">切换深色</button>
+  </div>
+
+  <div class="surface" data-financial-market="US">
+    <iframe id="frame" class="frame" title="AAPL 股东回报分组柱状图"
+      src="inspiration-real-business-shareholder_returns.html"></iframe>
+  </div>
+  <p class="caption">原生股东回报业务组件：同一周期内三根柱体依次为个股、行业与市场总回报；5 年周期源组件未返回数据，柱体以半透明占位。</p>
+
+  <h3>超额差值明细</h3>
+  <div class="tbl-scroll">
+    <table>
+      <caption>个股回报减去行业/市场回报（百分点）。差值为正表示个股占优。数据时点：2026-07-29 快照。</caption>
+      <thead>
+        <tr><th scope="col">周期</th><th scope="col" class="up">AAPL</th><th scope="col" class="up">行业</th><th scope="col" class="up">美股市场</th><th scope="col">相对行业</th><th scope="col">相对市场</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+<script>
+const DATA = {"rows": [{"p": "7日", "s": -0.2, "i": 4.0, "m": -0.6, "vi": -4.2, "vm": 0.4}, {"p": "30日", "s": 13.6, "i": -6.7, "m": 0.8, "vi": 20.3, "vm": 12.8}, {"p": "90日", "s": 22.9, "i": 36.7, "m": 3.5, "vi": -13.8, "vm": 19.4}, {"p": "1年", "s": 55.8, "i": 134.2, "m": 16.5, "vi": -78.4, "vm": 39.3}, {"p": "3年", "s": 83.0, "i": 173.4, "m": 65.4, "vi": -90.4, "vm": 17.6}, {"p": "5年", "s": null, "i": null, "m": null, "vi": null, "vm": null}], "complete": 5, "passed": true};
+const fmt = v => v === null || v === undefined ? '--' : (v > 0 ? '+' : '') + v.toFixed(1) + '%';
+const cls = v => v === null || v === undefined ? 'flat' : (v > 0 ? 'up' : v < 0 ? 'down' : 'flat');
+const sgn = v => v === null || v === undefined ? '--' : (v > 0 ? '+' : '') + v.toFixed(1);
+document.getElementById('tbody').innerHTML = DATA.rows.map(r => `
+  <tr>
+    <td>${r.p}</td>
+    <td class="${cls(r.s)}">${fmt(r.s)}</td>
+    <td class="${cls(r.i)}">${fmt(r.i)}</td>
+    <td class="${cls(r.m)}">${fmt(r.m)}</td>
+    <td class="${cls(r.vi)}">${sgn(r.vi)}</td>
+    <td class="${cls(r.vm)}">${sgn(r.vm)}</td>
+  </tr>`).join('');
+const frame = document.getElementById('frame');
+const toggle = document.getElementById('toggle');
+const LIGHT = 'inspiration-real-business-shareholder_returns.html';
+const DARK = 'inspiration-real-business-shareholder_returns-dark-frame.html';
+function setTheme(mode) {
+  document.documentElement.dataset.svPreview = mode;
+  frame.src = mode === 'dark' ? DARK : LIGHT;
+  toggle.textContent = mode === 'dark' ? '切换浅色' : '切换深色';
+}
+toggle.addEventListener('click', () => setTheme(document.documentElement.dataset.svPreview === 'dark' ? 'light' : 'dark'));
+const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+setTheme(preferred);
+</script>
+</body>
+</html>

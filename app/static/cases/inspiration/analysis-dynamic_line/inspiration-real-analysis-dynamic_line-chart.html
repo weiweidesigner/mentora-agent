@@ -1,0 +1,1554 @@
+<!doctype html>
+<html lang="zh">
+<head><script src="/static/cases/theme.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AAPL / MSFT / NVDA 近一年归一化股价走势（首个交易日=100）</title>
+  <script src="/static/vendor/echarts.min.js"></script>
+<script>window.echarts||document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"><\/script>')</script>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #0b0e14;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #wrap {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background:
+        radial-gradient(circle at top, rgba(30, 64, 175, 0.16), transparent 36%),
+        #0b0e14;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(51, 65, 85, 0.42);
+      box-sizing: border-box;
+    }
+
+    #chart {
+      width: 100%;
+      height: 100vh;
+    }
+
+    #timelineBar {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.84);
+      border: 1px solid rgba(59, 80, 120, 0.42);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+      box-sizing: border-box;
+    }
+
+    #playBtn {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(96, 165, 250, 0.24);
+      background: linear-gradient(180deg, #377dff 0%, #1d4ed8 100%);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.24);
+    }
+
+    #playBtn:active {
+      transform: scale(0.96);
+    }
+
+    .pillBtn {
+      flex: 0 0 auto;
+      height: 30px;
+      min-width: 42px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(17, 24, 39, 0.92);
+      color: #dbe7ff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .pillBtn:active {
+      transform: scale(0.98);
+    }
+
+    #musicBtn {
+      width: 30px;
+      min-width: 30px;
+      padding: 0;
+      color: #9fb3d9;
+    }
+
+    #musicBtn.on {
+      background: rgba(30, 64, 175, 0.88);
+      border-color: rgba(96, 165, 250, 0.58);
+      color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    #musicBtn.off {
+      background: rgba(17, 24, 39, 0.92);
+      color: #94a3b8;
+    }
+
+    #musicBtn.disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #musicBtn svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+    }
+
+    .timeLabel {
+      flex: 0 0 auto;
+      color: #91a4c6;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.05;
+      white-space: nowrap;
+      min-width: 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .timeLabel .md {
+      font-size: 10px;
+      color: #dbe5f3;
+      font-weight: 600;
+      line-height: 1.05;
+      width: 100%;
+    }
+
+    .timeLabel .yy {
+      font-size: 9px;
+      color: #8192ad;
+      font-weight: 500;
+      line-height: 1.05;
+      margin-top: 1px;
+      width: 100%;
+    }
+
+    #sliderWrap {
+      position: relative;
+      flex: 1 1 auto;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    #sliderTrack {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.18);
+      pointer-events: none;
+    }
+
+    #sliderProgress {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.92), rgba(59, 130, 246, 0.96));
+      pointer-events: none;
+      width: 0%;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.22);
+    }
+
+    #timelineRange {
+      position: relative;
+      width: 100%;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      height: 22px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    #timelineRange::-webkit-slider-runnable-track {
+      height: 4px;
+      background: transparent;
+      border-radius: 999px;
+    }
+
+    #timelineRange::-moz-range-track {
+      height: 4px;
+      background: transparent;
+      border-radius: 999px;
+    }
+
+    #timelineRange::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 2px solid #4ea1ff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+      margin-top: -4px;
+    }
+
+    #timelineRange::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 2px solid #4ea1ff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+    }
+
+    #errorBox {
+      display: none;
+      box-sizing: border-box;
+      padding: 16px 18px;
+      color: #fca5a5;
+      background: #0b0e14;
+      font-family: Arial, sans-serif;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      #wrap {
+        border-radius: 16px;
+      }
+
+      #timelineBar {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        gap: 6px;
+        padding: 7px 8px;
+        border-radius: 15px;
+      }
+
+      #playBtn,
+      .pillBtn,
+      #musicBtn {
+        height: 28px;
+      }
+
+      #playBtn,
+      #musicBtn {
+        width: 28px;
+        min-width: 28px;
+      }
+
+      .pillBtn {
+        min-width: 40px;
+        padding: 0 9px;
+        font-size: 10px;
+      }
+
+      .timeLabel {
+        min-width: 34px;
+      }
+
+      .timeLabel .md {
+        font-size: 9px;
+      }
+
+      .timeLabel .yy {
+        font-size: 8px;
+      }
+    }
+  </style>
+
+  <style id="projectDynamicLineStyle">
+    html, body {
+      height: auto !important;
+      min-height: 0 !important;
+      background: transparent !important;
+      overflow: hidden !important;
+    }
+    #wrap {
+      height: 520px !important;
+      min-height: 520px !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+    }
+    #chart {
+      height: 100% !important;
+    }
+    #timelineBar {
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 14px !important;
+      gap: 8px !important;
+      padding: 6px 8px !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: none !important;
+    }
+    #musicBtn,
+    #bgmAudio {
+      display: none !important;
+    }
+    #playBtn {
+      width: 28px !important;
+      height: 28px !important;
+      position: relative !important;
+      font-size: 0 !important;
+      line-height: 1 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+    }
+    #playBtn::before {
+      content: "" !important;
+      width: 0 !important;
+      height: 0 !important;
+      border-top: 4px solid transparent !important;
+      border-bottom: 4px solid transparent !important;
+      border-left: 6px solid #ffffff !important;
+      transform: translateX(1px) !important;
+    }
+    #playBtn.is-playing::before {
+      width: 8px !important;
+      height: 10px !important;
+      border: 0 !important;
+      border-radius: 1px !important;
+      background: linear-gradient(90deg, #ffffff 0 36%, transparent 36% 64%, #ffffff 64% 100%) !important;
+      transform: none !important;
+    }
+    .pillBtn {
+      height: 28px !important;
+      min-height: 28px !important;
+      line-height: 28px !important;
+      padding: 0 10px !important;
+      color: #151922 !important;
+      background: rgba(148, 163, 184, .10) !important;
+      border-color: transparent !important;
+    }
+    .timeLabel, .timeLabel .yy {
+      color: #687386 !important;
+    }
+    .timeLabel .md {
+      color: #151922 !important;
+    }
+    #sliderTrack {
+      background: rgba(76,145,255,.18) !important;
+    }
+    #timelineRange::-webkit-slider-thumb {
+      background: #4c91ff !important;
+      border: 0 !important;
+      box-shadow: 0 0 0 5px rgba(76,145,255,.14) !important;
+    }
+    #timelineRange::-moz-range-thumb {
+      background: #4c91ff !important;
+      border: 0 !important;
+      box-shadow: 0 0 0 5px rgba(76,145,255,.14) !important;
+    }
+    @media (max-width: 720px) {
+      #wrap {
+        height: 320px !important;
+        min-height: 320px !important;
+      }
+      #timelineBar {
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 12px !important;
+        gap: 7px !important;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap" data-financial-market="US">
+    <div id="chart"></div>
+
+    <div id="timelineBar">
+      <button id="playBtn" type="button" aria-label="播放">▶</button>
+      <button id="speedBtn" class="pillBtn" type="button" aria-label="播放速度">1x</button>
+      <div id="startLabel" class="timeLabel"></div>
+      <div id="sliderWrap">
+        <div id="sliderTrack"></div>
+        <div id="sliderProgress"></div>
+        <input id="timelineRange" type="range" min="0" max="0" value="0" step="1" />
+      </div>
+      <div id="endLabel" class="timeLabel"></div>
+      <button id="musicBtn" class="pillBtn off" type="button" aria-label="背景音乐开关" title="背景音乐已关闭">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M14.5 4.5a1 1 0 0 1 1.7.7v13.6a1 1 0 0 1-1.7.7l-4.7-4.5H6a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h3.8l4.7-4.5Z"></path>
+          <path d="M18.2 9.1a1 1 0 0 1 1.4 0 5 5 0 0 1 0 7.1 1 1 0 0 1-1.4-1.4 3 3 0 0 0 0-4.3 1 1 0 0 1 0-1.4Z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div id="errorBox"></div>
+    <audio id="bgmAudio" preload="auto" loop playsinline webkit-playsinline></audio>
+  </div>
+
+  
+  <style id="streamvizThemeBridge">
+    /* StreamViz theme bridge: root stays transparent, all reader-visible colors come from --sv-* tokens. */
+    #wrap,
+    #chart {
+      background: transparent !important;
+    }
+    .mobileDynamicHeader,
+    .mobileDynamicHeader * {
+      color: var(--sv-text-primary, var(--chart-text-primary)) !important;
+    }
+    .mobileDynamicFooter,
+    .mobileDynamicFooter * {
+      color: var(--sv-text-secondary, var(--chart-text-secondary)) !important;
+    }
+    #playBtn {
+      background: var(--sv-chart-series-1) !important;
+    }
+    #sliderTrack {
+      background: color-mix(in srgb, var(--sv-chart-series-1) 24%, transparent) !important;
+    }
+    #timelineRange::-webkit-slider-thumb {
+      background: var(--sv-chart-series-1) !important;
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--sv-chart-series-1) 16%, transparent) !important;
+    }
+    #timelineRange::-moz-range-thumb {
+      background: var(--sv-chart-series-1) !important;
+    }
+  </style>
+  <script id="streamvizDynamicLineTheme">
+    (function () {
+      var root = document.documentElement;
+      function readVar(name, fallback) {
+        var value = getComputedStyle(root).getPropertyValue(name).trim();
+        if (value) return value;
+        var host = document.body ? getComputedStyle(document.body).getPropertyValue(name).trim() : "";
+        return host || fallback;
+      }
+      function applyChartTheme() {
+        if (!window.__projectDynamicLineTheme) return;
+        // Only the resolved theme source changes; the native dynamic-line renderer keeps its own visuals.
+        window.__projectDynamicLineTheme = {
+          text: readVar("--sv-text-primary", "#151922"),
+          muted: readVar("--sv-text-secondary", "#687386"),
+          grid: readVar("--sv-border-subtle", "rgba(104,115,134,.13)"),
+          axis: readVar("--sv-border-subtle", "rgba(104,115,134,.12)"),
+          centerFill: readVar("--sv-border-subtle", "rgba(104,115,134,.13)")
+        };
+        root.style.setProperty("--streamviz-chart-surface", readVar("--sv-surface-primary", "transparent"));
+      }
+      applyChartTheme();
+      if (window.MutationObserver) {
+        new MutationObserver(function (records) {
+          for (var i = 0; i < records.length; i += 1) {
+            var name = records[i].attributeName || "";
+            if (name === "data-theme" || name === "class" || name === "style") {
+              applyChartTheme();
+              if (window.__streamvizRerenderChart) window.__streamvizRerenderChart();
+            }
+          }
+        }).observe(root, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+      }
+      if (window.matchMedia) {
+        var media = window.matchMedia("(prefers-color-scheme: dark)");
+        if (media.addEventListener) media.addEventListener("change", applyChartTheme);
+      }
+      window.__streamvizApplyChartTheme = applyChartTheme;
+    })();
+  </script>
+  <script id="projectDynamicLinePatch">
+    window.__projectDynamicLineTheme = {
+      text: "#151922",
+      muted: "#687386",
+      grid: "rgba(104, 115, 134, 0.13)",
+      axis: "rgba(104, 115, 134, 0.12)",
+      centerFill: "rgba(104,115,134,.13)"
+    };
+  </script>
+  <style id="dynamicLineMobileLayout">
+.mobileDynamicHeader{display:block;position:absolute;left:0;right:0;top:0;z-index:2}
+.mobileDynamicTitle{margin:0 0 10px;font:700 18px/1.4 sans-serif;overflow-wrap:anywhere}
+.mobileDynamicLegend{display:flex;flex-wrap:wrap;gap:8px 18px}
+.mobileDynamicLegend button{display:flex;align-items:center;gap:6px;min-width:0;padding:2px 0;border:0;background:transparent;color:inherit;font:12px/1.4 sans-serif;text-align:left;touch-action:manipulation}
+.mobileDynamicLegend i{width:16px;height:4px;flex:none;border-radius:2px}
+.mobileDynamicLegend b{font-weight:500;font-variant-numeric:tabular-nums}
+.mobileDynamicLegend button[aria-pressed="false"]{opacity:.4}
+#wrap #timelineBar{box-sizing:border-box;bottom:8px!important;min-width:0;left:var(--dynamic-player-left,0px)!important;right:var(--dynamic-player-right,0px)!important}
+@media(max-width:720px){
+ #wrap{height:var(--mobile-dynamic-height,380px)!important;min-height:0!important}
+ .mobileDynamicHeader{display:block;position:absolute;left:0;right:0;top:0;z-index:2}
+ .mobileDynamicTitle{margin:0 0 8px;font-size:14px;line-height:1.4;font-weight:700;color:var(--sv-text,#eef2f7);overflow-wrap:anywhere}
+ .mobileDynamicLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px}
+ .mobileDynamicLegend button{display:flex;align-items:center;gap:5px;min-width:0;padding:2px 0;border:0;background:transparent;color:inherit;font:10px/1.4 sans-serif;text-align:left;touch-action:manipulation}
+ .mobileDynamicLegend i{width:12px;height:3px;flex-shrink:0;border-radius:2px}
+ .mobileDynamicLegend span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mobileDynamicLegend b{margin-left:1px;font-weight:500;flex-shrink:0;font-variant-numeric:tabular-nums}
+ .mobileDynamicLegend button[aria-pressed="false"]{opacity:.4}
+ #timelineBar{left:var(--dynamic-player-left,0px)!important;right:var(--dynamic-player-right,0px)!important;bottom:8px!important;gap:6px!important;padding:6px 8px!important;box-sizing:border-box;min-width:0;max-width:100%}
+ #timelineBar #playBtn{box-shadow:0 2px 8px rgba(37,99,235,.24)!important}
+ #timelineBar .timeLabel{min-width:22px!important}
+ #timelineBar #playBtn,#timelineBar .pillBtn{flex-shrink:0}
+}
+</style>
+<script>
+const mobileLegendSelection={};
+
+let dynamicFullRangeCache=null;
+function getDynamicFullRange(){
+ if(dynamicFullRangeCache)return dynamicFullRangeCache;
+ const values=Object.values(fullSeriesDataMap).flat().filter(value=>value!==null&&value!==undefined&&value!=='').map(Number).filter(Number.isFinite);
+ if(!values.length)return {};
+ const low=Math.min(...values),high=Math.max(...values),span=high-low;
+ const pad=span>0?span*.02:Math.max(1,Math.abs(high)*.06);
+ const target=(span+2*pad)/4,power=Math.pow(10,Math.floor(Math.log10(target)));
+ const steps=[1,2,2.5,5,10,20].map(n=>n*power);
+ let step=steps.find(n=>n>=target)||steps.at(-1),min,max;
+ for(const candidate of steps.filter(n=>n>=step)){
+  step=candidate;
+  min=Math.floor((low-pad)/(step/2))*(step/2);
+  max=min+4*step;
+  if(max>=high+pad)break;
+ }
+ dynamicFullRangeCache={min:Number(min.toPrecision(12)),max:Number(max.toPrecision(12)),interval:step};
+ return dynamicFullRangeCache;
+}
+function getDynamicPlayerBottom(){return Math.ceil(document.getElementById('timelineBar').getBoundingClientRect().height)+24;}
+function alignDynamicPlayer(){
+ const wrap=document.getElementById('wrap');
+ wrap.style.setProperty('--dynamic-player-left','0px');
+ wrap.style.setProperty('--dynamic-player-right','0px');
+}
+
+function updateMobileDynamicHeader(){
+ let header=document.querySelector('.mobileDynamicHeader');
+ if(!header){header=document.createElement('div');header.className='mobileDynamicHeader';document.getElementById('wrap').append(header);}
+ const compact=isCompactLayout();header.hidden=false;
+ header.replaceChildren();
+ const heading=document.createElement('div');heading.className='mobileDynamicTitle';heading.textContent=title;heading.style.color=window.__projectDynamicLineTheme.text;header.append(heading);
+ const legend=document.createElement('div');legend.className='mobileDynamicLegend';legend.style.color=window.__projectDynamicLineTheme.muted;
+ seriesList.forEach((name,index)=>{
+  const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-pressed',String(mobileLegendSelection[name]!==false));
+  const marker=document.createElement('i');marker.style.background=colorPalette[index%colorPalette.length].line;
+  const label=document.createElement('span');label.textContent=name.replace(/（(.*?)）/g,'·$1');
+  const value=document.createElement('b'),data=fullSeriesDataMap[name]||[],point=getLastValidPoint(data.slice(0,Math.min(getSafeIndex(),data.length-1)+1));value.textContent=point?formatPlainValue(point.value):'—';
+  button.append(marker,label,value);button.onclick=()=>{mobileLegendSelection[name]=mobileLegendSelection[name]===false;renderChart();};legend.append(button);
+ });
+ header.append(legend);
+ const height=Math.ceil(header.getBoundingClientRect().height)+250+10+getDynamicPlayerBottom();
+ const wrap=document.getElementById('wrap');
+ if(compact && wrap.style.getPropertyValue('--mobile-dynamic-height')!==height+'px'){wrap.style.setProperty('--mobile-dynamic-height',height+'px');chart.resize();}
+}
+</script>
+<script>
+    const chart = echarts.init(document.getElementById('chart'));
+    const chartDom = document.getElementById('chart');
+    const errorBox = document.getElementById('errorBox');
+
+    const title = "AAPL / MSFT / NVDA 近一年归一化股价走势（首个交易日=100）";
+    const unit = "";
+    const xKey = "date";
+    const yKey = "value";
+    const seriesKey = "series";
+    const rows = [];
+    const seriesList = ["AAPL","MSFT","NVDA"];
+    const xList = ["2025-10-09","2025-10-10","2025-10-13","2025-10-14","2025-10-15","2025-10-16","2025-10-17","2025-10-20","2025-10-21","2025-10-22","2025-10-23","2025-10-24","2025-10-27","2025-10-28","2025-10-29","2025-10-30","2025-10-31","2025-11-03","2025-11-04","2025-11-05","2025-11-06","2025-11-07","2025-11-10","2025-11-11","2025-11-12","2025-11-13","2025-11-14","2025-11-17","2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24","2025-11-25","2025-11-26","2025-11-28","2025-12-01","2025-12-02","2025-12-03","2025-12-04","2025-12-05","2025-12-08","2025-12-09","2025-12-10","2025-12-11","2025-12-12","2025-12-15","2025-12-16","2025-12-17","2025-12-18","2025-12-19","2025-12-22","2025-12-23","2025-12-24","2025-12-26","2025-12-29","2025-12-30","2025-12-31","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-15","2026-01-16","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-22","2026-06-23","2026-06-24","2026-06-25","2026-06-26","2026-06-29","2026-06-30","2026-07-01","2026-07-02","2026-07-06","2026-07-07","2026-07-08","2026-07-09","2026-07-10","2026-07-13","2026-07-14","2026-07-15","2026-07-16","2026-07-17","2026-07-20","2026-07-21","2026-07-22","2026-07-23","2026-07-24","2026-07-27","2026-07-28","2026-07-29","2026-07-30","2026-07-31","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-17","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-08","2026-09-09","2026-09-10","2026-09-11","2026-09-14","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25","2026-09-28","2026-09-29","2026-09-30","2026-10-01","2026-10-02","2026-10-05","2026-10-06","2026-10-07","2026-10-08","2026-10-09","2026-10-12","2026-10-13"];
+    const bgmDataUri = "";
+    const bgmFilename = "";
+
+    function estimateLegendRows() {
+      const compact = isCompactLayout();
+      const width = chart.getWidth() || chartDom.clientWidth || 320;
+      const usableWidth = Math.max(120, width - (compact ? 24 : 32));
+      const averageItemWidth = compact ? 92 : 124;
+      return Math.max(1, Math.ceil((seriesList.length * averageItemWidth) / usableWidth));
+    }
+
+    function dynamicChartLayout() {
+      const compact = isCompactLayout();
+      const legendTop = compact ? 40 : 46;
+      const legendRows = estimateLegendRows();
+      const legendRowHeight = compact ? 20 : 22;
+      return {
+        legendTop,
+        legendLeft: 0,
+        legendRight: 0,
+        gridLeft: 0,
+        gridRight: 12,
+        gridTop: document.querySelector('.mobileDynamicHeader').offsetHeight + 16,
+        gridBottom: getDynamicPlayerBottom()
+      };
+    }
+
+    const playBtn = document.getElementById('playBtn');
+    const speedBtn = document.getElementById('speedBtn');
+    const timelineRange = document.getElementById('timelineRange');
+    const sliderProgress = document.getElementById('sliderProgress');
+    const startLabel = document.getElementById('startLabel');
+    const endLabel = document.getElementById('endLabel');
+    const musicBtn = document.getElementById('musicBtn');
+    const bgmAudio = document.getElementById('bgmAudio');
+
+    const speedPresets = [
+      { label: '1x', interval: 700 },
+      { label: '2x', interval: 350 },
+      { label: '3x', interval: 230 }
+    ];
+
+    function showError(message) {
+      chartDom.style.display = 'none';
+      document.getElementById('timelineBar').style.display = 'none';
+      errorBox.style.display = 'block';
+      errorBox.textContent = '渲染失败：' + message;
+    }
+
+    function numberLocale() {
+      const localeText = [title, unit, xKey, yKey, seriesKey, ...seriesList].filter(Boolean).join(' ');
+      if (/[\u4e00-\u9fff]/.test(localeText)) return 'zh-CN';
+      if (/[\u3040-\u30ff]/.test(localeText)) return 'ja-JP';
+      if (/[\uac00-\ud7af]/.test(localeText)) return 'ko-KR';
+      return 'en-US';
+    }
+
+    function trimCompactZeros(text) {
+      return String(text).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+    }
+
+    function compactNumber(value) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return String(value ?? '-');
+      const locale = numberLocale();
+      const abs = Math.abs(num);
+      let scaled = num;
+      let compactUnit = '';
+      const cjkUnits = locale === 'ja-JP'
+        ? [['兆', 1e12], ['億', 1e8], ['万', 1e4]]
+        : locale === 'ko-KR'
+          ? [['조', 1e12], ['억', 1e8], ['만', 1e4]]
+          : locale === 'zh-CN'
+            ? [['万亿', 1e12], ['亿', 1e8], ['万', 1e4]]
+            : null;
+      if (cjkUnits) {
+        const matched = cjkUnits.find(([, threshold]) => abs >= threshold);
+        if (matched) {
+          compactUnit = matched[0];
+          scaled = num / matched[1];
+        }
+      } else if (abs >= 1e4) {
+        if (abs >= 1e12) { scaled = num / 1e12; compactUnit = 'T'; }
+        else if (abs >= 1e9) { scaled = num / 1e9; compactUnit = 'B'; }
+        else if (abs >= 1e6) { scaled = num / 1e6; compactUnit = 'M'; }
+        else { scaled = num / 1e3; compactUnit = 'K'; }
+      }
+      const digits = Math.abs(scaled) >= 100 ? 0 : Math.abs(scaled) >= 10 ? 1 : 2;
+      const fixed = trimCompactZeros(scaled.toFixed(digits));
+      return new Intl.NumberFormat(locale, { maximumFractionDigits: digits }).format(Number(fixed)) + compactUnit;
+    }
+
+    function formatValue(value) {
+      if (value === null || value === undefined || value === '') return '-';
+      return `${compactNumber(value)}${unit}`;
+    }
+
+    function formatPlainValue(value) {
+      if (value === null || value === undefined || value === '') return '-';
+      return compactNumber(value);
+    }
+
+    function formatDateParts(value) {
+      if (!value) return { md: '', yy: '' };
+      const s = String(value);
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (m) {
+        return { md: `${m[2]}-${m[3]}`, yy: m[1] };
+      }
+      return { md: s, yy: '' };
+    }
+
+    function setTimeLabel(el, value) {
+      const parts = formatDateParts(value);
+      el.innerHTML = `<span class="md">${parts.md}</span><span class="yy">${parts.yy}</span>`;
+    }
+
+    function isCompactLayout() {
+      return window.innerWidth <= 768;
+    }
+
+    function rowValueToNumber(value) {
+      if (value === null || value === undefined || value === '') return null;
+      const num = Number(value);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    const colorPalette = [
+      { line: '#18e0b5', areaTop: 'rgba(24, 224, 181, 0.20)', areaBottom: 'rgba(24, 224, 181, 0)' },
+      { line: '#4c97ff', areaTop: 'rgba(76, 151, 255, 0.18)', areaBottom: 'rgba(76, 151, 255, 0)' },
+      { line: '#9b6bff', areaTop: 'rgba(155, 107, 255, 0.18)', areaBottom: 'rgba(155, 107, 255, 0)' },
+      { line: '#f59e0b', areaTop: 'rgba(245, 158, 11, 0.18)', areaBottom: 'rgba(245, 158, 11, 0)' },
+      { line: '#ec4899', areaTop: 'rgba(236, 72, 153, 0.18)', areaBottom: 'rgba(236, 72, 153, 0)' },
+      { line: '#b4d93b', areaTop: 'rgba(180, 217, 59, 0.18)', areaBottom: 'rgba(180, 217, 59, 0)' },
+      { line: '#ff6b4a', areaTop: 'rgba(255, 107, 74, 0.18)', areaBottom: 'rgba(255, 107, 74, 0)' }
+    ];
+
+    const fullSeriesDataMap = {"AAPL":[100.0,96.55,97.49,97.53,98.15,97.41,99.31,103.23,103.44,101.74,102.18,103.46,105.81,105.89,106.16,106.83,106.43,105.91,106.3,106.34,106.19,105.68,106.06,108.35,107.65,107.44,107.23,105.28,105.27,105.72,104.81,106.87,108.61,109.03,109.25,109.77,111.44,112.66,111.85,110.49,109.74,109.39,109.11,109.74,109.44,109.54,107.9,108.1,107.01,107.14,107.73,106.66,107.21,107.78,107.62,107.76,107.49,107.01,106.68,105.2,103.28,102.48,101.97,102.1,102.44,102.76,102.33,101.64,100.59,97.11,97.48,97.76,97.64,100.54,101.67,100.94,101.67,102.14,106.29,106.08,108.84,108.61,109.48,108.1,107.73,108.45,103.03,100.68,103.87,104.06,102.57,104.15,104.78,107.12,107.95,107.44,103.99,104.2,103.82,103.34,102.46,101.35,102.3,102.67,102.66,100.68,98.46,99.52,100.07,98.39,98.0,97.62,99.0,99.06,99.44,99.55,97.94,97.08,99.9,100.63,100.74,101.9,99.79,101.91,102.54,102.54,102.03,101.89,104.88,103.68,106.37,107.48,104.77,107.53,107.63,106.7,105.34,106.56,106.35,106.81,110.27,108.97,111.86,113.18,113.15,115.46,115.21,116.04,117.65,117.39,118.18,117.24,117.69,118.98,120.06,121.56,121.37,122.36,123.02,122.84,120.58,124.07,122.13,122.51,120.98,118.7,114.37,114.78,116.37,114.6,116.68,117.79,116.5,117.31,116.91,115.85,115.37,108.31,111.71,110.9,113.9,115.88,121.49,123.08,122.29,123.36,124.48,124.12,124.91,123.94,128.92,131.18,131.37,128.56,129.01,128.28,126.62,131.09,132.62,133.87,133.12,131.25,121.6,119.44,121.78,122.42,122.98,123.34,121.34,120.02,118.98,120.16,120.43,120.29,122.04,124.72,122.54,121.77,122.16,121.99,123.39,123.83,125.85,124.72,127.98,127.92,129.2,125.95,124.48,124.13,128.55,130.79,131.11,130.43,130.85,132.66,132.31,133.44,133.74,132.66,132.23,134.26,133.21,129.66,131.09,130.03,131.35,131.04,131.33,132.53,134.0,132.51,134.22,134.34],"MSFT":[100.0,97.81,98.4,98.31,98.28,97.93,98.31,98.93,99.09,99.64,99.65,100.23,101.75,103.77,103.67,100.64,99.12,98.97,98.46,97.08,95.16,95.1,96.86,97.37,97.84,96.34,97.66,97.15,94.52,93.25,91.58,90.38,90.74,91.31,92.94,94.18,93.17,93.8,91.45,92.04,92.49,93.99,94.18,91.61,92.55,91.6,90.89,91.19,91.14,92.65,93.02,92.83,93.19,93.42,93.36,93.24,93.32,92.58,90.53,90.51,91.6,92.55,91.52,91.75,91.34,90.1,87.94,87.42,88.03,87.01,85.01,86.36,89.19,90.02,91.99,92.2,82.98,82.37,81.04,78.72,79.29,75.36,76.79,79.17,79.11,77.41,76.92,76.82,75.97,76.49,76.27,76.04,73.6,74.46,76.68,76.9,75.18,76.29,77.32,77.57,78.61,78.28,78.37,77.67,77.5,76.93,75.72,76.56,76.46,75.0,74.47,73.1,73.32,71.35,71.03,70.06,68.29,68.71,70.86,70.71,71.49,71.38,71.27,71.66,71.41,70.99,73.58,75.25,78.72,80.45,80.93,80.03,81.19,82.87,79.58,81.28,81.32,82.17,81.25,78.06,79.33,79.18,78.75,79.24,80.55,79.46,78.99,78.06,77.57,78.37,80.77,81.08,79.9,80.6,80.22,80.12,79.64,79.0,81.74,86.19,88.15,84.48,81.8,81.94,79.76,78.82,77.22,76.06,74.72,74.8,76.52,75.39,72.53,72.63,70.32,71.58,69.96,67.54,71.4,70.55,71.41,73.56,74.75,74.03,74.43,73.38,73.58,73.72,74.84,73.68,75.73,76.78,75.39,77.01,76.14,74.72,73.04,73.07,74.48,75.3,74.76,86.35,88.96,93.35,94.34,93.31,95.69,95.71,96.87,96.44,94.26,95.11,94.83,91.95,92.2,92.71,92.1,92.5,93.28,94.13,95.02,96.68,98.3,97.11,95.91,95.1,97.65,95.65,94.55,94.11,94.26,94.88,96.75,95.16,93.86,95.28,94.52,96.02,95.33,95.83,95.32,98.81,97.48,97.43,98.18,98.16,99.07,100.53,101.32,101.41,100.04,102.43,103.59,104.03],"NVDA":[100.0,95.11,97.79,93.49,93.38,94.41,95.14,94.84,94.07,93.62,94.59,96.72,99.44,104.39,107.51,105.36,105.15,107.43,103.18,101.37,97.67,97.7,103.37,100.31,100.64,97.03,98.75,96.9,94.18,96.86,93.8,92.89,94.8,92.34,93.61,91.91,93.43,94.23,93.26,95.23,94.72,96.35,96.05,95.44,93.96,90.89,91.55,92.29,88.77,90.43,93.99,95.39,98.26,97.94,98.94,97.74,97.39,96.85,98.07,97.69,97.23,98.2,96.09,96.0,96.04,96.49,95.1,97.13,96.71,92.47,95.2,95.99,97.46,96.83,97.9,99.45,99.97,99.25,96.39,93.65,90.46,89.26,96.28,98.69,97.91,98.69,97.08,94.93,96.05,97.62,97.57,98.57,99.47,100.15,101.55,96.01,92.01,94.76,93.5,95.05,95.21,92.34,94.85,95.95,96.6,95.1,93.6,95.14,94.47,93.68,92.72,89.68,91.21,90.98,92.79,88.92,86.99,85.77,90.56,91.27,92.12,92.25,92.49,94.55,95.5,97.95,98.31,102.05,103.27,103.0,104.73,104.93,103.8,105.16,103.67,108.15,112.48,110.7,108.66,103.64,103.05,103.07,102.04,107.92,109.83,111.75,113.95,114.65,117.27,122.42,117.01,115.45,114.56,116.05,113.99,111.82,111.58,110.4,111.26,109.64,116.51,115.71,111.52,113.55,106.51,108.35,108.11,104.08,106.39,106.55,110.32,107.71,106.27,109.41,108.35,103.88,103.34,101.65,99.98,101.25,103.91,102.6,101.17,101.55,102.26,106.0,105.3,109.55,105.69,109.99,110.35,107.7,105.32,105.56,107.64,110.12,108.41,107.41,102.05,102.31,98.67,101.28,104.25,107.31,110.06,113.84,113.72,116.3,112.97,112.95,116.37,117.0,116.92,116.85,114.11,112.98,112.61,111.5,108.26,110.64,108.87,118.39,112.97,114.65,112.91,116.53,118.63,119.62,117.22,116.15,113.39,113.36,109.55,110.18,111.08,113.9,115.42,118.08,118.85,117.11,116.62,116.88,118.85,117.99,118.6,119.88,121.49,124.06,124.24,123.32,119.69,119.06,117.53,118.67]};
+
+    let currentIndex = Math.max(0, xList.length - 1);
+    let speedPresetIndex = 1;
+    let currentInterval = speedPresets[speedPresetIndex].interval;
+    let timer = null;
+    let isPlaying = false;
+    let lastFrameAt = 0;
+    let frameAccumulator = 0;
+
+    let isMusicOn = false;
+    let hasMusic = false;
+    let audioUnlocked = false;
+
+    timelineRange.max = Math.max(0, xList.length - 1);
+    timelineRange.value = currentIndex;
+    setTimeLabel(startLabel, xList.length ? xList[0] : '');
+    setTimeLabel(endLabel, xList.length ? xList[xList.length - 1] : '');
+
+    function updateSliderProgress() {
+      const max = Number(timelineRange.max) || 1;
+      const val = Number(timelineRange.value) || 0;
+      const pct = max === 0 ? 0 : (val / max) * 100;
+      sliderProgress.style.width = pct + '%';
+    }
+
+    function getSafeIndex() {
+      if (!xList.length) return 0;
+      return Math.min(Math.max(currentIndex, 0), xList.length - 1);
+    }
+
+    function getCurrentTimeText() {
+      if (!xList || !xList.length) return '';
+      return xList[getSafeIndex()] || '';
+    }
+
+    function getLastValidPoint(partialData) {
+      for (let i = partialData.length - 1; i >= 0; i--) {
+        const val = partialData[i];
+        if (val !== null && val !== undefined && val !== '') {
+          return { index: i, value: val };
+        }
+      }
+      return null;
+    }
+
+    function buildSeries(endIndex) {
+      const animDuration = isPlaying ? currentInterval : 260;
+      const animEasing = isPlaying ? 'linear' : 'cubicOut';
+
+      return seriesList.map((seriesName, index) => {
+        const theme = colorPalette[index % colorPalette.length];
+        const fullData = fullSeriesDataMap[seriesName] || [];
+        const partialData = fullData.slice(0, endIndex + 1);
+        const lastPoint = getLastValidPoint(partialData);
+
+        return {
+          name: seriesName,
+          type: 'line',
+          smooth: true,
+          showSymbol: false,
+          connectNulls: true,
+          symbol: 'circle',
+          symbolSize: 5,
+          data: partialData,
+          animation: isPlaying,
+          animationDuration: animDuration,
+          animationEasing: animEasing,
+          animationDurationUpdate: animDuration,
+          animationEasingUpdate: animEasing,
+          itemStyle: { color: theme.line, borderWidth: 0 },
+          lineStyle: {
+            width: isCompactLayout() ? 2.4 : 2.8,
+            color: theme.line
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: theme.areaTop },
+              { offset: 1, color: theme.areaBottom }
+            ])
+          },
+          markPoint: undefined
+        };
+      });
+    }
+
+    function buildCenterTimeGraphic() {
+      const compact = isCompactLayout();
+      const width = chart.getWidth();
+      const height = chart.getHeight();
+      const layout = dynamicChartLayout();
+      const gridLeft = layout.gridLeft;
+      const gridRight = layout.gridRight;
+      const gridTop = layout.gridTop;
+      const gridBottom = layout.gridBottom;
+      return {
+        type: 'text',
+        x: Math.round((gridLeft + width - gridRight) / 2),
+        y: Math.round((gridTop + height - gridBottom) / 2),
+        silent: true,
+        z: 1,
+        style: {
+          text: getCurrentTimeText(),
+          fill: window.__projectDynamicLineTheme.centerFill,
+          fontSize: compact ? 32 : 38,
+          fontWeight: 700,
+          textAlign: 'center',
+          textVerticalAlign: 'middle'
+        }
+      };
+    }
+
+    function buildRightLabelsGraphics(endIndex) {
+      const graphics = [];
+      const points = [];
+      const compact = isCompactLayout();
+
+      seriesList.forEach((seriesName, index) => {
+        const theme = colorPalette[index % colorPalette.length];
+        const fullData = fullSeriesDataMap[seriesName] || [];
+        const partialData = fullData.slice(0, endIndex + 1);
+        const lastPoint = getLastValidPoint(partialData);
+        if (!lastPoint) return;
+
+        const pixel = chart.convertToPixel({ xAxisIndex: 0, yAxisIndex: 0 }, [lastPoint.index, lastPoint.value]);
+        if (!pixel || !Array.isArray(pixel) || !isFinite(pixel[0]) || !isFinite(pixel[1])) return;
+
+        points.push({
+          seriesName,
+          color: theme.line,
+          value: lastPoint.value,
+          x: pixel[0],
+          y: pixel[1]
+        });
+      });
+
+      if (!points.length) return graphics;
+
+      points.sort((a, b) => a.y - b.y);
+
+      const minGap = compact ? 24 : 28;
+      for (let i = 1; i < points.length; i++) {
+        if (points[i].y - points[i - 1].y < minGap) {
+          points[i].y = points[i - 1].y + minGap;
+        }
+      }
+
+      const leftLimit = compact ? 16 : 20;
+      const rightLimit = Math.max(leftLimit, chart.getWidth() - (compact ? 112 : 170));
+      const labelGap = compact ? 16 : 20;
+
+      points.forEach(item => {
+        const text = `${item.seriesName}  ${formatValue(item.value)}`;
+        const anchorX = Math.max(leftLimit, Math.min(item.x + labelGap, rightLimit));
+
+        graphics.push({
+          type: 'text',
+          x: anchorX,
+          y: item.y,
+          silent: true,
+          z: 20,
+          style: {
+            text: text,
+            fill: item.color,
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+            borderWidth: 0,
+            borderRadius: 0,
+            padding: 0,
+            fontSize: compact ? 12 : 13,
+            fontWeight: 700,
+            textAlign: 'left',
+            textVerticalAlign: 'middle',
+            shadowBlur: 0,
+            shadowColor: 'rgba(0,0,0,0.18)'
+          }
+        });
+      });
+
+      return graphics;
+    }
+
+    function renderChart() {
+      updateMobileDynamicHeader();
+      if (!xList.length || !seriesList.length) {
+        throw new Error('没有可用于渲染折线图的数据');
+      }
+
+      const compact = isCompactLayout();
+      const safeIndex = getSafeIndex();
+      const animDuration = isPlaying ? currentInterval : 260;
+      const animEasing = isPlaying ? 'linear' : 'cubicOut';
+
+      chart.setOption({
+        backgroundColor: 'transparent',
+        color: colorPalette.map(c => c.line),
+        animation: isPlaying,
+        animationDuration: animDuration,
+        animationEasing: animEasing,
+        animationDurationUpdate: animDuration,
+        animationEasingUpdate: animEasing,
+        title: {
+          text: '',
+          left: 0,
+          top: compact ? 14 : 18,
+          textStyle: {
+            color: window.__projectDynamicLineTheme.text,
+            fontSize: compact ? 16 : 18,
+            fontWeight: 700
+          }
+        },
+        legend: {
+          show: false,
+          selected: mobileLegendSelection,
+          data: seriesList,
+          top: dynamicChartLayout().legendTop,
+          left: dynamicChartLayout().legendLeft,
+          right: dynamicChartLayout().legendRight,
+          itemWidth: compact ? 14 : 16,
+          itemHeight: 4,
+          itemGap: compact ? 10 : 18,
+          icon: 'roundRect',
+          formatter: function(name) {
+            const data = fullSeriesDataMap[name] || [];
+            const end = Math.min(getSafeIndex(), data.length - 1);
+            const point = getLastValidPoint(data.slice(0, end + 1));
+            return point ? `${name}  ${formatPlainValue(point.value)}` : name;
+          },
+          textStyle: {
+            color: window.__projectDynamicLineTheme.muted,
+            fontSize: compact ? 11 : 12,
+            padding: [0, 0, 0, 5]
+          }
+        },
+        tooltip: {
+          show: false,
+          trigger: 'none',
+          confine: true,
+          backgroundColor: "transparent",
+          borderColor: "transparent",
+          borderWidth: 1,
+          padding: [10, 12],
+          textStyle: { color: window.__projectDynamicLineTheme.text },
+          position: function(point, params, dom, rect, size) {
+            const viewWidth = size && size.viewSize ? size.viewSize[0] : chart.getWidth();
+            const contentWidth = size && size.contentSize ? size.contentSize[0] : 220;
+            const leftFixedX = compact ? 16 : 20;
+            const rightFixedX = Math.max(leftFixedX, viewWidth - contentWidth - leftFixedX);
+            const topFixedY = compact ? 70 : 76;
+            const pointerX = Array.isArray(point) ? point[0] : viewWidth / 2;
+            if (pointerX <= viewWidth / 2) return [rightFixedX, topFixedY];
+            return [leftFixedX, topFixedY];
+          },
+          axisPointer: {
+            type: 'line',
+            lineStyle: {
+              color: 'rgba(148, 163, 184, 0.48)',
+              type: 'solid',
+              width: 1
+            }
+          },
+          formatter: function(params) {
+            if (!params || !params.length) return '';
+            const axisValue = params[0].axisValue;
+            let html = `<div style="margin-bottom:8px;font-size:13px;font-weight:700;color:#151922;">${axisValue}</div>`;
+            params.forEach(item => {
+              const marker = item.marker || '';
+              const name = item.seriesName || '';
+              const value = Array.isArray(item.value) ? item.value[item.value.length - 1] : item.value;
+              html += `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:12px;gap:16px;">
+                  <span style="display:flex;align-items:center;">
+                    ${marker}<span style="color:#687386;">${name}</span>
+                  </span>
+                  <span style="font-weight:700;color:#151922;">${formatValue(value)}</span>
+                </div>`;
+            });
+            return html;
+          }
+        },
+        grid: {
+          left: dynamicChartLayout().gridLeft,
+          right: dynamicChartLayout().gridRight,
+          top: dynamicChartLayout().gridTop,
+          bottom: dynamicChartLayout().gridBottom,
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: xList.slice(0, safeIndex + 1),
+          axisLine: {
+            show: false,
+            lineStyle: { color: window.__projectDynamicLineTheme.axis }
+          },
+          axisTick: { show: false },
+          axisLabel: { show: false },
+          splitLine: { show: false }
+        },
+        yAxis: {
+          type: 'value',
+          position: 'right',
+          scale: true,
+          ...getDynamicFullRange(),
+          splitNumber: 4,
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: {
+            color: window.__projectDynamicLineTheme.muted,
+            margin: 6,
+            fontSize: compact ? 10 : 11,
+            formatter: function(value) {
+              return formatPlainValue(value);
+            }
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: window.__projectDynamicLineTheme.grid,
+              type: 'solid',
+              width: 1
+            }
+          }
+        },
+        graphic: [buildCenterTimeGraphic()],
+        series: buildSeries(safeIndex)
+      }, true);
+
+      chart.setOption({
+        graphic: [
+          buildCenterTimeGraphic()
+        ]
+      });
+
+      alignDynamicPlayer();
+      timelineRange.value = safeIndex;
+      updateSliderProgress();
+    }
+
+    function setPlayButtonState() {
+      playBtn.classList.toggle('is-playing', isPlaying);
+      playBtn.textContent = '';
+    }
+
+    function updateSpeedButtonState() {
+      speedBtn.textContent = speedPresets[speedPresetIndex].label;
+      speedBtn.title = `当前播放速度：${speedPresets[speedPresetIndex].label}`;
+    }
+
+    function stopTimer() {
+      if (timer) {
+        cancelAnimationFrame(timer);
+        timer = null;
+      }
+      lastFrameAt = 0;
+      frameAccumulator = 0;
+    }
+
+    function getMusicOnIcon() {
+      return `
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M14.5 4.5a1 1 0 0 1 1.7.7v13.6a1 1 0 0 1-1.7.7l-4.7-4.5H6a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h3.8l4.7-4.5Z"></path>
+          <path d="M18.2 9.1a1 1 0 0 1 1.4 0 5 5 0 0 1 0 7.1 1 1 0 0 1-1.4-1.4 3 3 0 0 0 0-4.3 1 1 0 0 1 0-1.4Z"></path>
+        </svg>
+      `;
+    }
+
+    function getMusicOffIcon() {
+      return `
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M14.5 4.5a1 1 0 0 1 1.7.7v13.6a1 1 0 0 1-1.7.7l-4.7-4.5H6a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h3.8l4.7-4.5Z"></path>
+          <path d="M18 9l-4 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"></path>
+          <path d="M14 9l4 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"></path>
+        </svg>
+      `;
+    }
+
+    function updateMusicButtonState() {
+      if (!musicBtn) return;
+
+      if (!hasMusic) {
+        musicBtn.classList.remove('on', 'off');
+        musicBtn.classList.add('disabled');
+        musicBtn.disabled = true;
+        musicBtn.title = '未找到背景音乐';
+        musicBtn.innerHTML = getMusicOffIcon();
+        return;
+      }
+
+      musicBtn.disabled = false;
+      musicBtn.classList.remove('disabled');
+      musicBtn.classList.toggle('on', isMusicOn);
+      musicBtn.classList.toggle('off', !isMusicOn);
+      musicBtn.title = isMusicOn
+        ? `背景音乐已开启${bgmFilename ? '：' + bgmFilename : ''}`
+        : `背景音乐已关闭${bgmFilename ? '：' + bgmFilename : ''}`;
+      musicBtn.innerHTML = isMusicOn ? getMusicOnIcon() : getMusicOffIcon();
+    }
+
+    function initBackgroundMusic() {
+      hasMusic = !!bgmDataUri;
+      if (!hasMusic) {
+        updateMusicButtonState();
+        return;
+      }
+
+      bgmAudio.src = bgmDataUri;
+      bgmAudio.volume = 0.55;
+      bgmAudio.muted = true;
+      bgmAudio.pause();
+      bgmAudio.currentTime = 0;
+      isMusicOn = false;
+      audioUnlocked = false;
+      updateMusicButtonState();
+    }
+
+    function stopBackgroundMusic(resetToStart = true) {
+      if (!hasMusic) return;
+      bgmAudio.pause();
+      bgmAudio.muted = true;
+      if (resetToStart) {
+        try {
+          bgmAudio.currentTime = 0;
+        } catch (err) {
+          console.error('背景音乐重置失败', err);
+        }
+      }
+    }
+
+    async function unlockAudioByGesture() {
+      if (!hasMusic || audioUnlocked) return;
+
+      try {
+        bgmAudio.muted = true;
+        bgmAudio.currentTime = 0;
+        await bgmAudio.play();
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+        audioUnlocked = true;
+      } catch (err) {
+        console.error('背景音乐解锁失败', err);
+      }
+    }
+
+    async function startBackgroundMusicFromBeginning() {
+      if (!hasMusic || !isMusicOn) return;
+
+      try {
+        await unlockAudioByGesture();
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+        bgmAudio.muted = false;
+        await bgmAudio.play();
+      } catch (err) {
+        console.error('背景音乐播放失败', err);
+        stopBackgroundMusic(true);
+      }
+    }
+
+    async function toggleMusic() {
+      if (!hasMusic) return;
+
+      if (isMusicOn) {
+        isMusicOn = false;
+        stopBackgroundMusic(true);
+        updateMusicButtonState();
+        return;
+      }
+
+      isMusicOn = true;
+      updateMusicButtonState();
+
+      await unlockAudioByGesture();
+
+      if (!isPlaying) {
+        stopBackgroundMusic(true);
+        return;
+      }
+
+      await startBackgroundMusicFromBeginning();
+    }
+
+    function startTimer() {
+      stopTimer();
+      const tick = (timestamp) => {
+        if (!isPlaying) return;
+        if (!lastFrameAt) lastFrameAt = timestamp;
+        const delta = Math.min(timestamp - lastFrameAt, currentInterval * 1.5);
+        lastFrameAt = timestamp;
+        frameAccumulator += delta;
+        if (frameAccumulator >= currentInterval) {
+          const steps = Math.max(1, Math.floor(frameAccumulator / currentInterval));
+          frameAccumulator = frameAccumulator % currentInterval;
+          currentIndex = Math.min(currentIndex + steps, xList.length - 1);
+          renderChart();
+          if (currentIndex >= xList.length - 1) {
+            currentIndex = xList.length - 1;
+            isPlaying = false;
+            setPlayButtonState();
+            stopBackgroundMusic(true);
+            renderChart();
+            stopTimer();
+            return;
+          }
+        }
+        timer = requestAnimationFrame(tick);
+      };
+      timer = requestAnimationFrame(tick);
+    }
+
+    speedBtn.addEventListener('click', function() {
+      speedPresetIndex = (speedPresetIndex + 1) % speedPresets.length;
+      currentInterval = speedPresets[speedPresetIndex].interval;
+      updateSpeedButtonState();
+      if (isPlaying) startTimer();
+    });
+
+    if (musicBtn) {
+      musicBtn.addEventListener('click', async function() {
+        await toggleMusic();
+      });
+    }
+
+    playBtn.addEventListener('click', async function() {
+      if (xList.length <= 1) return;
+
+      if (isPlaying) {
+        isPlaying = false;
+        setPlayButtonState();
+        stopTimer();
+        stopBackgroundMusic(true);
+        renderChart();
+      } else {
+        if (currentIndex >= xList.length - 1) currentIndex = 0;
+        isPlaying = true;
+        setPlayButtonState();
+        if (isMusicOn) {
+          await startBackgroundMusicFromBeginning();
+        }
+        startTimer();
+      }
+    });
+
+    timelineRange.addEventListener('input', function(e) {
+      currentIndex = Number(e.target.value) || 0;
+      isPlaying = false;
+      setPlayButtonState();
+      stopTimer();
+      stopBackgroundMusic(true);
+      renderChart();
+    });
+
+    timelineRange.addEventListener('change', function(e) {
+      currentIndex = Number(e.target.value) || 0;
+      isPlaying = false;
+      setPlayButtonState();
+      stopTimer();
+      stopBackgroundMusic(true);
+      renderChart();
+    });
+
+    try {
+      initBackgroundMusic();
+      renderChart();
+      setPlayButtonState();
+      updateSpeedButtonState();
+      updateSliderProgress();
+    } catch (err) {
+      console.error(err);
+      showError(err && err.message ? err.message : String(err));
+    }
+
+    window.addEventListener('resize', () => {
+      try {
+        chart.resize();
+        renderChart();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  </script>
+
+  <script id="projectDynamicLineHeightReporter">
+    (function(){
+      function postChartHeight(){
+        var wrap = document.getElementById('wrap');
+        var rect = wrap ? wrap.getBoundingClientRect() : null;
+        var height = Math.ceil(Math.max(180, rect ? rect.bottom : 0, document.body.scrollHeight || 0));
+        try { parent.postMessage({type:'analysis-planner-chart-height', height:height}, '*'); } catch (e) {}
+      }
+      window.addEventListener('load', postChartHeight);
+      window.addEventListener('resize', postChartHeight);
+      setTimeout(postChartHeight, 80);
+      setTimeout(postChartHeight, 300);
+      setTimeout(postChartHeight, 900);
+    })();
+  </script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>

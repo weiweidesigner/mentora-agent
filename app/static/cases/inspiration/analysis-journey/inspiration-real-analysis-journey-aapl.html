@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>AAPL 最近四份财报经营旅程 从产品增长到股东现金回报</title>
+<style>
+:root{--journey-text:#0F172A;--fullscreen-bg:#FFFFFF}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  min-height:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:transparent!important;
+  color:var(--journey-text);
+  overflow:hidden;
+}
+#wrap{
+  position:relative;
+  width:100%;
+  min-height:520px;
+  height:auto;
+  overflow:hidden;
+  background:transparent;
+}
+#title{
+  position:absolute;
+  left:16px;
+  right:16px;
+  top:14px;
+  z-index:20;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:18px;
+  line-height:28px;
+  font-weight:720;
+  letter-spacing:-.01em;
+  text-align:left;
+  pointer-events:none;
+}
+#viewport{
+  position:relative;
+  width:100%;
+  min-height:520px;
+  overflow:auto;
+  background:transparent;
+}
+#diagram{
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  min-width:100%;
+  min-height:520px;
+  padding:60px 28px 26px;
+  background:transparent;
+}
+#diagram svg{
+  display:block;
+  max-width:none!important;
+  height:auto!important;
+  background:transparent!important;
+  overflow:visible;
+}
+#diagram svg text{font-family:inherit!important}
+#fullscreenBtn,#exitFullscreenBtn{
+  position:absolute;
+  z-index:30;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  padding:0;
+  border:1px solid rgba(15,23,42,.12);
+  border-radius:6px;
+  background:rgba(255,255,255,.94);
+  color:#334155;
+  box-shadow:0 6px 18px rgba(15,23,42,.10);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+#fullscreenBtn{right:12px;top:10px}
+#exitFullscreenBtn{
+  right:max(14px,env(safe-area-inset-right));
+  top:max(14px,env(safe-area-inset-top));
+}
+#fullscreenBtn svg,#exitFullscreenBtn svg{
+  display:block;
+  width:14px;
+  height:14px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#fullscreenBtn:hover,#exitFullscreenBtn:hover{background:#F8FAFC}
+#fullscreenBtn:active,#exitFullscreenBtn:active{transform:translateY(1px)}
+#error{
+  display:none;
+  position:absolute;
+  left:20px;
+  right:20px;
+  bottom:20px;
+  z-index:40;
+  padding:12px 14px;
+  border:1px solid #FCA5A5;
+  border-radius:10px;
+  background:#FFFFFF;
+  color:#991B1B;
+  font-size:13px;
+  white-space:pre-wrap;
+}
+#source{
+  display:none;
+  margin:0;
+  padding:60px 24px 24px;
+  color:#334155;
+  background:transparent;
+  font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  white-space:pre-wrap;
+}
+html.is-fullscreen-root,
+html.is-fullscreen-root body,
+body.is-fullscreen{
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+  background:var(--fullscreen-bg)!important;
+}
+body.is-fullscreen #wrap{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  z-index:9999;
+  background:var(--fullscreen-bg)!important;
+}
+body.is-fullscreen #viewport,
+body.is-fullscreen #diagram{background:var(--fullscreen-bg)!important}
+body.is-fullscreen #title{
+  top:max(14px,env(safe-area-inset-top));
+  left:max(18px,env(safe-area-inset-left));
+  right:56px;
+  font-size:16px;
+}
+body.is-fullscreen #fullscreenBtn{display:none!important}
+body.is-fullscreen #exitFullscreenBtn{display:inline-flex}
+body.is-fullscreen #diagram{padding:58px 28px 20px}
+@media (orientation:portrait){
+  body.is-fullscreen #wrap{
+    width:100vh;
+    height:100vw;
+    left:50%;
+    top:50%;
+    right:auto;
+    bottom:auto;
+    transform:translate(-50%,-50%) rotate(90deg);
+    transform-origin:center center;
+  }
+}
+body.is-fullscreen.is-forced-landscape #wrap{
+  width:100vh;
+  height:100vw;
+  left:50%;
+  top:50%;
+  right:auto;
+  bottom:auto;
+  transform:translate(-50%,-50%) rotate(90deg);
+  transform-origin:center center;
+}
+@media (max-width:720px){
+  #title{left:12px;right:52px;top:10px;font-size:16px}
+  #fullscreenBtn{display:inline-flex}
+  #wrap,#viewport,#diagram{min-height:460px}
+  #diagram{padding:54px 16px 22px}
+  #source{padding:54px 18px 24px}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="title">AAPL 最近四份财报经营旅程 从产品增长到股东现金回报</div>
+  <button id="fullscreenBtn" type="button" aria-label="横屏全屏浏览" title="横屏全屏浏览">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M3 16v5h5"></path></svg>
+  </button>
+  <button id="exitFullscreenBtn" type="button" aria-label="退出全屏" title="退出全屏">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3"></path><path d="M15 3v6h6"></path><path d="M21 15h-6v6"></path><path d="M3 15h6v6"></path></svg>
+  </button>
+  <div id="viewport">
+    <div id="diagram"></div>
+    <pre id="source"></pre>
+    <div id="error"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.4/dist/mermaid.min.js"></script>
+<script>
+const code = "journey\n  section 产品与需求\n    最新季度 iPhone 收入 542.5 亿美元 占 49.6%: 4: 产品与收入\n    服务收入 307.4 亿美元 占 28.1% 是第二支柱: 4: 产品与收入\n  section 收入与毛利\n    收入 1024.7 → 1437.6 → 1111.8 → 1094.2 亿美元: 4: 产品与收入\n    毛利率 47.2% → 48.2% → 49.3% → 50.1% 连续四季抬升: 4: 产品与收入\n  section 利润与效率\n    净利 274.7 → 421.0 → 295.8 → 297.9 亿美元: 4: 利润与效率\n    最新季度净利同比 +27.1% 快于收入 +16.4%: 4: 利润与效率\n  section 现金创造\n    经营现金流 297.3 → 539.2 → 287.0 → 343.7 亿美元: 4: 现金质量\n    现金含量 1.08 → 1.28 → 0.97 → 1.15 倍: 4: 现金质量\n  section 股东现金回报\n    融资净流出 274.8 → 396.6 → 222.8 → 326.4 亿美元: 4: 股东回报\n    四季合计 1220.6 亿美元 约为同期净利的 94.7%: 4: 股东回报";
+const config = {"startOnLoad": false, "theme": "base", "securityLevel": "loose", "themeVariables": {"fontFamily": "-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,\"PingFang SC\",\"Microsoft YaHei\",sans-serif", "fontSize": "15px", "background": "transparent", "mainBkg": "transparent", "primaryTextColor": "#0F172A", "textColor": "#0F172A", "lineColor": "#94A3B8", "gridColor": "#CBD5E1", "sectionBkgColor": "#DBEAFE", "altSectionBkgColor": "#D1FAE5", "sectionBkgColor2": "#D1FAE5", "sectionTextColor": "#1E3A8A", "taskBkgColor": "#EFF6FF", "taskBorderColor": "#60A5FA", "taskTextColor": "#172554", "taskTextOutsideColor": "#334155", "actorBkg": "#FFFFFF", "actorBorder": "#CBD5E1", "actorTextColor": "#334155", "actorLineColor": "#CBD5E1", "signalColor": "#64748B", "signalTextColor": "#334155", "labelBoxBkgColor": "#FFFFFF", "labelBoxBorderColor": "#CBD5E1", "labelTextColor": "#334155"}};
+const taskPalette = [{"fillColor": "#EFF6FF", "strokeColor": "#60A5FA", "textColor": "#172554", "strokeWidth": 1.5}, {"fillColor": "#ECFDF5", "strokeColor": "#34D399", "textColor": "#064E3B", "strokeWidth": 1.5}, {"fillColor": "#FFF7ED", "strokeColor": "#FB923C", "textColor": "#431407", "strokeWidth": 1.5}, {"fillColor": "#F5F3FF", "strokeColor": "#A78BFA", "textColor": "#2E1065", "strokeWidth": 1.5}, {"fillColor": "#FDF2F8", "strokeColor": "#F472B6", "textColor": "#500724", "strokeWidth": 1.5}, {"fillColor": "#F0FDFA", "strokeColor": "#2DD4BF", "textColor": "#134E4A", "strokeWidth": 1.5}];
+const sectionPalette = [{"fillColor": "#DBEAFE", "strokeColor": "#93C5FD", "textColor": "#1E3A8A", "strokeWidth": 1.5}, {"fillColor": "#D1FAE5", "strokeColor": "#6EE7B7", "textColor": "#065F46", "strokeWidth": 1.5}, {"fillColor": "#FFEDD5", "strokeColor": "#FDBA74", "textColor": "#9A3412", "strokeWidth": 1.5}, {"fillColor": "#EDE9FE", "strokeColor": "#C4B5FD", "textColor": "#5B21B6", "strokeWidth": 1.5}, {"fillColor": "#FCE7F3", "strokeColor": "#F9A8D4", "textColor": "#9D174D", "strokeWidth": 1.5}, {"fillColor": "#CCFBF1", "strokeColor": "#5EEAD4", "textColor": "#115E59", "strokeWidth": 1.5}];
+const colorMode = "byOrder";
+const diagram = document.getElementById("diagram");
+const viewport = document.getElementById("viewport");
+const errorBox = document.getElementById("error");
+const sourceBox = document.getElementById("source");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+const exitFullscreenBtn = document.getElementById("exitFullscreenBtn");
+let svg = null;
+let naturalWidth = 0;
+let naturalHeight = 0;
+
+function measuredHeight() {
+  const candidates = [document.getElementById("wrap"), viewport, diagram, svg, errorBox, sourceBox]
+    .filter(Boolean)
+    .filter((node) => {
+      const style = window.getComputedStyle(node);
+      return style.display !== "none" && style.visibility !== "hidden";
+    });
+  const bottom = candidates.reduce((max, node) => {
+    const rect = node.getBoundingClientRect();
+    return rect.height > 1 ? Math.max(max, rect.bottom) : max;
+  }, 0);
+  return Math.max(420, Math.ceil(bottom || document.body.scrollHeight || document.documentElement.scrollHeight || 520));
+}
+
+function postChartHeight() {
+  try {
+    window.parent?.postMessage({type:"analysis-planner-chart-height",height:measuredHeight()}, "*");
+  } catch (e) {}
+}
+
+function uniqueElements(elements) {
+  return Array.from(new Set(elements));
+}
+
+function setImportantStyle(element, property, value) {
+  if (!element || !value) return;
+  element.style.setProperty(property, value, "important");
+}
+
+function paintShape(shape, style) {
+  if (!shape || !style) return;
+  setImportantStyle(shape, "fill", style.fillColor);
+  setImportantStyle(shape, "stroke", style.strokeColor);
+  if (style.strokeWidth) setImportantStyle(shape, "stroke-width", `${style.strokeWidth}px`);
+}
+
+function paintText(root, color) {
+  if (!root || !color) return;
+  root.querySelectorAll("text,tspan").forEach((node) => setImportantStyle(node, "fill", color));
+  root.querySelectorAll("foreignObject div,foreignObject span,foreignObject p").forEach((node) => {
+    setImportantStyle(node, "color", color);
+  });
+}
+
+function styleForIndex(palette, index) {
+  if (!Array.isArray(palette) || !palette.length) return null;
+  if (colorMode === "single") return palette[0];
+  return palette[index % palette.length];
+}
+
+function findTaskShapes() {
+  if (!svg) return [];
+  return uniqueElements([
+    ...svg.querySelectorAll("g.task > rect, g.task > path, g.task > polygon"),
+    ...svg.querySelectorAll("rect.task, path.task, polygon.task"),
+    ...svg.querySelectorAll("rect[id^='task'], path[id^='task'], polygon[id^='task']")
+  ]).filter((shape) => !shape.closest("defs"));
+}
+
+function findSectionShapes() {
+  if (!svg) return [];
+  return uniqueElements([
+    ...svg.querySelectorAll("g.journey-section > rect, g.journey-section > path, g.journey-section > polygon"),
+    ...svg.querySelectorAll("rect.journey-section, path.journey-section, polygon.journey-section"),
+    ...svg.querySelectorAll("rect[class*='section-type'], path[class*='section-type'], polygon[class*='section-type']")
+  ]).filter((shape) => !shape.closest("defs"));
+}
+
+function applyJourneyPalette() {
+  if (!svg) return;
+
+  const sections = findSectionShapes();
+  sections.forEach((shape, index) => {
+    const style = styleForIndex(sectionPalette, index);
+    paintShape(shape, style);
+    const group = shape.closest("g");
+    if (group && style) paintText(group, style.textColor);
+  });
+
+  const tasks = findTaskShapes();
+  tasks.forEach((shape, index) => {
+    let paletteIndex = index;
+    if (colorMode === "bySection") {
+      const group = shape.closest("g");
+      const classText = `${shape.getAttribute("class") || ""} ${group?.getAttribute("class") || ""}`;
+      const match = classText.match(/section-type-(\d+)/i);
+      if (match) paletteIndex = Number.parseInt(match[1], 10) || 0;
+    }
+    const style = styleForIndex(taskPalette, paletteIndex);
+    paintShape(shape, style);
+    const group = shape.closest("g");
+    if (group && style) paintText(group, style.textColor);
+  });
+}
+
+function fitDiagram() {
+  if (!svg || !naturalWidth || !naturalHeight) return;
+  const isFullscreen = document.body.classList.contains("is-fullscreen");
+  const compact = window.innerWidth <= 720;
+  const horizontalPadding = isFullscreen ? 56 : (compact ? 32 : 56);
+  const verticalPadding = isFullscreen ? 80 : (compact ? 76 : 92);
+  const availableWidth = Math.max(240, viewport.clientWidth - horizontalPadding);
+  const availableHeight = Math.max(180, viewport.clientHeight - verticalPadding);
+  const widthScale = availableWidth / naturalWidth;
+  const heightScale = availableHeight / naturalHeight;
+  const scale = isFullscreen
+    ? Math.max(0.1, Math.min(widthScale, heightScale))
+    : Math.min(1, widthScale, heightScale);
+  svg.style.width = `${Math.round(naturalWidth * scale)}px`;
+  viewport.scrollTo({left:0, top:0});
+}
+
+function updateFullscreenLayout() {
+  const active = document.body.classList.contains("is-fullscreen");
+  const needsForcedLandscape = active && window.innerHeight > window.innerWidth;
+  document.body.classList.toggle("is-forced-landscape", needsForcedLandscape);
+}
+
+function lockLandscape() {
+  try {
+    const orientation = screen.orientation;
+    if (orientation && typeof orientation.lock === "function") {
+      orientation.lock("landscape").catch(() => {});
+    }
+  } catch (e) {}
+}
+
+function unlockOrientation() {
+  try {
+    const orientation = screen.orientation;
+    if (orientation && typeof orientation.unlock === "function") orientation.unlock();
+  } catch (e) {}
+}
+
+function refitDiagram() {
+  updateFullscreenLayout();
+  requestAnimationFrame(() => {
+    fitDiagram();
+    postChartHeight();
+  });
+  setTimeout(() => { fitDiagram(); postChartHeight(); }, 80);
+  setTimeout(() => { fitDiagram(); postChartHeight(); }, 320);
+}
+
+async function enterFullscreen() {
+  document.documentElement.classList.add("is-fullscreen-root");
+  document.body.classList.add("is-fullscreen");
+  updateFullscreenLayout();
+  const target = document.documentElement || document.body;
+  try {
+    if (target.requestFullscreen) await target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+  } catch (e) {}
+  lockLandscape();
+  refitDiagram();
+}
+
+function exitFullscreen() {
+  document.documentElement.classList.remove("is-fullscreen-root");
+  document.body.classList.remove("is-fullscreen");
+  document.body.classList.remove("is-forced-landscape");
+  unlockOrientation();
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } catch (e) {}
+  refitDiagram();
+}
+
+fullscreenBtn.addEventListener("click", enterFullscreen);
+exitFullscreenBtn.addEventListener("click", exitFullscreen);
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.classList.remove("is-fullscreen-root");
+    document.body.classList.remove("is-fullscreen");
+    document.body.classList.remove("is-forced-landscape");
+    unlockOrientation();
+    refitDiagram();
+  }
+});
+
+document.addEventListener("webkitfullscreenchange", () => {
+  if (!document.webkitFullscreenElement) {
+    document.documentElement.classList.remove("is-fullscreen-root");
+    document.body.classList.remove("is-fullscreen");
+    document.body.classList.remove("is-forced-landscape");
+    unlockOrientation();
+    refitDiagram();
+  }
+});
+
+mermaid.initialize(config);
+(async () => {
+  try {
+    await mermaid.parse(code);
+    const result = await mermaid.render("journeySvg", code);
+    diagram.innerHTML = result.svg;
+    if (typeof result.bindFunctions === "function") result.bindFunctions(diagram);
+
+    svg = diagram.querySelector("svg");
+    if (!svg) throw new Error("Mermaid did not return an SVG element.");
+
+    const viewBox = svg.viewBox && svg.viewBox.baseVal;
+    naturalWidth = viewBox && viewBox.width ? viewBox.width : svg.getBoundingClientRect().width;
+    naturalHeight = viewBox && viewBox.height ? viewBox.height : svg.getBoundingClientRect().height;
+
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.setAttribute("preserveAspectRatio", "xMidYMin meet");
+    applyJourneyPalette();
+    refitDiagram();
+  } catch (err) {
+    errorBox.style.display = "block";
+    errorBox.textContent = `旅程图渲染失败：${String(err?.message || err)}`;
+    diagram.style.display = "none";
+    sourceBox.style.display = "block";
+    sourceBox.textContent = code;
+    postChartHeight();
+  }
+})();
+
+if ("ResizeObserver" in window) {
+  new ResizeObserver(postChartHeight).observe(document.getElementById("wrap"));
+}
+window.addEventListener("load", postChartHeight);
+window.addEventListener("resize", refitDiagram);
+window.addEventListener("orientationchange", () => {
+  setTimeout(refitDiagram, 120);
+  setTimeout(refitDiagram, 420);
+});
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!doctype html><html lang="zh-CN" data-theme="light"><head><script src="/static/cases/theme.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:transparent}*{box-sizing:border-box}</style><style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
+/* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
+:is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
+/* Semantic contract; legacy card/metric classes are aliases, outer names do not matter. */
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout]))){display:grid!important;gap:var(--sv-card-gap)!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout])))>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric]){padding:var(--sv-card-padding)!important;margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card]){display:flex!important;flex-direction:column!important;gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card])>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.metrics,[data-sv-layout="metrics"]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="stack"]{grid-template-columns:minmax(0,1fr)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
+:is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.sv-chips){flex-wrap:wrap}
+:is([data-aime-streamviz-root],[data-visualize-root]) .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important}
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metric{overflow-wrap:anywhere}
+  :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-grid,.cols){grid-template-columns:minmax(0,1fr)!important}
+  .svx .bd{min-width:0!important}
+  .svx .bdr3,.svx .scale-r{grid-template-columns:88px minmax(0,1fr) 64px!important}
+  .svx .bdrow{padding:10px 8px;column-gap:8px}
+  .svx .bfrow{grid-template-columns:80px minmax(0,1fr) minmax(0,1fr);height:52px}
+  .svx :is(.bleft,.brgt){position:relative;padding-bottom:18px}
+  .svx .bval{position:absolute;bottom:0;min-width:0;font-size:11px}
+  .svx .bleft .bval{right:4px}
+  .svx .brgt .bval{left:4px}
+  .svx .bdaxis{padding-top:16px;height:42px}
+  .svx .bdval{position:absolute;top:0;right:0;font-size:11px}
+}
+.sv-responsive-line{width:100%;min-width:0;color:var(--sv-text-secondary);font-size:12px}
+.sv-line-note{margin:0 0 12px 48px;line-height:1.5}
+.sv-line-body{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(220px,24vw,320px);box-sizing:border-box;padding-top:8px}
+.sv-line-y-axis,.sv-line-plot{position:relative;min-width:0;min-height:0}
+.sv-line-y-axis span{position:absolute;right:8px;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-plot svg{display:block;width:100%;height:100%;max-width:none}
+.sv-line-dot{position:absolute;left:100%;right:auto;width:7px;height:7px;box-sizing:border-box;border-radius:50%;transform:translate(-50%,-50%)}
+.sv-line-x-axis{position:relative;height:18px;margin:8px 0 0 48px}
+.sv-line-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.sv-line-x-axis span:last-child{transform:translateX(-100%)}
+.sv-line-values{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:13px;line-height:1.5}
+.sv-line-values span{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-values i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+/* Generated palettes are aliases, never a separate fixed light/dark theme. */
+[data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+[data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
+[data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.card,.panel,.sv-metric,.sv-node,.sv-rank){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.stat,.metric,.chart,.table-wrap,.sv-table-wrap){background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.cap,.bles,.note,.sub,.lg,.sv-summary,.sv-narrative p,.sv-node span,.sv-metric p,.sv-metric small,.sv-note,.sv-kicker,.stat span){color:var(--sv-text-secondary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(table,.sv-node b,.sv-rank b,.sv-event b){color:var(--sv-text-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(th,.sv-event time,.sv-rank small,.sv-event p){color:var(--sv-text-secondary)!important;background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+.stv .up{color:var(--sv-price-up)!important}.stv .dn{color:var(--sv-price-down)!important}.stv .nt{color:var(--sv-warning)!important}
+:is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-status-success)!important;background:var(--sv-bg-success)!important}
+:is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-warning)!important;background:var(--sv-bg-warning)!important}
+:is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-status-danger)!important;background:var(--sv-bg-danger)!important}
+:is(.sv-chip--neutral,.sv-badge,.chip){color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] :is([style*="color:#8fa2bd"],[style*="color:#c3cfe0"],[style*="color:#b9c6dc"],[style*="color:#c7d2e8"]){color:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] svg :is(text[fill="#e8eefb"],text[fill="#c3cfe0"],g[fill="#c3cfe0"],g[fill="#e8eefb"]){fill:var(--sv-text-primary)!important}
+[data-aime-streamviz-root] svg :is(text[fill="#8fa2bd"],g[fill="#8fa2bd"]){fill:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
+:root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
+:root:not([data-theme="dark"]) *{box-sizing:border-box}
+:root:not([data-theme="dark"]) html,:root:not([data-theme="dark"]) body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
+:root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
+:root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
+:root:not([data-theme="dark"]) .sv-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:12px}
+:root:not([data-theme="dark"]) .sv-badge-success{color:#09836f;background:#eaf8f2;border-color:#b7e6d5}
+:root:not([data-theme="dark"]) .sv-badge-warning{color:#a56417;background:#fff6df;border-color:#f0d28f}
+:root:not([data-theme="dark"]) .sv-badge-danger{color:#c34650;background:#fff0f1;border-color:#ffc3c8}
+:root:not([data-theme="dark"]) .svv{--bg:transparent!important;--card:#fff!important;--card2:#f6f7f9!important;--line:#dfe4eb!important;--text:#171b22!important;--muted:#667085!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root:not([data-theme="dark"]) .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#475467!important}
+:root:not([data-theme="dark"]) .svv .chip{color:#475467!important;background:#f6f7f9!important;border-color:#d0d5dd!important}
+:root:not([data-theme="dark"]) .svv .chip.success{color:#08745f!important;background:#e9f8f2!important;border-color:#9bdac7!important}
+:root:not([data-theme="dark"]) .svv .chip.warning{color:#925f0b!important;background:#fff5db!important;border-color:#ebc86f!important}
+:root:not([data-theme="dark"]) .svv .chip.danger{color:#b42335!important;background:#fff0f1!important;border-color:#f4aeb7!important}
+:root:not([data-theme="dark"]) .svv :is(.chart,.table-wrap){background:transparent!important}
+:root:not([data-theme="dark"]) .svv :is(.panel,.rank-html){background:#f6f7f9!important}
+:root:not([data-theme="dark"]) .svv table{color:#344054!important}
+:root:not([data-theme="dark"]) .svv thead th{color:#667085!important}
+:root:not([data-theme="dark"]) .svv tbody td{border-color:#dfe4eb!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#e8eefb"]{fill:#344054!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#93a4bd"]{fill:#667085!important}
+:root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
+:root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
+
+:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
+:root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
+:root[data-theme="dark"] .svv .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .svv .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .svv .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .svv .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .svv :is(.chart,.table-wrap){background:transparent!important}
+:root[data-theme="dark"] .svv :is(.panel,.rank-html){background:#181e28!important}
+:root[data-theme="dark"] .svv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .svv thead th{color:#aab6c7!important}
+:root[data-theme="dark"] .svv tbody td{border-color:#334052!important}
+:root[data-theme="dark"] .svv svg text[fill="#e8eefb"]{fill:#dbe3ee!important}
+:root[data-theme="dark"] .svv svg text[fill="#93a4bd"]{fill:#aab6c7!important}
+:root[data-theme="dark"] .svv svg :is(line,path)[stroke="#233247"]{stroke:#334052!important}
+:root[data-theme="dark"] .svv svg line[stroke="#93a4bd"]{stroke:#7d8ca3!important}
+:root[data-theme="dark"] .sv-report{color:#f1f5f9!important;background:transparent!important}
+:root[data-theme="dark"] .sv-report :is(.sv-kicker,.sv-lead,.dsub,.dlabel,.dlabel-flat,.dhead-c,.bval,.tval,.mv-meta,.keyline){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report :is(.card,.metric){background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report :is(.metric span,.metric em,.bname em,.tname em,.mv-id em){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .sv-report .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-report .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-report .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .sv-report .counts li{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .counts b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv-report :is(.btrack,.ttrack){background:#202733!important}
+:root[data-theme="dark"] .sv-report .mv{border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note{color:#aab6c7!important;background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note b{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv{--ink:#f1f5f9!important;--sub:#aab6c7!important;--line:#334052!important;--card:#181e28!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-sum,:root[data-theme="dark"] .sv .two p,:root[data-theme="dark"] .sv ol.steps{color:#c1cad7!important}
+:root[data-theme="dark"] .sv ol.steps b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-metric,:root[data-theme="dark"] .sv .pp-tabs>div,:root[data-theme="dark"] .sv .sv-narr>div,:root[data-theme="dark"] .sv .sv-note,:root[data-theme="dark"] .sv svg.payoff,:root[data-theme="dark"] .sv-card,:root[data-theme="dark"] .sv-metric{background:#181e28!important;border-color:#334052!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv thead th{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv tbody td{border-color:#2b3544!important}
+:root[data-theme="dark"] .sv tbody tr.hl{background:#1f3b46!important}
+:root[data-theme="dark"] .sv svg .ax,:root[data-theme="dark"] .sv svg .lk,:root[data-theme="dark"] .sv svg .lg{fill:#b9c5d5!important}
+:root[data-theme="dark"] .sv svg rect[fill="#eef2f7"],:root[data-theme="dark"] .sv svg rect[fill="#f8fafc"]{fill:#202733!important}
+:root[data-theme="dark"] .sv-badge-success,:root[data-theme="dark"] .sv .sv-chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-badge-warning,:root[data-theme="dark"] .sv .sv-chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-badge-danger,:root[data-theme="dark"] .sv .sv-chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+
+/* Report tables sit on the same card surface as ranked lists. Override the
+   widget runtime's independent neutral table palette inside report roots. */
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(table,.table-wrap,.sv-table-wrap){background:transparent!important;border-color:var(--sv-border-subtle)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+
+/* Financial direction is market-specific; success/danger remain status colors. */
+:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+[data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
+[data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+
+/* Report sections stay open; compact metrics have their own outlined cards. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-text-danger,var(--sv-status-danger))!important;background:var(--sv-bg-danger)!important;border-color:var(--sv-border-danger,var(--sv-border-subtle))!important}
+
+/* Standalone reports and sandboxed reports share the semantic runtime palette. */
+:root:not([data-theme="dark"]){--sv-text-success:var(--sv-jade-11,#208368);--sv-text-warning:var(--sv-amber-11,#915930);--sv-text-danger:var(--sv-red-11,#ce2c31);--sv-border-success:var(--sv-jade-7,#92ceac);--sv-border-warning:var(--sv-amber-7,#e8c36a);--sv-border-danger:var(--sv-red-7,#f3aeaf);--sv-bg-success:var(--sv-jade-3,#e6f4ea);--sv-bg-warning:var(--sv-amber-3,#fff3d0);--sv-bg-danger:var(--sv-red-3,#feebec)}
+:root[data-theme="dark"]{--sv-text-success:var(--sv-jade-11,#7ce2bd);--sv-text-warning:var(--sv-amber-11,#facf72);--sv-text-danger:var(--sv-red-11,#ff9592);--sv-border-success:var(--sv-jade-7,#1b5745);--sv-border-warning:var(--sv-amber-7,#6a4f0b);--sv-border-danger:var(--sv-red-7,#7e2e33);--sv-bg-success:var(--sv-jade-3,#132d21);--sv-bg-warning:var(--sv-amber-3,#35290f);--sv-bg-danger:var(--sv-red-3,#3b1219)}
+/* Timeline copy stays on the page; only status badges get a tinted surface. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
+/* Timeline events without dates do not reserve an empty tinted date column. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event:is(:has(>time:empty),:not(:has(>time))){grid-template-columns:minmax(0,1fr)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event>time:empty{display:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline :is(time,p){background:transparent!important;border:0!important;color:var(--sv-text-secondary)!important}
+
+/* Template reports share the compact metric rhythm; legacy margins must not stack. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metrics{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important;padding:12px 0!important;align-items:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric{display:grid!important;gap:var(--sv-component-gap)!important;align-content:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric>:is(p,strong,small){margin:0!important;line-height:1.5;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric strong{font-size:clamp(22px,2.5vw,27px);line-height:1.3}
+/* Place the dot's centre on the centre of the 1px connector, independent of radius. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{--sv-timeline-inset:20px;padding-left:var(--sv-timeline-inset)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event::before{left:calc(-1 * var(--sv-timeline-inset) - .5px)!important;transform:translateX(-50%);background:var(--sv-chart-series-1)!important}
+
+/* Compact metric cards tile across the available width and wrap as a group. */
+:root :is([data-aime-streamviz-root],[data-visualize-root]) :is([data-sv-metric],.metrics>.insight){box-sizing:border-box;min-width:0!important;padding:var(--sv-card-padding)!important;margin:0!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;background:transparent!important;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){align-items:stretch!important}
+@media(max-width:640px){
+  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))!important;gap:12px!important}
+  :root :is([data-aime-streamviz-root],[data-visualize-root]) :is(.stat-value,.sv-metric strong){font-size:22px!important}
+}
+</style></head><body><main data-aime-streamviz-root="true"><style>
+.amd-report{display:flex;flex-direction:column;gap:28px;container-type:inline-size}
+.amd-report *{box-sizing:border-box}
+.sec{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec>h2{margin:0;font-size:17px;line-height:1.45;color:var(--sv-text-primary);font-weight:600}
+.sec>p{margin:0;font-size:13px;line-height:1.75;color:var(--sv-text-secondary)}
+.sec>p b{color:var(--sv-text-primary);font-weight:600}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
+.mcard{border:1px solid var(--sv-border-subtle);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--sv-surface-primary)}
+.mcard .lb{font-size:11px;line-height:1.4;color:var(--sv-text-secondary)}
+.mcard .vl{font-size:19px;font-weight:600;color:var(--sv-text-primary);line-height:1.2}
+.mcard .dt{font-size:11px;line-height:1.4;color:var(--sv-text-secondary)}
+.card{border:1px solid var(--sv-border-subtle);border-radius:8px;padding:16px;background:var(--sv-surface-primary);min-width:0}
+.card>h3{margin:0 0 8px;font-size:15px;color:var(--sv-text-primary);font-weight:600}
+.combo{display:grid;grid-template-columns:minmax(0,46px) minmax(0,1fr);gap:8px}
+.ylab{display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:var(--sv-text-secondary);text-align:right;height:180px}
+.plot{position:relative;min-width:0}
+.bars{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;height:180px;align-items:end}
+.col{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.col-val{font-size:11px;color:var(--sv-text-primary);margin-bottom:3px;white-space:nowrap}
+.bar-wrap{position:relative;width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center}
+.bar{width:min(100%,32px);background:var(--sv-chart-series-1);border-radius:3px 3px 0 0;min-height:2px}
+.niline{position:absolute;left:0;right:0;top:0;bottom:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.nidot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--sv-chart-series-2);border:1.5px solid var(--sv-surface-primary);transform:translate(-50%,-50%);pointer-events:none;z-index:3}
+.xrow{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:6px}
+.xrow span{font-size:11px;color:var(--sv-text-secondary);text-align:center;white-space:nowrap}
+.yoyrow{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:2px}
+.yoyrow span{font-size:11px;text-align:center;color:var(--sv-price-up)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:10px;font-size:11px;color:var(--sv-text-secondary)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--sv-border-subtle);font-size:12.5px}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--sv-text-secondary);min-width:0}
+.kv .val{color:var(--sv-text-primary);font-weight:600;text-align:right;white-space:nowrap}
+.kv .val em{font-style:normal;font-weight:600}
+.up{color:var(--sv-price-up)}
+.band{position:relative;height:96px;margin:26px 8px 26px}
+.band-axis{position:absolute;left:0;right:0;top:50%;height:8px;transform:translateY(-50%);border-radius:4px;background:var(--sv-surface-secondary);border:1px solid var(--sv-border-subtle)}
+.band-mark{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2}
+.band-mark i{display:block;width:3px;height:38px;border-radius:2px}
+.band-mark b{font-size:11px;font-weight:600;white-space:nowrap}
+.band-cur i{background:var(--sv-chart-series-1)}
+.band-cur b{color:var(--sv-chart-series-1);transform:translateY(-7px)}
+.band-avg i{background:var(--sv-chart-series-2)}
+.band-avg b{color:var(--sv-chart-series-2);transform:translateY(5px)}
+.band-edge{position:absolute;top:calc(50% + 22px);font-size:11px;color:var(--sv-text-secondary)}
+.band-lo{left:0}
+.band-hi{right:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{border:1px solid var(--sv-border-subtle);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--sv-text-secondary);background:var(--sv-surface-primary)}
+.chip b{color:var(--sv-text-primary);font-weight:600}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;align-items:start}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px}
+.node{border:1px solid var(--sv-border-subtle);border-left:3px solid var(--sv-chart-series-1);border-radius:6px;padding:10px 12px;background:var(--sv-surface-primary);min-width:0}
+.node h4{margin:0 0 4px;font-size:12.5px;color:var(--sv-text-primary);font-weight:600}
+.node p{margin:0;font-size:11.5px;line-height:1.65;color:var(--sv-text-secondary)}
+ul.risk{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px}
+ul.risk li{font-size:13px;line-height:1.75;color:var(--sv-text-secondary)}
+ul.risk li b{color:var(--sv-text-primary);font-weight:600}
+.note{font-size:11.5px;line-height:1.75;color:var(--sv-text-secondary);border-top:1px solid var(--sv-border-subtle);padding-top:12px}
+@media(max-width:520px){.bars,.ylab{height:150px}.mcard .vl{font-size:17px}.col-val{font-size:10px}}
+</style>
+
+<div class="amd-report" data-financial-market="US">
+
+  <div class="mgrid">
+    <div class="mcard"><span class="lb">最新收盘价（2026-10-13）</span><span class="vl">$605.53</span><span class="dt">近一年累计 +160%</span></div>
+    <div class="mcard"><span class="lb">最新已披露季度 Q2 '26 营收</span><span class="vl">$11.54B</span><span class="dt"><span class="up">同比 +50.1%</span></span></div>
+    <div class="mcard"><span class="lb">TTM 营收 / TTM 净利润</span><span class="vl">$41.3B</span><span class="dt">净利 $6.43B（GAAP）</span></div>
+    <div class="mcard"><span class="lb">下季（Q3'26）营收一致预期</span><span class="vl">$13.06B</span><span class="dt">隐含环比 +13.2%</span></div>
+    <div class="mcard"><span class="lb">平均目标价 / 隐含空间</span><span class="vl">$643</span><span class="dt"><span class="up">+6.2%</span>（23 位分析师）</span></div>
+    <div class="mcard"><span class="lb">PS（TTM） / 前瞻 PE</span><span class="vl">23.9x</span><span class="dt">前瞻 PE 78x（非 GAAP 年化）</span></div>
+  </div>
+
+  <section class="sec">
+    <h2>一、增长：营收同比首次达到 +50%，利润弹性大于营收弹性</h2>
+    <p>AMD 最新已披露财报为 Q2 '26（期末 2026-06-27）：营收 <b>$11.54B</b>，同比 <b>+50.1%</b>；同期 GAAP 净利润 <b>$2.30B</b>，同比 +163.4%。图中最重要的变化不是绝对规模，而是<b>增速曲线的斜率</b>：营收同比从 FY24 一季度的 +2.2% 逐季抬升到 FY26 二季度的 +50.1%，说明收入结构已从温和修复切换到加速扩张，而不是季节性波动。</p>
+    <div class="card">
+      <h3>近八季营收、GAAP 净利润与营收同比</h3>
+      <div class="combo">
+        <div class="ylab"><span>$12B</span><span>$6B</span><span>0</span></div>
+        <div class="plot">
+          <div class="bars"><div class='col'><span class='col-val'>6.8</span><div class='bar-wrap'><div class='bar' style='height:59.11%'></div><i class='ni-dot' style='bottom:33.57%'></i></div></div><div class='col'><span class='col-val'>7.7</span><div class='bar-wrap'><div class='bar' style='height:66.38%'></div><i class='ni-dot' style='bottom:20.98%'></i></div></div><div class='col'><span class='col-val'>7.4</span><div class='bar-wrap'><div class='bar' style='height:64.48%'></div><i class='ni-dot' style='bottom:30.87%'></i></div></div><div class='col'><span class='col-val'>7.7</span><div class='bar-wrap'><div class='bar' style='height:66.62%'></div><i class='ni-dot' style='bottom:37.96%'></i></div></div><div class='col'><span class='col-val'>9.2</span><div class='bar-wrap'><div class='bar' style='height:80.15%'></div><i class='ni-dot' style='bottom:54.11%'></i></div></div><div class='col'><span class='col-val'>10.3</span><div class='bar-wrap'><div class='bar' style='height:89.03%'></div><i class='ni-dot' style='bottom:65.78%'></i></div></div><div class='col'><span class='col-val'>10.3</span><div class='bar-wrap'><div class='bar' style='height:88.88%'></div><i class='ni-dot' style='bottom:60.21%'></i></div></div><div class='col'><span class='col-val'>11.5</span><div class='bar-wrap'><div class='bar' style='height:100.00%'></div><i class='ni-dot' style='bottom:100.00%'></i></div></div></div>
+          <svg class="niline" viewBox="0 0 100 100" preserveAspectRatio="none" fill="none" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+            <polyline points="6.250,66.434 18.750,79.016 31.250,69.134 43.750,62.037 56.250,45.886 68.750,34.219 81.250,39.791 93.750,0.000" stroke="var(--sv-chart-series-2)" stroke-width="1.8" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <i class='nidot' style='left:6.250%;top:66.434%'></i><i class='nidot' style='left:18.750%;top:79.016%'></i><i class='nidot' style='left:31.250%;top:69.134%'></i><i class='nidot' style='left:43.750%;top:62.037%'></i><i class='nidot' style='left:56.250%;top:45.886%'></i><i class='nidot' style='left:68.750%;top:34.219%'></i><i class='nidot' style='left:81.250%;top:39.791%'></i><i class='nidot' style='left:93.750%;top:0.000%'></i>
+        </div>
+      </div>
+      <div class="xrow"><span>Q3 '24</span><span>Q4 '24</span><span>Q1 '25</span><span>Q2 '25</span><span>Q3 '25</span><span>Q4 '25</span><span>Q1 '26</span><span>Q2 '26</span></div>
+      <div class="yoyrow"><span>+17.6%</span><span>+24.2%</span><span>+35.9%</span><span>+31.7%</span><span>+35.6%</span><span>+34.1%</span><span>+37.8%</span><span>+50.1%</span></div>
+      <div class="legend">
+        <span><i style="background:var(--sv-chart-series-1)"></i>季度营收（十亿美元，左轴）</span>
+        <span><i style="background:var(--sv-chart-series-2);border-radius:50%"></i>季度 GAAP 净利润（按各自峰值等比绘制的趋势线）</span>
+        <span><i style="background:var(--sv-price-up)"></i>营收同比增速（末行）</span>
+      </div>
+    </div>
+    <p>利润率提供了同向证据：Q2 '26 毛利率 <b>53.8%</b>，高于 FY2025 全年的 49.5% 与 FY2024 的 49.4%。营收 +50.1% 的同时毛利率抬升，说明增量收入不是以价格换来的规模；TTM 营收 <b>$41.3B</b>、TTM 净利润 <b>$6.43B</b>，已分别超过 FY2025 全年的 $34.64B 与 $4.33B。</p>
+  </section>
+
+  <section class="sec">
+    <h2>二、市场预期：连续四季超预期，下季一致预期要求环比再 +13%</h2>
+    <p>增长已被卖方充分写进模型：过去四个已披露季度，AMD 营收<b>全部超过一致预期</b>，幅度 2.0%–6.2%；非 GAAP EPS 同样四季全部超预期（+2.4% 至 +16.0%）。市场对 Q3'26（预计 Nov 3, 2026 披露）的一致预期为营收 <b>$13.06B</b>、非 GAAP EPS <b>$1.94</b>，隐含营收环比 <b>+13.2%</b>、EPS 环比 +16.7%。但超预期幅度在收敛（6.2% → 3.6% → 2.0%），说明预期抬升的速度已经追上交付速度，<b>“超预期”本身的边际信息价值在下降</b>。</p>
+    <div class="two">
+      <div class="card">
+        <h3>实际 vs 一致预期：营收</h3>
+        <div class='kv'><span class='k'>Q3'25 营收</span><span class='val'>预期 8.76B → 实际 9.25B <em class='up'>+5.6%</em></span></div><div class='kv'><span class='k'>Q4'25 营收</span><span class='val'>预期 9.67B → 实际 10.27B <em class='up'>+6.2%</em></span></div><div class='kv'><span class='k'>Q1'26 营收</span><span class='val'>预期 9.90B → 实际 10.25B <em class='up'>+3.6%</em></span></div><div class='kv'><span class='k'>Q2'26 营收</span><span class='val'>预期 11.31B → 实际 11.54B <em class='up'>+2.0%</em></span></div>
+        <h3 style="margin-top:14px">实际 vs 一致预期：非 GAAP EPS</h3>
+        <div class='kv'><span class='k'>Q3'25 非 GAAP EPS</span><span class='val'>预期 $1.17 → 实际 $1.20 <em class='up'>+2.4%</em></span></div><div class='kv'><span class='k'>Q4'25 非 GAAP EPS</span><span class='val'>预期 $1.32 → 实际 $1.53 <em class='up'>+16.0%</em></span></div><div class='kv'><span class='k'>Q1'26 非 GAAP EPS</span><span class='val'>预期 $1.29 → 实际 $1.37 <em class='up'>+6.2%</em></span></div><div class='kv'><span class='k'>Q2'26 非 GAAP EPS</span><span class='val'>预期 $1.62 → 实际 $1.66 <em class='up'>+2.7%</em></span></div>
+      </div>
+      <div class="card">
+        <h3>卖方评级分布（近 90 天，23 位）</h3>
+        <div class="chips"><span class='chip'>强烈买入 <b>1</b>（4.3%）</span> <span class='chip'>买入 <b>20</b>（87.0%）</span> <span class='chip'>持有 <b>2</b>（8.7%）</span></div>
+        <div class="kv"><span class="k">综合评级 / 平均分</span><span class="val">买入 · 3.96 / 5</span></div>
+        <div class="kv"><span class="k">评级更新时间</span><span class="val">Oct 7, 2026</span></div>
+        <div class="kv"><span class="k">半导体行业评级排名</span><span class="val">第 38 / 77 家</span></div>
+        <div class="kv"><span class="k">行业平均分</span><span class="val">4.00 / 5</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>三、预期与价格的落差：平均目标价只剩 6% 空间，但分歧高达 52%</h2>
+    <p>23 位分析师平均目标价 <b>$643</b>，相对最新收盘 $605.53 仅剩 <b>+6.2%</b>；目标价区间从 $465 到 $800，离散度（区间宽度 ÷ 平均目标价）达 <b>52%</b>。价格已跑到共识目标价附近，<b>均值不再提供安全垫</b>，定价变量从“目标价有多高”变成“谁的目标价是对的”。值得注意的是平均目标价本身在过去六个月被连续上调（4 月 14 日 $283 → 10 月 $643），而股价同期涨得更快，才把空间压缩到个位数。</p>
+    <div class="card">
+      <h3>目标价区间与最新价格位置（美元）</h3>
+      <div class="band">
+        <div class="band-axis"></div>
+        <span class="band-mark band-cur" style="left:41.95%"><i></i><b>最新收盘 $605.53</b></span>
+        <span class="band-mark band-avg" style="left:53.21%"><i></i><b>平均目标价 $643.26</b></span>
+        <span class="band-edge band-lo">最低 $465</span>
+        <span class="band-edge band-hi">最高 $800</span>
+      </div>
+      <p style="margin:0;font-size:11.5px;line-height:1.75;color:var(--sv-text-secondary)">横轴为分析师目标价最低—最高区间；两个竖标分别为最新收盘价与平均目标价。区间下沿 $465 比现价低 23%，上沿 $800 比现价高 32%。</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>四、估值风险：23.9 倍 PS 与 154 倍 TTM PE，几乎全部由未来兑现支撑</h2>
+    <p>按最新收盘价与快照隐含股本推算，市值约 <b>$988B</b>，对应 TTM 营收的 PS 为 <b>23.9x</b>，TTM GAAP 口径 PE 为 <b>154x</b>。即使把下季非 GAAP EPS 一致预期（$1.94）直接年化，前瞻 PE 仍有 <b>78x</b>。<b>当前价格买的是尚未发生的盈利，而不是已经披露的盈利</b>：若 Q3 按一致预期落地，估值仍处高位；若环比增速低于 +13.2%，盈利预期与估值倍数会同时被下修，形成业绩与估值的双向压缩。</p>
+    <div class="two">
+      <div class="card">
+        <h3>估值口径与倍数</h3>
+        <div class='kv'><span class='k'>市值（最新收盘价 × 快照隐含股本）</span><span class='val'>$988.5B</span></div><div class='kv'><span class='k'>PS（TTM 营收 $41.3B）</span><span class='val'>23.9x</span></div><div class='kv'><span class='k'>PE（TTM GAAP 净利 $6.43B）</span><span class='val'>154x</span></div><div class='kv'><span class='k'>前瞻 PE（下季非 GAAP EPS $1.94 × 4）</span><span class='val'>78x</span></div>
+      </div>
+      <div class="card">
+        <h3>交付 → 预期 → 价格 → 剩余空间</h3>
+        <div class="flow">
+          <div class="node"><h4>① 交付</h4><p>Q2 '26 营收 $11.54B，同比 +50.1%，连续四季超预期</p></div>
+          <div class="node"><h4>② 预期抬升</h4><p>下季一致预期 $13.06B（环比 +13.2%）；平均目标价半年由 $283 上调至 $643</p></div>
+          <div class="node"><h4>③ 价格反应</h4><p>近一年区间 $188–$659，最新 $605.53，已贴近平均目标价</p></div>
+          <div class="node"><h4>④ 剩余空间</h4><p>隐含 +6.2%，离散度 52%，均值失去安全垫</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>五、主要风险与失效条件</h2>
+    <ul class="risk">
+      <li><b>估值容错极低</b>：PS 23.9x、TTM PE 154x、前瞻 PE 78x；任何一次环比增速不及 +13.2% 或毛利率回落，都会同时压低盈利预期与估值倍数。</li>
+      <li><b>预期高度一致</b>：23 位分析师中 21 位买入或强烈买入、2 位持有、0 位卖出。一致预期越集中，“超预期”的上行弹性越小，而低于预期的下行冲击更大。</li>
+      <li><b>目标价分歧极大</b>：区间 $465–$800，离散度 52%，说明市场对加速器份额与毛利率路径没有共识，均值 $643 的参考价值有限。</li>
+      <li><b>增长依赖单一叙事</b>：同比增速从个位数抬升到 50% 与估值倍数扩张同步发生，价格中已包含“继续加速”的假设；AI 资本开支节奏一旦放缓，增速与倍数会同向收缩。</li>
+      <li><b>最近的验证点</b>：下一份财报预计 Nov 3, 2026 披露，是本页所有前瞻结论最近的检验窗口。</li>
+    </ul>
+    <div class="note">数据时间与口径：行情截至 2026-10-13 收盘（最新收盘 $605.53，近一年区间 $188–$659）；财务数据取自 AInvest 财报数据源，最新已披露季度为 Q2 '26（期末 2026-06-27），营收与净利润为 GAAP 口径、单位十亿美元，毛利率按毛利润 ÷ 营收计算；一致预期、目标价、评级分布来自 AInvest 分析师模块近 90 天口径（更新于 Oct 7, 2026）。市值由最新收盘价乘以 Yahoo 快照隐含股本（1.632B 股）推算，非交易所直接披露值；PS(TTM) 与 PE(TTM) 由该市值与 TTM 财务数据推导；前瞻 PE 使用下季非 GAAP EPS 一致预期年化，与非 GAAP 历史口径不完全可比。Yahoo Finance 的季度财务字段与关键统计接口本次返回 429/无数据，AInvest 估值组件返回空状态，两者均未采用，估值倍数改用上述推导口径。本页为研究与可视化结果，不构成投资建议。</div>
+  </section>
+
+</div></main></body></html>

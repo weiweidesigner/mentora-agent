@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A股交易日历</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:transparent;color:#202938;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+body{padding:0}
+.calendar{width:100%;margin:0;border:0;border-radius:0;box-shadow:none}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 18px;border-bottom:1px solid #e5e9ef}
+.heading{min-width:0}
+.eyebrow{margin:0 0 4px;color:#8b95a4;font-size:12px;font-weight:700;letter-spacing:.08em}
+h1{margin:0;font-size:clamp(21px,3vw,28px);line-height:1.25;white-space:nowrap}
+.nav{display:flex;gap:8px}
+.nav button{width:38px;height:38px;border:1px solid #dce2e9;border-radius:10px;background:#fff;color:#2d3745;font-size:25px;line-height:1;cursor:pointer}
+.nav button:hover:not(:disabled){background:#f4f6f9}
+.nav button:focus-visible{outline:3px solid #f5a5ad;outline-offset:2px}
+.nav button:disabled{opacity:.35;cursor:default}
+.weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.weekdays{background:transparent;border-bottom:1px solid #e8ecf2}
+.weekdays span{padding:11px 4px;text-align:center;color:#697688;font-size:13px;font-weight:650}
+.days{gap:0;background:transparent}
+.day,.blank{min-height:94px;background:transparent;padding:12px 11px;border-bottom:1px solid #eef0f4}
+.day{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.number{font-size:23px;line-height:1;font-variant-numeric:tabular-nums;font-weight:600}
+.status{font-size:12px;line-height:1.35;color:#87919e}
+.day.trading .status{color:#d94b58;font-weight:650}
+.day.trading .number{color:#243042}
+.day.closed{background:transparent}
+.day.closed .number{color:#969eaa}
+.day.outside{background:transparent}
+.day.outside .number,.day.outside .status{color:#c2c8d0}
+.day.today .number{display:grid;place-items:center;width:34px;height:34px;margin:-6px 0 -5px -6px;border-radius:10px;background:#d94b58;color:#fff}
+.footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 0;color:#778393;font-size:12px}
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:#d94b58}
+.dot.closed-dot{background:#b8c0ca}
+.dot.outside-dot{background:#e2e5e9}
+@media(max-width:600px){.header{padding:0 0 14px}.day,.blank{min-height:72px;padding:9px 5px}.number{font-size:18px}.status{font-size:10px}.weekdays span{font-size:12px}.footer{padding:13px 0}}
+</style>
+</head>
+<body>
+<main class="calendar" aria-label="A股交易日历">
+  <div class="header">
+    <div class="heading"><p class="eyebrow">A 股市场</p><h1 id="monthTitle" aria-live="polite"></h1></div>
+    <div class="nav"><button id="previous" type="button" aria-label="上一个月">‹</button><button id="next" type="button" aria-label="下一个月">›</button></div>
+  </div>
+  <div class="weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+  <div id="days" class="days" role="grid" aria-label="交易日历"></div>
+  <div class="footer"><div class="legend"><span><i class="dot"></i>交易日</span><span><i class="dot closed-dot"></i>休市</span><span><i class="dot outside-dot"></i>无数据</span></div><span>接口覆盖：2025-10-14 至 2026-10-14</span></div>
+</main>
+<script>
+(() => {
+  const trading = new Set(["2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-19", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-25", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30", "2026-07-01", "2026-07-02", "2026-07-03", "2026-07-06", "2026-07-07", "2026-07-08", "2026-07-09", "2026-07-10", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-08", "2026-10-09", "2026-10-12", "2026-10-13", "2026-10-14"]);
+  const first = '2025-10-14', last = '2026-10-14';
+  const today = '2026-10-14';
+  const minMonth = Number(first.slice(0, 4)) * 12 + Number(first.slice(5, 7)) - 1;
+  const maxMonth = Number(last.slice(0, 4)) * 12 + Number(last.slice(5, 7)) - 1;
+  let current = maxMonth;
+  const cells = document.getElementById('days');
+  const title = document.getElementById('monthTitle');
+  const previous = document.getElementById('previous');
+  const next = document.getElementById('next');
+  const pad = n => String(n).padStart(2, '0');
+  function render() {
+    const year = Math.floor(current / 12), month = current % 12;
+    title.textContent = `${year} 年 ${month + 1} 月`;
+    previous.disabled = current <= minMonth;
+    next.disabled = current >= maxMonth;
+    cells.replaceChildren();
+    const leading = new Date(year, month, 1).getDay();
+    const count = new Date(year, month + 1, 0).getDate();
+    for (let i = 0; i < leading; i++) {
+      const blank = document.createElement('div'); blank.className = 'blank'; blank.setAttribute('aria-hidden', 'true'); cells.append(blank);
+    }
+    for (let day = 1; day <= count; day++) {
+      const key = `${year}-${pad(month + 1)}-${pad(day)}`;
+      const outside = key < first || key > last;
+      const trade = !outside && trading.has(key);
+      const weekend = new Date(year, month, day).getDay() % 6 === 0;
+      const status = outside ? '无数据' : trade ? '交易日' : weekend ? '周末休市' : '休市';
+      const cell = document.createElement('div');
+      cell.className = `day ${outside ? 'outside' : trade ? 'trading' : 'closed'}${key === today ? ' today' : ''}`;
+      cell.setAttribute('role', 'gridcell');
+      cell.setAttribute('aria-label', `${key} ${status}`);
+      const number = document.createElement('span'); number.className = 'number'; number.textContent = String(day);
+      const label = document.createElement('span'); label.className = 'status'; label.textContent = status;
+      cell.append(number, label); cells.append(cell);
+    }
+    const trailing = (7 - ((leading + count) % 7)) % 7;
+    for (let i = 0; i < trailing; i++) {
+      const blank = document.createElement('div'); blank.className = 'blank'; blank.setAttribute('aria-hidden', 'true'); cells.append(blank);
+    }
+  }
+  previous.addEventListener('click', () => { if (current > minMonth) { current--; render(); } });
+  next.addEventListener('click', () => { if (current < maxMonth) { current++; render(); } });
+  render();
+})();
+</script>
+</body>
+</html>

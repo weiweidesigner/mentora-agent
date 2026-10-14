@@ -1,23 +1,315 @@
 {
-  "question": "请展示 AAPL / MSFT / NVDA 的多股分时对比，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL,MSFT,NVDA 的最新共同交易日的三只股票分时走势，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:09:31.480000+08:00",
   "answer": {
-    "question": "请展示 AAPL / MSFT / NVDA 的多股分时对比，解释主要指标和观察方法。",
-    "interpretation": "# AAPL / MSFT / NVDA · 多股分时对比\n\n这份案例用原生业务组件展示多股分时对比，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-multi_intraday/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL,MSFT,NVDA 的最新共同交易日的三只股票分时走势，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,yahoo-data,code-interpreter",
+      "label": "business-chart-recall + yahoo-data + code-interpreter",
+      "script": "business-chart-recall + yahoo-data + code-interpreter",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
+    "reportUrl": "/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-multi_intraday/chart.html",
-        "url": "/static/cases/inspiration/business-multi_intraday/chart.html"
+        "path": "case:inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
+        "url": "/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-multi_intraday/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成本次真实取数、重算与重新渲染。以下为完整分析。\n\n## 核心结论\n\n**2026-10-13（美东，三只股票的最新共同交易日）三只股票走的是方向相反的分时形态：NVDA 低开高走收在全天最高附近，AAPL 与 MSFT 高开低走收在全天最低附近。** 按当日收盘涨跌幅排序是 **NVDA +0.97% > MSFT +0.43% > AAPL +0.09%**，但这一排序几乎完全由开盘跳空方向决定；按盘中动能（相对开盘）排序则完全颠倒：**NVDA +1.90% > MSFT −0.22% > AAPL −0.99%**。这意味着当日\"谁涨\"和\"谁走强\"是两件事，只看收盘涨跌幅会读错当天的真实强弱。\n\n这一分化还带有明显的单日反转特征：前一交易日（10-12）AAPL +1.29%、MSFT +1.14%、NVDA −1.29%，次日恰是前一日最强的两只高开回落、前一日最弱的 NVDA 低开走高。\n\n## 关键证据\n\n**分时路径的形态差异（本图直接呈现的结论）**\n\n[[AIME_CHART:case:inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html]]\n\n三张卡片对应同一交易日同一时间轴（美东 09:30–16:00），最值得注意的三点：\n\n- **AAPL 冲高即见顶**：开盘 344.665（较前收 340.97 跳空 +1.08%），**09:34 即打出全天最高 348.15，随后单边下行**，收盘 341.27，收在当日区间仅 **7.2%** 的位置，全天最低 340.74 出现在 15:42。09:39–09:44 的 5 分钟内急跌 **−1.20%**，基本定调了全天。\n- **MSFT 高位横盘后阴跌**：开盘 544.625（跳空 +0.64%），最高 551.15 出现在 10:03，此后逐级走低，**全天仅 27.1% 的分钟在均价上方**，收盘 543.45，收在区间 **4.8%** 的位置，最低 543.06 就在收盘前 15:58。\n- **NVDA 反向修复**：开盘 224.27（跳空 **−0.91%**），09:35 见全天最低 223.06 后震荡走高，**最高 228.64 出现在 15:59（收在区间 97.8%），尾盘 15:00–15:59 上涨 0.47%，是全天最强时段**。\n\n**量价与波动口径**\n\nNVDA 是唯一收盘站在当日成交量加权均价线上方的一只（**+1.06%**），AAPL 与 MSFT 分别收在均价线下方 −0.90% 与 −0.70%。波动维度上 MSFT 最\"安静\"：振幅（最高/最低）仅 1.49%，1 分钟收益率标准差折算的日内实现波动 1.10%；AAPL 振幅 2.18%、实现波动 **1.47%（三者最高）**；NVDA 振幅 2.50% 最大，但主要来自低开，实现波动 1.35%。\n\n| 标的 | 前收(10-12) | 开盘(跳空) | 最高(时间) | 最低(时间) | 收盘(日涨跌) | 相对开盘 | 收盘区间位置 | 收盘 vs 均价 | 振幅 |\n|---|---|---|---|---|---|---|---|---|---|\n| AAPL | 340.97 | 344.665 (+1.08%) | 348.15 (09:34) | 340.74 (15:42) | 341.27 (**+0.09%**) | −0.99% | 7.2% | −0.90% | 2.18% |\n| MSFT | 541.15 | 544.625 (+0.64%) | 551.15 (10:03) | 543.06 (15:58) | 543.45 (**+0.43%**) | −0.22% | 4.8% | −0.70% | 1.49% |\n| NVDA | 226.32 | 224.27 (−0.91%) | 228.64 (15:59) | 223.06 (09:35) | 228.52 (**+0.97%**) | +1.90% | 97.8% | +1.06% | 2.50% |\n\n**盘中相关性：当日没有形成同步的板块行情**\n\n三只股票 1 分钟收益率两两相关性近似为零（−0.06 ~ +0.03），放大到 5/15/30 分钟后符号来回翻转（如 AAPL-MSFT 在 15 分钟为 +0.34，在 30 分钟为 −0.26；AAPL-NVDA 在 5 分钟为 −0.28）。**这种跨尺度符号不稳定本身说明这些估计不稳健，不足以支撑\"同步\"或\"负相关\"的判断**，但至少可以确认当日并非三只权重股整体同向波动的行情，个股/事件驱动的分化特征明显。\n\n## 风险、数据时间与口径\n\n- **数据时间**：分时为 **2026-10-13（美东）** 常规时段 09:30–16:00，共 391 根 1 分钟 bar/标的；该数据快照的整体保存日期为 **2026-10-14**。本次执行时点为 2026-10-14 05:00（美东），当日尚未开盘，因此 10-13 确为最新完整共同交易日，与给定快照一致。\n- **数据来源与降级**：分时采用组件内置行情源（AInvest 优先，本次最终渲染回退至 Yahoo 1 分钟，故 bar 数为 391 根含 16:00 收盘 bar）。另一次同源取数（AInvest，390 根）给出**完全相同的开、高、低、收**，且两者与独立日线数据的当日开高低收逐项一致（差异 0.0000），价格口径可靠。\n- **成交量口径差异（重要）**：分钟数据合计成交量低于官方日成交量（如 AAPL 3090 万股 vs 日线 3898 万股，NVDA 6548 万股 vs 8404 万股），且两个分钟源的合计值本身也不同。因此本文的成交额、成交量占比只用于同源横向比较，不能当作精确换手率；基于尾盘成交量占比的推断已从结论中剔除。\n- **相关性结论的强度**：仅单日样本，1 分钟相关性标准误约 ±0.05，15 分钟仅 26 个观测点（标准误约 ±0.2），不能外推为长期相关性。\n- **验证情况**：产物已做结构化校验（3 张卡片、`lang=zh-CN`、`data-theme=light` 且支持运行时浅/深切换、根背景透明、每卡 391 根 bar、开高低收与独立日线一致）；视觉验证 Skill 因运行环境未配置视觉模型密钥无法执行，故未提供基于图像识别的额外判断。\n- 以上为数据分析与观察，不构成投资建议；后续确认点可放在 AAPL 能否收复当日均价线（约 344.4）、MSFT 能否止住收盘前创新低的节奏，以及 NVDA 低开高走形态在次日是否延续。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-multi_intraday-7960d01c26c34bf6959dd91d27f3f237",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-multi_intraday-7960d01c26c34bf6959dd91d27f3f237",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a3a4c778729dc283ae2313eb1d)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2888
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3485
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5047
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5782
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7731
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8163
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9335
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10072
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 10652
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11299
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13711
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14108
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16383
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17025
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 20185
+      },
+      {
+        "title": "bash",
+        "elapsedMs": 31667
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 33086
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 33087
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34951
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 34952
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 35374
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 36709
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 37331
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40754
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 41132
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42853
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 44550
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 58095
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 59132
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 62641
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 64313
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65724
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67113
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 68687
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 70741
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 77192
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 77558
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 80725
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 102809
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 107469
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 115192
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 126210
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 127843
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 129538
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 132666
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 134137
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 135721
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 266091
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 266561
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 269089
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 270950
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 275324
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 456793
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 523923
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 530136
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 536987
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 550309
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 554301
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 565952
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 567899
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 572167
+      }
+    ],
+    "startedAt": 1791968387395,
+    "endedAt": 1791968971480,
+    "elapsedMs": 584085,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968387395,
+        "endedAt": 1791968971480,
+        "elapsedMs": 584085
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-multi_intraday-7960d01c26c34bf6959dd91d27f3f237",
     "renderer": "multi_intraday.py",
-    "schema": "multi_intraday.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139a3a4c778729dc283ae2313eb1d)",
+      "candidateCount": 45
+    }
   }
 }

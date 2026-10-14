@@ -1,22 +1,67 @@
 {
-  "question": "画一张金融分析主题插画：用牛与熊的对峙表达市场情绪与风险的张力。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "画一张电影感金融分析主题插画：交易所中公牛与熊相互对峙，象征市场乐观和风险的张力，蓝色与琥珀色灯光，精细质感，没有文字和数字。",
+  "cachedAt": "2026-10-14T16:38:08.373000+08:00",
   "answer": {
-    "question": "画一张金融分析主题插画：用牛与熊的对峙表达市场情绪与风险的张力。",
-    "interpretation": "# 牛熊博弈的市场隐喻\n\n用牛与熊的对峙表达市场情绪与风险的张力。\n\n[[AIME_CHART:case:inspiration/art-1/chart.html]]\n\n## 创作说明\n\n由本地 FLUX.2 [klein] 4B 生成，属于金融主题艺术表达。画面中的形象与关系是视觉隐喻，不代表真实行情、数据或预测。",
+    "question": "画一张电影感金融分析主题插画：交易所中公牛与熊相互对峙，象征市场乐观和风险的张力，蓝色与琥珀色灯光，精细质感，没有文字和数字。",
+    "code": "",
+    "selectedSkill": {
+      "key": "flux-image",
+      "label": "flux-image",
+      "script": "flux-image",
+      "reason": "Veya 直接执行并验证了本地 flux-image Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.html",
+    "reportUrl": "/static/cases/inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/art-1/chart.html",
-        "url": "/static/cases/inspiration/art-1/chart.html"
+        "path": "case:inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.html",
+        "url": "/static/cases/inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.html",
+        "imageUrl": "/static/cases/inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.png",
+        "mediaType": "image",
+        "alt": "牛熊博弈的市场隐喻"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/art-1/chart.html",
+    "payloadUrl": null,
+    "interpretation": "[[AIME_CHART:case:inspiration/art-1/flux-03519cc9ac004231b13115ad7a5ce91c.html]]",
+    "status": [
+      "FLUX.2 [klein] 4B 已生成图片"
+    ],
+    "agentRunId": "flux-f6f90784abd14826b701a471afe6026c",
+    "studioSessionId": null,
+    "engineSessionId": "",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "",
     "sources": [],
+    "videos": [],
+    "actionLinks": [],
     "lang": "zh-CN"
   },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "本地图片已生成并验证",
+        "elapsedMs": 17007
+      }
+    ],
+    "startedAt": 1791967071365,
+    "endedAt": 1791967088373,
+    "elapsedMs": 17008,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967071365,
+        "endedAt": 1791967088373,
+        "elapsedMs": 17008
+      }
+    ]
+  },
   "provenance": {
-    "skill": "flux-image",
-    "model": "FLUX.2 [klein] 4B",
-    "seed": 20261014
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-art-1-a5289693042441b9b57037f48b082839",
+    "renderer": null,
+    "sample": false,
+    "visualRoute": null
   }
 }

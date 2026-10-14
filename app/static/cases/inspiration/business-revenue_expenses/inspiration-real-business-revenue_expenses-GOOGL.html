@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>收入与费用</title>
+<style>
+:root{color-scheme:light;--business-text-24272e:#24272e;--business-text-7b828c:#7b828c;--business-border-eceff4:#eceff4;--business-bg-ffffff:#ffffff;--business-text-202329:#202329;--business-text-69717d:#69717d;--business-bg-f3f5f8:#f3f5f8;--business-bg-fff:#fff;--business-text-1f2430:#1f2430;--business-text-7a818c:#7a818c;--business-text-fff:#fff;--business-border-e8edf7:#e8edf7;--business-bg-f7f9ff:#f7f9ff;--business-text-727272:#727272;--business-bg-f0f0f0:#f0f0f0;--business-bg-b5b5b5:#b5b5b5;--business-bg-8b8b8b:#8b8b8b;--business-bg-9a9a9a:#9a9a9a;--business-border-edf0f5:#edf0f5;--business-border-dfe5ee:#dfe5ee;--business-border-d9d9d9:#d9d9d9;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-24272e:#e8edf5;--business-text-7b828c:#a8b3c4;--business-border-eceff4:#293646;--business-bg-ffffff:#202b3a;--business-text-202329:#e8edf5;--business-text-69717d:#a8b3c4;--business-bg-f3f5f8:#202b3a;--business-bg-fff:#202b3a;--business-text-1f2430:#e8edf5;--business-text-7a818c:#a8b3c4;--business-text-fff:#f5f7fb;--business-border-e8edf7:#293646;--business-bg-f7f9ff:#202b3a;--business-text-727272:#a8b3c4;--business-bg-f0f0f0:#202b3a;--business-bg-b5b5b5:#516078;--business-bg-8b8b8b:#516078;--business-bg-9a9a9a:#516078;--business-border-edf0f5:#293646;--business-border-dfe5ee:#293646;--business-border-d9d9d9:#293646;}
+
+:root {
+  --blue:#2361ff;
+  --blue-soft: rgba(35, 97, 255, .18);
+  --red:#ff4d57;
+  --red-soft: rgba(255, 77, 87, .18);
+  --green:#23a987;
+  --green-soft: rgba(35, 169, 135, .18);
+  --ink:var(--business-text-24272e);
+  --muted:var(--business-text-7b828c);
+  --line:var(--business-border-eceff4);
+  --panel:var(--business-bg-ffffff);
+  --bg:var(--business-bg-ffffff);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.wrap {
+  width: 100%;
+  height: 100vh;
+  min-height: 0;
+  padding: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) 42px;
+  gap: 2px;
+  background: transparent;
+  overflow: hidden;
+}
+
+.toolbar {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.title-block {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color:var(--business-text-202329);
+  white-space: nowrap;
+}
+.sub {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color:var(--business-text-69717d);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+.segmented {
+  height: 24px;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background:var(--business-bg-f3f5f8);
+  border: 1px solid var(--business-border-edf0f5);
+  border-radius: 999px;
+}
+.seg-btn,
+.yoy-btn {
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color:var(--business-text-69717d);
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.seg-btn.active {
+  background:var(--business-bg-fff);
+  color:var(--business-text-1f2430);
+  box-shadow: 0 2px 8px rgba(29, 37, 52, .08);
+}
+.seg-btn:disabled {
+  cursor: not-allowed;
+  opacity: .35;
+}
+.yoy-btn {
+  height: 24px;
+  min-width: 42px;
+  border: 1px solid var(--business-border-edf0f5);
+  background:var(--business-bg-fff);
+}
+.yoy-btn.active {
+  color: var(--blue);
+  border-color: rgba(35, 97, 255, .30);
+  background: rgba(35, 97, 255, .06);
+}
+
+.chart {
+  position: relative;
+  min-height: 0;
+  background:var(--business-bg-fff);
+  overflow: visible;
+}
+#svg,
+.ghost-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+#svg {
+  z-index: 1;
+  transition: opacity 380ms cubic-bezier(.22, .8, .2, 1), transform 380ms cubic-bezier(.22, .8, .2, 1);
+  will-change: opacity, transform;
+}
+.ghost-svg {
+  z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 380ms cubic-bezier(.22, .8, .2, 1), transform 380ms cubic-bezier(.22, .8, .2, 1);
+  will-change: opacity, transform;
+}
+.flow {
+  stroke: none;
+  shape-rendering: geometricPrecision;
+}
+.flow.rev { fill: var(--blue-soft); }
+.flow.profit { fill: var(--green-soft); }
+.flow.exp { fill: var(--red-soft); }
+.flow.neg { fill: rgba(255, 77, 87, .16); }
+
+.node-bar {
+  rx: 1.5;
+  ry: 1.5;
+}
+.node-bar.blue { fill: var(--blue); }
+.node-bar.green { fill: var(--green); }
+.node-bar.red { fill: var(--red); }
+.node-hit {
+  fill: transparent;
+  cursor: default;
+}
+.label-name {
+  font-size: 10px;
+  font-weight: 690;
+  fill:var(--business-text-24272e);
+}
+.label-value {
+  font-size: 12.5px;
+  font-weight: 760;
+  letter-spacing: -.02em;
+}
+.label-value.blue { fill: var(--blue); }
+.label-value.green { fill: var(--green); }
+.label-value.red { fill: var(--red); }
+.label-yoy {
+  font-size: 10px;
+  font-weight: 720;
+}
+.label-yoy.up { fill: var(--green); }
+.label-yoy.down { fill: var(--red); }
+.label-yoy.flat { fill: var(--muted); }
+.period-text {
+  font-size: 12px;
+  font-weight: 760;
+  fill:var(--business-text-7a818c);
+}
+.badge-bg {
+  fill:var(--business-text-fff);
+  stroke:var(--business-border-e8edf7);
+  stroke-width: 1;
+  filter: drop-shadow(0 5px 14px rgba(35, 97, 255, .13));
+}
+.badge-inner { fill: var(--blue); }
+.badge-letter {
+  font-size: 18px;
+  font-weight: 850;
+  fill:var(--business-text-fff);
+}
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.bottom {
+  min-height: 0;
+  position: relative;
+  padding: 2px clamp(12px, 1.4vw, 22px) 0;
+  display: grid;
+  grid-template-columns: 32px max-content minmax(150px, 1fr) max-content;
+  align-items: center;
+  column-gap: clamp(12px, 1.2vw, 22px);
+  overflow: visible;
+}
+.play {
+  position: relative;
+  z-index: 6;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--business-border-dfe5ee);
+  border-radius: 50%;
+  background:var(--business-bg-fff);
+  color: var(--blue);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 5px 16px rgba(31, 41, 55, .12);
+  padding: 0;
+}
+.play:hover { background:var(--business-bg-f7f9ff); border-color: rgba(35, 97, 255, .28); }
+.play svg {
+  width: 25px;
+  height: 25px;
+  fill: currentColor;
+  display: block;
+}
+.play svg path {
+  stroke-linejoin: round;
+}
+.axis-date {
+  flex: 0 0 auto;
+  color:var(--business-text-727272);
+  font-size: clamp(12px, .95vw, 15px);
+  font-weight: 560;
+  white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.timeline {
+  position: relative;
+  min-width: 0;
+  height: 26px;
+}
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background:var(--business-bg-f0f0f0);
+}
+.tick {
+  position: absolute;
+  top: 12px;
+  width: 2px;
+  height: 7px;
+  border-radius: 3px;
+  background:var(--business-bg-b5b5b5);
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+.tick.active {
+  background:var(--business-bg-8b8b8b);
+}
+.thumb {
+  position: absolute;
+  top: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background:var(--business-bg-fff);
+  border: 1px solid var(--business-border-d9d9d9);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  z-index: 3;
+  cursor: grab;
+  transition: left 420ms cubic-bezier(.22, .8, .2, 1), transform 180ms ease;
+}
+.thumb:active { cursor: grabbing; }
+.thumb i {
+  width: 2px;
+  height: 10px;
+  border-radius: 3px;
+  background:var(--business-bg-9a9a9a);
+  display: block;
+}
+.tooltip {
+  position: absolute;
+  z-index: 4;
+  min-width: 150px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.96);
+  border: 1px solid var(--business-border-edf0f5);
+  box-shadow: 0 10px 28px rgba(31, 41, 55, .14);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  transition: opacity .12s ease;
+}
+.tooltip.show { opacity: 1; }
+.tooltip .t-name { font-size: 12px; color:var(--business-text-1f2430); font-weight: 750; margin-bottom: 4px; }
+.tooltip .t-value { font-size: 14px; font-weight: 800; }
+.tooltip .t-yoy { font-size: 11px; margin-top: 3px; font-weight: 700; }
+
+@media (max-width: 860px) {
+  .wrap { padding: 0; grid-template-rows: auto minmax(0, 1fr) 40px; }
+  .toolbar { min-height: 28px; align-items: flex-start; flex-wrap: wrap; gap: 6px; }
+  .legend { order: 3; width: 100%; gap: 10px; font-size: 10px; }
+  .actions { margin-left: 0; }
+  .bottom { grid-template-columns: 30px max-content minmax(80px, 1fr) max-content; column-gap: 8px; padding-inline: 7px; }
+  .play { width: 28px; height: 28px; }
+  .axis-date { font-size: 12px; }
+  .thumb { width: 18px; height: 18px; top: 5px; border-radius: 5px; }
+  .thumb i { height: 9px; }
+  .play svg { width: 23px; height: 23px; }
+  .label-name { font-size: 10px; }
+  .label-value { font-size: 12px; }
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<main class="wrap">
+  <header class="toolbar">
+    <div class="title-block">
+      <div class="title" id="chartTitle">Revenue & Expenses</div>
+      <div class="sub" id="subtitle"></div>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span class="leg"><span class="dot" style="background:var(--blue)"></span><span id="legendRevenue">Revenue</span></span>
+      <span class="leg"><span class="dot" style="background:var(--red)"></span><span id="legendExpenses">Expenses</span></span>
+      <span class="leg"><span class="dot" style="background:var(--green)"></span><span id="legendProfit">Profit</span></span>
+    </div>
+    <div class="actions">
+      <div class="segmented" aria-label="Period type">
+        <button class="seg-btn" id="quarterlyBtn" data-period="quarterly">季度</button>
+        <button class="seg-btn" id="annualBtn" data-period="annual">年度</button>
+      </div>
+      <button class="yoy-btn" id="yoyBtn" aria-pressed="false">同比</button>
+    </div>
+  </header>
+
+  <section class="chart" id="chart">
+    <svg id="svg" role="img" aria-label="Revenue and expenses Sankey chart"></svg>
+    <div class="tooltip" id="tooltip"></div>
+  </section>
+
+  <footer class="bottom">
+    <button class="play" id="playBtn" aria-label="Play timeline">
+      <svg id="playIcon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 958.464c-246.272 0-446.464-200.192-446.464-446.464S265.728 65.536 512 65.536s446.464 200.192 446.464 446.464-200.192 446.464-446.464 446.464z m1.024-875.008c-235.52 0-427.52 192-427.52 427.52 0 236.032 192 427.52 427.52 427.52s427.52-192 427.52-427.52-192-427.52-427.52-427.52z"></path><path d="M408.064 326.144l-0.512 394.24 328.192-192.512z"></path></svg>
+    </button>
+    <div class="axis-date" id="startDate"></div>
+    <div class="timeline" id="timeline" aria-label="Timeline">
+      <div class="track"></div>
+      <div class="thumb" id="thumb"><i></i><i></i><i></i></div>
+    </div>
+    <div class="axis-date" id="endDate"></div>
+  </footer>
+</main>
+
+<script>
+const payload = {"type": "revenue-expenses", "name": "Revenue & Expenses", "title": "收入与费用", "code": "GOOGL", "periodType": "quarterly", "currency": "USD", "items": [{"selling_administrative_expenses": {"yoy": "5.26101500", "last": "12279000000.0000", "value": "12925000000.0000"}, "operating_profit": {"yoy": "30.49008800", "last": "18160000000.0000", "value": "23697000000.0000"}, "projects": [{"yoy": "12.49005000", "name": "Google Services", "value": "76311000000.0000"}, {"yoy": "25.65960400", "name": "Google Cloud", "value": "9192000000.0000"}, {"yoy": "190.70796500", "name": "Other Bets", "value": "657000000.0000"}, {"yoy": "-77.57847500", "name": "Hedging Gains (Losses)", "value": "150000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2023", "endDate": "2023-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "17.97993600", "last": "10267000000.0000", "value": "12113000000.0000"}, "income_tax_expense": {"yoy": "5.73375000", "last": "3523000000.0000", "value": "3725000000.0000"}, "operating_income_total": {"yoy": "13.49410900", "last": "76048000000.0000", "value": "86310000000.0000"}, "gross_profit": {"yoy": "19.72436500", "last": "40706000000.0000", "value": "48735000000.0000"}, "net_profit": {"yoy": "51.84233700", "last": "13624000000.0000", "value": "20687000000.0000"}, "operating_expenses": {"yoy": "11.05295800", "last": "22546000000.0000", "value": "25038000000.0000"}, "other_item": {"yoy": "-170.58242800", "last": "1013000000.0000", "value": "-715000000.0000"}, "revenue_cost": {"yoy": "6.31826200", "last": "35342000000.0000", "value": "37575000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-8.16167900", "last": "10292000000.0000", "value": "9452000000.0000"}, "operating_profit": {"yoy": "44.36405400", "last": "17415000000.0000", "value": "25141000000.0000"}, "projects": [{"yoy": "13.61663000", "name": "Google Services", "value": "70398000000.0000"}, {"yoy": "28.44110500", "name": "Google Cloud", "value": "9574000000.0000"}, {"yoy": "71.87500000", "name": "Other Bets", "value": "495000000.0000"}, {"yoy": "-14.28571400", "name": "Hedging Gains (Losses)", "value": "72000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2024", "endDate": "2024-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "3.79316400", "last": "11468000000.0000", "value": "11903000000.0000"}, "income_tax_expense": {"yoy": "47.52695000", "last": "3154000000.0000", "value": "4653000000.0000"}, "operating_income_total": {"yoy": "15.40688100", "last": "69787000000.0000", "value": "80539000000.0000"}, "gross_profit": {"yoy": "19.53286500", "last": "39175000000.0000", "value": "46827000000.0000"}, "net_profit": {"yoy": "57.21214500", "last": "15051000000.0000", "value": "23662000000.0000"}, "operating_expenses": {"yoy": "-1.86121300", "last": "21760000000.0000", "value": "21355000000.0000"}, "other_item": {"yoy": "-301.77215200", "last": "-790000000.0000", "value": "-3174000000.0000"}, "revenue_cost": {"yoy": "10.12674800", "last": "30612000000.0000", "value": "33712000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-3.04034300", "last": "10262000000.0000", "value": "9950000000.0000"}, "operating_profit": {"yoy": "30.66368100", "last": "20989000000.0000", "value": "27425000000.0000"}, "projects": [{"yoy": "11.53051200", "name": "Google Services", "value": "73928000000.0000"}, {"yoy": "28.83825200", "name": "Google Cloud", "value": "10347000000.0000"}, {"yoy": "28.07017500", "name": "Other Bets", "value": "365000000.0000"}, {"yoy": "3300.00000000", "name": "Hedging Gains (Losses)", "value": "102000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2024", "endDate": "2024-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "12.01360000", "last": "10588000000.0000", "value": "11860000000.0000"}, "income_tax_expense": {"yoy": "11.23055200", "last": "3535000000.0000", "value": "3932000000.0000"}, "operating_income_total": {"yoy": "13.58908400", "last": "74604000000.0000", "value": "84742000000.0000"}, "gross_profit": {"yoy": "15.33686300", "last": "42688000000.0000", "value": "49235000000.0000"}, "net_profit": {"yoy": "28.58776100", "last": "18368000000.0000", "value": "23619000000.0000"}, "operating_expenses": {"yoy": "4.60431700", "last": "20850000000.0000", "value": "21810000000.0000"}, "other_item": {"yoy": "86.21444200", "last": "-914000000.0000", "value": "-126000000.0000"}, "revenue_cost": {"yoy": "11.25141000", "last": "31916000000.0000", "value": "35507000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-0.34060600", "last": "10863000000.0000", "value": "10826000000.0000"}, "operating_profit": {"yoy": "39.85681400", "last": "20393000000.0000", "value": "28521000000.0000"}, "projects": [{"yoy": "12.53787500", "name": "Google Services", "value": "76510000000.0000"}, {"yoy": "34.97800500", "name": "Google Cloud", "value": "11353000000.0000"}, {"yoy": "30.63973100", "name": "Other Bets", "value": "388000000.0000"}, {"yoy": "1800.00000000", "name": "Hedging Gains (Losses)", "value": "17000000.0000"}], "subject": {"sourceCode": "596005", "period": "Q3", "year": "2024", "endDate": "2024-09-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "10.56137900", "last": "11258000000.0000", "value": "12447000000.0000"}, "income_tax_expense": {"yoy": "258.42175100", "last": "1508000000.0000", "value": "5405000000.0000"}, "operating_income_total": {"yoy": "15.09264200", "last": "76693000000.0000", "value": "88268000000.0000"}, "gross_profit": {"yoy": "19.16528600", "last": "43464000000.0000", "value": "51794000000.0000"}, "net_profit": {"yoy": "33.58220300", "last": "19689000000.0000", "value": "26301000000.0000"}, "operating_expenses": {"yoy": "5.20772100", "last": "22121000000.0000", "value": "23273000000.0000"}, "other_item": {"yoy": "-296.14427900", "last": "-804000000.0000", "value": "-3185000000.0000"}, "revenue_cost": {"yoy": "9.76556600", "last": "33229000000.0000", "value": "36474000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-8.95164400", "last": "12925000000.0000", "value": "11768000000.0000"}, "operating_profit": {"yoy": "30.70008900", "last": "23697000000.0000", "value": "30972000000.0000"}, "projects": [{"yoy": "10.19905400", "name": "Google Services", "value": "84094000000.0000"}, {"yoy": "30.05874700", "name": "Google Cloud", "value": "11955000000.0000"}, {"yoy": "-39.11719900", "name": "Other Bets", "value": "400000000.0000"}, {"yoy": "-86.66666700", "name": "Hedging Gains (Losses)", "value": "20000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2024", "endDate": "2024-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "8.28036000", "last": "12113000000.0000", "value": "13116000000.0000"}, "income_tax_expense": {"yoy": "53.20805400", "last": "3725000000.0000", "value": "5707000000.0000"}, "operating_income_total": {"yoy": "11.77036300", "last": "86310000000.0000", "value": "96469000000.0000"}, "gross_profit": {"yoy": "14.61167500", "last": "48735000000.0000", "value": "55856000000.0000"}, "net_profit": {"yoy": "28.27379500", "last": "20687000000.0000", "value": "26536000000.0000"}, "operating_expenses": {"yoy": "-0.61506500", "last": "25038000000.0000", "value": "24884000000.0000"}, "other_item": {"yoy": "-77.76223800", "last": "-715000000.0000", "value": "-1271000000.0000"}, "revenue_cost": {"yoy": "8.08516300", "last": "37575000000.0000", "value": "40613000000.0000"}}, {"selling_administrative_expenses": {"yoy": "2.74016100", "last": "9452000000.0000", "value": "9711000000.0000"}, "operating_profit": {"yoy": "21.73740100", "last": "25141000000.0000", "value": "30606000000.0000"}, "projects": [{"yoy": "9.75311800", "name": "Google Services", "value": "77264000000.0000"}, {"yoy": "28.05514900", "name": "Google Cloud", "value": "12260000000.0000"}, {"yoy": "-9.09090900", "name": "Other Bets", "value": "450000000.0000"}, {"yoy": "261.11111100", "name": "Hedging Gains (Losses)", "value": "260000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2025", "endDate": "2025-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "13.88725500", "last": "11903000000.0000", "value": "13556000000.0000"}, "income_tax_expense": {"yoy": "55.79196200", "last": "4653000000.0000", "value": "7249000000.0000"}, "operating_income_total": {"yoy": "12.03764600", "last": "80539000000.0000", "value": "90234000000.0000"}, "gross_profit": {"yoy": "15.04687500", "last": "46827000000.0000", "value": "53873000000.0000"}, "net_profit": {"yoy": "45.97244500", "last": "23662000000.0000", "value": "34540000000.0000"}, "operating_expenses": {"yoy": "8.95340700", "last": "21355000000.0000", "value": "23267000000.0000"}, "other_item": {"yoy": "-252.33144300", "last": "-3174000000.0000", "value": "-11183000000.0000"}, "revenue_cost": {"yoy": "7.85773600", "last": "33712000000.0000", "value": "36361000000.0000"}}, {"selling_administrative_expenses": {"yoy": "23.71859300", "last": "9950000000.0000", "value": "12310000000.0000"}, "operating_profit": {"yoy": "14.02370100", "last": "27425000000.0000", "value": "31271000000.0000"}, "projects": [{"yoy": "11.65323000", "name": "Google Services", "value": "82543000000.0000"}, {"yoy": "31.67101600", "name": "Google Cloud", "value": "13624000000.0000"}, {"yoy": "2.19178100", "name": "Other Bets", "value": "373000000.0000"}, {"yoy": "-209.80392200", "name": "Hedging Gains (Losses)", "value": "-112000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2025", "endDate": "2025-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "16.42495800", "last": "11860000000.0000", "value": "13808000000.0000"}, "income_tax_expense": {"yoy": "45.90539200", "last": "3932000000.0000", "value": "5737000000.0000"}, "operating_income_total": {"yoy": "13.79009200", "last": "84742000000.0000", "value": "96428000000.0000"}, "gross_profit": {"yoy": "16.56138900", "last": "49235000000.0000", "value": "57389000000.0000"}, "net_profit": {"yoy": "19.37846600", "last": "23619000000.0000", "value": "28196000000.0000"}, "operating_expenses": {"yoy": "19.75240700", "last": "21810000000.0000", "value": "26118000000.0000"}, "other_item": {"yoy": "-2012.69841300", "last": "-126000000.0000", "value": "-2662000000.0000"}, "revenue_cost": {"yoy": "9.94733400", "last": "35507000000.0000", "value": "39039000000.0000"}}, {"selling_administrative_expenses": {"yoy": "34.84204700", "last": "10826000000.0000", "value": "14598000000.0000"}, "operating_profit": {"yoy": "9.49125200", "last": "28521000000.0000", "value": "31228000000.0000"}, "projects": [{"yoy": "13.77859100", "name": "Google Services", "value": "87052000000.0000"}, {"yoy": "33.50656200", "name": "Google Cloud", "value": "15157000000.0000"}, {"yoy": "-11.34020600", "name": "Other Bets", "value": "344000000.0000"}, {"yoy": "-1317.64705900", "name": "Hedging Gains (Losses)", "value": "-207000000.0000"}], "subject": {"sourceCode": "596005", "period": "Q3", "year": "2025", "endDate": "2025-09-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "21.72411000", "last": "12447000000.0000", "value": "15151000000.0000"}, "income_tax_expense": {"yoy": "66.66050000", "last": "5405000000.0000", "value": "9008000000.0000"}, "operating_income_total": {"yoy": "15.94915500", "last": "88268000000.0000", "value": "102346000000.0000"}, "gross_profit": {"yoy": "17.72985300", "last": "51794000000.0000", "value": "60977000000.0000"}, "net_profit": {"yoy": "32.99494300", "last": "26301000000.0000", "value": "34979000000.0000"}, "operating_expenses": {"yoy": "27.82623600", "last": "23273000000.0000", "value": "29749000000.0000"}, "other_item": {"yoy": "-300.59654600", "last": "-3185000000.0000", "value": "-12759000000.0000"}, "revenue_cost": {"yoy": "13.42051900", "last": "36474000000.0000", "value": "41369000000.0000"}}, {"selling_administrative_expenses": {"yoy": "15.19374600", "last": "11768000000.0000", "value": "13556000000.0000"}, "operating_profit": {"yoy": "16.02092200", "last": "30972000000.0000", "value": "35934000000.0000"}, "projects": [{"yoy": "13.99386400", "name": "Google Services", "value": "95862000000.0000"}, {"yoy": "47.75407800", "name": "Google Cloud", "value": "17664000000.0000"}, {"yoy": "-7.50000000", "name": "Other Bets", "value": "370000000.0000"}, {"yoy": "-440.00000000", "name": "Hedging Gains (Losses)", "value": "-68000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2025", "endDate": "2025-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "41.59804800", "last": "13116000000.0000", "value": "18572000000.0000"}, "income_tax_expense": {"yoy": "-18.31084600", "last": "5707000000.0000", "value": "4662000000.0000"}, "operating_income_total": {"yoy": "17.99438200", "last": "96469000000.0000", "value": "113828000000.0000"}, "gross_profit": {"yoy": "21.85262100", "last": "55856000000.0000", "value": "68062000000.0000"}, "net_profit": {"yoy": "29.84247800", "last": "26536000000.0000", "value": "34455000000.0000"}, "operating_expenses": {"yoy": "29.11107500", "last": "24884000000.0000", "value": "32128000000.0000"}, "other_item": {"yoy": "-150.43273000", "last": "-1271000000.0000", "value": "-3183000000.0000"}, "revenue_cost": {"yoy": "12.68805600", "last": "40613000000.0000", "value": "45766000000.0000"}}, {"selling_administrative_expenses": {"yoy": "22.51055500", "last": "9711000000.0000", "value": "11897000000.0000"}, "operating_profit": {"yoy": "29.70005900", "last": "30606000000.0000", "value": "39696000000.0000"}, "projects": [{"yoy": "16.01392600", "name": "Google Services", "value": "89637000000.0000"}, {"yoy": "63.36052200", "name": "Google Cloud", "value": "20028000000.0000"}, {"yoy": "-8.66666700", "name": "Other Bets", "value": "411000000.0000"}, {"yoy": "-169.23076900", "name": "Hedging Gains (Losses)", "value": "-180000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2026", "endDate": "2026-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "25.64178200", "last": "13556000000.0000", "value": "17032000000.0000"}, "income_tax_expense": {"yoy": "104.63512200", "last": "7249000000.0000", "value": "14834000000.0000"}, "operating_income_total": {"yoy": "21.79001300", "last": "90234000000.0000", "value": "109896000000.0000"}, "gross_profit": {"yoy": "27.38291900", "last": "53873000000.0000", "value": "68625000000.0000"}, "net_profit": {"yoy": "81.17544900", "last": "34540000000.0000", "value": "62578000000.0000"}, "operating_expenses": {"yoy": "24.33489500", "last": "23267000000.0000", "value": "28929000000.0000"}, "other_item": {"yoy": "-237.26191500", "last": "-11183000000.0000", "value": "-37716000000.0000"}, "revenue_cost": {"yoy": "13.50347900", "last": "36361000000.0000", "value": "41271000000.0000"}}, {"selling_administrative_expenses": {"yoy": "20.74736000", "last": "12310000000.0000", "value": "14864000000.0000"}, "operating_profit": {"yoy": "30.37638700", "last": "31271000000.0000", "value": "40770000000.0000"}, "projects": [{"yoy": "14.53424300", "name": "Google Services", "value": "94540000000.0000"}, {"yoy": "81.79682900", "name": "Google Cloud", "value": "24768000000.0000"}, {"yoy": "2.41286900", "name": "Other Bets", "value": "382000000.0000"}, {"yoy": "194.64285700", "name": "Hedging Gains (Losses)", "value": "106000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2026", "endDate": "2026-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "31.94524900", "last": "13808000000.0000", "value": "18219000000.0000"}, "income_tax_expense": {"yoy": "362.95973500", "last": "5737000000.0000", "value": "26560000000.0000"}, "operating_income_total": {"yoy": "24.23362500", "last": "96428000000.0000", "value": "119796000000.0000"}, "gross_profit": {"yoy": "28.68842500", "last": "57389000000.0000", "value": "73853000000.0000"}, "net_profit": {"yoy": "297.90395800", "last": "28196000000.0000", "value": "112193000000.0000"}, "operating_expenses": {"yoy": "26.66743200", "last": "26118000000.0000", "value": "33083000000.0000"}, "other_item": {"yoy": "-3580.80390700", "last": "-2662000000.0000", "value": "-97983000000.0000"}, "revenue_cost": {"yoy": "17.68487900", "last": "39039000000.0000", "value": "45943000000.0000"}}], "datasets": {"quarterly": [{"selling_administrative_expenses": {"yoy": "5.26101500", "last": "12279000000.0000", "value": "12925000000.0000"}, "operating_profit": {"yoy": "30.49008800", "last": "18160000000.0000", "value": "23697000000.0000"}, "projects": [{"yoy": "12.49005000", "name": "Google Services", "value": "76311000000.0000"}, {"yoy": "25.65960400", "name": "Google Cloud", "value": "9192000000.0000"}, {"yoy": "190.70796500", "name": "Other Bets", "value": "657000000.0000"}, {"yoy": "-77.57847500", "name": "Hedging Gains (Losses)", "value": "150000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2023", "endDate": "2023-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "17.97993600", "last": "10267000000.0000", "value": "12113000000.0000"}, "income_tax_expense": {"yoy": "5.73375000", "last": "3523000000.0000", "value": "3725000000.0000"}, "operating_income_total": {"yoy": "13.49410900", "last": "76048000000.0000", "value": "86310000000.0000"}, "gross_profit": {"yoy": "19.72436500", "last": "40706000000.0000", "value": "48735000000.0000"}, "net_profit": {"yoy": "51.84233700", "last": "13624000000.0000", "value": "20687000000.0000"}, "operating_expenses": {"yoy": "11.05295800", "last": "22546000000.0000", "value": "25038000000.0000"}, "other_item": {"yoy": "-170.58242800", "last": "1013000000.0000", "value": "-715000000.0000"}, "revenue_cost": {"yoy": "6.31826200", "last": "35342000000.0000", "value": "37575000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-8.16167900", "last": "10292000000.0000", "value": "9452000000.0000"}, "operating_profit": {"yoy": "44.36405400", "last": "17415000000.0000", "value": "25141000000.0000"}, "projects": [{"yoy": "13.61663000", "name": "Google Services", "value": "70398000000.0000"}, {"yoy": "28.44110500", "name": "Google Cloud", "value": "9574000000.0000"}, {"yoy": "71.87500000", "name": "Other Bets", "value": "495000000.0000"}, {"yoy": "-14.28571400", "name": "Hedging Gains (Losses)", "value": "72000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2024", "endDate": "2024-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "3.79316400", "last": "11468000000.0000", "value": "11903000000.0000"}, "income_tax_expense": {"yoy": "47.52695000", "last": "3154000000.0000", "value": "4653000000.0000"}, "operating_income_total": {"yoy": "15.40688100", "last": "69787000000.0000", "value": "80539000000.0000"}, "gross_profit": {"yoy": "19.53286500", "last": "39175000000.0000", "value": "46827000000.0000"}, "net_profit": {"yoy": "57.21214500", "last": "15051000000.0000", "value": "23662000000.0000"}, "operating_expenses": {"yoy": "-1.86121300", "last": "21760000000.0000", "value": "21355000000.0000"}, "other_item": {"yoy": "-301.77215200", "last": "-790000000.0000", "value": "-3174000000.0000"}, "revenue_cost": {"yoy": "10.12674800", "last": "30612000000.0000", "value": "33712000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-3.04034300", "last": "10262000000.0000", "value": "9950000000.0000"}, "operating_profit": {"yoy": "30.66368100", "last": "20989000000.0000", "value": "27425000000.0000"}, "projects": [{"yoy": "11.53051200", "name": "Google Services", "value": "73928000000.0000"}, {"yoy": "28.83825200", "name": "Google Cloud", "value": "10347000000.0000"}, {"yoy": "28.07017500", "name": "Other Bets", "value": "365000000.0000"}, {"yoy": "3300.00000000", "name": "Hedging Gains (Losses)", "value": "102000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2024", "endDate": "2024-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "12.01360000", "last": "10588000000.0000", "value": "11860000000.0000"}, "income_tax_expense": {"yoy": "11.23055200", "last": "3535000000.0000", "value": "3932000000.0000"}, "operating_income_total": {"yoy": "13.58908400", "last": "74604000000.0000", "value": "84742000000.0000"}, "gross_profit": {"yoy": "15.33686300", "last": "42688000000.0000", "value": "49235000000.0000"}, "net_profit": {"yoy": "28.58776100", "last": "18368000000.0000", "value": "23619000000.0000"}, "operating_expenses": {"yoy": "4.60431700", "last": "20850000000.0000", "value": "21810000000.0000"}, "other_item": {"yoy": "86.21444200", "last": "-914000000.0000", "value": "-126000000.0000"}, "revenue_cost": {"yoy": "11.25141000", "last": "31916000000.0000", "value": "35507000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-0.34060600", "last": "10863000000.0000", "value": "10826000000.0000"}, "operating_profit": {"yoy": "39.85681400", "last": "20393000000.0000", "value": "28521000000.0000"}, "projects": [{"yoy": "12.53787500", "name": "Google Services", "value": "76510000000.0000"}, {"yoy": "34.97800500", "name": "Google Cloud", "value": "11353000000.0000"}, {"yoy": "30.63973100", "name": "Other Bets", "value": "388000000.0000"}, {"yoy": "1800.00000000", "name": "Hedging Gains (Losses)", "value": "17000000.0000"}], "subject": {"sourceCode": "596005", "period": "Q3", "year": "2024", "endDate": "2024-09-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "10.56137900", "last": "11258000000.0000", "value": "12447000000.0000"}, "income_tax_expense": {"yoy": "258.42175100", "last": "1508000000.0000", "value": "5405000000.0000"}, "operating_income_total": {"yoy": "15.09264200", "last": "76693000000.0000", "value": "88268000000.0000"}, "gross_profit": {"yoy": "19.16528600", "last": "43464000000.0000", "value": "51794000000.0000"}, "net_profit": {"yoy": "33.58220300", "last": "19689000000.0000", "value": "26301000000.0000"}, "operating_expenses": {"yoy": "5.20772100", "last": "22121000000.0000", "value": "23273000000.0000"}, "other_item": {"yoy": "-296.14427900", "last": "-804000000.0000", "value": "-3185000000.0000"}, "revenue_cost": {"yoy": "9.76556600", "last": "33229000000.0000", "value": "36474000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-8.95164400", "last": "12925000000.0000", "value": "11768000000.0000"}, "operating_profit": {"yoy": "30.70008900", "last": "23697000000.0000", "value": "30972000000.0000"}, "projects": [{"yoy": "10.19905400", "name": "Google Services", "value": "84094000000.0000"}, {"yoy": "30.05874700", "name": "Google Cloud", "value": "11955000000.0000"}, {"yoy": "-39.11719900", "name": "Other Bets", "value": "400000000.0000"}, {"yoy": "-86.66666700", "name": "Hedging Gains (Losses)", "value": "20000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2024", "endDate": "2024-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "8.28036000", "last": "12113000000.0000", "value": "13116000000.0000"}, "income_tax_expense": {"yoy": "53.20805400", "last": "3725000000.0000", "value": "5707000000.0000"}, "operating_income_total": {"yoy": "11.77036300", "last": "86310000000.0000", "value": "96469000000.0000"}, "gross_profit": {"yoy": "14.61167500", "last": "48735000000.0000", "value": "55856000000.0000"}, "net_profit": {"yoy": "28.27379500", "last": "20687000000.0000", "value": "26536000000.0000"}, "operating_expenses": {"yoy": "-0.61506500", "last": "25038000000.0000", "value": "24884000000.0000"}, "other_item": {"yoy": "-77.76223800", "last": "-715000000.0000", "value": "-1271000000.0000"}, "revenue_cost": {"yoy": "8.08516300", "last": "37575000000.0000", "value": "40613000000.0000"}}, {"selling_administrative_expenses": {"yoy": "2.74016100", "last": "9452000000.0000", "value": "9711000000.0000"}, "operating_profit": {"yoy": "21.73740100", "last": "25141000000.0000", "value": "30606000000.0000"}, "projects": [{"yoy": "9.75311800", "name": "Google Services", "value": "77264000000.0000"}, {"yoy": "28.05514900", "name": "Google Cloud", "value": "12260000000.0000"}, {"yoy": "-9.09090900", "name": "Other Bets", "value": "450000000.0000"}, {"yoy": "261.11111100", "name": "Hedging Gains (Losses)", "value": "260000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2025", "endDate": "2025-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "13.88725500", "last": "11903000000.0000", "value": "13556000000.0000"}, "income_tax_expense": {"yoy": "55.79196200", "last": "4653000000.0000", "value": "7249000000.0000"}, "operating_income_total": {"yoy": "12.03764600", "last": "80539000000.0000", "value": "90234000000.0000"}, "gross_profit": {"yoy": "15.04687500", "last": "46827000000.0000", "value": "53873000000.0000"}, "net_profit": {"yoy": "45.97244500", "last": "23662000000.0000", "value": "34540000000.0000"}, "operating_expenses": {"yoy": "8.95340700", "last": "21355000000.0000", "value": "23267000000.0000"}, "other_item": {"yoy": "-252.33144300", "last": "-3174000000.0000", "value": "-11183000000.0000"}, "revenue_cost": {"yoy": "7.85773600", "last": "33712000000.0000", "value": "36361000000.0000"}}, {"selling_administrative_expenses": {"yoy": "23.71859300", "last": "9950000000.0000", "value": "12310000000.0000"}, "operating_profit": {"yoy": "14.02370100", "last": "27425000000.0000", "value": "31271000000.0000"}, "projects": [{"yoy": "11.65323000", "name": "Google Services", "value": "82543000000.0000"}, {"yoy": "31.67101600", "name": "Google Cloud", "value": "13624000000.0000"}, {"yoy": "2.19178100", "name": "Other Bets", "value": "373000000.0000"}, {"yoy": "-209.80392200", "name": "Hedging Gains (Losses)", "value": "-112000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2025", "endDate": "2025-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "16.42495800", "last": "11860000000.0000", "value": "13808000000.0000"}, "income_tax_expense": {"yoy": "45.90539200", "last": "3932000000.0000", "value": "5737000000.0000"}, "operating_income_total": {"yoy": "13.79009200", "last": "84742000000.0000", "value": "96428000000.0000"}, "gross_profit": {"yoy": "16.56138900", "last": "49235000000.0000", "value": "57389000000.0000"}, "net_profit": {"yoy": "19.37846600", "last": "23619000000.0000", "value": "28196000000.0000"}, "operating_expenses": {"yoy": "19.75240700", "last": "21810000000.0000", "value": "26118000000.0000"}, "other_item": {"yoy": "-2012.69841300", "last": "-126000000.0000", "value": "-2662000000.0000"}, "revenue_cost": {"yoy": "9.94733400", "last": "35507000000.0000", "value": "39039000000.0000"}}, {"selling_administrative_expenses": {"yoy": "34.84204700", "last": "10826000000.0000", "value": "14598000000.0000"}, "operating_profit": {"yoy": "9.49125200", "last": "28521000000.0000", "value": "31228000000.0000"}, "projects": [{"yoy": "13.77859100", "name": "Google Services", "value": "87052000000.0000"}, {"yoy": "33.50656200", "name": "Google Cloud", "value": "15157000000.0000"}, {"yoy": "-11.34020600", "name": "Other Bets", "value": "344000000.0000"}, {"yoy": "-1317.64705900", "name": "Hedging Gains (Losses)", "value": "-207000000.0000"}], "subject": {"sourceCode": "596005", "period": "Q3", "year": "2025", "endDate": "2025-09-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "21.72411000", "last": "12447000000.0000", "value": "15151000000.0000"}, "income_tax_expense": {"yoy": "66.66050000", "last": "5405000000.0000", "value": "9008000000.0000"}, "operating_income_total": {"yoy": "15.94915500", "last": "88268000000.0000", "value": "102346000000.0000"}, "gross_profit": {"yoy": "17.72985300", "last": "51794000000.0000", "value": "60977000000.0000"}, "net_profit": {"yoy": "32.99494300", "last": "26301000000.0000", "value": "34979000000.0000"}, "operating_expenses": {"yoy": "27.82623600", "last": "23273000000.0000", "value": "29749000000.0000"}, "other_item": {"yoy": "-300.59654600", "last": "-3185000000.0000", "value": "-12759000000.0000"}, "revenue_cost": {"yoy": "13.42051900", "last": "36474000000.0000", "value": "41369000000.0000"}}, {"selling_administrative_expenses": {"yoy": "15.19374600", "last": "11768000000.0000", "value": "13556000000.0000"}, "operating_profit": {"yoy": "16.02092200", "last": "30972000000.0000", "value": "35934000000.0000"}, "projects": [{"yoy": "13.99386400", "name": "Google Services", "value": "95862000000.0000"}, {"yoy": "47.75407800", "name": "Google Cloud", "value": "17664000000.0000"}, {"yoy": "-7.50000000", "name": "Other Bets", "value": "370000000.0000"}, {"yoy": "-440.00000000", "name": "Hedging Gains (Losses)", "value": "-68000000.0000"}], "subject": {"sourceCode": "596006", "period": "Q4", "year": "2025", "endDate": "2025-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "41.59804800", "last": "13116000000.0000", "value": "18572000000.0000"}, "income_tax_expense": {"yoy": "-18.31084600", "last": "5707000000.0000", "value": "4662000000.0000"}, "operating_income_total": {"yoy": "17.99438200", "last": "96469000000.0000", "value": "113828000000.0000"}, "gross_profit": {"yoy": "21.85262100", "last": "55856000000.0000", "value": "68062000000.0000"}, "net_profit": {"yoy": "29.84247800", "last": "26536000000.0000", "value": "34455000000.0000"}, "operating_expenses": {"yoy": "29.11107500", "last": "24884000000.0000", "value": "32128000000.0000"}, "other_item": {"yoy": "-150.43273000", "last": "-1271000000.0000", "value": "-3183000000.0000"}, "revenue_cost": {"yoy": "12.68805600", "last": "40613000000.0000", "value": "45766000000.0000"}}, {"selling_administrative_expenses": {"yoy": "22.51055500", "last": "9711000000.0000", "value": "11897000000.0000"}, "operating_profit": {"yoy": "29.70005900", "last": "30606000000.0000", "value": "39696000000.0000"}, "projects": [{"yoy": "16.01392600", "name": "Google Services", "value": "89637000000.0000"}, {"yoy": "63.36052200", "name": "Google Cloud", "value": "20028000000.0000"}, {"yoy": "-8.66666700", "name": "Other Bets", "value": "411000000.0000"}, {"yoy": "-169.23076900", "name": "Hedging Gains (Losses)", "value": "-180000000.0000"}], "subject": {"sourceCode": "596003", "period": "Q1", "year": "2026", "endDate": "2026-03-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "25.64178200", "last": "13556000000.0000", "value": "17032000000.0000"}, "income_tax_expense": {"yoy": "104.63512200", "last": "7249000000.0000", "value": "14834000000.0000"}, "operating_income_total": {"yoy": "21.79001300", "last": "90234000000.0000", "value": "109896000000.0000"}, "gross_profit": {"yoy": "27.38291900", "last": "53873000000.0000", "value": "68625000000.0000"}, "net_profit": {"yoy": "81.17544900", "last": "34540000000.0000", "value": "62578000000.0000"}, "operating_expenses": {"yoy": "24.33489500", "last": "23267000000.0000", "value": "28929000000.0000"}, "other_item": {"yoy": "-237.26191500", "last": "-11183000000.0000", "value": "-37716000000.0000"}, "revenue_cost": {"yoy": "13.50347900", "last": "36361000000.0000", "value": "41271000000.0000"}}, {"selling_administrative_expenses": {"yoy": "20.74736000", "last": "12310000000.0000", "value": "14864000000.0000"}, "operating_profit": {"yoy": "30.37638700", "last": "31271000000.0000", "value": "40770000000.0000"}, "projects": [{"yoy": "14.53424300", "name": "Google Services", "value": "94540000000.0000"}, {"yoy": "81.79682900", "name": "Google Cloud", "value": "24768000000.0000"}, {"yoy": "2.41286900", "name": "Other Bets", "value": "382000000.0000"}, {"yoy": "194.64285700", "name": "Hedging Gains (Losses)", "value": "106000000.0000"}], "subject": {"sourceCode": "596004", "period": "Q2", "year": "2026", "endDate": "2026-06-30", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "31.94524900", "last": "13808000000.0000", "value": "18219000000.0000"}, "income_tax_expense": {"yoy": "362.95973500", "last": "5737000000.0000", "value": "26560000000.0000"}, "operating_income_total": {"yoy": "24.23362500", "last": "96428000000.0000", "value": "119796000000.0000"}, "gross_profit": {"yoy": "28.68842500", "last": "57389000000.0000", "value": "73853000000.0000"}, "net_profit": {"yoy": "297.90395800", "last": "28196000000.0000", "value": "112193000000.0000"}, "operating_expenses": {"yoy": "26.66743200", "last": "26118000000.0000", "value": "33083000000.0000"}, "other_item": {"yoy": "-3580.80390700", "last": "-2662000000.0000", "value": "-97983000000.0000"}, "revenue_cost": {"yoy": "17.68487900", "last": "39039000000.0000", "value": "45943000000.0000"}}], "annual": [{"selling_administrative_expenses": {"yoy": "15.06289900", "last": "15183000000.0000", "value": "17470000000.0000"}, "operating_profit": {"yoy": "22.50000000", "last": "19360000000.0000", "value": "23716000000.0000"}, "projects": [{"yoy": "20.01851300", "name": "Google Services", "value": "89463000000.0000"}, {"yoy": "80.58035700", "name": "Other Bets", "value": "809000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2016", "endDate": "2016-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "13.56456600", "last": "12282000000.0000", "value": "13948000000.0000"}, "income_tax_expense": {"yoy": "41.44716900", "last": "3303000000.0000", "value": "4672000000.0000"}, "operating_income_total": {"yoy": "20.38032200", "last": "74989000000.0000", "value": "90272000000.0000"}, "gross_profit": {"yoy": "17.74479400", "last": "46825000000.0000", "value": "55134000000.0000"}, "net_profit": {"yoy": "19.14607300", "last": "16348000000.0000", "value": "19478000000.0000"}, "operating_expenses": {"yoy": "14.39286400", "last": "27465000000.0000", "value": "31418000000.0000"}, "other_item": {"yoy": "-49.14089300", "last": "-291000000.0000", "value": "-434000000.0000"}, "revenue_cost": {"yoy": "24.76210800", "last": "28164000000.0000", "value": "35138000000.0000"}}, {"selling_administrative_expenses": {"yoy": "12.95363500", "last": "17470000000.0000", "value": "19733000000.0000"}, "projects": [{"yoy": "22.56687100", "name": "Google Services", "value": "109652000000.0000"}, {"yoy": "48.70210100", "name": "Other Bets", "value": "1203000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2017", "endDate": "2017-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "gross_profit": {"yoy": "18.38792800", "last": "55134000000.0000", "value": "65272000000.0000"}, "operating_expenses": {"yoy": "24.43185400", "last": "31418000000.0000", "value": "39094000000.0000"}, "operating_profit": {"yoy": "10.38117700", "last": "23716000000.0000", "value": "26178000000.0000"}, "research_development_expenses": {"yoy": "19.19271600", "last": "13948000000.0000", "value": "16625000000.0000"}, "income_tax_expense": {"yoy": "211.02311600", "last": "4672000000.0000", "value": "14531000000.0000"}, "operating_income_total": {"yoy": "22.80109000", "last": "90272000000.0000", "value": "110855000000.0000"}, "net_profit": {"yoy": "-34.99332600", "last": "19478000000.0000", "value": "12662000000.0000"}, "other_item": {"yoy": "-133.87096800", "last": "-434000000.0000", "value": "-1015000000.0000"}, "revenue_cost": {"yoy": "29.72565300", "last": "35138000000.0000", "value": "45583000000.0000"}, "other_fee": {"value": "2736000000.0000"}}, {"selling_administrative_expenses": {"yoy": "17.85334200", "last": "19733000000.0000", "value": "23256000000.0000"}, "projects": [{"yoy": "24.23302800", "name": "Google Services", "value": "136224000000.0000"}, {"yoy": "-50.54031600", "name": "Other Bets", "value": "595000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2018", "endDate": "2018-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "gross_profit": {"yoy": "18.38154200", "last": "65272000000.0000", "value": "77270000000.0000"}, "operating_expenses": {"yoy": "27.24714800", "last": "39094000000.0000", "value": "49746000000.0000"}, "operating_profit": {"yoy": "5.14172200", "last": "26178000000.0000", "value": "27524000000.0000"}, "research_development_expenses": {"yoy": "28.83609000", "last": "16625000000.0000", "value": "21419000000.0000"}, "income_tax_expense": {"yoy": "-71.25455900", "last": "14531000000.0000", "value": "4177000000.0000"}, "operating_income_total": {"yoy": "23.42158700", "last": "110855000000.0000", "value": "136819000000.0000"}, "net_profit": {"yoy": "142.74206300", "last": "12662000000.0000", "value": "30736000000.0000"}, "other_item": {"yoy": "-627.98029600", "last": "-1015000000.0000", "value": "-7389000000.0000"}, "revenue_cost": {"yoy": "30.63861500", "last": "45583000000.0000", "value": "59549000000.0000"}, "other_fee": {"yoy": "85.34356700", "last": "2736000000.0000", "value": "5071000000.0000"}}, {"selling_administrative_expenses": {"yoy": "20.46353600", "last": "23256000000.0000", "value": "28015000000.0000"}, "projects": [{"yoy": "11.45246100", "name": "Google Services", "value": "151825000000.0000"}, {"yoy": null, "name": "Google Cloud", "value": "8918000000.0000"}, {"yoy": "10.75630300", "name": "Other Bets", "value": "659000000.0000"}, {"yoy": null, "name": "Hedging Gains (Losses)", "value": "455000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2019", "endDate": "2019-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "gross_profit": {"yoy": "16.42422700", "last": "77270000000.0000", "value": "89961000000.0000"}, "operating_expenses": {"yoy": "12.02910800", "last": "49746000000.0000", "value": "55730000000.0000"}, "operating_profit": {"yoy": "24.36782400", "last": "27524000000.0000", "value": "34231000000.0000"}, "research_development_expenses": {"yoy": "21.47159100", "last": "21419000000.0000", "value": "26018000000.0000"}, "income_tax_expense": {"yoy": "26.45439300", "last": "4177000000.0000", "value": "5282000000.0000"}, "operating_income_total": {"yoy": "18.30009000", "last": "136819000000.0000", "value": "161857000000.0000"}, "net_profit": {"yoy": "11.73542400", "last": "30736000000.0000", "value": "34343000000.0000"}, "other_item": {"yoy": "26.99959400", "last": "-7389000000.0000", "value": "-5394000000.0000"}, "revenue_cost": {"yoy": "20.73418500", "last": "59549000000.0000", "value": "71896000000.0000"}, "other_fee": {"yoy": "-66.53520000", "last": "5071000000.0000", "value": "1697000000.0000"}}, {"selling_administrative_expenses": {"yoy": "3.50883500", "last": "28015000000.0000", "value": "28998000000.0000"}, "operating_profit": {"yoy": "20.42885100", "last": "34231000000.0000", "value": "41224000000.0000"}, "projects": [{"yoy": "11.07195800", "name": "Google Services", "value": "168635000000.0000"}, {"yoy": "46.43417800", "name": "Google Cloud", "value": "13059000000.0000"}, {"yoy": "-0.30349000", "name": "Other Bets", "value": "657000000.0000"}, {"yoy": "-61.31868100", "name": "Hedging Gains (Losses)", "value": "176000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2020", "endDate": "2020-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "5.97663200", "last": "26018000000.0000", "value": "27573000000.0000"}, "income_tax_expense": {"yoy": "47.91745600", "last": "5282000000.0000", "value": "7813000000.0000"}, "operating_income_total": {"yoy": "12.77053200", "last": "161857000000.0000", "value": "182527000000.0000"}, "gross_profit": {"yoy": "8.70821800", "last": "89961000000.0000", "value": "97795000000.0000"}, "net_profit": {"yoy": "17.25533600", "last": "34343000000.0000", "value": "40269000000.0000"}, "operating_expenses": {"yoy": "1.50906200", "last": "55730000000.0000", "value": "56571000000.0000"}, "other_item": {"yoy": "-27.14126800", "last": "-5394000000.0000", "value": "-6858000000.0000"}, "revenue_cost": {"yoy": "17.85356600", "last": "71896000000.0000", "value": "84732000000.0000"}}, {"selling_administrative_expenses": {"yoy": "25.60176600", "last": "28998000000.0000", "value": "36422000000.0000"}, "operating_profit": {"yoy": "90.94217000", "last": "41224000000.0000", "value": "78714000000.0000"}, "projects": [{"yoy": "40.85391500", "name": "Google Services", "value": "237529000000.0000"}, {"yoy": "47.07098600", "name": "Google Cloud", "value": "19206000000.0000"}, {"yoy": "14.61187200", "name": "Other Bets", "value": "753000000.0000"}, {"yoy": "-15.34090900", "name": "Hedging Gains (Losses)", "value": "149000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2021", "endDate": "2021-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "14.46705100", "last": "27573000000.0000", "value": "31562000000.0000"}, "income_tax_expense": {"yoy": "88.16075800", "last": "7813000000.0000", "value": "14701000000.0000"}, "operating_income_total": {"yoy": "41.15007600", "last": "182527000000.0000", "value": "257637000000.0000"}, "gross_profit": {"yoy": "50.00562400", "last": "97795000000.0000", "value": "146698000000.0000"}, "net_profit": {"yoy": "88.81273400", "last": "40269000000.0000", "value": "76033000000.0000"}, "operating_expenses": {"yoy": "20.17464800", "last": "56571000000.0000", "value": "67984000000.0000"}, "other_item": {"yoy": "-75.26975800", "last": "-6858000000.0000", "value": "-12020000000.0000"}, "revenue_cost": {"yoy": "30.92928300", "last": "84732000000.0000", "value": "110939000000.0000"}}, {"selling_administrative_expenses": {"yoy": "16.11388700", "last": "36422000000.0000", "value": "42291000000.0000"}, "operating_profit": {"yoy": "-7.22743100", "last": "78714000000.0000", "value": "73025000000.0000"}, "projects": [{"yoy": "6.73559900", "name": "Google Services", "value": "253528000000.0000"}, {"yoy": "36.83224000", "name": "Google Cloud", "value": "26280000000.0000"}, {"yoy": "1215.43624200", "name": "Hedging Gains (Losses)", "value": "1960000000.0000"}, {"yoy": "41.83266900", "name": "Other Bets", "value": "1068000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2022", "endDate": "2022-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "25.15049700", "last": "31562000000.0000", "value": "39500000000.0000"}, "income_tax_expense": {"yoy": "-22.75355400", "last": "14701000000.0000", "value": "11356000000.0000"}, "operating_income_total": {"yoy": "9.78081600", "last": "257637000000.0000", "value": "282836000000.0000"}, "gross_profit": {"yoy": "6.77241700", "last": "146698000000.0000", "value": "156633000000.0000"}, "net_profit": {"yoy": "-21.12372300", "last": "76033000000.0000", "value": "59972000000.0000"}, "operating_expenses": {"yoy": "20.30919000", "last": "67984000000.0000", "value": "81791000000.0000"}, "other_item": {"yoy": "114.11813600", "last": "-12020000000.0000", "value": "1697000000.0000"}, "revenue_cost": {"yoy": "13.75891300", "last": "110939000000.0000", "value": "126203000000.0000"}}, {"selling_administrative_expenses": {"yoy": "4.84973200", "last": "42291000000.0000", "value": "44342000000.0000"}, "operating_profit": {"yoy": "10.55939700", "last": "73025000000.0000", "value": "80736000000.0000"}, "projects": [{"yoy": "7.50015800", "name": "Google Services", "value": "272543000000.0000"}, {"yoy": "25.90563200", "name": "Google Cloud", "value": "33088000000.0000"}, {"yoy": "42.97752800", "name": "Other Bets", "value": "1527000000.0000"}, {"yoy": "-87.95918400", "name": "Hedging Gains (Losses)", "value": "236000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2023", "endDate": "2023-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "15.00506300", "last": "39500000000.0000", "value": "45427000000.0000"}, "income_tax_expense": {"yoy": "4.98414900", "last": "11356000000.0000", "value": "11922000000.0000"}, "operating_income_total": {"yoy": "8.68277000", "last": "282836000000.0000", "value": "307394000000.0000"}, "gross_profit": {"yoy": "11.12728500", "last": "156633000000.0000", "value": "174062000000.0000"}, "net_profit": {"yoy": "23.04909000", "last": "59972000000.0000", "value": "73795000000.0000"}, "operating_expenses": {"yoy": "9.75412900", "last": "81791000000.0000", "value": "89769000000.0000"}, "other_item": {"yoy": "-393.51797300", "last": "1697000000.0000", "value": "-4981000000.0000"}, "revenue_cost": {"yoy": "5.64883600", "last": "126203000000.0000", "value": "133332000000.0000"}}, {"selling_administrative_expenses": {"yoy": "-5.29069500", "last": "44342000000.0000", "value": "41996000000.0000"}, "operating_profit": {"yoy": "39.20679700", "last": "80736000000.0000", "value": "112390000000.0000"}, "projects": [{"yoy": "11.88326200", "name": "Google Services", "value": "304930000000.0000"}, {"yoy": "30.64857400", "name": "Google Cloud", "value": "43229000000.0000"}, {"yoy": "7.92403400", "name": "Other Bets", "value": "1648000000.0000"}, {"yoy": "-10.59322000", "name": "Hedging Gains (Losses)", "value": "211000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2024", "endDate": "2024-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "8.58300100", "last": "45427000000.0000", "value": "49326000000.0000"}, "income_tax_expense": {"yoy": "65.21556800", "last": "11922000000.0000", "value": "19697000000.0000"}, "operating_income_total": {"yoy": "13.86624300", "last": "307394000000.0000", "value": "350018000000.0000"}, "gross_profit": {"yoy": "17.03416000", "last": "174062000000.0000", "value": "203712000000.0000"}, "net_profit": {"yoy": "35.67043800", "last": "73795000000.0000", "value": "100118000000.0000"}, "operating_expenses": {"yoy": "1.72999600", "last": "89769000000.0000", "value": "91322000000.0000"}, "other_item": {"yoy": "-49.06645300", "last": "-4981000000.0000", "value": "-7425000000.0000"}, "revenue_cost": {"yoy": "9.73059700", "last": "133332000000.0000", "value": "146306000000.0000"}}, {"selling_administrative_expenses": {"yoy": "19.47566400", "last": "41996000000.0000", "value": "50175000000.0000"}, "operating_profit": {"yoy": "14.81359600", "last": "112390000000.0000", "value": "129039000000.0000"}, "projects": [{"yoy": "12.39333600", "name": "Google Services", "value": "342721000000.0000"}, {"yoy": "35.80004200", "name": "Google Cloud", "value": "58705000000.0000"}, {"yoy": "-6.73543700", "name": "Other Bets", "value": "1537000000.0000"}, {"yoy": "-160.18957300", "name": "Hedging Gains (Losses)", "value": "-127000000.0000"}], "subject": {"sourceCode": "596001", "period": "FY", "year": "2025", "endDate": "2025-12-31", "name": "谷歌A", "logo": "https://lh-prod-mid-pub-newsf10.s3.amazonaws.com/logo/GOOGL.png"}, "research_development_expenses": {"yoy": "23.84340900", "last": "49326000000.0000", "value": "61087000000.0000"}, "income_tax_expense": {"yoy": "35.33025300", "last": "19697000000.0000", "value": "26656000000.0000"}, "operating_income_total": {"yoy": "15.09008100", "last": "350018000000.0000", "value": "402836000000.0000"}, "gross_profit": {"yoy": "17.96114100", "last": "203712000000.0000", "value": "240301000000.0000"}, "net_profit": {"yoy": "32.01422300", "last": "100118000000.0000", "value": "132170000000.0000"}, "operating_expenses": {"yoy": "21.83482600", "last": "91322000000.0000", "value": "111262000000.0000"}, "other_item": {"yoy": "-301.17171700", "last": "-7425000000.0000", "value": "-29787000000.0000"}, "revenue_cost": {"yoy": "11.09250500", "last": "146306000000.0000", "value": "162535000000.0000"}}]}, "source": "AInvest financial_reports_visual/usa/v1/sankey", "language": "zh-CN", "componentUi": {"Business": "主营业务", "Type": "类型", "Stock": "股票", "No data": "暂无数据", "No Data": "暂无数据", "Value": "价值", "Quarterly": "季度", "Annual": "年度", "YoY": "同比", "Breakdown": "拆解", "Ratio": "占比", "Total": "合计"}, "theme": "light", "i18n": {"title": "收入与费用", "revenue": "收入", "expenses": "费用", "profit": "利润", "quarterly": "季度", "annual": "年度", "yoy": "同比", "play": "播放时间轴", "pause": "暂停时间轴", "timeline": "时间轴", "chartAria": "收入与费用桑基图", "noData": "暂无数据", "sumPositive": "正向收入合计", "revenueNode": "收入", "grossProfit": "毛利润", "costOfRevenue": "收入成本", "operatingProfit": "营业利润", "operatingExpenses": "运营费用", "netProfit": "净利润", "otherItems": "其他项目", "tax": "税费", "negativeBusiness": "负向业务"}};
+const i18n = Object.assign({}, payload.i18n || {});
+function t(key) { return i18n[key] || key; }
+
+const svg = document.getElementById('svg');
+const chart = document.getElementById('chart');
+const tooltip = document.getElementById('tooltip');
+const ns = 'http://www.w3.org/2000/svg';
+
+const state = {
+  periodType: payload.periodType || 'quarterly',
+  index: 0,
+  yoy: false,
+  playing: false,
+  timer: null,
+};
+
+document.documentElement.lang = payload.language || document.documentElement.lang || 'en';
+document.title = t('title');
+document.getElementById('chartTitle').textContent = t('title');
+document.getElementById('legendRevenue').textContent = t('revenue');
+document.getElementById('legendExpenses').textContent = t('expenses');
+document.getElementById('legendProfit').textContent = t('profit');
+document.getElementById('quarterlyBtn').textContent = t('quarterly');
+document.getElementById('annualBtn').textContent = t('annual');
+document.getElementById('yoyBtn').textContent = t('yoy');
+document.getElementById('svg').setAttribute('aria-label', t('chartAria'));
+document.getElementById('timeline').setAttribute('aria-label', t('timeline'));
+document.getElementById('playBtn').setAttribute('aria-label', t('play'));
+
+const NODE_W = 12;
+const MIN_NODE_H = 7;
+const MIN_LINK_W = 2.5;
+const MAX_LINK_W = 56;
+const TIMELINE_EDGE_PAD_PCT = 1.35;
+const FRAME_TRANSITION_MS = 520;
+const PLAY_STEP_MS = 950;
+let lastModelSnapshot = null;
+let transitionRaf = null;
+
+function timelineVisualPercent(index, total) {
+  if (total <= 1) return 50;
+  return TIMELINE_EDGE_PAD_PCT + (index / (total - 1)) * (100 - TIMELINE_EDGE_PAD_PCT * 2);
+}
+
+function normalizePayload(input) {
+  const datasets = input.datasets && typeof input.datasets === 'object'
+    ? {
+        quarterly: Array.isArray(input.datasets.quarterly) ? input.datasets.quarterly : [],
+        annual: Array.isArray(input.datasets.annual) ? input.datasets.annual : [],
+      }
+    : { quarterly: [], annual: [] };
+
+  if (!datasets.quarterly.length && input.periodType === 'quarterly' && Array.isArray(input.items)) {
+    datasets.quarterly = input.items;
+  }
+  if (!datasets.annual.length && input.periodType === 'annual' && Array.isArray(input.items)) {
+    datasets.annual = input.items;
+  }
+  if (!datasets.quarterly.length && !datasets.annual.length && Array.isArray(input.items)) {
+    datasets[input.periodType === 'annual' ? 'annual' : 'quarterly'] = input.items;
+  }
+  return datasets;
+}
+
+const datasets = normalizePayload(payload);
+if (!datasets[state.periodType]?.length) {
+  state.periodType = datasets.quarterly.length ? 'quarterly' : 'annual';
+}
+state.index = Math.max(0, (datasets[state.periodType] || []).length - 1);
+
+function getData() {
+  return datasets[state.periodType] || [];
+}
+
+function val(x) {
+  const raw = x && typeof x === 'object' && 'value' in x ? x.value : x;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function itemValue(item, key) {
+  return val(item?.[key]);
+}
+
+function money(v) {
+  const sign = v < 0 ? '-' : '';
+  const a = Math.abs(v);
+  if (a >= 1e12) return `${sign}${(a / 1e12).toFixed(2)}T`;
+  if (a >= 1e9) return `${sign}${(a / 1e9).toFixed(2)}B`;
+  if (a >= 1e6) return `${sign}${(a / 1e6).toFixed(2)}M`;
+  if (a >= 1e3) return `${sign}${(a / 1e3).toFixed(2)}K`;
+  return `${sign}${a.toFixed(0)}`;
+}
+
+function periodLabel(item) {
+  const s = item?.subject || {};
+  return `${s.year || ''} ${s.period || ''}`.trim();
+}
+
+function shortPeriod(item) {
+  const s = item?.subject || {};
+  const year = String(s.year || '').slice(-2);
+  if ((s.period || '').toUpperCase() === 'FY') return `${s.year || ''}`;
+  return `${year ? "'" + year : ''} ${s.period || ''}`.trim();
+}
+
+function truncateText(str, max = 18) {
+  const s = String(str || '');
+  if (s.length <= max) return s;
+  return s.slice(0, Math.max(1, max - 1)) + '…';
+}
+
+function charsForWidth(px, fontPx) {
+  return Math.max(6, Math.floor(px / (fontPx * 0.52)));
+}
+
+function splitLabelIntoLines(text, maxChars, maxLines = 2) {
+  const s = String(text || '').trim();
+  if (!s) return [''];
+  if (s.length <= maxChars) return [s];
+
+  const tokens = s.split(/([\s/&-]+)/).filter(Boolean);
+  const lines = [];
+  let line = '';
+  for (const token of tokens) {
+    const next = line ? line + token : token.trimStart();
+    if (next.length <= maxChars || !line) {
+      line = next;
+    } else {
+      lines.push(line.trim());
+      line = token.trimStart();
+    }
+    if (lines.length === maxLines) break;
+  }
+  if (lines.length < maxLines && line.trim()) lines.push(line.trim());
+
+  const joinedLen = lines.join('').replace(/\s/g, '').length;
+  const rawLen = s.replace(/\s/g, '').length;
+  if (joinedLen < rawLen) {
+    const last = lines.length ? lines.length - 1 : 0;
+    lines[last] = truncateText(lines[last] || s, maxChars);
+  }
+  return lines.slice(0, maxLines);
+}
+
+function svgTextLines(parent, x, y, lines, cls, anchor = 'start', lineHeight = 12) {
+  const el = make('text', { x, y, class: cls, 'text-anchor': anchor }, parent);
+  lines.forEach((line, i) => {
+    const tspan = document.createElementNS(ns, 'tspan');
+    tspan.setAttribute('x', String(x));
+    tspan.setAttribute('dy', i === 0 ? '0' : String(lineHeight));
+    tspan.textContent = line;
+    el.appendChild(tspan);
+  });
+  return el;
+}
+
+function make(tag, attrs = {}, parent = svg) {
+  const el = document.createElementNS(ns, tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (value !== undefined && value !== null) el.setAttribute(key, String(value));
+  }
+  parent.appendChild(el);
+  return el;
+}
+
+function svgText(parent, x, y, text, cls, anchor = 'start') {
+  const el = make('text', { x, y, class: cls, 'text-anchor': anchor }, parent);
+  el.textContent = text;
+  return el;
+}
+
+function ribbonPath(x0, y0Top, y0Bottom, x1, y1Top, y1Bottom) {
+  const dx = Math.max(36, (x1 - x0) * 0.52);
+  return [
+    `M ${x0} ${y0Top}`,
+    `C ${x0 + dx} ${y0Top}, ${x1 - dx} ${y1Top}, ${x1} ${y1Top}`,
+    `L ${x1} ${y1Bottom}`,
+    `C ${x1 - dx} ${y1Bottom}, ${x0 + dx} ${y0Bottom}, ${x0} ${y0Bottom}`,
+    'Z',
+  ].join(' ');
+}
+
+function calcYoyMetric(key, projectName = null) {
+  const data = getData();
+  const current = data[state.index];
+  if (!current) return null;
+
+  const currentYear = Number(current.subject?.year);
+  const currentPeriod = current.subject?.period;
+  let prevIndex = -1;
+
+  if (Number.isFinite(currentYear)) {
+    prevIndex = data.findIndex((d) => {
+      const y = Number(d.subject?.year);
+      if (state.periodType === 'annual') return y === currentYear - 1;
+      return y === currentYear - 1 && d.subject?.period === currentPeriod;
+    });
+  }
+
+  if (prevIndex < 0) {
+    prevIndex = state.periodType === 'quarterly' ? state.index - 4 : state.index - 1;
+  }
+  if (prevIndex < 0 || !data[prevIndex]) return null;
+
+  const prev = data[prevIndex];
+  let currentValue = 0;
+  let prevValue = 0;
+
+  if (projectName) {
+    currentValue = val((current.projects || []).find((p) => p.name === projectName)?.value);
+    prevValue = val((prev.projects || []).find((p) => p.name === projectName)?.value);
+  } else if (key === 'sum_positive') {
+    currentValue = (current.projects || []).filter((p) => val(p.value) > 0).reduce((s, p) => s + val(p.value), 0);
+    prevValue = (prev.projects || []).filter((p) => val(p.value) > 0).reduce((s, p) => s + val(p.value), 0);
+  } else if (key === 'negative_business') {
+    currentValue = Math.abs((current.projects || []).filter((p) => val(p.value) < 0).reduce((s, p) => s + val(p.value), 0));
+    prevValue = Math.abs((prev.projects || []).filter((p) => val(p.value) < 0).reduce((s, p) => s + val(p.value), 0));
+  } else {
+    currentValue = itemValue(current, key);
+    prevValue = itemValue(prev, key);
+  }
+
+  if (!Number.isFinite(prevValue) || Math.abs(prevValue) < 1) return null;
+  const pct = ((currentValue - prevValue) / Math.abs(prevValue)) * 100;
+  if (!Number.isFinite(pct)) return null;
+  return pct;
+}
+
+function yoyClass(pct) {
+  if (pct > 0.05) return 'up';
+  if (pct < -0.05) return 'down';
+  return 'flat';
+}
+
+function yoyText(pct) {
+  if (pct === null || pct === undefined || !Number.isFinite(pct)) return '';
+  const arrow = pct > 0.05 ? '▲' : pct < -0.05 ? '▼' : '—';
+  return `${arrow} ${t('yoy')} ${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+}
+
+function computeModel(item, width, height) {
+  const projects = Array.isArray(item.projects) ? item.projects : [];
+  const positives = projects.filter((p) => val(p.value) > 0);
+  const negatives = projects.filter((p) => val(p.value) < 0);
+  const sumPositive = positives.reduce((s, p) => s + val(p.value), 0);
+  const negativeAbs = Math.abs(negatives.reduce((s, p) => s + val(p.value), 0));
+
+  const revenue = itemValue(item, 'operating_income_total');
+  const cogs = Math.abs(itemValue(item, 'revenue_cost'));
+  const gross = itemValue(item, 'gross_profit');
+  const operatingProfit = itemValue(item, 'operating_profit');
+  const operatingExpenses = Math.abs(itemValue(item, 'operating_expenses'));
+  const sga = Math.abs(itemValue(item, 'selling_administrative_expenses'));
+  const rd = Math.abs(itemValue(item, 'research_development_expenses'));
+  const tax = Math.abs(itemValue(item, 'income_tax_expense'));
+  const other = itemValue(item, 'other_item');
+  const net = itemValue(item, 'net_profit');
+
+  const rightTotal = Math.abs(net) + Math.abs(other) + tax + sga + rd;
+  const maxTotal = Math.max(
+    sumPositive + negativeAbs,
+    Math.abs(revenue),
+    Math.abs(gross) + Math.abs(cogs),
+    Math.abs(operatingProfit) + Math.abs(operatingExpenses),
+    rightTotal,
+    1
+  );
+  const plotH = Math.max(180, height - 20);
+  const dynamicMaxLink = Math.min(MAX_LINK_W, Math.max(28, width * 0.038));
+  const maxVisualHeight = Math.min(plotH * 0.76, Math.max(150, plotH * 0.68));
+  const scale = maxVisualHeight / maxTotal;
+  const w = (v) => Math.min(dynamicMaxLink, Math.max(MIN_LINK_W, Math.abs(v) * scale));
+
+  const compact = width < 980;
+  const tiny = width < 720;
+  // Move the whole Sankey slightly right, but push the last layer closer to the edge
+  // so the chart uses the available screen instead of leaving a blank right column.
+  const leftPad = tiny ? 58 : compact ? 82 : 116;
+  const rightPad = tiny ? 16 : compact ? 22 : 28;
+  const chartW = Math.max(260, width - leftPad - rightPad);
+  const ratios = tiny ? [0, .19, .36, .53, .70, .88] : compact ? [0, .19, .36, .53, .70, .90] : [0, .18, .35, .53, .70, .91];
+  const cols = ratios.map((t) => leftPad + chartW * t);
+  const top = 12;
+  const bottom = height - 10;
+  const center = top + (bottom - top) * 0.50;
+
+  const nodes = [];
+  const nodeMap = new Map();
+
+  function addNode(id, name, value, x, y, color, side = 'right', key = null, projectName = null) {
+    const node = {
+      id, name, value, x, y, color, side, key, projectName,
+      inLinks: [], outLinks: [], inCursor: 0, outCursor: 0, h: w(value),
+    };
+    nodes.push(node);
+    nodeMap.set(id, node);
+    return node;
+  }
+
+  const positiveSpecs = positives.map((p, i) => ({ id: `project_${i}`, name: p.name || `Revenue ${i + 1}`, value: val(p.value), color: 'blue', key: 'project', projectName: p.name }));
+  const nodeGap = tiny ? 12 : compact ? 16 : 20;
+  const positiveH = positiveSpecs.reduce((s, n) => s + w(n.value), 0) + Math.max(0, positiveSpecs.length - 1) * nodeGap;
+  let startY = Math.max(top + 10, center - positiveH * 0.55);
+
+  for (const spec of positiveSpecs) {
+    const h = w(spec.value);
+    addNode(spec.id, spec.name, spec.value, cols[0], startY + h / 2, 'blue', 'left', spec.key, spec.projectName);
+    startY += h + nodeGap;
+  }
+
+  let negSource = null;
+  let negBusiness = null;
+  if (negativeAbs > 0) {
+    const hNeg = w(negativeAbs);
+  const negName = negatives.length === 1 ? negatives[0].name || t('negativeBusiness') : t('negativeBusiness');
+    negSource = addNode('negative_source', negName, -negativeAbs, cols[0], Math.max(top + 12, center - positiveH * 0.68 - 22), 'red', 'left', 'negative_business');
+    negBusiness = addNode('negative_business', t('negativeBusiness'), -negativeAbs, cols[1], Math.max(top + 32, center - Math.max(70, plotH * 0.24)), 'red', 'left', 'negative_business');
+    negSource.h = hNeg;
+    negBusiness.h = hNeg;
+  }
+
+  const sumNode = addNode('sum_positive', t('sumPositive'), sumPositive, cols[1], center + 12, 'blue', 'left', 'sum_positive');
+  const revenueNode = addNode('revenue', t('revenueNode'), revenue, cols[2], center, 'blue', 'left', 'operating_income_total');
+
+  const splitGap = Math.max(56, Math.min(98, plotH * 0.20));
+  const smallSplitGap = Math.max(44, Math.min(78, plotH * 0.16));
+  const grossNode = addNode('gross', t('grossProfit'), gross, cols[3], center - splitGap * 0.78, 'green', 'right', 'gross_profit');
+  const cogsNode = addNode('cogs', t('costOfRevenue'), cogs, cols[3], center + splitGap * 0.88, 'red', 'right', 'revenue_cost');
+  const opNode = addNode('operating_profit', t('operatingProfit'), operatingProfit, cols[4], center - smallSplitGap * 0.72, 'green', 'right', 'operating_profit');
+  const opexNode = addNode('opex', t('operatingExpenses'), operatingExpenses, cols[4], center + smallSplitGap * 0.92, 'red', 'right', 'operating_expenses');
+
+  const rightTop = top + Math.max(28, plotH * 0.12);
+  const rightGap = Math.max(34, (bottom - rightTop) / 5.15);
+  const netNode = addNode('net', t('netProfit'), net, cols[5], rightTop, 'green', 'right', 'net_profit');
+  const otherNode = addNode('other', t('otherItems'), other, cols[5], rightTop + rightGap * 1.25, other < 0 ? 'red' : 'green', 'right', 'other_item');
+  const taxNode = addNode('tax', t('tax'), tax, cols[5], rightTop + rightGap * 2.45, 'red', 'right', 'income_tax_expense');
+  const sgaNode = addNode('sga', 'SG&A', sga, cols[5], rightTop + rightGap * 3.55, 'red', 'right', 'selling_administrative_expenses');
+  const rdNode = addNode('rd', 'R&D', rd, cols[5], rightTop + rightGap * 4.65, 'red', 'right', 'research_development_expenses');
+
+  const links = [];
+  function addLink(sourceId, targetId, value, kind) {
+    const source = nodeMap.get(sourceId);
+    const target = nodeMap.get(targetId);
+    if (!source || !target || Math.abs(value) <= 0) return null;
+    const link = { source, target, value: Math.abs(value), width: w(value), kind };
+    source.outLinks.push(link);
+    target.inLinks.push(link);
+    links.push(link);
+    return link;
+  }
+
+  for (const spec of positiveSpecs) addLink(spec.id, 'sum_positive', spec.value, 'rev');
+  addLink('sum_positive', 'revenue', sumPositive, 'rev');
+  if (negativeAbs > 0) {
+    addLink('negative_source', 'negative_business', negativeAbs, 'neg');
+    addLink('negative_business', 'revenue', negativeAbs, 'neg');
+  }
+  addLink('revenue', 'gross', gross, 'profit');
+  addLink('revenue', 'cogs', cogs, 'exp');
+  addLink('gross', 'operating_profit', operatingProfit, 'profit');
+  addLink('gross', 'opex', operatingExpenses, 'exp');
+  addLink('opex', 'sga', sga, 'exp');
+  addLink('opex', 'rd', rd, 'exp');
+
+  // Keep the right side visually readable even when financial statement rows do not add up perfectly.
+  addLink('operating_profit', 'net', Math.min(Math.abs(net), Math.max(Math.abs(operatingProfit), Math.abs(net) * .72)), 'profit');
+  addLink('operating_profit', 'tax', tax, 'exp');
+  addLink('operating_profit', 'other', Math.abs(other), other < 0 ? 'exp' : 'profit');
+
+  for (const node of nodes) {
+    const inSum = node.inLinks.reduce((s, l) => s + l.width, 0);
+    const outSum = node.outLinks.reduce((s, l) => s + l.width, 0);
+    node.h = Math.max(MIN_NODE_H, node.h, inSum, outSum);
+    node.y0 = node.y - node.h / 2;
+    node.y1 = node.y + node.h / 2;
+    node.inCursor = node.y - inSum / 2;
+    node.outCursor = node.y - outSum / 2;
+  }
+
+  // Assign link slots after all node heights are known.
+  for (const node of nodes) {
+    let out = node.outCursor;
+    for (const link of node.outLinks) {
+      link.sy0 = out;
+      link.sy1 = out + link.width;
+      out += link.width;
+    }
+    let inn = node.inCursor;
+    for (const link of node.inLinks) {
+      link.ty0 = inn;
+      link.ty1 = inn + link.width;
+      inn += link.width;
+    }
+  }
+
+  return { nodes, links, cols, center, w };
+}
+
+
+function linkKey(link) {
+  const sourceId = link.source?.id || link.sourceId || '';
+  const targetId = link.target?.id || link.targetId || '';
+  return `${sourceId}__${targetId}__${link.kind || ''}`;
+}
+
+function snapshotModel(model) {
+  return {
+    nodes: model.nodes.map((node) => ({
+      id: node.id,
+      x: node.x,
+      y: node.y,
+      y0: node.y0,
+      y1: node.y1,
+      h: node.h,
+      color: node.color,
+    })),
+    links: model.links.map((link) => ({
+      key: linkKey(link),
+      sourceId: link.source.id,
+      targetId: link.target.id,
+      kind: link.kind,
+      sy0: link.sy0,
+      sy1: link.sy1,
+      ty0: link.ty0,
+      ty1: link.ty1,
+      width: link.width,
+    })),
+  };
+}
+
+function snapshotNodeMap(snapshot) {
+  return new Map((snapshot?.nodes || []).map((node) => [node.id, node]));
+}
+
+function snapshotLinkMap(snapshot) {
+  return new Map((snapshot?.links || []).map((link) => [link.key, link]));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+function nodeFrame(node, fromNodes, t) {
+  const from = fromNodes.get(node.id);
+  if (!from) {
+    const center = node.y;
+    return {
+      x: node.x,
+      y0: lerp(center, node.y0, t),
+      h: lerp(0, Math.max(MIN_NODE_H, node.h), t),
+    };
+  }
+  return {
+    x: lerp(from.x, node.x, t),
+    y0: lerp(from.y0, node.y0, t),
+    h: lerp(Math.max(MIN_NODE_H, from.h), Math.max(MIN_NODE_H, node.h), t),
+  };
+}
+
+function linkFrame(link, fromNodes, fromLinks, t) {
+  const key = linkKey(link);
+  const fromLink = fromLinks.get(key);
+  const fromSource = fromNodes.get(link.source.id);
+  const fromTarget = fromNodes.get(link.target.id);
+
+  const targetSourceX = link.source.x;
+  const targetTargetX = link.target.x;
+  const sourceX = lerp(fromSource?.x ?? targetSourceX, targetSourceX, t);
+  const targetX = lerp(fromTarget?.x ?? targetTargetX, targetTargetX, t);
+
+  if (!fromLink) {
+    const syMid = (link.sy0 + link.sy1) / 2;
+    const tyMid = (link.ty0 + link.ty1) / 2;
+    return {
+      x0: sourceX + NODE_W,
+      x1: targetX,
+      sy0: lerp(syMid, link.sy0, t),
+      sy1: lerp(syMid, link.sy1, t),
+      ty0: lerp(tyMid, link.ty0, t),
+      ty1: lerp(tyMid, link.ty1, t),
+    };
+  }
+
+  return {
+    x0: sourceX + NODE_W,
+    x1: targetX,
+    sy0: lerp(fromLink.sy0, link.sy0, t),
+    sy1: lerp(fromLink.sy1, link.sy1, t),
+    ty0: lerp(fromLink.ty0, link.ty0, t),
+    ty1: lerp(fromLink.ty1, link.ty1, t),
+  };
+}
+
+function ribbonPathFromFrame(frame) {
+  return ribbonPath(frame.x0, frame.sy0, frame.sy1, frame.x1, frame.ty0, frame.ty1);
+}
+
+function animateSankeyGeometry(elements, fromSnapshot, duration = FRAME_TRANSITION_MS) {
+  const fromNodes = snapshotNodeMap(fromSnapshot);
+  const fromLinks = snapshotLinkMap(fromSnapshot);
+  const start = performance.now();
+  if (transitionRaf) cancelAnimationFrame(transitionRaf);
+
+  function step(now) {
+    const raw = Math.min(1, (now - start) / duration);
+    const t = easeInOutCubic(raw);
+
+    for (const item of elements.nodes) {
+      const frame = nodeFrame(item.node, fromNodes, t);
+      item.el.setAttribute('x', String(frame.x));
+      item.el.setAttribute('y', String(frame.y0));
+      item.el.setAttribute('height', String(frame.h));
+    }
+
+    for (const item of elements.links) {
+      const frame = linkFrame(item.link, fromNodes, fromLinks, t);
+      item.el.setAttribute('d', ribbonPathFromFrame(frame));
+    }
+
+    if (raw < 1) {
+      transitionRaf = requestAnimationFrame(step);
+    } else {
+      transitionRaf = null;
+    }
+  }
+
+  transitionRaf = requestAnimationFrame(step);
+}
+
+function drawNodeLabels(labelLayer, node, model, width) {
+  const anchor = node.side === 'left' ? 'end' : 'start';
+  const x = node.side === 'left' ? node.x - 7 : node.x + NODE_W + 7;
+  const isSmall = node.h < 14;
+  const yBase = node.y + (isSmall ? -3 : -7);
+  const colIndex = model.cols.reduce((best, col, i) => Math.abs(col - node.x) < Math.abs(model.cols[best] - node.x) ? i : best, 0);
+  let availablePx;
+  if (anchor === 'end') {
+    availablePx = Math.max(42, x - 4);
+  } else {
+    const nextCol = model.cols[colIndex + 1];
+    // Give labels more room than before. We wrap names instead of ellipsizing first.
+    availablePx = nextCol ? Math.max(52, nextCol - x - 14) : Math.max(80, width - x - 4);
+  }
+  const maxChars = Math.min(34, charsForWidth(availablePx, 10));
+  const nameLines = splitLabelIntoLines(node.name, maxChars, 2);
+  const value = money(node.value);
+
+  const group = make('g', { class: 'label-group', 'data-priority': Math.round(node.h * 100) }, labelLayer);
+  svgTextLines(group, x, yBase, nameLines, 'label-name', anchor, 12);
+  const valueY = yBase + nameLines.length * 12 + 5;
+  svgText(group, x, valueY, value, `label-value ${node.color}`, anchor);
+
+  if (state.yoy) {
+    const pct = node.projectName ? calcYoyMetric(null, node.projectName) : calcYoyMetric(node.key);
+    if (pct !== null) svgText(group, x, valueY + 12, yoyText(pct), `label-yoy ${yoyClass(pct)}`, anchor);
+  }
+}
+
+
+function rectsOverlap(a, b, pad = 4) {
+  return !(a.x + a.width + pad < b.x || b.x + b.width + pad < a.x || a.y + a.height + pad < b.y || b.y + b.height + pad < a.y);
+}
+
+function resolveSvgLabelCollisions(labelLayer, width, height) {
+  const groups = Array.from(labelLayer.querySelectorAll('.label-group'));
+  groups.forEach((g, i) => {
+    g.style.display = '';
+    g.dataset.order = String(i);
+  });
+
+  const sorted = groups.slice().sort((a, b) => {
+    const pa = Number(a.getAttribute('data-priority') || 0);
+    const pb = Number(b.getAttribute('data-priority') || 0);
+    if (pb !== pa) return pb - pa;
+    return Number(a.dataset.order || 0) - Number(b.dataset.order || 0);
+  });
+
+  const kept = [];
+  for (const group of sorted) {
+    let box;
+    try {
+      box = group.getBBox();
+    } catch (err) {
+      group.style.display = 'none';
+      continue;
+    }
+    const outOfBounds = box.x < 0 || box.y < 0 || box.x + box.width > width || box.y + box.height > height;
+    const overlap = kept.some((item) => rectsOverlap(box, item, 7));
+    if (outOfBounds || overlap) {
+      group.style.display = 'none';
+    } else {
+      kept.push(box);
+    }
+  }
+}
+
+function resolveTimelineLabelCollisions() {
+  const container = document.getElementById('periodLabels');
+  const labels = Array.from(container.querySelectorAll('.period-label'));
+  const c = container.getBoundingClientRect();
+  const kept = [];
+  for (const label of labels) {
+    label.style.display = '';
+    const b = label.getBoundingClientRect();
+    const rel = { x: b.left - c.left, y: b.top - c.top, width: b.width, height: b.height };
+    const out = rel.x < 0 || rel.x + rel.width > c.width;
+    const overlap = kept.some((item) => rectsOverlap(rel, item, 10));
+    if (out || overlap) {
+      label.style.display = 'none';
+    } else {
+      kept.push(rel);
+    }
+  }
+}
+
+function showTooltip(evt, node) {
+  const pct = node.projectName ? calcYoyMetric(null, node.projectName) : calcYoyMetric(node.key);
+  const cls = pct == null ? 'flat' : yoyClass(pct);
+  tooltip.innerHTML = `
+    <div class="t-name">${node.name}</div>
+    <div class="t-value" style="color:var(--${node.color})">${money(node.value)}</div>
+    ${pct == null ? '' : `<div class="t-yoy ${cls}">${yoyText(pct)}</div>`}
+  `;
+  const rect = chart.getBoundingClientRect();
+  tooltip.style.left = `${evt.clientX - rect.left}px`;
+  tooltip.style.top = `${evt.clientY - rect.top - 12}px`;
+  tooltip.classList.add('show');
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('show');
+}
+
+function render(options = {}) {
+  const data = getData();
+  const shouldAnimate = Boolean(options.animate && lastModelSnapshot && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  if (transitionRaf) {
+    cancelAnimationFrame(transitionRaf);
+    transitionRaf = null;
+  }
+
+  svg.innerHTML = '';
+  svg.style.transition = 'none';
+  svg.style.opacity = '1';
+  svg.style.transform = 'none';
+  hideTooltip();
+
+  document.getElementById('subtitle').textContent = `${payload.code || ''} · ${state.periodType === 'annual' ? t('annual') : t('quarterly')}`;
+
+  if (!data.length) {
+    lastModelSnapshot = null;
+    chart.querySelectorAll('.empty').forEach((el) => el.remove());
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = t('noData');
+    chart.appendChild(empty);
+    updateControls();
+    return;
+  }
+  chart.querySelectorAll('.empty').forEach((el) => el.remove());
+
+  state.index = Math.min(Math.max(0, state.index), data.length - 1);
+
+  const rect = chart.getBoundingClientRect();
+  const width = Math.max(320, rect.width);
+  const height = Math.max(220, rect.height);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  const item = data[state.index];
+  const model = computeModel(item, width, height);
+
+  const flowLayer = make('g', { class: 'flow-layer' });
+  const nodeLayer = make('g', { class: 'node-layer' });
+  const labelLayer = make('g', { class: 'label-layer' });
+  const transitionElements = { links: [], nodes: [] };
+  const fromNodes = shouldAnimate ? snapshotNodeMap(lastModelSnapshot) : new Map();
+  const fromLinks = shouldAnimate ? snapshotLinkMap(lastModelSnapshot) : new Map();
+
+  for (const link of model.links) {
+    const initialFrame = shouldAnimate
+      ? linkFrame(link, fromNodes, fromLinks, 0)
+      : { x0: link.source.x + NODE_W, x1: link.target.x, sy0: link.sy0, sy1: link.sy1, ty0: link.ty0, ty1: link.ty1 };
+    const path = make('path', {
+      class: `flow ${link.kind}`,
+      d: ribbonPathFromFrame(initialFrame),
+    }, flowLayer);
+    transitionElements.links.push({ el: path, link });
+  }
+
+  for (const node of model.nodes) {
+    const initialFrame = shouldAnimate
+      ? nodeFrame(node, fromNodes, 0)
+      : { x: node.x, y0: node.y0, h: Math.max(MIN_NODE_H, node.h) };
+    const rectEl = make('rect', {
+      class: `node-bar ${node.color}`,
+      x: initialFrame.x,
+      y: initialFrame.y0,
+      width: NODE_W,
+      height: initialFrame.h,
+      rx: 1.5,
+      ry: 1.5,
+    }, nodeLayer);
+    transitionElements.nodes.push({ el: rectEl, node });
+
+    const hit = make('rect', {
+      class: 'node-hit',
+      x: node.x - 7,
+      y: node.y0 - 7,
+      width: NODE_W + 14,
+      height: Math.max(MIN_NODE_H, node.h) + 14,
+    }, nodeLayer);
+    hit.addEventListener('mousemove', (evt) => showTooltip(evt, node));
+    hit.addEventListener('mouseleave', hideTooltip);
+  }
+
+  // Period only; logo / ticker badge is intentionally removed.
+  const period = svgText(labelLayer, model.cols[2] + NODE_W / 2, Math.max(24, model.center - 118), periodLabel(item), 'period-text', 'middle');
+  period.setAttribute('pointer-events', 'none');
+
+  for (const node of model.nodes) drawNodeLabels(labelLayer, node, model, width);
+  resolveSvgLabelCollisions(labelLayer, width, height);
+
+  const nextSnapshot = snapshotModel(model);
+  if (shouldAnimate) {
+    animateSankeyGeometry(transitionElements, lastModelSnapshot, FRAME_TRANSITION_MS);
+  }
+  lastModelSnapshot = nextSnapshot;
+
+  updateControls();
+  updateTimeline();
+}
+
+function updateControls() {
+  const qBtn = document.getElementById('quarterlyBtn');
+  const aBtn = document.getElementById('annualBtn');
+  qBtn.classList.toggle('active', state.periodType === 'quarterly');
+  aBtn.classList.toggle('active', state.periodType === 'annual');
+  qBtn.disabled = !datasets.quarterly.length;
+  aBtn.disabled = !datasets.annual.length;
+
+  const yoyBtn = document.getElementById('yoyBtn');
+  yoyBtn.classList.toggle('active', state.yoy);
+  yoyBtn.setAttribute('aria-pressed', String(state.yoy));
+
+}
+
+function updateTimeline() {
+  const data = getData();
+  const timeline = document.getElementById('timeline');
+  const thumb = document.getElementById('thumb');
+  const startDate = document.getElementById('startDate');
+  const endDate = document.getElementById('endDate');
+  timeline.querySelectorAll('.tick').forEach((el) => el.remove());
+
+  if (!data.length) {
+    thumb.style.left = '0%';
+    startDate.textContent = '';
+    endDate.textContent = '';
+    return;
+  }
+
+  startDate.textContent = periodLabel(data[0]);
+  endDate.textContent = periodLabel(data[data.length - 1]);
+
+  data.forEach((item, i) => {
+    const p = timelineVisualPercent(i, data.length);
+    const tick = document.createElement('span');
+    tick.className = `tick${i === state.index ? ' active' : ''}`;
+    tick.style.left = `${p}%`;
+    tick.title = periodLabel(item);
+    tick.addEventListener('click', (evt) => {
+      evt.stopPropagation();
+      state.index = i;
+      stopPlay();
+      render({ animate: true });
+    });
+    timeline.appendChild(tick);
+  });
+
+  thumb.style.left = `${timelineVisualPercent(state.index, data.length)}%`;
+}
+
+function setPlayIcon(mode) {
+  const icon = document.getElementById('playIcon');
+  const playBtn = document.getElementById('playBtn');
+  icon.setAttribute('viewBox', '0 0 1024 1024');
+  if (mode === 'pause') {
+    playBtn.setAttribute('aria-label', t('pause'));
+    icon.innerHTML = '<path d="M512 958.464c-246.272 0-446.464-200.192-446.464-446.464S265.728 65.536 512 65.536s446.464 200.192 446.464 446.464-200.192 446.464-446.464 446.464z m1.024-875.008c-235.52 0-427.52 192-427.52 427.52 0 236.032 192 427.52 427.52 427.52s427.52-192 427.52-427.52-192-427.52-427.52-427.52z"></path><path d="M386 318h92v388h-92zM548 318h92v388h-92z"></path>';
+  } else {
+    playBtn.setAttribute('aria-label', t('play'));
+    icon.innerHTML = '<path d="M512 958.464c-246.272 0-446.464-200.192-446.464-446.464S265.728 65.536 512 65.536s446.464 200.192 446.464 446.464-200.192 446.464-446.464 446.464z m1.024-875.008c-235.52 0-427.52 192-427.52 427.52 0 236.032 192 427.52 427.52 427.52s427.52-192 427.52-427.52-192-427.52-427.52-427.52z"></path><path d="M408.064 326.144l-0.512 394.24 328.192-192.512z"></path>';
+  }
+}
+
+function stopPlay() {
+  state.playing = false;
+  if (state.timer) clearTimeout(state.timer);
+  state.timer = null;
+  setPlayIcon('play');
+}
+
+function scheduleNextPlayFrame() {
+  if (!state.playing) return;
+  state.timer = window.setTimeout(() => {
+    const data = getData();
+    if (!state.playing || data.length <= 1) return;
+
+    if (state.index >= data.length - 1) {
+      stopPlay();
+      return;
+    }
+
+    state.index += 1;
+    render({ animate: true });
+
+    if (state.index >= data.length - 1) {
+      state.timer = window.setTimeout(stopPlay, FRAME_TRANSITION_MS + 80);
+    } else {
+      scheduleNextPlayFrame();
+    }
+  }, PLAY_STEP_MS);
+}
+
+function startPlay() {
+  const data = getData();
+  if (data.length <= 1) return;
+  if (state.timer) clearTimeout(state.timer);
+
+  state.playing = true;
+  setPlayIcon('pause');
+
+  // If the user is already at the end, replay once from the first frame.
+  // It does not loop: after the final frame the animation stops and the icon returns to play.
+  if (state.index >= data.length - 1) {
+    state.index = 0;
+    render({ animate: true });
+  }
+
+  scheduleNextPlayFrame();
+}
+
+function setPeriodType(type) {
+  if (!datasets[type]?.length || state.periodType === type) return;
+  stopPlay();
+  state.periodType = type;
+  state.index = Math.max(0, datasets[type].length - 1);
+  render({ animate: true });
+}
+
+function setIndexFromTimelineEvent(evt) {
+  const data = getData();
+  if (data.length <= 1) return;
+  const timeline = document.getElementById('timeline');
+  const rect = timeline.getBoundingClientRect();
+  const rawRatio = Math.min(1, Math.max(0, (evt.clientX - rect.left) / rect.width));
+  const edge = TIMELINE_EDGE_PAD_PCT / 100;
+  const ratio = Math.min(1, Math.max(0, (rawRatio - edge) / (1 - edge * 2)));
+  state.index = Math.round(ratio * (data.length - 1));
+  stopPlay();
+  render({ animate: true });
+}
+
+document.getElementById('quarterlyBtn').addEventListener('click', () => setPeriodType('quarterly'));
+document.getElementById('annualBtn').addEventListener('click', () => setPeriodType('annual'));
+document.getElementById('yoyBtn').addEventListener('click', () => {
+  state.yoy = !state.yoy;
+  render();
+});
+document.getElementById('timeline').addEventListener('pointerdown', setIndexFromTimelineEvent);
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (state.playing) stopPlay();
+  else startPlay();
+});
+
+window.addEventListener('resize', () => {
+  window.clearTimeout(window.__sankeyResizeTimer);
+  window.__sankeyResizeTimer = window.setTimeout(render, 80);
+});
+
+render();
+</script>
+</body>
+</html>

@@ -3447,8 +3447,8 @@ p {
 
 /* Cached case gallery and conversation replay. */
 .conversation { position: relative; }
-.conversation.is-empty { overflow-y: auto; overscroll-behavior: contain; justify-content:flex-start; padding:clamp(64px,14vh,160px) 0 0; }
-.conversation.is-empty .composer { flex: 0 0 auto; position: static; }
+.conversation.is-empty { overflow-y:auto; overscroll-behavior:contain; justify-content:flex-start; padding:0; }
+.conversation.is-empty .composer { flex:0 0 auto; position:static; padding-top:max(96px,calc(50dvh - 82px)); }
 .homeCases { display: none; }
 .conversation.is-empty .homeCases { display: block; flex: 0 0 auto; width: min(100%, 760px); margin: 28px auto 0; padding: 0 0 32px; }
 .conversation.is-empty .homeCases[hidden] { display: none; }
@@ -3635,6 +3635,7 @@ p {
 .inspirationTabs { display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 32px; }
 .inspirationTabs button { border:1px solid transparent; background:transparent; color:var(--muted); font:inherit; font-size:14px; padding:9px 16px; border-radius:999px; cursor:pointer; }
 .inspirationTabs button[aria-selected="true"] { color:var(--ink); background:var(--panel); border-color:var(--line); }
+.inspirationCount { margin-left:6px; color:var(--muted); font-size:12px; font-weight:400; }
 .inspirationTabs button:focus-visible,.inspirationPanel:focus-visible { outline:2px solid #8a7bff; outline-offset:3px; }
 .inspirationCategory + .inspirationCategory { margin-top:36px; }
 .inspirationCategoryHeader { margin-bottom:16px; }
@@ -3649,7 +3650,8 @@ p {
 .inspirationGrid .caseCard p { font-size:13px; line-height:1.5; }
 @media(max-width:1000px) { .inspirationGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:760px) {
-  .conversation.is-empty { padding:clamp(120px,24dvh,200px) 0 0; }
+  .conversation.is-empty { padding:0; }
+  .conversation.is-empty .composer { padding-top:max(96px,calc(50dvh - 86px)); }
   .conversation.is-empty .inspirationSquare { width:100%; padding:0 12px 40px; }
   .inspirationHeader h2 { font-size:22px; }
   .inspirationTabs { gap:4px; margin:20px 0 24px; }

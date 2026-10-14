@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>SPY 日K线（近三个月真实行情）</title>
+<style>
+*{box-sizing:border-box}
+html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:#18202a}
+.kline-component{width:100%;min-height:768px;background:transparent;overflow:visible;--chart-height:360px}
+.kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
+.kline-title strong{font-size:16px;line-height:1;font-weight:850;color:#18202a;white-space:nowrap;letter-spacing:.2px}
+.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs::-webkit-scrollbar{display:none}
+.period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
+.period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
+.annotation-controls{position:relative;flex:0 0 auto}
+.annotation-toggle{height:34px;padding:0 12px;border:1px solid #e1e6eb;border-radius:8px;background:#edf2f7;color:#18202a;font:inherit;font-size:13px;font-weight:780;cursor:pointer;white-space:nowrap}
+.annotation-toggle.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.annotation-toolbar{position:absolute;right:0;top:42px;display:none;align-items:center;gap:5px;width:max-content;max-width:min(760px,92vw);padding:7px;background:transparent;border:1px solid #e1e6eb;border-radius:10px;box-shadow:0 10px 30px rgba(15,23,42,.16);overflow-x:auto;z-index:80}
+.annotation-toolbar.open{display:flex}
+.annotation-toolbar button{height:30px;padding:0 9px;border:1px solid #e1e6eb;border-radius:7px;background:transparent;color:#18202a;font:inherit;font-size:12px;font-weight:680;cursor:pointer;white-space:nowrap}
+.annotation-toolbar button.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.annotation-toolbar button:disabled{opacity:.42;cursor:not-allowed}
+.annotation-separator{width:1px;height:20px;background:#e1e6eb;flex:0 0 auto}
+.chart-host{position:relative;width:100%;height:var(--chart-height);background:transparent;touch-action:pan-y;overflow:visible}
+#kline-canvas{display:block;width:100%;height:var(--chart-height);background:transparent;touch-action:pan-y}
+#kline-tooltip{position:absolute;z-index:40;top:10px;left:10px;width:240px;padding:8px 14px 8px 12px;box-sizing:border-box;background:rgba(37,43,52,.94);border:1px solid rgba(124,139,160,.55);border-radius:7px;color:#d9e0eb;box-shadow:none;font-size:11px;line-height:1.28;pointer-events:none;opacity:0;transform:translateY(-2px);transition:opacity .08s ease,transform .08s ease;overflow:hidden;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+#kline-tooltip.is-visible{opacity:1;transform:translateY(0)}
+#kline-tooltip .tip-time{margin-bottom:6px;color:#e1e7f0;font-weight:850;font-size:12px;white-space:nowrap;overflow:visible}
+#kline-tooltip .tip-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;column-gap:5px;margin:2px 0;white-space:nowrap}
+#kline-tooltip span{color:#aab4c2;font-size:11px;white-space:nowrap;min-width:0}
+#kline-tooltip b{color:#eef3fb;font-size:12px;font-weight:850;white-space:nowrap;width:76px;text-align:right;justify-self:end;overflow:hidden;text-overflow:clip;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+#kline-tooltip .is-up{color:#00b899!important}
+#kline-tooltip .is-down{color:#ff2f57!important}
+#kline-tooltip .is-flat{color:#a0a8b5!important}
+#annotation-editor{position:absolute;z-index:70;display:none;align-items:center;gap:5px;width:min(330px,calc(100% - 16px));padding:7px;background:transparent;border:1px solid #e1e6eb;border-radius:9px;box-shadow:0 10px 28px rgba(15,23,42,.18)}
+#annotation-editor.open{display:flex}
+#annotation-editor input{min-width:0;flex:1;height:32px;padding:0 9px;border:1px solid #e1e6eb;border-radius:7px;background:transparent;color:#18202a;font:inherit;font-size:13px;outline:none}
+#annotation-editor input:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.14)}
+#annotation-editor button{height:30px;padding:0 9px;border:1px solid #e1e6eb;border-radius:7px;background:transparent;color:#18202a;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#annotation-editor button[data-editor-action="confirm"]{background:#2563eb;border-color:#2563eb;color:#fff}
+@media(max-width:760px){
+  html,body{height:auto;min-height:0;overflow:auto}
+  .kline-component{min-height:auto;height:auto}
+  .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
+  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
+  .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
+  .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
+  .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
+  #kline-tooltip{width:min(156px,40%);padding:7px 9px 7px 8px;font-size:11px}
+  #kline-tooltip .tip-time{font-size:12px}
+  #kline-tooltip .tip-row{grid-template-columns:minmax(0,1fr) 58px;column-gap:4px}
+  #kline-tooltip b{width:58px;font-size:11px}
+  #annotation-editor{left:8px!important;right:8px!important;width:auto}
+}
+@media(max-width:380px){.period-button{min-width:40px;padding:0 8px;font-size:14px}#kline-tooltip{width:min(148px,40%)}}
+
+.kline-mobile-legend,.kline-mobile-levels{display:none}
+@media(max-width:760px){
+  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:15px!important}
+  .kline-title{gap:10px;padding-right:8px}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
+  .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
+  .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
+  .kline-mobile-levels:empty,.kline-mobile-legend:empty{display:none}
+  .kline-mobile-levels button{border:1px solid var(--kl-border);border-radius:6px;background:transparent;color:var(--kl-text);padding:5px 7px;font:inherit;font-size:11px;line-height:1.3;-webkit-tap-highlight-color:transparent}
+  .kline-mobile-levels button[aria-pressed="true"]{border-color:var(--level-color);background:color-mix(in srgb,var(--level-color) 12%,transparent)}
+  .kline-mobile-levels i{display:inline-block;width:10px;height:2px;margin-right:5px;vertical-align:middle}
+}
+
+</style>
+<style data-kline-theme="dual">/* Native K-line palettes, shared by standalone and previously saved charts. */
+:root[data-theme="light"] {
+  --kl-bg:transparent;--kl-title-bg:transparent;--kl-text:#18202a;
+  --kl-muted:#687383;--kl-border:#e1e6eb;--kl-active-bg:#edf2f7;--kl-active-text:#18202a;
+}
+:root[data-theme="dark"] {
+  color-scheme:dark;
+  --kl-bg:transparent;--kl-title-bg:transparent;--kl-text:#e6edf3;
+  --kl-muted:#8b949e;--kl-border:#242b35;--kl-active-bg:#5d6878;--kl-active-text:#fff;
+}
+:root[data-theme]:has(.kline-component),:root[data-theme] body:has(.kline-component) {background:var(--kl-bg);color:var(--kl-text)}
+:root[data-theme] .kline-component,:root[data-theme] .chart-host,:root[data-theme] #kline-canvas {background:var(--kl-bg)}
+:root[data-theme] .kline-title {background:var(--kl-title-bg);color:var(--kl-text);border-color:var(--kl-border)}
+:root[data-theme] .kline-title strong {color:var(--kl-text)}
+/* Size the document to its chart, rather than the iframe's previous height. */
+:root[data-theme]:has(.kline-component),:root[data-theme] body:has(.kline-component) {height:auto;min-height:0}
+:root[data-theme] .kline-title {height:auto;min-height:58px}
+:root[data-theme] .kline-title strong {max-width:100%;overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:760px) {
+  :root[data-theme] .kline-title {min-height:54px}
+}
+:root[data-theme] .period-button {color:var(--kl-muted)}
+:root[data-theme] .period-button.active {background:var(--kl-active-bg);color:var(--kl-active-text)}
+:root[data-theme] :is(.annotation-toggle,.annotation-toolbar,#annotation-editor) {background:var(--kl-title-bg);color:var(--kl-text);border-color:var(--kl-border)}
+:root[data-theme] :is(.annotation-toolbar,#annotation-editor) :is(button,input) {background:var(--kl-bg);color:var(--kl-text);border-color:var(--kl-border)}
+:root[data-theme] .annotation-separator {background:var(--kl-border)}
+:root[data-theme] :is(.annotation-toggle.active,.annotation-toolbar button.active,#annotation-editor button[data-editor-action="confirm"]) {background:#2563eb;border-color:#2563eb;color:#fff}
+:root[data-theme="dark"] #kline-tooltip {background:rgba(12,18,27,.96);border-color:#303746;color:#d8e0ec}
+:root[data-theme="dark"] #kline-tooltip .tip-time {color:#e6edf3}
+:root[data-theme="dark"] #kline-tooltip span {color:#8b949e}
+:root[data-theme="dark"] #kline-tooltip b {color:#d8e0ec}
+</style>
+</head>
+<body><div class="kline-component" data-kline-contract="{&quot;sources&quot;: {&quot;1d&quot;: &quot;inline&quot;}, &quot;type&quot;: &quot;kline&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;代码&quot;, &quot;field&quot;: &quot;code&quot;, &quot;aliases&quot;: [&quot;symbol&quot;, &quot;ticker&quot;, &quot;证券代码&quot;, &quot;数字币代码&quot;], &quot;visualChannel&quot;: &quot;quote.identity.symbol&quot;, &quot;payloadPath&quot;: &quot;symbol&quot;, &quot;required&quot;: true, &quot;default&quot;: &quot;&quot;}, {&quot;semantic&quot;: &quot;数据类型&quot;, &quot;field&quot;: &quot;dataType&quot;, &quot;aliases&quot;: [&quot;frequency&quot;, &quot;periodType&quot;, &quot;周期&quot;, &quot;K线周期&quot;], &quot;visualChannel&quot;: &quot;xAxis.timeGranularity&quot;, &quot;payloadPath&quot;: &quot;period&quot;, &quot;required&quot;: true, &quot;default&quot;: &quot;1d&quot;, &quot;supportedValues&quot;: [&quot;1m&quot;, &quot;5m&quot;, &quot;15m&quot;, &quot;30m&quot;, &quot;1h&quot;, &quot;2h&quot;, &quot;4h&quot;, &quot;1d&quot;, &quot;1w&quot;, &quot;1M&quot;, &quot;3M&quot;]}, {&quot;semantic&quot;: &quot;K线颜色&quot;, &quot;field&quot;: &quot;candleColors&quot;, &quot;aliases&quot;: [&quot;candleColorMode&quot;, &quot;colors&quot;, &quot;涨跌色&quot;], &quot;visualChannel&quot;: &quot;candle.color&quot;, &quot;payloadPath&quot;: &quot;candleColorMode / chartOptions.candleColors&quot;, &quot;default&quot;: &quot;green_up_red_down&quot;}, {&quot;semantic&quot;: &quot;K线类型&quot;, &quot;field&quot;: &quot;klineType&quot;, &quot;aliases&quot;: [&quot;candleType&quot;, &quot;displayType&quot;, &quot;形态&quot;], &quot;visualChannel&quot;: &quot;candle.shape&quot;, &quot;payloadPath&quot;: &quot;chartOptions.klineType&quot;, &quot;default&quot;: &quot;candle-hollow&quot;, &quot;supportedValues&quot;: [&quot;candle-hollow&quot;, &quot;candle-solid&quot;, &quot;line&quot;]}, {&quot;semantic&quot;: &quot;时间区间&quot;, &quot;field&quot;: &quot;timeRange&quot;, &quot;aliases&quot;: [&quot;range&quot;, &quot;dateRange&quot;, &quot;时间范围&quot;], &quot;visualChannel&quot;: &quot;xAxis.visibleRange&quot;, &quot;payloadPath&quot;: &quot;timeRange&quot;, &quot;default&quot;: {}}, {&quot;semantic&quot;: &quot;副图指标&quot;, &quot;field&quot;: &quot;subIndicators&quot;, &quot;aliases&quot;: [&quot;subCharts&quot;, &quot;indicators&quot;, &quot;副图&quot;], &quot;visualChannel&quot;: &quot;subChart.indicator&quot;, &quot;payloadPath&quot;: &quot;subCharts&quot;, &quot;default&quot;: [&quot;VOL&quot;, &quot;MACD&quot;], &quot;supportedValues&quot;: [&quot;VOL&quot;, &quot;KDJ&quot;, &quot;MACD&quot;, &quot;RSI&quot;]}, {&quot;semantic&quot;: &quot;主题模式&quot;, &quot;field&quot;: &quot;themeMode&quot;, &quot;aliases&quot;: [&quot;theme&quot;, &quot;mode&quot;, &quot;theme-mode&quot;, &quot;主题模式&quot;, &quot;黑夜白天&quot;, &quot;浅色模式&quot;, &quot;暗夜模式&quot;], &quot;visualChannel&quot;: &quot;theme.palette&quot;, &quot;payloadPath&quot;: &quot;chartOptions.themeMode / props.themeMode&quot;, &quot;default&quot;: &quot;light&quot;, &quot;supportedValues&quot;: [&quot;light&quot;, &quot;dark&quot;]}, {&quot;semantic&quot;: &quot;设备类型&quot;, &quot;field&quot;: &quot;deviceType&quot;, &quot;aliases&quot;: [&quot;device&quot;, &quot;viewport&quot;, &quot;端类型&quot;], &quot;visualChannel&quot;: &quot;layout.density&quot;, &quot;payloadPath&quot;: &quot;chartOptions.deviceType&quot;, &quot;default&quot;: &quot;pc&quot;, &quot;supportedValues&quot;: [&quot;pc&quot;, &quot;mobile&quot;]}, {&quot;semantic&quot;: &quot;语言&quot;, &quot;field&quot;: &quot;language&quot;, &quot;aliases&quot;: [&quot;lang&quot;, &quot;locale&quot;, &quot;语种&quot;], &quot;visualChannel&quot;: &quot;locale.language&quot;, &quot;payloadPath&quot;: &quot;language&quot;, &quot;default&quot;: &quot;zh&quot;, &quot;supportedValues&quot;: [&quot;zh&quot;, &quot;zh-hk&quot;, &quot;en&quot;, &quot;ja&quot;, &quot;th&quot;]}, {&quot;semantic&quot;: &quot;主图高度&quot;, &quot;field&quot;: &quot;mainChartHeight&quot;, &quot;aliases&quot;: [&quot;mainHeight&quot;, &quot;主图高度&quot;], &quot;visualChannel&quot;: &quot;layout.mainPane.height&quot;, &quot;payloadPath&quot;: &quot;chartOptions.mainChartHeight&quot;, &quot;default&quot;: 300}, {&quot;semantic&quot;: &quot;副图高度&quot;, &quot;field&quot;: &quot;subChartHeight&quot;, &quot;aliases&quot;: [&quot;subHeight&quot;, &quot;副图高度&quot;], &quot;visualChannel&quot;: &quot;layout.subPane.height&quot;, &quot;payloadPath&quot;: &quot;chartOptions.subChartHeight&quot;, &quot;default&quot;: 52}, {&quot;semantic&quot;: &quot;分时数据量&quot;, &quot;field&quot;: &quot;minuteLimit&quot;, &quot;aliases&quot;: [&quot;minuteDataLimit&quot;, &quot;分时数据量&quot;], &quot;visualChannel&quot;: &quot;data.minute.limit&quot;, &quot;payloadPath&quot;: &quot;chartOptions.minuteLimit&quot;, &quot;default&quot;: 1000}, {&quot;semantic&quot;: &quot;画线标记工具&quot;, &quot;field&quot;: &quot;drawingTools&quot;, &quot;aliases&quot;: [&quot;annotationsEnabled&quot;, &quot;画线&quot;, &quot;标记工具&quot;], &quot;visualChannel&quot;: &quot;interaction.annotationToolbar&quot;, &quot;payloadPath&quot;: &quot;props.drawingTools&quot;, &quot;default&quot;: true}, {&quot;semantic&quot;: &quot;K线标记&quot;, &quot;field&quot;: &quot;annotations&quot;, &quot;aliases&quot;: [&quot;markers&quot;, &quot;overlays&quot;, &quot;标记&quot;, &quot;画线&quot;, &quot;支撑压力线&quot;, &quot;买卖点&quot;, &quot;文本&quot;, &quot;文字气泡&quot;], &quot;visualChannel&quot;: &quot;overlay.annotations&quot;, &quot;payloadPath&quot;: &quot;props.annotations&quot;, &quot;default&quot;: [], &quot;supportedValues&quot;: [&quot;straight-line&quot;, &quot;ray-line&quot;, &quot;segment&quot;, &quot;arrow-segment&quot;, &quot;horizontal-line&quot;, &quot;vertical-line&quot;, &quot;buy&quot;, &quot;sell&quot;, &quot;text&quot;, &quot;callout&quot;]}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;time&quot;, &quot;type&quot;: &quot;datetime|timestamp&quot;, &quot;channel&quot;: &quot;x&quot;}, {&quot;field&quot;: &quot;open&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;candle.open&quot;}, {&quot;field&quot;: &quot;high&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;candle.high&quot;}, {&quot;field&quot;: &quot;low&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;candle.low&quot;}, {&quot;field&quot;: &quot;close&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;candle.close&quot;}, {&quot;field&quot;: &quot;volume&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;subChart.VOL&quot;}, {&quot;field&quot;: &quot;changePct&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;quote.changePct&quot;, &quot;optional&quot;: true}], &quot;annotationContract&quot;: {&quot;payloadPath&quot;: &quot;props.annotations[]&quot;, &quot;supportedTypes&quot;: [&quot;straight-line&quot;, &quot;ray-line&quot;, &quot;segment&quot;, &quot;arrow-segment&quot;, &quot;horizontal-line&quot;, &quot;vertical-line&quot;, &quot;buy&quot;, &quot;sell&quot;, &quot;text&quot;, &quot;callout&quot;], &quot;aliases&quot;: {&quot;straightLine&quot;: &quot;straight-line&quot;, &quot;rayLine&quot;: &quot;ray-line&quot;, &quot;arrowSegment&quot;: &quot;arrow-segment&quot;, &quot;horizontal&quot;: &quot;horizontal-line&quot;, &quot;horizontalStraightLine&quot;: &quot;horizontal-line&quot;, &quot;vertical&quot;: &quot;vertical-line&quot;, &quot;verticalStraightLine&quot;: &quot;vertical-line&quot;, &quot;pure-text&quot;: &quot;text&quot;}, &quot;point&quot;: {&quot;time&quot;: &quot;datetime|timestamp&quot;, &quot;price&quot;: &quot;number&quot;}, &quot;fields&quot;: {&quot;id&quot;: &quot;string (optional)&quot;, &quot;type&quot;: &quot;string&quot;, &quot;period&quot;: &quot;K-line tab/period that owns the mark, such as 1d or 1w; defaults to the active tab when created&quot;, &quot;points&quot;: &quot;one point, or two points for straight/ray/segment/arrow-segment&quot;, &quot;text&quot;: &quot;string (required for text/callout; both render in a bubble with an arrow anchored at the point, optional for price lines)&quot;, &quot;color&quot;: &quot;CSS color (optional)&quot;, &quot;offsetX&quot;: &quot;number of canvas pixels (optional for text/callout)&quot;, &quot;offsetY&quot;: &quot;number of canvas pixels (optional for text/callout)&quot;, &quot;source&quot;: &quot;model|user (optional)&quot;}, &quot;examples&quot;: [{&quot;type&quot;: &quot;horizontal-line&quot;, &quot;period&quot;: &quot;1d&quot;, &quot;points&quot;: [{&quot;time&quot;: &quot;2026-08-13&quot;, &quot;price&quot;: 348.5}], &quot;text&quot;: &quot;卖出参考&quot;}, {&quot;type&quot;: &quot;text&quot;, &quot;period&quot;: &quot;1d&quot;, &quot;points&quot;: [{&quot;time&quot;: &quot;2026-08-13&quot;, &quot;price&quot;: 348.5}], &quot;text&quot;: &quot;财报日&quot;}, {&quot;type&quot;: &quot;callout&quot;, &quot;period&quot;: &quot;1d&quot;, &quot;points&quot;: [{&quot;time&quot;: &quot;2026-08-13&quot;, &quot;price&quot;: 348.5}], &quot;text&quot;: &quot;压力区&quot;}]}, &quot;builtInDataSources&quot;: [{&quot;id&quot;: &quot;ainvest.quote.single_kline&quot;, &quot;name&quot;: &quot;AInvest quote single_kline&quot;, &quot;endpoint&quot;: &quot;https://quote.ainvest.com/quote/fuyao/common_hq_aggr/quote/v1/single_kline&quot;, &quot;requestMapping&quot;: {&quot;symbol&quot;: &quot;code_list[0].codes[0]&quot;, &quot;market&quot;: &quot;code_list[0].market&quot;, &quot;period&quot;: &quot;time_period&quot;, &quot;limit&quot;: &quot;begin_time&quot;}, &quot;rowContract&quot;: [&quot;time&quot;, &quot;open&quot;, &quot;high&quot;, &quot;low&quot;, &quot;close&quot;, &quot;volume&quot;], &quot;priority&quot;: 1}, {&quot;id&quot;: &quot;yahoo.finance.chart&quot;, &quot;name&quot;: &quot;Yahoo Finance chart&quot;, &quot;endpoint&quot;: &quot;https://query1.finance.yahoo.com/v8/finance/chart/{symbol}&quot;, &quot;assetTypes&quot;: [&quot;equity&quot;, &quot;etf&quot;, &quot;option&quot;, &quot;crypto&quot;], &quot;rowContract&quot;: [&quot;time&quot;, &quot;open&quot;, &quot;high&quot;, &quot;low&quot;, &quot;close&quot;, &quot;volume&quot;], &quot;priority&quot;: 2}, {&quot;id&quot;: &quot;public.crypto.ohlc&quot;, &quot;name&quot;: &quot;Binance / Bybit / Coinbase / Kraken public OHLC&quot;, &quot;assetTypes&quot;: [&quot;crypto&quot;], &quot;rowContract&quot;: [&quot;time&quot;, &quot;open&quot;, &quot;high&quot;, &quot;low&quot;, &quot;close&quot;, &quot;volume&quot;], &quot;priority&quot;: 2}]}"><header class="kline-title"><strong>SPY</strong><nav class="period-tabs" aria-label="K-line period"><button type="button" class="period-button active" data-period="1d">日K</button></nav></header><div class="chart-host"><canvas id="kline-canvas"></canvas><aside id="kline-tooltip"></aside><div id="annotation-editor"><input type="text" maxlength="80" placeholder="输入标记文字"><button type="button" data-editor-action="confirm">确定</button><button type="button" data-editor-action="cancel">取消</button></div></div></div>
+<script>
+(() => {
+  const config = {"code": "SPY", "name": "SPY 标普500ETF", "dataType": "1d", "themeMode": "light", "deviceType": "pc", "language": "zh", "timeZone": "", "candleColorMode": "green_up_red_down", "klineType": "candle-hollow", "subIndicators": ["VOL", "MACD"], "mainChartHeight": 470, "subChartHeight": 104, "minuteLimit": 1000, "zoomMinBars": 20, "zoomMaxBars": 1200, "ma": [5, 10, 20, 60], "drawingTools": false, "annotations": [{"symbol": "SPY", "type": "horizontal-line", "period": "1d", "points": [{"time": "2026-10-06", "price": 781.62}], "text": "近期压力", "color": "#60a5fa", "source": "jev-kline-plan", "role": "resistance"}, {"symbol": "SPY", "type": "horizontal-line", "period": "1d", "points": [{"time": "2026-09-16", "price": 749.6}], "text": "近期支撑", "color": "#fb923c", "source": "jev-kline-plan", "role": "support"}, {"symbol": "SPY", "type": "callout", "period": "1d", "points": [{"time": "2026-07-29", "price": 729.1}], "text": "区间低点", "color": "#fb923c", "source": "jev-kline-plan", "role": "low"}], "sources": {"1d": "inline"}, "exchange": "", "market": ""};
+  config.themeMode = document.documentElement.dataset.theme || config.themeMode;
+  const dataByPeriod = {"1d": [{"time": "2026-07-14", "open": 750.91, "high": 753.34, "low": 748.66, "close": 751.83, "volume": 35143140.0, "changePct": 0.12251801147941468}, {"time": "2026-07-15", "open": 754.24, "high": 755.58, "low": 750.2, "close": 754.81, "volume": 43844770.0, "changePct": 0.3963661998057866}, {"time": "2026-07-16", "open": 752.76, "high": 754.57, "low": 747.88, "close": 750.72, "volume": 46409810.0, "changePct": -0.5418582159748664}, {"time": "2026-07-17", "open": 742.08, "high": 747.29, "low": 740.8, "close": 743.29, "volume": 62650960.0, "changePct": -0.9897165387894424}, {"time": "2026-07-20", "open": 747.06, "high": 748.73, "low": 741.5103, "close": 742.09, "volume": 50422320.0, "changePct": -0.16144438913477943}, {"time": "2026-07-21", "open": 746.29, "high": 749.04, "low": 744.18, "close": 748.28, "volume": 34324260.0, "changePct": 0.8341306310555296}, {"time": "2026-07-22", "open": 746.62, "high": 750.02, "low": 746.37, "close": 747.41, "volume": 32836200.0, "changePct": -0.11626663815683669}, {"time": "2026-07-23", "open": 739.37, "high": 742.56, "low": 735.21, "close": 738.18, "volume": 55437330.0, "changePct": -1.2349312960757808}, {"time": "2026-07-24", "open": 738.51, "high": 743.72, "low": 737.29, "close": 738.93, "volume": 44781980.0, "changePct": 0.10160123547102717}, {"time": "2026-07-27", "open": 744.91, "high": 745.53, "low": 735.87, "close": 739.09, "volume": 41461190.0, "changePct": 0.021652930588844654}, {"time": "2026-07-28", "open": 739.19, "high": 742.7901, "low": 735.98, "close": 740.86, "volume": 47322250.0, "changePct": 0.2394836894018315}, {"time": "2026-07-29", "open": 739.97, "high": 742.68, "low": 729.1, "close": 729.46, "volume": 70697220.0, "changePct": -1.5387522608859894}, {"time": "2026-07-30", "open": 736.05, "high": 742.45, "low": 734.59, "close": 741.69, "volume": 66811270.0, "changePct": 1.6765826775971382}, {"time": "2026-07-31", "open": 744.68, "high": 748.895, "low": 737.68, "close": 747.03, "volume": 62445900.0, "changePct": 0.719977349027201}, {"time": "2026-08-03", "open": 749.44, "high": 758.58, "low": 748.8, "close": 757.67, "volume": 59927540.0, "changePct": 1.424306922078089}, {"time": "2026-08-04", "open": 760.63, "high": 773.41, "low": 760.52, "close": 771.33, "volume": 69154790.0, "changePct": 1.8028957197724793}, {"time": "2026-08-05", "open": 775.85, "high": 776.85, "low": 769.51, "close": 769.79, "volume": 44689080.0, "changePct": -0.19965514111989213}, {"time": "2026-08-06", "open": 770.21, "high": 771.82, "low": 767.46, "close": 768.56, "volume": 38416900.0, "changePct": -0.15978383715039568}, {"time": "2026-08-07", "open": 771.02, "high": 773.915, "low": 769.61, "close": 773.26, "volume": 43586330.0, "changePct": 0.6115332570001186}, {"time": "2026-08-10", "open": 772.6, "high": 775.05, "low": 771.62, "close": 773.03, "volume": 39249480.0, "changePct": -0.02974419988102106}, {"time": "2026-08-11", "open": 774.53, "high": 774.61, "low": 769.2, "close": 770.56, "volume": 36740560.0, "changePct": -0.31952188142763127}, {"time": "2026-08-12", "open": 774.71, "high": 774.9, "low": 771.28, "close": 772.49, "volume": 33179130.0, "changePct": 0.25046719269103956}, {"time": "2026-08-13", "open": 774.87, "high": 779.37, "low": 774.111, "close": 777.88, "volume": 35634480.0, "changePct": 0.6977436601121045}, {"time": "2026-08-14", "open": 778.54, "high": 778.8, "low": 775.4301, "close": 776.34, "volume": 31367910.0, "changePct": -0.1979739805625491}, {"time": "2026-08-17", "open": 776.18, "high": 776.775, "low": 772.51, "close": 772.67, "volume": 34356580.0, "changePct": -0.4727310199139634}, {"time": "2026-08-18", "open": 768.7, "high": 769.5, "low": 766.92, "close": 767.45, "volume": 43920910.0, "changePct": -0.675579484126454}, {"time": "2026-08-19", "open": 770.36, "high": 772.47, "low": 768.1, "close": 769.06, "volume": 40306020.0, "changePct": 0.2097856537885079}, {"time": "2026-08-20", "open": 765.96, "high": 768.15, "low": 762.04, "close": 762.6, "volume": 45520300.0, "changePct": -0.8399864769978782}, {"time": "2026-08-21", "open": 766.05, "high": 767.85, "low": 764.17, "close": 765.72, "volume": 39188670.0, "changePct": 0.4091266719118858}, {"time": "2026-08-24", "open": 764.78, "high": 765.22, "low": 762.08, "close": 763.47, "volume": 32430890.0, "changePct": -0.2938410907381339}, {"time": "2026-08-25", "open": 766.16, "high": 766.78, "low": 763.0501, "close": 765.91, "volume": 27422260.0, "changePct": 0.3195934352364871}, {"time": "2026-08-26", "open": 764.73, "high": 767.35, "low": 763.93, "close": 766.08, "volume": 28751590.0, "changePct": 0.02219581935214432}, {"time": "2026-08-27", "open": 768.5, "high": 772.355, "low": 767.16, "close": 771.1, "volume": 34557060.0, "changePct": 0.6552840434419283}, {"time": "2026-08-28", "open": 771.76, "high": 775.3, "low": 768.3076, "close": 769.35, "volume": 36744340.0, "changePct": -0.22694851510828284}, {"time": "2026-08-31", "open": 767.33, "high": 767.995, "low": 764.715, "close": 767.05, "volume": 38810780.0, "changePct": -0.2989536621823663}, {"time": "2026-09-01", "open": 762.01, "high": 764.67, "low": 759.48, "close": 761.78, "volume": 41126320.0, "changePct": -0.6870477804575947}, {"time": "2026-09-02", "open": 762.45, "high": 766.43, "low": 761.73, "close": 765.16, "volume": 29566220.0, "changePct": 0.4436976554910821}, {"time": "2026-09-03", "open": 767.9, "high": 774.03, "low": 767.45, "close": 773.17, "volume": 43531580.0, "changePct": 1.0468398766271036}, {"time": "2026-09-04", "open": 772.01, "high": 772.87, "low": 769.0, "close": 770.19, "volume": 34054200.0, "changePct": -0.38542623226456296}, {"time": "2026-09-08", "open": 769.07, "high": 769.7, "low": 765.14, "close": 765.96, "volume": 44746100.0, "changePct": -0.5492151287344704}, {"time": "2026-09-09", "open": 764.08, "high": 764.47, "low": 760.94, "close": 762.4, "volume": 32812410.0, "changePct": -0.46477622852368894}, {"time": "2026-09-10", "open": 758.03, "high": 760.11, "low": 756.64, "close": 757.83, "volume": 42740380.0, "changePct": -0.5994228751311614}, {"time": "2026-09-11", "open": 764.72, "high": 766.38, "low": 763.6, "close": 764.29, "volume": 45512740.0, "changePct": 0.8524339231753775}, {"time": "2026-09-14", "open": 759.0, "high": 763.52, "low": 757.93, "close": 760.88, "volume": 43992430.0, "changePct": -0.4461657224351989}, {"time": "2026-09-15", "open": 760.117, "high": 760.35, "low": 756.15, "close": 757.39, "volume": 46194960.0, "changePct": -0.458679423825048}, {"time": "2026-09-16", "open": 759.5, "high": 761.67, "low": 749.6, "close": 754.05, "volume": 59217650.0, "changePct": -0.44098813028955464}, {"time": "2026-09-17", "open": 763.15, "high": 763.57, "low": 759.96, "close": 762.6, "volume": 49652750.0, "changePct": 1.1338770638551932}, {"time": "2026-09-18", "open": 761.31, "high": 762.0, "low": 757.971, "close": 761.69, "volume": 65395150.0, "changePct": -0.11932861264095651}, {"time": "2026-09-21", "open": 766.251, "high": 774.89, "low": 766.03, "close": 773.5, "volume": 50484690.0, "changePct": 1.5504995470598137}, {"time": "2026-09-22", "open": 774.03, "high": 775.14, "low": 772.57, "close": 773.38, "volume": 34802340.0, "changePct": -0.015513897866836768}, {"time": "2026-09-23", "open": 772.79, "high": 773.05, "low": 766.5, "close": 767.81, "volume": 54931690.0, "changePct": -0.7202151594300377}, {"time": "2026-09-24", "open": 764.065, "high": 768.95, "low": 763.245, "close": 767.18, "volume": 43983660.0, "changePct": -0.08205154921139268}, {"time": "2026-09-25", "open": 768.78, "high": 772.28, "low": 766.29, "close": 771.35, "volume": 36666730.0, "changePct": 0.5435491019056826}, {"time": "2026-09-28", "open": 768.35, "high": 769.54, "low": 763.715, "close": 765.61, "volume": 42694470.0, "changePct": -0.7441498671160951}, {"time": "2026-09-29", "open": 766.83, "high": 766.98, "low": 762.35, "close": 764.2, "volume": 36910550.0, "changePct": -0.18416687347343474}, {"time": "2026-09-30", "open": 766.45, "high": 769.41, "low": 762.18, "close": 762.63, "volume": 62110040.0, "changePct": -0.2054436011515337}, {"time": "2026-10-01", "open": 764.36, "high": 765.65, "low": 758.7901, "close": 763.99, "volume": 47708060.0, "changePct": 0.17833025189148977}, {"time": "2026-10-02", "open": 770.58, "high": 772.65, "low": 767.145, "close": 769.64, "volume": 46335300.0, "changePct": 0.7395384756345047}, {"time": "2026-10-05", "open": 769.69, "high": 776.605, "low": 769.63, "close": 774.83, "volume": 44840160.0, "changePct": 0.6743412504547575}, {"time": "2026-10-06", "open": 778.15, "high": 781.62, "low": 777.96, "close": 779.09, "volume": 36054290.0, "changePct": 0.5497980202108899}, {"time": "2026-10-07", "open": 775.77, "high": 779.1021, "low": 773.61, "close": 777.22, "volume": 30989170.0, "changePct": -0.24002361729710264}, {"time": "2026-10-08", "open": 774.86, "high": 777.09, "low": 770.435, "close": 773.93, "volume": 40431080.0, "changePct": -0.4233035691310172}, {"time": "2026-10-09", "open": 776.24, "high": 779.42, "low": 775.14, "close": 778.57, "volume": 22624490.0, "changePct": 0.599537425865404}, {"time": "2026-10-12", "open": 778.78, "high": 779.397, "low": 777.05, "close": 778.1, "volume": 18685020.0, "changePct": -0.06036708324236306}, {"time": "2026-10-13", "open": 777.34, "high": 778.75, "low": 775.95, "close": 778.01, "volume": 25847950.0, "changePct": -0.011566636679094522}]};
+  const lazyPagesByPeriod = {"1d": []};
+  const labels = {"open": "开盘", "high": "最高", "low": "最低", "close": "收盘", "change": "涨跌额", "changePct": "涨跌幅", "volume": "成交量", "price": "价格", "avgPrice": "均价", "noData": "暂无数据", "macd": "MACD", "dif": "DIF", "dea": "DEA", "vol": "成交量", "ma": "MA", "highMark": "高", "lowMark": "低", "locale": "zh-CN", "weekdays": ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"], "annotate": "标记", "select": "选择", "horizontalLine": "水平线", "verticalLine": "垂直线", "trendLine": "趋势线", "buyMark": "买点", "sellMark": "卖点", "callout": "文字", "undo": "撤销", "delete": "删除", "clear": "清空", "calloutPrompt": "输入标记文字", "confirm": "确定", "cancel": "取消", "buyShort": "买", "sellShort": "卖"};
+  let activePeriod = config.dataType;
+  let activeIndex = -1;
+  let viewEnd = null;
+  let visibleCount = null;
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartEnd = 0;
+  let dragMoved = false;
+  let lastPointerX = null;
+  let lastPointerY = null;
+  let touchMode = 'none';
+  let pinchStartDistance = 0;
+  let pinchStartVisibleCount = 0;
+  let tooltipSuppressed = false;
+  let ignoreNextClick = false;
+  let annotationMode = 'pan';
+  let annotations = [];
+  let selectedAnnotationId = null;
+  let annotationDraft = null;
+  let annotationPointer = null;
+  let annotationHitRegions = [];
+  let annotationHistory = [];
+  let lastRenderState = null;
+  let pendingCalloutPoint = null;
+
+  const root = document.querySelector('.kline-component');
+  const canvas = document.getElementById('kline-canvas');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('kline-tooltip');
+  const annotationEditor = document.getElementById('annotation-editor');
+  const annotationEditorInput = annotationEditor?.querySelector('input');
+
+  const mobileLegend = document.createElement('div');
+  mobileLegend.className = 'kline-mobile-legend';
+  root.querySelector('.chart-host').before(mobileLegend);
+  const mobileLevels = document.createElement('div');
+  mobileLevels.className = 'kline-mobile-levels';
+  root.append(mobileLevels);
+  function syncMobileSummary(entries) {
+    const key = JSON.stringify(entries);
+    if (mobileLegend.dataset.key !== key) {
+      mobileLegend.dataset.key = key;
+      mobileLegend.replaceChildren(...entries.map(([text,color]) => {
+        const span = document.createElement('span'); span.textContent = text; span.style.color = color; return span;
+      }));
+    }
+    const levels = annotations.filter(item => item.type === 'horizontal-line' && String(item.period || config.dataType) === String(activePeriod));
+    const levelKey = JSON.stringify(levels);
+    if (mobileLevels.dataset.key !== levelKey) {
+      mobileLevels.dataset.key = levelKey;
+      mobileLevels.replaceChildren(...levels.map(item => {
+        const button = document.createElement('button'); button.type = 'button';
+        button.dataset.annotationId = item.id;
+        button.style.setProperty('--level-color', annotationColor(item));
+        const swatch = document.createElement('i'); swatch.style.background = annotationColor(item);
+        const price = fmtPrice(item.points[0].price);
+        // Existing labels sometimes already include a rounded price; do not repeat it.
+        const text = (item.text || '').replace(/\s+[-+]?\d+(?:\.\d+)?\s*$/, '').trim() || price;
+        button.append(swatch, document.createTextNode(text === price ? price : `${text} ${price}`));
+        button.setAttribute('aria-label', `${text} ${price}`);
+        button.addEventListener('click', () => { selectedAnnotationId = selectedAnnotationId === item.id ? null : item.id; draw(); });
+        return button;
+      }));
+    }
+    mobileLevels.querySelectorAll('button').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.annotationId === selectedAnnotationId));
+    });
+  }
+  function selectMobileAnnotation(clientX, clientY) {
+    if (window.innerWidth > 760) return false;
+    const rect = canvas.getBoundingClientRect();
+    const id = hitTestAnnotation(clientX - rect.left, clientY - rect.top);
+    selectedAnnotationId = id === selectedAnnotationId ? null : id;
+    if (!id) return false;
+    activeIndex = -1; hideTooltip(); draw(); return true;
+  }
+
+
+  function hideTooltip() {
+    tooltip.classList.remove('is-visible', 'is-below');
+  }
+
+  let theme = config.themeMode === 'dark' ? {
+    bg: 'transparent', grid: '#252c38', gridStrong: '#303746', text: '#d8e0ec', muted: '#8a93a3', axis: '#8b93a3'
+  } : {
+    bg: 'transparent', grid: '#edf2f7', gridStrong: '#dce3ec', text: '#17202b', muted: '#687383', axis: '#6b7280'
+  };
+  const colorMode = config.candleColorMode || 'green_up_red_down';
+  const upColor = colorMode === 'red_up_green_down' ? '#ff2f57' : '#00b899';
+  const downColor = colorMode === 'red_up_green_down' ? '#00b899' : '#ff2f57';
+  const flatColor = '#9099a8';
+  const maColors = ['#fbbf24', '#8b5cf6', '#38bdf8', '#f97316'];
+
+  function normTime(v) {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n < 1e12 ? n * 1000 : n;
+    const p = Date.parse(String(v || '').replaceAll('/', '-'));
+    return Number.isFinite(p) ? p : 0;
+  }
+
+  function isCryptoCode() {
+    const code = String(config.code || '').toUpperCase().replace(/[-/]/g, '');
+    if (/^[A-Z0-9]{2,18}(USDT|USDC|USD|BTC|ETH)$/.test(code)) return true;
+    const sources = Object.values(config.sources || {}).map(v => String(v || '').toLowerCase());
+    if (sources.some(source => ['binance', 'bybit', 'coinbase', 'kraken'].includes(source))) return true;
+    const market = String(config.market || '').toLowerCase();
+    if (market === 'crypto') return true;
+    return false;
+  }
+
+  function volumeMultiplier(period = activePeriod) {
+    // Do not guess a hidden K-lot multiplier in the renderer.
+    // The Python fetch layer now prefers exchange-native minute data for crypto,
+    // where volume is already base-asset volume. Multiplying here caused VOL to
+    // become misleading or blank-looking on minute charts.
+    return 1;
+  }
+
+  function normBar(bar) {
+    const t = normTime(bar.timestamp ?? bar.time);
+    return {
+      ...bar,
+      time: t,
+      timestamp: t,
+      open: Number(bar.open),
+      high: Number(bar.high),
+      low: Number(bar.low),
+      close: Number(bar.close),
+      volume: Number(bar.volume || 0) * volumeMultiplier()
+    };
+  }
+
+  function bars() {
+    return (dataByPeriod[activePeriod] || []).map(normBar).filter(b => Number.isFinite(b.close));
+  }
+
+  function loadPreviousPageIfNeeded() {
+    const pages = lazyPagesByPeriod[activePeriod] || [];
+    if (!pages.length) return false;
+    const all = dataByPeriod[activePeriod] || [];
+    const page = pages.shift();
+    if (!Array.isArray(page) || !page.length) return false;
+    const seen = new Set(all.map(item => String(item.timestamp ?? item.time)));
+    const incoming = page.filter(item => !seen.has(String(item.timestamp ?? item.time)));
+    if (!incoming.length) return false;
+    dataByPeriod[activePeriod] = [...incoming, ...all];
+    if (Number.isFinite(viewEnd)) viewEnd += incoming.length;
+    if (Number.isFinite(activeIndex) && activeIndex >= 0) activeIndex += incoming.length;
+    return true;
+  }
+
+  function maybeLoadPreviousPage() {
+    const all = bars();
+    if (!all.length) return false;
+    const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+    const slice = visibleSlice(all, layout);
+    if (slice.start > 3) return false;
+    const loaded = loadPreviousPageIfNeeded();
+    if (loaded) draw();
+    return loaded;
+  }
+
+  function priceDigits(value) {
+    const n = Math.abs(Number(value));
+    if (!Number.isFinite(n)) return 2;
+    if (n >= 1000) return 2;
+    if (n >= 100) return 3;
+    if (n >= 1) return 4;
+    if (n >= 0.01) return 6;
+    return 8;
+  }
+
+  function fmtNumber(value, digits, signed = false) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return '--';
+    const locale = config.language === 'zh' ? 'zh-CN' : 'en-US';
+    const text = Math.abs(n).toLocaleString(locale, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    });
+    if (!signed) return n < 0 ? '-' + text : text;
+    return `${n >= 0 ? '+' : '-'}${text}`;
+  }
+
+  function quoteDigits(value) {
+    // 股票价格统一保留 2 位；数字币继续使用动态精度，避免 BTC/ETH 小数价格被截断。
+    if (!isCryptoCode()) return 2;
+    return priceDigits(value);
+  }
+
+  function indicatorDigits(value) {
+    const n = Math.abs(Number(value));
+    if (!Number.isFinite(n)) return 2;
+    if (n >= 100) return 2;
+    if (n >= 1) return 4;
+    if (n >= 0.01) return 6;
+    return 8;
+  }
+
+  function fmtPrice(value, signed = false) {
+    return fmtNumber(value, quoteDigits(value), signed);
+  }
+
+  function fmtIndicator(value, signed = false) {
+    return fmtNumber(value, indicatorDigits(value), signed);
+  }
+
+  function fmtMacdIndicator(value, signed = false) {
+    return fmtNumber(value, 2, signed);
+  }
+
+  function fmtAxisPrice(value) {
+    return fmtPrice(value, false);
+  }
+
+  function numberLocale() {
+    return labels.locale || (config.language === 'zh' ? 'zh-CN' : 'en-US');
+  }
+
+  function fmtVolume(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return '--';
+    const abs = Math.abs(n);
+    const locale = numberLocale();
+    const compact = (v, suffix) => v.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + suffix;
+    if (abs >= 1e12) return compact(n / 1e12, 'T');
+    if (abs >= 1e9) return compact(n / 1e9, 'B');
+    if (abs >= 1e6) return compact(n / 1e6, 'M');
+    if (abs >= 1e3) return compact(n / 1e3, 'K');
+    if (abs === 0) return '0';
+    if (abs > 0 && abs < 0.000001) return n.toExponential(2);
+    const digits = abs < 1 ? 6 : abs < 10 ? 4 : 2;
+    return n.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: digits });
+  }
+
+  function isDateOnlyPeriod(period = activePeriod) {
+    return ['1d', '1w', '1M', '3M'].includes(String(period));
+  }
+
+  function isMinutePeriod(period = activePeriod) {
+    return String(period) === '1m';
+  }
+
+  function fmtTime(value, compact = false) {
+    const d = new Date(normTime(value));
+    if (!Number.isFinite(d.getTime())) return '--';
+    const pad = x => String(x).padStart(2, '0');
+    const locale = labels.locale || 'en-US';
+    const timeZone = config.timeZone || undefined;
+    const clockParts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+      timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(d).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+    const weekdayKey = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(d);
+    const weekdayIndex = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(weekdayKey);
+    const week = labels.weekdays[Math.max(0, weekdayIndex)];
+    const date = new Intl.DateTimeFormat(locale, {
+      timeZone,
+      month: 'numeric',
+      day: 'numeric',
+      ...(Number(new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric' }).format(d)) === new Date().getFullYear() ? {} : { year: 'numeric' })
+    }).format(d);
+    const clock = `${pad(clockParts.hour || 0)}:${pad(clockParts.minute || 0)}`;
+    if (compact) {
+      return isDateOnlyPeriod() ? date : clock;
+    }
+    // 日K / 周K / 月K 只展示日期 + 星期，不展示具体时分；分时/小时线才展示时分。
+    if (isDateOnlyPeriod()) return `${date} ${week}`;
+    return `${date} ${week} ${clock}`;
+  }
+
+  function fmtAxisTime(value, options = {}) {
+    const d = new Date(normTime(value));
+    if (!Number.isFinite(d.getTime())) return '--';
+    if (options.startYearOnly) {
+      return new Intl.DateTimeFormat(labels.locale || 'en-US', { year: 'numeric' }).format(d);
+    }
+    return fmtTime(value, true);
+  }
+
+  function movingAverage(list, windowSize) {
+    const out = new Array(list.length).fill(null);
+    let sum = 0;
+    for (let i = 0; i < list.length; i++) {
+      sum += list[i].close;
+      if (i >= windowSize) sum -= list[i - windowSize].close;
+      if (i >= windowSize - 1) out[i] = sum / windowSize;
+    }
+    return out;
+  }
+
+  // 分时均价：优先使用成交量加权均价（VWAP）；如果没有可靠成交量，退化为累计平均价。
+  function averagePrice(list) {
+    const out = new Array(list.length).fill(null);
+    let pvSum = 0;
+    let volumeSum = 0;
+    let priceSum = 0;
+    let priceCount = 0;
+    for (let i = 0; i < list.length; i++) {
+      const price = Number(list[i].close);
+      const volume = Math.max(0, Number(list[i].volume || 0));
+      if (!Number.isFinite(price)) continue;
+      priceSum += price;
+      priceCount += 1;
+      if (Number.isFinite(volume) && volume > 0) {
+        pvSum += price * volume;
+        volumeSum += volume;
+      }
+      out[i] = volumeSum > 0 ? pvSum / volumeSum : priceSum / Math.max(1, priceCount);
+    }
+    return out;
+  }
+
+  function ema(values, period) {
+    const k = 2 / (period + 1);
+    const out = [];
+    let last = values[0] || 0;
+    values.forEach((v, i) => { last = i === 0 ? v : v * k + last * (1 - k); out.push(last); });
+    return out;
+  }
+
+  function macd(list) {
+    const closes = list.map(b => b.close);
+    const e12 = ema(closes, 12);
+    const e26 = ema(closes, 26);
+    const dif = closes.map((_, i) => e12[i] - e26[i]);
+    const dea = ema(dif, 9);
+    const hist = dif.map((v, i) => (v - dea[i]) * 2);
+    return { dif, dea, hist };
+  }
+
+  function measuredTextWidth(text, size = 12, weight = 500) {
+    ctx.font = `${weight} ${size}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+    return ctx.measureText(String(text || '')).width;
+  }
+
+  function estimateAxisRightPad(width) {
+    const base = width < 520 ? 64 : 78;
+    const all = bars();
+    const samples = [];
+    if (all.length) {
+      const recent = all.slice(Math.max(0, all.length - Math.max(80, Math.floor(width / 4))));
+      const lows = recent.map(bar => Number(bar.low)).filter(Number.isFinite);
+      const highs = recent.map(bar => Number(bar.high)).filter(Number.isFinite);
+      const closes = recent.map(bar => Number(bar.close)).filter(Number.isFinite);
+      const prices = [...lows, ...highs, ...closes];
+      if (prices.length) {
+        const minP = Math.min(...prices);
+        const maxP = Math.max(...prices);
+        const priceScaleSample = scale(minP, maxP, 0, 1);
+        for (let i = 0; i <= 4; i++) {
+          samples.push(fmtAxisPrice(priceScaleSample.hi - (priceScaleSample.hi - priceScaleSample.lo) * i / 4));
+        }
+        samples.push(fmtPrice(all[all.length - 1]?.close));
+      }
+      const volumes = recent.map(bar => Number(bar.volume || 0)).filter(Number.isFinite);
+      if (volumes.length) samples.push(fmtVolume(Math.max(...volumes)));
+      const macdValues = macd(recent);
+      const indicatorValues = [...macdValues.dif, ...macdValues.dea, ...macdValues.hist].map(Number).filter(Number.isFinite);
+      if (indicatorValues.length) {
+        samples.push(fmtMacdIndicator(Math.min(...indicatorValues), true));
+        samples.push(fmtMacdIndicator(Math.max(...indicatorValues), true));
+      }
+    }
+    if (!samples.length) return base;
+    const maxLabelWidth = Math.max(...samples.map(label => measuredTextWidth(label, 12, 500)));
+    const needed = Math.ceil(maxLabelWidth + 24);
+    const maxPad = Math.max(base, Math.floor(width * (width < 520 ? 0.32 : 0.22)));
+    return Math.max(base, Math.min(maxPad, needed));
+  }
+
+  function getLayout(width) {
+    const rightPad = estimateAxisRightPad(width);
+    const isCompact = width <= 760;
+    const configuredMainHeight = Number(config.mainChartHeight || 300);
+    const configuredSubHeight = Number(config.subChartHeight || 72);
+    const mainHeight = isCompact
+      ? Math.max(260, Math.min(Math.max(configuredMainHeight, 300), Math.round(width * 0.82)))
+      : configuredMainHeight;
+    const baseSubHeight = isCompact
+      ? Math.max(44, Math.min(configuredSubHeight, Math.round(width * 0.12)))
+      : configuredSubHeight;
+    const xHeight = isCompact ? 26 : 30;
+    const panes = [];
+    let y = 0;
+    panes.push({ type: 'main', x: 0, y, w: width - rightPad, h: mainHeight, rightPad });
+    y += mainHeight;
+    // 分时主图只画价格线/均价线，但仍保留用户配置的 VOL / MACD 副图。
+    // MACD 对垂直空间更敏感，单独给更高的最小高度，避免柱体和 DIF/DEA 被压成一条平线。
+    const subIndicators = (config.subIndicators || []);
+    const paneHeight = (type) => {
+      const upper = String(type || '').toUpperCase();
+      if (upper === 'MACD') return Math.max(baseSubHeight, isCompact ? Math.round(width * 0.17) : 112);
+      if (upper === 'VOL') return Math.max(baseSubHeight, isCompact ? Math.round(width * 0.13) : 78);
+      return baseSubHeight;
+    };
+    subIndicators.forEach(ind => {
+      const type = String(ind).toUpperCase();
+      const h = paneHeight(type);
+      panes.push({ type, x: 0, y, w: width - rightPad, h, rightPad });
+      y += h;
+    });
+    return { width, height: y + xHeight, panes, rightPad, xHeight };
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const layout = getLayout(Math.max(240, Math.floor(rect.width)));
+    const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    canvas.style.width = `${layout.width}px`;
+    canvas.style.height = `${layout.height}px`;
+    canvas.width = Math.floor(layout.width * dpr);
+    canvas.height = Math.floor(layout.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    root.style.setProperty('--chart-height', `${layout.height}px`);
+    const titleHeight = document.querySelector('.kline-title')?.offsetHeight || 0;
+    root.style.minHeight = `${titleHeight + layout.height}px`;
+    return layout;
+  }
+
+  function autoVisibleCount(layout) {
+    return isMinutePeriod()
+      ? Math.max(window.innerWidth < 520 ? 150 : 220, Math.floor(layout.panes[0].w / (window.innerWidth < 520 ? 2.4 : 3.2)))
+      : Math.max(34, Math.floor(layout.panes[0].w / (window.innerWidth < 520 ? 6.6 : 8.5)));
+  }
+
+  function visibleBounds(list) {
+    const dataCount = Math.max(1, list.length);
+    const requestedMin = Math.max(8, Number(config.zoomMinBars || 20));
+    const minBars = Math.min(requestedMin, dataCount);
+    const configuredMax = Math.max(requestedMin, Number(config.zoomMaxBars || (isMinutePeriod() ? 2400 : 1200)));
+    const maxBars = Math.max(minBars, Math.min(configuredMax, dataCount));
+    return { minBars, maxBars };
+  }
+
+  function clampVisibleCount(count, list, layout) {
+    const autoCount = autoVisibleCount(layout);
+    const bounds = visibleBounds(list);
+    const initial = Number.isFinite(Number(count)) ? Number(count) : autoCount;
+    return Math.round(Math.max(bounds.minBars, Math.min(bounds.maxBars, initial)));
+  }
+
+  function visibleSlice(list, layout) {
+    if (!list.length) return { start: 0, end: -1, list: [], slots: 0, blankSlots: 0 };
+    const autoCount = autoVisibleCount(layout);
+    if (!visibleCount) visibleCount = autoCount;
+    visibleCount = clampVisibleCount(visibleCount, list, layout);
+    if (viewEnd === null) viewEnd = list.length - 1;
+    viewEnd = Math.max(0, Math.min(list.length - 1, viewEnd));
+    const start = Math.max(0, viewEnd - visibleCount + 1);
+    const visible = list.slice(start, viewEnd + 1);
+    // Use the loaded/visible bar count as the slot count. Sparse data fills
+    // the plot instead of being right-aligned after hundreds of empty slots.
+    const slots = Math.max(visibleCount, visible.length, 1);
+    const blankSlots = Math.max(0, slots - visible.length);
+    return { start, end: viewEnd, list: visible, slots, blankSlots };
+  }
+
+  function scale(min, max, y, h) {
+    const pad = (max - min) * 0.08 || Math.abs(max || 1) * 0.02;
+    const lo = min - pad;
+    const hi = max + pad;
+    return {
+      lo, hi, top: y, height: h,
+      y: v => y + (hi - v) / Math.max(1e-12, hi - lo) * h,
+      price: pixelY => hi - (pixelY - y) / Math.max(1, h) * (hi - lo),
+    };
+  }
+
+  function drawGrid(pane, yTicks = 4) {
+    ctx.strokeStyle = theme.grid;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= yTicks; i++) {
+      const y = pane.y + pane.h * i / yTicks;
+      ctx.moveTo(pane.x, y); ctx.lineTo(pane.x + pane.w, y);
+    }
+    const xTicks = Math.max(4, Math.floor(pane.w / 160));
+    for (let i = 0; i <= xTicks; i++) {
+      const x = pane.x + pane.w * i / xTicks;
+      ctx.moveTo(x, pane.y); ctx.lineTo(x, pane.y + pane.h);
+    }
+    ctx.stroke();
+  }
+
+  function drawText(text, x, y, color = theme.text, size = 12, weight = 600, align = 'left') {
+    ctx.font = `${weight} ${size}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+    ctx.fillStyle = color;
+    ctx.textAlign = align;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+  }
+
+  function textRect(text, x, y, size = 12, weight = 600, align = 'left') {
+    ctx.font = `${weight} ${size}px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif`;
+    const w = ctx.measureText(String(text || '')).width;
+    let left = x;
+    if (align === 'center') left = x - w / 2;
+    if (align === 'right') left = x - w;
+    return { x: left, y: y - size * 0.62, w, h: size * 1.24 };
+  }
+
+  function rectsOverlap(a, b, pad = 0) {
+    if (!a || !b) return false;
+    return !(
+      a.x + a.w + pad < b.x ||
+      b.x + b.w + pad < a.x ||
+      a.y + a.h + pad < b.y ||
+      b.y + b.h + pad < a.y
+    );
+  }
+
+  function drawDashedLine(x1, y1, x2, y2, color) {
+    ctx.save();
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPriceAxis(pane, s, blockedRects = []) {
+    ctx.strokeStyle = theme.gridStrong;
+    ctx.beginPath(); ctx.moveTo(pane.x + pane.w, pane.y); ctx.lineTo(pane.x + pane.w, pane.y + pane.h); ctx.stroke();
+    const ticks = window.innerWidth <= 760 ? 3 : 4;
+    const axisFontSize = window.innerWidth <= 760 ? 11 : 12;
+    const labelSafePad = 12;
+    for (let i = 0; i <= ticks; i++) {
+      const val = s.hi - (s.hi - s.lo) * i / ticks;
+      const y = pane.y + pane.h * i / ticks;
+
+      // 顶部/底部刻度文字不能直接以边界为中心绘制，否则会被画布裁掉。
+      // 只移动文字，不移动网格线和价格映射。
+      // 如果刻度与最新价标签发生碰撞，则隐藏该刻度，避免 551.63 一类价签与右轴数字重叠。
+      const labelY = Math.max(pane.y + labelSafePad, Math.min(pane.y + pane.h - labelSafePad, y));
+      const label = fmtAxisPrice(val);
+      const rect = textRect(label, pane.x + pane.w + 7, labelY, axisFontSize, 500, 'left');
+      if (blockedRects.some(item => rectsOverlap(rect, item, 5))) continue;
+      drawText(label, pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, 'left');
+    }
+  }
+
+  function drawValueAxis(pane, minValue, maxValue, formatter = fmtIndicator) {
+    if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return;
+    ctx.strokeStyle = theme.gridStrong;
+    ctx.beginPath(); ctx.moveTo(pane.x + pane.w, pane.y); ctx.lineTo(pane.x + pane.w, pane.y + pane.h); ctx.stroke();
+    const lo = minValue;
+    const hi = maxValue;
+    const axisFontSize = window.innerWidth <= 760 ? 11 : 12;
+    const labelSafePad = 10;
+    for (const i of [0, 1]) {
+      const val = i === 0 ? hi : lo;
+      const y = i === 0 ? pane.y : pane.y + pane.h;
+      const labelY = Math.max(pane.y + labelSafePad, Math.min(pane.y + pane.h - labelSafePad, y));
+      drawText(formatter(val), pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, 'left');
+    }
+  }
+
+  function drawLine(points, color, width = 1.5) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    let started = false;
+    points.forEach(p => {
+      if (!Number.isFinite(p.y)) { started = false; return; }
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+  }
+
+  const annotationStorageKey = `aichart:kline-annotations:v1:${String(config.code || '').toUpperCase()}`;
+
+  function normalizeAnnotation(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const rawType = String(raw.type || '').trim();
+    const typeKey = rawType.toLowerCase().replace(/_/g, '-');
+    const aliases = {
+      'straightline': 'straight-line', 'straight-line': 'straight-line',
+      'rayline': 'ray-line', 'ray-line': 'ray-line',
+      'arrowsegment': 'arrow-segment', 'arrow-segment': 'arrow-segment',
+      'horizontal': 'horizontal-line', 'horizontal-line': 'horizontal-line', 'horizontalstraightline': 'horizontal-line',
+      'vertical': 'vertical-line', 'vertical-line': 'vertical-line', 'verticalstraightline': 'vertical-line',
+      'pure-text': 'text', 'text': 'text', 'callout': 'callout',
+      'segment': 'segment', 'buy': 'buy', 'sell': 'sell'
+    };
+    const type = aliases[typeKey];
+    if (!type) return null;
+    const points = (Array.isArray(raw.points) ? raw.points : [raw.point]).filter(Boolean).map(point => ({
+      time: normTime(point.time ?? point.timestamp),
+      price: Number(point.price ?? point.value),
+    })).filter(point => Number.isFinite(point.time) && Number.isFinite(point.price));
+    const twoPointTypes = new Set(['straight-line', 'ray-line', 'segment', 'arrow-segment']);
+    if (!points.length || (twoPointTypes.has(type) && points.length < 2)) return null;
+    const text = String(raw.text || '').slice(0, 80);
+    if ((type === 'text' || type === 'callout') && !text.trim()) return null;
+    const period = String(raw.period || raw.dataType || raw.periodTab || activePeriod || config.dataType);
+    const fingerprint = JSON.stringify([period, type, points, text]);
+    let fingerprintHash = 0;
+    for (let i = 0; i < fingerprint.length; i += 1) fingerprintHash = ((fingerprintHash << 5) - fingerprintHash + fingerprint.charCodeAt(i)) | 0;
+    return {
+      id: String(raw.id || `annotation-${Math.abs(fingerprintHash).toString(36)}`),
+      period,
+      type,
+      points: twoPointTypes.has(type) ? points.slice(0, 2) : points.slice(0, 1),
+      text,
+      color: String(raw.color || '').trim(),
+      offsetX: Number.isFinite(Number(raw.offsetX)) ? Number(raw.offsetX) : null,
+      offsetY: Number.isFinite(Number(raw.offsetY)) ? Number(raw.offsetY) : null,
+      source: raw.source === 'model' ? 'model' : 'user',
+    };
+  }
+
+  function mergeAnnotations(...collections) {
+    const merged = [];
+    const seen = new Set();
+    collections.flat().forEach(item => {
+      const normalized = normalizeAnnotation(item);
+      if (!normalized) return;
+      const signature = `${normalized.period}:${normalized.id || JSON.stringify([normalized.type, normalized.points, normalized.text])}`;
+      if (seen.has(signature)) return;
+      seen.add(signature);
+      merged.push(normalized);
+    });
+    return merged;
+  }
+
+  function loadAnnotations() {
+    let saved = [];
+    try {
+      const parsed = JSON.parse(localStorage.getItem(annotationStorageKey) || '[]');
+      if (Array.isArray(parsed)) saved = parsed;
+    } catch {}
+    const model = (Array.isArray(config.annotations) ? config.annotations : []).map(item => ({ ...item, source: item?.source || 'model' }));
+    return mergeAnnotations(model, saved);
+  }
+
+  function saveAnnotations() {
+    try {
+      localStorage.setItem(annotationStorageKey, JSON.stringify(annotations));
+    } catch {}
+  }
+
+  function rememberAnnotationState() {
+    annotationHistory.push(JSON.stringify(annotations));
+    if (annotationHistory.length > 30) annotationHistory.shift();
+  }
+
+  function restorePreviousAnnotations() {
+    const previous = annotationHistory.pop();
+    if (previous === undefined) return;
+    try { annotations = mergeAnnotations(JSON.parse(previous)); } catch { return; }
+    selectedAnnotationId = null;
+    annotationDraft = null;
+    saveAnnotations();
+    draw();
+  }
+
+  function nearestBarIndex(all, timestamp) {
+    if (!all.length) return -1;
+    let lo = 0; let hi = all.length - 1;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (normTime(all[mid].time) < timestamp) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo > 0 && Math.abs(normTime(all[lo - 1].time) - timestamp) <= Math.abs(normTime(all[lo].time) - timestamp)) return lo - 1;
+    return lo;
+  }
+
+  function annotationPointPixel(point, state) {
+    const index = nearestBarIndex(state.all, normTime(point.time));
+    if (index < state.slice.start || index > state.slice.end) return null;
+    return { x: state.xOf(index), y: state.priceScale.y(Number(point.price)), index };
+  }
+
+  function distanceToSegment(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1; const dy = y2 - y1;
+    const denom = dx * dx + dy * dy;
+    if (!denom) return Math.hypot(px - x1, py - y1);
+    const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / denom));
+    return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+  }
+
+  function annotationColor(item) {
+    if (item.color) return item.color;
+    if (item.type === 'horizontal-line') {
+      const text = String(item.text || '');
+      const ma = text.match(/\bMA\s*(\d+)/i);
+      const maIndex = ma ? (config.ma || [5, 10, 20, 60]).map(Number).indexOf(Number(ma[1])) : -1;
+      if (maIndex >= 0 && maIndex < maColors.length) return maColors[maIndex];
+      if (/支撑|支持|support/i.test(text)) return '#fb923c';
+      if (/高点|高位|high/i.test(text)) return '#f472b6';
+      const palette = ['#fb923c', '#38bdf8', '#fbbf24', '#8b5cf6', '#60a5fa', '#f472b6'];
+      const peers = annotations.filter(mark => mark.type === 'horizontal-line' && String(mark.period || config.dataType) === String(item.period || config.dataType));
+      return palette[Math.max(0, peers.findIndex(mark => mark.id === item.id)) % palette.length];
+    }
+    if (item.type === 'buy') return upColor;
+    if (item.type === 'sell') return downColor;
+    if (item.type === 'callout' || item.type === 'text') return '#8b5cf6';
+    return '#2563eb';
+  }
+
+  function lineEndpointsForRect(first, second, main, mode) {
+    const dx = second.x - first.x;
+    const dy = second.y - first.y;
+    if (Math.abs(dx) < .001 && Math.abs(dy) < .001) return null;
+    const candidates = [];
+    const push = (t) => {
+      if (!Number.isFinite(t)) return;
+      const x = first.x + t * dx;
+      const y = first.y + t * dy;
+      if (x >= main.x - .5 && x <= main.x + main.w + .5 && y >= main.y - .5 && y <= main.y + main.h + .5) {
+        candidates.push({ t, x, y });
+      }
+    };
+    if (Math.abs(dx) >= .001) {
+      push((main.x - first.x) / dx);
+      push((main.x + main.w - first.x) / dx);
+    }
+    if (Math.abs(dy) >= .001) {
+      push((main.y - first.y) / dy);
+      push((main.y + main.h - first.y) / dy);
+    }
+    candidates.sort((a, b) => a.t - b.t);
+    if (mode === 'straight-line') return candidates.length >= 2 ? [candidates[0], candidates[candidates.length - 1]] : null;
+    const forward = candidates.filter(point => point.t >= 0);
+    return forward.length ? [first, forward[forward.length - 1]] : null;
+  }
+
+  function drawArrowHead(from, to, color, selected) {
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    const size = selected ? 11 : 9;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(to.x, to.y);
+    ctx.lineTo(to.x - size * Math.cos(angle - Math.PI / 6), to.y - size * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(to.x - size * Math.cos(angle + Math.PI / 6), to.y - size * Math.sin(angle + Math.PI / 6));
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+
+  function annotationTextTokens(text) {
+    return String(text || '').match(/\s+|\(?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?\)?|[A-Za-z]+(?:[-_/][A-Za-z0-9]+)*|./gu) || [];
+  }
+
+  function isProtectedAnnotationToken(token) {
+    return /^\(?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?%?\)?$/u.test(String(token || '').trim());
+  }
+
+  function wrapAnnotationText(text, maxWidth, maxLines = 3) {
+    const tokens = annotationTextTokens(text);
+    const lines = [];
+    let current = '';
+    let consumed = 0;
+    for (const token of tokens) {
+      const normalized = /^\s+$/u.test(token) ? ' ' : token;
+      if (!current && normalized === ' ') { consumed += 1; continue; }
+      const next = current + normalized;
+      if (current && ctx.measureText(next).width > maxWidth) {
+        lines.push(current.trimEnd());
+        current = normalized.trimStart();
+        if (lines.length === maxLines) break;
+      } else if (!current && ctx.measureText(normalized).width > maxWidth && !isProtectedAnnotationToken(normalized)) {
+        for (const char of Array.from(normalized)) {
+          const charNext = current + char;
+          if (current && ctx.measureText(charNext).width > maxWidth) {
+            lines.push(current);
+            current = char;
+            if (lines.length === maxLines) break;
+          } else {
+            current = charNext;
+          }
+        }
+        if (lines.length === maxLines) break;
+      } else {
+        current = next;
+      }
+      consumed += 1;
+    }
+    if (lines.length < maxLines && current.trim()) lines.push(current.trimEnd());
+    if (lines.length === maxLines && consumed < tokens.length) {
+      let last = lines[maxLines - 1];
+      while (last && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+      lines[maxLines - 1] = `${last}…`;
+    }
+    return lines.length ? lines : [''];
+  }
+
+  function fitAnnotationLabel(text, maxWidth) {
+    const value = String(text || '');
+    if (ctx.measureText(value).width <= maxWidth) return value;
+    let fitted = value;
+    while (fitted && ctx.measureText(`${fitted}…`).width > maxWidth) fitted = fitted.slice(0, -1);
+    return `${fitted}…`;
+  }
+
+  function horizontalAnnotationLabelLayout(items, state) {
+    const main = state.main;
+    const topEdge = main.y + 5;
+    const bottomEdge = main.y + main.h - 5;
+    const boxH = 22;
+    const gap = 4;
+    ctx.save();
+    ctx.font = '750 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const entries = items.map(item => {
+      const lineY = state.priceScale.y(Number(item.points[0].price));
+      const priceText = fmtPrice(item.points[0].price);
+      const fullText = item.text ? `${item.text} · ${priceText}` : priceText;
+      const maxTextW = Math.max(72, Math.min(230, main.w * .48) - 14);
+      const text = fitAnnotationLabel(fullText, maxTextW);
+      const boxW = Math.max(86, Math.min(main.w * .48, ctx.measureText(text).width + 14));
+      return { item, lineY, text, boxW, top: lineY - boxH / 2 };
+    }).filter(entry => entry.lineY >= main.y && entry.lineY <= main.y + main.h)
+      .sort((a, b) => a.lineY - b.lineY);
+    ctx.restore();
+    if (!entries.length) return new Map();
+    let cursor = topEdge;
+    entries.forEach(entry => {
+      entry.top = Math.max(cursor, Math.min(bottomEdge - boxH, entry.top));
+      cursor = entry.top + boxH + gap;
+    });
+    entries[entries.length - 1].top = Math.min(entries[entries.length - 1].top, bottomEdge - boxH);
+    for (let index = entries.length - 2; index >= 0; index -= 1) {
+      entries[index].top = Math.min(entries[index].top, entries[index + 1].top - boxH - gap);
+    }
+    if (entries[0].top < topEdge) {
+      const shift = topEdge - entries[0].top;
+      entries.forEach(entry => { entry.top += shift; });
+    }
+    return new Map(entries.map(entry => [entry.item.id, {
+      x: main.x + 5,
+      y: entry.top,
+      w: entry.boxW,
+      h: boxH,
+      lineY: entry.lineY,
+      text: entry.text,
+    }]));
+  }
+
+  function annotationBubbleMetrics(item, main) {
+    const text = item.text || labels.callout;
+    ctx.font = '700 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const protectedWidths = annotationTextTokens(text)
+      .filter(isProtectedAnnotationToken)
+      .map(token => ctx.measureText(token).width);
+    const protectedWidth = protectedWidths.length ? Math.max(...protectedWidths) : 0;
+    const textMaxWidth = Math.max(80, Math.min(main.w - 30, Math.max(160, main.w * .46, protectedWidth + 2)));
+    const lines = wrapAnnotationText(text, textMaxWidth, 4);
+    const contentWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+    const boxW = Math.min(main.w - 8, Math.max(110, contentWidth + 22));
+    const lineHeight = 17;
+    const boxH = lines.length * lineHeight + 16;
+    return { lines, boxW, boxH, lineHeight };
+  }
+
+  function annotationBubbleLayout(items, state, reservedRects = []) {
+    const main = state.main;
+    const occupied = reservedRects.map(rect => ({ x: rect.x, y: rect.y, w: rect.w, h: rect.h }));
+    const result = new Map();
+    ctx.save();
+    const entries = items.map(item => {
+      const first = annotationPointPixel(item.points[0], state);
+      if (!first) return null;
+      return { item, first, ...annotationBubbleMetrics(item, main) };
+    }).filter(Boolean).sort((a, b) => a.first.y - b.first.y || a.first.x - b.first.x);
+    const clampX = (x, w) => Math.max(main.x + 4, Math.min(main.x + main.w - w - 4, x));
+    const clampY = (y, h) => Math.max(main.y + 4, Math.min(main.y + main.h - h - 4, y));
+    entries.forEach(entry => {
+      const { item, first, boxW, boxH } = entry;
+      const requested = Number.isFinite(item.offsetX) || Number.isFinite(item.offsetY)
+        ? {
+            x: Number.isFinite(item.offsetX) ? first.x + item.offsetX : first.x + 18,
+            y: Number.isFinite(item.offsetY) ? first.y + item.offsetY : first.y - boxH - 30,
+          }
+        : null;
+      const bases = [
+        requested,
+        { x: first.x + 18, y: first.y - boxH - 30 },
+        { x: first.x - boxW - 18, y: first.y - boxH - 30 },
+        { x: first.x + 18, y: first.y + 30 },
+        { x: first.x - boxW - 18, y: first.y + 30 },
+      ].filter(Boolean).map(candidate => ({ x: clampX(candidate.x, boxW), y: clampY(candidate.y, boxH), w: boxW, h: boxH }));
+      const scanXs = [...new Set([clampX(first.x + 18, boxW), clampX(first.x - boxW - 18, boxW), main.x + 4, main.x + main.w - boxW - 4])];
+      const scanYs = [];
+      for (let y = main.y + 4; y <= main.y + main.h - boxH - 4; y += 6) scanYs.push(y);
+      scanYs.sort((a, b) => Math.abs(a - (first.y - boxH / 2)) - Math.abs(b - (first.y - boxH / 2)));
+      scanXs.forEach(x => scanYs.forEach(y => bases.push({ x, y, w: boxW, h: boxH })));
+      const unique = [];
+      const seen = new Set();
+      bases.forEach(candidate => {
+        const key = `${Math.round(candidate.x)}:${Math.round(candidate.y)}`;
+        if (!seen.has(key)) { seen.add(key); unique.push(candidate); }
+      });
+      const available = unique.find(candidate => !occupied.some(rect => rectsOverlap(candidate, rect, 7)));
+      const chosen = available || unique.reduce((best, candidate) => {
+        const overlapCount = occupied.filter(rect => rectsOverlap(candidate, rect, 3)).length;
+        const distance = Math.abs(candidate.x - first.x) + Math.abs(candidate.y + boxH / 2 - first.y);
+        const score = overlapCount * 10000 + distance;
+        return !best || score < best.score ? { candidate, score } : best;
+      }, null)?.candidate || bases[0];
+      const layout = { ...entry, boxX: chosen.x, boxY: chosen.y };
+      result.set(item.id, layout);
+      occupied.push({ x: chosen.x, y: chosen.y, w: boxW, h: boxH });
+    });
+    ctx.restore();
+    return result;
+  }
+
+  function drawAnnotationBubble(item, first, main, color, selected, isDraft, layout, phase = 'all') {
+    const metrics = layout || annotationBubbleMetrics(item, main);
+    const { lines, boxW, boxH, lineHeight } = metrics;
+    ctx.save();
+    const preferredRight = first.x + boxW + 22 <= main.x + main.w;
+    const defaultX = preferredRight ? first.x + 18 : first.x - boxW - 18;
+    const defaultY = first.y - boxH - 34 >= main.y ? first.y - boxH - 30 : first.y + 30;
+    const requestedX = Number.isFinite(item.offsetX) ? first.x + item.offsetX : defaultX;
+    const requestedY = Number.isFinite(item.offsetY) ? first.y + item.offsetY : defaultY;
+    const boxX = Number.isFinite(metrics.boxX) ? metrics.boxX : Math.max(main.x + 4, Math.min(main.x + main.w - boxW - 4, requestedX));
+    const boxY = Number.isFinite(metrics.boxY) ? metrics.boxY : Math.max(main.y + 4, Math.min(main.y + main.h - boxH - 4, requestedY));
+    const connector = {
+      x: Math.max(boxX + 10, Math.min(boxX + boxW - 10, first.x)),
+      y: first.y < boxY ? boxY : first.y > boxY + boxH ? boxY + boxH : Math.max(boxY + 10, Math.min(boxY + boxH - 10, first.y)),
+    };
+    ctx.strokeStyle = color;
+    ctx.lineWidth = selected ? 2.5 : 1.6;
+    if (isDraft) ctx.setLineDash([5, 4]);
+    if (phase === 'all' || phase === 'connector') {
+      ctx.beginPath(); ctx.moveTo(connector.x, connector.y); ctx.lineTo(first.x, first.y); ctx.stroke();
+      ctx.setLineDash([]);
+      drawArrowHead(connector, first, color, selected);
+    }
+    if (phase === 'all' || phase === 'label') {
+      ctx.fillStyle = config.themeMode === 'dark' ? 'rgba(17,23,34,.97)' : 'rgba(255,255,255,.98)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = selected ? 2 : 1.2;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') ctx.roundRect(boxX, boxY, boxW, boxH, 9);
+      else ctx.rect(boxX, boxY, boxW, boxH);
+      ctx.fill(); ctx.stroke();
+      lines.forEach((line, index) => drawText(line, boxX + 11, boxY + 9 + lineHeight * (index + .5), theme.text, 12, 700, 'left'));
+    }
+    ctx.restore();
+    return {
+      x: Math.min(first.x - 10, boxX),
+      y: Math.min(first.y - 10, boxY),
+      w: Math.max(20, boxX + boxW - first.x + 10, first.x - boxX + 10),
+      h: Math.max(20, boxY + boxH - first.y + 10, first.y - boxY + 10),
+    };
+  }
+
+  function drawAnnotationArrow(x, y, direction, color, selected) {
+    const size = selected ? 9 : 8;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = selected ? '#fff' : color;
+    ctx.lineWidth = selected ? 2 : 1;
+    ctx.beginPath();
+    if (direction === 'up') {
+      ctx.moveTo(x, y - size); ctx.lineTo(x - size * .75, y + size * .35); ctx.lineTo(x + size * .75, y + size * .35);
+    } else {
+      ctx.moveTo(x, y + size); ctx.lineTo(x - size * .75, y - size * .35); ctx.lineTo(x + size * .75, y - size * .35);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+
+  function drawAnnotationLayer(state) {
+    annotationHitRegions = [];
+    const main = state.main;
+    const compact = window.innerWidth <= 760;
+    const activeAnnotations = annotations.filter(item => String(item.period || config.dataType) === String(activePeriod));
+    const horizontalLabels = horizontalAnnotationLabelLayout(
+      compact ? [] : activeAnnotations.filter(item => item.type === 'horizontal-line'),
+      state,
+    );
+    const bubbleLayouts = annotationBubbleLayout(
+      activeAnnotations.filter(item => (item.type === 'text' || item.type === 'callout') && (!compact || item.id === selectedAnnotationId || nearestBarIndex(state.all, normTime(item.points[0].time)) === state.all.length - 1)),
+      state,
+      [...horizontalLabels.values()],
+    );
+    const renderOne = (item, isDraft = false, phase = 'geometry') => {
+      const color = isDraft ? 'rgba(37,99,235,.7)' : annotationColor(item);
+      const selected = !isDraft && item.id === selectedAnnotationId;
+      const first = annotationPointPixel(item.points[0], state);
+      if (item.type === 'horizontal-line') {
+        const y = state.priceScale.y(Number(item.points[0].price));
+        if (y < main.y || y > main.y + main.h) return;
+        if (phase === 'geometry') {
+          ctx.save(); ctx.setLineDash(isDraft ? [5, 4] : [7, 4]);
+          ctx.strokeStyle = color; ctx.lineWidth = compact ? (selected ? 1.8 : 1) : (selected ? 3 : (item.source === 'model' ? 2.2 : 1.5));
+          ctx.beginPath(); ctx.moveTo(main.x, y); ctx.lineTo(main.x + main.w, y); ctx.stroke(); ctx.restore();
+          if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'line', x1: main.x, y1: y, x2: main.x + main.w, y2: y });
+        }
+        const label = horizontalLabels.get(item.id);
+        if (!label) return;
+        const labelCenterY = label.y + label.h / 2;
+        if (phase === 'connector' && Math.abs(labelCenterY - y) > 2) {
+          ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.moveTo(label.x + label.w, labelCenterY);
+          ctx.lineTo(label.x + label.w + 10, y);
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (phase === 'label') {
+          ctx.save();
+          ctx.fillStyle = color; ctx.fillRect(label.x, label.y, label.w, label.h);
+          drawText(label.text, label.x + 7, labelCenterY, '#fff', 11, 750, 'left');
+          ctx.restore();
+          if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'rect', x: label.x, y: label.y, w: label.w, h: label.h });
+        }
+        return;
+      }
+      if (!first) return;
+      if (item.type === 'text' || item.type === 'callout') {
+        if (compact && !selected && first.index !== state.all.length - 1) {
+          if (phase === 'geometry') {
+            ctx.save(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(first.x, first.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+            if (!isDraft) annotationHitRegions.push({ id:item.id, type:'point', x:first.x, y:first.y, r:16 });
+          }
+          return;
+        }
+        if (phase !== 'connector' && phase !== 'label') return;
+        const hitRect = drawAnnotationBubble(item, first, main, color, selected, isDraft, bubbleLayouts.get(item.id), phase);
+        if (!isDraft && phase === 'label') annotationHitRegions.push({ id: item.id, type: 'rect', ...hitRect });
+        return;
+      }
+      if (phase !== 'geometry') return;
+      if (item.type === 'vertical-line') {
+        ctx.save(); ctx.setLineDash(isDraft ? [5, 4] : [7, 4]);
+        ctx.strokeStyle = color; ctx.lineWidth = selected ? 2.6 : 1.5;
+        ctx.beginPath(); ctx.moveTo(first.x, main.y); ctx.lineTo(first.x, main.y + main.h); ctx.stroke(); ctx.restore();
+        if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'line', x1: first.x, y1: main.y, x2: first.x, y2: main.y + main.h });
+        return;
+      }
+      if (['straight-line', 'ray-line', 'segment', 'arrow-segment'].includes(item.type)) {
+        const second = annotationPointPixel(item.points[1], state);
+        if (!second) return;
+        const endpoints = item.type === 'straight-line' || item.type === 'ray-line'
+          ? lineEndpointsForRect(first, second, main, item.type)
+          : [first, second];
+        if (!endpoints) return;
+        const [lineStart, lineEnd] = endpoints;
+        if (selected) {
+          ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 4.5;
+          ctx.beginPath(); ctx.moveTo(lineStart.x, lineStart.y); ctx.lineTo(lineEnd.x, lineEnd.y); ctx.stroke();
+        }
+        ctx.save(); if (isDraft) ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lineStart.x, lineStart.y); ctx.lineTo(lineEnd.x, lineEnd.y); ctx.stroke(); ctx.restore();
+        if (item.type === 'arrow-segment') drawArrowHead(lineStart, lineEnd, color, selected);
+        ctx.fillStyle = color;
+        [first, second].forEach(point => { ctx.beginPath(); ctx.arc(point.x, point.y, selected ? 4.5 : 3, 0, Math.PI * 2); ctx.fill(); });
+        if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'line', x1: lineStart.x, y1: lineStart.y, x2: lineEnd.x, y2: lineEnd.y });
+        return;
+      }
+      if (item.type === 'buy' || item.type === 'sell') {
+        const isBuy = item.type === 'buy';
+        drawAnnotationArrow(first.x, first.y, isBuy ? 'up' : 'down', color, selected);
+        drawText(isBuy ? labels.buyShort : labels.sellShort, first.x, first.y + (isBuy ? 15 : -15), color, 11, 850, 'center');
+        if (!isDraft) annotationHitRegions.push({ id: item.id, type: 'point', x: first.x, y: first.y, r: 14 });
+        return;
+      }
+    };
+    activeAnnotations.forEach(item => renderOne(item, false, 'geometry'));
+    if (annotationDraft?.type === 'segment' && annotationDraft.points?.length && annotationPointer) {
+      renderOne({ ...annotationDraft, points: [annotationDraft.points[0], annotationPointer] }, true, 'geometry');
+    }
+    activeAnnotations.forEach(item => renderOne(item, false, 'connector'));
+    activeAnnotations.forEach(item => renderOne(item, false, 'label'));
+  }
+
+  function annotationPointFromClient(clientX, clientY) {
+    const state = lastRenderState;
+    if (!state) return null;
+    const rect = canvas.getBoundingClientRect();
+    const x = (clientX - rect.left) * state.layout.width / Math.max(1, rect.width);
+    const y = (clientY - rect.top) * state.layout.height / Math.max(1, rect.height);
+    const main = state.main;
+    if (x < main.x || x > main.x + main.w || y < main.y || y > main.y + main.h) return null;
+    const xStep = main.w / Math.max(1, state.slice.slots || state.slice.list.length);
+    const rawOffset = Math.round((x - main.x) / xStep - (state.slice.blankSlots || 0) - .5);
+    const index = Math.max(state.slice.start, Math.min(state.slice.end, state.slice.start + rawOffset));
+    const bar = state.all[index];
+    if (!bar) return null;
+    return { time: normTime(bar.time), price: state.priceScale.price(y), x, y, index };
+  }
+
+  function hitTestAnnotation(x, y) {
+    for (let i = annotationHitRegions.length - 1; i >= 0; i -= 1) {
+      const hit = annotationHitRegions[i];
+      if (hit.type === 'line' && distanceToSegment(x, y, hit.x1, hit.y1, hit.x2, hit.y2) <= 8) return hit.id;
+      if (hit.type === 'point' && Math.hypot(x - hit.x, y - hit.y) <= hit.r) return hit.id;
+      if (hit.type === 'rect' && x >= hit.x && x <= hit.x + hit.w && y >= hit.y && y <= hit.y + hit.h) return hit.id;
+    }
+    return null;
+  }
+
+  function closeAnnotationEditor() {
+    pendingCalloutPoint = null;
+    annotationEditor?.classList.remove('open');
+    if (annotationEditorInput) annotationEditorInput.value = '';
+  }
+
+  function openAnnotationEditor(point) {
+    if (!annotationEditor || !annotationEditorInput || !lastRenderState) return;
+    pendingCalloutPoint = point;
+    const maxLeft = Math.max(8, lastRenderState.layout.width - Math.min(330, lastRenderState.layout.width - 16) - 8);
+    annotationEditor.style.left = `${Math.max(8, Math.min(maxLeft, point.x + 12))}px`;
+    annotationEditor.style.top = `${Math.max(8, Math.min(lastRenderState.layout.height - 58, point.y - 48))}px`;
+    annotationEditor.classList.add('open');
+    annotationEditorInput.value = '';
+    setTimeout(() => annotationEditorInput.focus(), 0);
+  }
+
+  function setAnnotationMode(mode) {
+    annotationMode = mode || 'pan';
+    annotationDraft = null;
+    annotationPointer = null;
+    closeAnnotationEditor();
+    tooltipSuppressed = annotationMode !== 'pan';
+    if (tooltipSuppressed) hideTooltip();
+    canvas.style.cursor = annotationMode === 'pan' ? 'default' : annotationMode === 'select' ? 'pointer' : 'crosshair';
+    document.querySelectorAll('[data-annotation-mode]').forEach(button => button.classList.toggle('active', button.dataset.annotationMode === annotationMode));
+    document.querySelector('.annotation-toggle')?.classList.toggle('active', annotationMode !== 'pan');
+    draw();
+  }
+
+  function addAnnotation(item) {
+    const normalized = normalizeAnnotation({ ...item, period: item?.period || activePeriod });
+    if (!normalized) return;
+    rememberAnnotationState();
+    annotations.push(normalized);
+    selectedAnnotationId = normalized.id;
+    annotationDraft = null;
+    saveAnnotations();
+    draw();
+  }
+
+  function handleAnnotationClick(event) {
+    const point = annotationPointFromClient(event.clientX, event.clientY);
+    if (!point) return;
+    if (annotationMode === 'select') {
+      selectedAnnotationId = hitTestAnnotation(point.x, point.y);
+      draw();
+      return;
+    }
+    if (annotationMode === 'segment') {
+      if (!annotationDraft) {
+        annotationDraft = { type: 'segment', points: [point] };
+        annotationPointer = point;
+        draw();
+      } else {
+        addAnnotation({ type: 'segment', points: [annotationDraft.points[0], point] });
+      }
+      return;
+    }
+    if (annotationMode === 'callout') {
+      openAnnotationEditor(point);
+      return;
+    }
+    if (['horizontal', 'vertical', 'buy', 'sell'].includes(annotationMode)) {
+      addAnnotation({ type: annotationMode, points: [point] });
+    }
+  }
+
+  function draw() {
+    const layout = resizeCanvas();
+    const all = bars();
+    ctx.clearRect(0, 0, layout.width, layout.height);
+    ctx.fillStyle = theme.bg;
+    ctx.fillRect(0, 0, layout.width, layout.height);
+
+    if (!all.length) {
+      drawText(labels.noData, layout.width / 2, layout.height / 2, theme.muted, 15, 700, 'center');
+      hideTooltip();
+      return;
+    }
+
+    const isTimeShare = isMinutePeriod();
+    const legendFontSize = window.innerWidth < 520 ? 10 : 11;
+    const compact = window.innerWidth <= 760;
+    const avgValues = isTimeShare ? averagePrice(all) : [];
+    const mas = isTimeShare ? [] : (config.ma || [5, 10, 20, 60]).map(n => Number(n)).filter(n => Number.isFinite(n) && n > 1).slice(0, 4);
+    const maValues = isTimeShare ? [] : mas.map(n => movingAverage(all, n));
+    if (compact) {
+      const index = activeIndex >= 0 ? activeIndex : all.length - 1;
+      const entries = isTimeShare ? [[`${labels.price} ${fmtPrice(all[index]?.close)}`, upColor], [`${labels.avgPrice} ${fmtPrice(avgValues[index])}`,maColors[0]]] : mas.map((n,i) => [`MA${n} ${fmtPrice(maValues[i]?.[index])}`,maColors[i]]).filter((entry,i) => Number.isFinite(maValues[i]?.[index]));
+      syncMobileSummary(entries);
+    }
+    const slice = visibleSlice(all, layout);
+    const visible = slice.list;
+    const main = layout.panes[0];
+    const xStep = main.w / Math.max(1, slice.slots || visible.length);
+    // 控制 K 线之间的视觉间距最大不超过 9px；缩放放大出来的剩余空间全部给实体宽度。
+    const candleGap = Math.min(16, Math.max(0, xStep * 0.18));
+    const candleW = Math.max(2, xStep - candleGap);
+    const xOf = i => main.x + ((slice.blankSlots || 0) + (i - slice.start) + 0.5) * xStep;
+
+    let minP;
+    let maxP;
+    if (isTimeShare) {
+      const visibleAvg = avgValues.slice(slice.start, slice.end + 1).filter(Number.isFinite);
+      const values = [...visible.map(b => b.close), ...visibleAvg].filter(Number.isFinite);
+      minP = Math.min(...values);
+      maxP = Math.max(...values);
+    } else {
+      minP = Math.min(...visible.map(b => b.low));
+      maxP = Math.max(...visible.map(b => b.high));
+      maValues.forEach(arr => arr.slice(slice.start, slice.end + 1).forEach(v => { if (Number.isFinite(v)) { minP = Math.min(minP, v); maxP = Math.max(maxP, v); } }));
+    }
+    const priceScale = scale(minP, maxP, main.y + 16, main.h - 20);
+    const latest = all[all.length - 1];
+    const latestY = priceScale.y(latest.close);
+    const latestPriceLabel = fmtPrice(latest.close);
+    const latestPriceLabelW = textRect(latestPriceLabel, 0, 0, 12, 800, 'left').w + 14;
+    const latestPriceLabelRect = (latestY >= main.y && latestY <= main.y + main.h)
+      ? { x: main.x + main.w + 2, y: latestY - 13, w: latestPriceLabelW, h: 26 }
+      : null;
+
+    drawGrid(main, 5);
+    drawPriceAxis(main, priceScale, latestPriceLabelRect ? [latestPriceLabelRect] : []);
+
+    if (isTimeShare) {
+      const pricePts = visible.map((bar, j) => ({ x: xOf(slice.start + j), y: priceScale.y(bar.close) }));
+      const avgPts = avgValues.slice(slice.start, slice.end + 1).map((v, j) => ({ x: xOf(slice.start + j), y: Number.isFinite(v) ? priceScale.y(v) : NaN }));
+      drawLine(pricePts, upColor, 1.7);
+      drawLine(avgPts, maColors[0], 1.4);
+
+      const legendIndex = activeIndex >= 0 ? activeIndex : all.length - 1;
+      const priceText = `${labels.price} ${fmtPrice(all[legendIndex]?.close)}`;
+      const legendStartX = main.x + 4;
+      if (!compact) drawText(priceText, legendStartX, main.y + 18, upColor, legendFontSize, 800);
+      const avgText = `${labels.avgPrice} ${fmtPrice(avgValues[legendIndex])}`;
+      if (!compact) drawText(avgText, legendStartX + ctx.measureText(priceText).width + 18, main.y + 18, maColors[0], legendFontSize, 800);
+    } else {
+      const drawCandleBar = (bar, i) => {
+        const x = xOf(i);
+        const color = bar.close > bar.open ? upColor : bar.close < bar.open ? downColor : flatColor;
+        const yo = priceScale.y(bar.open);
+        const yc = priceScale.y(bar.close);
+        const yh = priceScale.y(bar.high);
+        const yl = priceScale.y(bar.low);
+
+        const bodyW = Math.max(3, Math.round(candleW));
+        const cx = Math.round(x) + 0.5;
+        const left = Math.round(x - bodyW / 2) + 0.5;
+        const rawTop = Math.min(yo, yc);
+        const rawBottom = Math.max(yo, yc);
+        const rawH = Math.max(0, rawBottom - rawTop);
+        const bodyH = Math.max(3, Math.round(rawH));
+        let top = rawTop - Math.max(0, bodyH - rawH) / 2;
+        top = Math.max(main.y + 1, Math.min(main.y + main.h - bodyH - 1, top));
+        top = Math.round(top) + 0.5;
+        const bottom = top + bodyH;
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+
+        // 空心 K 线不能让影线穿过实体，否则移动端会看起来像“两根竖线”。
+        // 这里把影线拆成上下两段，再单独画实体边框。
+        ctx.beginPath();
+        ctx.moveTo(cx, yh);
+        ctx.lineTo(cx, top);
+        ctx.moveTo(cx, bottom);
+        ctx.lineTo(cx, yl);
+        ctx.stroke();
+
+        const isUp = bar.close >= bar.open;
+        const useHollow = config.klineType !== 'candle-solid' && isUp;
+
+        if (useHollow) {
+          // 先擦掉实体内部，再画完整边框，保证顶部/底部横线可见。
+          if (bodyW > 2 && bodyH > 2) {
+            ctx.fillStyle = theme.bg;
+            ctx.fillRect(left + 1, top + 1, bodyW - 2, bodyH - 2);
+          }
+          ctx.strokeStyle = color;
+          ctx.strokeRect(left, top, bodyW, bodyH);
+        } else {
+          ctx.fillStyle = color;
+          ctx.fillRect(left, top, bodyW, bodyH);
+        }
+      };
+
+      visible.forEach((bar, j) => drawCandleBar(bar, slice.start + j));
+
+      maValues.forEach((arr, idx) => {
+        const pts = arr.slice(slice.start, slice.end + 1).map((v, j) => ({ x: xOf(slice.start + j), y: Number.isFinite(v) ? priceScale.y(v) : NaN }));
+        drawLine(pts, maColors[idx], 1.6);
+      });
+
+      const legendIndex = activeIndex >= 0 ? activeIndex : all.length - 1;
+      let lx = main.x + 4;
+      let ly = main.y + 18;
+      const legendMaxX = main.x + main.w - 8;
+      const legendGap = window.innerWidth < 520 ? 14 : 18;
+      const legendLineGap = window.innerWidth < 520 ? 17 : 18;
+      mas.forEach((n, idx) => {
+        const v = maValues[idx]?.[legendIndex];
+        if (!Number.isFinite(v)) return;
+        const label = `${labels.ma || 'MA'}${n} ${fmtPrice(v)}`;
+        const labelW = ctx.measureText(label).width;
+        if (lx > main.x + 4 && lx + labelW > legendMaxX) {
+          lx = main.x + 4;
+          ly += legendLineGap;
+        }
+        if (!compact) drawText(label, lx, ly, maColors[idx], legendFontSize, 800);
+        lx += labelW + legendGap;
+      });
+
+      const visibleHigh = visible.reduce((best, b) => b.high > best.high ? b : best, visible[0]);
+      const visibleLow = visible.reduce((best, b) => b.low < best.low ? b : best, visible[0]);
+      const hiIdx = all.indexOf(visibleHigh); const loIdx = all.indexOf(visibleLow);
+      const drawExtremeLabel = (value, idx, y, color, marker) => {
+        const x = xOf(idx);
+        if (compact) { ctx.save(); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill(); ctx.restore(); return; }
+        const raw = fmtPrice(value);
+        const preferLeft = x > main.x + main.w * 0.66;
+        let text = preferLeft ? `${raw} ${marker}` : `${marker} ${raw}`;
+        let align = preferLeft ? 'right' : 'left';
+        let labelX = preferLeft ? x - 8 : x + 8;
+        const measuredW = ctx.measureText(text).width;
+        if (align === 'left' && labelX + measuredW > main.x + main.w - 4) {
+          text = `${raw} ${marker}`;
+          align = 'right';
+          labelX = x - 8;
+        } else if (align === 'right' && labelX - measuredW < main.x + 4) {
+          text = `${marker} ${raw}`;
+          align = 'left';
+          labelX = x + 8;
+        }
+        const rect = textRect(text, labelX, y, 11, 500, align);
+        if (!rectsOverlap(rect, latestPriceLabelRect, 6)) drawText(text, labelX, y, color, 11, 500, align);
+      };
+      drawExtremeLabel(
+        visibleHigh.high,
+        hiIdx,
+        Math.max(main.y + 14, priceScale.y(visibleHigh.high) - 10),
+        upColor,
+        labels.highMark || labels.high || 'High'
+      );
+      drawExtremeLabel(
+        visibleLow.low,
+        loIdx,
+        Math.min(main.y + main.h - 10, priceScale.y(visibleLow.low) + 10),
+        downColor,
+        labels.lowMark || labels.low || 'Low'
+      );
+    }
+
+    lastRenderState = { layout, all, slice, main, xOf, priceScale };
+    drawAnnotationLayer(lastRenderState);
+
+    if (latestPriceLabelRect) {
+      drawDashedLine(main.x, latestY, main.x + main.w, latestY, upColor);
+      ctx.fillStyle = upColor;
+      ctx.fillRect(latestPriceLabelRect.x, latestPriceLabelRect.y, latestPriceLabelRect.w, latestPriceLabelRect.h);
+      drawText(latestPriceLabel, main.x + main.w + 9, latestY, '#fff', 12, 800);
+    }
+
+    const mc = macd(all);
+    layout.panes.slice(1).forEach(pane => {
+      drawGrid(pane, 2);
+      ctx.strokeStyle = theme.gridStrong;
+      ctx.beginPath(); ctx.moveTo(pane.x, pane.y); ctx.lineTo(pane.x + pane.w + pane.rightPad, pane.y); ctx.stroke();
+      if (pane.type === 'VOL') {
+        const vmax = Math.max(...visible.map(b => b.volume || 0), 1);
+        drawValueAxis(pane, 0, vmax, fmtVolume, 2);
+        const legendIndex = activeIndex >= slice.start && activeIndex <= slice.end ? activeIndex : slice.end;
+        const volText = `${labels.vol} ${fmtVolume(all[legendIndex]?.volume)}`;
+        drawText(volText, pane.x + 4, pane.y + 15, theme.muted, legendFontSize, 600);
+        visible.forEach((bar, j) => {
+          const i = slice.start + j;
+          const x = xOf(i);
+          const h = (bar.volume || 0) / vmax * (pane.h - 20);
+          ctx.fillStyle = bar.close >= bar.open ? upColor : downColor;
+          ctx.globalAlpha = 0.8;
+          ctx.fillRect(x - candleW / 2, pane.y + pane.h - h - 4, candleW, Math.max(1, h));
+          ctx.globalAlpha = 1;
+        });
+      }
+      if (pane.type === 'MACD') {
+        const vals = [
+          ...mc.hist.slice(slice.start, slice.end + 1),
+          ...mc.dif.slice(slice.start, slice.end + 1),
+          ...mc.dea.slice(slice.start, slice.end + 1),
+          0
+        ].map(Number).filter(Number.isFinite);
+
+        // MACD 不再用正负对称的 maxAbs 缩放。比如整段都在 0 轴上方时，
+        // 对称缩放会浪费下半区，DIF/DEA 和柱体会被压在顶部像一条平线。
+        // 这里按当前可视区 min/max（并强制包含 0 轴）映射到图形区，同时预留顶部图例区。
+        let minM = Math.min(...vals);
+        let maxM = Math.max(...vals);
+        const spanM = maxM - minM || Math.max(Math.abs(maxM), 1);
+        const padM = spanM * 0.12;
+        minM -= padM;
+        maxM += padM;
+        drawValueAxis(pane, minM, maxM, fmtMacdIndicator, 2);
+        const plotTop = pane.y + 24;
+        const plotBottom = pane.y + pane.h - 6;
+        const plotH = Math.max(12, plotBottom - plotTop);
+        const macdY = v => plotTop + (maxM - Number(v || 0)) / Math.max(1e-12, maxM - minM) * plotH;
+        const y0 = macdY(0);
+
+        // 0 轴
+        ctx.strokeStyle = theme.gridStrong;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pane.x, y0);
+        ctx.lineTo(pane.x + pane.w, y0);
+        ctx.stroke();
+
+        const legendIndex = activeIndex >= slice.start && activeIndex <= slice.end ? activeIndex : slice.end;
+        let lx = pane.x + 4;
+        let ly = pane.y + 15;
+        const legendMaxX = pane.x + pane.w - 8;
+        const legendGap = 16;
+        const legendLineGap = 16;
+        [
+          [labels.dif, mc.dif[legendIndex], '#f59e0b'],
+          [labels.dea, mc.dea[legendIndex], '#8b5cf6'],
+          [labels.macd, mc.hist[legendIndex], mc.hist[legendIndex] >= 0 ? upColor : downColor],
+        ].forEach(([label, value, color]) => {
+          const text = `${label} ${fmtMacdIndicator(value, true)}`;
+          const textW = ctx.measureText(text).width;
+          if (lx > pane.x + 4 && lx + textW > legendMaxX) {
+            lx = pane.x + 4;
+            ly += legendLineGap;
+          }
+          drawText(text, lx, ly, color, legendFontSize, 700);
+          lx += textW + legendGap;
+        });
+
+        visible.forEach((_, j) => {
+          const i = slice.start + j;
+          const x = xOf(i);
+          const v = Number(mc.hist[i] || 0);
+          const y = macdY(v);
+          ctx.fillStyle = v >= 0 ? upColor : downColor;
+          ctx.globalAlpha = 0.82;
+          ctx.fillRect(x - candleW / 2, Math.min(y0, y), candleW, Math.max(1, Math.abs(y - y0)));
+          ctx.globalAlpha = 1;
+        });
+
+        drawLine(mc.dif.slice(slice.start, slice.end + 1).map((v, j) => ({
+          x: xOf(slice.start + j),
+          y: macdY(v)
+        })), '#f59e0b', 1.4);
+
+        drawLine(mc.dea.slice(slice.start, slice.end + 1).map((v, j) => ({
+          x: xOf(slice.start + j),
+          y: macdY(v)
+        })), '#8b5cf6', 1.4);
+      }
+    });
+
+    const xY = layout.height - 16;
+    const labelCount = Math.max(3, Math.floor(main.w / 160));
+    const firstVisibleYear = all[slice.start] ? new Date(normTime(all[slice.start].time)).getFullYear() : NaN;
+    const lastVisibleYear = all[slice.end] ? new Date(normTime(all[slice.end].time)).getFullYear() : NaN;
+    const crossesYear = isDateOnlyPeriod() && Number.isFinite(firstVisibleYear) && Number.isFinite(lastVisibleYear) && firstVisibleYear !== lastVisibleYear;
+    for (let k = 0; k <= labelCount; k++) {
+      const idx = Math.min(slice.end, Math.round(slice.start + (slice.end - slice.start) * k / labelCount));
+      if (!all[idx]) continue;
+      const x = xOf(idx);
+
+      // 所有周期的首尾时间都做安全对齐，避免首个/末个时间被画布边缘裁掉。
+      const isFirst = k === 0;
+      const isLast = k === labelCount;
+      const label = fmtAxisTime(all[idx].time, { startYearOnly: isFirst && crossesYear });
+      const safePad = 2;
+      const labelX = isFirst ? main.x + safePad : isLast ? main.x + main.w - safePad : x;
+      const align = isFirst ? 'left' : isLast ? 'right' : 'center';
+      drawText(label, labelX, xY, theme.axis, window.innerWidth <= 760 ? 11 : 12, 500, align);
+    }
+
+    if (activeIndex >= slice.start && activeIndex <= slice.end) {
+      const x = xOf(activeIndex);
+      drawDashedLine(x, 0, x, layout.height - 28, '#8fa0b5');
+      const label = fmtAxisTime(all[activeIndex].time);
+      const w = ctx.measureText(label).width + 16;
+      ctx.fillStyle = '#4b5563';
+      ctx.fillRect(Math.max(0, Math.min(layout.width - w, x - w / 2)), layout.height - 28, w, 24);
+      drawText(label, Math.max(w / 2, Math.min(layout.width - w / 2, x)), layout.height - 16, '#fff', 12, 700, 'center');
+    }
+
+    positionTooltip(layout, all, slice, xOf);
+  }
+
+  function pointerXInCanvas() {
+    const n = Number(lastPointerX);
+    if (!Number.isFinite(n)) return null;
+    const rect = canvas.getBoundingClientRect();
+    return n - rect.left;
+  }
+
+  function positionTooltip(layout, all, slice, xOf) {
+    if (tooltipSuppressed) {
+      hideTooltip();
+      return;
+    }
+    if (activeIndex < 0 || activeIndex >= all.length || activeIndex < slice.start || activeIndex > slice.end) {
+      hideTooltip();
+      return;
+    }
+    const b = all[activeIndex];
+    if (isMinutePeriod()) {
+      const avg = averagePrice(all)[activeIndex];
+      const m = macd(all);
+      const showVol = (config.subIndicators || []).map(x => String(x).toUpperCase()).includes('VOL');
+      const showMacd = (config.subIndicators || []).map(x => String(x).toUpperCase()).includes('MACD');
+      const macdValue = Number(m.hist[activeIndex] || 0);
+      const macdTone = macdValue > 0 ? 'is-up' : macdValue < 0 ? 'is-down' : 'is-flat';
+      tooltip.innerHTML = `
+        <div class="tip-time">${fmtTime(b.time)}</div>
+        <div class="tip-row"><span>${labels.price}</span><b>${fmtPrice(b.close)}</b></div>
+        <div class="tip-row"><span>${labels.avgPrice}</span><b>${fmtPrice(avg)}</b></div>
+        ${showVol ? `<div class="tip-row"><span>${labels.volume}</span><b>${fmtVolume(b.volume)}</b></div>` : ''}
+        ${showMacd ? `<div class="tip-row"><span>${labels.macd}</span><b class="${macdTone}">${fmtMacdIndicator(macdValue, true)}</b></div>` : ''}`;
+    } else {
+      const prev = activeIndex > 0 ? all[activeIndex - 1] : null;
+      const change = b.close - (prev ? prev.close : b.open);
+      const pct = prev?.close ? change / prev.close * 100 : (b.open ? change / b.open * 100 : 0);
+      const tone = change > 0 ? 'is-up' : change < 0 ? 'is-down' : 'is-flat';
+      tooltip.innerHTML = `
+        <div class="tip-time">${fmtTime(b.time)}</div>
+        <div class="tip-row"><span>${labels.open}</span><b>${fmtPrice(b.open)}</b></div>
+        <div class="tip-row"><span>${labels.high}</span><b>${fmtPrice(b.high)}</b></div>
+        <div class="tip-row"><span>${labels.low}</span><b>${fmtPrice(b.low)}</b></div>
+        <div class="tip-row"><span>${labels.close}</span><b>${fmtPrice(b.close)}</b></div>
+        <div class="tip-row"><span>${labels.change}</span><b class="${tone}">${fmtPrice(change, true)}</b></div>
+        <div class="tip-row"><span>${labels.changePct}</span><b class="${tone}">${Math.abs(pct).toLocaleString(numberLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</b></div>
+        <div class="tip-row"><span>${labels.volume}</span><b>${fmtVolume(b.volume)}</b></div>`;
+    }
+    const x = xOf(activeIndex);
+    tooltip.classList.add('is-visible');
+    const main = layout.panes[0];
+    const edgeGap = 8;
+    const compactTooltip = window.innerWidth <= 760 || main.w <= 420;
+    const tipW = compactTooltip
+      ? Math.min(156, Math.floor(main.w * 0.4))
+      : Math.min(270, Math.floor(main.w * 0.56));
+    tooltip.style.width = `${tipW}px`;
+    const plotLeft = main.x + edgeGap;
+    const plotRight = main.x + main.w - edgeGap;
+    const showRight = x < main.x + main.w / 2;
+    const left = showRight ? plotRight - tipW : plotLeft;
+    tooltip.style.left = `${left}px`;
+    const top = main.y + edgeGap;
+    tooltip.style.top = `${top}px`;
+    tooltip.classList.remove('is-below');
+  }
+
+  function setActiveFromX(clientX) {
+    lastPointerX = clientX;
+    const all = bars();
+    if (!all.length) return;
+    const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+    const slice = visibleSlice(all, layout);
+    const main = layout.panes[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const xStep = main.w / Math.max(1, slice.slots || slice.list.length || 1);
+    const slotIndex = Math.round((x - main.x) / Math.max(1, xStep) - 0.5);
+    const dataOffset = slotIndex - (slice.blankSlots || 0);
+    activeIndex = Math.max(slice.start, Math.min(slice.end, slice.start + dataOffset));
+    draw();
+  }
+
+  function toggleTooltipFromX(clientX) {
+    if (!tooltipSuppressed && tooltip.classList.contains('is-visible')) {
+      tooltipSuppressed = true;
+      hideTooltip();
+      return;
+    }
+    tooltipSuppressed = false;
+    setActiveFromX(clientX);
+  }
+
+  function switchPeriod(period) {
+    activePeriod = period;
+    activeIndex = -1;
+    selectedAnnotationId = null;
+    annotationDraft = null;
+    annotationPointer = null;
+    closeAnnotationEditor();
+    tooltipSuppressed = false;
+    viewEnd = null;
+    visibleCount = null;
+    document.querySelectorAll('.period-button').forEach(btn => btn.classList.toggle('active', btn.dataset.period === period));
+    scrollActivePeriodIntoView();
+    draw();
+  }
+
+  function scrollActivePeriodIntoView() {
+    const tabs = document.querySelector('.period-tabs');
+    const active = document.querySelector('.period-button.active');
+    if (!tabs || !active) return;
+    const tabsRect = tabs.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    const extra = 12;
+    if (activeRect.left < tabsRect.left + extra || activeRect.right > tabsRect.right - extra) {
+      const delta = activeRect.left - tabsRect.left - Math.max(extra, (tabsRect.width - activeRect.width) / 2);
+      tabs.scrollTo({ left: Math.max(0, tabs.scrollLeft + delta), behavior: 'smooth' });
+    }
+  }
+
+  function touchDistance(touches) {
+    if (!touches || touches.length < 2) return 0;
+    const a = touches[0];
+    const b = touches[1];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  }
+
+  function zoomToCount(nextCount) {
+    const all = bars(); if (!all.length) return;
+    const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+    visibleCount = clampVisibleCount(nextCount, all, layout);
+    maybeLoadPreviousPage();
+    draw();
+  }
+
+  document.querySelectorAll('.period-button').forEach(btn => btn.addEventListener('click', () => switchPeriod(btn.dataset.period)));
+  canvas.addEventListener('mousemove', e => {
+    if (annotationMode !== 'pan') {
+      annotationPointer = annotationPointFromClient(e.clientX, e.clientY);
+      if (annotationDraft) draw();
+      return;
+    }
+    if (!isDragging) setActiveFromX(e.clientX);
+  });
+  canvas.addEventListener('mouseleave', () => {
+    annotationPointer = null;
+    if (annotationMode === 'pan' && !isDragging) { activeIndex = -1; hideTooltip(); draw(); }
+  });
+  canvas.addEventListener('click', e => {
+    if (ignoreNextClick) {
+      ignoreNextClick = false;
+      return;
+    }
+    if (annotationMode !== 'pan') {
+      handleAnnotationClick(e);
+      return;
+    }
+    if (!dragMoved && !selectMobileAnnotation(e.clientX, e.clientY)) toggleTooltipFromX(e.clientX);
+  });
+  const panZoomEnabled = true;
+  if (panZoomEnabled) {
+    canvas.addEventListener('mousedown', e => {
+      if (annotationMode !== 'pan') return;
+      isDragging = true; dragMoved = false; dragStartX = e.clientX; dragStartEnd = viewEnd ?? (bars().length - 1);
+    });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      dragMoved = false;
+    });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const all = bars(); if (!all.length) return;
+      const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+      dragMoved = dragMoved || Math.abs(e.clientX - dragStartX) > 3;
+      const deltaBars = Math.round((dragStartX - e.clientX) / Math.max(1, layout.panes[0].w) * (visibleCount || 60));
+      viewEnd = Math.max(0, Math.min(all.length - 1, dragStartEnd + deltaBars));
+      if (viewEnd <= 3 && maybeLoadPreviousPage()) return;
+      draw();
+	    });
+    canvas.addEventListener('wheel', e => {
+      if (!e.ctrlKey && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      const all = bars(); if (!all.length) return;
+      const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+      const current = clampVisibleCount(visibleCount || autoVisibleCount(layout), all, layout);
+      // 滚轮向下 / 触控板双指向下：缩小，显示更多 K 线；向上：放大。
+      const factor = e.deltaY > 0 ? 1.16 : 0.86;
+      visibleCount = clampVisibleCount(current * factor, all, layout);
+      maybeLoadPreviousPage();
+      draw();
+    }, { passive: false });
+    canvas.addEventListener('touchstart', e => {
+      if (annotationMode !== 'pan' && e.touches[0]) {
+        e.preventDefault();
+        touchMode = 'annotation';
+        lastPointerX = e.touches[0].clientX;
+        lastPointerY = e.touches[0].clientY;
+        annotationPointer = annotationPointFromClient(lastPointerX, lastPointerY);
+        return;
+      }
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+        touchMode = 'pinch';
+        isDragging = false;
+        const all = bars();
+        const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+        pinchStartDistance = touchDistance(e.touches);
+        pinchStartVisibleCount = clampVisibleCount(visibleCount || autoVisibleCount(layout), all, layout);
+        hideTooltip();
+        return;
+      }
+      if (e.touches[0]) {
+        touchMode = 'drag';
+        isDragging = true;
+        dragMoved = false;
+        dragStartX = e.touches[0].clientX;
+        dragStartY = e.touches[0].clientY;
+        lastPointerX = e.touches[0].clientX;
+        lastPointerY = e.touches[0].clientY;
+        dragStartEnd = viewEnd ?? (bars().length - 1);
+      }
+    }, { passive: false });
+    canvas.addEventListener('touchmove', e => {
+      if (touchMode === 'annotation' && e.touches[0]) {
+        e.preventDefault();
+        lastPointerX = e.touches[0].clientX;
+        lastPointerY = e.touches[0].clientY;
+        annotationPointer = annotationPointFromClient(lastPointerX, lastPointerY);
+        if (annotationDraft) draw();
+        return;
+      }
+      const all = bars(); if (!all.length) return;
+      const layout = getLayout(canvas.clientWidth || canvas.parentElement.clientWidth || 360);
+      if (touchMode === 'pinch' && e.touches.length >= 2) {
+        e.preventDefault();
+        const nextDistance = Math.max(1, touchDistance(e.touches));
+        // 两指捏合：距离变小，visibleCount 变大 => 缩小；两指张开则放大。
+        zoomToCount(pinchStartVisibleCount * (pinchStartDistance / nextDistance));
+        return;
+      }
+      if (!e.touches[0]) return;
+      const moveX = e.touches[0].clientX - dragStartX;
+      const moveY = e.touches[0].clientY - dragStartY;
+      if (touchMode === 'drag' && Math.abs(moveY) > Math.abs(moveX) && Math.abs(moveY) > 8) {
+        touchMode = 'vertical-scroll';
+        isDragging = false;
+        dragMoved = true;
+        return;
+      }
+      if (touchMode === 'vertical-scroll') return;
+      dragMoved = dragMoved || Math.abs(moveX) > 6;
+      if (!dragMoved) {
+        return;
+      }
+      e.preventDefault();
+      const deltaBars = Math.round((dragStartX - e.touches[0].clientX) / Math.max(1, layout.panes[0].w) * (visibleCount || 60));
+      viewEnd = Math.max(0, Math.min(all.length - 1, dragStartEnd + deltaBars));
+      activeIndex = -1;
+      hideTooltip();
+      if (viewEnd <= 3 && maybeLoadPreviousPage()) return;
+      draw();
+    }, { passive: false });
+    canvas.addEventListener('touchend', e => {
+      if (e.touches.length === 0) {
+        if (touchMode === 'annotation' && lastPointerX !== null && lastPointerY !== null) {
+          handleAnnotationClick({ clientX: lastPointerX, clientY: lastPointerY });
+          ignoreNextClick = true;
+          touchMode = 'none';
+          return;
+        }
+        if (!dragMoved && lastPointerX !== null) {
+          if (!selectMobileAnnotation(lastPointerX, lastPointerY)) toggleTooltipFromX(lastPointerX);
+          ignoreNextClick = true;
+        }
+        isDragging = false;
+        touchMode = 'none';
+        dragMoved = false;
+      }
+    });
+  }
+  const annotationToggle = document.querySelector('.annotation-toggle');
+  const annotationToolbar = document.querySelector('.annotation-toolbar');
+  annotationToggle?.addEventListener('click', () => {
+    const open = !annotationToolbar?.classList.contains('open');
+    annotationToolbar?.classList.toggle('open', open);
+    annotationToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.querySelectorAll('[data-annotation-mode]').forEach(button => button.addEventListener('click', () => {
+    setAnnotationMode(button.dataset.annotationMode);
+  }));
+  document.querySelector('[data-annotation-action="undo"]')?.addEventListener('click', restorePreviousAnnotations);
+  document.querySelector('[data-annotation-action="delete"]')?.addEventListener('click', () => {
+    if (!selectedAnnotationId) return;
+    rememberAnnotationState();
+    annotations = annotations.filter(item => item.id !== selectedAnnotationId);
+    selectedAnnotationId = null;
+    saveAnnotations();
+    draw();
+  });
+  document.querySelector('[data-annotation-action="clear"]')?.addEventListener('click', () => {
+    const activeCount = annotations.filter(item => String(item.period || config.dataType) === String(activePeriod)).length;
+    if (!activeCount || !window.confirm(`${labels.clear}?`)) return;
+    rememberAnnotationState();
+    annotations = annotations.filter(item => String(item.period || config.dataType) !== String(activePeriod));
+    selectedAnnotationId = null;
+    annotationDraft = null;
+    saveAnnotations();
+    draw();
+  });
+  const commitCallout = () => {
+    const text = String(annotationEditorInput?.value || '').trim();
+    if (!pendingCalloutPoint || !text) return;
+    const point = pendingCalloutPoint;
+    closeAnnotationEditor();
+    addAnnotation({ type: 'callout', points: [point], text });
+  };
+  document.querySelector('[data-editor-action="confirm"]')?.addEventListener('click', commitCallout);
+  document.querySelector('[data-editor-action="cancel"]')?.addEventListener('click', closeAnnotationEditor);
+  annotationEditorInput?.addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); commitCallout(); }
+    if (event.key === 'Escape') { event.preventDefault(); closeAnnotationEditor(); }
+  });
+  window.addEventListener('keydown', event => {
+    if (event.key === 'Escape') setAnnotationMode('pan');
+    if ((event.key === 'Delete' || event.key === 'Backspace') && selectedAnnotationId && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) {
+      event.preventDefault();
+      rememberAnnotationState();
+      annotations = annotations.filter(item => item.id !== selectedAnnotationId);
+      selectedAnnotationId = null;
+      saveAnnotations();
+      draw();
+    }
+  });
+  window.addEventListener('resize', () => { viewEnd = null; visibleCount = null; draw(); });
+
+  annotations = loadAnnotations();
+  new MutationObserver(() => {
+    const mode = document.documentElement.dataset.theme || config.themeMode;
+    if (mode === config.themeMode) return;
+    config.themeMode = mode;
+    theme = mode === 'dark' ? {
+      bg: 'transparent', grid: '#252c38', gridStrong: '#303746', text: '#d8e0ec', muted: '#8a93a3', axis: '#8b93a3'
+    } : {
+      bg: 'transparent', grid: '#edf2f7', gridStrong: '#dce3ec', text: '#17202b', muted: '#687383', axis: '#6b7280'
+    };
+    draw();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  draw();
+  scrollActivePeriodIntoView();
+  setTimeout(scrollActivePeriodIntoView, 80);
+  setTimeout(scrollActivePeriodIntoView, 320);
+})();
+</script>
+</body>
+</html>

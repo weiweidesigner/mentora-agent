@@ -1,23 +1,147 @@
 {
-  "question": "请展示 NVDA 的分析师推荐分布，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AMD 的分析师买入、持有和卖出推荐分布及近期调整，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:38:59.028000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的分析师推荐分布，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 分析师推荐分布\n\n这份案例用原生业务组件展示分析师推荐分布，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-analyst_recommendations/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AMD 的分析师买入、持有和卖出推荐分布及近期调整，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall",
+      "label": "business-chart-recall",
+      "script": "business-chart-recall",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html",
+    "reportUrl": "/static/cases/inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-analyst_recommendations/chart.html",
-        "url": "/static/cases/inspiration/business-analyst_recommendations/chart.html"
+        "path": "case:inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html",
+        "url": "/static/cases/inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-analyst_recommendations/chart.html",
+    "payloadUrl": null,
+    "interpretation": "实时接口取数成功（任务给定的历史快照是 NVDA 案例，非 AMD 数据，故未使用）。已用原生业务组件重新拉取 AMD 数据并渲染。\n\n## 核心结论\n\n**AMD 当前卖方共识为极度乐观：23 位分析师中 21 位给出买入类评级（强烈买入 1 + 买入 20），持有 2，卖出 0 —— 买入占比 91.3%，卖出为零。** 更值得注意的不是这个绝对水位，而是 5 月以来的**结构性上移**：持有评级从 7 家压缩到 2 家，强烈买入从 0 升到 1，同期目标价出现 8 月底以来最密集的一轮上调。\n\n[[AIME_CHART:case:inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html]]\n\n## 关键证据与图表解读\n\n**1）分布形态：买入一家独大，持有被持续挤出（6M 周期最重要）**\n\n图中 2026-05 至 2026-10 的月度堆叠分布是最该盯的部分。2026-05：买入 17、持有 7；2026-06：买入 20、持有 6；2026-07：买入 22、持有 4；**2026-08 出现评级跃迁——强烈买入首次由 0 变 1，持有骤降至 2**；此后 2026-08/09/10 稳定在「强烈买入 1、买入 20~21、持有 2、卖出 0」。六个月内持有评级由 7 家降至 2 家（-71%），这是本次数据里斜率最陡的一段变化，也是共识从「多数看多」转向「近乎一致看多」的分水岭，拐点落在 8 月而非 10 月。\n\n**2）覆盖基数在收缩，而非扩张**\n\n分布总数由 2026-07 的 26 位降至 2026-10 的 23 位（1M 口径 21，为月中快照）。含义是：持有家数减少并非全部来自分析师主动上调，其中一部分是覆盖分析师退出。因此「持有占比下降」的解读强度应弱于「绝对看多水位高」这一结论——这一点必须与分布图对照看，不能只看占比。\n\n**3）近期动作：目标价集中上调，方向一致偏多（组件下方明细表）**\n\n2026-08-25 至 2026-10-06 的 8 条记录中，5 条伴随目标价上调、3 条维持不变，**无一条下调**：\n\n- 上调幅度最大的是 **Citigroup（Atif Malik）**，2026-10-06 目标价由 575 升至 **800 美元**，+225 美元（+39%），评级维持买入；\n- **Mizuho（Vijay Rakesh）** 同日由 580 升至 **705 美元**，+125 美元（+21.6%），维持增持；\n- **B of A Securities（Vivek Arya）** 2026-09-25 由 620 升至 **720 美元**，+100 美元（+16.1%）；\n- 结构性动作有两条：**Raymond James（Simon Leopold）** 2026-08-25 直接上调评级至「强烈买入」，目标价 565→641 美元；**Piper Sandler（David O'Connor）** 2026-09-10 首次覆盖即给增持、目标价 600 美元。\n- 未调价的三家（StoneX 685、Rosenblatt 700、Stifel 更早的调整）目标价仍处 685~700 美元区间，说明 700 美元上下是当前卖方的一个密集共识带，而 800 美元属最乐观尾部。\n\n**4）读图方法（供后续自行跟踪）**\n\n该组件的分布是**月末快照的存量计数**，反映「当时有多少分析师持某评级」，不是评级变动流量；要判断方向，必须结合下方「近期分析师动作」表看谁在动、动的是评级还是目标价。两者配合才能区分「共识变强」与「覆盖样本变化」。\n\n## 风险、数据时间与口径\n\n- **极端共识本身是风险信号**：91.3% 买入、0 卖出，意味着看多逻辑已充分定价，后续超预期门槛抬高；一旦出现首个下调或覆盖退出，分布图的边际变化会被放大。\n- **强烈买入仅 1 家**：这与 21 家买入形成落差——绝对看多水位高，但最高信心档位仍单薄，说明买入评级内部并非等强度。\n- **覆盖面窄**：23 位分析师样本对 AMD 这类高波动标的偏小，单家机构变动即可改变百分比读数。\n- **数据口径与时间**：AInvest 分析师评级接口实时取数，标的 AMD（市场标识 185 / NASDAQ），推荐分布截至 **2026-10-14**（当月为月中快照），近期动作区间 2026-08-25 ~ 2026-10-06；评级与目标价为机构时点观点，非投资建议，也不构成对股价的预测。\n- **执行说明**：任务给定的 `payload.json` 快照实为 NVDA 数据（非 AMD），不满足标的要求，本次未采用；首选一次实时调用因接口瞬时返回 `subjects not matched share` 失败，随即换市场标识 185 重试成功，全部分布与动作数据均来自本次实时重新取数，未使用 `--sample`、模拟值或旧产物。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-analyst_recommendations-d06c25072cd44769bc31dc954562cfd0",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-analyst_recommendations-d06c25072cd44769bc31dc954562cfd0",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398fa08f7f9185eeb26d6c1456a0)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8305
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8796
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 9477
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9853
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12402
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12933
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 15802
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 19717
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20143
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20519
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20956
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 21376
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 29224
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33129
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33602
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 43260
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 53564
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56212
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 58648
+      }
+    ],
+    "startedAt": 1791967070201,
+    "endedAt": 1791967139028,
+    "elapsedMs": 68827,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967070201,
+        "endedAt": 1791967139028,
+        "elapsedMs": 68827
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-analyst_recommendations-d06c25072cd44769bc31dc954562cfd0",
     "renderer": "analyst_recommendations.py",
-    "schema": "analyst_recommendations.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398fa08f7f9185eeb26d6c1456a0)",
+      "candidateCount": 45
+    }
   }
 }

@@ -1,23 +1,215 @@
 {
-  "question": "请展示 NVDA 的成交量价格分布，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 NVDA 的近期各价格区间成交量分布，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:16:50.806000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的成交量价格分布，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 成交量价格分布\n\n这份案例用原生业务组件展示成交量价格分布，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-volume_profile/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 NVDA 的近期各价格区间成交量分布，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "deepseek",
+      "label": "DeepSeek Harness",
+      "script": "deepseek",
+      "reason": "由 DeepSeek Harness 自主规划并执行。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html",
+    "reportUrl": "/static/cases/inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-volume_profile/chart.html",
-        "url": "/static/cases/inspiration/business-volume_profile/chart.html"
+        "path": "case:inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html",
+        "url": "/static/cases/inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-volume_profile/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成：本次执行重新调用 AInvest 实时成交分布接口取数成功（返回 2026-10-14 可取的最新交易日数据），并用原生 `volume_profile.py` 业务组件重新渲染，未复制旧 HTML 或正文。\n\n## 核心结论\n\n**NVDA 最近一个交易日的成交分布呈现\"单价位极端堆积 + 低位小额吸筹\"的双层结构**：228.52 美元一个价位就吃下全日 26.88% 的成交量，且几乎全是卖出方向；把这一笔剔除后，全日的买卖实际上大致平衡。因此\"卖压占优\"（全日净卖出 1,550 万股，占成交量 -23.85%）这个表象，主要由单一价位的巨额卖单造成，而不是全天持续性的抛售。\n\n## 关键证据与图表解读\n\n全日成交 6,501 万股、124.12 万笔，成交量加权平均价 226.77 美元；买入 1,957 万股、卖出 3,508 万股、中性 1,036 万股（中性占 15.93%，属集合竞价/未分类方向）。\n\n**第一，集中度异常高。** 接口返回的前 20 个价位合计 2,194 万股，只占全日成交量的 33.75%；而在这 20 个价位内部，228.52 单一价位占 79.64%，前三个价位合计 87.2%。也就是说，被抽样的高成交价位之间极不均衡，一个价位把其余的挤成了长尾。整体价格带宽仅 224.00–228.52 美元，跨度 4.52 美元，相当于均价的 1.99%——高价位上的窄幅密集换手。\n\n**第二，228.52 是典型的巨额单向卖单，而非连续抛售。** 该价位卖出 1,449 万股、买入仅 95 万股、中性 203 万股，净卖出 1,354 万股，卖出/买入比约 15:1；但只对应 1,779 笔成交，平均单笔 9,822 股，而全日平均单笔仅 52.4 股（相差约 187 倍）。这个量级与笔数的组合，指向大宗/协议成交或收盘竞价类的一次性转让（机构调仓、指数或大额对冲），而不是盘中持续的散户式抛压——该判断为基于笔均规模的推断，接口未回传交易类型标签。\n\n**第三，剔除该价位后，日内方向几乎中性。** 全日净卖出 1,550.5 万股；扣掉 228.52 的 -1,354.4 万股后，剩余 4,753.6 万股成交量上的净卖出只有约 196 万股（约 -4.1%）。因此把\"净卖出 23.85%\"直接解读为全日空头主导会失真。\n\n**第四，均价下方是买入占优的\"吸筹区\"。** 均价以下的 12 个价位合计 338 万股，净买入 +114 万股；均价以上的 8 个价位合计 1,856 万股（占抽样量的 84.61%），净卖出 -1,353 万股。分价格带看：224–225 美元净买入 +73.5 万股（卖出/买入 0.43）、225–226 美元净买入 +40.1 万股（0.47）、226–227 美元基本平衡（净 -0.49 万股）、227–228 美元小幅净买入 +2.2 万股，228–229 美元净卖出 -1,354 万股（13.98）。其中 224.40 美元最值得注意：买入 115.0 万股对卖出 2.4 万股，却分散在 19,793 笔成交里，平均单笔仅 59.7 股——与 228.52 恰好相反，是大规模小单买入的形态。225.98 美元同样偏买（42.5 万股对 3.9 万股）。\n\n[[AIME_CHART:case:inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html]]\n\n图表为原生「成交分布」业务组件：上方是全日均价、成交笔数、成交量摘要与买入/卖出/中性环形占比，下方按价位列出买入/卖出/中性堆叠量与占比，可直接看到 228.52 行的一根超长卖出柱与其余价位的量级落差，以及 224–226 区间偏买入的短柱分布。组件支持运行时浅/深主题切换，界面语言为简体中文。\n\n## 风险、数据时间与口径\n\n- **数据时间**：2026-10-14（美东时间当日盘前）通过 AInvest 成交分布接口实时获取，请求参数 `offset_day=0`、`trade_period=ALL`、`combine=0`、`count=20`、`market=185`（NASDAQ）。接口未回传明确的交易日标签，且取数时点为盘前，故正文中的\"最近一个交易日\"指该接口在当前时点返回的最新可用交易日，不能确认是否为 2026-10-14 当日完整收盘数据。\n- **口径边界**：价位明细只包含成交量最大的前 20 个价位（占全日 33.75%），因此\"集中度\"\"价格带占比\"均在这 20 个价位内部成立，不代表全价格轴分布；买入/卖出/中性、成交量、均价、笔数则是全日汇总口径。`ratio` 字段为占全日成交量的百分比。\n- **方向口径**：买入/卖出/中性由数据源按成交方向归类，中性 15.93% 主要为集合竞价或无法判定方向的成交；不同数据商对主动买卖盘的判定规则不同，跨来源比较会失真。\n- **研判局限**：单一交易日快照无法判断这是建仓、派发还是被动调仓；大额卖单价位高于全日均价，也可能是机构换仓或衍生品对冲，需要结合后续数日的价格与量能确认。上述\"大宗/协议成交\"结论是基于笔均规模的推断，非接口事实。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-volume_profile-d6364ad0057e462d93d90d1f1aeb98aa",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-volume_profile-d6364ad0057e462d93d90d1f1aeb98aa",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b1f866748f84d5f245c2ceeb56)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2183
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2647
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3714
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4120
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4979
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5558
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6211
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7719
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8124
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8641
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9766
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11764
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12996
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13395
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 14900
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 18792
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21135
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23618
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24056
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 26004
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 26390
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 27262
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 29586
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 34816
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 41890
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 42289
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 44541
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 47068
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 48842
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 51689
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 52555
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 55630
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57128
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 58209
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 64508
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 67428
+      }
+    ],
+    "startedAt": 1791969326601,
+    "endedAt": 1791969410806,
+    "elapsedMs": 84205,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791969326601,
+        "endedAt": 1791969410806,
+        "elapsedMs": 84205
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-volume_profile-d6364ad0057e462d93d90d1f1aeb98aa",
     "renderer": "volume_profile.py",
-    "schema": "volume_profile.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b1f866748f84d5f245c2ceeb56)",
+      "candidateCount": 45
+    }
   }
 }

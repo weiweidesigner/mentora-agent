@@ -178,6 +178,8 @@
 
   async function replayAnswer(article, answer, signal) {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    // Native image and video presentation is shared with live answers.
+    if (answer.videos?.length || answer.reportArtifacts?.some(item => typeof isGeneratedImageArtifact === "function" && isGeneratedImageArtifact(item))) return;
     const target = article.querySelector(".finalAnswer");
     const flow = document.createElement("div");
     flow.className = "mixedReport cachedReplay";
@@ -317,14 +319,18 @@
   back?.addEventListener("click", closeCase);
   window.addEventListener("keydown", (event) => {
     if (!selectedCase) return;
+    // The native image dialog owns its keyboard handling while it is open.
+    if (document.querySelector("#generatedImageDialog")?.open) return;
+    const videoOverlay = document.querySelector(".aimeVideoOverlay.is-open");
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (document.querySelector(".activityDrawer.is-open")) { closeActivityDrawer(); back?.focus({ preventScroll: true }); }
+      if (videoOverlay) videoOverlay.querySelector(".aimeVideoClose")?.click();
+      else if (document.querySelector(".activityDrawer.is-open")) { closeActivityDrawer(); back?.focus({ preventScroll: true }); }
       else closeCase();
     }
     if (event.key === "Tab" && overlay) {
-      const controls = Array.from(overlay.querySelectorAll('button:not(:disabled),a[href],input,textarea,select,[tabindex="0"]'))
+      const controls = Array.from((videoOverlay || overlay).querySelectorAll('button:not(:disabled),a[href],input,textarea,select,[tabindex="0"]'))
         .filter(node => node.getClientRects().length && !node.closest('[inert]') && !node.closest('.activityDrawer:not(.is-open)'));
       const first = controls[0], last = controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
@@ -469,11 +475,14 @@
       const categories = [{ id: "recommended", title: "推荐" }, ...catalog.categories];
       let active = "recommended";
       const render = () => {
-        tabs.innerHTML = categories.map(category => `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`).join("");
+        tabs.innerHTML = categories.map(category => {
+          const count = category.id === "recommended" ? catalog.cases.length : catalog.cases.filter(row => row.category === category.id).length;
+          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === active}" tabindex="${category.id === active ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}<span class="inspirationCount">${count}</span></button>`;
+        }).join("");
         panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
         panel.innerHTML = catalog.categories.filter(category => active === "recommended" || category.id === active).map(category => {
-          const rows = catalog.cases.filter(row => row.category === category.id && (active !== "recommended" || row.featured));
-          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3><p>${escapeHtml(category.subtitle)}</p></header><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
+          const rows = catalog.cases.filter(row => row.category === category.id);
+          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}<span class="inspirationCount">${rows.length}</span></h3><p>${escapeHtml(category.subtitle)}</p></header><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
         }).join("");
       };
       tabs.addEventListener("click", event => {

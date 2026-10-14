@@ -1,23 +1,219 @@
 {
-  "question": "请展示 AAPL 的机构交易，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的公开机构买卖活动和交易明细，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:55:15.062000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的机构交易，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 机构交易\n\n这份案例用原生业务组件展示机构交易，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-institution_trades/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n这是组件演示数据，不代表 AAPL 的真实财务或投资评级。",
+    "question": "分析 AAPL 的公开机构买卖活动和交易明细，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",
+    "reportUrl": "/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-institution_trades/chart.html",
-        "url": "/static/cases/inspiration/business-institution_trades/chart.html"
+        "path": "case:inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",
+        "url": "/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-institution_trades/chart.html",
+    "payloadUrl": null,
+    "interpretation": "**核心结论**：AAPL 的机构资金在 2023 Q3–2026 Q3 的 13 个季度里呈**净买入格局**——累计买入 99.4 亿股、卖出 70.5 亿股，净增 **+28.9 亿股（净额占双边总量 +16.99%）**，13 个季度中 9 个季度净买入。但**最新披露的两个季度（2026 Q2、Q3）显示申报口径的活跃度断崖式回落**：2026 Q1 创出单季净买入 15.25 亿股的峰值后，Q2 净买入降至 0.88 亿股，Q3 目前仅 105 万股买入，不能解读为机构集体撤退，而是 13F 申报窗口刚开启、样本极不完整。\n\n**关键证据一：净买入集中在 2026 Q1，节奏先放大后骤缩**\n\n- 2026 Q1 是绝对峰值：买入 30.47 亿股、卖出 15.22 亿股，**净买入 +15.25 亿股，占该季双边成交股数的 33.4%**，规模是第二名 2024 Q1（+4.70 亿股）的 3 倍以上。\n- 该季股价并未上涨：2025-12-31 收 271.86 → 2026-03-31 收 253.79，**季度内下跌约 6.7%**，机构净买入发生在价格回调段，而非追高段。\n- 2024 年是唯一连续四个季度净买入且净额占比都偏高的年份（+75.8%、+67.4%、+42.9%、+24.2%）；2025 Q1–Q2 曾短暂转为净卖出（-0.58 亿股、-0.96 亿股）。\n- 2026 Q2 双边股数 5.95 亿股，**仅为 Q1 的 13%**；2026 Q3 双边 195 万股，不足 Q2 的 0.4%。\n\n[[AIME_CHART:case:inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html]]\n\n图中最后一根极矮的柱子是最重要的观察点，也是最容易被误读的地方：它**不是新的卖出拐点，而是申报样本尚未铺开**。同一张图的价格线给出对照——股价从窗口起点 152.59（2023-03-14）升至 **341.27（2026-10-13，为窗口最高收盘价，累计 +123.7%）**，即机构季度净买入的峰值出现在股价回调期，而股价创新高时披露的机构活动反而最少。\n\n**关键证据二：最新披露明细是小幅调仓，而非一致性动作**\n\n明细表 15 条记录全部为 2026 Q3 持仓、披露日期均为 2026-10-13：**7 家增持、8 家减持，合计仅净增 124,087 股**，绝对变动比例中位数约 4.6%——属于常规再平衡量级，与季度柱状图的\"活跃度骤降\"互相印证，也说明当日披露的机构以中小投顾为主。\n\n- 最大增持：**Fisher Funds Management LTD +127,128 股（+39.94%）**至 445,414 股，是当日唯一的方向性大额加仓。\n- 最大减持：DAVIS-REA LTD. -6,268 股（-23.91%），但持仓基数仅 19,946 股；按股数计最重的减持是 BKD Wealth Advisors, LLC -5,154 股（持仓 180,791 股）。\n- 结构含义：**增幅最大的机构体量最小，体量最大的机构在做微调**，因此这 15 条明细不足以代表整体机构态度，真正的方向仍由 2026 Q1 的大额净买入和后续申报数据决定。\n\n**风险、数据时间与口径**\n\n- 数据来源与时间：AInvest 机构交易汇总与明细接口（市场 185 / NASDAQ），行情为日线。季度活动覆盖 2023 Q3–2026 Q3，价格序列 2023-03-14 至 **2026-10-13**（900 个交易日），明细披露日期均为 2026-10-13。\n- **2026 Q3 是不完整季度**：13F 申报截止日为季度结束后 45 天，当前仅收录 2026-10-13 当日披露的机构，故该季柱状图与明细表都严重偏低，不应与其他完整季度直接比较。\n- 口径：所有数值为**股数**，不是市值或占流通股比例；净额占比重在\"买+卖\"双边口径上计算。同一机构可能同时增减不同组合，季度汇总计数的是申报笔数合计，不等于机构家数。\n- 数据获取过程存在降级：AInvest 机构明细接口在本次取数中多次返回 504 网关超时，重试后才成功返回；该接口稳定性会影响数据新鲜度，若后续取数失败，最新季度可能停留在已成功抓取的时点。\n- 图表为未做任何样式改写的原生业务组件，已核对渲染结果：季度买卖柱、价格线、15 行明细表均正常绘制，无脚本报错，支持浅色/深色运行时切换。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-institution_trades-d72b7b823d534af78debc81874ad9db7",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-institution_trades-d72b7b823d534af78debc81874ad9db7",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399bbeb5731aaf0ebda07dffa285)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3758
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3784
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4588
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8791
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 9221
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14530
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 22184
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24562
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29158
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 30821
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 86416
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 88401
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 92236
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 102957
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 110561
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 122161
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 127426
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 155411
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 166239
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 169794
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 173688
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 175595
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 180660
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 180660
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 181079
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 185113
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 189152
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 192031
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 199404
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 200652
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 203712
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 210017
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 216644
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 217427
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 225215
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 235011
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 238511
+      }
+    ],
+    "startedAt": 1791967868294,
+    "endedAt": 1791968115062,
+    "elapsedMs": 246768,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967868294,
+        "endedAt": 1791968115062,
+        "elapsedMs": 246768
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-institution_trades-d72b7b823d534af78debc81874ad9db7",
     "renderer": "institution_trades.py",
-    "schema": "institution_trades.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": true
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399bbeb5731aaf0ebda07dffa285)",
+      "candidateCount": 45
+    }
   }
 }

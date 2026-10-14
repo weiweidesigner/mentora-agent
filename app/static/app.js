@@ -2490,6 +2490,33 @@ function buildVideoLane(videos, options = {}) {
   return section;
 }
 
+function isGeneratedImageArtifact(item) {
+  if (item.mediaType === "image") return true;
+  if (item.imageUrl && /\.(?:png|jpe?g|webp|gif)(?:[?#]|$)/i.test(item.imageUrl)) return true;
+  return /(?:^|\/)generated\/flux-[^/]+\.html$/i.test(new URL(item.url, window.location.origin).pathname);
+}
+
+function createGeneratedImageArtifact(item) {
+  const artifactUrl = new URL(item.url, window.location.origin);
+  artifactUrl.pathname = artifactUrl.pathname.replace(/\.html$/i, ".png");
+  const image = document.createElement("img");
+  image.className = "reportGeneratedImage";
+  image.alt = item.alt || "本地生成图片";
+  image.loading = "lazy";
+  image.decoding = "async";
+  image.src = new URL(item.imageUrl || artifactUrl.pathname, window.location.origin).href;
+  image.addEventListener("load", () => {
+    if (image.naturalWidth % 16 === 8 && image.naturalHeight % 16 === 8) image.classList.add("reportGeneratedImageLegacyFrame");
+  });
+  const preview = document.createElement("button");
+  preview.type = "button";
+  preview.className = "reportGeneratedImageButton";
+  preview.setAttribute("aria-label", "查看图片详情");
+  preview.append(image);
+  preview.addEventListener("click", () => openGeneratedImagePreview(image.src, preview));
+  return preview;
+}
+
 async function renderMixedReportFlow(article, data, container, onDone) {
   if (!container) {
     onDone?.();
@@ -2546,38 +2573,15 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       slot.streamvizHost = streamedHost;
       return slot;
     }
+    if (isGeneratedImageArtifact(item)) return createGeneratedImageArtifact(item);
     if (item.renderMode === "iframe") return createArtifactFallbackFrame(item, index, { demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
-    const artifactUrl = new URL(item.url, window.location.origin);
-    const imageUrl = String(item.imageUrl || "");
-    if (imageUrl.startsWith("/generated/") || /^\/generated\/flux-[^/]+\.html$/i.test(artifactUrl.pathname)) {
-      const image = document.createElement("img");
-      image.className = "reportGeneratedImage";
-      image.alt = "本地生成图片";
-      image.loading = "lazy";
-      image.decoding = "async";
-      image.addEventListener("load", () => {
-        if (image.naturalWidth % 16 === 8 && image.naturalHeight % 16 === 8) {
-          image.classList.add("reportGeneratedImageLegacyFrame");
-        }
-      });
-      artifactUrl.pathname = artifactUrl.pathname.replace(/\.html$/i, ".png");
-      image.src = new URL(imageUrl || artifactUrl.pathname, window.location.origin).href;
-      const previewButton = document.createElement("button");
-      previewButton.type = "button";
-      previewButton.className = "reportGeneratedImageButton";
-      previewButton.setAttribute("aria-label", "查看图片详情");
-      previewButton.append(image);
-      previewButton.addEventListener("click", () => openGeneratedImagePreview(image.src, previewButton));
-      return previewButton;
-    }
     return createStreamVisualizationArtifact(item, index, { showActions: false, demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
   };
   // A single FLUX result is visual-only, including previously saved conversations
   // whose interpretation still contains the old completion message.
   if (reportArtifacts.length === 1 && !videos.length && !sources.length) {
     const item = reportArtifacts[0];
-    const artifactPath = new URL(item.url, window.location.origin).pathname;
-    if (String(item.imageUrl || "").startsWith("/generated/") || /^\/generated\/flux-[^/]+\.html$/i.test(artifactPath)) {
+    if (isGeneratedImageArtifact(item)) {
       replaceNodes([makeFrame(item, 0)]);
       onDone?.();
       return;
@@ -2797,7 +2801,9 @@ function updateThinkingSummary(article, prefix, options = {}) {
   if (!target) return;
   const startedAt = Number(article.dataset.startedAt || Date.now());
   const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
-  target.textContent = article.dataset.cachedActivityCount
+  target.textContent = article.classList.contains("cachedCaseAnswer") && !article.dataset.cachedElapsedMs
+    ? "缓存回放 · 原始耗时未记录"
+    : article.dataset.cachedActivityCount
     ? `已思考${article.dataset.cachedElapsedMs ? " " + formatDuration(Number(article.dataset.cachedElapsedMs)) : ""}`
     : options.live ? article.dataset.currentThinking || prefix : `${prefix} ${formatDuration(elapsed)}`;
   const trigger = article.querySelector(".thinkingTrigger");
@@ -2807,7 +2813,7 @@ function updateThinkingSummary(article, prefix, options = {}) {
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
   }
   if (activeActivityArticle === article && activityElapsed) {
-    activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+    activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
   }
 }
 
@@ -2845,7 +2851,7 @@ function syncActivityDrawer(article) {
   const state = article.dataset.thinkingState || "active";
   const lang = normalizeLang(article.dataset.lang || "en");
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
-  activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+  activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
   const steps = Array.from(article.querySelectorAll(".thinkingSteps li"))
     .map((item) => `<li class="${item.className}">${item.innerHTML}</li>`)

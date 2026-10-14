@@ -1,43 +1,419 @@
 {
-  "question": "用动态折线图展示财务指标动态演进，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "用动态折线图演绎 AAPL、MSFT、NVDA 最近一年归一化股价走势。",
+  "cachedAt": "2026-10-14T16:52:40.652000+08:00",
   "answer": {
-    "question": "用动态折线图展示财务指标动态演进，使用清楚标注的金融演示数据。",
-    "interpretation": "# 财务指标动态演进\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-dynamic_line/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "用动态折线图演绎 AAPL、MSFT、NVDA 最近一年归一化股价走势。",
+    "code": "",
+    "selectedSkill": {
+      "key": "yahoo-data,code-interpreter,generic-chart,vision-chart-analyst",
+      "label": "yahoo-data + code-interpreter + generic-chart + vision-chart-analyst",
+      "script": "yahoo-data + code-interpreter + generic-chart + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-dynamic_line/inspiration-real-analysis-dynamic_line-chart.html",
+    "reportUrl": "/static/cases/inspiration/analysis-dynamic_line/inspiration-real-analysis-dynamic_line-chart.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-dynamic_line/chart.html",
-        "url": "/static/cases/inspiration/analysis-dynamic_line/chart.html"
+        "path": "case:inspiration/analysis-dynamic_line/inspiration-real-analysis-dynamic_line-chart.html",
+        "url": "/static/cases/inspiration/analysis-dynamic_line/inspiration-real-analysis-dynamic_line-chart.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-dynamic_line/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成。真实取数 → 按 schema 转换 → 真实 JEV 路由 → dynamic_line 渲染 → 渲染验证，全部用项目 Skill 执行，未使用 sample 数据或旧案例演示值。\n\n## 核心结论\n\n近一年（数据时期 **2025-10-09 → 2026-10-13**，254 个交易日）三只标的基本同源起点、路径极度分化：\n\n| 标的 | 期末归一化（起点=100） | 区间最大回撤（自区间高点） | 回撤低点 |\n|---|---|---|---|\n| AAPL | **134.34**（+34.3%） | −13.8% | 2026-03-30 |\n| NVDA | **118.67**（+18.7%） | −20.2% | 2026-03-30 |\n| MSFT | **104.03**（+4.0%） | **−34.9%** | 2026-06-25 |\n\n三点判断：\n\n1. **终点接近、过程完全不同。** AAPL 与 MSFT 期末仅差约 30 个归一化点，但 MSFT 中途一度跌到 67.54（较自身高点 2025-10-28 的 103.77 腰斩近三分之一），AAPL 最深只到 97.08。用终点收益率做横向比较会完全掩盖这个风险差异——这正是需要\"可播放\"折线而非静态柱状对比的原因。\n2. **2026 年 3 月底是共同转折点。** 2026-03-30 同日出现两处低点：NVDA 85.77（−20.2%）、AAPL 97.08（−13.8%）；MSFT 当日 68.71，并在 2026-06-25 二次探底至 67.54 才真正止跌。之后 MSFT 修复最猛（2026-07-30 单日 +15.5%），但直到期末仍未回到 AAPL/NVDA 的运行区间。\n3. **NVDA 波动最剧烈，且期末正在回落。** 2025-10-29 冲高 107.51 后一路回撤至 −20.2%；反弹到 2026-10-06 的 124.24（区间新高）后，到 10-13 已回落至 118.67（较自身高点 −4.5%）。三者的分化是\"同一起跑线 → 分化 → 收敛但不重合\"，不是简单的齐涨齐跌。\n\n## 图表解读\n\n[[AIME_CHART:case:inspiration/analysis-dynamic_line/inspiration-real-analysis-dynamic_line-chart.html]]\n\n该动态折线以首日 2025-10-09 = 100 归一化，X 轴为交易日、Y 轴为归一化指数，图例内实时显示播放头当日的各标的数值，底部时间轴与 1x/2x/3x 倍速可拖动回放。**图中最值得看的是 2026-03 至 2026-06 这一段**：AAPL、NVDA 的曲线先后触底回升，MSFT 却继续下探并在低位反复，三条曲线的间距在此区间被拉开到全期最大；随后 MSFT 快速收窄缺口，到期末三线收敛。\n\n- **口径**：归一化指数 = 当日收盘价 ÷ 该标的 2025-10-09 收盘价 × 100（基准价 AAPL 254.04 / MSFT 522.40 / NVDA 192.57 美元）。这与常用的\"累计收益率 %\"是同一信息的两种表达，此处按用户\"归一化股价走势\"的要求采用指数口径。\n- **JEV 路由**：对 6 个候选渲染器（dynamic_line / group_line / line_chart / kline / bar_line / dynamic_bar）执行了真实 JEV 路由调用，返回 `primary_script = dynamic_line.py`（置信度 0.99）、`supporting_script = null`、`provider_model = jev-1.13.0`，语义判定为 `comparison-and-ranking`，视觉编码为 `growth-and-rate`——即\"多标的可比归一化序列的时间演进\"，与最终产物一致。按 JEV 契约，图表由 `dynamic_line.py` 调用 Aime 原生 dynamic-line renderer 渲染，脚本自身完成样式后处理；未自写 K 线 HTML/CSS。\n\n## 风险、数据时间与限制（请务必一并阅读）\n\n- **数据源为降级口径**：Yahoo 行情主机本次返回限流，三个标的全部走 Yahoo 的 Nasdaq 日线历史回退通道，且该通道**只提供未复权日线**——`adj_close` 显式不可用，已单独请求验证并按要求明确失败而非静默替代。因此上表为**不含股息再投资的价格指数**，与同期的总回报口径存在差异（AAPL、MSFT 为派息股，实际总回报会略高）。缓存案例目录中的历史数据本次未启用，全部数据为本次真实抓取。\n- 未复权价格对拆股敏感。已扫描全部相邻交易日，区间内最大单日波动为 MSFT 2026-07-30 +15.5%、2026-01-29 −10.0%，NVDA 最大 +8.7%，无约 2:1 或 3:1 的阶梯型跳变，未发现未处理拆股迹象；但这属于事后校验，不等同于复权数据。\n- 归一化曲线的\"收敛\"只是指数点位的接近，**不代表风险等价**：MSFT 的 −34.9% 回撤与 AAPL 的 −13.8% 在持有体验上差异巨大；NVDA 期末较区间高点已回落，动能弱于 AAPL。\n- 回撤、低点日期、单日涨跌均为本次基于原始行情的可复算派生值，不是数据源预置字段。\n- 图表运行验证：headless Chromium 双主题实测通过（明/暗主题切换均正确继承 `--sv-*` 令牌、根背景透明、画布 520px 正常出图、三条曲线与图例数值 134/104/119 可见且无重叠）。**视觉模型验证未能完成**——该步骤缺少可用的视觉模型密钥，故仅完成确定性渲染验证，未做模型级视觉复核，这一点如实披露。\n\n投资含义上，若目标是\"同等起点下的相对强弱\"，AAPL 在本区间同时具备最低回撤与最高期末指数；MSFT 的高弹性修复更依赖后续能否延续（其反弹后仍处最弱区间）；NVDA 高位反复且期末回落，方向性突破尚未确认。以上为数据描述性结论，不构成买卖建议。\n\n产物文件（均以 `inspiration-real-analysis-dynamic_line` 开头，位于 `outputs/generated/`）：图表 HTML、归一化 schema payload（762 行 tidy 数据）、原始行情 JSON、转换审计 JSON、JEV 决策 JSON、明/暗主题渲染截图。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-dynamic_line-116608417f8f468481e5fe33083019ae",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-dynamic_line-116608417f8f468481e5fe33083019ae",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "dynamic_line.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "dynamic_line.py",
+      "supporting": null,
+      "selectedScripts": [
         "dynamic_line.py"
       ],
-      "primary_script": "dynamic_line.py",
-      "supporting_script": null,
-      "primary_confidence": 0.99,
-      "supporting_confidence": 0.89,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "trend-and-inflection",
-      "semantic_lens_confidence": 1.0,
-      "primary_purpose": "{\"chartType\": \"dynamic-line\", \"script\": \"dynamic_line.py\", \"purpose\": \"Show playable time-series progression for one or more series.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Preferred tidy rows with x/time, series/name, and value fields.\"}, \"semanticChannels\": [{\"channel\": \"x\", \"payloadField\": \"encode.x\", \"required\": true, \"acceptedTypes\": [\"date\", \"string\", \"number\"], \"semantics\": \"time or ordered frame\"}, {\"channel\": \"series\", \"payloadField\": \"encode.series\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"line/entity/group name\"}, {\"channel\": \"y\", \"payloadField\": \"encode.y\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"numeric value at each frame\"}], \"payloadShape\": {\"chartName\": \"dynamic_line\", \"title\": \"string\", \"unit\": \"string\", \"theme\": \"light|dark\", \"encode\": {\"x\": \"string\", \"series\": \"string\", \"y\": \"string\"}, \"data\": \"array<object>\"}, \"modelInstructions\": [\"Prefer tidy long data: one row per series per x value.\", \"Sort x chronologically and keep values numeric.\"]}",
-      "supporting_purpose": "",
-      "visual_encoding": "trend-and-inflection",
-      "visual_encoding_confidence": 0.9,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.98,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.74
-    },
-    "jevError": null
+      "primaryConfidence": 0.99,
+      "supportingConfidence": 0.87,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 0.46,
+      "primaryPurpose": "Show playable time-series progression for one or more series. schema semantics=time or ordered frame; line/entity/group name; numeric value at each frame",
+      "supportingPurpose": "",
+      "visualEncoding": "growth-and-rate",
+      "visualEncodingConfidence": 0.44,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.46,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.56,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2431
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 2438
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4484
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5913
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7088
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7862
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17981
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18454
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20151
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21194
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 22947
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23383
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 54927
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60044
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 60714
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 64608
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 66302
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67209
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 68370
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 70019
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 71508
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 72340
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 73053
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 74299
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 75962
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79181
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 80301
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 85607
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 89319
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 90343
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 90343
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 91871
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 95828
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 98378
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 99062
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 101730
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 103731
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 105226
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 107979
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 110231
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 114849
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 119740
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 121833
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 122556
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 132343
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 135294
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 136949
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 172129
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 175879
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 178627
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 179455
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 183008
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 183474
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 190128
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 191165
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 192995
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 193797
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 196141
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 214840
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 219516
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 230149
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 232616
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 233706
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 243133
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 245997
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 254199
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 256314
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 258679
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 259423
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 260988
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 263092
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 264918
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 266212
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 268992
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 271036
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 274024
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 1111
+      }
+    ],
+    "startedAt": 1791967675112,
+    "endedAt": 1791967960652,
+    "elapsedMs": 286651,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967675112,
+        "endedAt": 1791967960652,
+        "elapsedMs": 285540
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791968115850,
+        "endedAt": 1791968116961,
+        "elapsedMs": 1111
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-dynamic_line-116608417f8f468481e5fe33083019ae",
+    "renderer": "dynamic_line.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "dynamic_line.py",
+      "supporting": null,
+      "selectedScripts": [
+        "dynamic_line.py"
+      ],
+      "primaryConfidence": 0.99,
+      "supportingConfidence": 0.87,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 0.46,
+      "primaryPurpose": "Show playable time-series progression for one or more series. schema semantics=time or ordered frame; line/entity/group name; numeric value at each frame",
+      "supportingPurpose": "",
+      "visualEncoding": "growth-and-rate",
+      "visualEncodingConfidence": 0.44,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.46,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.56,
+      "candidateCount": 45
+    }
   }
 }

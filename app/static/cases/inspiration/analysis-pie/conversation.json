@@ -1,43 +1,310 @@
 {
-  "question": "用饼图展示投资组合配置，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "把 AAPL 最近已披露财年的各产品营收构成做成饼图。",
+  "cachedAt": "2026-10-14T16:46:09.356000+08:00",
   "answer": {
-    "question": "用饼图展示投资组合配置，使用清楚标注的金融演示数据。",
-    "interpretation": "# 投资组合配置\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-pie/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "把 AAPL 最近已披露财年的各产品营收构成做成饼图。",
+    "code": "",
+    "selectedSkill": {
+      "key": "deepseek",
+      "label": "DeepSeek Harness",
+      "script": "deepseek",
+      "reason": "由 DeepSeek Harness 自主规划并执行。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html",
+    "reportUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-pie/chart.html",
-        "url": "/static/cases/inspiration/analysis-pie/chart.html"
+        "path": "case:inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html",
+        "url": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-pie/chart.html",
-    "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "pie.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "payloadUrl": null,
+    "interpretation": "已完成：JEV 路由 → 真实数据取数 → schema 转换 → `pie.py` 原生渲染 → 视觉验证。\n\n**核心结论（AAPL FY2025，财年截至 2025-09-27）**\n\n- 最近已披露财年净销售额 **4161.61 亿美元**，产品结构为 **iPhone 2095.86 亿（50.4%）、服务 1091.58 亿（26.2%）、可穿戴/家居与配件 356.86 亿（8.6%）、Mac 337.08 亿（8.1%）、iPad 280.23 亿（6.7%）**，五项加总与公司披露总额完全一致。\n- 结构变化才是重点：**服务收入同比 +13.5%，占比一年内提升 1.64 个百分点；iPhone 同比 +4.2%，占比反而回落 1.09 个百分点**。硬件整体（3070.03 亿）同比仅 +4.1%，服务已成唯一显著跑赢整体的板块。\n- 集中度判断：iPhone 单独一项占一半、iPhone＋服务合计 **76.6%**（上年 76.0%）。这不是分散化，而是\"硬件基本盘＋高毛利服务\"的双引擎结构。\n\n[[AIME_CHART:case:inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html]]\n\n**图表解读（饼图回答\"收入由谁贡献\"）**\n\n- 环形图按扇区角度编码营收，iPhone 扇区接近整个圆的一半，服务超过四分之一，其余三项硬件合计仅约 23.4%——**收入仍高度依赖单一产品线，同时第二曲线已具规模**。\n- 中心标签给出总额（416.16 B 美元），图例五项文字完整、无截断；悬浮可读取每项金额与比例。视觉验证（`vision-chart-analyst`）确认环形完整渲染、扇区角度与数值成比例、浅深主题下均无渲染错误与控制台报错。\n- 该图**只回答收入构成**：扇区大小不代表利润贡献。服务毛利率显著高于硬件，因此服务在利润端的权重高于其 26.2% 的收入占比——这是本次饼图无法表达、需要在毛利率拆解中补充的维度。\n\n**做法与口径（含降级说明）**\n\n- **JEV 路由（`jev_visualization_router`，模型 jev-1.13.0）**：语义镜头 `composition-and-drivers`、视觉编码 `composition-and-contribution`、证据策略 `us-business-native`、标记策略 `contribution-focus`；主可视化按语义选中 `revenue_sources.py`（置信度 1.0）。你明确要求 `pie.py`（K线复用原生内核的通用图表能力），因此采用\"路由定语义、通用组件定渲染\"的组合：`pie.py` 与业务收入拆分组件同源同一环形渲染内核，数据契约同为 `type=pie`、`items[].label/value`，未改动组件默认样式。路由决策已留档。\n- **数据为实时取数，非缓存**：AInvest 财报可视化财年拆分接口（`type=annual`），标的 `185-AAPL`，单位百万美元，返回 FY2017–FY2025 共 9 个财年；本次取最新已披露的 FY2025。未使用 `--sample`、未使用原 analysis 案例的演示数值，也未使用限流备用快照。\n- **标签口径已交叉验证**：源数据项名为 `Other Products`，与苹果财报口径的 **Wearables, Home and Accessories** 为同一项（356.86 亿），已通过苹果 FY25 Q4 合并财报 PDF 与 2025 年 10-K 的净销售额分类表核对；总额 4161.61 亿与苹果官方披露一致，并且与本仓库缓存财报模块中的 FY2025 年度净销售额（416.161 B）互相印证。饼图标签按中文读者口径显示为\"可穿戴、家居与配件\"，源标签映射保留在 payload 与源数据文件中备查。\n- **时间与版本风险**：FY2025 为公司**最近已披露**财年，FY2026 年报尚未发布；若后续披露 FY2026 或调整分部口径，本图需重取重绘，图表不自动刷新。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-pie-dcb7b5a76ef04c4ba07410f6166562ba",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-pie-dcb7b5a76ef04c4ba07410f6166562ba",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [
+      {
+        "siteName": "apple.com",
+        "url": "https://www.apple.com/newsroom/pdfs/fy2025-q4/FY25_Q4_Consolidated_Financial_Statements.pdf",
+        "title": "apple.com",
+        "summary": "{\"type\": \"external-info-search\", \"query\": \"苹果公司 2025财年（FY2025，截至2025年9月27日）全年净销售额按产品类别的官方披露明细：iPhone、Mac、iPad、Wearables/Home and Accessories（可穿戴、家居与配件）、Services（服务）各是多少十亿美元？请给出苹果FY2025年报/财报中的准确数字，并说明FY2025产品线披露口径（是否仍单列 W",
+        "iconUrl": ""
+      },
+      {
+        "siteName": "SEC filing",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+        "title": "SEC filing",
+        "summary": "{\"type\": \"external-info-search\", \"query\": \"苹果公司 2025财年（FY2025，截至2025年9月27日）全年净销售额按产品类别的官方披露明细：iPhone、Mac、iPad、Wearables/Home and Accessories（可穿戴、家居与配件）、Services（服务）各是多少十亿美元？请给出苹果FY2025年报/财报中的准确数字，并说明FY2025产品线披露口径（是否仍单列 W",
+        "iconUrl": ""
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "pie.py",
+      "supporting": null,
+      "selectedScripts": [
         "pie.py"
       ],
-      "primary_script": "pie.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.72,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "composition-and-drivers",
-      "semantic_lens_confidence": 1.0,
-      "primary_purpose": "{\"chartType\": \"pie\", \"script\": \"pie.py\", \"purpose\": \"Show part-to-whole composition with one ring.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Rows can contain category and value fields, or the payload can provide explicit items.\"}, \"semanticChannels\": [{\"channel\": \"slice.label\", \"payloadField\": \"props.items[].label or items[].label\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"segment/category name\"}, {\"channel\": \"slice.value\", \"payloadField\": \"props.items[].value or items[].value\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"non-negative comparable contribution\"}, {\"channel\": \"slice.display\", \"payloadField\": \"props.items[].displayValue or items[].displayValue\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"formatted value or percentage\"}, {\"channel\": \"center.label\", \"payloadField\": \"props.centerLabel or centerLabel\", \"required\": false, \"acceptedTypes\": [\"string\"], \"semantics\": \"total or central summary\"}], \"payloadShape\": {\"type\": \"pie\", \"props\": {\"title\": \"string\", \"subtitle\": \"string\", \"centerLabel\": \"string\", \"badgeLabel\": \"string\", \"legendPosition\": \"bottom only, optional\", \"showLegendValues\": \"boolean, optional,",
-      "supporting_purpose": "",
-      "visual_encoding": "composition-and-contribution",
-      "visual_encoding_confidence": 1.0,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.99,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.58
-    },
-    "jevError": null
+      "primaryConfidence": 0.68,
+      "supportingConfidence": 0.84,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Show part-to-whole composition with one ring. schema semantics=segment/category name; non-negative comparable contribution; formatted value or percentage; total or central summary",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.74,
+      "markStrategy": "contribution-focus",
+      "markStrategyConfidence": 0.56,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5080
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5081
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6387
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 8245
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14755
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 16664
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 19026
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 19885
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20286
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23794
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24264
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 24930
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31745
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33378
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 33968
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 35765
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 38023
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 39993
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 41982
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42363
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42859
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 44496
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 45080
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 47521
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 53162
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56382
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 59581
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 65644
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67375
+      },
+      {
+        "title": "bash",
+        "elapsedMs": 77694
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 78404
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 78875
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 79302
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 80428
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 121802
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 124748
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 132589
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 136348
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 140856
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 143945
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 150915
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 152205
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 155785
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 159963
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 162392
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 1846
+      }
+    ],
+    "startedAt": 1791967398167,
+    "endedAt": 1791967569356,
+    "elapsedMs": 173035,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967398167,
+        "endedAt": 1791967569356,
+        "elapsedMs": 171189
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791967647171,
+        "endedAt": 1791967649017,
+        "elapsedMs": 1846
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-pie-dcb7b5a76ef04c4ba07410f6166562ba",
+    "renderer": "pie.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "pie.py",
+      "supporting": null,
+      "selectedScripts": [
+        "pie.py"
+      ],
+      "primaryConfidence": 0.68,
+      "supportingConfidence": 0.84,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 1.0,
+      "primaryPurpose": "Show part-to-whole composition with one ring. schema semantics=segment/category name; non-negative comparable contribution; formatted value or percentage; total or central summary",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.74,
+      "markStrategy": "contribution-focus",
+      "markStrategyConfidence": 0.56,
+      "candidateCount": 45
+    }
   }
 }

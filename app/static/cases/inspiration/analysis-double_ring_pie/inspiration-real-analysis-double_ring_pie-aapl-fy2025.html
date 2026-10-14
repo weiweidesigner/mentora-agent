@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>苹果 FY2025 利润率双环图（营收为共同基准）</title>
+<style>
+:root{color-scheme:light;--business-text-171717:#171717;--business-bg-fff:#fff;--business-bg-2f2f2f:#2f2f2f;--business-text-fff:#fff;--business-text-4b5563:#4b5563;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-171717:#f1f5f9;--business-bg-fff:#181e28;--business-bg-2f2f2f:#202733;--business-text-fff:#f1f5f9;--business-text-4b5563:#c1cad7;}
+
+*{box-sizing:border-box}
+	html,body{width:100%;min-height:0;margin:0;background:transparent}
+	body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--business-text-171717);overflow:hidden}
+	.double-ring-component{width:100%;min-height:0;padding:8px 18px 10px;background:transparent}
+	.ring-layout{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;max-width:560px;margin:0 auto}
+	.ring-stage{position:relative;width:100%;height:250px;display:flex;align-items:center;justify-content:center}
+	.ring-side{width:100%;display:flex;justify-content:center}
+	svg{display:block;width:240px;height:240px;overflow:visible}
+.center-text{font-size:18px;font-weight:500;fill:var(--business-text-171717);text-anchor:middle;dominant-baseline:middle}
+.ring-track,.ring-arc,.ring-highlight{transition:opacity .12s ease}
+.ring-arc{cursor:pointer}
+.ring-arc:hover{opacity:.88}
+.ring-highlight{pointer-events:none}
+.ring-tooltip{position:absolute;z-index:5;min-width:150px;padding:8px 11px;background:var(--business-bg-2f2f2f);color:var(--business-text-fff);border-radius:4px;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease}
+.ring-tooltip::after{content:"";position:absolute;top:50%;transform:translateY(-50%) rotate(45deg);width:10px;height:10px;background:var(--business-bg-2f2f2f)}
+.ring-tooltip[data-side="right"]::after{left:-5px}
+.ring-tooltip[data-side="left"]::after{right:-5px}
+.tooltip-title{display:flex;align-items:center;gap:9px;white-space:nowrap}
+.tooltip-value{padding-left:18px;white-space:nowrap}
+.tooltip-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.ring-tooltip.active{opacity:1;visibility:visible}
+	.ring-legend{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px;width:100%;max-width:560px;margin:0 auto;color:var(--business-text-4b5563);font-size:12px;line-height:1.2}
+	.legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
+	.legend-dot{width:8px;height:8px;border-radius:50%;flex:none}
+		.metric-list{display:none;grid-template-columns:minmax(0,1fr) auto;gap:14px 18px;width:100%;max-width:460px;margin:22px auto 0;font-size:14px;line-height:1.2}
+.metric-label{color:var(--business-text-171717);white-space:nowrap}
+.metric-value{font-weight:800;text-align:right;white-space:nowrap}
+		@media(min-width:760px){.double-ring-component{max-width:820px;margin:0 auto}.ring-layout{gap:8px}.ring-stage{height:250px}.ring-side{width:100%;max-width:560px}.ring-legend{justify-content:center;margin:0;font-size:12px;gap:10px 16px}}
+	@media(max-width:520px){.double-ring-component{padding:12px 14px 10px}svg{width:220px;height:220px}.ring-stage{height:230px}.ring-legend{gap:9px 12px;font-size:12px}}
+</style>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script></head>
+<body>
+<section class="double-ring-component" data-component-contract="{&quot;type&quot;: &quot;double-ring-pie&quot;, &quot;name&quot;: &quot;双环饼图&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;中心文本&quot;, &quot;field&quot;: &quot;centerLabel&quot;, &quot;aliases&quot;: [&quot;marketCapLabel&quot;, &quot;totalLabel&quot;], &quot;visualChannel&quot;: &quot;doubleRing.center.label&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;基准环&quot;, &quot;field&quot;: &quot;base&quot;, &quot;aliases&quot;: [&quot;track&quot;, &quot;marketCap&quot;], &quot;visualChannel&quot;: &quot;doubleRing.track&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;双环系列&quot;, &quot;field&quot;: &quot;rings&quot;, &quot;aliases&quot;: [&quot;series&quot;], &quot;visualChannel&quot;: &quot;doubleRing.arc.progress&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;底部指标&quot;, &quot;field&quot;: &quot;metrics&quot;, &quot;aliases&quot;: [&quot;fields&quot;, &quot;keyValues&quot;], &quot;visualChannel&quot;: &quot;metricList.items&quot;}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;centerLabel&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;doubleRing.center.label&quot;}, {&quot;field&quot;: &quot;base.label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.label&quot;}, {&quot;field&quot;: &quot;base.displayValue&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.value&quot;}, {&quot;field&quot;: &quot;base.color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;doubleRing.track.color&quot;}, {&quot;field&quot;: &quot;rings[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.label&quot;}, {&quot;field&quot;: &quot;rings[].value&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;doubleRing.arc.length&quot;}, {&quot;field&quot;: &quot;rings[].total&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;doubleRing.arc.scale&quot;}, {&quot;field&quot;: &quot;rings[].color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;doubleRing.arc.color&quot;}, {&quot;field&quot;: &quot;metrics[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;metric.label&quot;}, {&quot;field&quot;: &quot;metrics[].value&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;metric.value&quot;}], &quot;builtInDataSources&quot;: []}">
+  <div class="ring-layout">
+    <div class="ring-stage"><svg role="img" aria-label="苹果 FY2025 利润率双环图（营收为共同基准）"></svg><div class="ring-tooltip"></div></div>
+    <div class="ring-side">
+      <div class="ring-legend"></div>
+      <div class="metric-list"></div>
+    </div>
+  </div>
+</section>
+<script>
+const config = {"title": "苹果 FY2025 利润率双环图（营收为共同基准）", "centerLabel": "营收 100%", "height": 430, "base": {"label": "营收（共同基准）", "value": 416.161, "displayValue": "4,161.61 亿美元", "color": "#a8b0bd", "trackColor": "#eceef1"}, "rings": [{"label": "营业利润", "value": 133.05, "total": 416.161, "displayValue": "1,330.50 亿美元 · 占营收 31.97%", "color": "#3b6ff5"}, {"label": "净利润", "value": 112.01, "total": 416.161, "displayValue": "1,120.10 亿美元 · 占营收 26.92%", "color": "#27b0a4"}], "metrics": [{"label": "财年", "value": "FY2025（截至 2025-09-27）"}, {"label": "营收", "value": "4,161.61 亿美元"}, {"label": "营业利润率", "value": "31.97%"}, {"label": "净利率", "value": "26.92%"}, {"label": "营业利润", "value": "1,330.50 亿美元"}, {"label": "净利润", "value": "1,120.10 亿美元"}, {"label": "净利率 − 营业利润率", "value": "−5.05 个百分点"}, {"label": "净利润 / 营业利润", "value": "84.19%"}]};
+const root = document.querySelector('.double-ring-component');
+const stage = root.querySelector('.ring-stage');
+const svg = root.querySelector('svg');
+const legend = root.querySelector('.ring-legend');
+const metrics = root.querySelector('.metric-list');
+const tooltip = root.querySelector('.ring-tooltip');
+const NS = 'http://www.w3.org/2000/svg';
+
+const node = (name, attrs = {}, text = '') => {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key,value]) => el.setAttribute(key,value));
+  if (text !== '') el.textContent = text;
+  return el;
+};
+const polar = (cx, cy, r, angle) => {
+  const rad = (angle - 90) * Math.PI / 180;
+  return {x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad)};
+};
+const arcPath = (cx, cy, outerR, innerR, start, end) => {
+  const large = end - start > 180 ? 1 : 0;
+  const p1 = polar(cx, cy, outerR, start);
+  const p2 = polar(cx, cy, outerR, end);
+  const p3 = polar(cx, cy, innerR, end);
+  const p4 = polar(cx, cy, innerR, start);
+  return `M ${p1.x} ${p1.y} A ${outerR} ${outerR} 0 ${large} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${innerR} ${innerR} 0 ${large} 0 ${p4.x} ${p4.y} Z`;
+};
+
+function render() {
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+  metrics.innerHTML = '';
+  const width = svg.clientWidth || 260;
+  const height = svg.clientHeight || 260;
+  const cx = width / 2;
+  const cy = height / 2;
+  const outerR = Math.min(width, height) * .44;
+  const innerR = outerR * .62;
+  const gap = 0;
+  const track = node('path', {d:arcPath(cx,cy,outerR,innerR,0,359.99),fill:config.base.trackColor,class:'ring-track'});
+  svg.appendChild(track);
+  config.rings.forEach((ring, index) => {
+    const ratio = Number(ring.value || 0) / Math.max(Number(ring.total || 1), 0.000001);
+    const bandW = (outerR - innerR - gap) / 2;
+    const bandOuter = index === 0 ? outerR : outerR - bandW - gap;
+    const bandInner = bandOuter - bandW;
+	    const cappedRatio = Math.max(0, Math.min(1, ratio));
+	    const end = cappedRatio >= .999 ? 359.99 : Math.max(.4, cappedRatio * 360);
+    const highlight = node('path', {d:arcPath(cx,cy,bandOuter + 6,bandOuter,0,end),fill:ring.color,class:'ring-highlight','data-index':index});
+    highlight.style.opacity = '0';
+    svg.appendChild(highlight);
+    const arc = node('path', {d:arcPath(cx,cy,bandOuter,bandInner,0,end),fill:ring.color,class:'ring-arc','data-index':index});
+    arc.addEventListener('mouseenter', event => showTooltip(event, ring, index));
+    arc.addEventListener('mousemove', event => showTooltip(event, ring, index));
+    arc.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(arc);
+  });
+  svg.appendChild(node('text', {x:cx,y:cy,class:'center-text'}, config.centerLabel));
+
+  const baseLegend = document.createElement('span');
+  baseLegend.className = 'legend-item';
+  baseLegend.innerHTML = `<i class="legend-dot" style="background:${config.base.color}"></i>${config.base.label}`;
+  legend.appendChild(baseLegend);
+  config.rings.slice().reverse().forEach(ring => {
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    item.innerHTML = `<i class="legend-dot" style="background:${ring.color}"></i>${ring.label}`;
+    legend.appendChild(item);
+  });
+
+	  config.metrics.forEach(metric => {
+	    const label = document.createElement('div');
+    label.className = 'metric-label';
+    label.textContent = metric.label;
+    const value = document.createElement('div');
+    value.className = 'metric-value';
+    value.textContent = metric.value;
+	    metrics.appendChild(label);
+	    metrics.appendChild(value);
+	  });
+	  postChartHeight();
+	}
+function setHighlight(index) {
+  svg.querySelectorAll('.ring-highlight').forEach(item => item.style.opacity = item.dataset.index == index ? '.22' : '0');
+}
+function showTooltip(event, ring, index) {
+  setHighlight(index);
+  tooltip.innerHTML = `<div class="tooltip-title"><i class="tooltip-dot" style="background:${ring.color}"></i>${ring.label}</div><div class="tooltip-value">${ring.displayValue || ring.value}</div>`;
+  tooltip.classList.add('active');
+  const rect = stage.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const tooltipW = tooltip.offsetWidth;
+  const tooltipH = tooltip.offsetHeight;
+  const side = x < stage.clientWidth / 2 ? 'right' : 'left';
+  tooltip.dataset.side = side;
+  const left = side === 'right' ? x + 16 : x - tooltipW - 16;
+  tooltip.style.left = `${Math.max(0, Math.min(stage.clientWidth - tooltipW, left))}px`;
+  tooltip.style.top = `${Math.max(0, Math.min(stage.clientHeight - tooltipH, y - tooltipH / 2))}px`;
+}
+	function hideTooltip() {
+	  tooltip.classList.remove('active');
+	  svg.querySelectorAll('.ring-highlight').forEach(item => item.style.opacity = '0');
+	}
+	function postChartHeight() {
+	  const height = Math.ceil(Math.max(180, root.getBoundingClientRect().height || document.body.scrollHeight || 0)) + 2;
+	  try { parent.postMessage({type:'analysis-planner-chart-height',height}, '*'); } catch (e) {}
+	}
+	window.addEventListener('resize', render);
+	render();
+	setTimeout(postChartHeight,80);
+	setTimeout(postChartHeight,300);
+	</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>管理层</title>
+<style>
+:root{color-scheme:light;--business-text-111:#111;--business-text-0d0d0d:#0d0d0d;--business-text-7a7a7a:#7a7a7a;--business-text-777:#777;--business-text-1b1d21:#1b1d21;--business-border-ececec:#ececec;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-111:#e8edf5;--business-text-0d0d0d:#e8edf5;--business-text-7a7a7a:#a8b3c4;--business-text-777:#a8b3c4;--business-text-1b1d21:#e8edf5;--business-border-ececec:#293646;}
+
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:transparent;
+  color:var(--business-text-111);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+.wrap {
+  width:100%;
+  min-height:0;
+  padding:0;
+}
+.title {
+  margin:0 0 22px;
+  font-size:16px;
+  line-height:1.15;
+  font-weight:780;
+  letter-spacing:0;
+}
+.grid {
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
+  gap:48px;
+  align-items:start;
+}
+.section-title {
+  margin:0 0 8px;
+  font-size:16px;
+  line-height:1.2;
+  font-weight:780;
+}
+.person {
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 18px;
+  align-items:start;
+  gap:12px;
+  width:100%;
+  min-height:58px;
+  padding:10px 0;
+  border-bottom:1px solid var(--business-border-ececec);
+  border-left:0;
+  border-right:0;
+  border-top:0;
+  background:transparent;
+  color:inherit;
+  cursor:pointer;
+  text-align:left;
+  appearance:none;
+  font:inherit;
+}
+.name {
+  min-width:0;
+  margin:0;
+  color:var(--business-text-0d0d0d);
+  font-size:14px;
+  line-height:1.2;
+  font-weight:650;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.role {
+  min-width:0;
+  margin:4px 0 0;
+  color:var(--business-text-7a7a7a);
+  font-size:13px;
+  line-height:1.35;
+  font-weight:400;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.details {
+  display:none;
+  grid-column:1 / -1;
+  padding:10px 0 4px;
+}
+.person[data-open="true"] .name,
+.person[data-open="true"] .role {
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+.person[data-open="true"] .details {
+  display:block;
+}
+.detail-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px 42px;
+  margin-bottom:14px;
+}
+.detail-row {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:14px;
+  align-items:baseline;
+  color:var(--business-text-777);
+  font-size:13px;
+  line-height:1.25;
+}
+.detail-value {
+  color:var(--business-text-1b1d21);
+  text-align:right;
+}
+.bio {
+  margin:0;
+  color:var(--business-text-1b1d21);
+  font-size:13px;
+  line-height:1.5;
+  font-weight:400;
+}
+.chevron {
+  width:14px;
+  height:14px;
+  margin-top:2px;
+  color:var(--business-text-1b1d21);
+  transition:transform .16s ease;
+}
+.person[data-open="true"] .chevron {
+  transform:rotate(180deg);
+}
+.empty {
+  color:var(--business-text-777);
+  font-size:13px;
+  padding:14px 0;
+}
+@media (max-width: 900px) {
+  .wrap { padding:0; }
+  .title { font-size:16px; margin-bottom:18px; }
+  .grid { grid-template-columns:1fr; gap:24px; }
+  .section-title { font-size:15px; }
+  .person { min-height:54px; padding:9px 0; }
+  .name { font-size:14px; }
+  .role { font-size:12px; margin-top:4px; }
+  .detail-grid { grid-template-columns:1fr; gap:9px; margin-bottom:12px; }
+  .detail-row { font-size:12px; }
+  .bio { font-size:12px; }
+}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<main class="wrap">
+  <h1 class="title">管理层</h1>
+  <div class="grid">
+    <section>
+      <h2 class="section-title">管理层</h2>
+      <div id="executives"></div>
+    </section>
+    <section>
+      <h2 class="section-title">董事会</h2>
+      <div id="board"></div>
+    </section>
+  </div>
+</main>
+<script>
+const payload = {"type": "executive-profile", "name": "管理层", "title": "管理层", "code": "AAPL", "market": "185", "exchange": "NASDAQ", "executives": [{"name": "John Ternus", "title": "Director and Chief Executive Officer", "gender": "Male", "age": "50", "education": "N/A", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": "John Ternus,joined Apple in 2001 and assumed his current position in 2021. Mr. Ternus's previous positions at Apple include Vice President, Hardware Engineering."}, {"name": "Kevan Parekh", "title": "Senior Vice President,Chief Financial Officer", "gender": "Male", "age": "54", "education": "N/A", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": "Kevan Parekh oversees Apple's accounting, biness support, financial planning and analysis, treasury, investor relations, internal audit, and tax functions.Kevan joined Apple in June 2013 and assumed his current position in January 2025. Kevan's previo positions at Apple include Vice President, Financial Planning and Analysis and Vice President, Worldwide Finance for Sales, Marketing, and Retail. Prior to joining Apple, Kevan held vario senior leadership roles at Thomson Reuters and General Motors."}, {"name": "Timothy Cook", "title": "Executive Chair", "gender": "Male", "age": "65", "education": "N/A", "salary": "$99.42M", "ownership": "0.02%", "votePower": "0.02%", "bio": "Timothy Cook is the Company's Lead Independent Director and is the Chief Executive Officer of Apple Inc. (\"Apple\").Mr. Cook joined Apple in 1998 as Senior Vice President of Worldwide Operations and also served as its Executive Vice President, Worldwide Sales and Operations and Chief Operating Officer.Mr. Cook was Vice President, Corporate Materials for Compaq Computer Corporation from 1997 to 1998.Previous to his work at Compaq, Mr. Cook served in the positions of Senior Vice President Fulfillment and Chief Operating Officer of the Reseller Division at Intelligent Electronics from 1994 to 1997.Mr. Cook also worked for International Business Machines Corporation from 1983 to 1994, including as Director of North American Fulfillment.Mr. Cook is a member of the Board of Directors of Apple."}, {"name": "Deirdre O'Brien", "title": "Senior Vice President,Retail and People", "gender": "Female", "age": "59", "education": "Master", "salary": "$27.15M", "ownership": "0.00%", "votePower": "0.00%", "bio": "Deirdre O'Brien oversees Apple's retail stores and online teams, and Apple's People team. As the leader of Apple's retail and online teams, Deirdre supports their work to enrich the lives of millions of Apple ctomers every year. In her role as the leader of the People team, Deirdre is dedicated to helping everyone at Apple do the best work of their lives, build on the Company's special culture, and achieve their full potential.Deirdre joined Apple in July 1988 and assumed her current position in October 2024, having previoly served in the role from February 2019 to May 2023. Deirdre's previo positions with Apple include Senior Vice President, Retail; Vice President, People; and Vice President, Operations."}, {"name": "Sabih Khan", "title": "Chief Operating Officer", "gender": "Male", "age": "59", "education": "N/A", "salary": "--", "ownership": "0.01%", "votePower": "0.01%", "bio": "Sabih Khan oversees Apple's entire worldwide operations, environmental and social initiatives, as ll as AppleCare ctomer service and support. Sabih leads the team in charge of Apple's global supply chain, ensuring product quality, and overseeing planning, procurement, manufacturing, logistics, and product fulfillment functions, as ll as Apple's supply chain innovation programs that protect and educate workers at supplier facilities around the world. Sabih also oversees teams focused on Apple's environmental and social initiatives, accessibility and artificial intelligence data operations. As the leader of AppleCare, Sabih also leads the dedicated teams that help ctomers navigate any service and support they need for all of their Apple products and services."}, {"name": "Jennifer Newstead", "title": "General Counsel", "gender": "", "age": "", "education": "N/A", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": ""}, {"name": "Kate Adams", "title": "Senior Vice President and Secretary", "gender": "Female", "age": "62", "education": "N/A", "salary": "$27.15M", "ownership": "0.00%", "votePower": "0.00%", "bio": "Kate Adams oversees all of Apple's legal matters, including corporate governance, intellectual property, litigation, compliance, global security, and privacy.Kate joined Apple as General Counsel in November 2017. Prior to joining Apple, Kate served as General Counsel of Honeyll International Inc., a diversified technology and manufacturing company, from September 2008. Prior to joining Honeyll in 2003, Kate was a partner at the law firm of Sidley Atin LLP."}, {"name": "Ben Borders", "title": "Principal Accounting Officer", "gender": "Male", "age": "45", "education": "N/A", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": "Ben Borders,joined Apple in November 2010 and assumed his current position in January 2026. Mr. Borders' previous positions at Apple include Director of Technical Accounting."}], "board": [{"name": "John Ternus", "title": "Director and Chief Executive Officer", "gender": "Male", "age": "50", "education": "N/A", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": "John Ternus,joined Apple in 2001 and assumed his current position in 2021. Mr. Ternus's previous positions at Apple include Vice President, Hardware Engineering."}, {"name": "Art Levinson", "title": "Lead Independent Director", "gender": "Male", "age": "75", "education": "PhD", "salary": "$562.46K", "ownership": "0.03%", "votePower": "0.03%", "bio": "Art Levinson has served as the Chief Executive Officer of Calico, a company focused on health, aging, and ll being, since September 2013.Dr. Levinson previoly served as Chief Executive Officer of Genentech, Inc., a medical drug developer, from July 1995 to April 2009, and served as Genentech's Chairman from September 1999 to September 2014.Dr. Levinson also serves on the Board of Directors of the Broad Institute of MIT and Harvard and on the Board of Scientific Consultants at the Memorial Sloan Kettering Cancer Center.Dr. Levinson was awarded the National Medal of Technology and Innovation, the nation's highest honor for achievement and leadership in advancing the fields of science and technology, and the Biotechnology Heritage Award from the Biotechnology Indtry Organization and the Chemical Heritage Foundation. Dr. Levinson has been inducted into the Biotech Hall of Fame."}, {"name": "Ron Sugar", "title": "Director", "gender": "Male", "age": "77", "education": "PhD", "salary": "$423.95K", "ownership": "0.00%", "votePower": "0.00%", "bio": "Ron Sugar is the retired Chairman and Chief Executive Officer of Northrop Grumman Corporation, a global security company. Dr. Sugar served in this role from April 2003 to June 2010 and served as President and Chief Operating Officer from 2001 to 2003. Before joining Northrop Grumman, he held executive positions at Litton Indtries and TRW Inc., where he served as Chief Financial Officer. Dr. Sugar serves on the Board of Trtees of the University of Southern California and on the Board of the Los Angeles Philharmonic Association. Dr. Sugar was elected as a member of the National Academy of Engineering for major contributions to advanced space communication systems and leadership in aerospace innovation."}, {"name": "Sue Wagner", "title": "Director", "gender": "Female", "age": "64", "education": "N/A", "salary": "$405.42K", "ownership": "0.00%", "votePower": "0.00%", "bio": "Sue Wagner is a co founder of BlackRock, Inc., an asset management company. Ms. Wagner served as BlackRock's Vice Chair from January 2006 until her retirement in July 2012, and also served as a member of BlackRock's Global Executive Committee and Global Operating Committee. During her tenure at BlackRock, Ms. Wagner served as BlackRock's Chief Operating Officer and Head of Corporate Strategy, and led the alternative investments and international client binesses. Ms. Wagner also serves on the Board of Directors of Color Health, Inc., a privately held health technology company."}, {"name": "Andrea Jung", "title": "Director", "gender": "Female", "age": "67", "education": "N/A", "salary": "$409.51K", "ownership": "0.00%", "votePower": "0.00%", "bio": "Andrea Jung has served as the President and Chief Executive Officer and a member of the Board of Grameen America LLC, a non profit microfinance organization helping women who live in poverty build small binesses, since April 2014. Ms. Jung previoly served as Executive Chairman of Avon Products, Inc., a personal care products company, from April 2012 to December 2012, and as Chairman of the Board of Avon from September 2001 to April 2012. Ms. Jung served as Chief Executive Officer of Avon from November 1999 to April 2012, and served as a member of Avon's Board from January 1998 to December 2012. Ms. Jung also serves on the Board of Rockefeller Capital Management."}, {"name": "Wanda Austin", "title": "Director", "gender": "", "age": "71", "education": "PhD", "salary": "--", "ownership": "0.00%", "votePower": "0.00%", "bio": "Wanda Austin is the retired President and Chief Executive Officer of The Aerospace Corporation, an independent, non profit organization performing objective technical analyses and assessments for a variety of government, civil, and commercial ctomers, operating the only federally funded research and development center committed exclively to the space enterprise. Dr. Atin served in this role from January 2008 until October 2016. Dr. Atin joined The Aerospace Corporation in 1979, serving in vario positions of increasing responsibility. Dr. Atin is also a Member of the National Academy of Engineering and is a co founder of MakingSpace, Inc., a leadership and science, technology, engineering, and mathematics (STEM) consulting firm. Dr. Atin was the Interim President of the University of Southern California from 2018 to 2019 and has served on the American Energy Innovation Council since 2017. Dr. Atin also served on the Defense Policy Board from 2017 to 2019, the President's Council of Advisors on Science and Technology from 2015 to 2017, the Defense Science Board from 2009 to 2017, and the NASA Advisory Council from 2005 to 2007 and 2014 to 2016."}, {"name": "Alex Gorsky", "title": "Director", "gender": "Male", "age": "65", "education": "N/A", "salary": "$453.19K", "ownership": "0.00%", "votePower": "0.00%", "bio": "Alex Gorsky is the former chairman and chief executive officer of Johnson & Johnson, and one of jt seven leaders to have served in the dual role of chairman and chief executive officer since the company was listed on the New York Stock Exchange in 1944. He joined Johnson & Johnson in 1988 as a sales representative with Janssen Pharmaceutica. In 2003, he was named company group chairman of the Johnson & Johnson pharmaceutical biness in Europe, the Middle East and Africa. Mr. Gorsky left Johnson & Johnson in 2004 to join the Novartis Pharmaceuticals Corporation, where he served as head of the company's pharmaceutical biness in North America. Mr. Gorsky returned to Johnson & Johnson in 2008 as company group chairman for Ethicon. In early 2009, he was appointed worldwide chairman of the Surgical Care Group and member of the executive committee. In September 2009, he was appointed worldwide chairman of the Medical Devices and Diagnostics Group and became vice chairman of the executive committee in January 2011. He was named chief executive officer and joined the board of directors in April 2012, and was named chairman of the board of directors in December 2012. Mr. Gorsky remained chief executive officer until he transitioned to executive chairman at the end of 2021. He currently sits on the boards of Apple, JPMorgan Chase and the Travis Manion Foundation, and serves on the Board of Advisors for the Wharton School of the University of Pennsylvania."}, {"name": "Timothy Cook", "title": "Executive Chair", "gender": "Male", "age": "65", "education": "N/A", "salary": "$99.42M", "ownership": "0.02%", "votePower": "0.02%", "bio": "Timothy Cook is the Company's Lead Independent Director and is the Chief Executive Officer of Apple Inc. (\"Apple\").Mr. Cook joined Apple in 1998 as Senior Vice President of Worldwide Operations and also served as its Executive Vice President, Worldwide Sales and Operations and Chief Operating Officer.Mr. Cook was Vice President, Corporate Materials for Compaq Computer Corporation from 1997 to 1998.Previous to his work at Compaq, Mr. Cook served in the positions of Senior Vice President Fulfillment and Chief Operating Officer of the Reseller Division at Intelligent Electronics from 1994 to 1997.Mr. Cook also worked for International Business Machines Corporation from 1983 to 1994, including as Director of North American Fulfillment.Mr. Cook is a member of the Board of Directors of Apple."}, {"name": "Monica Lozano", "title": "Director", "gender": "Female", "age": "69", "education": "N/A", "salary": "$376.47K", "ownership": "0.00%", "votePower": "0.00%", "bio": "Monica Lozano is the retired President and Chief Executive Officer of the College Futures Foundation, a charitable foundation working to increase the rate of college graduation for low income California students. Ms. Lozano served in this role from December 2017 to August 2022. Ms. Lozano also co founded The Aspen Institute Latinos and Society Program and served as Chair of its Advisory Board from January 2015 to October 2019. Her career in media spanned more than 30 years, including as Chair of the Board of Directors of U.S. Hispanic Media, Inc., the parent company of ImpreMedia, a national Hispanic news and information company, from June 2014 to January 2016, and as Chair of ImpreMedia from July 2012 to January 2016 and Chief Executive Officer from May 2010 to May 2014. She also served as Publisher of La Opinión from 2004 to May 2014 and Chief Executive Officer from 2004 to July 2012. Ms. Lozano serves on the Board of the ingart Foundation, a private grantmaking foundation advancing racial, social, and economic jtice in Southern California, and is a Member of the American Academy of Arts and Sciences."}], "source": {"provider": "AInvest profile page", "url": "https://www.ainvest.com/stocks/NASDAQ-AAPL/profile/"}, "language": "zh-CN", "componentUi": {"Exchange": "交易所", "Business": "主营业务", "Type": "类型", "Stock": "股票", "Executive Profile": "管理层", "Executive profile": "管理层", "Executives": "管理层", "Board": "董事会", "No data": "暂无数据", "Value": "价值", "Gender": "性别", "Age": "年龄", "Education": "学历", "Salary": "薪酬", "Ownership": "持股", "Vote Power": "投票权"}, "theme": "light"};
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function detailRow(label, value) {
+  return `<div class="detail-row"><span>${escapeHtml(label)}</span><span class="detail-value">${escapeHtml(value || '--')}</span></div>`;
+}
+function renderPeople(targetId, people) {
+  const target = document.getElementById(targetId);
+  if (!people || !people.length) {
+    target.innerHTML = '<div class="empty">暂无数据</div>';
+    return;
+  }
+  target.innerHTML = people.map(person => `
+    <button class="person" type="button" data-open="false" aria-expanded="false">
+      <div class="copy">
+        <p class="name" title="${escapeHtml(person.name)}">${escapeHtml(person.name)}</p>
+        <p class="role" title="${escapeHtml(person.title)}">${escapeHtml(person.title)}</p>
+      </div>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="details">
+        <div class="detail-grid">
+          ${detailRow("性别", person.gender)}
+          ${detailRow("年龄", person.age)}
+          ${detailRow("学历", person.education || 'N/A')}
+          ${detailRow("薪酬", person.salary)}
+          ${detailRow("持股", person.ownership)}
+          ${detailRow("投票权", person.votePower)}
+        </div>
+        <p class="bio">${escapeHtml(person.bio || '')}</p>
+      </div>
+    </button>
+  `).join('');
+  target.querySelectorAll('.person').forEach((row) => {
+    row.addEventListener('click', () => {
+      const open = row.dataset.open !== 'true';
+      row.dataset.open = String(open);
+      row.setAttribute('aria-expanded', String(open));
+    });
+  });
+}
+renderPeople('executives', payload.executives);
+renderPeople('board', payload.board);
+</script>
+</body>
+</html>

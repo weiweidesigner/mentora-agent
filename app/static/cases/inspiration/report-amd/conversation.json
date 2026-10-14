@@ -1,21 +1,491 @@
 {
-  "question": "用一页报告梳理 AMD 分析师共识和目标价分歧。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "基于 AMD 最新已披露财报、分析师评级和历史股价，分析增长、市场预期与估值风险，通过 streamviz 做成完整金融分析报告。",
+  "cachedAt": "2026-10-14T16:55:09.889000+08:00",
   "answer": {
-    "question": "用一页报告梳理 AMD 分析师共识和目标价分歧。",
-    "interpretation": "# AMD 分析师共识报告\n\n共识买入与目标价分歧需要同时观察。\n\n[[AIME_CHART:case:inspiration/report-amd/chart.html]]\n\n## 数据口径\n\n数据来自已缓存 AMD 案例中的 AInvest 分析师评级；评级窗口与参考收盘价日期不同，完整口径见案例正文。",
+    "question": "基于 AMD 最新已披露财报、分析师评级和历史股价，分析增长、市场预期与估值风险，通过 streamviz 做成完整金融分析报告。",
+    "code": "",
+    "selectedSkill": {
+      "key": "streamviz,yahoo-data,business-chart-recall,code-interpreter,internal-search,external-search",
+      "label": "streamviz + yahoo-data + business-chart-recall + code-interpreter + internal-search + external-search",
+      "script": "streamviz + yahoo-data + business-chart-recall + code-interpreter + internal-search + external-search",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
+    "reportUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/report-amd/chart.html",
-        "url": "/static/cases/inspiration/report-amd/chart.html"
+        "path": "case:inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html"
+      },
+      {
+        "path": "case:inspiration/report-amd/inspiration-real-report-amd-kline.html",
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html"
+      },
+      {
+        "path": "case:inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html",
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/report-amd/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成全链路真实数据生成与校验。以下是完整分析。\n\n---\n\n# AMD：增长在加速，但价格已经把加速提前兑现\n\n**核心结论（证据强度：高，基于已披露财报与当前一致预期）**\n\n1. **增长是真的、而且在加速。** 最新已披露季度（Q2 FY2026，期末 2026-06-27）营收 **115.36 亿美元，同比 +50.1%**，是近十季首次站上 50%，GAAP 净利润 22.97 亿美元（同比 +163.4%），TTM 营收 412.7 亿、TTM 净利润 64.3 亿，均已超过 FY2025 全年（346.39 亿 / 43.35 亿）。毛利率同步升至 53.8%——增量收入不是低价换量。\n2. **预期已经追上交付。** 过去四季营收、EPS 全部超一致预期，但超预期幅度从 +6.2% 收敛到 +2.0%；下季（Q3'26，预计 11 月 3 日披露）一致预期营收 130.62 亿、隐含环比 **+13.2%**，非 GAAP EPS 1.94。市场要求的是\"继续加速\"，而非\"维持\"。\n3. **风险在价格里，不在财报里。** 平均目标价 643.26 美元对最新收盘 605.53 美元只剩 **+6.2%** 空间，而目标价区间 465–800 美元、离散度 **52%**——共识均值已不再提供安全垫。估值端 PS(TTM) **23.9x**、TTM GAAP PE **约 154x**，即便把下季非 GAAP EPS 一致预期直接年化，前瞻 PE 仍有 **约 78x**。**当前价格买的是尚未发生的盈利。**\n\n---\n\n## 一、完整报告看板（StreamViz）\n\n整合了增长、预期、估值、风险五个板块，含近八季营收/净利润趋势图、目标价区间带、估值口径表与传导链。已通过 320px / 390px / 1440px 三档视口验证无横向溢出，浅色与深色主题均使用同一份内容。\n\n[[AIME_CHART:case:inspiration/report-amd/inspiration-real-report-amd-streamviz.html]]\n\n**图中最关键的三个读数**：营收同比从 Q1'24 的 +2.2% 单调抬升到 Q2'26 的 +50.1%（末行增速带）；净利润趋势线的斜率在 Q4'25 之后明显变陡（利润弹性大于营收弹性）；目标价区间带中，最新收盘价与平均目标价几乎重叠，而区间下沿 465 美元比现价低约 23%。\n\n## 二、价格位置：一年翻倍之后处在区间高位\n\n近一年日K线（含成交量与 MACD）显示价格区间约 **205–606 美元**，最新收盘 605.53 美元贴近一年高点，累计涨幅约 **+160%**。价格与预期同步上行，是\"目标价上调但仍追不上股价\"的直接原因。\n\n[[AIME_CHART:case:inspiration/report-amd/inspiration-real-report-amd-kline.html]]\n\n## 三、预期侧的结构：超预期幅度收敛，但下季门槛抬升\n\n实际值与一致预期对照给出本报告最重要的一条边际变化：**交付仍超预期，但超出幅度在被预期消化**（营收 +5.59% → +6.22% → +3.57% → +2.00%）。同时 Q3'26 预期营收 130.62 亿，较 Q2'26 实际值要求 +13.2% 环比。\n\n[[AIME_CHART:case:inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html]]\n\n## 四、风险与失效条件\n\n- **估值容错极低**：PS 23.9x、TTM PE 约 154x、前瞻 PE 约 78x 三者同时高位，任何一次环比不及 +13.2% 或毛利率回落，都会同时压低盈利预期与估值倍数。\n- **预期高度一致**：23 位分析师中 21 位买入/强烈买入、2 位持有、0 位卖出，平均分 3.96/5，行业排名第 38/77。共识越集中，超预期的上行弹性越小、低于预期的下行冲击越大。\n- **目标价分歧极大**：区间 465–800 美元、离散度 52%，说明市场对加速器份额与毛利率路径并无共识，均值 643.26 美元的参考价值有限。\n- **增长依赖单一叙事**：同比增速抬升与倍数扩张同步发生，价格中已包含\"持续加速\"假设；AI 资本开支节奏放缓会让增速与倍数同向收缩。\n- **最近的验证点**：下一份财报预计 **2026-11-03** 披露。\n\n---\n\n## 数据时间、口径与降级披露\n\n- **行情**：截至 2026-10-13 收盘（最新收盘 605.53 美元），日线来自 Nasdaq 历史接口经 Yahoo 适配器取得（Yahoo chart 主机本次返回 429，已按适配器既有降级路径使用 Nasdaq 未复权日线）。\n- **财务**：取自 AInvest 财报数据源，最新已披露季度为 Q2 FY2026（期末 2026-06-27），营收/净利润为 GAAP 口径、单位十亿美元；毛利率按毛利润 ÷ 营收计算；年度对照为 FY2024 25.785B / FY2025 34.639B。\n- **一致预期、目标价、评级分布**：AInvest 分析师模块近 90 天口径（更新于 2026-10-07）。\n- **市值与估值倍数为我方推导，非交易所披露值**：市值 = 最新收盘价 × Yahoo 快照隐含股本（1.632B 股）= 988.5B 美元；PS(TTM) = 市值 ÷ TTM 营收；PE(TTM) = 市值 ÷ TTM 净利润；前瞻 PE = 收盘价 ÷（下季非 GAAP EPS 一致预期 × 4）年化，与非 GAAP 历史口径不完全可比。\n- **明确的数据缺口**：Yahoo Finance 季度财务字段（total_revenue / net_income）与关键统计（key-statistics）接口本次返回\"无数据 / HTTP 429\"，AInvest 估值组件返回空状态——三者均**未采用**，也未用示例数据替代，估值倍数改用上述可追溯的推导口径。外部检索 Skill 因运行环境未配置 `MOONSHOT_API_KEY` 无法执行，因此本报告未引用外部新闻/公告类事实，结论仅建立在财报数据、分析师预期与行情三类结构化证据上。\n- 本页为研究与可视化结果，不构成投资建议。\n\n**实际生成产物**（均位于 `outputs/generated/`，文件名以 `inspiration-real-report-amd` 开头，HTML 已校验存在且非空、含真实数据）：\n`-streamviz.html`（主报告，43 KB）、`-streamviz-payload.json`、`-kline.html`、`-revenue-estimate.html` + `.json`、`-income-statement.html` + `.json`、`-analyst-recommendations.html` + `.json`、`-average-rating-history.html` + `.json`、`-price-target-vs-actual.html` + `.json`、`-eps-estimate.html`。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-report-amd-d7ce9c864b6d41108b99279e9bee2ab7",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-report-amd-d7ce9c864b6d41108b99279e9bee2ab7",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991faac79b9a7aca082cb534ca7)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 9487
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 9494
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11137
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11137
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 15821
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 16247
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 16644
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18767
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 20398
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 21962
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 26414
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 31469
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33375
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33805
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 36111
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 36561
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 37871
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 46093
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 53269
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 53636
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 56576
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 58778
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 85979
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 91286
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 98015
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 98470
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 153131
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 172562
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 175116
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 175955
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 178160
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 193084
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 195778
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 197154
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 234739
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 237459
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 240709
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 244572
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 245325
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 313226
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 315411
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 319442
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 335359
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 339649
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 340755
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 343293
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 345051
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 378127
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 416677
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 419157
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 421162
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 422513
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 425959
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 428307
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 430248
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 433867
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 442819
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 443487
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 448788
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 449464
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 451203
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 457893
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 459535
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 460825
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 461848
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 463763
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 468004
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 498536
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 500685
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 505249
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 506067
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 507429
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 513736
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 517787
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 537891
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 538783
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 542513
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 545323
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 549135
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 551691
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 553394
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 560213
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 562381
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 563024
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 569686
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 570704
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 572601
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 577107
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 612903
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 622099
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 624817
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 665331
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 743017
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 786495
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 811225
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 814330
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 817703
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 822567
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 825708
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 828911
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 845066
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 848339
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 851228
+      }
+    ],
+    "startedAt": 1791967223009,
+    "endedAt": 1791968109889,
+    "elapsedMs": 886880,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967223009,
+        "endedAt": 1791968109889,
+        "elapsedMs": 886880
+      }
+    ]
   },
   "provenance": {
-    "skill": "streamviz",
-    "dataDate": "2026-10-13"
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-report-amd-d7ce9c864b6d41108b99279e9bee2ab7",
+    "renderer": "render_streamviz.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a13991faac79b9a7aca082cb534ca7)",
+      "candidateCount": 45
+    }
   }
 }

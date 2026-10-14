@@ -1,23 +1,203 @@
 {
-  "question": "请展示 AAPL 的股息率走势，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的历史股息率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:43:20.905000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的股息率走势，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 股息率走势\n\n这份案例用原生业务组件展示股息率走势，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-dividend_yield/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的历史股息率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html",
+    "reportUrl": "/static/cases/inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-dividend_yield/chart.html",
-        "url": "/static/cases/inspiration/business-dividend_yield/chart.html"
+        "path": "case:inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html",
+        "url": "/static/cases/inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-dividend_yield/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n**AAPL 最新股息率已降至 0.3125%（2026-10-14），是本次三年窗口（2023-10-14 至 2026-10-14，1091 个日度观测）的最低水平，较 2024 年 4 月的月度峰值 0.5658% 回落约 44.8%，较一年前的 0.4117% 下降 24.1%。** 更关键的是，这不是单点扰动：年度均值连续三年单调下移——**2023 年 0.4995% → 2024 年 0.4767% → 2025 年 0.4419% → 2026 年 0.3630%**，当前值在 1091 个观测中处于第 1 百分位，即三年内只有约 1% 的时间比现在更低。\n\n## 关键证据与图表解读\n\n[[AIME_CHART:case:inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html]]\n\n原生分红业务组件完整保留了日频股息率序列、区间滑块与原生 tooltip（百分比口径），可直接对照下列判断：\n\n**1）图中最重要的形态是 2024 年 4 月见顶后的长周期单边下行，而非短期波动。** 曲线在 2024 年一季度末至 4 月触及区间高位，此后逐级下台阶：2024 年 6 月月度均值 0.4722%、2024 年 12 月 0.3971%、2025 年 12 月 0.3730%，到 2026 年 10 月仅剩 0.3153%。从月度峰值算起，下行已持续 **30 个月**，累计回撤 44.3%。\n\n**2）下行动能至今未止。** 最近 90 日均值 0.3269%，低于前一个 90 日的 0.3552%（-8.0%）；30 日均值 0.3152% 又低于 90 日均值，最新月度均值 0.3153% 贴近区间低点 0.3088%（2026-07-28）。2026 年 7-10 月均值 0.3255%，较 2026 年一季度 0.3985% 再降约 18%。**短、中、长期均值同向向下，说明当前是趋势延续而非超跌。**\n\n**3）需要特别提示的图中\"尖刺\"是数据口径问题，不是真实收益率跳变。** 日序列中有 **21 个观测日（占 1.9%）相对相邻 21 日中位数偏离 ≥15%**，聚成 12 个片段，全部落在 **2 月 12-15 日、5 月 14-17 日、8 月 13-16 日、11 月 10-15 日**四个季度除息窗口内，幅度约 ±24%、持续 1-6 天。0.24 的幅度意味着股价单日反向波动三成以上，与事实不符，属于除息窗口附近的临时重定价。**因此图中原始最高点 0.6472%（2024-02-15）应视为异常日；剔除后真实峰值是 0.5818%（2024-04-19），月度峰值为 2024 年 4 月的 0.5658%。** 上述回撤幅度均以清洗后峰值计算，未使用被污染的极值。\n\n**4）当前水平已系统性偏离历史中枢。** 三年区间均值 0.4370%、中位数 0.4309%、25 分位 0.3880%、75 分位 0.4950%，最新值低于 25 分位约 19%；近 52 周（清洗后）均值 0.3655%，最新值较其低 14.5%。**这意味着买入 AAPL 的股息回报已明显低于过去三年的常态区间。**\n\n## 风险、数据时间与口径\n\n- **数据时间**：本次通过 AInvest 分红业务组件实时取数成功，实际覆盖 **2023-10-14 至 2026-10-14**，共 1091 个日度观测，数据晚于 2026-07-29 的历史快照，因此本次未使用该快照作为输入。序列为自然日历日频（含周末填充值，共 311 个周末记录），周末点沿用前一交易日数值。\n- **口径**：股息率为比率口径（组件内按 ×100 显示为百分比），可视为滚动年化每股分红 ÷ 股价。**本次仅调用分红单一业务组件，未取价格与每股分红序列**，所以\"股息率下行源于股价涨幅持续快于分红上调幅度\"属于该恒等式的机制性推断，而非本组件直接测得的证据，需用价格与 DPS 数据交叉验证后才能作为结论使用。\n- **年度均值的可比性**：2023 年样本仅 79 天（从 10 月 14 日起）、2026 年样本 286 天，两年均为不完整年度，年度均值对比应视为趋势参考而非同口径水平比较。\n- **数据质量限制**：约 1.9% 的观测日在除息窗口出现 ±24% 的临时阶跃，其中 2023 年 11 月 10-15 日是唯一一次持续 6 天的向下阶跃（其余为 1-2 天向上跳变）。这些点不影响整体下行趋势判断，但**会使任何基于单日极值（最高/最低收盘股息率）的结论失真**，涉及单日读数时须以清洗后序列或月度均值为准。\n- **后续确认点**：下一季度除息窗口（约 2027 年 2 月中旬）会再次出现同类尖刺；同时需跟踪每股分红上调幅度与股价的相对速度，判断股息率是在 0.31% 附近筑底还是继续下探。股息率走低本身不构成买卖建议，它同时反映估值抬升与分红回报占比下降两种含义。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-dividend_yield-c4873eacde99417ba2d2bceb336b8379",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-dividend_yield-c4873eacde99417ba2d2bceb336b8379",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139929cda7e31914cebc8630b16fe)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4387
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 5874
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6031
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6864
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7871
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8314
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12447
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 13962
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14633
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 17363
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18346
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20164
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 22892
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 22899
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 24801
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 25257
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 26353
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29215
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 36256
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 37735
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 39246
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 47902
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 49353
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 54884
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 55416
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 60240
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 60800
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 74358
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 90047
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 95406
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 97660
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 103195
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 119382
+      }
+    ],
+    "startedAt": 1791967269405,
+    "endedAt": 1791967400905,
+    "elapsedMs": 131500,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967269405,
+        "endedAt": 1791967400905,
+        "elapsedMs": 131500
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-dividend_yield-c4873eacde99417ba2d2bceb336b8379",
     "renderer": "dividend_yield.py",
-    "schema": "dividend_yield.schema.json",
-    "dataDate": "2026-07-29",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139929cda7e31914cebc8630b16fe)",
+      "candidateCount": 45
+    }
   }
 }

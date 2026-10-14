@@ -1,23 +1,223 @@
 {
-  "question": "请展示 AAPL 的营收与利润，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的最近已披露季度的营收、利润及盈利能力，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:48:35.535000+08:00",
   "answer": {
-    "question": "请展示 AAPL 的营收与利润，解释主要指标和观察方法。",
-    "interpretation": "# AAPL · 营收与利润\n\n这份案例用原生业务组件展示营收与利润，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-income_statement/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-09-05 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的最近已披露季度的营收、利润及盈利能力，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html",
+    "reportUrl": "/static/cases/inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-income_statement/chart.html",
-        "url": "/static/cases/inspiration/business-income_statement/chart.html"
+        "path": "case:inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html",
+        "url": "/static/cases/inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-income_statement/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成本次执行：实时取数 → 原生业务组件渲染 → 可审计派生指标计算 → 结构化校验。以下为完整分析。\n\n---\n\n## 核心结论：AAPL 最新已披露季度是「增收更增利」的加速形态，毛利率首次站上 50%\n\n最新已披露财季为 **2026 财年第三财季（组件标注 Q3 '26，截至 2026-06-27）**：**收入 1,094.17 亿美元、同比增长 16.4%**，**净利润 297.89 亿美元、同比增长 27.1%**，利润增速明显快于收入增速。这不是单季波动——**净利润率从去年同期的 24.92% 提升到 27.23%（+2.31 个百分点）**，而**毛利率从 46.49% 升至 50.06%（+3.57 个百分点）**，在该组件覆盖的 66 个季度里**是唯一一个毛利率达到或超过 50% 的季度**（此前峰值是 2012 财年 Q2 的 47.37%）。更关键的是，**利润率扩张几乎全部来自毛利端，而不是费用压缩**：费用占收入比重反而同比上升 1.26 个百分点至 22.83%。这意味着当前盈利改善更像定价与产品结构的结果，而非节流，可持续性判断应盯住毛利率而非费用率。\n\n[[AIME_CHART:case:inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html]]\n\n**图内看点（原生利润表组件）**：默认停在「季度 × 收入」视图，可用指标页签切换收入／营业利润／净利润／EBIT，用「趋势」柱＋同比线看增长节奏，用「拆解」瀑布看 收入 → 销售成本 → 毛利 → 费用 → 净利润 的漏斗。柱状最右三根（Q1 '26 143.76B、Q2 '26 111.18B、Q3 '26 109.42B）是本轮增长中枢抬升的直观证据；同比线在最近三季集中落在 **15.7%–16.6%** 区间，而前五季只有 **4.0%–9.6%**。瀑布图则显示最新季度毛利 547.70 亿、费用 249.81 亿，两者差额正好等于净利润 297.89 亿。\n\n## 关键证据：增长中枢上移 + 利润率逐季走高\n\n**收入同比增速完成了台阶式切换。** 最近 8 个季度收入同比依次为 6.07% → 3.95% → 5.08% → 9.63% → 7.94% → **15.65% → 16.60% → 16.36%**：2025 财年全年收入 4,161.61 亿美元、同比仅增 6.43%，而 2026 财年前三季已连续三个季度维持 15% 以上的量级，**增长动能的抬升是结构性的、不是一次性基数效应**。\n\n**毛利率是盈利超预期的第一驱动力。** 最近 8 个季度毛利率为 46.22% → 46.88% → 47.05% → 46.49% → 47.18% → 48.16% → 49.27% → **50.06%**，呈清晰的逐季抬升；年度视角同样是长期上行通道：2020 财年 38.23% → 2021 财年 41.78% → 2022 财年 43.31% → 2023 财年 44.13% → 2024 财年 46.21% → 2025 财年 46.91%。**最新季度销售成本同比仅增 8.60%，远低于收入 16.36% 的增速**，这是毛利率跳升的直接算术来源。\n\n| 指标（十亿美元 / 比率） | Q3 '26（截至 2026-06-27） | Q2 '26 | Q3 '25 | 同比变动 |\n|---|---|---|---|---|\n| 收入 | 109.42 | 111.18 | 94.04 | **+16.36%** |\n| 毛利 / 毛利率 | 54.77 / **50.06%** | 54.78 / 49.27% | 43.72 / 46.49% | +25.28% / **+3.57pp** |\n| 营业利润 / 营业利润率 | 35.70 / 32.62% | 35.89 / 32.28% | 28.20 / 29.99% | +26.57% / +2.63pp |\n| 费用 / 费用占收入 | 24.98 / 22.83% | 25.20 / 22.67% | 20.28 / 21.57% | +23.16% / +1.26pp |\n| 净利润 / 净利润率 | 29.79 / **27.23%** | 29.58 / 26.60% | 23.43 / 24.92% | **+27.12% / +2.31pp** |\n\n**环比视角提醒不要线性外推。** 最新季度收入环比 **-1.59%**（Q2 '26 的 111.18B 降至今 109.42B），净利润环比 **+0.71%**；同期季节性峰值在 Q1 '26（收入 143.76B、净利润率 29.28%）。因此**同比是判断经营趋势的正确口径，环比主要反映季节性**。累计口径同样支持趋势：2026 财年前三季收入 3,643.57 亿美元、同比 +16.15%，净利润 1,014.64 亿美元、同比 +20.01%，相对于 2025 财年全年（4,161.61 亿 / 1,120.10 亿）的节奏明显上移。另需注意 2024 财年 Q4 净利润 147.36 亿美元（净利率 15.52%、同比 -35.81%）是低基数，**2025 财年 Q4 的 +86.39% 净利润同比有基数放大成分，不宜当作可比增速**。\n\n## 风险、数据时间与口径\n\n- **数据时间与新鲜度**：本组件于 **2026-10-14** 通过内置 AInvest 财报源实时取数并重新渲染，最新已披露财季为 **截至 2026-06-27 的 2026 财年第三财季**；与用户提供的 **2026-09-05 快照**在 134 个重叠季度上**数值完全一致（零差异）**，说明该快照并未失真，且自 2026-09-05 以来没有更新的财报被纳入该数据源。2026 财年 Q4 尚未出现在数据中，**下一确认点是 9 月末结束财季的披露**。\n- **口径提示一（重要）**：图中的「费用」是**残差项**（毛利 − 净利润），包含运营费用、税项及其他项目，因此 22.83% 的费用占收入比**不能直接解读为经营费用率**，其 23.16% 的同比增长也不能等同于运营开支增速。\n- **口径提示二**：该数据源中「营业利润」与「EBIT」数值完全相同（如最新季度均为 35.695B），**两者不是两个独立口径**，不应据此做交叉验证。\n- **口径提示三**：毛利率与成本拆解数据自 Q2 '10 起可得（共 66 个季度），更早季度仅有收入/利润点状数据；「66 个季度最高」的结论限于该覆盖区间。\n- **覆盖范围限制**：本组件只回答损益表问题，**不拆分产品线或地区**，因此无法判断本轮增长与毛利改善具体来自硬件还是服务、来自哪个市场；也不含现金流与资产负债表，**利润到经营现金的转化质量需另看现金流量组件**。\n- **验证降级披露**：本环境未配置视觉模型密钥，无法用视觉组件对渲染结果做图像级复核；已改用结构化校验替代并全部通过——产物为 232 KB 非空 HTML，包含 Q3 '26 标签与 109.417／29.789 等最新数值、浅色与深色主题及运行时切换属性、中文页签与图例、且无空状态占位。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-income_statement-a196c63698aa4271bda0b78caa14b455",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-income_statement-a196c63698aa4271bda0b78caa14b455",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139975f2178739e28a0d4d1096bc9)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3166
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4399
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6683
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7091
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11118
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12029
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14361
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 15032
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 15669
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16967
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 17368
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18016
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18644
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 19272
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 33406
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33987
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 36898
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 39794
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 39801
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 41649
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 42138
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 53467
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 56476
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 58281
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 61450
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 63898
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65629
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 66790
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 69053
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 77247
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 80020
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 81072
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 89046
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 92594
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 96737
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 101846
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 108762
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 111672
+      }
+    ],
+    "startedAt": 1791967583325,
+    "endedAt": 1791967715535,
+    "elapsedMs": 132210,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967583325,
+        "endedAt": 1791967715535,
+        "elapsedMs": 132210
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-income_statement-a196c63698aa4271bda0b78caa14b455",
     "renderer": "income_statement.py",
-    "schema": "income_statement.schema.json",
-    "dataDate": "2026-09-05",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139975f2178739e28a0d4d1096bc9)",
+      "candidateCount": 45
+    }
   }
 }

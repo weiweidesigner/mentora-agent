@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）</title>
+<script src="/static/vendor/echarts.min.js"></script>
+<script>window.echarts||document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"><\/script>')</script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:auto;min-height:0;background:transparent;color:#151922;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden}
+#wrap{position:relative;width:100%;height:320px;min-height:0;max-height:none;background:transparent;overflow:hidden}
+#header{position:absolute;left:0;right:1px;top:12px;z-index:6;pointer-events:none}
+#title{margin:0;padding:0;font-family:"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:22px;line-height:1.35;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#151922}
+#legend{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;min-height:18px}
+.legendItem{display:inline-flex;align-items:center;gap:7px;color:#687386;font-size:12px;line-height:18px;white-space:nowrap}
+.legendDot{width:9px;height:9px;flex:0 0 9px;border-radius:50%}
+#chart{position:absolute;inset:0;height:100%;min-height:100%}
+#empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#687386;font-size:14px;z-index:7}
+#timelineBar{position:absolute;left:0;right:0;bottom:14px;z-index:8;display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:transparent;border:1px solid transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
+#timelineBar.is-hidden{display:none}
+#playBtn{width:28px;height:28px;position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:0;border:0;border-radius:999px;background:#4c91ff;color:#fff;cursor:pointer}
+#playBtn::before{content:"";width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid #fff;transform:translateX(1px)}
+#playBtn.is-playing::before{width:8px;height:10px;border:0;border-radius:1px;background:linear-gradient(90deg,#fff 0 36%,transparent 36% 64%,#fff 64% 100%);transform:none}
+.timeLabel{min-width:58px;color:#687386;font-size:12px;line-height:1;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+#sliderWrap{position:relative;display:flex;align-items:center;flex:1;min-width:80px;height:28px;padding:0}
+#sliderTrack{position:absolute;left:0;right:0;top:50%;height:4px;border-radius:999px;background:rgba(76,145,255,.16);transform:translateY(-50%);pointer-events:none;overflow:hidden}
+#sliderFill{display:block;width:0;height:100%;border-radius:inherit;background:#4c91ff}
+#timelineRange{position:absolute;inset:0;width:100%;height:28px;margin:0;appearance:none;background:transparent;cursor:pointer;z-index:2}
+#timelineRange::-webkit-slider-thumb{appearance:none;width:14px;height:14px;margin-top:-5px;border-radius:999px;background:#4c91ff;border:0;box-shadow:0 0 0 5px rgba(76,145,255,.14)}
+#timelineRange::-webkit-slider-runnable-track{height:4px;background:transparent}
+#timelineRange::-moz-range-thumb{width:14px;height:14px;border-radius:999px;background:#4c91ff;border:0;box-shadow:0 0 0 5px rgba(76,145,255,.14)}
+#timelineRange::-moz-range-track{height:4px;background:transparent}
+#speedBtn{height:28px;min-height:28px;line-height:28px;min-width:42px;padding:0 10px;border-radius:999px;border:1px solid transparent;background:rgba(148,163,184,.10);color:#151922;font-size:12px;font-weight:750;cursor:pointer}
+@media(max-width:720px){
+ #header{top:8px}
+ #title{font-size:17px}
+ #legend{gap:7px 12px;margin-top:8px}
+ .legendItem{font-size:11px}
+ #timelineBar{bottom:12px;gap:7px;padding:5px 8px}
+ .timeLabel{min-width:42px;font-size:11px}
+ #speedBtn{height:28px;min-height:28px;line-height:28px;min-width:38px;padding:0 9px}
+}
+</style>
+</head>
+<body>
+<div id="wrap" data-renderer-version="dynamic-bar-spacing-v5">
+  <div id="header"><h1 id="title">AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）</h1><div id="legend"></div></div>
+  <div id="chart"></div>
+  <div id="empty">暂无可渲染数据</div>
+  <div id="timelineBar" class="is-hidden">
+    <button id="playBtn" type="button" aria-label="播放"></button>
+    <button id="speedBtn" type="button">1x</button>
+    <div id="startLabel" class="timeLabel"></div>
+    <div id="sliderWrap">
+      <div id="sliderTrack"><span id="sliderFill"></span></div>
+      <input id="timelineRange" type="range" min="0" max="0" value="0" aria-label="时间轴" />
+    </div>
+    <div id="endLabel" class="timeLabel"></div>
+  </div>
+</div>
+<script>
+const payload={"rows": [{"frame": "2024Q3", "name": "苹果 AAPL", "value": 94.93, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2024Q3", "name": "谷歌 GOOGL", "value": 88.268, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2024Q3", "name": "微软 MSFT", "value": 65.585, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2024Q4", "name": "苹果 AAPL", "value": 124.3, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2024Q4", "name": "谷歌 GOOGL", "value": 96.469, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2024Q4", "name": "微软 MSFT", "value": 69.632, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q1", "name": "苹果 AAPL", "value": 95.359, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q1", "name": "谷歌 GOOGL", "value": 90.234, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q1", "name": "微软 MSFT", "value": 70.066, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q2", "name": "谷歌 GOOGL", "value": 96.428, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q2", "name": "苹果 AAPL", "value": 94.036, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q2", "name": "微软 MSFT", "value": 76.441, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q3", "name": "苹果 AAPL", "value": 102.466, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q3", "name": "谷歌 GOOGL", "value": 102.346, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q3", "name": "微软 MSFT", "value": 77.673, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q4", "name": "苹果 AAPL", "value": 143.756, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q4", "name": "谷歌 GOOGL", "value": 113.828, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2025Q4", "name": "微软 MSFT", "value": 81.273, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q1", "name": "苹果 AAPL", "value": 111.184, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q1", "name": "谷歌 GOOGL", "value": 109.896, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q1", "name": "微软 MSFT", "value": 82.886, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q2", "name": "谷歌 GOOGL", "value": 119.796, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q2", "name": "苹果 AAPL", "value": 109.417, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}, {"frame": "2026Q2", "name": "微软 MSFT", "value": 90.007, "__series": "AAPL/MSFT/GOOGL 季度营收排名变化（自然季度口径 · 十亿美元）"}], "encode": {"time": "frame", "name": "name", "value": "value", "color": "__series"}, "unit": " 十亿美元", "topN": 3, "valueLabel": "季度营收", "timeLabel": "自然季度（8 个已披露季度）"};
+const rows=payload.rows||[];
+const enc=payload.encode||{};
+const unit=payload.unit||"";
+const topN=Math.max(3,Number(payload.topN)||10);
+const valueLabel=payload.valueLabel||enc.value||"数值";
+const timeLabelText=payload.timeLabel||enc.time||"时间";
+const palette=["#38bdf8","#34d399","#f97316","#a78bfa","#f43f5e","#facc15","#2dd4bf","#fb7185","#60a5fa","#f59e0b"];
+const localeText=[
+  payload.locale,
+  payload.language,
+  payload.title,
+  payload.subtitle,
+  payload.valueLabel,
+  payload.timeLabel,
+  payload.nameLabel,
+  payload.groupLabel,
+  unit
+].filter(Boolean).join(" ");
+const numberLocale=/[\u4e00-\u9fff]/.test(localeText)?"zh-CN":/[\u3040-\u30ff]/.test(localeText)?"ja-JP":/[\uac00-\ud7af]/.test(localeText)?"ko-KR":"en-US";
+
+const empty=document.getElementById("empty");
+const legendEl=document.getElementById("legend");
+const timelineBar=document.getElementById("timelineBar");
+const playBtn=document.getElementById("playBtn");
+const speedBtn=document.getElementById("speedBtn");
+const range=document.getElementById("timelineRange");
+const sliderFill=document.getElementById("sliderFill");
+const startLabel=document.getElementById("startLabel");
+const endLabel=document.getElementById("endLabel");
+const wrap=document.getElementById("wrap");
+const header=document.getElementById("header");
+const chart=echarts.init(document.getElementById("chart"));
+
+const speedPresets=[{label:"1x",interval:900},{label:"2x",interval:520},{label:"3x",interval:320}];
+let speedIndex=0,currentIndex=0,timer=null,isPlaying=false,lastFrameAt=0,frameAccumulator=0;
+
+function num(v){const n=Number(String(v??"").replace(/,/g,""));return Number.isFinite(n)?n:null}
+function trimZeros(text){return String(text).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1')}
+function compactNumber(v,includeUnit=false){
+  const n=num(v);if(n==null)return v??"-";
+  const abs=Math.abs(n);let scaled=n,suffix="";
+  const cjkUnits=numberLocale==="ja-JP"?[["兆",1e12],["億",1e8],["万",1e4]]:numberLocale==="ko-KR"?[["조",1e12],["억",1e8],["만",1e4]]:numberLocale==="zh-CN"?[["万亿",1e12],["亿",1e8],["万",1e4]]:null;
+  if(cjkUnits){
+    const matched=cjkUnits.find(([,threshold])=>abs>=threshold);
+    if(matched){scaled=n/matched[1];suffix=matched[0]}
+  }else if(abs>=1e4){
+    if(abs>=1e12){scaled=n/1e12;suffix="T"}
+    else if(abs>=1e9){scaled=n/1e9;suffix="B"}
+    else if(abs>=1e6){scaled=n/1e6;suffix="M"}
+    else {scaled=n/1e3;suffix="K"}
+  }
+  const digits=Math.abs(scaled)>=100?0:Math.abs(scaled)>=10?1:2;
+  return new Intl.NumberFormat(numberLocale,{maximumFractionDigits:digits}).format(Number(trimZeros(scaled.toFixed(digits))))+suffix+(includeUnit?unit:"");
+}
+function frameValue(row){return String(row[enc.time]??"")}
+function itemName(row){return String(row[enc.name]??"")}
+function groupName(row){return String(row[enc.color]??"Series")}
+function sortFrames(values){
+  return values.sort((a,b)=>{
+    const na=num(a),nb=num(b);
+    if(na!=null&&nb!=null)return na-nb;
+    return String(a).localeCompare(String(b),"zh-CN",{numeric:true});
+  });
+}
+function compact(){return chart.getWidth()<720}
+const measureCanvas=document.createElement("canvas");
+const measureContext=measureCanvas.getContext("2d");
+function labelFont(){return `${compact()?11:12}px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif`}
+function textWidth(text){
+  if(!measureContext)return String(text).length*(compact()?11:12);
+  measureContext.font=labelFont();
+  return measureContext.measureText(String(text)).width;
+}
+function truncateText(text,maxWidth){
+  const source=String(text);
+  if(textWidth(source)<=maxWidth)return source;
+  const ellipsis="…";
+  let low=0,high=source.length;
+  while(low<high){
+    const mid=Math.ceil((low+high)/2);
+    if(textWidth(source.slice(0,mid)+ellipsis)<=maxWidth)low=mid;else high=mid-1;
+  }
+  return source.slice(0,Math.max(0,low))+ellipsis;
+}
+function layout(axisLabels){
+  const small=compact();
+  const labelLimit=small?72:104;
+  const labelWidth=Math.min(labelLimit,Math.max(0,...axisLabels.map(textWidth)));
+  const headerHeight=Math.ceil(header.getBoundingClientRect().height||0);
+  const headerTop=small?8:12;
+  const timelineVisible=!timelineBar.classList.contains("is-hidden");
+  const timelineHeight=timelineVisible?Math.ceil(timelineBar.getBoundingClientRect().height||46):0;
+  const timelineBottom=timelineVisible?(small?12:14):0;
+  const playerGap=timelineVisible?(small?10:14):0;
+  const xAxisLabelSpace=small?18:22;
+  return {
+    left:Math.ceil(labelWidth)+3,
+    right:1,
+    top:headerTop+headerHeight+(small?14:16),
+    bottom:timelineBottom+timelineHeight+playerGap+xAxisLabelSpace,
+    labelLimit
+  };
+}
+function contentHeight(frameRows){
+  const small=compact();
+  const headerHeight=Math.ceil(header.getBoundingClientRect().height||0);
+  const headerTop=small?8:12;
+  const timelineVisible=!timelineBar.classList.contains("is-hidden");
+  const timelineHeight=timelineVisible?Math.ceil(timelineBar.getBoundingClientRect().height||46):0;
+  const timelineBottom=timelineVisible?(small?12:14):0;
+  const playerGap=timelineVisible?(small?10:14):0;
+  const xAxisLabelSpace=small?18:22;
+  const top=headerTop+headerHeight+(small?14:16);
+  const bottom=timelineBottom+timelineHeight+playerGap+xAxisLabelSpace;
+  const rowSlot=small?32:40;
+  const minPlot=small?132:160;
+  const rowCount=Math.max(1,frameRows.length);
+  return Math.ceil(top+bottom+Math.max(minPlot,rowCount*rowSlot));
+}
+function resizeToContent(frameRows){
+  const height=contentHeight(frameRows);
+  if(Math.abs(wrap.getBoundingClientRect().height-height)>1){
+    wrap.style.height=`${height}px`;
+    chart.resize();
+  }
+}
+function postChartHeight(){
+  const height=Math.ceil(Math.max(180,(wrap&&wrap.getBoundingClientRect().height)||document.body.scrollHeight||0))+2;
+  try{parent.postMessage({type:"analysis-planner-chart-height",height},"*")}catch(e){}
+}
+
+const frames=sortFrames([...new Set(rows.map(frameValue).filter(Boolean))]);
+const hasGrouping=Boolean(enc.color&&enc.color!=="__series");
+const groups=hasGrouping?[...new Set(rows.map(groupName).filter(Boolean))]:[];
+const groupColorMap=new Map(groups.map((g,i)=>[g,palette[i%palette.length]]));
+const itemColorMap=new Map();
+
+// 有分类层级时，同组对象使用同一颜色；无分类层级时，每个对象按首次出现顺序依次使用色板颜色。
+rows.forEach(row=>{
+  const name=itemName(row);
+  if(!name||itemColorMap.has(name))return;
+  if(hasGrouping){
+    itemColorMap.set(name,groupColorMap.get(groupName(row))||palette[0]);
+  }else{
+    itemColorMap.set(name,palette[itemColorMap.size%palette.length]);
+  }
+});
+
+function renderLegend(){
+  legendEl.innerHTML="";
+  legendEl.style.display=hasGrouping?"flex":"none";
+  if(!hasGrouping)return;
+  groups.forEach(group=>{
+    const item=document.createElement("span");item.className="legendItem";
+    const dot=document.createElement("span");dot.className="legendDot";dot.style.background=groupColorMap.get(group)||palette[0];
+    const text=document.createElement("span");text.textContent=group;
+    item.append(dot,text);legendEl.appendChild(item);
+  });
+}
+renderLegend();
+
+function rowsForFrame(frame){
+  return rows
+    .filter(row=>frameValue(row)===frame&&num(row[enc.value])!=null)
+    .map(row=>({
+      name:itemName(row),
+      group:groupName(row),
+      value:num(row[enc.value])||0,
+      color:itemColorMap.get(itemName(row))||(hasGrouping?groupColorMap.get(groupName(row)):null)||palette[0]
+    }))
+    .sort((a,b)=>b.value-a.value)
+    .slice(0,topN);
+}
+function niceMax(value){
+  if(!(value>0))return 1;
+  const exp=Math.floor(Math.log10(value));
+  const frac=value/Math.pow(10,exp);
+  const niceFrac=frac<=1?1:frac<=2?2:frac<=5?5:10;
+  return niceFrac*Math.pow(10,exp);
+}
+function niceInterval(value){
+  if(!(value>0))return 1;
+  const exp=Math.floor(Math.log10(value));
+  const frac=value/Math.pow(10,exp);
+  const niceFrac=frac<=1?1:frac<=2?2:frac<=2.5?2.5:frac<=5?5:10;
+  return niceFrac*Math.pow(10,exp);
+}
+function axisScale(frameRows,l){
+  const maxValue=Math.max(...frameRows.map(d=>d.value),0);
+  if(!(maxValue>0))return {min:0,max:1,interval:.25};
+
+  const small=compact();
+  const labelDistance=6;
+  const safetyGap=1;
+  const maxLabelText=compactNumber(maxValue,false);
+  const valueFontSize=small?11:12;
+  const previousFont=measureContext?measureContext.font:"";
+  if(measureContext)measureContext.font=`600 ${valueFontSize}px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif`;
+  const labelWidth=Math.ceil(measureContext?measureContext.measureText(maxLabelText).width:maxLabelText.length*valueFontSize);
+  if(measureContext)measureContext.font=previousFont;
+
+  const plotWidth=Math.max(1,chart.getWidth()-l.left-l.right);
+  const reservedPixels=labelDistance+labelWidth+safetyGap;
+  const maxFillByLabel=Math.max(.62,1-(reservedPixels/plotWidth)-.03);
+  const targetFill=Math.min(.74,maxFillByLabel);
+  const scaled=maxValue/targetFill;
+  return {min:0,max:scaled,interval:niceInterval(scaled/4)};
+}
+function getFrame(){return frames[Math.max(0,Math.min(currentIndex,frames.length-1))]||""}
+function setPlayState(){
+  playBtn.classList.toggle("is-playing",isPlaying);
+  playBtn.setAttribute("aria-label",isPlaying?"暂停":"播放");
+}
+function setTimelineState(){
+  const max=Math.max(frames.length-1,0);
+  range.max=String(max);range.value=String(currentIndex);
+  sliderFill.style.width=(max?currentIndex/max*100:0)+"%";
+  startLabel.textContent=frames[0]||"";
+  endLabel.textContent=frames[frames.length-1]||"";
+}
+
+function renderChart(){
+  const frame=getFrame();
+  const frameRows=rowsForFrame(frame);
+  setTimelineState();
+  resizeToContent(frameRows);
+  const small=compact();
+  const labelLimit=small?72:104;
+  const labelMap=new Map(frameRows.map(d=>[d.name,truncateText(d.name,labelLimit)]));
+  const l=layout([...labelMap.values()]);
+  const scale=axisScale(frameRows,l);
+
+  chart.setOption({
+    animation:true,
+    animationDuration:420,
+    animationDurationUpdate:Math.min(speedPresets[speedIndex].interval*.84,520),
+    animationEasing:"cubicOut",
+    animationEasingUpdate:"cubicInOut",
+    grid:{left:l.left,right:l.right,top:l.top,bottom:l.bottom,containLabel:false},
+    tooltip:{
+      className:"generic-canvas-tooltip",
+      trigger:"item",
+      backgroundColor:"rgba(255,255,255,.98)",
+      borderColor:"#dfe5ee",
+      textStyle:{color:"#151922"},
+      formatter:p=>`<b>${p.name}</b><br/>${timeLabelText}: ${frame}<br/>${valueLabel}: ${compactNumber(p.value,true)}`
+    },
+    xAxis:{
+      type:"value",min:scale.min,max:scale.max,interval:scale.interval,splitNumber:4,
+      axisLabel:{color:"#687386",formatter:v=>compactNumber(v,false),hideOverlap:true,showMinLabel:false,showMaxLabel:false,margin:8},
+      axisLine:{show:false},axisTick:{show:false},
+      splitLine:{show:true,lineStyle:{color:"rgba(104,115,134,.13)"}}
+    },
+    yAxis:{
+      type:"category",inverse:true,
+      data:frameRows.map(d=>d.name),
+      axisLine:{show:false},axisTick:{show:false},
+      axisLabel:{
+        color:"#4b5563",
+        fontSize:small?11:12,
+        margin:3,
+        padding:0,
+        align:"right",
+        formatter:value=>labelMap.get(value)||value
+      },
+      animationDurationUpdate:Math.min(speedPresets[speedIndex].interval*.84,520)
+    },
+    graphic:[
+      {type:"text",left:"center",top:"42%",silent:true,z:1,style:{text:frame,fill:"rgba(104,115,134,.12)",fontSize:compact()?46:62,fontWeight:800,textAlign:"center",textVerticalAlign:"middle"}}
+    ],
+    series:[{
+      type:"bar",
+      realtimeSort:true,
+      data:frameRows.map(d=>({id:d.name,name:d.name,value:d.value,itemStyle:{color:d.color,borderRadius:[0,7,7,0]}})),
+      universalTransition:true,
+      barWidth:small?16:22,
+      barCategoryGap:"34%",
+      showBackground:true,
+      backgroundStyle:{color:"rgba(104,115,134,.07)",borderRadius:[0,7,7,0]},
+      label:{show:true,position:"right",distance:6,color:"#374151",fontSize:small?11:12,fontWeight:600,formatter:p=>compactNumber(p.value,false)},
+      emphasis:{focus:"series"}
+    }]
+  },{notMerge:false,lazyUpdate:true});
+  postChartHeight();
+}
+
+function stopTimer(){
+  if(timer){cancelAnimationFrame(timer);timer=null}
+  lastFrameAt=0;frameAccumulator=0;
+}
+function startTimer(){
+  stopTimer();
+  const tick=timestamp=>{
+    if(!isPlaying)return;
+    if(!lastFrameAt)lastFrameAt=timestamp;
+    const interval=speedPresets[speedIndex].interval;
+    const delta=Math.min(timestamp-lastFrameAt,interval*1.5);
+    lastFrameAt=timestamp;frameAccumulator+=delta;
+    if(frameAccumulator>=interval){
+      const steps=Math.max(1,Math.floor(frameAccumulator/interval));
+      frameAccumulator%=interval;
+      currentIndex=Math.min(currentIndex+steps,frames.length-1);
+      renderChart();
+      if(currentIndex>=frames.length-1){
+        isPlaying=false;setPlayState();renderChart();stopTimer();return;
+      }
+    }
+    timer=requestAnimationFrame(tick);
+  };
+  timer=requestAnimationFrame(tick);
+}
+
+if(!rows.length||!enc.time||!enc.name||!enc.value){
+  empty.style.display="flex";
+  timelineBar.classList.add("is-hidden");
+  postChartHeight();
+}else{
+  timelineBar.classList.toggle("is-hidden",frames.length<=1);
+  speedBtn.textContent=speedPresets[speedIndex].label;
+  playBtn.addEventListener("click",()=>{
+    if(frames.length<=1)return;
+    if(currentIndex>=frames.length-1)currentIndex=0;
+    isPlaying=!isPlaying;setPlayState();
+    if(isPlaying)startTimer();else stopTimer();
+    renderChart();
+  });
+  speedBtn.addEventListener("click",()=>{
+    speedIndex=(speedIndex+1)%speedPresets.length;
+    speedBtn.textContent=speedPresets[speedIndex].label;
+    if(isPlaying)startTimer();
+  });
+  range.addEventListener("input",()=>{
+    currentIndex=Number(range.value)||0;
+    isPlaying=false;setPlayState();stopTimer();renderChart();
+  });
+  addEventListener("resize",()=>{chart.resize();renderChart();postChartHeight()});
+  setPlayState();renderChart();setTimeout(postChartHeight,80);setTimeout(postChartHeight,300);
+}
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>

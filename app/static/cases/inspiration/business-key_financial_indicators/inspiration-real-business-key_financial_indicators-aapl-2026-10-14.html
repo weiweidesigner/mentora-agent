@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>关键财务指标</title>
+<style>
+:root{color-scheme:light;--business-text-171717:#171717;--business-bg-f3f3f3:#f3f3f3;--business-text-707070:#707070;--business-bg-f2f2f2:#f2f2f2;--business-text-242424:#242424;--business-bg-fff:#fff;--business-border-e8e8e8:#e8e8e8;--business-border-999:#999;--business-text-8a8a8a:#8a8a8a;--business-text-666:#666;--business-bg-3b3b3b:#3b3b3b;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-text-f5f5f5:#f5f5f5;--business-bg-f1f1f1:#f1f1f1;--business-bg-5f5f5f:#5f5f5f;--business-bg-8a8a8a:#8a8a8a;--business-border-3b3b3b:#3b3b3b;--business-border-d5d5d5:#d5d5d5;--business-border-8a8a8a:#8a8a8a;}
+:root[data-theme="dark"]{color-scheme:dark;--business-text-171717:#e8edf5;--business-bg-f3f3f3:#202b3a;--business-text-707070:#a8b3c4;--business-bg-f2f2f2:#202b3a;--business-text-242424:#e8edf5;--business-bg-fff:#202b3a;--business-border-e8e8e8:#293646;--business-border-999:#566477;--business-text-8a8a8a:#a8b3c4;--business-text-666:#a8b3c4;--business-bg-3b3b3b:#263242;--business-text-fff:#f5f7fb;--business-text-d8d8d8:#a8b3c4;--business-text-f5f5f5:#f5f7fb;--business-bg-f1f1f1:#202b3a;--business-bg-5f5f5f:#263242;--business-bg-8a8a8a:#516078;--business-border-3b3b3b:#566477;--business-border-d5d5d5:#293646;--business-border-8a8a8a:#566477;}
+
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;background:transparent;color:var(--business-text-171717)}
+.component{width:100%;height:540px;padding:0;background:transparent;overflow:hidden}
+.title{margin:0 0 16px;font-size:16px;font-weight:700;line-height:1.25}
+.top-tabs{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none}
+.top-tabs::-webkit-scrollbar{display:none}
+.metric-tab{appearance:none;border:0;background:transparent;color:var(--business-text-171717);border-radius:6px;height:42px;padding:0 18px;font:inherit;font-size:14px;white-space:nowrap;cursor:pointer}
+.metric-tab[aria-selected="true"]{background:var(--business-bg-f3f3f3);font-weight:700}
+.toolbar{display:flex;align-items:center;justify-content:flex-end;margin-bottom:8px;min-height:36px}
+.legend{display:flex;align-items:center;justify-content:center;gap:14px;color:var(--business-text-707070);font-size:12px;margin-top:8px;min-height:22px}
+.legend-item{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.legend-dot{width:9px;height:9px;border-radius:50%}
+.segmented{display:inline-flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--business-bg-f2f2f2)}
+.segmented button{appearance:none;border:0;background:transparent;color:var(--business-text-242424);border-radius:999px;height:28px;padding:0 12px;font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
+.segmented button[aria-selected="true"]{background:var(--business-bg-fff)}
+.stage{position:relative;width:100%;height:300px;overflow:visible}
+svg{display:block;height:100%;overflow:visible}
+svg *{pointer-events:none}
+.grid{stroke:var(--business-border-e8e8e8);stroke-width:1}
+.axis{stroke:var(--business-border-999);stroke-width:1}
+.hover-band{fill:var(--business-text-8a8a8a);fill-opacity:.08;opacity:0;transition:opacity .12s ease}
+.hover-band.active{opacity:1}
+.hover-zone{fill:transparent;pointer-events:all;cursor:pointer}
+.x-label,.y-label{fill:var(--business-text-666);font-size:12px}
+.bar-value{fill:#2f63f6;font-size:11px;text-anchor:middle;font-weight:600}
+.tooltip{position:absolute;z-index:6;min-width:190px;padding:10px 12px;background:var(--business-bg-3b3b3b);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transform:translateY(-4px)}
+.tooltip.active{opacity:1;visibility:visible;transform:translateY(0)}
+.tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--business-border-3b3b3b)}
+.tip-title{color:var(--business-text-d8d8d8);margin-bottom:6px;font-size:12px;white-space:nowrap}
+.tip-row{display:flex;align-items:center;gap:8px;min-height:22px;white-space:nowrap}
+.tip-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.tip-name{color:var(--business-text-f5f5f5);min-width:72px}
+.tip-value{margin-left:auto;color:var(--business-text-fff);font-weight:600;font-variant-numeric:tabular-nums}
+.range-filter{position:relative;width:100%;height:34px;margin-top:8px;padding:5px 2px 0}
+.range-track{position:relative;width:100%;height:26px}
+.range-track::before{content:"";position:absolute;left:0;right:0;top:12px;height:3px;background:var(--business-bg-f1f1f1);border-radius:999px}
+.range-track-active{position:absolute;top:12px;height:3px;background:var(--business-bg-5f5f5f);border-radius:999px}
+.range-handle{appearance:none;position:absolute;top:13px;width:32px;height:32px;border:1px solid var(--business-border-d5d5d5);border-radius:50%;background:var(--business-bg-fff);color:var(--business-text-8a8a8a);box-shadow:0 1px 4px rgba(0,0,0,.18);transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;cursor:grab;z-index:2;padding:0}
+.range-handle:active{cursor:grabbing}
+.range-handle::before{content:"";width:2px;height:13px;border-radius:999px;background:var(--business-bg-8a8a8a);box-shadow:-5px 0 0 var(--business-border-8a8a8a),5px 0 0 #8a8a8a;opacity:.9}
+.range-filter[hidden]{display:none}
+@media(max-width:720px){.component{height:520px;padding-left:0;padding-right:0}.metric-tab{padding:0 12px}.toolbar{align-items:flex-end}.stage{height:286px}.legend{justify-content:center;overflow-x:auto;padding-bottom:2px}}
+</style>
+<script data-business-theme-runtime>
+    (() => {
+      const requested = new URLSearchParams(location.search).get('theme');
+      if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
+    })();
+    </script></head>
+<body>
+<main class="component" data-component-contract="{&quot;type&quot;: &quot;key-financial-indicators&quot;, &quot;name&quot;: &quot;Key Indicators&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;股票代码&quot;, &quot;field&quot;: &quot;code&quot;, &quot;visualChannel&quot;: &quot;dataSource.symbol&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;指标切换&quot;, &quot;field&quot;: &quot;metrics&quot;, &quot;visualChannel&quot;: &quot;topTabs.items&quot;}, {&quot;semantic&quot;: &quot;周期切换&quot;, &quot;field&quot;: &quot;views&quot;, &quot;visualChannel&quot;: &quot;segmentedTabs.items&quot;}, {&quot;semantic&quot;: &quot;指标数值&quot;, &quot;field&quot;: &quot;value&quot;, &quot;visualChannel&quot;: &quot;bar.height&quot;}, {&quot;semantic&quot;: &quot;同比&quot;, &quot;field&quot;: &quot;yoy&quot;, &quot;visualChannel&quot;: &quot;line.y&quot;}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;code&quot;, &quot;type&quot;: &quot;string&quot;, &quot;required&quot;: true}, {&quot;field&quot;: &quot;metrics[].key&quot;, &quot;type&quot;: &quot;string&quot;}, {&quot;field&quot;: &quot;views.*.records[].values&quot;, &quot;type&quot;: &quot;object&quot;}, {&quot;field&quot;: &quot;views.*.records[].yoy&quot;, &quot;type&quot;: &quot;number&quot;, &quot;unit&quot;: &quot;ratio&quot;}], &quot;builtInDataSources&quot;: [{&quot;id&quot;: &quot;ainvest-financial-statistics&quot;, &quot;provider&quot;: &quot;AInvest&quot;, &quot;endpoint&quot;: &quot;https://api.ainvest.com/gw/fuyao-gateway-beimei/fuyao/financial_reports_visual/seo/v1/financial_statistics&quot;, &quot;params&quot;: {&quot;market&quot;: &quot;auto&quot;, &quot;code&quot;: &quot;{symbol}&quot;, &quot;strategy&quot;: &quot;period_dj|period_year|ttm&quot;}}], &quot;presentationOptions&quot;: {&quot;theme&quot;: {&quot;values&quot;: [&quot;light&quot;, &quot;dark&quot;], &quot;runtimeSwitching&quot;: true}, &quot;language&quot;: {&quot;values&quot;: [&quot;en&quot;, &quot;zh-CN&quot;, &quot;zh-Hant&quot;], &quot;selection&quot;: &quot;question-language&quot;}}}">
+  <h2 class="title">关键财务指标</h2>
+  <div class="top-tabs" role="tablist"></div>
+  <div class="toolbar">
+    <div class="segmented" role="tablist"></div>
+  </div>
+  <div class="stage"><svg role="img" aria-label="关键财务指标"></svg><div class="tooltip"></div></div>
+  <div class="legend"></div>
+  <div class="range-filter" aria-label="时间范围">
+    <div class="range-track">
+      <div class="range-track-active"></div>
+      <button class="range-handle range-handle-start" type="button" aria-label="起始周期"></button>
+      <button class="range-handle range-handle-end" type="button" aria-label="结束周期"></button>
+    </div>
+  </div>
+</main>
+<script>
+const payload = {"type": "key-financial-indicators", "name": "关键财务指标", "title": "关键财务指标", "code": "AAPL", "metrics": [{"key": "balanced_eps", "label": "基本每股收益", "unit": "", "decimals": 2, "scale": 1}, {"key": "balanced_net_assets", "label": "每股净资产", "unit": "", "decimals": 2, "scale": 1}, {"key": "index_weighted_avg_roe", "label": "净资产收益率", "unit": "%", "decimals": 2, "scale": 100}, {"key": "total_assets_net_ratio", "label": "总资产收益率", "unit": "%", "decimals": 2, "scale": 100}, {"key": "sale_net_interest_ratio", "label": "净利率", "unit": "%", "decimals": 2, "scale": 100, "aliases": ["net_margin", "net profit margin", "net_profit_margin", "net gross margin", "net_gross_margin", "净利率", "淨利率", "销售净利率", "銷售淨利率"]}, {"key": "current_ratio", "label": "流动比率", "unit": "", "decimals": 2, "scale": 1}, {"key": "quick_ratio", "label": "速动比率", "unit": "", "decimals": 2, "scale": 1}, {"key": "assets_debt_ratio", "label": "资产负债率", "unit": "%", "decimals": 2, "scale": 100}], "defaultMetric": "index_weighted_avg_roe", "defaultView": "quarterly", "views": {"quarterly": {"label": "季度", "records": [{"key": "2023_596006", "label": "Q4 '23", "compareKey": "596006", "values": {"balanced_eps": 1.47, "balanced_net_assets": 3.99651165, "index_weighted_avg_roe": 37.503676, "total_assets_net_ratio": 6.676933999999999, "sale_net_interest_ratio": 25.649735, "current_ratio": 0.9880116700000001, "quick_ratio": 0.94444215, "assets_debt_ratio": 82.374079}, "yoy": {"balanced_eps": 0.13953488372093018, "balanced_net_assets": 0.2574613943722686, "index_weighted_avg_roe": -0.015585068251459725, "total_assets_net_ratio": 0.11018656539598892, "sale_net_interest_ratio": 0.11588291939739954, "current_ratio": 0.12356273942876149, "quick_ratio": 0.11473406463816384, "assets_debt_ratio": -0.03808330054703114}}, {"key": "2024_596003", "label": "Q1 '24", "compareKey": "596003", "values": {"balanced_eps": 2.19, "balanced_net_assets": 4.7929451, "index_weighted_avg_roe": 49.786416, "total_assets_net_ratio": 9.606612, "sale_net_interest_ratio": 28.363788, "current_ratio": 1.07254447, "quick_ratio": 1.02394512, "assets_debt_ratio": 79.03902}, "yoy": {"balanced_eps": 0.15873015873015875, "balanced_net_assets": 0.3385475510249181, "index_weighted_avg_roe": -0.10877204363740407, "total_assets_net_ratio": 0.12004872589457402, "sale_net_interest_ratio": 0.10771759301368812, "current_ratio": 0.14341334336297124, "quick_ratio": 0.15264667376407864, "assets_debt_ratio": -0.05501195818046085}}, {"key": "2024_596004", "label": "Q2 '24", "compareKey": "596004", "values": {"balanced_eps": 1.53, "balanced_net_assets": 4.83736595, "index_weighted_avg_roe": 31.877217, "total_assets_net_ratio": 6.841842, "sale_net_interest_ratio": 26.044318, "current_ratio": 1.03710165, "quick_ratio": 0.98677133, "assets_debt_ratio": 78.010794}, "yoy": {"balanced_eps": 0.0, "balanced_net_assets": 0.22365373313190526, "index_weighted_avg_roe": -0.21570303058336315, "total_assets_net_ratio": -0.03870556931385147, "sale_net_interest_ratio": 0.022325713140414864, "current_ratio": 0.10288434477251901, "quick_ratio": 0.12383044295250763, "assets_debt_ratio": -0.04030098197210014}}, {"key": "2024_596005", "label": "Q3 '24", "compareKey": "596005", "values": {"balanced_eps": 1.4, "balanced_net_assets": 4.38226678, "index_weighted_avg_roe": 30.443855, "total_assets_net_ratio": 6.411738, "sale_net_interest_ratio": 25.004372000000004, "current_ratio": 0.9529797000000001, "quick_ratio": 0.90614174, "assets_debt_ratio": 79.88372}, "yoy": {"balanced_eps": 0.10236220472440936, "balanced_net_assets": 0.1376900827255692, "index_weighted_avg_roe": -0.0625969249497864, "total_assets_net_ratio": 0.07587619870627808, "sale_net_interest_ratio": 0.02876246045511414, "current_ratio": -0.029119733929536467, "quick_ratio": -0.01798495959515576, "assets_debt_ratio": -0.025924730314554313}}, {"key": "2024_596006", "label": "Q4 '24", "compareKey": "596006", "values": {"balanced_eps": 0.97, "balanced_net_assets": 3.7673352, "index_weighted_avg_roe": 23.833476, "total_assets_net_ratio": 4.230884, "sale_net_interest_ratio": 15.523017, "current_ratio": 0.86731258, "quick_ratio": 0.82600685, "assets_debt_ratio": 84.396405}, "yoy": {"balanced_eps": -0.3401360544217687, "balanced_net_assets": -0.057344121591638486, "index_weighted_avg_roe": -0.36450293565889375, "total_assets_net_ratio": -0.36634329469184507, "sale_net_interest_ratio": -0.39480789957479095, "current_ratio": -0.12216362788508368, "quick_ratio": -0.1254023870069755, "assets_debt_ratio": 0.02455051424611384}}, {"key": "2025_596003", "label": "Q1 '25", "compareKey": "596003", "values": {"balanced_eps": 2.41, "balanced_net_assets": 4.43848108, "index_weighted_avg_roe": 58.735086, "total_assets_net_ratio": 10.247297, "sale_net_interest_ratio": 29.227675, "current_ratio": 0.9229383900000001, "quick_ratio": 0.8750666699999999, "assets_debt_ratio": 80.598399}, "yoy": {"balanced_eps": 0.1004566210045663, "balanced_net_assets": -0.0739553682765947, "index_weighted_avg_roe": 0.1797411968758707, "total_assets_net_ratio": 0.06669208665864713, "sale_net_interest_ratio": 0.030457391657278, "current_ratio": -0.13948706481140113, "quick_ratio": -0.14539690369343242, "assets_debt_ratio": 0.019729229942375387}}, {"key": "2025_596004", "label": "Q2 '25", "compareKey": "596004", "values": {"balanced_eps": 1.65, "balanced_net_assets": 4.47115547, "index_weighted_avg_roe": 37.108585, "total_assets_net_ratio": 7.3387649999999995, "sale_net_interest_ratio": 25.986011000000005, "current_ratio": 0.82087002, "quick_ratio": 0.77750725, "assets_debt_ratio": 79.834135}, "yoy": {"balanced_eps": 0.07843137254901954, "balanced_net_assets": -0.0757045226235157, "index_weighted_avg_roe": 0.16410993469097368, "total_assets_net_ratio": 0.07263000227131813, "sale_net_interest_ratio": -0.0022387608690692404, "current_ratio": -0.20849608136290218, "quick_ratio": -0.21206947713002564, "assets_debt_ratio": 0.023372932212432026}}, {"key": "2025_596005", "label": "Q3 '25", "compareKey": "596005", "values": {"balanced_eps": 1.57, "balanced_net_assets": 4.4309909, "index_weighted_avg_roe": 35.338471, "total_assets_net_ratio": 7.071980999999999, "sale_net_interest_ratio": 24.920243, "current_ratio": 0.86799178, "quick_ratio": 0.82600624, "assets_debt_ratio": 80.14148}, "yoy": {"balanced_eps": 0.12142857142857154, "balanced_net_assets": 0.011118474170118905, "index_weighted_avg_roe": 0.1607751712127127, "total_assets_net_ratio": 0.10297410780041223, "sale_net_interest_ratio": -0.003364571603718115, "current_ratio": -0.08918124908641821, "quick_ratio": -0.08843594380720175, "assets_debt_ratio": 0.003226689993906201}}, {"key": "2025_596006", "label": "Q4 '25", "compareKey": "596006", "values": {"balanced_eps": 1.85, "balanced_net_assets": 4.99097694, "index_weighted_avg_roe": 39.360002, "total_assets_net_ratio": 7.952677000000001, "sale_net_interest_ratio": 26.804989000000003, "current_ratio": 0.8932929199999999, "quick_ratio": 0.8587703999999999, "assets_debt_ratio": 79.475338}, "yoy": {"balanced_eps": 0.9072164948453609, "balanced_net_assets": 0.3248029907187447, "index_weighted_avg_roe": 0.6514587297295619, "total_assets_net_ratio": 0.8796726641524566, "sale_net_interest_ratio": 0.7267899017310877, "current_ratio": 0.029954990391122812, "quick_ratio": 0.039664985829112646, "assets_debt_ratio": -0.05830896470056998}}, {"key": "2026_596003", "label": "Q1 '26", "compareKey": "596003", "values": {"balanced_eps": 2.85, "balanced_net_assets": 5.99821679, "index_weighted_avg_roe": 51.996319, "total_assets_net_ratio": 11.40009, "sale_net_interest_ratio": 29.283646999999995, "current_ratio": 0.9737446599999999, "quick_ratio": 0.9375612, "assets_debt_ratio": 76.749091}, "yoy": {"balanced_eps": 0.18257261410788378, "balanced_net_assets": 0.35141204432035117, "index_weighted_avg_roe": -0.11473154223354678, "total_assets_net_ratio": 0.1124972761109589, "sale_net_interest_ratio": 0.0019150342954064416, "current_ratio": 0.05504838735768681, "quick_ratio": 0.07141687844195924, "assets_debt_ratio": -0.04775911243596778}}, {"key": "2026_596004", "label": "Q2 '26", "compareKey": "596004", "values": {"balanced_eps": 2.02, "balanced_net_assets": 7.26024442, "index_weighted_avg_roe": 30.386119, "total_assets_net_ratio": 7.883482999999999, "sale_net_interest_ratio": 26.602749, "current_ratio": 1.07035747, "quick_ratio": 1.02024643, "assets_debt_ratio": 71.302569}, "yoy": {"balanced_eps": 0.22424242424242433, "balanced_net_assets": 0.6237960117275904, "index_weighted_avg_roe": -0.1811566245384996, "total_assets_net_ratio": 0.07422475034968412, "sale_net_interest_ratio": 0.023733461822978308, "current_ratio": 0.30393051752578326, "quick_ratio": 0.31220182191227164, "assets_debt_ratio": -0.10686614190784428}}, {"key": "2026_596005", "label": "Q3 '26", "compareKey": "596005", "values": {"balanced_eps": 2.03, "balanced_net_assets": 7.35986531, "index_weighted_avg_roe": 27.838755999999997, "total_assets_net_ratio": 7.897946, "sale_net_interest_ratio": 27.225202999999997, "current_ratio": 1.0032948, "quick_ratio": 0.92901437, "assets_debt_ratio": 71.946377}, "yoy": {"balanced_eps": 0.29299363057324823, "balanced_net_assets": 0.6609976134232186, "index_weighted_avg_roe": -0.2122252261565024, "total_assets_net_ratio": 0.11679400722371865, "sale_net_interest_ratio": 0.09249348009969235, "current_ratio": 0.1558805314953558, "quick_ratio": 0.12470623708605394, "assets_debt_ratio": -0.10225794432546047}}]}, "annual": {"label": "年度", "records": [{"key": "2014_596001", "label": "2014", "compareKey": "annual", "values": {"balanced_eps": 1.6225, "balanced_net_assets": 4.75383304, "index_weighted_avg_roe": 33.611801, "total_assets_net_ratio": 18.006604, "sale_net_interest_ratio": 21.614377, "current_ratio": 1.08011285, "quick_ratio": 1.04684151, "assets_debt_ratio": 51.886007}, "yoy": {"balanced_eps": 0.1346153846153847, "balanced_net_assets": -0.031219701243992325, "index_weighted_avg_roe": 0.09700507225876684, "total_assets_net_ratio": -0.06881204705594221, "sale_net_interest_ratio": -0.0025884533191943048, "current_ratio": -0.35655422917707286, "quick_ratio": -0.36099372620584974, "assets_debt_ratio": 0.28703111806466225}}, {"key": "2015_596001", "label": "2015", "compareKey": "annual", "values": {"balanced_eps": 2.32, "balanced_net_assets": 5.34864153, "index_weighted_avg_roe": 46.248192, "total_assets_net_ratio": 20.450263, "sale_net_interest_ratio": 22.845774, "current_ratio": 1.10877062, "quick_ratio": 1.07963032, "assets_debt_ratio": 58.892008}, "yoy": {"balanced_eps": 0.4298921417565484, "balanced_net_assets": 0.1251218721808539, "index_weighted_avg_roe": 0.3759510238680755, "total_assets_net_ratio": 0.135709043193264, "sale_net_interest_ratio": 0.05697120023399229, "current_ratio": 0.02653219985300623, "quick_ratio": 0.03132165632216858, "assets_debt_ratio": 0.1350267905564596}}, {"key": "2016_596001", "label": "2016", "compareKey": "annual", "values": {"balanced_eps": 2.0875, "balanced_net_assets": 6.00848062, "index_weighted_avg_roe": 36.903281, "total_assets_net_ratio": 14.929636000000002, "sale_net_interest_ratio": 21.186798, "current_ratio": 1.35266942, "quick_ratio": 1.32568413, "assets_debt_ratio": 60.132241}, "yoy": {"balanced_eps": -0.10021551724137928, "balanced_net_assets": 0.12336573432693669, "index_weighted_avg_roe": -0.20206002863852499, "total_assets_net_ratio": -0.2699538387354724, "sale_net_interest_ratio": -0.07261631844909257, "current_ratio": 0.219972278846999, "quick_ratio": 0.22790561309912086, "assets_debt_ratio": 0.021059444942003056}}, {"key": "2017_596001", "label": "2017", "compareKey": "annual", "values": {"balanced_eps": 2.3175, "balanced_net_assets": 6.53734608, "index_weighted_avg_roe": 36.867508, "total_assets_net_ratio": 13.873932, "sale_net_interest_ratio": 21.092421, "current_ratio": 1.27606285, "quick_ratio": 1.22790485, "assets_debt_ratio": 64.284515}, "yoy": {"balanced_eps": 0.11017964071856287, "balanced_net_assets": 0.08801983287415506, "index_weighted_avg_roe": -0.0009693718019272851, "total_assets_net_ratio": -0.07071197181230689, "sale_net_interest_ratio": -0.004454519271859671, "current_ratio": -0.05663362301781025, "quick_ratio": -0.07375760016075618, "assets_debt_ratio": 0.06905237408331412}}, {"key": "2018_596001", "label": "2018", "compareKey": "annual", "values": {"balanced_eps": 3.0, "balanced_net_assets": 5.6334025, "index_weighted_avg_roe": 49.363583, "total_assets_net_ratio": 16.066792, "sale_net_interest_ratio": 22.414202, "current_ratio": 1.13292619, "quick_ratio": 1.09880185, "assets_debt_ratio": 70.702851}, "yoy": {"balanced_eps": 0.2944983818770227, "balanced_net_assets": -0.1382737840307209, "index_weighted_avg_roe": 0.33894547469820846, "total_assets_net_ratio": 0.15805613001418772, "sale_net_interest_ratio": 0.0626661586168794, "current_ratio": -0.11217054081623011, "quick_ratio": -0.10514088286238137, "assets_debt_ratio": 0.09984264484222984}}, {"key": "2019_596001", "label": "2019", "compareKey": "annual", "values": {"balanced_eps": 2.99, "balanced_net_assets": 5.09133433, "index_weighted_avg_roe": 55.917221, "total_assets_net_ratio": 15.692355, "sale_net_interest_ratio": 21.238095, "current_ratio": 1.54012562, "quick_ratio": 1.50128644, "assets_debt_ratio": 73.26921}, "yoy": {"balanced_eps": -0.0033333333333332624, "balanced_net_assets": -0.09622393748715813, "index_weighted_avg_roe": 0.13276260760893308, "total_assets_net_ratio": -0.02330502567033919, "sale_net_interest_ratio": -0.05247150891207272, "current_ratio": 0.35942273520925483, "quick_ratio": 0.36629405929740655, "assets_debt_ratio": 0.036297814921211674}}, {"key": "2020_596001", "label": "2020", "compareKey": "annual", "values": {"balanced_eps": 3.31, "balanced_net_assets": 3.84873135, "index_weighted_avg_roe": 73.685562, "total_assets_net_ratio": 17.334134, "sale_net_interest_ratio": 20.913611, "current_ratio": 1.36360445, "quick_ratio": 1.32507211, "assets_debt_ratio": 79.826668}, "yoy": {"balanced_eps": 0.1070234113712374, "balanced_net_assets": -0.24406234190477916, "index_weighted_avg_roe": 0.317761517511752, "total_assets_net_ratio": 0.10462285616148753, "sale_net_interest_ratio": -0.015278394790116615, "current_ratio": -0.11461478707171951, "quick_ratio": -0.11737555559350824, "assets_debt_ratio": 0.08949813980524693}}, {"key": "2021_596001", "label": "2021", "compareKey": "annual", "values": {"balanced_eps": 5.67, "balanced_net_assets": 3.84067827, "index_weighted_avg_roe": 147.443334, "total_assets_net_ratio": 28.057906, "sale_net_interest_ratio": 25.881793, "current_ratio": 1.07455312, "quick_ratio": 1.0221149, "assets_debt_ratio": 82.025743}, "yoy": {"balanced_eps": 0.7129909365558912, "balanced_net_assets": -0.0020923985770011783, "index_weighted_avg_roe": 1.0009799748830033, "total_assets_net_ratio": 0.6186505769483495, "sale_net_interest_ratio": 0.23755734961312988, "current_ratio": -0.21197593627682862, "quick_ratio": -0.22863450804952795, "assets_debt_ratio": 0.027548124644260583}}, {"key": "2022_596001", "label": "2022", "compareKey": "annual", "values": {"balanced_eps": 6.15, "balanced_net_assets": 3.17823805, "index_weighted_avg_roe": 175.459292, "total_assets_net_ratio": 28.362915, "sale_net_interest_ratio": 25.309641, "current_ratio": 0.87935603, "quick_ratio": 0.84723539, "assets_debt_ratio": 85.635356}, "yoy": {"balanced_eps": 0.08465608465608473, "balanced_net_assets": -0.1724800083293621, "index_weighted_avg_roe": 0.19001169629004735, "total_assets_net_ratio": 0.010870697193154822, "sale_net_interest_ratio": -0.022106350978079423, "current_ratio": -0.18165420244650174, "quick_ratio": -0.17109574471519787, "assets_debt_ratio": 0.044005855576340173}}, {"key": "2023_596001", "label": "2023", "compareKey": "annual", "values": {"balanced_eps": 6.16, "balanced_net_assets": 3.99651165, "index_weighted_avg_roe": 171.949512, "total_assets_net_ratio": 27.503126, "sale_net_interest_ratio": 25.306234, "current_ratio": 0.9880116700000001, "quick_ratio": 0.94444215, "assets_debt_ratio": 82.374079}, "yoy": {"balanced_eps": 0.001626016260162567, "balanced_net_assets": 0.2574613943722686, "index_weighted_avg_roe": -0.02000338631253571, "total_assets_net_ratio": -0.030313844680633115, "sale_net_interest_ratio": -0.0001346127351233181, "current_ratio": 0.12356273942876149, "quick_ratio": 0.11473406463816384, "assets_debt_ratio": -0.03808330054703114}}, {"key": "2024_596001", "label": "2024", "compareKey": "annual", "values": {"balanced_eps": 6.11, "balanced_net_assets": 3.7673352, "index_weighted_avg_roe": 157.412508, "total_assets_net_ratio": 26.126208000000002, "sale_net_interest_ratio": 23.971256, "current_ratio": 0.86731258, "quick_ratio": 0.82600685, "assets_debt_ratio": 84.396405}, "yoy": {"balanced_eps": -0.008116883116883088, "balanced_net_assets": -0.057344121591638486, "index_weighted_avg_roe": -0.08454228122496792, "total_assets_net_ratio": -0.0500640545369279, "sale_net_interest_ratio": -0.052752930364905325, "current_ratio": -0.12216362788508368, "quick_ratio": -0.1254023870069755, "assets_debt_ratio": 0.02455051424611384}}, {"key": "2025_596001", "label": "2025", "compareKey": "annual", "values": {"balanced_eps": 7.49, "balanced_net_assets": 4.99097694, "index_weighted_avg_roe": 171.42245, "total_assets_net_ratio": 30.932547, "sale_net_interest_ratio": 26.915064, "current_ratio": 0.8932929199999999, "quick_ratio": 0.8587703999999999, "assets_debt_ratio": 79.475338}, "yoy": {"balanced_eps": 0.22585924713584285, "balanced_net_assets": 0.3248029907187447, "index_weighted_avg_roe": 0.08900145342960926, "total_assets_net_ratio": 0.18396619210870546, "sale_net_interest_ratio": 0.12280574701634327, "current_ratio": 0.029954990391122812, "quick_ratio": 0.039664985829112646, "assets_debt_ratio": -0.05830896470056998}}]}, "cumulative": {"label": "累计", "records": [{"key": "2023_596001", "label": "FY '23", "compareKey": "cumulative", "values": {"balanced_eps": 6.16, "balanced_net_assets": 3.996512, "index_weighted_avg_roe": 171.9495, "total_assets_net_ratio": 27.503100000000003, "sale_net_interest_ratio": 25.3062, "current_ratio": 0.9880116700000001, "quick_ratio": 0.94444215, "assets_debt_ratio": 82.374079}, "yoy": {"balanced_eps": 0.030100334448160484, "balanced_net_assets": 0.037543300070952045, "index_weighted_avg_roe": 0.07405806489091049, "total_assets_net_ratio": -0.025742300689342378, "sale_net_interest_ratio": 0.025314609381963765, "current_ratio": 0.006570269073226882, "quick_ratio": 0.02352243048895189, "assets_debt_ratio": 0.004441871472875905}}, {"key": "2024_596003", "label": "Q1 '24", "compareKey": "cumulative", "values": {"balanced_eps": 6.46, "balanced_net_assets": 4.792945, "index_weighted_avg_roe": 154.2694, "total_assets_net_ratio": 28.8215, "sale_net_interest_ratio": 26.163199999999996, "current_ratio": 1.07254447, "quick_ratio": 1.02394512, "assets_debt_ratio": 79.03902}, "yoy": {"balanced_eps": 0.04870129870129867, "balanced_net_assets": 0.19928202392486236, "index_weighted_avg_roe": -0.10282146793099142, "total_assets_net_ratio": 0.047936414440553854, "sale_net_interest_ratio": 0.033865218800135766, "current_ratio": 0.0855585035751651, "quick_ratio": 0.08417981980156229, "assets_debt_ratio": -0.040486753120481035}}, {"key": "2024_596002", "label": "H1 '24", "compareKey": "cumulative", "values": {"balanced_eps": 6.46, "balanced_net_assets": 4.837366, "index_weighted_avg_roe": 147.24980000000002, "total_assets_net_ratio": 29.9861, "sale_net_interest_ratio": 26.3058, "current_ratio": 1.03710165, "quick_ratio": 0.98677133, "assets_debt_ratio": 78.010794}, "yoy": {"balanced_eps": 0.0, "balanced_net_assets": 0.009267997024793882, "index_weighted_avg_roe": -0.0455022188457333, "total_assets_net_ratio": 0.040407334802144236, "sale_net_interest_ratio": 0.005450403620352449, "current_ratio": -0.0330455482186206, "quick_ratio": -0.03630447498983158, "assets_debt_ratio": -0.013009093483193358}}, {"key": "2024_596007", "label": "9M '24", "compareKey": "cumulative", "values": {"balanced_eps": 6.6, "balanced_net_assets": 4.382267, "index_weighted_avg_roe": 160.5834, "total_assets_net_ratio": 30.5876, "sale_net_interest_ratio": 26.4407, "current_ratio": 0.9529797000000001, "quick_ratio": 0.90614174, "assets_debt_ratio": 79.88372}, "yoy": {"balanced_eps": 0.02167182662538695, "balanced_net_assets": -0.09407991869955686, "index_weighted_avg_roe": 0.09055088699611129, "total_assets_net_ratio": 0.020059294139617954, "sale_net_interest_ratio": 0.005128146644466172, "current_ratio": -0.08111254089702778, "quick_ratio": -0.08171051139071898, "assets_debt_ratio": 0.024008549380999666}}, {"key": "2024_596001", "label": "FY '24", "compareKey": "cumulative", "values": {"balanced_eps": 6.11, "balanced_net_assets": 3.767335, "index_weighted_avg_roe": 157.4125, "total_assets_net_ratio": 26.1262, "sale_net_interest_ratio": 23.9713, "current_ratio": 0.86731258, "quick_ratio": 0.82600685, "assets_debt_ratio": 84.396405}, "yoy": {"balanced_eps": -0.07424242424242414, "balanced_net_assets": -0.14032280552508544, "index_weighted_avg_roe": -0.01974612568920584, "total_assets_net_ratio": -0.14585649086557945, "sale_net_interest_ratio": -0.09339389653072726, "current_ratio": -0.0898939610151193, "quick_ratio": -0.08843527062333545, "assets_debt_ratio": 0.05649067169130337}}, {"key": "2025_596003", "label": "Q1 '25", "compareKey": "cumulative", "values": {"balanced_eps": 6.33, "balanced_net_assets": 4.438481, "index_weighted_avg_roe": 136.5205, "total_assets_net_ratio": 27.566000000000003, "sale_net_interest_ratio": 24.295, "current_ratio": 0.9229383900000001, "quick_ratio": 0.8750666699999999, "assets_debt_ratio": 80.598399}, "yoy": {"balanced_eps": 0.03600654664484448, "balanced_net_assets": 0.17814874440420092, "index_weighted_avg_roe": -0.13272135313269273, "total_assets_net_ratio": 0.0551094303802314, "sale_net_interest_ratio": 0.013503648112534669, "current_ratio": 0.06413582747756306, "quick_ratio": 0.05939396265297313, "assets_debt_ratio": -0.04500198794012613}}, {"key": "2025_596002", "label": "H1 '25", "compareKey": "cumulative", "values": {"balanced_eps": 6.45, "balanced_net_assets": 4.471155, "index_weighted_avg_roe": 138.0155, "total_assets_net_ratio": 29.101900000000004, "sale_net_interest_ratio": 24.3013, "current_ratio": 0.82087002, "quick_ratio": 0.77750725, "assets_debt_ratio": 79.834135}, "yoy": {"balanced_eps": 0.018957345971563996, "balanced_net_assets": 0.0073615275135795535, "index_weighted_avg_roe": 0.010950736336301175, "total_assets_net_ratio": 0.05571718784009292, "sale_net_interest_ratio": 0.0002593126157645412, "current_ratio": -0.1105906646704772, "quick_ratio": -0.11148798525259791, "assets_debt_ratio": -0.009482371976148027}}, {"key": "2025_596007", "label": "9M '25", "compareKey": "cumulative", "values": {"balanced_eps": 6.62, "balanced_net_assets": 4.430991, "index_weighted_avg_roe": 149.81359999999998, "total_assets_net_ratio": 29.9439, "sale_net_interest_ratio": 24.296100000000003, "current_ratio": 0.86799178, "quick_ratio": 0.82600624, "assets_debt_ratio": 80.14148}, "yoy": {"balanced_eps": 0.02635658914728681, "balanced_net_assets": -0.00898291381086112, "index_weighted_avg_roe": 0.08548387681093773, "total_assets_net_ratio": 0.02893281881938963, "sale_net_interest_ratio": -0.00021398032204032454, "current_ratio": 0.05740465463703987, "quick_ratio": 0.06237754053097257, "assets_debt_ratio": 0.0038497943266999506}}, {"key": "2025_596001", "label": "FY '25", "compareKey": "cumulative", "values": {"balanced_eps": 7.49, "balanced_net_assets": 4.990977, "index_weighted_avg_roe": 171.4225, "total_assets_net_ratio": 30.9325, "sale_net_interest_ratio": 26.9151, "current_ratio": 0.8932929199999999, "quick_ratio": 0.8587703999999999, "assets_debt_ratio": 79.475338}, "yoy": {"balanced_eps": 0.1314199395770393, "balanced_net_assets": 0.12637940361422542, "index_weighted_avg_roe": 0.14423857380104368, "total_assets_net_ratio": 0.03301507151707031, "sale_net_interest_ratio": 0.10779507822243059, "current_ratio": 0.029149054844735907, "quick_ratio": 0.039665753614645735, "assets_debt_ratio": -0.008312075095194247}}, {"key": "2026_596003", "label": "Q1 '26", "compareKey": "cumulative", "values": {"balanced_eps": 7.93, "balanced_net_assets": 5.998217, "index_weighted_avg_roe": 152.0213, "total_assets_net_ratio": 32.5629, "sale_net_interest_ratio": 27.0368, "current_ratio": 0.9737446599999999, "quick_ratio": 0.9375612, "assets_debt_ratio": 76.749091}, "yoy": {"balanced_eps": 0.05874499332443251, "balanced_net_assets": 0.2018121902785768, "index_weighted_avg_roe": -0.11317767504265785, "total_assets_net_ratio": 0.05270831649559518, "sale_net_interest_ratio": 0.00452162540729927, "current_ratio": 0.09006199220743852, "quick_ratio": 0.09174838816056079, "assets_debt_ratio": -0.0343030563770611}}, {"key": "2026_596002", "label": "H1 '26", "compareKey": "cumulative", "values": {"balanced_eps": 8.3, "balanced_net_assets": 7.260244, "index_weighted_avg_roe": 141.47050000000002, "total_assets_net_ratio": 34.906, "sale_net_interest_ratio": 27.1519, "current_ratio": 1.07035747, "quick_ratio": 1.02024643, "assets_debt_ratio": 71.302569}, "yoy": {"balanced_eps": 0.046658259773014, "balanced_net_assets": 0.21040035730617943, "index_weighted_avg_roe": -0.06940343228218665, "total_assets_net_ratio": 0.07195612184418464, "sale_net_interest_ratio": 0.0042571606107232275, "current_ratio": 0.09921780726376472, "quick_ratio": 0.08819182150455891, "assets_debt_ratio": -0.07096529651406557}}, {"key": "2026_596007", "label": "9M '26", "compareKey": "cumulative", "values": {"balanced_eps": 8.76, "balanced_net_assets": 7.359865, "index_weighted_avg_roe": 148.7511, "total_assets_net_ratio": 36.0764, "sale_net_interest_ratio": null, "current_ratio": 1.0032948, "quick_ratio": 0.92901437, "assets_debt_ratio": 71.946377}, "yoy": {"balanced_eps": 0.05542168674698784, "balanced_net_assets": 0.013721439665113178, "index_weighted_avg_roe": 0.05146373272166276, "total_assets_net_ratio": 0.033530052140033254, "sale_net_interest_ratio": null, "current_ratio": -0.06265446066350161, "quick_ratio": -0.08942159199714138, "assets_debt_ratio": 0.009029239886153229}}]}}, "source": "AInvest financial_reports_visual/seo/v1/financial_statistics", "language": "zh-CN", "componentUi": {"Key Indicators": "关键财务指标", "Business": "主营业务", "Type": "类型", "Stock": "股票", "Value": "价值", "Key Financial Indicators": "关键财务指标", "Basic EPS": "基本每股收益", "BVPS": "每股净资产", "ROE": "净资产收益率", "ROA": "总资产收益率", "Net Margin": "净利率", "Current Ratio": "流动比率", "Quick Ratio": "速动比率", "Debt Ratio": "资产负债率", "Quarterly": "季度", "Annual": "年度", "Cumulative": "累计", "YoY": "同比", "Ratio": "占比", "Debt": "负债", "Time range filter": "时间范围", "Start period": "起始周期", "End period": "结束周期"}, "theme": "light"};
+const root = document.querySelector('.component');
+const topTabs = root.querySelector('.top-tabs');
+const segmented = root.querySelector('.segmented');
+const legend = root.querySelector('.legend');
+const svg = root.querySelector('svg');
+const tooltip = root.querySelector('.tooltip');
+const rangeFilter = root.querySelector('.range-filter');
+const rangeTrack = root.querySelector('.range-track');
+const rangeActive = root.querySelector('.range-track-active');
+const rangeHandleStart = root.querySelector('.range-handle-start');
+const rangeHandleEnd = root.querySelector('.range-handle-end');
+const NS = 'http://www.w3.org/2000/svg';
+let metricKey = payload.defaultMetric || payload.metrics[0].key;
+let viewKey = payload.defaultView || 'quarterly';
+let rangeByView = JSON.parse(JSON.stringify(payload.defaultRanges || {}));
+let dragRangeHandle = null;
+let currentRangeCount = 0;
+
+function el(name, attrs = {}, parent = svg) {
+  const node = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+  parent.appendChild(node);
+  return node;
+}
+function fmt(value, decimals = 2, unit = '') {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '-';
+  return `${Number(value).toFixed(decimals)}${unit}`;
+}
+function hideTip() { tooltip.classList.remove('active'); }
+function setTipPosition(anchorX, topGridY = 24) {
+  const stageRect = root.querySelector('.stage').getBoundingClientRect();
+  const left = Math.max(8, Math.min(stageRect.width - tooltip.offsetWidth - 8, anchorX - tooltip.offsetWidth / 2));
+  const arrowH = 8;
+  const gap = 6;
+  const top = topGridY - tooltip.offsetHeight - arrowH - gap;
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+  tooltip.style.setProperty('--arrow-left', `${Math.max(14, Math.min(tooltip.offsetWidth - 14, anchorX - left))}px`);
+}
+function showTipForX(anchorX, row, metric, topGridY = 24) {
+  const value = row.values[metric.key];
+  const yoy = row.yoy?.[metric.key];
+  tooltip.innerHTML = `
+    <div class="tip-title">${row.label}</div>
+    <div class="tip-row">
+      <span class="tip-dot" style="background:#2f63f6"></span>
+      <span class="tip-name">${metric.label}</span>
+      <span class="tip-value">${fmt(value, metric.decimals, metric.unit)}</span>
+    </div>
+    <div class="tip-row">
+      <span class="tip-dot" style="background:#ff7043"></span>
+      <span class="tip-name">同比</span>
+      <span class="tip-value">${fmt(yoy == null ? null : yoy * 100, 2, '%')}</span>
+    </div>`;
+  setTipPosition(anchorX);
+  tooltip.classList.add('active');
+}
+function showTip(event, row, metric) {
+  const stageRect = root.querySelector('.stage').getBoundingClientRect();
+  const x = event.clientX - stageRect.left;
+  showTipForX(x, row, metric);
+}
+
+function buildControls() {
+  payload.metrics.forEach(metric => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'metric-tab';
+    button.role = 'tab';
+    button.textContent = metric.label;
+    button.setAttribute('aria-selected', String(metric.key === metricKey));
+    button.addEventListener('click', () => { metricKey = metric.key; buildControlsState(); render(); });
+    topTabs.appendChild(button);
+  });
+  Object.entries(payload.views).forEach(([key, view]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.role = 'tab';
+    button.textContent = view.label;
+    button.dataset.value = key;
+    button.setAttribute('aria-selected', String(key === viewKey));
+    button.addEventListener('click', () => { viewKey = key; buildControlsState(); render(); });
+    segmented.appendChild(button);
+  });
+}
+function buildControlsState() {
+  topTabs.querySelectorAll('button').forEach((button, index) => button.setAttribute('aria-selected', String(payload.metrics[index].key === metricKey)));
+  segmented.querySelectorAll('button').forEach(button => button.setAttribute('aria-selected', String(button.dataset.value === viewKey)));
+  const activeMetricButton = topTabs.querySelector('button[aria-selected="true"]');
+  if (activeMetricButton) activeMetricButton.scrollIntoView({block:'nearest', inline:'center'});
+}
+function renderLegend(metric) {
+  legend.innerHTML = `<span class="legend-item"><span class="legend-dot" style="background:#2f63f6"></span>${metric.label}</span><span class="legend-item"><span class="legend-dot" style="background:#ff7043"></span>同比</span>`;
+}
+function rangeKey() {
+  return viewKey;
+}
+function getRangeState(count) {
+  const key = rangeKey();
+  if (!rangeByView[key]) {
+    rangeByView[key] = {start:0, end:Math.max(0, count - 1)};
+  }
+  const state = rangeByView[key];
+  const maxIndex = Math.max(0, count - 1);
+  state.start = Math.max(0, Math.min(maxIndex, state.start));
+  state.end = Math.max(0, Math.min(maxIndex, state.end));
+  if (state.start > state.end) {
+    state.start = 0;
+    state.end = maxIndex;
+  }
+  return state;
+}
+function clientXToRangeIndex(clientX, count) {
+  const rect = rangeTrack.getBoundingClientRect();
+  const ratio = rect.width <= 0 ? 0 : Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  return Math.round(ratio * Math.max(0, count - 1));
+}
+function updateRangeByPointer(clientX) {
+  if (!dragRangeHandle || currentRangeCount <= 1) return;
+  const state = getRangeState(currentRangeCount);
+  const index = clientXToRangeIndex(clientX, currentRangeCount);
+  if (dragRangeHandle === 'start') {
+    state.start = Math.min(index, state.end);
+  } else {
+    state.end = Math.max(index, state.start);
+  }
+  rangeByView[rangeKey()] = state;
+  render();
+}
+function onRangePointerMove(event) {
+  event.preventDefault();
+  updateRangeByPointer(event.clientX);
+}
+function onRangePointerUp() {
+  dragRangeHandle = null;
+  document.removeEventListener('pointermove', onRangePointerMove);
+  document.removeEventListener('pointerup', onRangePointerUp);
+}
+function startRangeDrag(handle, event) {
+  if (currentRangeCount <= 1) return;
+  event.preventDefault();
+  dragRangeHandle = handle;
+  updateRangeByPointer(event.clientX);
+  document.addEventListener('pointermove', onRangePointerMove);
+  document.addEventListener('pointerup', onRangePointerUp);
+}
+function initRangeFilter() {
+  rangeHandleStart.addEventListener('pointerdown', event => startRangeDrag('start', event));
+  rangeHandleEnd.addEventListener('pointerdown', event => startRangeDrag('end', event));
+  rangeTrack.addEventListener('pointerdown', event => {
+    if (event.target.closest('.range-handle')) return;
+    const state = getRangeState(currentRangeCount);
+    const index = clientXToRangeIndex(event.clientX, currentRangeCount);
+    dragRangeHandle = Math.abs(index - state.start) <= Math.abs(index - state.end) ? 'start' : 'end';
+    startRangeDrag(dragRangeHandle, event);
+  });
+}
+function renderRangeFilter(allRows, range) {
+  currentRangeCount = allRows.length;
+  if (allRows.length <= 1) {
+    rangeFilter.hidden = true;
+    return;
+  }
+  rangeFilter.hidden = false;
+  const denominator = Math.max(1, allRows.length - 1);
+  const leftPct = range.start / denominator * 100;
+  const rightPct = range.end / denominator * 100;
+  rangeActive.style.left = `${leftPct}%`;
+  rangeActive.style.width = `${Math.max(0, rightPct - leftPct)}%`;
+  rangeHandleStart.style.left = `${leftPct}%`;
+  rangeHandleEnd.style.left = `${rightPct}%`;
+  rangeHandleStart.setAttribute('aria-label', `起始周期 ${allRows[range.start]?.label || ''}`);
+  rangeHandleEnd.setAttribute('aria-label', `结束周期 ${allRows[range.end]?.label || ''}`);
+}
+
+function render() {
+  hideTip();
+  svg.innerHTML = '';
+  const metric = payload.metrics.find(item => item.key === metricKey) || payload.metrics[0];
+  const allRows = (payload.views[viewKey]?.records || []).filter(row => row.values?.[metric.key] != null);
+  const range = getRangeState(allRows.length);
+  renderRangeFilter(allRows, range);
+  const rows = allRows.slice(range.start, range.end + 1);
+  renderLegend(metric);
+  const stage = root.querySelector('.stage');
+  const stageRect = stage.getBoundingClientRect();
+  const w = Math.max(320, stageRect.width || root.clientWidth);
+  const h = Math.max(280, stageRect.height || 380);
+  svg.style.width = '100%';
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const m = {left: 54, right: 52, top: 24, bottom: 56};
+  const cw = w - m.left - m.right;
+  const ch = h - m.top - m.bottom;
+  const values = rows.map(row => Number(row.values[metric.key]));
+  const yoyValues = rows.map(row => row.yoy?.[metric.key]).filter(v => v != null).map(v => Number(v) * 100);
+  const minValue = Math.min(0, ...values);
+  const maxValue = Math.max(0, ...values);
+  const valuePad = Math.max((maxValue - minValue) * .18, 1);
+  const vMin = minValue < 0 ? minValue - valuePad : 0;
+  const vMax = maxValue + valuePad;
+  const yMin = Math.min(-10, ...yoyValues, 0);
+  const yMax = Math.max(10, ...yoyValues, 0);
+  const yPad = Math.max((yMax - yMin) * .18, 20);
+  const lMin = yMin - yPad;
+  const lMax = yMax + yPad;
+  const band = cw / Math.max(rows.length, 1);
+  const x = i => m.left + (rows.length <= 1 ? cw / 2 : band * (i + .5));
+  const yBar = v => m.top + (vMax - v) / Math.max(vMax - vMin, .0001) * ch;
+  const yLine = v => m.top + (lMax - v) / Math.max(lMax - lMin, .0001) * ch;
+  const zeroY = yBar(0);
+  for (let i = 0; i < 5; i++) {
+    const gy = m.top + ch * i / 4;
+    el('line', {x1:m.left, y1:gy, x2:w-m.right, y2:gy, class:'grid'});
+    const leftVal = lMax - (lMax - lMin) * i / 4;
+    const rightVal = vMax - (vMax - vMin) * i / 4;
+    el('text', {x:m.left - 10, y:gy + 4, class:'y-label', 'text-anchor':'end'}).textContent = `${leftVal.toFixed(0)}%`;
+    el('text', {x:w - m.right + 10, y:gy + 4, class:'y-label'}).textContent = fmt(rightVal, metric.decimals, metric.unit);
+  }
+  el('line', {x1:m.left, y1:zeroY, x2:w-m.right, y2:zeroY, class:'axis'});
+  const barW = Math.max(3, Math.min(42, band * .48));
+  const canShowBarValue = band >= 46 && barW >= 18;
+  const canShowDots = band >= 18;
+  const labelMode = band >= 58 ? 'all' : rows.length <= 3 ? 'all' : 'edge-middle';
+  const hoverLayer = el('g', {}, svg);
+  const barLayer = el('g', {}, svg);
+  const labelLayer = el('g', {}, svg);
+  const hoverLeaveHandler = () => {
+    hoverLayer.querySelectorAll('.hover-band').forEach(node => node.classList.remove('active'));
+    hideTip();
+  };
+  rows.forEach((row, i) => {
+    const cx = x(i);
+    const v = Number(row.values[metric.key]);
+    const top = yBar(Math.max(v, 0));
+    const bottom = yBar(Math.min(v, 0));
+    const bandLeft = m.left + band * i;
+    const bandWidth = Math.max(8, band);
+    const hoverBand = el('rect', {x: bandLeft + 1, y: m.top, width: Math.max(0, bandWidth - 2), height: ch, class:'hover-band'}, hoverLayer);
+    const hoverZone = el('rect', {x: bandLeft, y: m.top, width: bandWidth, height: ch, class:'hover-zone'}, hoverLayer);
+    el('rect', {x:cx - barW / 2, y:top, width:barW, height:Math.max(1, bottom - top), fill:'#2f63f6', rx:0}, barLayer);
+    if (canShowBarValue) {
+      el('text', {x:cx, y:top - 7, class:'bar-value'}, labelLayer).textContent = fmt(v, metric.decimals, metric.unit);
+    }
+    const midIndex = Math.floor((rows.length - 1) / 2);
+    const shouldShowLabel = labelMode === 'all' || i === 0 || i === midIndex || i === rows.length - 1;
+    if (shouldShowLabel) {
+      const label = el('text', {x:cx, y:h - 20, class:'x-label', 'text-anchor':'middle'}, labelLayer);
+      label.textContent = row.label;
+    }
+    const activateHover = () => {
+      hoverLayer.querySelectorAll('.hover-band').forEach(node => node.classList.remove('active'));
+      hoverBand.classList.add('active');
+      const anchorX = (cx / w) * stageRect.width;
+      const topGridY = (m.top / h) * stageRect.height;
+      showTipForX(anchorX, row, metric, topGridY);
+    };
+    hoverZone.addEventListener('mouseenter', activateHover);
+    hoverZone.addEventListener('mousemove', activateHover);
+    hoverZone.addEventListener('mouseleave', hoverLeaveHandler);
+  });
+  const lineRows = rows.map((row, i) => ({row, i, yoy:row.yoy?.[metric.key]})).filter(item => item.yoy != null);
+  if (lineRows.length) {
+    let d = '';
+    lineRows.forEach((item, idx) => {
+      const px = x(item.i);
+      const py = yLine(Number(item.yoy) * 100);
+      d += `${idx ? 'L' : 'M'}${px},${py}`;
+    });
+    el('path', {d, fill:'none', stroke:'#ff7043', 'stroke-width':2});
+    lineRows.forEach(item => {
+      const cx = x(item.i);
+      const cy = yLine(Number(item.yoy) * 100);
+      if (canShowDots) {
+        el('circle', {cx, cy, r:4, fill:'#ff7043'});
+      }
+    });
+  }
+}
+buildControls();
+initRangeFilter();
+render();
+function postChartHeight() {
+  const nodes = [document.querySelector('.component'), document.querySelector('main'), document.body].filter(Boolean);
+  const height = Math.ceil(Math.max(180, ...nodes.map(node => node.getBoundingClientRect().bottom || node.scrollHeight || 0)));
+  try { parent.postMessage({type:'analysis-planner-chart-height', height}, '*'); } catch (e) {}
+}
+new ResizeObserver(() => { render(); postChartHeight(); }).observe(root.querySelector('.stage'));
+postChartHeight();
+setTimeout(postChartHeight, 80);
+setTimeout(postChartHeight, 300);
+</script>
+</body>
+</html>

@@ -1,23 +1,183 @@
 {
-  "question": "请展示 NVDA 的买卖资金流，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 NVDA 的最近可用交易日的买卖资金流和订单结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:14:45.366000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的买卖资金流，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 买卖资金流\n\n这份案例用原生业务组件展示买卖资金流，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-trade_flow/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 NVDA 的最近可用交易日的买卖资金流和订单结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "deepseek",
+      "label": "DeepSeek Harness",
+      "script": "deepseek",
+      "reason": "由 DeepSeek Harness 自主规划并执行。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html",
+    "reportUrl": "/static/cases/inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-trade_flow/chart.html",
-        "url": "/static/cases/inspiration/business-trade_flow/chart.html"
+        "path": "case:inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html",
+        "url": "/static/cases/inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-trade_flow/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成。以下是用 **trade_flow.py** 原生业务组件对 NVDA 最新可用交易日资金流的分析与实际生成产物。\n\n---\n\n## 核心结论\n\n**2026-10-13（周二）NVDA 收涨 2.31% 至 228.52 美元，但当日资金流是净流出 438.66M 美元——当日是\"超大单买入、中小单派发\"的分歧日，而非全面净流入的普涨日。** 全部订单规模合计流入 2.98B、流出 3.42B，净流出主要由中小单贡献（中单 −170.96M、小单 −268.14M），而**超大单逆势净流入 77.20M 美元**，是四个规模档中唯一净买入的一档。\n\n**关键分歧点在于：超大单（+77.20M）与大单（−76.76M）几乎等额反向，两档合计净额接近零。** 这意味着当日大资金内部并未形成一致方向：真正的大额资金在承接，次一级的大额资金在小幅减持，价格的上行更多由超大单的定向买入推动，而不是全谱系资金共振。\n\n## 关键证据与图表解读\n\n**1. 订单结构：中小单是净流出主体，超大单是唯一净买方**\n\n| 订单规模 | 流入 | 流出 | 净额 | 流入占比 | 流出占比 |\n|---|---|---|---|---|---|\n| 超大单 | 572.58M | 495.38M | **+77.20M** | 8.96% | 7.75% |\n| 大单 | 565.64M | 642.40M | −76.76M | 8.85% | 10.05% |\n| 中单 | 810.35M | 981.31M | −170.96M | 12.68% | 15.35% |\n| 小单 | 1.03B | 1.30B | **−268.14M** | 16.09% | 20.28% |\n\n图中订单流分布环形图最重要的信息不是金额大小，而是**每个档位的流出占比都高于流入占比、唯独超大单相反**：超大单流入占比（8.96%）高于流出占比（7.75%），其余三档全部是\"卖占比 > 买占比\"，其中小单差距最大（20.28% vs 16.09%）。按金额看，小单净卖出 268.14M，是当日净流出的最大单一来源。\n\n**2. 盘中路径：累计净流出全天单调扩大，没有任何一分钟出现累计净流入**\n\n订单流追踪（Overall 视图）显示累计净流向从开盘 09:31 的 −2.02M 一路走低至收盘 −438.66M，**全天 390 个交易分钟中累计净流入为正的分钟数为 0**。斜率最陡的时段是美东 10:01 → 10:31，累计净流出由 −7.06M 骤增至 −112.28M，20 分钟内放大近 16 倍，是当日资金面最明显的拐点；尾盘 15:31 → 16:00 再扩大约 43M。这个形态说明卖压是持续性的、而非个别时点的冲击。\n\n**3. 价格与资金流的背离是本图最值得注意的一点**\n\n同期股价由开盘 223.35 上行至收盘 228.52（最高即收盘价，日内低点 223.19），**价格几乎单边上行，而累计净流向全程为负、且越走越负**。对这种\"价涨钱走\"的组合，通常的解释是净流出集中在中小单、而定价权掌握在超大单手中；它并不否定当日的强势，但提示上涨的资金广度不足，需要后续交易日看到大单/中单转为净流入来确认趋势的可持续性。\n\n[[AIME_CHART:case:inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html]]\n\n**组件阅读方法**：上方环形图按\"超大单/大单/中单/小单\"展示买卖占比与金额，用于看结构；中间\"净流向 −438.66M\"汇总流入流出总账；下方\"订单流追踪\"可用超大单 / 大单 / 整体三个标签页切换，拖动时间轴滑块可放大任意时段观察累计净流向与股价的相对走势（\"净流入/净流出\"为纵轴方向图例，\"股价\"为叠加的价格线）。\n\n## 数据时间与口径\n\n- **数据日期：2026-10-13（美东时间 09:31–16:00，共 390 个分钟点）**，为本次可用的最近完整交易日；数据快照保存于 **2026-10-14**，标的 NVDA（美股 NASDAQ）、币种 USD。本次为**重新渲染**，未复用任何旧 HTML 或旧正文。\n- **实时重取结果：接口可通但数据滞后。** 本次以 `--code NVDA` 直连接口重取，返回的\"最近趋势\"日期为 **2026-10-01**，且分钟价格序列为空（无法生成股价叠加），落后于上述 2026-10-13 快照。因此按用户指定改以结构化历史数据（`outputs/generated/nvda-trade-flow-input-20261013.json`，取自 `app/static/cases/inspiration/business-trade_flow/payload.json`）作为输入重新渲染，这是一次**数据降级**，降级细节已如实披露。\n- **已知缺口：组件分钟级追踪仅提供超大单、大单、整体三个视图，中单与小单只有当日汇总金额、没有分时序列**，因此\"中单/小单在哪个时点加速卖出\"无法从本数据判定，正文对此未作推断。\n- 本图为美股口径，图表区域声明为美股涨跌习惯（绿涨红跌）。资金流为订单规模分档的成交方向统计，属于**推断性资金流指标**，不等于机构持仓变动，也不构成买卖建议；下一步确认点应观察大单与中单能否由净流出转为净流入，以及超大单净买入是否连续多个交易日出现。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-trade_flow-70e3709958304111a8b1c6864570d524",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-trade_flow-70e3709958304111a8b1c6864570d524",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b00a557bd88f879c6994e9e99a)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2230
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2624
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3652
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4092
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5949
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6417
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7781
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8157
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11347
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 11721
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 16918
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 23367
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 25351
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 30787
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 31202
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 33820
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 34171
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 37634
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 40716
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 43769
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 45833
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 47605
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 48898
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 56111
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 59230
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 62549
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 66769
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 73530
+      }
+    ],
+    "startedAt": 1791969200127,
+    "endedAt": 1791969285366,
+    "elapsedMs": 85239,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791969200127,
+        "endedAt": 1791969285366,
+        "elapsedMs": 85239
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-trade_flow-70e3709958304111a8b1c6864570d524",
     "renderer": "trade_flow.py",
-    "schema": "trade_flow.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139b00a557bd88f879c6994e9e99a)",
+      "candidateCount": 45
+    }
   }
 }

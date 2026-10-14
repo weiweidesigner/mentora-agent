@@ -1,43 +1,511 @@
 {
-  "question": "用瀑布图展示收入到利润的拆解，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "把 AAPL 最近一个已披露季度从营收到净利润的成本、费用、税费拆解做成瀑布图。",
+  "cachedAt": "2026-10-14T16:52:15.118000+08:00",
   "answer": {
-    "question": "用瀑布图展示收入到利润的拆解，使用清楚标注的金融演示数据。",
-    "interpretation": "# 收入到利润的拆解\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-waterfall/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "把 AAPL 最近一个已披露季度从营收到净利润的成本、费用、税费拆解做成瀑布图。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,generic-chart,code-interpreter,vision-chart-analyst,advisor-text-generation",
+      "label": "business-chart-recall + generic-chart + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "script": "business-chart-recall + generic-chart + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-waterfall/inspiration-real-analysis-waterfall.html",
+    "reportUrl": "/static/cases/inspiration/analysis-waterfall/inspiration-real-analysis-waterfall.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-waterfall/chart.html",
-        "url": "/static/cases/inspiration/analysis-waterfall/chart.html"
+        "path": "case:inspiration/analysis-waterfall/inspiration-real-analysis-waterfall.html",
+        "url": "/static/cases/inspiration/analysis-waterfall/inspiration-real-analysis-waterfall.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-waterfall/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n苹果最近一个已披露季度是 **FY2026 Q3（2026-03-29 至 2026-06-27，2026-07-31 披露）**。从 1,094.17 亿美元营业收入到 297.89 亿美元净利润，三级漏损结构是：**成本扣掉 546.47 亿（占营收 49.94%）→ 期间费用再扣 190.75 亿（17.43%，其中研发 117.29 亿、销管 73.46 亿）→ 最后所得税再扣 64.78 亿（税前利润的 17.86%）**，终点净利率 27.23%，即每 1 美元营收留下 0.2723 美元净利润。**最值得注意的不是漏损总量，而是漏损方向**：本季营收环比下降 1.59%，净利润却环比上升 0.71%——毛利几乎没动（547.70 亿，环比 −0.02%），真正的边际改善来自\"其他收支净额\"由 −0.52 亿翻正到 +5.72 亿，这一项对环比净利润增量的贡献（+6.24 亿）超过了所得税增加（−2.23 亿）与研发费用增加（−3.10 亿）的合计拖累，属于质量偏低的利润来源。\n\n[[AIME_CHART:case:inspiration/analysis-waterfall/inspiration-real-analysis-waterfall.html]]\n\n## 图表解读\n\n上图把同一季度的利润表桥拆成 10 根柱子，蓝色为节点口径（营业收入/毛利润/营业利润/税前利润/净利润），粉红为对利润的扣减，青绿为对利润的加项，相邻柱之间的虚线表示结转关系。\n\n- **单笔最大漏损是销售成本 546.47 亿美元**，柱长几乎是营收柱的一半；扣完它毛利仍有 547.70 亿，毛利率 50.06%，是整条链路唯一高于 50% 的节点。\n- **第二级漏损是期间费用 190.75 亿**，由研发费用 117.29 亿（营收的 10.72%）和销管费用 73.46 亿（6.71%）两根较短的柱子承接，合计把营业利润率从 50.06% 压到 32.62%。\n- **税费是第三级、也是相对温和的一级**：营业利润 356.95 亿之外先有 +5.72 亿其他收支净额把税前利润抬到 362.67 亿，再被所得税扣去 64.78 亿，落到 297.89 亿；实际税率 17.86%，仅比上季的 17.46% 高 0.40 个百分点。\n- 视觉上最直观的对比是**柱长量级差**：所得税柱（64.78）不到成本柱（546.47）的八分之一，说明这家公司的利润压制主要发生在经营层面，而非税务层面。\n\n## 关键证据与环比口径\n\n本季完整桥（单位：亿美元，括号为上季 FY2026 Q2）：\n\n| 步骤 | 本季 | 上季 | 环比 |\n|---|---|---|---|\n| 营业收入 | 1,094.17 | 1,111.84 | −1.59% |\n| 销售成本 | −546.47 | −564.03 | −3.11% |\n| 毛利润 | 547.70 | 547.81 | −0.02% |\n| 研发费用 | −117.29 | −114.19 | +2.71% |\n| 销售及管理费用 | −73.46 | −74.77 | −1.75% |\n| 营业利润 | 356.95 | 358.85 | −0.53% |\n| 其他收支净额 | +5.72 | −0.52 | 转正 |\n| 税前利润 | 362.67 | 358.33 | +1.21% |\n| 所得税费用 | −64.78 | −62.55 | +3.57% |\n| 净利润 | 297.89 | 295.78 | +0.71% |\n\n环比归因可以完全闭合：营收少收 17.67 亿（−17.67）、成本少支 17.56 亿（+17.56）、研发多支 3.10 亿（−3.10）、销管少支 1.31 亿（+1.31）、其他收支改善 6.24 亿（+6.24）、所得税多缴 2.23 亿（−2.23），合计 **+2.11 亿，与净利润实际增量 2.11 亿一致**。这也解释了\"营收降、净利升\"：**成本下降速度快于收入（−3.11% vs −1.59%）把毛利率从 49.27% 推高 0.79 个百分点到 50.06%**，加上其他收支转正，抵消了研发费用扩张和税负上升。\n\n所有校验项均通过，且三家上游产品口径互相印证：毛利=营收−成本、营业利润=毛利−费用、营业利润+其他收支=税前利润、税前利润−所得税=净利润全部成立；营收/成本/毛利/净利润与利润表产品的五步口径逐一相等，毛利/营业利润/税前利润/所得税又与独立指标序列完全一致。图表视觉复核也确认 10 个步骤标签与数值均完整可读、无截断。\n\n## 风险与待确认点\n\n- **利润质量**：本季环比改善的主要来源是\"其他收支净额\"+5.72 亿的一次性色彩较强的科目。本次分析未对其构成做归因，不应把它当作可持续的经营改善；下一份财报需确认该项是否回落到常态。\n- **费用端在反向走**：研发费用同比 +32.29%、环比 +2.71%，增速快于收入；若研发强度继续从 10.72% 抬升，会持续侵蚀营业利润率。\n- **毛利率 50% 是脆弱平衡点**：本季毛利率的改善几乎全部来自成本端效率（成本降幅大于收入降幅），而非收入增长；一旦成本回到与收入同向变动，毛利率与净利率会同时回落。\n- **税率为观察项**：实际税率 17.86%，环比上行 0.40 个百分点，仍属温和区间，但对净利润的边际影响已开始显现。\n\n## 数据时间与口径\n\n- **标的与期间**：AAPL（苹果），FY2026 Q3，报告期 2026-03-29 至 2026-06-27，披露日 2026-07-31；比较基期为 FY2026 Q2（截至 2026-03-28）。截至 2026-10-14，**FY2026 Q4（约 2026-09-26 结束）尚未进入数据源**，故本季即最近一个已披露季度。\n- **数据来源与降级情况**：全部为实时接口成功取得的真实数据，**未使用 --sample、未使用任何模拟数值、未复用既有案例的演示数据**。主口径为 AInvest 美股\"收入与费用\"产品（提供营业收入、销售成本、毛利、研发费用、销售及管理费用、营业利润、其他收支、所得税、净利润九项明细）；并以 AInvest 利润表产品的五步瀑布口径（营收→销售成本→毛利→费用→净收入）做交叉核对。\n- **口径说明（重要限制）**：利润表产品自身的瀑布只给 5 步，\"费用\"一桶实际上混合了期间费用、税费与其他收支（本季 249.81 亿 = 190.75 + 64.78 − 5.72）。**税费明细并非来自该产品，而来自\"收入与费用\"产品的所得税科目**，二者已逐项对齐验证。此外，\"其他收支净额\"在上游以费用列符号存储，本分析按其符号约定取反后计入利润贡献，该处理已用税前利润独立序列验证（35.695 + 0.572 = 36.267 亿）。\n- **单位与换算**：上游原始单位为美元，图表统一换算为亿美元（÷1e8）并四舍五入到两位小数，四舍五入残差不超过 0.01 亿美元，不影响任何结论。\n- **路由说明**：JEV 组件路由（jev-1.13.0，46 个候选）给出的主证据是利润表业务组件（置信度 0.90），分析视角为\"构成与驱动因素\"、视觉编码为\"构成与贡献\"、证据策略为\"美股原生业务组件\"、标记策略为\"符号方向\"。本次按用户明确指定的瀑布图形态执行通用图表渲染，**JEV 的证据策略与标记策略被完整保留**（数据取自原生业务财务组件；负向扣减为红色、正向加项为绿色、节点为蓝色），仅渲染器按用户硬约束落在 waterfall.py，未新增重复的第二张图。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-waterfall-aa60db381a204b9ba2d487133eee5acb",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-waterfall-aa60db381a204b9ba2d487133eee5acb",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "waterfall.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "waterfall.py",
+      "supporting": null,
+      "selectedScripts": [
         "waterfall.py"
       ],
-      "primary_script": "waterfall.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.8,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "composition-and-drivers",
-      "semantic_lens_confidence": 0.79,
-      "primary_purpose": "{\"type\": \"waterfall\", \"name\": \"waterfall\", \"visualChannelMappings\": [{\"semantic\": \"横轴步骤\", \"field\": \"items[].label\", \"aliases\": [\"category\", \"dimension\", \"name\"], \"visualChannel\": \"xAxis.category\", \"required\": true}, {\"semantic\": \"瀑布值\", \"field\": \"items[].value\", \"aliases\": [\"amount\", \"delta\"], \"visualChannel\": \"waterfall.bar.height\", \"required\": true}, {\"semantic\": \"柱类型\", \"field\": \"items[].type\", \"aliases\": [\"barType\"], \"visualChannel\": \"waterfall.bar.baseline\", \"default\": \"delta\", \"supportedValues\": [\"delta\", \"total\"]}, {\"semantic\": \"堆叠到上一柱\", \"field\": \"items[].stackWithPrevious\", \"aliases\": [\"stack\", \"stacked\"], \"visualChannel\": \"waterfall.bar.stack\", \"default\": false}, {\"semantic\": \"颜色\", \"field\": \"items[].color\", \"aliases\": [\"fill\"], \"visualChannel\": \"waterfall.bar.color\"}], \"dataContract\": [{\"field\": \"items[].label\", \"type\": \"string\", \"channel\": \"legend.label\"}, {\"field\": \"items[].value\", \"type\": \"number\", \"channel\": \"waterfall.bar.height\"}, {\"field\": \"items[].displayValue\", \"type\": \"string\", \"channel\": \"legend.value\"}, {\"field\": \"items[].type\", \"type\": \"delta|total\", \"channel\": \"waterfall.bar.baseline\"}, {\"field\": \"items[].stackWithPrevious\", \"type\": \"boolean\", \"channel\": \"water",
-      "supporting_purpose": "",
-      "visual_encoding": "flow-and-relationship",
-      "visual_encoding_confidence": 0.61,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.98,
-      "mark_strategy": "signed-direction",
-      "mark_strategy_confidence": 0.91
-    },
-    "jevError": null
+      "primaryConfidence": 0.91,
+      "supportingConfidence": 0.78,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.91,
+      "primaryPurpose": "通用瀑布图组件，适合展示起始值、增减项、堆叠步骤和最终汇总值。生成 payload 前必须读取 waterfall.schema.json，并按 items[].label/value/type/stackWithPrevious 构造数据。cli_args 可使用 --payl schema semantics=横轴步骤; 瀑布值; 柱类型; 堆叠到上一柱; 颜色",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 0.76,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.71,
+      "markStrategy": "signed-direction",
+      "markStrategyConfidence": 0.82,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6355
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7315
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7315
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 7315
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7814
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 7826
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10106
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11624
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12576
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13021
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13418
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14126
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 15513
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 16808
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17235
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 20666
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21162
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22800
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 23199
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 30245
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34122
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36261
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 36762
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 39664
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40406
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 46039
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 46484
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 48400
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 51610
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 52062
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 54367
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 55813
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57560
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 59018
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 66862
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 69394
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 71829
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 74420
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 74849
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 85238
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 85948
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 86652
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 87089
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 87790
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 94973
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 103964
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 109608
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 110626
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 116821
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 117523
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 118136
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 120226
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 124762
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 127237
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 138105
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 141012
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 142672
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 143092
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 151406
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 162106
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 166071
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 171042
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 177731
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 178126
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 184310
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 185275
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 186107
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 187955
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 196216
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 201846
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 205996
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 217617
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 219269
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 222657
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 228624
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 232959
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 234992
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 237837
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 241585
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 245033
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 247517
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 248762
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 251946
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 253695
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 258854
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 263687
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 274904
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 276262
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 277587
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 277602
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 289715
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 292550
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 296797
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 303729
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 306200
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 319909
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 322688
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 325547
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 326827
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 1572
+      }
+    ],
+    "startedAt": 1791967587786,
+    "endedAt": 1791967935118,
+    "elapsedMs": 348904,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967587786,
+        "endedAt": 1791967935118,
+        "elapsedMs": 347332
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791967950771,
+        "endedAt": 1791967952343,
+        "elapsedMs": 1572
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-waterfall-aa60db381a204b9ba2d487133eee5acb",
+    "renderer": "waterfall.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "waterfall.py",
+      "supporting": null,
+      "selectedScripts": [
+        "waterfall.py"
+      ],
+      "primaryConfidence": 0.91,
+      "supportingConfidence": 0.78,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.91,
+      "primaryPurpose": "通用瀑布图组件，适合展示起始值、增减项、堆叠步骤和最终汇总值。生成 payload 前必须读取 waterfall.schema.json，并按 items[].label/value/type/stackWithPrevious 构造数据。cli_args 可使用 --payl schema semantics=横轴步骤; 瀑布值; 柱类型; 堆叠到上一柱; 颜色",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 0.76,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.71,
+      "markStrategy": "signed-direction",
+      "markStrategyConfidence": 0.82,
+      "candidateCount": 45
+    }
   }
 }

@@ -1,43 +1,455 @@
 {
-  "question": "用动态柱状图展示行业排名动态变化，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "用动态柱状图演绎 AAPL、MSFT、GOOGL 最近八个已披露季度的季度营收排名变化，标注财年与披露期口径。",
+  "cachedAt": "2026-10-14T16:55:32.782000+08:00",
   "answer": {
-    "question": "用动态柱状图展示行业排名动态变化，使用清楚标注的金融演示数据。",
-    "interpretation": "# 行业排名动态变化\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-dynamic_bar/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "用动态柱状图演绎 AAPL、MSFT、GOOGL 最近八个已披露季度的季度营收排名变化，标注财年与披露期口径。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,generic-chart,yahoo-data,vision-chart-analyst",
+      "label": "business-chart-recall + code-interpreter + generic-chart + yahoo-data + vision-chart-analyst",
+      "script": "business-chart-recall + code-interpreter + generic-chart + yahoo-data + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-dynamic_bar/inspiration-real-analysis-dynamic_bar-aapl-msft-googl-8q.html",
+    "reportUrl": "/static/cases/inspiration/analysis-dynamic_bar/inspiration-real-analysis-dynamic_bar-aapl-msft-googl-8q.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-dynamic_bar/chart.html",
-        "url": "/static/cases/inspiration/analysis-dynamic_bar/chart.html"
+        "path": "case:inspiration/analysis-dynamic_bar/inspiration-real-analysis-dynamic_bar-aapl-msft-googl-8q.html",
+        "url": "/static/cases/inspiration/analysis-dynamic_bar/inspiration-real-analysis-dynamic_bar-aapl-msft-googl-8q.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-dynamic_bar/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成：真实取数 → schema 转换 → JEV 路由 → 原生 `dynamic_bar.py` 渲染 → 末帧视觉核验。\n\n## 核心结论\n\n1. **头名在 8 个季度里换了 3 次**：苹果连续领跑 3 季后，**谷歌在 2025Q2 首次登顶**（96.4B vs 苹果 94.0B，差 2.4B）；苹果在 **2025Q3 以 0.12B 的极微优势夺回**（102.5B vs 102.3B）；**2026Q2 谷歌再度登顶**，并以 119.8B 刷新区间新高，领先苹果 10.4B。\n2. **微软 8 个季度稳居第 3，却是唯一\"每季环比都增长\"的公司**（7/7 环比上升）；苹果只有 3 升 4 降，谷歌 5 升 2 降。微软相对领跑者的规模从 69.1% 收窄到 75.1%，但绝对差距几乎没变（29.3B → 29.8B），因为领跑者同期也在加速。\n3. **增速换了主角**：最新已披露季度（2026Q2）同比，谷歌 +24.2% > 微软 +17.8% > 苹果 +16.4%。但按 8 季累计营收，苹果仍以 875.4B 居首（谷歌 817.3B、微软 613.6B），排名榜的短期换位尚未改变累计体量格局。\n4. **苹果的季度节律是排名波动的主因**：它的 12 月季度是高点（2024Q4 帧 124.3B、2025Q4 帧 143.8B），也正因为这个高点，微软的相对占比在 2024Q4 与 2025Q4 两度被压到 56%。\n\n[[AIME_CHART:case:inspiration/analysis-dynamic_bar/inspiration-real-analysis-dynamic_bar-aapl-msft-googl-8q.html]]\n\n图中最值得看的是 **2025Q2→2025Q3 那一次\"擦肩\"**：两条柱几乎等长（102.5 与 102.3），排名在第 5 帧贴边翻转，随后苹果靠 2025Q4 的 143.8B 把差距拉开到 29.9B，又在最近两帧被谷歌连续追近、最终让出第一。播放到最后一帧（2026Q2）时排序为 **谷歌 119.8B > 苹果 109.4B > 微软 90.0B**。\n\n## 财年与披露期口径\n\n时间轴统一为**自然季度**（帧 = 各公司财季结束日所归属的自然季度），三家公司财年不同，故同一帧的财季标签各异；**披露期口径 = 公司实际财报发布日**（美股盘后），非 SEC 10-Q 提交日。\n\n| 帧（自然季度） | 苹果 AAPL 财季 · 披露日 | 微软 MSFT 财季 · 披露日 | 谷歌 GOOGL 财季 · 披露日 | 当帧排名 |\n|---|---|---|---|---|\n| 2024Q3 | FY2024 Q4 · 2024-10-31 | FY2025 Q1 · 2024-10-30 | FY2024 Q3 · 2024-10-29 | AAPL > GOOGL > MSFT |\n| 2024Q4 | FY2025 Q1 · 2025-01-30 | FY2025 Q2 · 2025-01-29 | FY2024 Q4 · 2025-02-04 | AAPL > GOOGL > MSFT |\n| 2025Q1 | FY2025 Q2 · 2025-05-01 | FY2025 Q3 · 2025-04-30 | FY2025 Q1 · 2025-04-24 | AAPL > GOOGL > MSFT |\n| 2025Q2 | FY2025 Q3 · 2025-07-31 | FY2025 Q4 · 2025-07-30 | FY2025 Q2 · 2025-07-23 | **GOOGL > AAPL > MSFT** |\n| 2025Q3 | FY2025 Q4 · 2025-10-30 | FY2026 Q1 · 2025-10-29 | FY2025 Q3 · 2025-10-29 | AAPL > GOOGL > MSFT |\n| 2025Q4 | FY2026 Q1 · 2026-01-29 | FY2026 Q2 · 2026-01-28 | FY2025 Q4 · 2026-02-04 | AAPL > GOOGL > MSFT |\n| 2026Q1 | FY2026 Q2 · 2026-04-30 | FY2026 Q3 · 2026-04-29 | FY2026 Q1 · 2026-04-29 | AAPL > GOOGL > MSFT |\n| 2026Q2 | FY2026 Q3 · 2026-07-30 | FY2026 Q4 · 2026-07-29 | FY2026 Q2 · 2026-07-22 | **GOOGL > AAPL > MSFT** |\n\n披露滞后期末 **22–35 天**（苹果稳定 33 天，谷歌最快 22 天）。截至 **2026-10-14**，三家的 2026 自然年 Q3 财报均未发布（日程集中在 2026-10-28 至 11-02），因此不在本次范围内——这正是\"最近 8 个已披露季度\"落在 2024Q3–2026Q2 的原因。\n\n## 数据、验证与限制\n\n- **数据来源**：`income_statement.py` 内置 AInvest Financials 取数，2026-10-14 实时拉取三家季度损益表，营收字段 `operating_income_total`（十亿美元）。\n- **计算**：`code-interpreter` 受限变换完成按帧排名、与领跑者差距、占比、环比与累计；该结果与另一套独立实现逐行互校，24 行数值全部一致。\n- **JEV 路由**：`jev-1.13.0` 在 46 个候选中选出 `dynamic_bar.py` 为主渲染器（置信度 0.98，semantic lens = comparison-and-ranking，visualEncoding = cross-sectional-comparison，markStrategy = leaders-laggards，未选辅助图）。\n- **降级披露（重要）**：计划中的独立跨源复核未能完成——`yahoo-data` 的季度 `total_revenue` 序列对三家均返回 `requested_field_unavailable`（无可用数据，未做替代取数）。因此数值证据仅来自 AInvest 单一来源，另以同源缓存案例 payload 校验苹果 8/8 期完全一致；跨源数值复核仍属缺口。\n- **口径差异**：同一帧内各公司期末日最多相差 3 天（苹果 2026-06-27 vs 微软/谷歌 2026-06-30）；GAAP 口径、未调整汇率或一次性项目，汇总数据与 10-Q 原文可能存在微小舍入差异。\n- **图表限制**：`dynamic_bar.py` 原生组件按模块注册表默认不传主题参数、无脚注/注释通道，`chart-markup` 的 Mark 协议也不支持该渲染器，因此财年与披露期口径以**标题（自然季度口径 · 十亿美元）+ 悬浮提示的 timeLabel + 上方口径表**承载，未在图内加注；末帧已用无头浏览器驱动到 2026Q2 截图并由视觉核验确认排序、刻度与口径标注可读。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-dynamic_bar-258df84f68f44b508cc6823075565e02",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-dynamic_bar-258df84f68f44b508cc6823075565e02",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "dynamic_bar.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "dynamic_bar.py",
+      "supporting": null,
+      "selectedScripts": [
         "dynamic_bar.py"
       ],
-      "primary_script": "dynamic_bar.py",
-      "supporting_script": null,
-      "primary_confidence": 0.96,
-      "supporting_confidence": 0.77,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "comparison-and-ranking",
-      "semantic_lens_confidence": 0.9,
-      "primary_purpose": "{\"chartType\": \"dynamic-bar\", \"script\": \"dynamic_bar.py\", \"purpose\": \"Show an animated horizontal ranking chart over time without parent-group classification.\", \"rawDataContract\": {\"shape\": \"array<object>\", \"notes\": \"Use one row per item per frame. Each row must contain a frame, an item name, and a numeric value.\"}, \"displayMode\": {\"mode\": \"flat\", \"behavior\": \"Do not show a legend. Assign each ranked item a stable color from the chart palette, and keep that item's color consistent across all frames.\"}, \"semanticChannels\": [{\"channel\": \"frame\", \"payloadField\": \"encode.time or encode.x\", \"required\": true, \"acceptedTypes\": [\"date\", \"string\", \"number\"], \"semantics\": \"animation frame or period\"}, {\"channel\": \"category\", \"payloadField\": \"encode.name or encode.category; legacy encode.series when no name/category is supplied\", \"required\": true, \"acceptedTypes\": [\"string\"], \"semantics\": \"ranked bar/item name\"}, {\"channel\": \"value\", \"payloadField\": \"encode.value or encode.y\", \"required\": true, \"acceptedTypes\": [\"number\"], \"semantics\": \"bar length and ranking value\"}], \"payloadShape\": {\"chartName\": \"dynamic_bar\", \"title\": \"string\", \"unit\": \"string\", \"topN\": \"number\", \"valueLabel\": \"string\", \"t",
-      "supporting_purpose": "",
-      "visual_encoding": "cross-sectional-comparison",
-      "visual_encoding_confidence": 0.99,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.98,
-      "mark_strategy": "leaders-laggards",
-      "mark_strategy_confidence": 0.72
-    },
-    "jevError": null
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.53,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 0.98,
+      "primaryPurpose": "Show an animated horizontal ranking chart over time without parent-group classification. schema semantics=animation frame or period; ranked bar/item name; bar length and ranking value",
+      "supportingPurpose": "",
+      "visualEncoding": "cross-sectional-comparison",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.34,
+      "markStrategy": "leaders-laggards",
+      "markStrategyConfidence": 0.85,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5596
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6217
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 8506
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17926
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 20222
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20610
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 23549
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 24166
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 31268
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 32238
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 32657
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 34138
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 34782
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 36196
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 37039
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 37593
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 40756
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 55860
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 59627
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 67286
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 68507
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 74717
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 76519
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 84120
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 91828
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 92595
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 95964
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 97217
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 121971
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 123973
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 126704
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 135703
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 151171
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 151625
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 175680
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 179644
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 179644
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 183272
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 184207
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 186788
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 190763
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 192123
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 197305
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 197306
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 199179
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 201131
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 202933
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 205085
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 206240
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 209877
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 212333
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 213373
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 218283
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 220160
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 221540
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 222214
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 228308
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 233719
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 240674
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 241257
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 250717
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 260517
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 261446
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 263640
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 271213
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 277872
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 287034
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 293967
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 300787
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 304779
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 306830
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 310780
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 314317
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 324457
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 332362
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 334251
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 335263
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 336165
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 340295
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 344735
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 346763
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 351747
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 358638
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 366905
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 369080
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 3579
+      }
+    ],
+    "startedAt": 1791967746748,
+    "endedAt": 1791968132782,
+    "elapsedMs": 389613,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967746748,
+        "endedAt": 1791968132782,
+        "elapsedMs": 386034
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791968258460,
+        "endedAt": 1791968262039,
+        "elapsedMs": 3579
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-dynamic_bar-258df84f68f44b508cc6823075565e02",
+    "renderer": "dynamic_bar.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "dynamic_bar.py",
+      "supporting": null,
+      "selectedScripts": [
+        "dynamic_bar.py"
+      ],
+      "primaryConfidence": 1.0,
+      "supportingConfidence": 0.53,
+      "semanticLens": "comparison-and-ranking",
+      "semanticLensConfidence": 0.98,
+      "primaryPurpose": "Show an animated horizontal ranking chart over time without parent-group classification. schema semantics=animation frame or period; ranked bar/item name; bar length and ranking value",
+      "supportingPurpose": "",
+      "visualEncoding": "cross-sectional-comparison",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "us-structured-plus-internal",
+      "evidenceStrategyConfidence": 0.34,
+      "markStrategy": "leaders-laggards",
+      "markStrategyConfidence": 0.85,
+      "candidateCount": 45
+    }
   }
 }

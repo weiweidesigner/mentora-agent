@@ -1,23 +1,231 @@
 {
-  "question": "请展示 NVDA 的历史评级趋势，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AMD 的平均分析师评级的历史变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:39:47.902000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的历史评级趋势，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 历史评级趋势\n\n这份案例用原生业务组件展示历史评级趋势，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-average_rating_history/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-10-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AMD 的平均分析师评级的历史变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,vision-chart-analyst",
+      "label": "business-chart-recall + code-interpreter + vision-chart-analyst",
+      "script": "business-chart-recall + code-interpreter + vision-chart-analyst",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html",
+    "reportUrl": "/static/cases/inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-average_rating_history/chart.html",
-        "url": "/static/cases/inspiration/business-average_rating_history/chart.html"
+        "path": "case:inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html",
+        "url": "/static/cases/inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-average_rating_history/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n**AMD 的平均分析师评级正处于过去一年最高位 3.96/5，距\"买入\"分界线 4.00 仅差 0.043 分；更关键的是，评级已连续 6 个观测点单向上行，但自 2026 年 9 月中旬起完全走平。**\n\n- 最新读数（2026-10-14）：**3.9565**，口径为 1=强烈卖出、5=强烈买入\n- 近 1 年净升 **+0.184**，近 6 个月净升 **+0.357**\n- 全部涨幅集中在 **4 月 14 日 → 9 月 13 日** 的修复段；此后 5 个观测点（1M 视图）数值完全一致，无任何变动\n\n结论强度：**中等偏正面**。方向明确且单调，但绝对水平仍属\"温和看多\"而非\"强烈看多\"，且当前动量为零。\n\n## 关键证据\n\n**1. 一年全景：先磨损、后修复的 V 型，但两侧不对称**\n\n| 时间 | 平均评级 | 相对最新 |\n|---|---|---|\n| 2025-10-14 | 3.7727 | −0.184 |\n| 2026-01-13 | 3.8421（年度前高） | −0.114 |\n| 2026-03-15 | 3.6667 | −0.290 |\n| **2026-04-14** | **3.6000（年度最低）** | **−0.357** |\n| 2026-09-13 | 3.9565（年内最高） | 0.000 |\n| **2026-10-14** | **3.9565** | — |\n\n**2. 唯一的实质性冲击在 2026 年 2—4 月。** 1Y 视图里最大单步下滑为 2026-02-12 → 03-15 的 **−0.133**，叠加 03-15 → 04-14 继续下探至 3.6000，两个月累计回撤 **0.242 分**。这是全年唯一一次连续下修，也是本轮行情的起点。\n\n**3. 4 月之后是六连升，修复斜率大于下跌斜率。** 从 3.6000 到 3.9565 的 **+0.357 分**在 6 个观测点内完成，且每一步都未回吐（单调不减）。最大单步上行出现在 2026-07-14 → 08-14 的 **+0.113**，即评级修复最快的阶段集中在 7—8 月。\n\n**4. 当下状态：动能已耗尽。** 1M 视图 5 个观测点（2026-09-25、09-29、10-04、10-09、10-14）数值全部等于 3.9565，3M 视图内 09-21 → 10-14 亦无变化（−0.002 属四舍五入级别）。**评级已在高位横盘近一个月，说明新增分析师动作几乎为零，多空双方都没有再调整立场。**\n\n**5. 3.9565 的分母指向约 23 位分析师。** 该数值可由分母 23 的分数精确还原（合计 91 分 / 23 人），意味着这是一个\"23 人共识、无人给满分、平均 3.96\"的结构——**评级贴顶但未触顶**，进一步上修需要真实的上调动作来推动。\n\n[[AIME_CHART:case:inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html]]\n\n上图即本任务要求的业务组件（average_rating_history.py，AMD，默认 6M 视图，可切换 1M/3M/6M/1Y）。把周期切到 1Y，最该看的是 **2026 年 4 月 14 日那个 3.60 的低点**：它是全年唯一拐点，左半段是 2—4 月的连续下修，右半段是 4 月至今的六段楼梯式抬升，而最后一段在 9 月中旬后变成一条水平线。切到 6M 可以看到更清楚的形态——**这不是缓慢均值回归，而是前两个月急跌、后六个月稳步收复的近似对称 V 型**；切到 1M 只剩一条直线，直观说明当前共识处于\"冻结\"状态。\n\n## 对投资判断的含义\n\n- **正面**：分析师群体的立场在半年内发生了方向性改变，且是逐月加码而非一次性跳升，这类\"缓慢抬升\"通常对应盈利预期被反复上修，比单次激进上调更可靠。\n- **需警惕**：评级停在 3.96 而非突破 4.00，说明**没人愿意第一个把 AMD 推向\"买入\"**。在 5 分制里 3.96 已是准买入区，但 4.00 这个整数关口往往也是机构对外沟通的口径分界，突破与否具有信号意义。\n- **横盘风险**：近一个月零变动意味着当前评级已充分反映已公开信息，**AMD 后续的方向更可能由下一份财报后的目标价/盈利预测调整决定**，而不是由这个评级本身领先指示。\n- **不要过度解读**：该指标是\"平均分\"而非\"人数分布\"，同样的 3.96 可能来自\"多数买入 + 少数持有\"，也可能来自\"全部强烈买入的收敛\"。要看买入/持有/卖出的人数结构，需要另外的分析师推荐分布组件。\n\n## 风险、数据时间与口径\n\n- **数据时间**：快照日期 **2026-10-14**（组件内置来源的最近观测日），1Y 视图起点 2025-10-14，共 13 个观测点；1M/3M/6M 分别为 5/5/7 个观测点。\n- **数据来源与口径**：本次为**实时取数**（AInvest 分析师评级历史接口，市场 ID 185），非示例值、非缓存副本；评分区间 1—5，1=强烈卖出、5=强烈买入。\n- **采样频率**：观测点为**非等距**（月频为主，1M 视图内约 4—5 天一次），读数呈阶梯状，因此\"横盘\"可能部分来自两次快照之间没有新增评级，而非分析师集体按兵不动。\n- **降级说明**：视觉验证环节的多模态模型密钥未配置，未能执行图文语义核对；已改用无头浏览器实测渲染，确认图表正常出图（SVG 折线 + 4.10/3.80/3.60/3.40/3.10 纵轴 + 4月14日/7月14日/10月14日 横轴 + 1M/3M/6M/1Y 切换），浅色与深色主题下文字与根背景对比均正常，控制台无报错。以上分析基于结构化数值本身，未依赖图像理解结论。\n- **单一指标局限**：平均评级不反映样本量变化、目标价空间与盈利预期，不构成投资建议。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-average_rating_history-54d43da7a9d44a28ba7a85ad3fcb33f8",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-average_rating_history-54d43da7a9d44a28ba7a85ad3fcb33f8",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398f92477cff9b03dfc997b1b1ce)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5061
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6158
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10723
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11434
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 12682
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 14393
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14804
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 19184
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 19733
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 20124
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 20586
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 21295
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 21719
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 27551
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 32826
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 33248
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 50312
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 53186
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 53799
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 56395
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 57809
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 60685
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 66533
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 67182
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 69583
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 75013
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 76976
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 79219
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 80119
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 82599
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 83910
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 85135
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 86217
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 88743
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 90633
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 91141
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 93050
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 100427
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 104576
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 106369
+      }
+    ],
+    "startedAt": 1791967070203,
+    "endedAt": 1791967187902,
+    "elapsedMs": 117699,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967070203,
+        "endedAt": 1791967187902,
+        "elapsedMs": 117699
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-average_rating_history-54d43da7a9d44a28ba7a85ad3fcb33f8",
     "renderer": "average_rating_history.py",
-    "schema": "average_rating_history.schema.json",
-    "dataDate": "2026-10-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1398f92477cff9b03dfc997b1b1ce)",
+      "candidateCount": 45
+    }
   }
 }

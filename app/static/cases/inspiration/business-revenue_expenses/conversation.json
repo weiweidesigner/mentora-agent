@@ -1,23 +1,243 @@
 {
-  "question": "请展示 NVDA 的收入与成本流向，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 GOOGL 的收入、成本、费用与利润流向，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:10:09.984000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的收入与成本流向，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 收入与成本流向\n\n这份案例用原生业务组件展示收入与成本流向，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-revenue_expenses/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-30 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 GOOGL 的收入、成本、费用与利润流向，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,vision-chart-analyst,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + vision-chart-analyst + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html",
+    "reportUrl": "/static/cases/inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-revenue_expenses/chart.html",
-        "url": "/static/cases/inspiration/business-revenue_expenses/chart.html"
+        "path": "case:inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html",
+        "url": "/static/cases/inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-revenue_expenses/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n**GOOGL 最新季度（2026 Q2，截至 2026-06-30）的经营改善是真实的，但 93.65% 的净利率不是。** 营收 1,197.96 亿美元（同比 +24.23%）、营业利润 407.70 亿美元（同比 +30.38%），而净利润 1,121.93 亿美元（同比 +297.90%）——差额几乎全部来自 **+979.83 亿美元的非经营项目**，占税前利润约 70.6%。经营利润只贡献了净利润的 36%，因此把净利润率当作盈利能力证据会严重高估这家公司。\n\n真正可持续的变化有两条。第一，**营收增速已连续 6 个季度加速**：同比增速从 2025 Q1 的 12.04% 升至 2025 Q4 的 17.99%、2026 Q1 的 21.79%、2026 Q2 的 24.23%。第二，**增量正在向 Google Cloud 迁移**：云业务单季 247.68 亿美元、同比 +81.80%，收入占比从去年同期的 14.13% 升至 20.68%（+6.55pp），在 233.68 亿美元的同比营收增量中贡献 47.69%——接近其收入占比（20.68%）的 2.3 倍。\n\n## 收入—成本—费用—利润流向\n\n[[AIME_CHART:case:inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html]]\n\n流向图从左到右读：收入 1,197.96 亿美元 → 扣除收入成本 459.43 亿美元 → 毛利润 738.53 亿美元 → 扣除运营费用 330.83 亿美元（R&D 182.19 亿 + SG&A 148.64 亿）→ **营业利润 407.70 亿美元** → 加上其他项目 979.83 亿美元、扣除所得税 265.60 亿美元 → **净利润 1,121.93 亿美元**。\n\n**图中最关键的一处落差是营业利润与净利润之间多出的 979.83 亿美元非经营流入**，它的规模是营业利润本身的 2.4 倍。切换\"同比\"标签可看到同一现象在 2026 Q1 已经出现（其他项目 +377.16 亿美元）。结构性证据则来自收入侧的拆分：Google Services 945.40 亿美元、同比 +14.53%，占比从 85.60% 降至 78.92%（−6.68pp）；Google Cloud 占比首次突破两成。这正是毛利率扩张的来源——**收入成本同比只增 17.68%，明显慢于营收的 24.23%**，毛利率因此从 59.51% 升至 61.65%（+2.14pp）。\n\n## 费用端的摊薄效应已经停止\n\n这是流向图里容易被忽略、但对利润率判断更重要的细节。**运营费用同比 +26.67%，快于营收的 +24.23%**，费用率从 27.09% 升至 27.62%（+0.53pp）；其中 R&D 182.19 亿美元、同比 +31.95%，研发费用率从 14.32% 升至 15.21%（+0.89pp）。\n\n也就是说，本期营业利润率扩张的 1.60pp，是毛利率 +2.14pp 覆盖掉费用率 +0.53pp 之后的净得。**一旦云业务的毛利率改善放缓，而研发投入维持 30% 以上的同比增速，营业利润率扩张会迅速收窄**——这是未来几个季度最值得盯住的方向。\n\n滚动口径同样印证：最近四个季度（2025 Q3–2026 Q2）营收 4,458.66 亿美元，毛利率 60.90%、营业利润率 33.11%，净利润率却是 54.77%，其中非经营项目贡献 1,516.41 亿美元、占净利润 62.1%；而前一个四季度窗口该比例仅约 15.8%。\n\n## 风险与确认点\n\n- **非经营收益的性质未披露**：该数据集只给出\"其他项目\"总额，未拆分构成与是否可重复。近千亿美元量级的单季收益不应外推至未来季度，估值与盈利预期应锚定 **33% 左右的营业利润率和 4,458.66 亿美元的滚动营收**，而非 54.77% 的净利润率。\n- **客户集中与资本开支压力**：云业务 +81.80% 的高增速伴随研发费用率上行，若增速回落而费用刚性，利润率将承压。\n- **口径提示**：本组件 `other_item` 采用\"费用为正\"口径（净利润 = 营业利润 − 其他项目 − 所得税）。已逐期验证：11 个季度 + 10 个年度共 21 期全部严格闭合，分部收入合计与总营收差异为 0.0。\n\n## 数据时间与口径\n\n- 数据来源：AInvest 财务可视化接口（`financial_reports_visual/usa/v1/sankey`），**本次实时取数于 2026-10-14**，最新报告期为 **2026 Q2（期末 2026-06-30）**，下一份季报尚未发布。\n- 覆盖区间：季度 2023 Q4–2026 Q2（11 期）、年度 FY2016–FY2025（10 期），币种美元，未经审计调整。\n- 关于降级说明：任务提供的备用文件 `app/static/cases/inspiration/business-revenue_expenses/payload.json` 经核实为 **NVDA（英伟达）** 数据，并非 GOOGL，无法作为本次标的的输入，故未使用；实时接口本次取数成功，因此本次为全新取数、全新渲染，未复制任何旧 HTML 或正文。\n- 验证：组件 HTML 已通过无头浏览器实测渲染（桑基节点、四条业务收入分支与费用/利润流向均正常绘制），确认运行时浅色/深色切换生效且根背景透明。**视觉模型校验环节因环境未配置 VISION_API_KEY 未能执行**，改以上述 DOM 级渲染实测替代，此为本次唯一降级项。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-revenue_expenses-a5915ba6be7744a185a82d88a21fba97",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-revenue_expenses-a5915ba6be7744a185a82d88a21fba97",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139aa7dc07962930077c00dfe0727)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 2210
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 2584
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3697
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4084
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 5723
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6120
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 8244
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 15242
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17709
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18960
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 21269
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 30540
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 30545
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 32340
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 32726
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 34002
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 36016
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 37308
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 46234
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 48102
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 55161
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 57091
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 58553
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 61331
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 63489
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 68626
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 78794
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 82651
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 87863
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 98755
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 102163
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 105292
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 106986
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 107007
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 111293
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 114217
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 122914
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 126661
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 134039
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 147443
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 150486
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 161365
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 164347
+      }
+    ],
+    "startedAt": 1791968836475,
+    "endedAt": 1791969009984,
+    "elapsedMs": 173509,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968836475,
+        "endedAt": 1791969009984,
+        "elapsedMs": 173509
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-revenue_expenses-a5915ba6be7744a185a82d88a21fba97",
     "renderer": "revenue_expenses.py",
-    "schema": "revenue_expenses.schema.json",
-    "dataDate": "2026-07-30",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139aa7dc07962930077c00dfe0727)",
+      "candidateCount": 45
+    }
   }
 }

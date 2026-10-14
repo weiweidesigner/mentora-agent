@@ -1,23 +1,231 @@
 {
-  "question": "请展示 GOOGL 的关键财务指标，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的ROE、净利率和财务比率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:57:55.687000+08:00",
   "answer": {
-    "question": "请展示 GOOGL 的关键财务指标，解释主要指标和观察方法。",
-    "interpretation": "# GOOGL · 关键财务指标\n\n这份案例用原生业务组件展示关键财务指标，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-key_financial_indicators/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-07-29 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的ROE、净利率和财务比率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,code-interpreter,advisor-text-generation",
+      "label": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "script": "business-chart-recall + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html",
+    "reportUrl": "/static/cases/inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-key_financial_indicators/chart.html",
-        "url": "/static/cases/inspiration/business-key_financial_indicators/chart.html"
+        "path": "case:inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html",
+        "url": "/static/cases/inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-key_financial_indicators/chart.html",
+    "payloadUrl": null,
+    "interpretation": "已完成：用原生 `key_financial_indicators.py` 组件重新取数（AInvest 实时接口，取数日 2026-10-14）并渲染 AAPL，不是复制旧 HTML。\n\n## 核心结论\n\n**AAPL 最新财季 ROE 同比下滑，但下滑来自去杠杆，不是盈利能力转弱。** Q3 '26（组件期间键 2026_596005）ROE 27.84%，同比 -7.50pp（-21.2%）；同期净利率 27.23%（同比 +2.30pp）、ROA 7.90%（同比 +0.83pp）、EPS 2.03（同比 +29.3%）全部走高。按 ROE = ROA × 权益乘数拆分：**ROA 改善贡献 +4.16pp，权益乘数由 5.04 降至 3.57（资产负债率 80.14% → 71.95%）拖累 -11.62pp**，合计与 -7.50pp 基本吻合（重构 28.15% vs 报告 27.84%，误差 0.31pp）。\n\n拉长看这是延续三年的结构变化：**FY2025 ROE 171.42% 接近 FY2022 周期高点 175.46%，且 ROA 30.93%、净利率 26.92% 均为 2020 年以来最高**（净利率较 FY2024 +2.94pp），而股东权益占资产比重已从 FY2024 的 15.6% 升到 28.05%——高 ROE 由资产回报而非杠杆支撑。同时 BVPS 从 Q3 '25 的 4.43 升至 7.36（+66.1%），**分母快速扩张意味着 ROE 中枢大概率继续下移，属账面结构变化**。\n\n[[AIME_CHART:case:inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html]]\n\n## 图表解读（关键财务指标，8 个指标 × 季度/年度/累计）\n\n- **ROE 柱状 + 同比线的最新一段是连续三季向下**：Q1 '26 52.00%、Q2 '26 30.39%、Q3 '26 27.84%，同比分别 -6.74pp、-6.72pp、-7.50pp。切到「净利率」页签，同期同比为正（Q3 '26 +9.2%），这就是图中最重要的背离：**ROE 与利润率两条路径方向相反**。\n- 切到「年度」页签可确认量级与位置：FY2025 ROE 171.42%、ROA 30.93%、净利率 26.92%，是 2020 年以来的最佳组合；图表同时暴露出 **Q4 '24 的异常低点（ROE 23.83%、净利率 15.52%）**，该季度不宜作为同比基准，本次结论未使用它。\n- 财务比率页签显示流动性修复但仍偏薄：**流动比率 1.003（同比 +0.14）、速动比率 0.929（同比 +0.10）**，较 Q2 '25 低点 0.82 / 0.78 明显回升；但两者仍在 1 附近及以下，短期偿付依赖存货与营运资本周转，而非厚实的流动资产垫。\n\n## 风险、数据时间与口径\n\n- **数据时间**：本次为 2026-10-14 实时取数，最新单季 Q3 '26，最新完整财年 FY2025，年初至今口径 9M '26。用户提供的回退快照（保存日 2026-07-29）经核对其标的为 GOOGL，与本次 AAPL 任务不匹配，**因此未采用**；实时接口本次取数成功，无需降级。\n- **缺失项**：累计视图 9M '26 的净利率字段源数据为空（未做插补），该口径仅用于 ROE/ROA/负债率比较；累计（YTD）与单季口径不可直接比较，例如 9M '26 ROA 36.08% 高于 FY2025 全年的 30.93%。\n- **口径限制**：ROE 报出 150%–175% 是长期回购压缩账面权益的机械结果，绝对值不适合与同业横向比较；权益乘数按期末资产负债率近似计算，单季重构误差约 0.3pp，年度口径误差更大（FY2025 约 -20.7pp），故杠杆拆分以单季为准。ROE 下行也可能部分来自权益基数扩大的口径效应，如需归因到具体回购/偿债动作，需另取现金流与股本证据。\n- **验证情况**：HTML 已生成（49 KB，非空）并经无头浏览器实渲染确认——8 个指标页签、3 个周期页签、ROE 序列 Q4 '23→Q3 '26 与同比线、坐标轴（85% / 14% / -56%）与图例均正常，无脚本报错，支持浅/深色运行时切换。本环境未配置视觉模型密钥，因此未执行图像理解型复核，改用实渲染 DOM 校验替代。\n\n产物：图表 `outputs/static/cases/inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html`，同目录含组件 payload；分析中间件为 `outputs/aapl-kfi-live-payload-2026-10-14.json`、`outputs/aapl-kfi-derived-2026-10-14.json`、`outputs/aapl-kfi-citations-2026-10-14.json`、`outputs/aapl-kfi-advisor-text-2026-10-14.json`。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-key_financial_indicators-f78c53bd68404b04aed54c901187b28b",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-key_financial_indicators-f78c53bd68404b04aed54c901187b28b",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399f832a7b009c3d7190d45b8032)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4459
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6311
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6313
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 6749
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 12986
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13479
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 17349
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 19024
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 20494
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 20877
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22516
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 29320
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 40889
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 40895
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 42665
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 43300
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 50630
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 51167
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 52829
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 54562
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 55268
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 62938
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 65420
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 66573
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 72007
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 72428
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 75294
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 92232
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 95182
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 99309
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 102384
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 103819
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 104483
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 111307
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 112457
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 113854
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 117567
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 125657
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 141036
+      },
+      {
+        "title": "正在汇总结论与关键证据",
+        "elapsedMs": 152468
+      }
+    ],
+    "startedAt": 1791968115063,
+    "endedAt": 1791968275687,
+    "elapsedMs": 160624,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968115063,
+        "endedAt": 1791968275687,
+        "elapsedMs": 160624
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-key_financial_indicators-f78c53bd68404b04aed54c901187b28b",
     "renderer": "key_financial_indicators.py",
-    "schema": "key_financial_indicators.schema.json",
-    "dataDate": "2026-07-29",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399f832a7b009c3d7190d45b8032)",
+      "candidateCount": 45
+    }
   }
 }

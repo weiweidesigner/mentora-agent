@@ -1,23 +1,155 @@
 {
-  "question": "请展示 NVDA 的现金流质量，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的经营、投资、融资现金流及现金质量，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T16:41:09.404000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的现金流质量，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 现金流质量\n\n这份案例用原生业务组件展示现金流质量，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-cash_flow/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-08-14 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的经营、投资、融资现金流及现金质量，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall",
+      "label": "business-chart-recall",
+      "script": "business-chart-recall",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html",
+    "reportUrl": "/static/cases/inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-cash_flow/chart.html",
-        "url": "/static/cases/inspiration/business-cash_flow/chart.html"
+        "path": "case:inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html",
+        "url": "/static/cases/inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-cash_flow/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n**AAPL 的现金流是\"经营单一供血、投资与融资持续净流出\"的典型高质量结构，但最新一期出现了\"经营更强、现金却更少\"的背离。**\n\n1. **经营现金流仍是唯一且强劲的来源**：FY2026 前三季（截至 2026-06-27 的 9 个月）经营净现金流 1169.96 亿美元，同比 +43.1%，增速较 FY2025 全年的 -5.7% 出现明确反转；同期投资 -188.11 亿、融资 -945.75 亿，两项均为净流出，没有任何\"靠融资性流入撑现金\"的迹象。\n2. **最大拐点是 FY2026 Q1（截至 2025-12-27）**：单季经营现金流 539.25 亿美元，同比 +80.1%，是近年最陡的一次跳升；但要留意本组件无法拆解驱动来源（营运资本时点等因素），因此只应作为\"须持续验证的异常高基数\"处理，不应直接归因。\n3. **投资现金流由净流入翻转为净流出**：FY2025 全年投资为 +151.95 亿（+417.7%，到期金融资产回收大于购买），而 FY2026 前 9 个月转为 -188.11 亿（同比 -205.8%），说明增量资金开始回到\"对外投放/再投资\"方向。\n4. **现金质量的核心瑕疵是\"落地率\"下滑**：经营现金流覆盖融资流出的倍数从 FY2021 的 1.114、FY2022 的 1.103，降至 FY2024 的 0.969、FY2025 的 0.924；净现金留存占经营现金流的比重也从 FY2025 前 9 个月的 7.7% 降到 FY2026 前 9 个月的 3.1%。即\"经营挣得更多，但留在账上的更少\"。\n\n## 关键证据\n\n单位：十亿美元（B USD），来源组件：AInvest 现金流模块；本次为实时取数（2026-10-14 执行），无需使用历史快照。\n\n| 财年（截至） | 经营 | 投资 | 融资 | 净现金 | 经营/融资流出覆盖倍数 |\n|---|---|---|---|---|---|\n| 2021 (2021-09-25) | 104.04 | -14.55 | -93.35 | -3.86 | 1.114 |\n| 2022 (2022-09-24) | 122.15 | -22.35 | -110.75 | -10.95 | 1.103 |\n| 2023 (2023-09-30) | 110.54 | +3.71 | -108.49 | +5.76 | 1.019 |\n| 2024 (2024-09-28) | 118.25 | +2.94 | -121.98 | -0.79 | 0.969 |\n| 2025 (2025-09-27) | 111.48 | +15.20 | -120.69 | +5.99 | 0.924 |\n\n近五个季度：\n\n| 季度（结束日） | 经营（同比） | 投资 | 融资 | 净现金（同比） |\n|---|---|---|---|---|\n| Q1'25 (2024-12-28) | 29.94 (-25.0%) | +9.79 | -39.37 | +0.36 |\n| Q2'25 (2025-03-29) | 23.95 (+5.6%) | +2.92 | -29.01 | -2.14 |\n| Q1'26 (2025-12-27) | **53.93 (+80.1%)** | -4.89 | -39.66 | +9.38 (+2535.7%) |\n| Q2'26 (2026-03-28) | 28.70 (+19.8%) | -6.17 | -22.28 | +0.26 |\n| Q3'26 (2026-06-27) | **34.37 (+23.3%)** | -7.76 (-252.9%) | -32.64 (-31.4%) | **-6.03 (-174.4%)** |\n\n两处最值得盯的落差：其一，9 个月口径下经营现金流同比多增约 352 亿，但净现金反而少增约 27 亿——增量被投资方向的反向摆动（同比约 -366 亿）和几乎持平的融资流出（-945.75 亿 vs -932.10 亿）吃掉，\"经营→留存\"的转化率从 7.7% 压缩到 3.1%。其二，最新单季 Q3'26 经营现金流仍是两位数增长（+23.3%），净现金却转负 -60.28 亿，原因是融资流出同比扩大至 -326.40 亿，叠加投资 -77.57 亿，三项加总后现金净减少。\n\n## 图表解读\n\n[[AIME_CHART:case:inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html]]\n\n该组件同时给出两个互补视角（趋势 + 拆解，均支持季度/年度/累计切换与经营、投资、融资、净现金四个指标页签）：\n\n- **趋势面板**（默认季度、经营口径）：柱体显示最近约 8 个季度的经营现金流，折线为同比。要看的不是每个月柱子多高，而是折线在 Q1'26 一次性冲到 +80.1% 后的回落——Q2'26、Q3'26 分别回到 +19.8%、+23.3%，即**单季跳升没有被后续季度延续**，这是判断\"经营现金流抬升是结构性还是时点性的关键分歧点\"。切到\"投资\"页签可看到柱体从正值区间跌入负值区间，与上文的由流入转流出完全对应。\n- **拆解面板**（Q3'26 瀑布）：34.37B 经营 → -7.76B 投资 → -32.64B 融资 → 0.00B 其他 → -6.03B 净现金。\"其他\"恒为 0，说明恒等式严格闭合，净现金变化 100% 由经营、投资、融资三项解释，没有无法归属的调节项——这一点本身就是现金质量较好的旁证。瀑布也直观显示：**本季现金转为净减少，责任在融资端而不是经营端**。\n\n## 现金质量评估（仅限本组件可证范围）\n\n- **支持高质量的证据**：经营现金流长期为正且体量最大；投资与融资在近 20 个季度中几乎全部为净流出，说明股东回报（回购、分红）与资本开支均由经营现金支付，而非依赖外部融资；瀑布恒等式无残差。\n- **削弱质量的证据**：经营现金流出覆盖融资流出的倍数已连续两年低于 1（FY2024 0.969、FY2025 0.924），意味着**股东回报规模略超当年经营现金创造能力**，缺口靠投资端的资产到期回收填补；净现金留存率降至 3.1%，账上现金几乎\"即收即用\"。\n- **无法在本组件内验证的部分**：融资流出的回购/分红/债务拆分、以及最常用的现金质量指标（经营现金流/净利润、应计比率、应收账款与存货变动）需要利润表和资产负债表口径，本组件不含这些字段，故不作判断。若需要，应追加 `income_statement.py` 或 `balance_sheet.py`。\n\n## 风险、数据时间与口径\n\n- **数据时间**：本次为 2026-10-14 实时取数（AInvest 现金流模块），最新可用期为**截至 2026-06-27 的季度（FY2026 Q3）及 FY2026 前 9 个月**；最新完整财年为**截至 2025-09-27 的 FY2025**。FY2026 第四财季（9 月下旬结束）尚未进入数据集，因此\"年度\"页签最新一年仍是 FY2025，跨年比较时请勿混用季度与年度口径。用户提供的历史快照（2026-08-14）未被使用，因实时接口正常返回。\n- **口径**：单位为十亿美元；同比为来源端字段（对应各指标 YoY）；\"累计\"页签中的季度键为财季，Q1 指 12 月季度，与自然季度错位约一个季度，解读时以结束日为准。\n- **限制披露**：模型化图像理解校验未执行——`vision-chart-analyst` 因环境未配置 `VISION_API_KEY` 而失败。已改用无头浏览器渲染结构检查替代：HTML 非空（约 252KB，自包含、无外部脚本），两个 SVG 面板正常绘制（趋势 24 个矩形/21 个文本节点，瀑布 19 个矩形/14 个文本节点），页面渲染值与 payload 一致（34.37B / -7.76B / -32.64B / 0.00B / -6.03B）。该检查仅证明\"图能正确渲染、数值与数据一致\"，不等同于视觉语义校验。\n- **生成产物**：图表 `case:inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html`；本次渲染使用的组件 payload `generated-artifact",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-cash_flow-6a53bad48eef4adcbdfb1e72fa62a268",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-cash_flow-6a53bad48eef4adcbdfb1e72fa62a268",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399159857172a38064935d16126c)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 3218
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 9798
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10214
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 12011
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13504
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13909
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 15226
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 15896
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16775
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 17189
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 17731
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 21597
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 23797
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 26491
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 30858
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 37556
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 40364
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 45105
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 46575
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 48917
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 55826
+      }
+    ],
+    "startedAt": 1791967187903,
+    "endedAt": 1791967269404,
+    "elapsedMs": 81501,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967187903,
+        "endedAt": 1791967269404,
+        "elapsedMs": 81501
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-cash_flow-6a53bad48eef4adcbdfb1e72fa62a268",
     "renderer": "cash_flow.py",
-    "schema": "cash_flow.schema.json",
-    "dataDate": "2026-08-14",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a1399159857172a38064935d16126c)",
+      "candidateCount": 45
+    }
   }
 }

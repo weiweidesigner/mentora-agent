@@ -1,23 +1,163 @@
 {
-  "question": "请展示 NVDA 的收入地域分布，解释主要指标和观察方法。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "分析 AAPL 的按地区拆分的收入结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "cachedAt": "2026-10-14T17:10:40.526000+08:00",
   "answer": {
-    "question": "请展示 NVDA 的收入地域分布，解释主要指标和观察方法。",
-    "interpretation": "# NVDA · 收入地域分布\n\n这份案例用原生业务组件展示收入地域分布，可查看组件内的指标、周期、图例和明细。\n\n[[AIME_CHART:case:inspiration/business-revenue_geography/chart.html]]\n\n## 阅读方法\n\n比较相同口径下的变化，结合时间、单位与来源判断差异。公司评级、交易记录和目标价各有覆盖范围，应与经营数据一起使用。\n\n## 数据口径\n\n本案例来自 2026-08-10 保存的数据快照；财报所属期间和行情时间以图中记录为准，打开案例不会刷新数据。",
+    "question": "分析 AAPL 的按地区拆分的收入结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall",
+      "label": "business-chart-recall",
+      "script": "business-chart-recall",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html",
+    "reportUrl": "/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/business-revenue_geography/chart.html",
-        "url": "/static/cases/inspiration/business-revenue_geography/chart.html"
+        "path": "case:inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html",
+        "url": "/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/business-revenue_geography/chart.html",
+    "payloadUrl": null,
+    "interpretation": "# AAPL 按地区收入结构分析（FY2026 Q3）\n\n## 核心结论\n\n**苹果的收入重心已经明确落在美洲之外。** 最新财季（2026 Q3）总营收 109,417 百万美元，其中美洲仅占 41.84%，欧洲与大中华区合计 44.07%，**非美洲地区贡献了 58.16% 的收入**。同时，大中华区（17.20%）已超过日本与其他亚太地区之和（14.10%），是亚太区域的绝对核心。\n\n## 关键证据\n\n本次由 `revenue_geography.py` 原生业务组件实时取数（AInvest 财务页收入拆分，地区口径 classify=2），区域明细**加总后与披露的总营收 109,417 百万美元完全吻合**，无未分配残差，说明该口径拆分是完整闭合的。\n\n| 地区 | 收入（百万美元） | 占比 |\n|---|---:|---:|\n| 美洲 | 45,781 | 41.84% |\n| 欧洲 | 29,395 | 26.87% |\n| 大中华区 | 18,816 | 17.20% |\n| 其他亚太地区 | 8,871 | 8.11% |\n| 日本 | 6,554 | 5.99% |\n| **合计** | **109,417** | **100%** |\n\n图中最重要的三个信号：\n\n1. **美洲是单一最大市场，但已非多数。** 41.84% 的占比意味着苹果对北美本土需求的依赖度低于多数大型科技公司，汇率与海外宏观对其营收的传导比\"美国公司\"标签所暗示的更强。\n2. **欧洲以 26.87% 稳居第二，且几乎是第三名大中华区的 1.6 倍。** 欧洲是除美洲外唯一具备\"20%+\"量级的区域。\n3. **大中华区（17.20%）单独一区就超过日本+其他亚太的合计（14.10%）。** 这意味着亚太增长叙事的权重应主要落在中国的表现上，日本与其他亚太是补充项而非驱动项。\n\n[[AIME_CHART:case:inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html]]\n\n## 本次实际生成产物\n\n- 图表 HTML：`outputs/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html`（14,933 字节，非空）\n- 组件 payload：`outputs/generated/inspiration-real-business-revenue_geography-AAPL-payload.json`\n- 渲染快照：`outputs/generated/inspiration-real-business-revenue_geography-AAPL-render.png`\n\n## 风险、口径与数据时间\n\n- **数据时间**：本次为**实时接口取数**，抓取时刻为 **2026-10-14 17:10 CST**；数据期间为 **2026 Q3**（组件角标显示\"期间：2026 Q3\"）。正文与图表均以该期间为准。\n- **降级说明（重要）**：任务中提供的回退快照文件实际内容是 **NVDA 的空数据快照（noData=true，statusMsg=\"result empty\"）**，并非 AAPL 数据，因此**未被采用**；其标注的 2026-08-10 快照日期对本案例不适用。本次改用 AInvest 实时接口并成功返回真实 AAPL 地区拆分，无需降级。\n- **单期限制**：该业务组件本次仅返回单一期间（2026 Q3），**不含上一财年同期数据**，因此无法从本组件计算各地区的同比增速或结构变化方向。上表与结论均为静态结构占比，不包含趋势判断。\n- **口径限制**：\"美洲\"为美国与其他美洲的合并口径，\"欧洲\"为欧洲、中东与非洲合并口径（EMEA），因此不能把\"欧洲\"等同于欧盟市场。\n- **验证方式**：视觉验证 Skill 因运行环境未配置 `VISION_API_KEY` 而无法执行；已改用无头浏览器渲染校验替代——页面无 JS 报错，5 个扇区与中文图例正常绘制，根背景为透明（rgba(0,0,0,0)），切换 `?theme=dark` 后文字配色正确随之反转。此为降级验证，未经过多模态模型复核。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-business-revenue_geography-0c6e77328e144541a7e5469943f1e044",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-business-revenue_geography-0c6e77328e144541a7e5469943f1e044",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139ac8d4a7e70aa4df2f2f21e9284)",
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3111
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 3469
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4712
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 8446
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 9917
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 10313
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 11228
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 11613
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 12470
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 13580
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 14865
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 20737
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 22549
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 26565
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 29403
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 29796
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 31205
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 35232
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 37527
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 42476
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 50353
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 54987
+      },
+      {
+        "title": "正在推进当前分析步骤",
+        "elapsedMs": 62915
+      }
+    ],
+    "startedAt": 1791968971481,
+    "endedAt": 1791969040526,
+    "elapsedMs": 69045,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791968971481,
+        "endedAt": 1791969040526,
+        "elapsedMs": 69045
+      }
+    ]
   },
   "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-business-revenue_geography-0c6e77328e144541a7e5469943f1e044",
     "renderer": "revenue_geography.py",
-    "schema": "revenue_geography.schema.json",
-    "dataDate": "2026-08-10",
-    "sample": false
+    "sample": false,
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 400 {\"detail\":{\"error_type\":\"max_tokens_exceeded\"}} (request_id=req_01a139ac8d4a7e70aa4df2f2f21e9284)",
+      "candidateCount": 45
+    }
   }
 }

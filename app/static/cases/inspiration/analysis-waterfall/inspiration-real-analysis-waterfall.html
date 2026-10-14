@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head><script src="/static/cases/theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>苹果 FY2026 Q3（截至 2026-06-27）从营收到净利润的拆解 · 亿美元</title>
+<style>
+:root{color-scheme:light;--business-bg-fff:#fff;--business-text-171717:#171717;--business-text-1a1a1a:#1a1a1a;--business-text-secondary:#5f6876;--business-bg-f1f1f1:#f1f1f1;--business-border-ececec:#ececec;--business-border-606060:#606060;--business-text-f7f7f7:#f7f7f7;--business-bg-3a3a3a:#3a3a3a;--business-text-fff:#fff;--business-bg-e8e8e8:#e8e8e8;--business-border-3a3a3a:#3a3a3a;}
+:root[data-theme="dark"]{color-scheme:dark;--business-bg-fff:#181e28;--business-text-171717:#f1f5f9;--business-text-1a1a1a:#f1f5f9;--business-text-secondary:#c1cad7;--business-bg-f1f1f1:#202733;--business-border-ececec:#2b3544;--business-border-606060:#334052;--business-text-f7f7f7:#f1f5f9;--business-bg-3a3a3a:#202733;--business-text-fff:#f1f5f9;--business-bg-e8e8e8:#2b3544;--business-border-3a3a3a:#334052;}
+
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--business-text-171717)}
+.waterfall-component{position:relative;width:100%;min-height:340px;padding:14px 28px 14px;background:transparent;overflow:visible}
+.waterfall-title{height:24px;margin:0 0 6px;font-size:16px;font-weight:800;line-height:1.2}
+.waterfall-tabs{position:absolute;z-index:4;top:8px;right:28px;display:flex;gap:10px;align-items:center;font-size:15px}
+.waterfall-tab{appearance:none;border:0;background:transparent;padding:8px 12px;border-radius:8px;color:var(--business-text-1a1a1a);font:inherit;font-weight:500;line-height:1;cursor:pointer}
+.waterfall-tab.active{background:var(--business-bg-f1f1f1);font-weight:800}
+.waterfall-layout{display:grid;grid-template-columns:1fr;align-items:center;gap:0;width:100%}
+.waterfall-stage{position:relative;width:100%;height:180px;margin-top:6px}
+svg{display:block;width:100%;height:100%;overflow:visible}
+.grid-line{stroke:var(--business-border-ececec);stroke-width:1}
+.axis-line{stroke:var(--business-border-606060);stroke-width:1}
+.connector{stroke-dasharray:5 5;stroke-width:1.2;fill:none}
+.bar{cursor:crosshair}
+.hit-area{cursor:crosshair}
+.highlight{fill:var(--business-text-f7f7f7);pointer-events:none}
+.waterfall-tooltip{position:absolute;z-index:5;min-width:160px;padding:7px 10px;background:var(--business-bg-3a3a3a);color:var(--business-text-fff);border-radius:5px;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden}
+.waterfall-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-8px;transform:translateX(-50%);border-left:9px solid transparent;border-right:9px solid transparent;border-top:9px solid var(--business-bg-3a3a3a)}
+.waterfall-tooltip.active{opacity:1;visibility:visible}
+.tooltip-row{display:flex;justify-content:space-between;align-items:center;gap:18px;white-space:nowrap}
+.tooltip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-fff)}
+.tooltip-dot,.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.waterfall-legend{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;margin-top:18px;padding-bottom:8px;color:var(--business-text-secondary);font-size:14px;line-height:1.2}
+.waterfall-component.hide-legend .waterfall-layout{grid-template-columns:1fr}
+.waterfall-component.hide-legend .waterfall-legend{display:none}
+.legend-separator{grid-column:1/-1;height:1px;background:var(--business-bg-e8e8e8);margin:-2px 0 0}
+.legend-label{display:flex;align-items:center;gap:12px;min-width:0}
+.legend-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend-value{font-weight:800;text-align:right;white-space:nowrap}
+.legend-label.is-total,.legend-value.is-total{font-weight:800}
+@media(min-width:900px){.waterfall-component{max-width:1040px;padding-left:36px;padding-right:36px}.waterfall-layout{grid-template-columns:minmax(520px,640px) 360px;justify-content:start;gap:18px}.waterfall-stage{height:180px}.waterfall-legend{width:100%;max-width:340px;margin-top:14px}}
+@media(max-width:640px){.waterfall-component{padding:12px 16px 12px}.waterfall-stage{height:168px}.waterfall-tooltip,.waterfall-legend{font-size:13px}.waterfall-legend{gap:9px 12px;margin-top:14px}}
+</style>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script></head>
+<body>
+<section class="waterfall-component" data-component-contract="{&quot;type&quot;: &quot;waterfall&quot;, &quot;name&quot;: &quot;waterfall&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;横轴步骤&quot;, &quot;field&quot;: &quot;items[].label&quot;, &quot;aliases&quot;: [&quot;category&quot;, &quot;dimension&quot;, &quot;name&quot;], &quot;visualChannel&quot;: &quot;xAxis.category&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;瀑布值&quot;, &quot;field&quot;: &quot;items[].value&quot;, &quot;aliases&quot;: [&quot;amount&quot;, &quot;delta&quot;], &quot;visualChannel&quot;: &quot;waterfall.bar.height&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;柱类型&quot;, &quot;field&quot;: &quot;items[].type&quot;, &quot;aliases&quot;: [&quot;barType&quot;], &quot;visualChannel&quot;: &quot;waterfall.bar.baseline&quot;, &quot;default&quot;: &quot;delta&quot;, &quot;supportedValues&quot;: [&quot;delta&quot;, &quot;total&quot;]}, {&quot;semantic&quot;: &quot;堆叠到上一柱&quot;, &quot;field&quot;: &quot;items[].stackWithPrevious&quot;, &quot;aliases&quot;: [&quot;stack&quot;, &quot;stacked&quot;], &quot;visualChannel&quot;: &quot;waterfall.bar.stack&quot;, &quot;default&quot;: false}, {&quot;semantic&quot;: &quot;颜色&quot;, &quot;field&quot;: &quot;items[].color&quot;, &quot;aliases&quot;: [&quot;fill&quot;], &quot;visualChannel&quot;: &quot;waterfall.bar.color&quot;}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;items[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.label&quot;}, {&quot;field&quot;: &quot;items[].value&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;waterfall.bar.height&quot;}, {&quot;field&quot;: &quot;items[].displayValue&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;legend.value&quot;}, {&quot;field&quot;: &quot;items[].type&quot;, &quot;type&quot;: &quot;delta|total&quot;, &quot;channel&quot;: &quot;waterfall.bar.baseline&quot;}, {&quot;field&quot;: &quot;items[].stackWithPrevious&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;waterfall.bar.stack&quot;}, {&quot;field&quot;: &quot;items[].color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;waterfall.bar.color&quot;}, {&quot;field&quot;: &quot;compactItems[]&quot;, &quot;type&quot;: &quot;array&quot;, &quot;channel&quot;: &quot;responsive.mobileItems&quot;}, {&quot;field&quot;: &quot;showLegend&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;legend.visibility&quot;}], &quot;builtInDataSources&quot;: []}">
+  <h2 class="waterfall-title">苹果 FY2026 Q3（截至 2026-06-27）从营收到净利润的拆解 · 亿美元</h2>
+  <div class="waterfall-tabs"></div>
+  <div class="waterfall-layout">
+    <div class="waterfall-stage">
+      <svg role="img" aria-label="苹果 FY2026 Q3（截至 2026-06-27）从营收到净利润的拆解 · 亿美元"></svg>
+      <div class="waterfall-tooltip"></div>
+    </div>
+    <div class="waterfall-legend"></div>
+  </div>
+</section>
+<script>
+const config = {"title": "苹果 FY2026 Q3（截至 2026-06-27）从营收到净利润的拆解 · 亿美元", "items": [{"label": "营业收入", "value": 1094.17, "start": 0.0, "end": 1094.17, "type": "total", "stackWithPrevious": false, "displayValue": "1,094.17", "tooltipValue": "1,094.17 亿美元", "color": "#3477ed", "legendColor": "#3477ed"}, {"label": "销售成本", "value": -546.47, "start": 1094.17, "end": 547.7, "type": "delta", "stackWithPrevious": false, "displayValue": "-546.47", "tooltipValue": "-546.47 亿美元", "color": "#ff3d7f", "legendColor": "#ff3d7f"}, {"label": "毛利润", "value": 547.7, "start": 0.0, "end": 547.7, "type": "total", "stackWithPrevious": false, "displayValue": "547.70", "tooltipValue": "547.70 亿美元", "color": "#3477ed", "legendColor": "#3477ed"}, {"label": "研发费用", "value": -117.29, "start": 547.7, "end": 430.41, "type": "delta", "stackWithPrevious": false, "displayValue": "-117.29", "tooltipValue": "-117.29 亿美元", "color": "#ff3d7f", "legendColor": "#ff3d7f"}, {"label": "销管费用", "value": -73.46, "start": 430.41, "end": 356.95000000000005, "type": "delta", "stackWithPrevious": false, "displayValue": "-73.46", "tooltipValue": "-73.46 亿美元", "color": "#ff3d7f", "legendColor": "#ff3d7f"}, {"label": "营业利润", "value": 356.95, "start": 0.0, "end": 356.95, "type": "total", "stackWithPrevious": false, "displayValue": "356.95", "tooltipValue": "356.95 亿美元", "color": "#3477ed", "legendColor": "#3477ed"}, {"label": "其他收支", "value": 5.72, "start": 356.95, "end": 362.67, "type": "delta", "stackWithPrevious": false, "displayValue": "5.72", "tooltipValue": "5.72 亿美元", "color": "#2ab7a1", "legendColor": "#2ab7a1"}, {"label": "税前利润", "value": 362.67, "start": 0.0, "end": 362.67, "type": "total", "stackWithPrevious": false, "displayValue": "362.67", "tooltipValue": "362.67 亿美元", "color": "#3477ed", "legendColor": "#3477ed"}, {"label": "所得税", "value": -64.78, "start": 362.67, "end": 297.89, "type": "delta", "stackWithPrevious": false, "displayValue": "-64.78", "tooltipValue": "-64.78 亿美元", "color": "#ff3d7f", "legendColor": "#ff3d7f"}, {"label": "净利润", "value": 297.89, "start": 0.0, "end": 297.89, "type": "total", "stackWithPrevious": false, "displayValue": "297.89", "tooltipValue": "297.89 亿美元", "color": "#3477ed", "legendColor": "#3477ed"}], "compactItems": [], "views": {}, "defaultView": "", "height": 340, "unit": "", "showLegend": true, "showXAxis": true, "gridCount": 5, "connectorColor": "#6f6f6f"};
+const root = document.querySelector('.waterfall-component');
+const stage = root.querySelector('.waterfall-stage');
+const svg = root.querySelector('svg');
+const legend = root.querySelector('.waterfall-legend');
+const tooltip = root.querySelector('.waterfall-tooltip');
+const tabs = root.querySelector('.waterfall-tabs');
+const NS = 'http://www.w3.org/2000/svg';
+let activeView = config.defaultView || Object.keys(config.views || {})[0] || '';
+
+const node = (name, attrs = {}, text = '') => {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([key,value]) => el.setAttribute(key,value));
+  if (text !== '') el.textContent = text;
+  return el;
+};
+const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+const format = value => value;
+const niceStep = (range, count = 4) => {
+  const rough = Math.max(range / count, 0.0001);
+  const power = 10 ** Math.floor(Math.log10(rough));
+  const normalized = rough / power;
+  const factor = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+  return factor * power;
+};
+const currentConfig = () => {
+  if (activeView && config.views && config.views[activeView]) {
+    const view = config.views[activeView];
+    const useCompact = window.matchMedia('(max-width: 640px)').matches && view.compactItems && view.compactItems.length;
+    return {...config, items: useCompact ? view.compactItems : view.items};
+  }
+  const useCompact = window.matchMedia('(max-width: 640px)').matches && config.compactItems && config.compactItems.length;
+  if (useCompact) return {...config, items: config.compactItems};
+  return config;
+};
+const axisRange = (items) => {
+  const values = items.flatMap(item => [number(item.start), number(item.end)]);
+  let min = Math.min(0, ...values);
+  let max = Math.max(0, ...values);
+  if (min === max) { min -= 1; max += 1; }
+  const allNonNegative = values.every(value => value >= 0);
+  const pad = (max - min) * .035;
+  min = allNonNegative ? 0 : min - pad;
+  max += pad;
+  if (allNonNegative) return {min:0, max};
+  const step = niceStep(max - min, config.gridCount - 1);
+  return {min:Math.floor(min / step) * step, max:Math.ceil(max / step) * step};
+};
+const visualGroups = () => {
+  const current = currentConfig();
+  const groups = [];
+  current.items.forEach((item) => {
+    const previous = groups[groups.length - 1];
+    if (item.stackWithPrevious && previous) {
+      previous.items.push(item);
+      previous.end = item.end;
+      previous.value += item.value;
+    } else {
+      groups.push({items:[item], start:item.start, end:item.end, value:item.value, type:item.type});
+    }
+  });
+  return groups;
+};
+
+function render() {
+  svg.innerHTML = '';
+  legend.innerHTML = '';
+  renderTabs();
+  const current = currentConfig();
+  root.classList.toggle('hide-legend', !current.showLegend);
+  const width = svg.clientWidth || 900;
+  const height = svg.clientHeight || 270;
+  const margin = {top:18,right:8,bottom:1,left:0};
+  const plotW = Math.max(180, width - margin.left - margin.right);
+  const plotH = Math.max(120, height - margin.top - margin.bottom);
+  const rows = current.items;
+  const groups = visualGroups();
+  const range = axisRange(rows);
+  const y = value => margin.top + plotH - (number(value) - range.min) / (range.max - range.min) * plotH;
+  const zeroY = y(0);
+  const groupW = plotW / Math.max(groups.length, 1);
+  const barW = Math.min(82, groupW * .36);
+  const gridCount = Math.max(2, current.gridCount || 5);
+
+  for (let index = 0; index < gridCount; index += 1) {
+    const gy = margin.top + plotH * index / (gridCount - 1);
+    svg.appendChild(node('line', {x1:margin.left,y1:gy,x2:margin.left+plotW,y2:gy,class:'grid-line'}));
+  }
+  svg.appendChild(node('line', {x1:margin.left,y1:zeroY,x2:margin.left+plotW,y2:zeroY,class:'axis-line'}));
+
+  groups.forEach((group, index) => {
+    const groupX = margin.left + groupW * index;
+    const center = groupX + groupW / 2;
+    const x = center - barW / 2;
+    const highlight = node('rect', {x:groupX,y:margin.top,width:groupW,height:plotH,class:'highlight','data-highlight-index':index});
+    highlight.style.opacity = '0';
+    svg.appendChild(highlight);
+    group.items.forEach((item) => {
+      const startY = y(item.start);
+      const endY = y(item.end);
+      const barY = Math.min(startY, endY);
+      const barH = Math.max(3, Math.abs(startY - endY));
+      svg.appendChild(node('rect', {x,y:barY,width:barW,height:barH,rx:0,fill:item.color,class:'bar'}));
+    });
+    if (config.showXAxis) {
+      svg.appendChild(node('text', {x:center,y:margin.top+plotH+16,'text-anchor':'middle',fill:'var(--business-text-171717)','font-size':'12'}, group.items.map(item => item.label).join('+')));
+    }
+  });
+
+  groups.slice(0, -1).forEach((group, index) => {
+    const x1 = margin.left + groupW * (index + .5) + barW / 2;
+    const x2 = margin.left + groupW * (index + 1.5) - barW / 2;
+    const connectorY = y(group.end);
+    svg.appendChild(node('line', {x1,y1:connectorY,x2,y2:connectorY,stroke:current.connectorColor,class:'connector'}));
+  });
+
+  groups.forEach((group, index) => {
+    const groupX = margin.left + groupW * index;
+    const center = groupX + groupW / 2;
+    const hit = node('rect', {x:groupX,y:margin.top,width:groupW,height:plotH,fill:'transparent',class:'hit-area'});
+    hit.addEventListener('mouseenter', () => showTooltip(group, index, center));
+    hit.addEventListener('mousemove', () => showTooltip(group, index, center));
+    hit.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(hit);
+  });
+
+  if (current.showLegend) {
+    rows.forEach((item, index) => {
+      if (item.type === 'total' && index > 0) {
+        const separator = document.createElement('div');
+        separator.className = 'legend-separator';
+        legend.appendChild(separator);
+      }
+      const label = document.createElement('div');
+      label.className = `legend-label ${item.type === 'total' ? 'is-total' : ''}`;
+      label.innerHTML = `<i class="legend-dot" style="background:${item.legendColor}"></i><span>${item.label}</span>`;
+      const value = document.createElement('div');
+      value.className = `legend-value ${item.type === 'total' ? 'is-total' : ''}`;
+      value.textContent = item.displayValue;
+      legend.appendChild(label);
+      legend.appendChild(value);
+    });
+  }
+}
+
+function renderTabs() {
+  tabs.innerHTML = '';
+  const views = config.views || {};
+  const keys = Object.keys(views);
+  if (keys.length <= 1) return;
+  keys.forEach(key => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `waterfall-tab ${key === activeView ? 'active' : ''}`;
+    button.textContent = views[key].label || key;
+    button.addEventListener('click', () => {
+      activeView = key;
+      hideTooltip();
+      render();
+    });
+    tabs.appendChild(button);
+  });
+}
+
+function showTooltip(group, index, centerX) {
+  svg.querySelectorAll('.highlight').forEach(el => el.style.opacity = el.dataset.highlightIndex == index ? '.42' : '0');
+  tooltip.innerHTML = group.items.map(item => `<div class="tooltip-row"><span class="tooltip-label"><i class="tooltip-dot" style="background:${item.legendColor}"></i>${item.label}</span><span>${item.tooltipValue || item.displayValue}</span></div>`).join('');
+  tooltip.classList.add('active');
+  const desiredLeft = centerX - tooltip.offsetWidth / 2;
+  const left = Math.min(stage.clientWidth - tooltip.offsetWidth - 8, Math.max(8, desiredLeft));
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${-(tooltip.offsetHeight + 10)}px`;
+  tooltip.style.setProperty('--arrow-left', `${Math.min(tooltip.offsetWidth - 14, Math.max(14, centerX - left))}px`);
+}
+function hideTooltip() {
+  tooltip.classList.remove('active');
+  svg.querySelectorAll('.highlight').forEach(el => el.style.opacity = '0');
+}
+window.addEventListener('resize', render);
+render();
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null;
+  const hideLocalPortal=()=>{
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

@@ -1,43 +1,279 @@
 {
-  "question": "用双环图展示仓位与风险预算，使用清楚标注的金融演示数据。",
-  "cachedAt": "2026-10-14T16:18:36.985853+08:00",
+  "question": "用双环图对照 AAPL 最近已披露财年营业利润和净利润各占营收的比例，营收为共同基准。",
+  "cachedAt": "2026-10-14T16:47:55.111000+08:00",
   "answer": {
-    "question": "用双环图展示仓位与风险预算，使用清楚标注的金融演示数据。",
-    "interpretation": "# 仓位与风险预算\n\n这个案例展示如何将问题映射到合适的视觉通道，并用通用图表保留交互。\n\n[[AIME_CHART:case:inspiration/analysis-double_ring_pie/chart.html]]\n\n## 案例口径\n\n数值类案例使用明确标注的演示数据，不代表真实公司或市场。结构类案例展示研究方法，时间线为演示计划。适合先体验表达形式，再替换为自己的数据。",
+    "question": "用双环图对照 AAPL 最近已披露财年营业利润和净利润各占营收的比例，营收为共同基准。",
+    "code": "",
+    "selectedSkill": {
+      "key": "business-chart-recall,generic-chart,yahoo-data",
+      "label": "business-chart-recall + generic-chart + yahoo-data",
+      "script": "business-chart-recall + generic-chart + yahoo-data",
+      "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
+    "reportUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/analysis-double_ring_pie/chart.html",
-        "url": "/static/cases/inspiration/analysis-double_ring_pie/chart.html"
+        "path": "case:inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
+        "url": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html"
       }
     ],
-    "reportUrl": "/static/cases/inspiration/analysis-double_ring_pie/chart.html",
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n苹果 FY2025（财年截至 2025-09-27）**营业利润占营收 31.97%、净利润占营收 26.92%**，以营收为同一基准，两者相差 **5.05 个百分点**。这一差距就是营业利润之下、净利润之上的税负与营业外净损益等项目的合计拖累；营业利润到净利润的留存效率为 **84.19%**。\n\n关键在于：**两个比率均已站上 30%/27% 的量级，但利润的\"漏损\"集中在营业利润线之下，而非经营本身**——营收 4,161.61 亿美元中，约 1,330.50 亿美元留在营业利润层，最终 1,120.10 亿美元落到净利润层。\n\n## 关键证据与图表解读\n\n数据经两个独立来源交叉验证，**完全一致**：\n\n| 指标 | 数值 | 双重验证 |\n|---|---|---|\n| 营收 | 4,161.61 亿美元 | SEC EDGAR 10-K `RevenueFromContractWithCustomer` = 416,161,000,000 |\n| 营业利润 | 1,330.50 亿美元 | SEC EDGAR 10-K `OperatingIncomeLoss` = 133,050,000,000 |\n| 净利润 | 1,120.10 亿美元 | SEC EDGAR 10-K `NetIncomeLoss` = 112,010,000,000 |\n\n按 schema 的 `visualChannelMappings` 转换后：`base` 通道承载共同基准（营收 416.161，作为外环刻度 0–100%），`rings[].value/total` 通道承载两条占比弧（31.97%、26.92%），`metrics` 通道承载底部指标明细，`centerLabel` 固定为\"营收 100%\"。\n\n[[AIME_CHART:case:inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html]]\n\n图中最重要的读数：**外环扫描 115.1°、内环扫描 96.9°**，两环共用同一 360° 营收基准，因此弧长差直接等于 5.05 个百分点的利润率落差，无需换算即可对照。环间空隙（约 5 个百分点）从视觉上量化了\"营业利润 → 净利润\"这一段的损耗；底部\"净利润 / 营业利润 84.19%\"给出该损耗的另一种表述口径。基准环用中性灰显示，不与两条业务弧争夺注意力。\n\n作为同期参照（同一数据集、非本次主图口径）：FY2024 营业利润率为 31.51%、净利率 23.97%，即 FY2025 营业利润率仅微升约 0.46 个百分点，而**净利率提升约 2.95 个百分点**——利润率改善主要发生在营业利润线之下（该项为跨年观察，未纳入本图的两环对比）。\n\n## 风险、数据时间与口径\n\n- **数据时期**：全部为 FY2025 已披露财年数据，期末 2025-09-27，单位十亿美元，本回答统一换算为亿美元。**仅覆盖单一已披露财年**，不含未披露期间；FY2024 对比值来自同一数据集，仅作参照。\n- **口径提示**：本次\"营业利润\"对应 AInvest 利润表模块 `operating_income` / `earnings_before_interest_taxes` 字段，已由 SEC EDGAR `OperatingIncomeLoss` 逐位验证一致，可确认为营业利润口径，而非税前利润。净利润为合并口径归母/净收入。\n- **降级披露**：Yahoo Finance 针对 AAPL 的年度 `total_revenue`、`operating_income`、`net_income` 接口本次返回 `requested_field_unavailable`（无可用年度财务序列），因此改用 SEC EDGAR XBRL 官方 10-K 数据作为主验证源、AInvest 缓存真实历史 payload 作为结构与口径来源；两者独立且数值完全吻合，故本次结论无模拟或估算成分。\n- **JEV 路由能力**：本次已按双基准一致性要求选中 `double_ring_pie.py`（通用图表 Skill，其 schema 明确限定\"两环共享同一 total/baseline\"，与本问\"营收为共同基准\"完全匹配）。需说明 JEV 运行时路由模块因环境缺少 `typesafe_sdk` 依赖无法执行，路由判定由 schema 的 `visualChannelMappings` 与 `modelInstructions` 人工比对完成；K 线复用原生内核能力本次未触发（本问无行情/技术面维度）。缓存目录中的 `business-kline/chart.html` 经核为 NVDA 标的，与本次 AAPL 分析无关，未使用。\n- **图表本身限制**：双环仅适合两个共享基准的比例对照，不呈现时间趋势、绝对值层级或税务明细构成；上述 5.05 个百分点的分解需另用利润表瀑布图验证。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-inspiration-real-analysis-double_ring_pie-cce50d6852c34db09668a1e244bc9f05",
+    "studioSessionId": null,
+    "engineSessionId": "inspiration-real-analysis-double_ring_pie-cce50d6852c34db09668a1e244bc9f05",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
     "sources": [],
-    "lang": "zh-CN"
-  },
-  "provenance": {
-    "renderer": "double_ring_pie.py",
-    "sample": true,
-    "jevDecision": {
-      "selected_scripts": [
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "double_ring_pie.py",
+      "supporting": null,
+      "selectedScripts": [
         "double_ring_pie.py"
       ],
-      "primary_script": "double_ring_pie.py",
-      "supporting_script": null,
-      "primary_confidence": 1.0,
-      "supporting_confidence": 0.89,
-      "provider_model": "jev-1.13.0",
-      "candidate_count": 16,
-      "semantic_lens": "composition-and-drivers",
-      "semantic_lens_confidence": 0.72,
-      "primary_purpose": "{\"type\": \"double-ring-pie\", \"script\": \"double_ring_pie.py\", \"purpose\": \"Compare two related values against one common total using concentric progress rings, with optional summary metrics.\", \"visualChannelMappings\": [{\"semantic\": \"中心文本\", \"field\": \"centerLabel\", \"aliases\": [\"marketCapLabel\", \"totalLabel\"], \"visualChannel\": \"doubleRing.center.label\", \"required\": true}, {\"semantic\": \"基准环\", \"field\": \"base\", \"aliases\": [\"track\", \"marketCap\"], \"visualChannel\": \"doubleRing.track\", \"required\": true}, {\"semantic\": \"双环系列\", \"field\": \"rings\", \"aliases\": [\"series\"], \"visualChannel\": \"doubleRing.arc.progress\", \"required\": true}, {\"semantic\": \"底部指标\", \"field\": \"metrics\", \"aliases\": [\"fields\", \"keyValues\"], \"visualChannel\": \"metricList.items\"}], \"payloadShape\": {\"type\": \"double-ring-pie\", \"title\": \"string\", \"centerLabel\": \"string\", \"base\": {\"label\": \"string\", \"value\": \"number\", \"displayValue\": \"string\", \"color\": \"string\", \"trackColor\": \"string\"}, \"rings\": [{\"label\": \"string\", \"value\": \"number\", \"total\": \"number\", \"displayValue\": \"string\", \"color\": \"string\"}], \"metrics\": [{\"label\": \"string\", \"value\": \"string\"}]}, \"dataContract\": [{\"field\": \"centerLabel\", \"type\": \"string\", \"channel\": \"doubleRing.cente",
-      "supporting_purpose": "",
-      "visual_encoding": "composition-and-contribution",
-      "visual_encoding_confidence": 0.85,
-      "evidence_strategy": "user-data-only",
-      "evidence_strategy_confidence": 0.99,
-      "mark_strategy": "no-mark",
-      "mark_strategy_confidence": 0.51
-    },
-    "jevError": null
+      "primaryConfidence": 0.97,
+      "supportingConfidence": 0.78,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.85,
+      "primaryPurpose": "Compare two related values against one common total using concentric progress rings, with optional summary metrics. schema semantics=中心文本; 基准环; 双环系列; 底部指标",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.56,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.57,
+      "candidateCount": 45
+    }
+  },
+  "activity": {
+    "label": "实际生成记录",
+    "steps": [
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 4288
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 4875
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 6464
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 7140
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 13562
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 15614
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16401
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 16850
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 18941
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 23021
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 24000
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28172
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 28765
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 30568
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 32398
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 38381
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 39282
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 40625
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 42744
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 42745
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 44217
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 46301
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 47659
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 48394
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 51921
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 61431
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 64672
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 65111
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 67537
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 68538
+      },
+      {
+        "title": "正在获取分析所需的市场数据",
+        "elapsedMs": 72149
+      },
+      {
+        "title": "正在确认组件规范与数据契约",
+        "elapsedMs": 75719
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 76403
+      },
+      {
+        "title": "正在计算关键指标与对比关系",
+        "elapsedMs": 80723
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 83500
+      },
+      {
+        "title": "正在检索并核对相关证据",
+        "elapsedMs": 93209
+      },
+      {
+        "title": "正在整理数据并统一分析口径",
+        "elapsedMs": 94094
+      },
+      {
+        "title": "正在把分析结果转换为图表",
+        "elapsedMs": 94603
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 95046
+      },
+      {
+        "title": "正在检查图表表达是否准确",
+        "elapsedMs": 96696
+      },
+      {
+        "title": "正在确认项目与运行环境",
+        "elapsedMs": 102791
+      },
+      {
+        "title": "JEV 已核验实际生成的可视化选择",
+        "elapsedMs": 987
+      }
+    ],
+    "startedAt": 1791967569356,
+    "endedAt": 1791967675111,
+    "elapsedMs": 106742,
+    "durationSource": "sum-measured-generation-stages",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1791967569356,
+        "endedAt": 1791967675111,
+        "elapsedMs": 105755
+      },
+      {
+        "name": "JEV 路由核验",
+        "startedAt": 1791967751329,
+        "endedAt": 1791967752316,
+        "elapsedMs": 987
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "inspiration-real-analysis-double_ring_pie-cce50d6852c34db09668a1e244bc9f05",
+    "renderer": "double_ring_pie.py",
+    "sample": false,
+    "visualRoute": {
+      "applied": true,
+      "provider": "typesafe",
+      "providerModel": "jev-1.13.0",
+      "primary": "double_ring_pie.py",
+      "supporting": null,
+      "selectedScripts": [
+        "double_ring_pie.py"
+      ],
+      "primaryConfidence": 0.97,
+      "supportingConfidence": 0.78,
+      "semanticLens": "composition-and-drivers",
+      "semanticLensConfidence": 0.85,
+      "primaryPurpose": "Compare two related values against one common total using concentric progress rings, with optional summary metrics. schema semantics=中心文本; 基准环; 双环系列; 底部指标",
+      "supportingPurpose": "",
+      "visualEncoding": "composition-and-contribution",
+      "visualEncodingConfidence": 1.0,
+      "evidenceStrategy": "structured-data-first",
+      "evidenceStrategyConfidence": 0.56,
+      "markStrategy": "no-mark",
+      "markStrategyConfidence": 0.57,
+      "candidateCount": 45
+    }
   }
 }

@@ -792,3 +792,27 @@ def test_execution_receipts_never_become_modules_fallbacks_or_explicit_charts(tm
     assert str(receipt) not in final['interpretation'] and '正文' in final['interpretation']
     only=client._artifact_payload('deepseek','测试',f'正文\n[[AIME_CHART:{receipt}]]','run','session')
     assert only['reportArtifacts']==[] and only['interpretation']=='正文'
+
+
+def test_visualization_catalog_keeps_routing_bounded_and_semantic(tmp_path: Path) -> None:
+    app = tmp_path / 'app'
+    scripts = app / 'skills' / 'generic-chart' / 'scripts'
+    schemas = scripts.parent / 'schemas'
+    scripts.mkdir(parents=True)
+    schemas.mkdir()
+    registry = []
+    for index in range(45):
+        stem = f'chart_{index}'
+        (scripts / f'{stem}.py').write_text('')
+        (schemas / f'{stem}.schema.json').write_text(json.dumps({
+            'purpose': 'Compare revenue over time',
+            'semanticChannels': [{'channel': 'x', 'semantics': 'fiscal quarter'}, {'channel': 'y', 'semantics': 'reported revenue'}],
+            'payloadShape': {'data': 'x' * 5000},
+        }))
+        registry.append({'script': f'{stem}.py', 'label': stem, 'description': 'verbose documentation ' * 300})
+    (app / 'module_registry.json').write_text(json.dumps(registry))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / 'outputs')
+    candidates = client._visualization_candidates()
+    assert len(candidates) == 45
+    assert sum(len(item['description']) for item in candidates) < 45 * 400
+    assert all('fiscal quarter' in item['description'] and 'reported revenue' in item['description'] for item in candidates)
