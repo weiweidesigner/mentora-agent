@@ -15,7 +15,11 @@
   const responseCache = new Map();
   let overlay = null;
   let restoreOverlayNodes = null;
+  let restoreHomeScroll = true;
   function mountCaseOverlay() {
+    const homeScrollTop = conversation.scrollTop;
+    const horizontalPositions = [...conversation.querySelectorAll('.caseLane,#inspirationTabs')]
+      .map(node => [node, node.scrollLeft]);
     const origin = document.createComment("case conversation location");
     conversation.before(origin);
     const home = document.createElement("section");
@@ -47,6 +51,7 @@
     }
     overlay.append(panel);
     document.body.append(overlay);
+    home.scrollTop = homeScrollTop;
     document.querySelector(".shell")?.classList.add("case-overlay-open");
     overlay.addEventListener("click", event => { if (event.target === overlay) closeCase(); });
     restoreOverlayNodes = () => {
@@ -58,6 +63,13 @@
       overlay = null;
       restoreOverlayNodes = null;
       document.querySelector(".shell")?.classList.remove("case-overlay-open");
+      const preserve = restoreHomeScroll;
+      requestAnimationFrame(() => {
+        if (!preserve || overlay || !conversation.classList.contains("is-empty")) return;
+        conversation.scrollTop = homeScrollTop;
+        horizontalPositions.forEach(([node, left]) => { node.scrollLeft = left; });
+        window.dispatchEvent(new window.Event("veya:home-restored"));
+      });
     };
   }
   function updateCaseTitle(measure = false) {
@@ -341,7 +353,8 @@
     if (!selectedCase) return;
     const question = selectedCase.question;
     ask.disabled = true;
-    startNewChat(false, false);
+    restoreHomeScroll = false;
+    try { startNewChat(false, false); } finally { restoreHomeScroll = true; }
     input.value = question;
     updateComposerState();
     input.focus({ preventScroll: true });
@@ -460,6 +473,10 @@
       }
       requestAnimationFrame(moveLanes);
     }
+    window.addEventListener("veya:home-restored", () => lanes.forEach(state => {
+      state.position = state.lane.scrollLeft;
+      state.manualUntil = performance.now() + 2500;
+    }));
     desktop.addEventListener("change", renderGallery);
     renderGallery();
     requestAnimationFrame(moveLanes);
@@ -490,7 +507,7 @@
         panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
         panel.innerHTML = catalog.categories.filter(category => active === "all" || category.id === active).map(category => {
           const rows = catalog.cases.filter(row => row.category === category.id);
-          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}<span class="inspirationCount">${rows.length}</span></h3><p>${escapeHtml(category.subtitle)}</p></header><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
+          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3></header><p class="inspirationCategorySubtitle">${escapeHtml(category.subtitle)}</p><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
         }).join("");
       };
       tabs.addEventListener("click", event => {
@@ -498,7 +515,11 @@
         if (!tab) return;
         active = tab.dataset.category;
         render();
-        tabs.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+        const selected = tabs.querySelector('[aria-selected="true"]');
+        selected.focus({ preventScroll: true });
+        tabs.scrollLeft += selected.getBoundingClientRect().left < tabs.getBoundingClientRect().left
+          ? selected.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 12
+          : Math.max(0, selected.getBoundingClientRect().right - tabs.getBoundingClientRect().right + 12);
       });
       tabs.addEventListener("keydown", event => {
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
@@ -507,7 +528,11 @@
         const next = event.key === "Home" ? 0 : event.key === "End" ? categories.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + categories.length) % categories.length;
         active = categories[next].id;
         render();
-        tabs.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+        const selected = tabs.querySelector('[aria-selected="true"]');
+        selected.focus({ preventScroll: true });
+        tabs.scrollLeft += selected.getBoundingClientRect().left < tabs.getBoundingClientRect().left
+          ? selected.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 12
+          : Math.max(0, selected.getBoundingClientRect().right - tabs.getBoundingClientRect().right + 12);
       });
       panel.addEventListener("click", event => {
         const card = event.target.closest("[data-case]");
