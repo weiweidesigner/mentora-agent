@@ -3615,7 +3615,7 @@ p {
   .caseOverlayPanel .caseBackButton:hover{background:#fff;color:#111319}
 }
 @media(min-width:761px){
-  .caseOverlayPanel .activityClose{position:absolute;left:-18px;top:58px;width:34px;height:34px;background:var(--soft-2);border:1px solid var(--line);color:var(--muted);z-index:4}
+  .caseOverlayPanel .activityClose{position:absolute;left:-18px;top:42px;width:34px;height:34px;background:var(--soft-2);border:1px solid var(--line);color:var(--muted);z-index:4}
 }
 @media(max-width:1000px) and (min-width:761px){
   .caseOverlayPanel:has(>.activityDrawer.is-open){grid-template-columns:minmax(0,1fr) 320px}
