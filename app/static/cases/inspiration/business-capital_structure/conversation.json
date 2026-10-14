@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的市值、负债、现金和企业价值，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 的资本结构是什么样的，现金和债务占多大比重？",
   "cachedAt": "2026-10-14T16:56:12.541000+08:00",
   "answer": {
-    "question": "分析 AAPL 的市值、负债、现金和企业价值，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 的资本结构是什么样的，现金和债务占多大比重？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,vision-chart-analyst",

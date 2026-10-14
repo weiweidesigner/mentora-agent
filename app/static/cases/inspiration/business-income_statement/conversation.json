@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的最近已披露季度的营收、利润及盈利能力，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "看看 AAPL 最近几个季度的营收和利润，增长质量怎么样？",
   "cachedAt": "2026-10-14T16:48:35.535000+08:00",
   "answer": {
-    "question": "分析 AAPL 的最近已披露季度的营收、利润及盈利能力，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "看看 AAPL 最近几个季度的营收和利润，增长质量怎么样？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

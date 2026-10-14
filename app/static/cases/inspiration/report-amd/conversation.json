@@ -1,8 +1,8 @@
 {
-  "question": "基于 AMD 最新已披露财报、分析师评级和历史股价，分析增长、市场预期与估值风险，通过 streamviz 做成完整金融分析报告。",
+  "question": "帮我梳理 AMD 的业绩、分析师共识和目标价分歧，做成一页报告。",
   "cachedAt": "2026-10-14T16:55:09.889000+08:00",
   "answer": {
-    "question": "基于 AMD 最新已披露财报、分析师评级和历史股价，分析增长、市场预期与估值风险，通过 streamviz 做成完整金融分析报告。",
+    "question": "帮我梳理 AMD 的业绩、分析师共识和目标价分歧，做成一页报告。",
     "code": "",
     "selectedSkill": {
       "key": "streamviz,yahoo-data,business-chart-recall,code-interpreter,internal-search,external-search",

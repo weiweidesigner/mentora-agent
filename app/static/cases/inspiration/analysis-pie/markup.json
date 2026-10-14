@@ -1,0 +1,33 @@
+{
+  "plan": {
+    "version": 1,
+    "selectionMode": "user-specified",
+    "marks": [
+      {
+        "type": "item-style",
+        "target": {
+          "label": "iPhone"
+        },
+        "style": {
+          "color": "#8b5cf6"
+        }
+      }
+    ]
+  },
+  "report": {
+    "version": 1,
+    "chartScript": "pie.py",
+    "selectionMode": "user-specified",
+    "effectiveMaxMarks": 1,
+    "applied": [
+      {
+        "index": 0,
+        "type": "item-style",
+        "reason": "item color applied"
+      }
+    ],
+    "skipped": []
+  },
+  "source": "verified-cached-payload",
+  "request": "highlight-analysis-evidence"
+}

@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的投资综合评级和评分维度，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "从多个维度看看 AAPL 当前的投资评级。",
   "cachedAt": "2026-10-14T16:57:13.925000+08:00",
   "answer": {
-    "question": "分析 AAPL 的投资综合评级和评分维度，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "从多个维度看看 AAPL 当前的投资评级。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall",

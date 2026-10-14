@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL,MSFT,NVDA 的最新共同交易日的三只股票分时走势，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "把苹果、微软和英伟达的分时走势放在一起，看看谁更强。",
   "cachedAt": "2026-10-14T17:09:31.480000+08:00",
   "answer": {
-    "question": "分析 AAPL,MSFT,NVDA 的最新共同交易日的三只股票分时走势，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "把苹果、微软和英伟达的分时走势放在一起，看看谁更强。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,yahoo-data,code-interpreter",

@@ -1,8 +1,8 @@
 {
-  "question": "基于 AAPL 最近一份已披露财报，梳理经营驱动、现金质量和风险的思维导图。",
+  "question": "用思维导图梳理苹果最新财报的增长动力和主要风险。",
   "cachedAt": "2026-10-14T17:06:27.005000+08:00",
   "answer": {
-    "question": "基于 AAPL 最近一份已披露财报，梳理经营驱动、现金质量和风险的思维导图。",
+    "question": "用思维导图梳理苹果最新财报的增长动力和主要风险。",
     "code": "",
     "selectedSkill": {
       "key": "generic-chart,business-chart-recall,code-interpreter,external-search,internal-search,yahoo-data,vision-chart-analyst,advisor-text-generation",

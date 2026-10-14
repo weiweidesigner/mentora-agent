@@ -1,8 +1,8 @@
 {
-  "question": "用动态折线图演绎 AAPL、MSFT、NVDA 最近一年归一化股价走势。",
+  "question": "动态展示苹果、微软和英伟达近一年的股价变化。",
   "cachedAt": "2026-10-14T16:52:40.652000+08:00",
   "answer": {
-    "question": "用动态折线图演绎 AAPL、MSFT、NVDA 最近一年归一化股价走势。",
+    "question": "动态展示苹果、微软和英伟达近一年的股价变化。",
     "code": "",
     "selectedSkill": {
       "key": "yahoo-data,code-interpreter,generic-chart,vision-chart-analyst",

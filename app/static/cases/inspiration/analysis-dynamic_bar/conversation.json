@@ -1,8 +1,8 @@
 {
-  "question": "用动态柱状图演绎 AAPL、MSFT、GOOGL 最近八个已披露季度的季度营收排名变化，标注财年与披露期口径。",
+  "question": "用动态排名看看苹果、微软和谷歌最近八个季度的营收变化。",
   "cachedAt": "2026-10-14T16:55:32.782000+08:00",
   "answer": {
-    "question": "用动态柱状图演绎 AAPL、MSFT、GOOGL 最近八个已披露季度的季度营收排名变化，标注财年与披露期口径。",
+    "question": "用动态排名看看苹果、微软和谷歌最近八个季度的营收变化。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,generic-chart,yahoo-data,vision-chart-analyst",

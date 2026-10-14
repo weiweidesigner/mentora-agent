@@ -1,8 +1,8 @@
 {
-  "question": "分析 AMD 的最近已披露营收与分析师预期差异，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AMD 最近的营收有没有达到预期，未来增长怎么看？",
   "cachedAt": "2026-10-14T17:07:16.474000+08:00",
   "answer": {
-    "question": "分析 AMD 的最近已披露营收与分析师预期差异，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AMD 最近的营收有没有达到预期，未来增长怎么看？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

@@ -1,8 +1,8 @@
 {
-  "question": "取 SPY 最近三个月真实 OHLCV 数据，用通用数据输入方式接入原生 K线内核，展示 K线与成交量。",
+  "question": "看看 SPY 近三个月的 K 线和成交量，分析趋势与关键价位。",
   "cachedAt": "2026-10-14T17:08:52.034000+08:00",
   "answer": {
-    "question": "取 SPY 最近三个月真实 OHLCV 数据，用通用数据输入方式接入原生 K线内核，展示 K线与成交量。",
+    "question": "看看 SPY 近三个月的 K 线和成交量，分析趋势与关键价位。",
     "code": "",
     "selectedSkill": {
       "key": "yahoo-data,code-interpreter,business-chart-recall,generic-chart,vision-chart-analyst",

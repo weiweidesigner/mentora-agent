@@ -1,0 +1,51 @@
+{
+  "plan": {
+    "version": 1,
+    "selectionMode": "user-specified",
+    "marks": [
+      {
+        "type": "series-style",
+        "target": {
+          "series": "MSFT归一化"
+        },
+        "style": {
+          "strokeWidth": 3.5
+        }
+      },
+      {
+        "type": "point",
+        "target": {
+          "series": "MSFT归一化",
+          "x": "2026-10-13"
+        },
+        "style": {
+          "color": "#4bc3d5"
+        },
+        "eventTime": "2026-10-13",
+        "eventTitle": "窗口内累计表现领先",
+        "labelPosition": "bottom"
+      }
+    ]
+  },
+  "report": {
+    "version": 1,
+    "chartScript": "group_line.py",
+    "selectionMode": "user-specified",
+    "effectiveMaxMarks": 2,
+    "applied": [
+      {
+        "index": 0,
+        "type": "series-style",
+        "reason": "series style applied"
+      },
+      {
+        "index": 1,
+        "type": "point",
+        "reason": "point marker applied"
+      }
+    ],
+    "skipped": []
+  },
+  "source": "verified-cached-payload",
+  "request": "highlight-analysis-evidence"
+}

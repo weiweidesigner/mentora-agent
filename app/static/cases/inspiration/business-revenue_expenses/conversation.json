@@ -1,8 +1,8 @@
 {
-  "question": "分析 GOOGL 的收入、成本、费用与利润流向，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "GOOGL 的收入主要花在哪些地方，利润是怎么形成的？",
   "cachedAt": "2026-10-14T17:10:09.984000+08:00",
   "answer": {
-    "question": "分析 GOOGL 的收入、成本、费用与利润流向，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "GOOGL 的收入主要花在哪些地方，利润是怎么形成的？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,vision-chart-analyst,advisor-text-generation",

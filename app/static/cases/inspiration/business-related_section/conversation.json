@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的关联主题和行业板块标签，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 和哪些行业、主题或 ETF 关联最紧密？",
   "cachedAt": "2026-10-14T17:19:19.310000+08:00",
   "answer": {
-    "question": "分析 AAPL 的关联主题和行业板块标签，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 和哪些行业、主题或 ETF 关联最紧密？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

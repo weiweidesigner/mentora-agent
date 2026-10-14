@@ -1,0 +1,89 @@
+{
+  "plan": {
+    "version": 1,
+    "selectionMode": "user-specified",
+    "marks": [
+      {
+        "type": "item-style",
+        "target": {
+          "label": "销售成本"
+        },
+        "style": {
+          "color": "#ff2f57"
+        }
+      },
+      {
+        "type": "item-style",
+        "target": {
+          "label": "研发费用"
+        },
+        "style": {
+          "color": "#ff2f57"
+        }
+      },
+      {
+        "type": "item-style",
+        "target": {
+          "label": "销管费用"
+        },
+        "style": {
+          "color": "#ff2f57"
+        }
+      },
+      {
+        "type": "item-style",
+        "target": {
+          "label": "其他收支"
+        },
+        "style": {
+          "color": "#00b899"
+        }
+      },
+      {
+        "type": "item-style",
+        "target": {
+          "label": "所得税"
+        },
+        "style": {
+          "color": "#ff2f57"
+        }
+      }
+    ]
+  },
+  "report": {
+    "version": 1,
+    "chartScript": "waterfall.py",
+    "selectionMode": "user-specified",
+    "effectiveMaxMarks": 5,
+    "applied": [
+      {
+        "index": 0,
+        "type": "item-style",
+        "reason": "item color applied"
+      },
+      {
+        "index": 1,
+        "type": "item-style",
+        "reason": "item color applied"
+      },
+      {
+        "index": 2,
+        "type": "item-style",
+        "reason": "item color applied"
+      },
+      {
+        "index": 3,
+        "type": "item-style",
+        "reason": "item color applied"
+      },
+      {
+        "index": 4,
+        "type": "item-style",
+        "reason": "item color applied"
+      }
+    ],
+    "skipped": []
+  },
+  "source": "verified-cached-payload",
+  "request": "highlight-analysis-evidence"
+}

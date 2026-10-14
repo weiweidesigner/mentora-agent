@@ -1,0 +1,37 @@
+{
+  "plan": {
+    "version": 1,
+    "selectionMode": "user-specified",
+    "marks": [
+      {
+        "type": "point",
+        "target": {
+          "x": "2026-10-06",
+          "series": "close"
+        },
+        "style": {
+          "color": "#8b5cf6"
+        },
+        "eventTime": "2026-10-06",
+        "eventTitle": "窗口内最高收盘价",
+        "labelPosition": "bottom"
+      }
+    ]
+  },
+  "report": {
+    "version": 1,
+    "chartScript": "line_chart.py",
+    "selectionMode": "user-specified",
+    "effectiveMaxMarks": 1,
+    "applied": [
+      {
+        "index": 0,
+        "type": "point",
+        "reason": "point marker applied"
+      }
+    ],
+    "skipped": []
+  },
+  "source": "verified-cached-payload",
+  "request": "highlight-analysis-evidence"
+}

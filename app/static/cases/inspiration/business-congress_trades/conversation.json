@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的公开议员交易记录与交易披露时差，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "看看美国议员对 AAPL 的交易记录，有哪些值得关注的变化？",
   "cachedAt": "2026-10-14T16:43:44.904000+08:00",
   "answer": {
-    "question": "分析 AAPL 的公开议员交易记录与交易披露时差，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "看看美国议员对 AAPL 的交易记录，有哪些值得关注的变化？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

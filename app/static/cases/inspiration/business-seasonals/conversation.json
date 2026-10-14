@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的近五年月份季节性收益率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 往年不同月份的表现有什么规律？",
   "cachedAt": "2026-10-14T17:13:20.126000+08:00",
   "answer": {
-    "question": "分析 AAPL 的近五年月份季节性收益率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 往年不同月份的表现有什么规律？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

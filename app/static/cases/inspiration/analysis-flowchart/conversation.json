@@ -1,8 +1,8 @@
 {
-  "question": "根据 AAPL 最新已披露产品收入和成本信息，用流程图梳理主营业务收入如何形成营业利润，节点注明已披露事实，不伪造成本归属。",
+  "question": "用流程图展示苹果最新季度的收入如何转化为利润。",
   "cachedAt": "2026-10-14T17:00:41.526000+08:00",
   "answer": {
-    "question": "根据 AAPL 最新已披露产品收入和成本信息，用流程图梳理主营业务收入如何形成营业利润，节点注明已披露事实，不伪造成本归属。",
+    "question": "用流程图展示苹果最新季度的收入如何转化为利润。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,generic-chart,code-interpreter,vision-chart-analyst,advisor-text-generation",

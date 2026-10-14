@@ -1,8 +1,8 @@
 {
-  "question": "分析 NVDA 的日内范围、52周范围和行情关键指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "NVDA 最近一个交易日表现如何？看看价格和成交情况。",
   "cachedAt": "2026-10-14T16:59:47.394000+08:00",
   "answer": {
-    "question": "分析 NVDA 的日内范围、52周范围和行情关键指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "NVDA 最近一个交易日表现如何？看看价格和成交情况。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,yahoo-data,code-interpreter",

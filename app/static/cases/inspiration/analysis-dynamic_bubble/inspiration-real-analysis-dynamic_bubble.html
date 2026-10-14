@@ -46,6 +46,10 @@ html,body{margin:0;width:100%;height:auto;min-height:0;background:transparent;co
 }
 </style></head><body><div id="wrap" data-renderer-version="dynamic-bubble-v15"><div id="header"><div id="title">三巨头月度收益-波动-成交额动态：NVDA波动最高且成交额最大（2026-04–2026-09）</div><div id="legend"></div></div><div id="chart"></div><div id="empty">暂无可渲染数据</div><div id="timelineBar" class="is-hidden"><button id="playBtn" type="button" aria-label="播放"></button><button id="speedBtn" type="button">1x</button><div id="startLabel" class="timeLabel"></div><div id="sliderWrap"><div id="sliderTrack"><span id="sliderFill"></span></div><input id="timelineRange" type="range" min="0" max="0" value="0" aria-label="时间轴" /></div><div id="endLabel" class="timeLabel"></div></div></div>
 <script>
+const darkMode = document.documentElement.dataset.theme === 'dark';
+const chartText = darkMode ? '#c1cad7' : '#687386';
+const chartBorder = darkMode ? '#526176' : '#d9e0ea';
+const chartGrid = darkMode ? '#2b3544' : 'rgba(104,115,134,.12)';
 const payload={"rows": [{"month": "2026-04", "symbol": "AAPL", "monthly_return_pct": 6.92, "annualized_vol_pct": 23.54, "monthly_turnover_usd": 240534392555.2, "trading_days": 21, "month_end_close": 271.35}, {"month": "2026-04", "symbol": "MSFT", "monthly_return_pct": 10.16, "annualized_vol_pct": 33.25, "monthly_turnover_usd": 289850491366.4, "trading_days": 21, "month_end_close": 407.78}, {"month": "2026-04", "symbol": "NVDA", "monthly_return_pct": 14.43, "annualized_vol_pct": 33.81, "monthly_turnover_usd": 613552796617.0, "trading_days": 21, "month_end_close": 199.57}, {"month": "2026-05", "symbol": "AAPL", "monthly_return_pct": 15.0, "annualized_vol_pct": 17.41, "monthly_turnover_usd": 291593835782.4, "trading_days": 20, "month_end_close": 312.06}, {"month": "2026-05", "symbol": "MSFT", "monthly_return_pct": 10.41, "annualized_vol_pct": 28.48, "monthly_turnover_usd": 293711402836.4, "trading_days": 20, "month_end_close": 450.24}, {"month": "2026-05", "symbol": "NVDA", "monthly_return_pct": 5.8, "annualized_vol_pct": 36.75, "monthly_turnover_usd": 718250910133.0, "trading_days": 20, "month_end_close": 211.14}, {"month": "2026-06", "symbol": "AAPL", "monthly_return_pct": -7.27, "annualized_vol_pct": 34.94, "monthly_turnover_usd": 411255711655.7, "trading_days": 21, "month_end_close": 289.36}, {"month": "2026-06", "symbol": "MSFT", "monthly_return_pct": -17.15, "annualized_vol_pct": 39.32, "monthly_turnover_usd": 396653896821.7, "trading_days": 21, "month_end_close": 373.02}, {"month": "2026-06", "symbol": "NVDA", "monthly_return_pct": -5.23, "annualized_vol_pct": 47.13, "monthly_turnover_usd": 709578704170.0, "trading_days": 21, "month_end_close": 200.09}, {"month": "2026-07", "symbol": "AAPL", "monthly_return_pct": 6.76, "annualized_vol_pct": 38.87, "monthly_turnover_usd": 385986307530.0, "trading_days": 22, "month_end_close": 308.91}, {"month": "2026-07", "symbol": "MSFT", "monthly_return_pct": 24.58, "annualized_vol_pct": 57.69, "monthly_turnover_usd": 329122701082.2, "trading_days": 22, "month_end_close": 464.72}, {"month": "2026-07", "symbol": "NVDA", "monthly_return_pct": 0.33, "annualized_vol_pct": 40.92, "monthly_turnover_usd": 577546153283.2, "trading_days": 22, "month_end_close": 200.75}, {"month": "2026-08", "symbol": "AAPL", "monthly_return_pct": 2.57, "annualized_vol_pct": 18.86, "monthly_turnover_usd": 279721900695.3, "trading_days": 21, "month_end_close": 316.85}, {"month": "2026-08", "symbol": "MSFT", "monthly_return_pct": 9.16, "annualized_vol_pct": 26.77, "monthly_turnover_usd": 295109041740.3, "trading_days": 21, "month_end_close": 507.29}, {"month": "2026-08", "symbol": "NVDA", "monthly_return_pct": 9.98, "annualized_vol_pct": 45.94, "monthly_turnover_usd": 585508805326.7, "trading_days": 21, "month_end_close": 220.78}, {"month": "2026-09", "symbol": "AAPL", "monthly_return_pct": 5.1, "annualized_vol_pct": 23.86, "monthly_turnover_usd": 297153923564.1, "trading_days": 21, "month_end_close": 333.02}, {"month": "2026-09", "symbol": "MSFT", "monthly_return_pct": 1.11, "annualized_vol_pct": 24.15, "monthly_turnover_usd": 224780692267.7, "trading_days": 21, "month_end_close": 512.9}, {"month": "2026-09", "symbol": "NVDA", "monthly_return_pct": 3.44, "annualized_vol_pct": 27.17, "monthly_turnover_usd": 528270473490.7, "trading_days": 21, "month_end_close": 228.38}], "encode": {"x": "annualized_vol_pct", "y": "monthly_return_pct", "size": "monthly_turnover_usd", "name": "symbol", "series": "symbol", "time": "month"}, "labels": {"x": "年化波动率（%）", "y": "当月收益率（%）", "size": "月成交额（美元）", "time": "月份"}};
 const rows=payload.rows||[], enc=payload.encode||{}, labels=payload.labels||{};
 const palette=["#38bdf8","#34d399","#f97316","#a78bfa","#f43f5e","#facc15","#fb7185","#2dd4bf"];
@@ -132,11 +136,20 @@ function setPlayState(){playBtn.classList.toggle("is-playing",isPlaying);playBtn
 function setTimelineState(){const max=Math.max(frames.length-1,0);range.max=String(max);range.value=String(currentIndex);const pct=max?currentIndex/max*100:0;sliderFill.style.width=pct+"%";startLabel.textContent=frames[0]||"";endLabel.textContent=frames[frames.length-1]||"";const endWidth=Math.ceil(endLabel.getBoundingClientRect().width||0);document.getElementById("sliderWrap").style.setProperty("--end-label-space",(endWidth+(compact()?7:8))+"px");}
 function buildSeries(frame){
  const frameRows=validRowsForFrame(frame);
+ const riskLeader = [...frameRows].sort((a,b)=>num(b[enc.x])-num(a[enc.x]))[0];
+ const riskMark = group => ({
+   symbol: 'circle', symbolSize: 8,
+   itemStyle: {color: darkMode ? '#f1f5f9' : '#151922'},
+   label: {show:true,formatter:'当月波动最高',position:'bottom',distance:42,color:chartText,fontSize:11},
+   data: riskLeader && (!group || String(riskLeader[enc.series])===group)
+     ? [{coord:[num(riskLeader[enc.x]),num(riskLeader[enc.y])]}] : []
+ });
  const labelLimit=compact()?6:12;
  const labelNames=new Set([...frameRows].sort((a,b)=>(num(b[enc.size])||0)-(num(a[enc.size])||0)).slice(0,labelLimit).map(r=>String(r[enc.name]??"")));
  if(!hasGrouping){
   return [{
    id:"bubble-all",
+   markPoint:riskMark(null),
    name:"Series",
    type:"scatter",
    animationDuration:420,
@@ -162,6 +175,7 @@ function buildSeries(frame){
  }
  return groups.map((g,index)=>({
   id:"bubble-"+index,
+  markPoint:riskMark(g),
   name:g,
   type:"scatter",
   animationDuration:420,
@@ -200,13 +214,13 @@ function renderChart(){
   animationEasingUpdate:"cubicInOut",
   grid:{left:l.gridLeft,right:l.gridRight,top:l.top,bottom:l.bottom,containLabel:true},
   legend:{show:false},
-  tooltip:{className:"generic-canvas-tooltip",trigger:"item",backgroundColor:"rgba(255,255,255,.98)",borderColor:"#dfe5ee",extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:"#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
-  xAxis:{type:"value",min:xScale.min,max:xScale.max,interval:xScale.interval,splitNumber:4,name:"",axisLabel:{color:"#687386",formatter:v=>compactNumber(v),margin:10,hideOverlap:true,showMinLabel:false,showMaxLabel:false},axisLine:{lineStyle:{color:"#d9e0ea"}},axisTick:{show:false},splitLine:{lineStyle:{color:"rgba(104,115,134,.12)"}}},
-  yAxis:{type:"value",min:yScale.min,max:yScale.max,interval:yScale.interval,splitNumber:4,name:"",axisLabel:{color:"#687386",formatter:v=>compactNumber(v),inside:false,align:"right",padding:0,margin:3,hideOverlap:true},axisLine:{show:true,lineStyle:{color:"#d9e0ea"}},axisTick:{show:false},splitLine:{lineStyle:{color:"rgba(104,115,134,.12)"}}},
+  tooltip:{className:"generic-canvas-tooltip",trigger:"item",backgroundColor:darkMode ? "#202733" : "rgba(255,255,255,.98)",borderColor:chartBorder,extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:darkMode ? "#f1f5f9" : "#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
+  xAxis:{type:"value",min:xScale.min,max:xScale.max,interval:xScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),margin:10,hideOverlap:true,showMinLabel:false,showMaxLabel:false},axisLine:{lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
+  yAxis:{type:"value",min:yScale.min,max:yScale.max,interval:yScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),inside:false,align:"right",padding:0,margin:3,hideOverlap:true},axisLine:{show:true,lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
   graphic:[
-   {type:"text",left:"center",top:"45%",silent:true,z:1,style:{text:frame,fill:"rgba(104,115,134,.13)",fontSize:compact()?42:64,fontWeight:800,textAlign:"center",textVerticalAlign:"middle"}},
-   {type:"text",x:0,y:l.top-24,silent:true,z:4,style:{text:labels.y||enc.y,fill:"#687386",fontSize:compact()?12:13,fontWeight:650,textAlign:"left",textVerticalAlign:"middle"}},
-   {type:"text",x:chart.getWidth()-8,y:chart.getHeight()-l.bottom+(compact()?16:18),silent:true,z:4,style:{text:labels.x||enc.x,fill:"#687386",fontSize:compact()?12:13,fontWeight:650,textAlign:"right",textVerticalAlign:"middle"}}
+   {type:"text",left:"center",top:"45%",silent:true,z:1,style:{text:frame,fill:darkMode ? "rgba(193,202,215,.25)" : "rgba(104,115,134,.13)",fontSize:compact()?42:64,fontWeight:800,textAlign:"center",textVerticalAlign:"middle"}},
+   {type:"text",x:0,y:l.top-24,silent:true,z:4,style:{text:labels.y||enc.y,fill:chartText,fontSize:compact()?12:13,fontWeight:650,textAlign:"left",textVerticalAlign:"middle"}},
+   {type:"text",x:chart.getWidth()-8,y:chart.getHeight()-l.bottom+(compact()?16:18),silent:true,z:4,style:{text:labels.x||enc.x,fill:chartText,fontSize:compact()?12:13,fontWeight:650,textAlign:"right",textVerticalAlign:"middle"}}
   ],
   series:buildSeries(frame)
  },{notMerge:false,lazyUpdate:true});

@@ -1,8 +1,8 @@
 {
-  "question": "基于 AAPL 最近四份已披露财报，用旅程图展示从产品增长、利润变化到现金回报的经营变化。",
+  "question": "把苹果最近四个季度的经营变化串起来，看看收入、利润和现金流如何演进。",
   "cachedAt": "2026-10-14T17:05:58.965000+08:00",
   "answer": {
-    "question": "基于 AAPL 最近四份已披露财报，用旅程图展示从产品增长、利润变化到现金回报的经营变化。",
+    "question": "把苹果最近四个季度的经营变化串起来，看看收入、利润和现金流如何演进。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,generic-chart,code-interpreter,advisor-text-generation",

@@ -1,8 +1,8 @@
 {
-  "question": "分析 AMD 的每股收益实际值和一致预期，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AMD 的每股收益与分析师预期相比表现如何？",
   "cachedAt": "2026-10-14T16:45:22.031000+08:00",
   "answer": {
-    "question": "分析 AMD 的每股收益实际值和一致预期，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AMD 的每股收益与分析师预期相比表现如何？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,vision-chart-analyst,advisor-text-generation",

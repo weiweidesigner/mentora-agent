@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的ROE、净利率和财务比率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 的盈利能力和财务回报最近有什么变化？",
   "cachedAt": "2026-10-14T16:57:55.687000+08:00",
   "answer": {
-    "question": "分析 AAPL 的ROE、净利率和财务比率变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 的盈利能力和财务回报最近有什么变化？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

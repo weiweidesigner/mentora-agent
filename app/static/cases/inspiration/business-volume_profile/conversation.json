@@ -1,8 +1,8 @@
 {
-  "question": "分析 NVDA 的近期各价格区间成交量分布，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "NVDA 的成交主要集中在哪些价位？",
   "cachedAt": "2026-10-14T17:16:50.806000+08:00",
   "answer": {
-    "question": "分析 NVDA 的近期各价格区间成交量分布，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "NVDA 的成交主要集中在哪些价位？",
     "code": "",
     "selectedSkill": {
       "key": "deepseek",

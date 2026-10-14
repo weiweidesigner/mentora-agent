@@ -1,8 +1,8 @@
 {
-  "question": "分析 NVDA 的公司业务、行业与上市资料，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "介绍一下 NVDA，它主要做什么业务？",
   "cachedAt": "2026-10-14T16:38:41.845000+08:00",
   "answer": {
-    "question": "分析 NVDA 的公司业务、行业与上市资料，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "介绍一下 NVDA，它主要做什么业务？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,advisor-text-generation",

@@ -1,8 +1,8 @@
 {
-  "question": "核验 AAPL 2026 年已发生的财报披露与重要公司公告，用时间线展示，必须有日期和来源。",
+  "question": "整理苹果今年的财报和重要公告，用时间线展示。",
   "cachedAt": "2026-10-14T17:14:06.351000+08:00",
   "answer": {
-    "question": "核验 AAPL 2026 年已发生的财报披露与重要公司公告，用时间线展示，必须有日期和来源。",
+    "question": "整理苹果今年的财报和重要公告，用时间线展示。",
     "code": "",
     "selectedSkill": {
       "key": "generic-chart,business-chart-recall,yahoo-data,external-search,internal-search,vision-chart-analyst",

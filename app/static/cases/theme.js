@@ -7,6 +7,25 @@
   }
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
+  // SVG presentation attributes lose to the saved light-theme class rules.
+  // Scope palette overrides to dark mode so the original light styles survive.
+  const palette = document.createElement("style");
+  palette.dataset.casePalette = "true";
+  palette.textContent = `
+    :root[data-theme="dark"] #title,
+    :root[data-theme="dark"] .chart-title { color: #f1f5f9; }
+    :root[data-theme="dark"] .axis-label,
+    :root[data-theme="dark"] .x-label { fill: #c1cad7; }
+    :root[data-theme="dark"] .grid-line { stroke: #2b3544; }
+    :root[data-theme="dark"] .axis-line { stroke: #526176; }
+    :root[data-theme="dark"] .legendItem,
+    :root[data-theme="dark"] .timeLabel,
+    :root[data-theme="dark"] #speedBtn,
+    :root[data-theme="dark"] #empty { color: #c1cad7; }
+    :root[data-theme="dark"] .bar-label { fill: #8294ff; }
+  `;
+  document.documentElement.appendChild(palette);
+
   const syncBody = () => {
     if (!document.body) return;
     document.body.classList.toggle("theme-dark", theme === "dark");

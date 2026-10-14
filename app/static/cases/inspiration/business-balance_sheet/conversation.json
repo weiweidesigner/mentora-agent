@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的资产、负债、权益及偿债结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 的资产负债结构怎么样，偿债压力大吗？",
   "cachedAt": "2026-10-14T16:39:57.473000+08:00",
   "answer": {
-    "question": "分析 AAPL 的资产、负债、权益及偿债结构，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 的资产负债结构怎么样，偿债压力大吗？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,vision-chart-analyst,advisor-text-generation",

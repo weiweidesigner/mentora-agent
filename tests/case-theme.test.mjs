@@ -35,3 +35,16 @@ test('saved chart runtime selects root and body palettes before chart startup',a
     w.close();
   }
 });
+
+test('cached dark palettes override light title and SVG class colors',()=>{
+ const script=readFileSync(new URL('../app/static/cases/theme.js',import.meta.url),'utf8');
+ for(const theme of ['light','dark']){
+  const dom=new JSDOM('<head><style>.chart-title{color:#16181c}.axis-label{fill:#777}.grid-line{stroke:#e8e8e8}#title{color:#151922}</style></head><body><h2 class="chart-title">营收</h2><div id="title">气泡图</div><svg><text class="axis-label">30</text><line class="grid-line"/></svg></body>',{url:`https://example.com/chart.html?theme=${theme}`});
+  const w=dom.window;
+  vm.runInContext(script,vm.createContext({document:w.document,location:w.location,parent:w,URLSearchParams,MutationObserver:w.MutationObserver}));
+  assert.equal(w.getComputedStyle(w.document.querySelector('.chart-title')).color,theme==='dark'?'rgb(241, 245, 249)':'rgb(22, 24, 28)');
+  assert.equal(w.getComputedStyle(w.document.querySelector('#title')).color,theme==='dark'?'rgb(241, 245, 249)':'rgb(21, 25, 34)');
+  assert.equal(w.getComputedStyle(w.document.querySelector('.axis-label')).fill,theme==='dark'?'rgb(193, 202, 215)':'rgb(119, 119, 119)');
+  w.close();
+ }
+});

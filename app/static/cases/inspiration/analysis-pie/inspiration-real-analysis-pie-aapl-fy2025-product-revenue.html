@@ -78,7 +78,7 @@ svg{display:block;width:100%;height:100%;overflow:visible}
   </div>
 </section>
 <script>
-const config = {"items": [{"label": "iPhone", "value": 209586.0, "displayValue": "209.59 B (50.4%)", "color": "#4387f5", "percent": 50.361759030759735}, {"label": "服务", "value": 109158.0, "displayValue": "109.16 B (26.2%)", "color": "#4bc3d5", "percent": 26.22975242754607}, {"label": "可穿戴、家居与配件", "value": 35686.0, "displayValue": "35.69 B (8.6%)", "color": "#f9730c", "percent": 8.575046676646778}, {"label": "Mac", "value": 33708.0, "displayValue": "33.71 B (8.1%)", "color": "#8b5cf6", "percent": 8.099749856425758}, {"label": "iPad", "value": 28023.0, "displayValue": "28.02 B (6.7%)", "color": "#2ab7a1", "percent": 6.733692008621663}], "title": "苹果 AAPL · FY2025 各产品营收构成", "centerLabel": "总净销售额 416.16 B 美元", "subtitle": "AAPL · 按产品类别净销售额 · FY2025（截至 2025-09-27）", "badgeLabel": "期间: FY2025", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": true, "ringWidth": 28, "height": 360};
+const config = {"items": [{"label": "iPhone", "value": 209586.0, "displayValue": "209.59 B (50.4%)", "color": "#8b5cf6", "percent": 50.361759030759735}, {"label": "服务", "value": 109158.0, "displayValue": "109.16 B (26.2%)", "color": "#4bc3d5", "percent": 26.22975242754607}, {"label": "可穿戴、家居与配件", "value": 35686.0, "displayValue": "35.69 B (8.6%)", "color": "#f9730c", "percent": 8.575046676646778}, {"label": "Mac", "value": 33708.0, "displayValue": "33.71 B (8.1%)", "color": "#8b5cf6", "percent": 8.099749856425758}, {"label": "iPad", "value": 28023.0, "displayValue": "28.02 B (6.7%)", "color": "#2ab7a1", "percent": 6.733692008621663}], "title": "苹果 AAPL · FY2025 各产品营收构成", "centerLabel": "总净销售额", "centerValue": "416.16 B 美元", "subtitle": "AAPL · 按产品类别净销售额 · FY2025（截至 2025-09-27）", "badgeLabel": "期间: FY2025", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": true, "ringWidth": 28, "height": 360, "_chartMarkup": {"version": 1, "chartScript": "pie.py", "selectionMode": "user-specified", "effectiveMaxMarks": 1, "applied": [{"index": 0, "type": "item-style", "reason": "item color applied"}], "skipped": []}};
 const root = document.querySelector('.pie-component');
 const stage = root.querySelector('.pie-stage');
 const svg = root.querySelector('svg');
@@ -137,9 +137,17 @@ function render() {
   });
 
   if (config.showCenterLabel) {
-    const centerText = String(config.centerLabel || '');
-    const centerFontSize = centerText.length > 14 ? 11 : centerText.length > 9 ? 13 : 16;
-    svg.appendChild(node('text', {x:cx,y:cy,class:'pie-center','font-size':centerFontSize}, centerText));
+    const maxWidth = Math.max(24, innerR * 2 - 20);
+    const addCenterRow = (text, y, size, weight, className) => {
+      const row = node('text', {x:cx,y,class:className}, text);
+      row.style.fontSize = `${size}px`;
+      row.style.fontWeight = weight;
+      svg.appendChild(row);
+      const measured = row.getComputedTextLength();
+      if (measured > maxWidth) row.style.fontSize = `${size * maxWidth / measured}px`;
+    };
+    addCenterRow(String(config.centerLabel || ''), cy - 11, 12, '400', 'pie-center pie-center-key');
+    addCenterRow(String(config.centerValue || ''), cy + 12, 16, '650', 'pie-center pie-center-value');
   }
 
   config.items.forEach(item => {

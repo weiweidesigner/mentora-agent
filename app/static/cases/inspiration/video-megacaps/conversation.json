@@ -1,8 +1,8 @@
 {
-  "question": "搜索关于 AAPL、NVDA 等科技龙头投资观点的金融分析视频，用项目 video-search。执行 ainvest_video_search.py --query \"Nvidia Apple stocks investment\" --semantic --semantic-threshold 1.0 --limit 10 --output outputs/generated/inspiration-real-video-megacaps-retry-raw.json，检查结果；如果本次接口受限，可以读取本次任务已真实检索的 outputs/generated/inspiration-real-video-megacaps-raw.json 等 megacap 相关 JSON。只需要金融观点分析正文和检索结果 JSON 路径，保留真实标题、来源、封面、日期、时长和视频 URL。前端已经有原生 buildVideoLane/openVideoPlayer，绝对不要制作 HTML、StreamViz 页面、iframe 包装或替代视频 UI，不要下载封面，不需要截图。不得编造内容，不用子智能体，完成后立即输出最终分析及已执行的技能。",
+  "question": "找几段分析苹果和英伟达投资机会的视频，看看有哪些值得关注的观点。",
   "cachedAt": "2026-10-14T17:08:11.198000+08:00",
   "answer": {
-    "question": "搜索关于 AAPL、NVDA 等科技龙头投资观点的金融分析视频，用项目 video-search。执行 ainvest_video_search.py --query \"Nvidia Apple stocks investment\" --semantic --semantic-threshold 1.0 --limit 10 --output outputs/generated/inspiration-real-video-megacaps-retry-raw.json，检查结果；如果本次接口受限，可以读取本次任务已真实检索的 outputs/generated/inspiration-real-video-megacaps-raw.json 等 megacap 相关 JSON。只需要金融观点分析正文和检索结果 JSON 路径，保留真实标题、来源、封面、日期、时长和视频 URL。前端已经有原生 buildVideoLane/openVideoPlayer，绝对不要制作 HTML、StreamViz 页面、iframe 包装或替代视频 UI，不要下载封面，不需要截图。不得编造内容，不用子智能体，完成后立即输出最终分析及已执行的技能。",
+    "question": "找几段分析苹果和英伟达投资机会的视频，看看有哪些值得关注的观点。",
     "code": "",
     "selectedSkill": {
       "key": "native-streamviz",

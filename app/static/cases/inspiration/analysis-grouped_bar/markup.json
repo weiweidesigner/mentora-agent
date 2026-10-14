@@ -1,0 +1,34 @@
+{
+  "plan": {
+    "version": 1,
+    "selectionMode": "user-specified",
+    "marks": [
+      {
+        "type": "item-style",
+        "target": {
+          "x": "MSFT FY2026（截至 2026-06-30）",
+          "series": "netIncome"
+        },
+        "style": {
+          "color": "#8b5cf6"
+        }
+      }
+    ]
+  },
+  "report": {
+    "version": 1,
+    "chartScript": "grouped_bar.py",
+    "selectionMode": "user-specified",
+    "effectiveMaxMarks": 1,
+    "applied": [
+      {
+        "index": 0,
+        "type": "item-style",
+        "reason": "bar item color applied"
+      }
+    ],
+    "skipped": []
+  },
+  "source": "verified-cached-payload",
+  "request": "highlight-analysis-evidence"
+}

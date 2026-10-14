@@ -1,8 +1,8 @@
 {
-  "question": "搜索并展示关于 NVIDIA、AMD 与 AI 芯片投资的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果，不要编造标题、地址或时长。",
+  "question": "找几段分析 AI 行业和芯片投资的视频，看看主要观点和分歧。",
   "cachedAt": "2026-10-14T16:45:08.038000+08:00",
   "answer": {
-    "question": "搜索并展示关于 NVIDIA、AMD 与 AI 芯片投资的金融分析视频，使用项目 video-search，提供原生视频卡片、来源、发布日期和时长。至少三个相关结果，不要编造标题、地址或时长。",
+    "question": "找几段分析 AI 行业和芯片投资的视频，看看主要观点和分歧。",
     "code": "",
     "selectedSkill": {
       "key": "video-search,streamviz",

@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的净利润、现金分红及分红率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 每年拿多少利润分红，分红比例有什么变化？",
   "cachedAt": "2026-10-14T17:02:41.587000+08:00",
   "answer": {
-    "question": "分析 AAPL 的净利润、现金分红及分红率，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 每年拿多少利润分红，分红比例有什么变化？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,advisor-text-generation",

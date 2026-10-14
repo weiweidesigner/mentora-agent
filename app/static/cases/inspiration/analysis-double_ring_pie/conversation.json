@@ -1,8 +1,8 @@
 {
-  "question": "用双环图对照 AAPL 最近已披露财年营业利润和净利润各占营收的比例，营收为共同基准。",
+  "question": "用双环图比较苹果的营业利润率和净利率。",
   "cachedAt": "2026-10-14T16:47:55.111000+08:00",
   "answer": {
-    "question": "用双环图对照 AAPL 最近已披露财年营业利润和净利润各占营收的比例，营收为共同基准。",
+    "question": "用双环图比较苹果的营业利润率和净利率。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,generic-chart,yahoo-data",

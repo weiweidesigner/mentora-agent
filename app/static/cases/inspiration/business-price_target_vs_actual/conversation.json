@@ -1,8 +1,8 @@
 {
-  "question": "分析 AMD 的平均目标价与实际股价的差异和变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "分析师给 AMD 的目标价与当前股价差多少？",
   "cachedAt": "2026-10-14T17:04:52.063000+08:00",
   "answer": {
-    "question": "分析 AMD 的平均目标价与实际股价的差异和变化，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "分析师给 AMD 的目标价与当前股价差多少？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,code-interpreter,yahoo-data,advisor-text-generation",

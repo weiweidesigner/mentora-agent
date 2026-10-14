@@ -1,8 +1,8 @@
 {
-  "question": "核验最近一个完整交易日的 A 股市场表现，分析指数、涨跌宽度、成交额和板块分化。通过 streamviz 做成一份有证据的完整市场复盘报告。",
+  "question": "复盘一下 A 股市场表现，整理成一页报告。",
   "cachedAt": "2026-10-14T16:50:10.723000+08:00",
   "answer": {
-    "question": "核验最近一个完整交易日的 A 股市场表现，分析指数、涨跌宽度、成交额和板块分化。通过 streamviz 做成一份有证据的完整市场复盘报告。",
+    "question": "复盘一下 A 股市场表现，整理成一页报告。",
     "code": "",
     "selectedSkill": {
       "key": "a-share-data,code-interpreter,generic-chart,streamviz,vision-chart-analyst,advisor-text-generation",

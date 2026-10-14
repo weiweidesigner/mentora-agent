@@ -1,8 +1,8 @@
 {
-  "question": "分析 AAPL 的市值、市盈率、市销率等估值指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "AAPL 现在的估值处于什么水平，与历史相比贵吗？",
   "cachedAt": "2026-10-14T17:21:54.520000+08:00",
   "answer": {
-    "question": "分析 AAPL 的市值、市盈率、市销率等估值指标，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "AAPL 现在的估值处于什么水平，与历史相比贵吗？",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,yahoo-data,code-interpreter",

@@ -1,8 +1,8 @@
 {
-  "question": "分析 JPM 的近期价格、成交量与趋势确认信号，用对应金融图表展示，并根据真实数据解释关键观察点。",
+  "question": "看看 JPM 最近的走势，结合成交量分析趋势和关键价位。",
   "cachedAt": "2026-10-14T17:01:04.332000+08:00",
   "answer": {
-    "question": "分析 JPM 的近期价格、成交量与趋势确认信号，用对应金融图表展示，并根据真实数据解释关键观察点。",
+    "question": "看看 JPM 最近的走势，结合成交量分析趋势和关键价位。",
     "code": "",
     "selectedSkill": {
       "key": "business-chart-recall,yahoo-data,vision-chart-analyst",

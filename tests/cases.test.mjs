@@ -185,3 +185,23 @@ test('all inspiration cards have portable, non-empty caches and complete compone
     }
   }
 });
+
+test('gallery summaries and replay questions are readable product copy',()=>{
+  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
+  const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
+  for(const row of catalog.cases){
+    assert.ok(row.preview.length>10,row.id);
+    assert.doesNotMatch(row.preview,/^[-_*\s]+$|组件期间键|本轮接口|\.py/);
+    assert.notEqual(row.tag,'实际生成');
+    assert.doesNotMatch(row.question,/\.py|--query|--output|outputs\/|buildVideoLane|不要|真实数据|实际生成/);
+    assert.ok(row.question.length<100,row.id);
+    const cached=JSON.parse(readFileSync(new URL(row.id+'/conversation.json',root),'utf8'));
+    assert.equal(cached.question,row.question);
+    assert.equal(cached.answer.question,row.question);
+  }
+  for(const name of ['bar_chart','grouped_bar','line_chart','group_line','bar_line','pie','treemap','waterfall']){
+    const marks=JSON.parse(readFileSync(new URL('analysis-'+name+'/markup.json',root),'utf8'));
+    assert.ok(marks.report.applied.length>0);
+    assert.deepEqual(marks.report.skipped,[]);
+  }
+});
