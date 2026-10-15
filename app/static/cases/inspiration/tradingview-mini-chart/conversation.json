@@ -1,0 +1,74 @@
+{
+  "question": "给我一张简洁的特斯拉走势图，快速看看最近这一年的变化。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "给我一张简洁的特斯拉走势图，快速看看最近这一年的变化。",
+    "code": "NASDAQ:TSLA",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-mini-chart/tradingview-mini-chart.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-mini-chart/tradingview-mini-chart.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-mini-chart/tradingview-mini-chart.html",
+        "url": "/static/cases/inspiration/tradingview-mini-chart/tradingview-mini-chart.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "用紧凑的面积走势图查看特斯拉，悬停查看价格，并跳转到完整行情页面。\n\n[[AIME_CHART:case:inspiration/tradingview-mini-chart/tradingview-mini-chart.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 特斯拉 · 迷你走势图",
+        "detail": "调用：TradingViewChart\n结果：mini-chart 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 50.258208,
+        "durationMs": 50.258208
+      }
+    ],
+    "startedAt": 1792065503954,
+    "endedAt": 1792065504004.2583,
+    "elapsedMs": 50.258208,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 50.258208,
+        "elapsedMs": 50.258208
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "mini-chart",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "symbol": "NASDAQ:TSLA",
+      "dateRange": "12M",
+      "colorTheme": "light",
+      "isTransparent": false,
+      "autosize": true,
+      "locale": "zh_CN",
+      "width": "100%",
+      "height": "100%"
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "question": "把微软的主要财务数据展示出来，我想自己看看收入和盈利指标。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "把微软的主要财务数据展示出来，我想自己看看收入和盈利指标。",
+    "code": "NASDAQ:MSFT",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-fundamental-data/tradingview-fundamental-data.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-fundamental-data/tradingview-fundamental-data.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-fundamental-data/tradingview-fundamental-data.html",
+        "url": "/static/cases/inspiration/tradingview-fundamental-data/tradingview-fundamental-data.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "通过官方财务数据面板浏览微软的主要经营与财务指标，按面板提供的栏目查看。\n\n[[AIME_CHART:case:inspiration/tradingview-fundamental-data/tradingview-fundamental-data.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 微软 · 财务数据概览",
+        "detail": "调用：TradingViewChart\n结果：fundamental-data 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 42.234583,
+        "durationMs": 42.234583
+      }
+    ],
+    "startedAt": 1792065504099,
+    "endedAt": 1792065504141.2346,
+    "elapsedMs": 42.234583,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 42.234583,
+        "elapsedMs": 42.234583
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "fundamental-data",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "isTransparent": false,
+      "largeChartUrl": "",
+      "displayMode": "regular",
+      "width": "100%",
+      "height": "100%",
+      "colorTheme": "light",
+      "symbol": "NASDAQ:MSFT",
+      "locale": "zh_CN"
+    }
+  }
+}

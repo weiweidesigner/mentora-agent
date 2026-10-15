@@ -1,0 +1,73 @@
+{
+  "question": "给我一个经济日历，看看美国、欧洲和中国近期有哪些重要数据要公布。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "给我一个经济日历，看看美国、欧洲和中国近期有哪些重要数据要公布。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-economic-calendar/tradingview-economic-calendar.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-economic-calendar/tradingview-economic-calendar.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-economic-calendar/tradingview-economic-calendar.html",
+        "url": "/static/cases/inspiration/tradingview-economic-calendar/tradingview-economic-calendar.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "按时间浏览经济数据发布安排，关注美国、欧元区和中国的重要经济事件。\n\n[[AIME_CHART:case:inspiration/tradingview-economic-calendar/tradingview-economic-calendar.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 经济日历 · 重要数据",
+        "detail": "调用：TradingViewChart\n结果：economic-calendar 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 39.080208,
+        "durationMs": 39.080208
+      }
+    ],
+    "startedAt": 1792065504137,
+    "endedAt": 1792065504176.0803,
+    "elapsedMs": 39.080208,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 39.080208,
+        "elapsedMs": 39.080208
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "economic-calendar",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "colorTheme": "light",
+      "isTransparent": false,
+      "width": "100%",
+      "height": "100%",
+      "locale": "zh_CN",
+      "importanceFilter": "-1,0,1",
+      "countryFilter": "us,eu,cn"
+    }
+  }
+}

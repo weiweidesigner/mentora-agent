@@ -1,0 +1,86 @@
+{
+  "question": "做一条滚动行情条，把我关注的苹果、微软和英伟达放进去。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "做一条滚动行情条，把我关注的苹果、微软和英伟达放进去。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-ticker-tape/tradingview-ticker-tape.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-ticker-tape/tradingview-ticker-tape.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-ticker-tape/tradingview-ticker-tape.html",
+        "url": "/static/cases/inspiration/tradingview-ticker-tape/tradingview-ticker-tape.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "用横向滚动行情条跟踪关注的股票，点击对应标的可进一步查看行情。\n\n[[AIME_CHART:case:inspiration/tradingview-ticker-tape/tradingview-ticker-tape.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 自选行情 · 滚动行情条",
+        "detail": "调用：TradingViewChart\n结果：ticker-tape 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 44.505,
+        "durationMs": 44.505
+      }
+    ],
+    "startedAt": 1792065504005,
+    "endedAt": 1792065504049.505,
+    "elapsedMs": 44.505,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 44.505,
+        "elapsedMs": 44.505
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "ticker-tape",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "colorTheme": "light",
+      "symbols": [
+        {
+          "proName": "NASDAQ:AAPL",
+          "title": "苹果"
+        },
+        {
+          "proName": "NASDAQ:MSFT",
+          "title": "微软"
+        },
+        {
+          "proName": "NASDAQ:NVDA",
+          "title": "英伟达"
+        }
+      ],
+      "showSymbolLogo": true,
+      "displayMode": "adaptive",
+      "locale": "zh_CN",
+      "width": "100%",
+      "height": "100%"
+    }
+  }
+}

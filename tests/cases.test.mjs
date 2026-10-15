@@ -157,17 +157,22 @@ test('inspiration categories switch by click and keyboard and replay without inf
 test('all inspiration cards have portable, non-empty caches and complete component coverage', () => {
   const root=new URL('../app/static/cases/inspiration/',import.meta.url);
   const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
-  assert.equal(catalog.cases.length,60);
-  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,60);
-  const counts={reports:3,charts:34,analysis:17,videos:3,art:3};
+  assert.equal(catalog.cases.length,77);
+  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,77);
+  const counts={reports:3,charts:51,analysis:17,videos:3,art:3};
   for(const [category,count] of Object.entries(counts))assert.equal(catalog.cases.filter(row=>row.category===category).length,count);
   for(const row of catalog.cases){
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
     assert.ok(cached.answer.interpretation.trim());
-    assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
-    assert.ok(cached.activity.elapsedMs>1000);
+    if(row.generation==='actual-tool-execution'){
+      assert.equal(cached.provenance.generation,'actual-tool-execution');
+      assert.ok(cached.activity.elapsedMs>0);
+    }else{
+      assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
+      assert.ok(cached.activity.elapsedMs>1000);
+    }
     assert.equal(cached.activity.elapsedMs,cached.activity.stages.reduce((total,stage)=>total+stage.endedAt-stage.startedAt,0));
     assert.ok(cached.activity.steps.length>0);
     for(const artifact of cached.answer.reportArtifacts){
@@ -180,7 +185,7 @@ test('all inspiration cards have portable, non-empty caches and complete compone
       assert.equal(cached.answer.visualRoute.applied,true);
       assert.equal(cached.answer.visualRoute.primary,cached.provenance.renderer);
     }
-    if(row.category==='charts')assert.equal(cached.provenance.renderer,row.id.replace('business-','')+'.py');
+    if(row.category==='charts')assert.equal(cached.provenance.renderer,row.tool==='TradingViewChart'?'trading_view_chart.py':row.id.replace('business-','')+'.py');
     if(cached.provenance.sample)assert.match(cached.answer.interpretation,/演示数据/);
     if(row.category==='videos'){
       assert.ok(cached.answer.videos.length>=3);
@@ -215,4 +220,28 @@ test('gallery summaries and replay questions are readable product copy',()=>{
     assert.ok(marks.report.applied.length>0);
     assert.deepEqual(marks.report.skipped,[]);
   }
+});
+
+test('financial gallery covers every TradingView widget exactly once',()=>{
+ const root=new URL('../app/static/cases/inspiration/',import.meta.url);
+ const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
+ const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));
+ const rows=catalog.cases.filter(row=>row.tool==='TradingViewChart');
+ assert.equal(rows.length,18);
+ assert.deepEqual(rows.map(row=>row.widget).sort(),Object.keys(widgets).sort());
+ assert.equal(new Set(rows.map(row=>row.conversationUrl)).size,18);
+ assert.doesNotMatch(catalog.categories.find(c=>c.id==='charts').subtitle,/\d+\s*个/);
+ for(const row of rows){
+  assert.equal(row.category,'charts');
+  const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
+  assert.equal(cached.provenance.widget,row.widget);
+  const artifact=cached.answer.reportArtifacts[0];
+  const document=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
+  const config=JSON.parse(document.match(/<script id="tv-config" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(config.widget,row.widget);
+  assert.equal(config.config.locale,'zh_CN');
+  assert.equal(config.script,widgets[row.widget].script);
+  assert.match(document,/tradingview-widget-copyright/);
+  assert.match(cached.answer.interpretation,/TradingView.*加载|TradingView.*更新/);
+ }
 });

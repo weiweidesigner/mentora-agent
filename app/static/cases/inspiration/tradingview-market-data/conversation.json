@@ -1,0 +1,93 @@
+{
+  "question": "把苹果、微软、英伟达和特斯拉的报价整理成一个行情列表。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "把苹果、微软、英伟达和特斯拉的报价整理成一个行情列表。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-market-data/tradingview-market-data.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-market-data/tradingview-market-data.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-market-data/tradingview-market-data.html",
+        "url": "/static/cases/inspiration/tradingview-market-data/tradingview-market-data.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "把关注的科技股放进同一报价列表，便于查看各自价格和涨跌变化。\n\n[[AIME_CHART:case:inspiration/tradingview-market-data/tradingview-market-data.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 科技龙头 · 行情列表",
+        "detail": "调用：TradingViewChart\n结果：market-data 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 50.15775,
+        "durationMs": 50.15775
+      }
+    ],
+    "startedAt": 1792065503954,
+    "endedAt": 1792065504004.1577,
+    "elapsedMs": 50.15775,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 50.15775,
+        "elapsedMs": 50.15775
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "market-data",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "colorTheme": "light",
+      "symbolsGroups": [
+        {
+          "name": "科技龙头",
+          "symbols": [
+            {
+              "name": "NASDAQ:AAPL",
+              "displayName": "苹果"
+            },
+            {
+              "name": "NASDAQ:MSFT",
+              "displayName": "微软"
+            },
+            {
+              "name": "NASDAQ:NVDA",
+              "displayName": "英伟达"
+            },
+            {
+              "name": "NASDAQ:TSLA",
+              "displayName": "特斯拉"
+            }
+          ]
+        }
+      ],
+      "locale": "zh_CN",
+      "width": "100%",
+      "height": "100%"
+    }
+  }
+}

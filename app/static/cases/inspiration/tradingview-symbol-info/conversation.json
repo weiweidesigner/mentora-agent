@@ -1,0 +1,72 @@
+{
+  "question": "帮我打开英伟达的行情速览，快速了解这只股票的基本交易信息。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "帮我打开英伟达的行情速览，快速了解这只股票的基本交易信息。",
+    "code": "NASDAQ:NVDA",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-symbol-info/tradingview-symbol-info.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-symbol-info/tradingview-symbol-info.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-symbol-info/tradingview-symbol-info.html",
+        "url": "/static/cases/inspiration/tradingview-symbol-info/tradingview-symbol-info.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "集中查看英伟达的标的信息和行情摘要，作为进一步研究的快捷入口。\n\n[[AIME_CHART:case:inspiration/tradingview-symbol-info/tradingview-symbol-info.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 英伟达 · 行情速览",
+        "detail": "调用：TradingViewChart\n结果：symbol-info 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 44.018375,
+        "durationMs": 44.018375
+      }
+    ],
+    "startedAt": 1792065504054,
+    "endedAt": 1792065504098.0183,
+    "elapsedMs": 44.018375,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 44.018375,
+        "elapsedMs": 44.018375
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "symbol-info",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "symbol": "NASDAQ:NVDA",
+      "width": "100%",
+      "height": "100%",
+      "locale": "zh_CN",
+      "colorTheme": "light",
+      "isTransparent": false
+    }
+  }
+}

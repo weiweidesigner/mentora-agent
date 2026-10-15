@@ -1,0 +1,74 @@
+{
+  "question": "打开一个美股筛选器，我想自己按市值、估值和涨跌幅找股票。",
+  "cachedAt": "2026-10-15T19:58:23.950506+08:00",
+  "answer": {
+    "question": "打开一个美股筛选器，我想自己按市值、估值和涨跌幅找股票。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading_view_chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-screener/tradingview-screener.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-screener/tradingview-screener.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-screener/tradingview-screener.html",
+        "url": "/static/cases/inspiration/tradingview-screener/tradingview-screener.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "在美股筛选器中切换数据列、排序和筛选条件，按自己的标准寻找标的。\n\n[[AIME_CHART:case:inspiration/tradingview-screener/tradingview-screener.html]]\n\n这是缓存的对话与组件配置。打开后，行情、新闻、财务信息或日历内容由 TradingView 加载，可能更新、延迟或受市场权限限制；请以面板实际显示为准。",
+    "status": [
+      "已生成 TradingView 官方组件"
+    ],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "生成 美股 · 股票筛选器",
+        "detail": "调用：TradingViewChart\n结果：screener 官方组件已生成，配置为中文界面；面板内容由 TradingView 加载。",
+        "state": "done",
+        "elapsedMs": 45.073583,
+        "durationMs": 45.073583
+      }
+    ],
+    "startedAt": 1792065504052,
+    "endedAt": 1792065504097.0735,
+    "elapsedMs": 45.073583,
+    "durationSource": "measured-tool-execution",
+    "stages": [
+      {
+        "name": "组件生成",
+        "startedAt": 0,
+        "endedAt": 45.073583,
+        "elapsedMs": 45.073583
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-tool-execution",
+    "renderer": "trading_view_chart.py",
+    "widget": "screener",
+    "sample": false,
+    "tool": "TradingViewChart",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; loaded in browser, not frozen with cached conversation",
+    "config": {
+      "width": "100%",
+      "height": "100%",
+      "defaultColumn": "overview",
+      "defaultScreen": "general",
+      "market": "america",
+      "showToolbar": true,
+      "colorTheme": "light",
+      "locale": "zh_CN"
+    }
+  }
+}
