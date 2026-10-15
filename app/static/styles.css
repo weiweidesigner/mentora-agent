@@ -4500,7 +4500,7 @@ p {
 /* A scene-aware daily companion, using the same cards as the case carousel. */
 .dayHeader { align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:24px; }
 .dayHeader h2 { margin:0;font-size:26px;line-height:1.45; }
-.dayMoment { display:flex;align-items:center;gap:12px;flex:none; }
+.dayHeading { display:flex;align-items:center;gap:12px;flex:none; }
 .dayHeader #dayClock { max-width:none;font-size:13px;line-height:1.5;font-variant-numeric:tabular-nums;white-space:nowrap; }
 .daySceneArt { display:block;width:46px;height:46px;color:#e8a34c; }
 .daySceneArt svg { display:block;width:100%;height:100%;overflow:visible; }
@@ -4532,12 +4532,12 @@ p {
 .taskRecommendations.has-scenes .taskRecommendation { padding:20px 16px;align-items:flex-start; }
 .taskRecommendations.has-scenes .taskRecommendation small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden; }
 @media(max-width:1000px) { .daySceneGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:1fr; } }
-@media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayMoment { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { min-height:136px; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
+@media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayHeading { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { min-height:136px; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
 @media(prefers-reduced-motion:reduce) { .daySun,.daySunRays,.dayTravel { animation:none!important; } }
 
-/* Keep the scene clock beside the greeting on a shared center line. */
-.dayHeader { justify-content:flex-start;align-items:center;column-gap:20px; }
-.dayMoment { align-items:center; }
+/* Keep the scene beside the greeting and its clock on the line below. */
+.dayHeader { flex-direction:column;justify-content:flex-start;align-items:flex-start;gap:8px; }
+.dayHeading { align-items:center;gap:12px; }
 .daySceneArt { display:flex;align-items:center;justify-content:center; }
 .daySceneCard { position:relative; }
 .daySceneCard .dayLivePreview { -webkit-line-clamp:2; }

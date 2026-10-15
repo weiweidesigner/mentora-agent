@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-live" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-clock-below" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -147,8 +147,8 @@
         </section>
         <section id="myDay" class="myDay" aria-labelledby="myDayTitle">
           <header class="dayHeader">
-            <h2 id="myDayTitle">新的一天，从容开场</h2>
-            <div class="dayMoment"><span id="daySceneArt" class="daySceneArt" role="img" aria-label="盘前"></span><time id="dayClock"></time></div>
+            <div class="dayHeading"><h2 id="myDayTitle">新的一天，从容开场</h2><span id="daySceneArt" class="daySceneArt" role="img" aria-label="盘前"></span></div>
+            <time id="dayClock"></time>
           </header>
           <div id="dayPanel" class="dayPanel"><p class="dayEmpty" role="status">正在加载已生成的结果…</p></div>
           <p id="dayMessage" class="dayMessage" role="status" aria-live="polite"></p>
