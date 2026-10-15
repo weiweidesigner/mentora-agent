@@ -73,3 +73,12 @@ def test_tradingview_dashboard_chrome_is_scoped_to_canvas_and_preserves_provider
     assert upgrade_widget_tradingview(result)==result
     plain='<html><head></head><body>plain chart</body></html>'
     assert upgrade_widget_tradingview(plain)==plain
+
+
+def test_follow_up_history_is_passed_as_context(monkeypatch):
+    from app import widget_planner as planner
+    seen = []
+    monkeypatch.setattr(planner, 'model_plan', lambda context: seen.append(context) or {'reply':'已理解你的追问。','actions':[]})
+    planner.plan_widgets(planner.PlanningInput(message='改成周线', history=[{'role':'user','content':'看苹果行情'},{'role':'assistant','content':'已添加苹果日线。'}], board={'id':'b','title':'看板','cards':[]}))
+    assert seen[0]['history'][1]['content'] == '已添加苹果日线。'
+    assert seen[0]['message'] == '改成周线'

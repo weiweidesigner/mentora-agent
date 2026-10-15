@@ -68,3 +68,22 @@
 @media(max-width:600px){.widgetAddForm.has-symbol-market{grid-template-columns:100px minmax(0,1fr)}.widgetAddForm.has-symbol-market>button{grid-column:1/-1;margin-top:0;width:100%}.widgetSymbolChoices{left:auto;width:min(340px,calc(100vw - 72px))}}
 
 .widgetCommandScope[hidden]{display:none!important}
+
+/* Persistent assistant chat beside a browser-style dashboard tab strip. */
+@media(min-width:761px){.shell.widgets-view,.shell.widgets-view.sidebar-collapsed{grid-template-columns:clamp(390px,33vw,470px) minmax(0,1fr) 0}.shell.widgets-view .sidebarContent{padding:0 0 0 0}}
+.widgetSidebar{padding:0;overflow:hidden;height:100%;color:var(--ink)}
+.widgetChatHeader{display:flex;align-items:center;justify-content:space-between;padding:24px 20px 18px;flex:none}.widgetSidebar .widgetChatHeader h2{padding:0;font-size:19px;line-height:28px}
+.widgetChatHeader button{display:none;background:transparent;border:0;color:var(--muted);font-size:24px;cursor:pointer}
+.widgetChatLog{flex:1;min-height:0;overflow:auto;padding:12px 20px 24px;scrollbar-width:thin;overscroll-behavior:contain}
+.widgetChatMessage{margin:0 0 24px;line-height:1.7;font-size:14px;overflow-wrap:anywhere;white-space:pre-wrap}
+.widgetChatMessage .widgetMessageAuthor{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:7px;white-space:normal}
+.widgetChatMessage.is-user{margin-left:28px;padding:12px 16px;background:var(--soft-2);border-radius:16px 16px 4px 16px}
+.widgetChatMessage.is-user .widgetMessageAuthor{display:none}.widgetMessageScope{display:block;font-size:11px;color:var(--muted);margin-bottom:6px}
+.widgetChatMessage.is-assistant{padding-right:4px}.widgetChatMessage.is-pending{color:var(--muted)}
+.widgetSidebar .widgetComposerArea{padding:10px 16px 18px;flex:none;background:transparent}.widgetSidebar .widgetComposer{width:100%}.widgetSidebar .widgetComposerBox{border-radius:20px;padding:10px 10px 10px 14px}.widgetSidebar .widgetComposerBox textarea{font-size:14px;line-height:24px;min-width:0}.widgetSidebar .widgetStatus{font-size:11px;margin:0 4px 8px;min-height:0;line-height:17px}
+.widgetWorkspace .widgetTopbar{padding:12px 24px 0;gap:8px;min-height:52px;border-bottom:1px solid var(--line);align-items:stretch;flex:none}
+.widgetBoardTabs{flex:1;min-width:0;align-items:stretch!important;gap:4px!important}.widgetBoardTabs button{max-width:220px;min-width:120px;text-align:left;overflow:hidden;text-overflow:ellipsis;border-radius:10px 10px 0 0!important;padding:12px 16px!important;border-bottom:0!important;font-size:14px!important}.widgetBoardTabs button[aria-selected=true]{background:var(--soft-2)!important;border-color:color-mix(in srgb,var(--ink) 30%,var(--line))!important}
+.widgetWorkspace #widgetNew{align-self:center;font-size:22px;padding:8px;margin-bottom:8px}.widgetTopActions{align-self:center;margin-bottom:8px}.widgetTopActions #widgetSidebarLibrary{font-size:13px;margin:0;padding:8px;gap:6px;white-space:nowrap}.widgetTopActions #widgetRename,.widgetTopActions #widgetDelete{font-size:12px;padding:7px}
+#widgetChatToggle{display:none}.widgetWorkspace .widgetScroll{padding-top:24px}
+@media(max-width:1000px){.widgetTopActions #widgetRename,.widgetTopActions #widgetDelete{display:none}.widgetWorkspace .widgetTopbar{padding-left:16px;padding-right:16px}}
+@media(max-width:760px){.widgetChatHeader button,#widgetChatToggle{display:block}.shell.widgets-view .sidebarContent{padding:0}.widgetChatHeader{padding:22px 20px 12px}.widgetWorkspace .widgetTopbar{padding:8px 12px 0;min-height:50px;gap:4px}.widgetBoardTabs button{min-width:100px;padding:10px 12px!important}.widgetTopActions #widgetSidebarLibrary{font-size:0}.widgetTopActions #widgetSidebarLibrary svg{width:20px;height:20px}.widgetSidebar .widgetComposerArea{padding-bottom:20px}.widgetChatLog{padding-top:12px}.widgetWorkspace #widgetNew{margin-bottom:4px}.widgetTopActions{margin-bottom:4px}#widgetChatToggle{align-self:center;margin-bottom:4px;font-size:12px;padding:8px}}

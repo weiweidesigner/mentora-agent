@@ -19,7 +19,7 @@
   function load() {
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
-      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,10,40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,10,40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;
     } catch { boards = []; }
     if (!boards.length) boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});
@@ -77,6 +77,13 @@
     const resize=document.createElement('div');resize.className='widgetResize';resize.title='拖动调整宽高';resize.setAttribute('role','slider');resize.tabIndex=0;resize.setAttribute('aria-label','调整图表尺寸，方向键调整');resize.setAttribute('aria-valuemin','3');resize.setAttribute('aria-valuemax','12');resize.setAttribute('aria-valuenow',card.w);el.append(resize);
     return el;
   }
+  function renderChat(){
+    const board=current(),log=$('widgetChatLog');if(!board)return;
+    const messages=Array.isArray(board.chat)?board.chat:[];
+    const signature=JSON.stringify([board.id,messages,commandControllers.has(board.id)]);if(log.dataset.signature===signature)return;log.dataset.signature=signature;
+    const entries=messages.length?messages:[{role:'assistant',content:'想在这张看板里关注什么？告诉我想看的标的和图表，也可以选中卡片后直接调整。'}];
+    log.innerHTML=entries.map(m=>`<article class="widgetChatMessage is-${m.role==='user'?'user':'assistant'}"><span class="widgetMessageAuthor">${m.role==='user'?'你':'Mentora Widget'}</span>${m.scope?`<span class="widgetMessageScope">${esc(m.scope)}</span>`:''}<div>${esc(m.content)}</div></article>`).join('')+(commandControllers.has(board.id)?'<article class="widgetChatMessage is-assistant is-pending"><span class="widgetMessageAuthor">Mentora Widget</span>正在处理…</article>':'');log.scrollTop=log.scrollHeight;
+  }
   function render() {
     const board=current();if(!board)return;
     $('widgetBoardTitle').textContent=board.title;
@@ -86,7 +93,7 @@
     const ids=new Set(board.cards.map(c=>c.id));for(const [id,node] of oldNodes)if(!ids.has(id))node.remove();
     for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText])){old.querySelector('.widgetCardTitle').textContent=card.title;}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
-    updateSelection();
+    updateSelection();renderChat();
     applyLayout();notice(jobs.has(activeId)?'正在生成图表，你可以切换看板继续浏览…':'');
   }
   function route(push=true) {
@@ -209,10 +216,12 @@
     if(board.cards.some(c=>c.status==='loading')){notice('请等待组件加载完成后再调整。');return;}
     const controller=new AbortController();commandControllers.set(board.id,controller);jobs.set(board.id,controller);
     const snapshot=JSON.parse(JSON.stringify(board)),selection=selectedCardId;
+    const history=(board.chat||[]).slice(-12).map(({role,content})=>({role,content}));
+    board.chat=[...(board.chat||[]),{role:'user',content:message,scope:selection?board.cards.find(c=>c.id===selection)?.title:'整个看板'}].slice(-40);save();
     render();notice(selection?'正在理解这张卡片的调整…':'正在理解看板调整…');
     let reply='';
     try{
-      const response=await fetch('/api/widgets/plan',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({message,selectedCardId:selection,board:{id:board.id,title:board.title,cards:board.cards.map(c=>({id:c.id,title:c.title,component:c.component||'',url:c.url||'',request:c.request||'',x:c.x,y:c.y,w:c.w,h:c.h,parameters:c.parameters||{}}))}})});
+      const response=await fetch('/api/widgets/plan',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({message,history,selectedCardId:selection,board:{id:board.id,title:board.title,cards:board.cards.map(c=>({id:c.id,title:c.title,component:c.component||'',url:c.url||'',request:c.request||'',x:c.x,y:c.y,w:c.w,h:c.h,parameters:c.parameters||{}}))}})});
       const plan=await response.json();if(!response.ok)throw Error(typeof plan.detail==='string'?plan.detail:'暂时无法理解这个调整，请重试。');
       if(!boards.includes(board))return;
       if(plan.actions?.length)undoByBoard.set(board.id,snapshot);
@@ -237,22 +246,24 @@
       }
       settle(board,null);save();reply=plan.reply||'看板已调整。';
     }catch(error){reply=error.name==='AbortError'?'调整已停止。':error.message;}
-    finally{commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);save();if(activeId===board.id){render();notice(reply);}}
+    finally{commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(boards.includes(board)){board.chat=[...(board.chat||[]),{role:'assistant',content:reply||'调整已停止。'}].slice(-40);}save();if(activeId===board.id){render();notice('');}}
   }
   $('widgetScope').onclick=()=>{selectedCardId='';updateSelection();};
-  $('widgetUndo').onclick=()=>{if(commandControllers.has(activeId))return;const previous=undoByBoard.get(activeId),board=current();if(!previous||!board)return;Object.assign(board,JSON.parse(JSON.stringify(previous)));undoByBoard.delete(activeId);selectedCardId='';save();render();notice('已撤销上一次调整。');};
+  $('widgetUndo').onclick=()=>{if(commandControllers.has(activeId))return;const previous=undoByBoard.get(activeId),board=current();if(!previous||!board)return;const chat=board.chat;Object.assign(board,JSON.parse(JSON.stringify(previous)));board.chat=[...(chat||[]),{role:'assistant',content:'已撤销上一次调整。'}].slice(-40);undoByBoard.delete(activeId);selectedCardId='';save();render();notice('已撤销上一次调整。');};
   function editName(action) {
     if(action==='new'&&boards.length>=40){notice('最多保存 40 个看板，请先整理已有看板。');return;}
     nameAction=action;$('widgetNameHeading').textContent=action==='new'?'新建看板':'重命名看板';$('widgetNameInput').value=action==='new'?'':current().title;$('widgetNameDialog').showModal();$('widgetNameInput').focus();
   }
   $('widgetNameDialog').addEventListener('close',()=>{
     if($('widgetNameDialog').returnValue!=='save')return;const title=$('widgetNameInput').value.trim();if(!title)return;
-    if(nameAction==='new'){const board={id:uid(),title,cards:[],messages:[]};boards.push(board);activeId=board.id;}else current().title=title;
+    selectedCardId='';if(nameAction==='new'){const board={id:uid(),title,cards:[],messages:[]};boards.push(board);activeId=board.id;}else current().title=title;
     save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
   });
+  $('widgetChatToggle').onclick=()=>{if(typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);$('widgetPrompt').focus();};
+  $('widgetChatClose').onclick=()=>{if(typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);};
   $('widgetNew').onclick=()=>editName('new');$('widgetRename').onclick=()=>editName('rename');
   $('widgetDelete').onclick=()=>{if(!confirm(`删除「${current().title}」及其看板布局？`))return;jobs.get(activeId)?.abort();boards=boards.filter(b=>b.id!==activeId);if(!boards.length)boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});activeId=boards[0].id;save();route();render();};
-  $('widgetTabs').onclick=event=>{const button=event.target.closest('[data-board]');if(!button)return;activeId=button.dataset.board;save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);};
+  $('widgetTabs').onclick=event=>{const button=event.target.closest('[data-board]');if(!button)return;activeId=button.dataset.board;selectedCardId='';save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);};
   $('widgetTabs').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const i=boards.findIndex(b=>b.id===activeId);activeId=boards[(i+(['ArrowRight','ArrowDown'].includes(event.key)?1:boards.length-1))%boards.length].id;save();route();render();$('widgetTabs').querySelector('[aria-selected=true]')?.focus();});
   $('widgetSidebarLibrary').onclick=library;$('widgetLibraryOpen').onclick=library;$('widgetEmptyAdd').onclick=library;$('widgetLibraryClose').onclick=()=>$('widgetLibrary').close();
   $('widgetCategories').onclick=event=>{const b=event.target.closest('[data-category]');if(b){category=b.dataset.category;renderLibrary();}};

@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="stylesheet" href="/static/styles.css?v=20261015-brand-icons-compact" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-full-column" />
-      <link rel="stylesheet" href="/static/widgets.css?v=20261015-scope-quiet" />
+      <link rel="stylesheet" href="/static/widgets.css?v=20261015-chat-tabs" />
   </head>
   <body>
     <main class="shell sidebar-collapsed">
@@ -54,13 +54,10 @@
               <span>新建对话</span>
             </button>
           </nav>
-          <section id="widgetSidebar" class="widgetSidebar" aria-label="Widget 看板列表" hidden>
-            <h2>Widget</h2>
-            <button id="widgetNew" type="button" aria-label="新建看板"><span aria-hidden="true">＋</span> 新建看板</button>
-            <button id="widgetSidebarLibrary" class="widgetSidebarAction" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>图表库</button>
-            <div class="widgetSidebarLabel">我的看板</div>
-            <div id="widgetTabs" role="tablist" aria-label="我的看板" aria-orientation="vertical"></div>
-          </section>
+          <section id="widgetSidebar" class="widgetSidebar" aria-label="Mentora Widget 对话" hidden>
+            <header class="widgetChatHeader"><h2>Mentora Widget</h2><button id="widgetChatClose" type="button" aria-label="返回看板">×</button></header>
+            <div id="widgetChatLog" class="widgetChatLog" role="log" aria-label="看板对话" aria-live="polite"></div>
+        <div class="widgetComposerArea"><div class="widgetCommandScope"><button id="widgetScope" type="button" hidden title="取消卡片选择，操作整个看板"></button><button id="widgetUndo" type="button" hidden>撤销</button></div><div id="widgetStatus" class="widgetStatus" role="status" aria-live="polite" hidden></div><form id="widgetForm" class="widgetComposer composer"><div class="composerBox widgetComposerBox"><textarea id="widgetPrompt" rows="1" placeholder="调整布局、添加组件或修改参数…" aria-label="描述你的金融看板" required maxlength="6000"></textarea><button id="widgetGenerate" type="submit" aria-label="生成看板"><span class="sendArrow" aria-hidden="true"></span></button><button id="widgetStop" type="button" hidden>停止</button></div></form></div>          </section>
           <section id="taskSidebar" class="taskSidebar" aria-label="定时任务列表" hidden>
             <div class="taskSidebarTitle"><h2>定时任务</h2><button id="taskSearchToggle" class="taskSidebarIcon" type="button" aria-label="搜索任务" aria-expanded="false" aria-controls="taskSearchField"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg></button></div>
             <button id="taskSidebarNew" class="taskSidebarCreate dayTextButton" type="button" aria-label="新建定时任务"><span aria-hidden="true">＋</span> 新建任务</button>
@@ -179,9 +176,9 @@
         </div>
       </section>
       <section id="widgetWorkspace" class="widgetWorkspace" aria-label="Widget 看板" hidden>
-        <header class="widgetTopbar" hidden><div id="widgetBoardTitle" class="widgetBrand">我的看板</div><div class="widgetTopActions"><button id="widgetLibraryOpen" type="button">＋ 添加图表</button><button id="widgetRename" type="button" title="重命名当前看板">重命名</button><button id="widgetDelete" type="button" title="删除当前看板">删除看板</button></div></header>
+        <header class="widgetTopbar"><button id="widgetChatToggle" type="button" aria-label="打开 Mentora Widget 对话">对话</button><div id="widgetTabs" class="widgetBoardTabs" role="tablist" aria-label="我的看板"></div><button id="widgetNew" type="button" aria-label="新建看板" title="新建看板">＋</button><div id="widgetBoardTitle" hidden>我的看板</div><div class="widgetTopActions"><button id="widgetSidebarLibrary" class="widgetSidebarAction" type="button"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>图表库</button><button id="widgetLibraryOpen" type="button" hidden>添加图表</button><button id="widgetRename" type="button" title="重命名当前看板">重命名</button><button id="widgetDelete" type="button" title="删除当前看板">删除</button></div></header>
         <div id="widgetScroll" class="widgetScroll"><div id="widgetCanvas" class="widgetCanvas"></div><div id="widgetEmpty" class="widgetEmpty"><div class="widgetEmptyIcon" aria-hidden="true">▦</div><h2>把关注的市场，放在同一张看板</h2><p>从金融图表库添加，或告诉我你想关注什么。</p><button id="widgetEmptyAdd" type="button">浏览图表库 ↗</button><div class="widgetSuggestions"><button type="button" data-widget-prompt="帮我做一张英伟达看板，放上收入构成、现金流和分析师预期。">看看英伟达的经营与预期</button><button type="button" data-widget-prompt="我想把苹果的收入构成、现金流和估值放在一张看板里。">把苹果的关键数据放在一起</button></div></div></div>
-        <div class="widgetComposerArea"><div class="widgetCommandScope"><button id="widgetScope" type="button" hidden title="取消卡片选择，操作整个看板"></button><button id="widgetUndo" type="button" hidden>撤销</button></div><div id="widgetStatus" class="widgetStatus" role="status" aria-live="polite" hidden></div><form id="widgetForm" class="widgetComposer composer"><div class="composerBox widgetComposerBox"><textarea id="widgetPrompt" rows="1" placeholder="调整布局、添加组件或修改参数…" aria-label="描述你的金融看板" required maxlength="6000"></textarea><button id="widgetGenerate" type="submit" aria-label="生成看板"><span class="sendArrow" aria-hidden="true"></span></button><button id="widgetStop" type="button" hidden>停止</button></div></form></div>
+
       </section>
       <dialog id="widgetLibrary" class="widgetLibrary"><header><div><h2>图表库</h2></div><button id="widgetLibraryClose" type="button" aria-label="关闭图表库">×</button></header><div id="widgetCategories" class="widgetCategories"></div><div id="widgetLibraryList" class="widgetLibraryList"></div><form id="widgetAddForm" class="widgetAddForm"><label id="widgetParameterField"><span id="widgetSymbolLabel">关注标的</span><select id="widgetMarket" aria-label="市场范围" hidden></select><input id="widgetSymbol" placeholder="例如 AAPL、NVDA 或 MSFT" required maxlength="160"></label><button type="submit">添加到看板</button></form></dialog>
       <dialog id="widgetNameDialog" class="widgetNameDialog"><form method="dialog" id="widgetNameForm"><h2 id="widgetNameHeading">看板名称</h2><input id="widgetNameInput" required maxlength="48" aria-label="看板名称"><div><button value="cancel" formnovalidate>取消</button><button value="save">保存</button></div></form></dialog>
@@ -278,7 +275,7 @@
     <script src="/static/cases.js?v=20261015-remove-case-assistant"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
     <script src="/static/widget-symbol-picker.js?v=20261015-human-symbols"></script>
-    <script src="/static/widgets.js?v=20261015-scope-quiet"></script>
+    <script src="/static/widgets.js?v=20261015-chat-tabs"></script>
     <script src="/static/day-tasks.js?v=20261015-all-recommendations"></script>
   </body>
 </html>

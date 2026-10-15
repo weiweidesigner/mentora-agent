@@ -19,7 +19,7 @@ function setup({storage,reply,plan,blocked=false}={}) {
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
 test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(catalog.filter(c=>c.provider==='TradingView').length,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
- const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,false);assert.ok(d.querySelector('#widgetSidebar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的看板');
+ const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,false);assert.ok(d.querySelector('#widgetWorkspace .widgetTopbar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的看板');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
  assert.equal(calls[0].url,'/api/widgets/plan');const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/原生脚本取真实数据/);
  assert.equal(d.querySelectorAll('.widgetCard iframe').length,2);assert.match(d.querySelector('.widgetCard iframe').src,/share-artifact\/real-kline.html/);
@@ -99,4 +99,15 @@ test('single-scope widgets hide the field and submit default after switching fro
   const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
   assert.equal(body.market,'default');assert.deepEqual(body.symbols,[]);s.dom.window.close();
  }
+});
+
+test('sidebar chat persists per board, forwards follow-up history and keeps board tabs above the canvas',async()=>{
+ const s=setup({storage:twoCards(),plan:{reply:'想放大哪张卡片？',actions:[]}});
+ assert.ok(s.d.querySelector('#widgetSidebar #widgetForm'));assert.equal(s.d.querySelector('#widgetWorkspace #widgetForm'),null);assert.match(s.d.querySelector('.widgetChatHeader').textContent,/Mentora Widget/);
+ submit(s.w,s.d,'把它放大一点');await tick();await tick();assert.match(s.d.querySelector('#widgetChatLog').textContent,/把它放大一点/);assert.match(s.d.querySelector('#widgetChatLog').textContent,/想放大哪张卡片/);
+ submit(s.w,s.d,'第一张');await tick();await tick();const requests=s.calls.filter(c=>c.url==='/api/widgets/plan').map(c=>JSON.parse(c.options.body));assert.equal(requests[1].history[0].content,'把它放大一点');assert.equal(requests[1].history[1].role,'assistant');
+ const storage=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(storage.boards[0].chat.length,4);
+ s.d.querySelector('#widgetNew').click();s.d.querySelector('#widgetNameInput').value='新页签';s.d.querySelector('#widgetNameDialog').close('save');assert.equal(s.d.querySelector('#widgetTabs [aria-selected=true]').textContent,'新页签');assert.doesNotMatch(s.d.querySelector('#widgetChatLog').textContent,/第一张/);
+ s.d.querySelector('[data-board="board"]').click();assert.match(s.d.querySelector('#widgetChatLog').textContent,/第一张/);s.dom.window.close();
+ const restored=setup({storage});assert.match(restored.d.querySelector('#widgetChatLog').textContent,/第一张/);restored.dom.window.close();
 });
