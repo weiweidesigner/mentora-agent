@@ -14,7 +14,7 @@
   let stage = 'pre', editing = null, tasks = [], markets = [], publicKey = '', busy = false, firstLoad = true;
   let deepLink = new URLSearchParams(location.search).get('dayResult');
   let shareLink = new URLSearchParams(location.search).get('dayShare');
-  let serverDelta = 0, lastRefresh = 0;
+  let serverDelta = 0, lastRefresh = 0, suggestedQuestion = '', suggestedTitle = '';
   const el = name => form.elements.namedItem(name);
   function message(value, inDialog = dialog.open) {
     (inDialog ? $('dayDialogMessage') : $('dayMessage')).textContent = value;
@@ -37,14 +37,14 @@
     if (!task.enabled) return task.cadence === 'once' && task.lastRun?.status === 'success' ? '已完成' : '已暂停';
     return task.resultVersion ? '已更新' : '等待执行';
   }
-  function template(stage, type = 'stocks') {
-    const name = marketNames[market], asset = type === 'watchlist' ? '股票' : assets[type];
+  function template(stage, type = 'stocks', selectedMarket = market) {
+    const name = marketNames[selectedMarket], asset = type === 'watchlist' ? '股票' : assets[type];
     const text = {
       pre: `结合最新隔夜市场、公告与今日事件，梳理{{market}}中{{symbols}}的${asset}盘前关注机会。按催化剂、观察指标和风险列出要点，注明数据时间；没有指定标的时分析全市场。`,
       live: `检查{{market}}中{{symbols}}的${asset}盘中表现，汇总价格、成交量与板块异动，分析可能原因与需要继续观察的信号。注明行情时间和延迟，不具备实时数据时明确说明。`,
       post: `复盘{{market}}中{{symbols}}的${asset}今日表现，说明涨跌驱动、市场强弱和重要事件，并列出下一交易日的关注清单。区分已确认事实与推测，注明数据时间。`
     };
-    return {title: `${name}${type === 'stocks' ? '' : asset} · ${stages[stage]}`, market, stage, assetType:type, symbols:'', question:text[stage], cadence:'trading', timeMode:stage === 'live' ? 'fixed' : stage === 'post' ? 'close' : 'open', offset:stage === 'post' ? 15 : -30, time:market === 'US' ? '11:00' : '10:30', timezone:'market', date:'', enabled:true, browser:false, feishu:false, wecom:false, serverchan:false};
+    return {title: `${name}${type === 'stocks' ? '' : assets[type]} · ${stages[stage]}`, market:selectedMarket, stage, assetType:type, symbols:'', question:text[stage], cadence:'trading', timeMode:stage === 'live' ? 'fixed' : stage === 'post' ? 'close' : 'open', offset:stage === 'post' ? 15 : -30, time:selectedMarket === 'US' ? '11:00' : '10:30', timezone:'market', date:'', enabled:true, browser:false, feishu:false, wecom:false, serverchan:false};
   }
   function render() {
     $('dayMarkets').innerHTML = markets.map(m => `<button type="button" data-market="${m.market}" aria-pressed="${m.market === market}">${m.flag} ${esc(m.name)}</button>`).join('');
@@ -73,6 +73,11 @@
     $('dayTaskList').innerHTML = tasks.length ? tasks.map(t => `<div class="dayTaskRow"><div><strong>${esc(t.title)}</strong><p>${esc(marketNames[t.market])} · ${esc(stages[t.stage])} · ${esc(statusText(t))}</p></div><div><button class="dayTextButton" data-edit="${t.id}" type="button">编辑</button><button class="dayTextButton" data-toggle="${t.id}" type="button">${t.enabled ? '暂停' : '开启'}</button><button class="dayTextButton dayDelete" data-delete="${t.id}" type="button" ${t.activeRun ? 'disabled' : ''}>删除</button></div></div>`).join('') : '<p class="dayEmpty">还没有定时任务，从推荐开始，或创建自己的问句。</p>';
   }
   function updateFields(event) {
+    if (!editing && ['assetType','stage','market'].includes(event?.target?.name)) {
+      const recommendation = template(el('stage').value, el('assetType').value, el('market').value);
+      if (el('question').value === suggestedQuestion) {el('question').value = recommendation.question; suggestedQuestion = recommendation.question;}
+      if (el('title').value === suggestedTitle) {el('title').value = recommendation.title; suggestedTitle = recommendation.title;}
+    }
     if (event?.target === el('cadence') && el('cadence').value === 'daily') el('timeMode').value = 'fixed';
     if (event?.target === el('timeMode') && el('timeMode').value !== 'fixed' && el('cadence').value === 'daily') el('cadence').value = 'trading';
     $('dayDateLabel').hidden = el('cadence').value !== 'once';
@@ -89,6 +94,7 @@
   }
   function edit(task) {
     editing = task.id || null;
+    suggestedQuestion = task.question; suggestedTitle = task.title;
     form.reset();
     for (const [name, value] of Object.entries(task)) {
       const field = el(name);
