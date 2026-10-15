@@ -706,17 +706,17 @@
       "mobileTitle": "AMD 共识报告"
     },
     {
-      "id": "report-cashflow",
-      "title": "AAPL 财务与现金流报告",
-      "tag": "财务分析",
-      "question": "分析苹果的盈利质量和现金流，看看钱从哪里来、又花到哪里去。",
-      "preview": "对照苹果的营收、利润、经营现金流与股东回报，观察盈利质量和资金分配。",
+      "id": "report-us-premarket",
+      "title": "美股盘前速览",
+      "tag": "盘前观察",
+      "question": "帮我看看今天美股盘前有什么值得关注的",
+      "preview": "汇总宏观数据、银行财报与 AI 芯片动态，对照盘前定价和开盘后表现，梳理观察重点。",
       "cachedDate": "2026-10-14",
-      "conversationUrl": "/static/cases/inspiration/report-cashflow/conversation.json",
+      "conversationUrl": "/static/cases/inspiration/report-us-premarket/conversation.json",
       "category": "reports",
       "featured": true,
       "generation": "actual-veya-chat-stream",
-      "mobileTitle": "AAPL 财务报告"
+      "mobileTitle": "美股盘前速览"
     },
     {
       "id": "video-ai",

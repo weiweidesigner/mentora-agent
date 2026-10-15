@@ -1,0 +1,62 @@
+{
+  "question": "帮我看看今天美股盘前有什么值得关注的",
+  "cachedAt": "2026-10-14T22:23:20.570000+08:00",
+  "answer": {
+    "question": "帮我看看今天美股盘前有什么值得关注的",
+    "code": "",
+    "selectedSkill": {
+      "key": "internal-search,yahoo-data,code-interpreter,business-chart-recall,generic-chart,streamviz",
+      "label": "美股盘前研究",
+      "script": "",
+      "reason": "恢复原始已完成研究缓存"
+    },
+    "htmlUrl": "/static/cases/inspiration/report-us-premarket/deepseek-premarket-1014-streamviz.html",
+    "reportUrl": "/static/cases/inspiration/report-us-premarket/deepseek-premarket-1014-streamviz.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/report-us-premarket/deepseek-premarket-1014-streamviz.html",
+        "url": "/static/cases/inspiration/report-us-premarket/deepseek-premarket-1014-streamviz.html"
+      },
+      {
+        "path": "case:inspiration/report-us-premarket/deepseek-premarket-gap-vs-now.html",
+        "url": "/static/cases/inspiration/report-us-premarket/deepseek-premarket-gap-vs-now.html"
+      },
+      {
+        "path": "case:inspiration/report-us-premarket/deepseek-premarket-1014-intraday.html",
+        "url": "/static/cases/inspiration/report-us-premarket/deepseek-premarket-1014-intraday.html"
+      }
+    ],
+    "interpretation": "**核心结论（美东 2026-10-14 约 10:20 / 北京 22:20，盘前时段已结束，下面同时给出盘前定价与开盘后验证）**\n\n1. **今天盘前唯一的宏观主角是 9 月 CPI 全面超预期**：同比 3.7%（预期 3.6%，前值 3.4%）、核心 2.6%（预期 2.5%），汽油单月 +9.1%；10 年期美债收益率被推到约 **5.2%**（2002 年以来高位区），进一步加息预期升温，**股指期货在盘前走低**。\n2. **抛压有两块**：一是银行财报股（美国银行 BAC −8.5%，道富 STT −8.0%），二是 AI 芯片链（拉姆研究 −3.2%、AMD −2.9%、博通 −2.1%、英伟达 −1.7%）；道指 ETF 几乎持平（+0.04%），小盘更弱（罗素2000 ETF −1.34%）。\n3. **开盘后出现明显分化**：阿斯麦（ASML）、摩根大通（JPM）跌幅大幅收窄甚至转平，而 BAC、富国、博通继续走弱——即\"利空是宏观的、修复是个股的\"。\n4. **值得盯的四条线**：纳指100 已跌破 30,700–30,800 的突破区间（下方 30,200 / 30,000）；10 月 27–28 日议息会议（市场定价约两成概率再加息，约九成概率 2027 年底利率至少再高 50bp）；本周财报密集期看\"指引\"而非\"是否超预期\"；油价与霍尔木兹航运风险（既是能源股支撑，也是通胀黏性来源）。\n\n[[AIME_CHART:case:inspiration/report-us-premarket/deepseek-premarket-1014-streamviz.html]]\n\n上图把盘前的宏观数字、已公布财报的市场反应和后续关注点压在一页：最关键的是 **CPI 的两个口径同时超预期**（同比与核心都高于预测），这才让\"能源一次性冲击\"的辩解站不住脚，也解释了为什么银行这种\"本该受益于高利率\"的板块反而被卖——市场定价的是加息周期末端的信用风险，而不是当季息差。\n\n**盘前抛压的方向与开盘后的修复（下图：跳空 vs 最新）**\n\n[[AIME_CHART:case:inspiration/report-us-premarket/deepseek-premarket-gap-vs-now.html]]\n\n图中最重要的不是\"都在跌\"，而是两条柱子的差：**STT（−9.76%→−8.03%）和 BAC（−7.65%→−8.49%）跳空最深，但方向相反**——STT 是营收不及预期、盈利超预期，开盘后有资金接；BAC 是业绩不及预期叠加 12 亿美元罚款，开盘后跌幅继续扩大。相比之下 **ASML（−2.30%→−0.30%）和 JPM（−1.42%→+0.01%）几乎把盘前的恐慌跌幅全部收回**，说明这两家的下跌更多来自宏观利率定价而非自身业绩。能源股是另一个反差：VLO、XLE 开盘跳空为正（+0.73%、+0.77%），随后被利率与 CPI 压制转跌，黄金 ETF 同步 −1.77%，反映实际利率上行对无息资产的挤压。\n\n**开盘后分时路径（验证上述判断）**\n\n[[AIME_CHART:case:inspiration/report-us-premarket/deepseek-premarket-1014-intraday.html]]\n\n分时卡片只覆盖开盘后约 38 分钟，但形态已能区分两类标的：SPY/QQQ 在开盘后低位横盘、没有出现快速反抽，说明指数层面卖压未消化；ASML 与 BAC 走出了完全不同的路径——前者低开后逐步抬升，后者持续贴近日内低位。若后续 ASML 的分时能保持在开盘价上方，而 BAC 继续走弱，则\"业绩驱动的个股\"与\"宏观驱动的板块\"会进一步分离。\n\n**风险与数据口径**\n\n- 风险方向：若市场把本次 CPI 重新解读为能源的一次性冲击（汽油贡献了过半月度涨幅），利率回落可能带来利率敏感板块的快速反弹；反之，若本周财报指引转弱叠加芯片去杠杆，纳指100 下探 30,200/30,000 的风险上升。银行股与芯片股目前同向下跌，属于板块整体减仓特征，个股业绩优势短期保护有限。\n- 行情口径：均为 AInvest 快照（美东 2026-10-14 约 10:20）。**\"开盘跳空\" = 今日开盘价/上一交易日收盘价−1，用于近似盘前定价**；盘前逐笔报价当前数据源不可得，因此没有直接标注\"盘前涨跌幅\"。上一交易日收盘价已用 Nasdaq 日线回退数据交叉核对（SPY 778.01、QQQ 743.57，两个来源一致），该回退为不复权 OHLCV。\n- 降级披露：Yahoo 行情接口本次返回 429 限流，日线走 Nasdaq 回退；外部网页检索（Kimi）因缺少接口密钥不可用，宏观与财报事实全部来自 AInvest 端内文章（10 月 13–14 日）；图表视觉校验工具同样因缺少密钥未能执行，图表正确性仅经过文件存在性、非空与字段核对。",
+    "status": [],
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "reasoningFramework": "deepseek",
+    "agentRunId": "session-1791986858267-jkekpr1"
+  },
+  "activity": {
+    "elapsedMs": 942303,
+    "steps": [
+      {
+        "title": "读取原始研究缓存",
+        "detail": "本次加载：2026年10月14日已完成会话及三份图表缓存，未重新取数或生成回答。",
+        "state": "done"
+      }
+    ],
+    "stages": [
+      {
+        "name": "原始研究会话",
+        "startedAt": 1791986858267,
+        "endedAt": 1791987800570
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "session-1791986858267-jkekpr1",
+    "cachedAt": "2026-10-14T22:23:20.570000+08:00",
+    "note": "保留原始公开回答和图表中的历史数据，不重新取数；不含模型内部推理。",
+    "restoredFromSession": true
+  }
+}

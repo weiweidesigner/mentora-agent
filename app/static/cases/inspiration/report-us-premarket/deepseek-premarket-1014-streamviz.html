@@ -1,0 +1,292 @@
+<!doctype html><html lang="zh-CN" data-theme="light"><head><script src="/static/cases/theme.js?v=20261015-premarket"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:transparent}*{box-sizing:border-box}</style><style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
+/* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
+:is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
+/* Semantic contract; legacy card/metric classes are aliases, outer names do not matter. */
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout]))){display:grid!important;gap:var(--sv-card-gap)!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout])))>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric]){padding:var(--sv-card-padding)!important;margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card]){display:flex!important;flex-direction:column!important;gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card])>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.metrics,[data-sv-layout="metrics"]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="stack"]{grid-template-columns:minmax(0,1fr)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
+:is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.sv-chips){flex-wrap:wrap}
+:is([data-aime-streamviz-root],[data-visualize-root]) .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important}
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metric{overflow-wrap:anywhere}
+  :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-grid,.cols){grid-template-columns:minmax(0,1fr)!important}
+  .svx .bd{min-width:0!important}
+  .svx .bdr3,.svx .scale-r{grid-template-columns:88px minmax(0,1fr) 64px!important}
+  .svx .bdrow{padding:10px 8px;column-gap:8px}
+  .svx .bfrow{grid-template-columns:80px minmax(0,1fr) minmax(0,1fr);height:52px}
+  .svx :is(.bleft,.brgt){position:relative;padding-bottom:18px}
+  .svx .bval{position:absolute;bottom:0;min-width:0;font-size:11px}
+  .svx .bleft .bval{right:4px}
+  .svx .brgt .bval{left:4px}
+  .svx .bdaxis{padding-top:16px;height:42px}
+  .svx .bdval{position:absolute;top:0;right:0;font-size:11px}
+}
+.sv-responsive-line{width:100%;min-width:0;color:var(--sv-text-secondary);font-size:12px}
+.sv-line-note{margin:0 0 12px 48px;line-height:1.5}
+.sv-line-body{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(220px,24vw,320px);box-sizing:border-box;padding-top:8px}
+.sv-line-y-axis,.sv-line-plot{position:relative;min-width:0;min-height:0}
+.sv-line-y-axis span{position:absolute;right:8px;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-plot svg{display:block;width:100%;height:100%;max-width:none}
+.sv-line-dot{position:absolute;left:100%;right:auto;width:7px;height:7px;box-sizing:border-box;border-radius:50%;transform:translate(-50%,-50%)}
+.sv-line-x-axis{position:relative;height:18px;margin:8px 0 0 48px}
+.sv-line-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.sv-line-x-axis span:last-child{transform:translateX(-100%)}
+.sv-line-values{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:13px;line-height:1.5}
+.sv-line-values span{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-values i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+/* Generated palettes are aliases, never a separate fixed light/dark theme. */
+[data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+[data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
+[data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.card,.panel,.sv-metric,.sv-node,.sv-rank){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.stat,.metric,.chart,.table-wrap,.sv-table-wrap){background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.cap,.bles,.note,.sub,.lg,.sv-summary,.sv-narrative p,.sv-node span,.sv-metric p,.sv-metric small,.sv-note,.sv-kicker,.stat span){color:var(--sv-text-secondary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(table,.sv-node b,.sv-rank b,.sv-event b){color:var(--sv-text-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(th,.sv-event time,.sv-rank small,.sv-event p){color:var(--sv-text-secondary)!important;background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+.stv .up{color:var(--sv-price-up)!important}.stv .dn{color:var(--sv-price-down)!important}.stv .nt{color:var(--sv-warning)!important}
+:is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-status-success)!important;background:var(--sv-bg-success)!important}
+:is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-warning)!important;background:var(--sv-bg-warning)!important}
+:is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-status-danger)!important;background:var(--sv-bg-danger)!important}
+:is(.sv-chip--neutral,.sv-badge,.chip){color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] :is([style*="color:#8fa2bd"],[style*="color:#c3cfe0"],[style*="color:#b9c6dc"],[style*="color:#c7d2e8"]){color:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] svg :is(text[fill="#e8eefb"],text[fill="#c3cfe0"],g[fill="#c3cfe0"],g[fill="#e8eefb"]){fill:var(--sv-text-primary)!important}
+[data-aime-streamviz-root] svg :is(text[fill="#8fa2bd"],g[fill="#8fa2bd"]){fill:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
+:root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
+:root:not([data-theme="dark"]) *{box-sizing:border-box}
+:root:not([data-theme="dark"]) html,:root:not([data-theme="dark"]) body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
+:root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
+:root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
+:root:not([data-theme="dark"]) .sv-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:12px}
+:root:not([data-theme="dark"]) .sv-badge-success{color:#09836f;background:#eaf8f2;border-color:#b7e6d5}
+:root:not([data-theme="dark"]) .sv-badge-warning{color:#a56417;background:#fff6df;border-color:#f0d28f}
+:root:not([data-theme="dark"]) .sv-badge-danger{color:#c34650;background:#fff0f1;border-color:#ffc3c8}
+:root:not([data-theme="dark"]) .svv{--bg:transparent!important;--card:#fff!important;--card2:#f6f7f9!important;--line:#dfe4eb!important;--text:#171b22!important;--muted:#667085!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root:not([data-theme="dark"]) .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#475467!important}
+:root:not([data-theme="dark"]) .svv .chip{color:#475467!important;background:#f6f7f9!important;border-color:#d0d5dd!important}
+:root:not([data-theme="dark"]) .svv .chip.success{color:#08745f!important;background:#e9f8f2!important;border-color:#9bdac7!important}
+:root:not([data-theme="dark"]) .svv .chip.warning{color:#925f0b!important;background:#fff5db!important;border-color:#ebc86f!important}
+:root:not([data-theme="dark"]) .svv .chip.danger{color:#b42335!important;background:#fff0f1!important;border-color:#f4aeb7!important}
+:root:not([data-theme="dark"]) .svv :is(.chart,.table-wrap){background:transparent!important}
+:root:not([data-theme="dark"]) .svv :is(.panel,.rank-html){background:#f6f7f9!important}
+:root:not([data-theme="dark"]) .svv table{color:#344054!important}
+:root:not([data-theme="dark"]) .svv thead th{color:#667085!important}
+:root:not([data-theme="dark"]) .svv tbody td{border-color:#dfe4eb!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#e8eefb"]{fill:#344054!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#93a4bd"]{fill:#667085!important}
+:root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
+:root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
+
+:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
+:root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
+:root[data-theme="dark"] .svv .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .svv .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .svv .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .svv .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .svv :is(.chart,.table-wrap){background:transparent!important}
+:root[data-theme="dark"] .svv :is(.panel,.rank-html){background:#181e28!important}
+:root[data-theme="dark"] .svv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .svv thead th{color:#aab6c7!important}
+:root[data-theme="dark"] .svv tbody td{border-color:#334052!important}
+:root[data-theme="dark"] .svv svg text[fill="#e8eefb"]{fill:#dbe3ee!important}
+:root[data-theme="dark"] .svv svg text[fill="#93a4bd"]{fill:#aab6c7!important}
+:root[data-theme="dark"] .svv svg :is(line,path)[stroke="#233247"]{stroke:#334052!important}
+:root[data-theme="dark"] .svv svg line[stroke="#93a4bd"]{stroke:#7d8ca3!important}
+:root[data-theme="dark"] .sv-report{color:#f1f5f9!important;background:transparent!important}
+:root[data-theme="dark"] .sv-report :is(.sv-kicker,.sv-lead,.dsub,.dlabel,.dlabel-flat,.dhead-c,.bval,.tval,.mv-meta,.keyline){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report :is(.card,.metric){background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report :is(.metric span,.metric em,.bname em,.tname em,.mv-id em){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .sv-report .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-report .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-report .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .sv-report .counts li{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .counts b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv-report :is(.btrack,.ttrack){background:#202733!important}
+:root[data-theme="dark"] .sv-report .mv{border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note{color:#aab6c7!important;background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note b{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv{--ink:#f1f5f9!important;--sub:#aab6c7!important;--line:#334052!important;--card:#181e28!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-sum,:root[data-theme="dark"] .sv .two p,:root[data-theme="dark"] .sv ol.steps{color:#c1cad7!important}
+:root[data-theme="dark"] .sv ol.steps b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-metric,:root[data-theme="dark"] .sv .pp-tabs>div,:root[data-theme="dark"] .sv .sv-narr>div,:root[data-theme="dark"] .sv .sv-note,:root[data-theme="dark"] .sv svg.payoff,:root[data-theme="dark"] .sv-card,:root[data-theme="dark"] .sv-metric{background:#181e28!important;border-color:#334052!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv thead th{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv tbody td{border-color:#2b3544!important}
+:root[data-theme="dark"] .sv tbody tr.hl{background:#1f3b46!important}
+:root[data-theme="dark"] .sv svg .ax,:root[data-theme="dark"] .sv svg .lk,:root[data-theme="dark"] .sv svg .lg{fill:#b9c5d5!important}
+:root[data-theme="dark"] .sv svg rect[fill="#eef2f7"],:root[data-theme="dark"] .sv svg rect[fill="#f8fafc"]{fill:#202733!important}
+:root[data-theme="dark"] .sv-badge-success,:root[data-theme="dark"] .sv .sv-chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-badge-warning,:root[data-theme="dark"] .sv .sv-chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-badge-danger,:root[data-theme="dark"] .sv .sv-chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+
+/* Report tables sit on the same card surface as ranked lists. Override the
+   widget runtime's independent neutral table palette inside report roots. */
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(table,.table-wrap,.sv-table-wrap){background:transparent!important;border-color:var(--sv-border-subtle)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+
+/* Financial direction is market-specific; success/danger remain status colors. */
+:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+[data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
+[data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+
+/* Report sections stay open; compact metrics have their own outlined cards. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-text-danger,var(--sv-status-danger))!important;background:var(--sv-bg-danger)!important;border-color:var(--sv-border-danger,var(--sv-border-subtle))!important}
+
+/* Standalone reports and sandboxed reports share the semantic runtime palette. */
+:root:not([data-theme="dark"]){--sv-text-success:var(--sv-jade-11,#208368);--sv-text-warning:var(--sv-amber-11,#915930);--sv-text-danger:var(--sv-red-11,#ce2c31);--sv-border-success:var(--sv-jade-7,#92ceac);--sv-border-warning:var(--sv-amber-7,#e8c36a);--sv-border-danger:var(--sv-red-7,#f3aeaf);--sv-bg-success:var(--sv-jade-3,#e6f4ea);--sv-bg-warning:var(--sv-amber-3,#fff3d0);--sv-bg-danger:var(--sv-red-3,#feebec)}
+:root[data-theme="dark"]{--sv-text-success:var(--sv-jade-11,#7ce2bd);--sv-text-warning:var(--sv-amber-11,#facf72);--sv-text-danger:var(--sv-red-11,#ff9592);--sv-border-success:var(--sv-jade-7,#1b5745);--sv-border-warning:var(--sv-amber-7,#6a4f0b);--sv-border-danger:var(--sv-red-7,#7e2e33);--sv-bg-success:var(--sv-jade-3,#132d21);--sv-bg-warning:var(--sv-amber-3,#35290f);--sv-bg-danger:var(--sv-red-3,#3b1219)}
+/* Timeline copy stays on the page; only status badges get a tinted surface. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
+/* Timeline events without dates do not reserve an empty tinted date column. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event:is(:has(>time:empty),:not(:has(>time))){grid-template-columns:minmax(0,1fr)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event>time:empty{display:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline :is(time,p){background:transparent!important;border:0!important;color:var(--sv-text-secondary)!important}
+
+/* Template reports share the compact metric rhythm; legacy margins must not stack. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metrics{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important;padding:12px 0!important;align-items:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric{display:grid!important;gap:var(--sv-component-gap)!important;align-content:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric>:is(p,strong,small){margin:0!important;line-height:1.5;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric strong{font-size:clamp(22px,2.5vw,27px);line-height:1.3}
+/* Place the dot's centre on the centre of the 1px connector, independent of radius. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{--sv-timeline-inset:20px;padding-left:var(--sv-timeline-inset)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event::before{left:calc(-1 * var(--sv-timeline-inset) - .5px)!important;transform:translateX(-50%);background:var(--sv-chart-series-1)!important}
+
+/* Compact metric cards tile across the available width and wrap as a group. */
+:root :is([data-aime-streamviz-root],[data-visualize-root]) :is([data-sv-metric],.metrics>.insight){box-sizing:border-box;min-width:0!important;padding:var(--sv-card-padding)!important;margin:0!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;background:transparent!important;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){align-items:stretch!important}
+@media(max-width:640px){
+  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))!important;gap:12px!important}
+  :root :is([data-aime-streamviz-root],[data-visualize-root]) :is(.stat-value,.sv-metric strong){font-size:22px!important}
+}
+</style></head><body><main data-aime-streamviz-root="true"><style>.pv-head{display:grid;gap:8px;margin:0}
+.pv-kicker{margin:0;color:var(--sv-text-secondary);font-size:13px}
+.pv-head h1{margin:0;font-size:25px;line-height:1.25;color:var(--sv-text-primary)}
+.pv-summary{margin:0;color:var(--sv-text-secondary);line-height:1.65}
+.pv-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pv-chip{padding:6px 10px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:13px;color:var(--sv-text-secondary);background:var(--sv-surface-secondary)}
+.pv-chip-danger{color:var(--sv-status-danger);border-color:var(--sv-status-danger)}
+.pv-chip-warning{color:var(--sv-status-warning);border-color:var(--sv-status-warning)}
+.pv-section{margin-top:28px;min-width:0}
+.pv-section h2{margin:0 0 12px;font-size:17px;color:var(--sv-text-primary);font-weight:700}
+.pv-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.pv-metric{min-width:0;padding:12px;border:1px solid var(--sv-border-subtle);border-radius:8px;background:var(--sv-surface-primary)}
+.pv-metric p{margin:0;font-size:13px;color:var(--sv-text-secondary)}
+.pv-metric strong{display:block;margin:6px 0 4px;font-size:22px;line-height:1.15;color:var(--sv-text-primary);font-variant-numeric:tabular-nums}
+.pv-metric small{display:block;font-size:12px;line-height:1.5;color:var(--sv-text-secondary)}
+.pv-up{color:var(--sv-price-up)}
+.pv-down{color:var(--sv-price-down)}
+.pv-flat{color:var(--sv-price-flat)}
+.pv-split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;align-items:start}
+.pv-col{min-width:0;padding:12px;border:1px solid var(--sv-border-subtle);border-radius:8px;background:var(--sv-surface-primary)}
+.pv-col-title{margin:0 0 8px;font-size:13px;color:var(--sv-text-secondary)}
+.pv-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pv-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:13px;color:var(--sv-text-primary)}
+.pv-list b{font-size:14px;font-variant-numeric:tabular-nums}
+.pv-table-wrap{overflow:auto;min-width:0;border:1px solid var(--sv-border-subtle);border-radius:8px}
+.pv-table-wrap table{border-collapse:collapse;width:100%;min-width:520px;font-size:13px}
+.pv-table-wrap th,.pv-table-wrap td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--sv-border-subtle);vertical-align:top}
+.pv-table-wrap th{color:var(--sv-text-secondary);font-weight:600;background:var(--sv-surface-primary)}
+.pv-table-wrap td{color:var(--sv-text-primary)}
+.pv-table-wrap tr:last-child td{border-bottom:0}
+.pv-watch{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.pv-watch li{min-width:0;padding:12px;border:1px solid var(--sv-border-subtle);border-radius:8px;background:var(--sv-surface-primary)}
+.pv-watch b{display:block;font-size:14px;color:var(--sv-text-primary);margin-bottom:4px}
+.pv-watch span{display:block;font-size:13px;line-height:1.6;color:var(--sv-text-secondary)}
+.pv-note{margin:24px 0 0;padding-top:12px;border-top:1px solid var(--sv-border-subtle);font-size:12px;line-height:1.6;color:var(--sv-text-secondary)}
+</style><header class="pv-head">
+  <p class="pv-kicker">数据口径：AInvest 行情快照，美东时间 10:20 左右 · 盘前时段已结束，下方同时给出开盘后验证</p>
+  <h1>美股盘前速览 · 2026年10月14日</h1>
+  <p class="pv-summary">9月CPI全面高于预期：同比3.7%（预期3.6%）、核心2.6%（预期2.5%），汽油单月+9.1%；10年期美债收益率升至约5.2%的2002年以来高位，加息预期升温。盘前股指期货走低，开盘后抛压集中在银行财报股与AI芯片，个别财报股跌幅明显收窄。</p>
+  <div class="pv-chips"><span class="pv-chip pv-chip-danger">CPI 超预期</span><span class="pv-chip pv-chip-warning">加息预期升温</span><span class="pv-chip pv-chip-warning">收益率冲高</span><span class="pv-chip pv-chip-neutral">银行 / 芯片领跌</span><span class="pv-chip pv-chip-neutral">个别个股盘中修复</span></div>
+</header>
+
+<section class="pv-section" data-financial-market="US">
+  <h2>盘前与开盘定价的关键数字</h2>
+  <div class="pv-metrics">
+    <article class="pv-metric"><p>9月CPI 同比</p><strong>3.7%</strong><small>预期 3.6% · 前值 3.4%；环比 +0.6%</small></article>
+    <article class="pv-metric"><p>核心CPI 同比</p><strong>2.6%</strong><small>预期 2.5% · 前值 2.4%；环比 +0.3%</small></article>
+    <article class="pv-metric"><p>10年期美债收益率</p><strong>约 5.2%</strong><small>2002年以来高位区间</small></article>
+    <article class="pv-metric"><p>标普500 ETF（SPY）</p><strong class="pv-down">-0.56%</strong><small>开盘跳空 -0.39%，开盘后跌势略扩大</small></article>
+    <article class="pv-metric"><p>纳指100 ETF（QQQ）</p><strong class="pv-down">-0.85%</strong><small>开盘跳空 -0.75%，芯片权重拖累</small></article>
+    <article class="pv-metric"><p>罗素2000 ETF（IWM）</p><strong class="pv-down">-1.34%</strong><small>小盘对融资成本更敏感</small></article>
+  </div>
+</section>
+
+<section class="pv-section" data-financial-market="US">
+  <h2>开盘后相对盘前跳空：谁在修复、谁在恶化（百分点）</h2>
+  <div class="pv-split">
+    <div class="pv-col">
+      <p class="pv-col-title">跌幅收窄（修复）</p>
+      <ul class="pv-list">
+        <li><span>阿斯麦（ASML）</span><b class="pv-up">+2.00</b></li>
+        <li><span>道富银行（STT）</span><b class="pv-up">+1.73</b></li>
+        <li><span>摩根大通（JPM）</span><b class="pv-up">+1.43</b></li>
+        <li><span>美光（MU）</span><b class="pv-up">+0.78</b></li>
+        <li><span>拉姆研究（LRCX）</span><b class="pv-up">+0.64</b></li>
+      </ul>
+    </div>
+    <div class="pv-col">
+      <p class="pv-col-title">跌幅扩大（恶化）</p>
+      <ul class="pv-list">
+        <li><span>瓦莱罗能源（VLO）</span><b class="pv-down">-1.45</b></li>
+        <li><span>美国银行（BAC）</span><b class="pv-down">-0.84</b></li>
+        <li><span>能源板块 ETF（XLE）</span><b class="pv-down">-0.81</b></li>
+        <li><span>博通（AVGO）</span><b class="pv-down">-0.67</b></li>
+        <li><span>富国银行（WFC）</span><b class="pv-down">-0.61</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="pv-section" data-financial-market="US">
+  <h2>今日已公布财报的市场反应</h2>
+  <div class="pv-table-wrap">
+    <table>
+      <thead><tr><th>标的</th><th>财报要点</th><th>开盘跳空</th><th>开盘后最新</th></tr></thead>
+      <tbody>
+        <tr><td>美国银行（BAC）</td><td>三季度业绩不及预期，另计提12亿美元罚款，交易业务偏弱</td><td class="pv-down">-7.65%</td><td class="pv-down">-8.49%</td></tr>
+        <tr><td>道富银行（STT）</td><td>营收不及预期，盖过盈利超预期的利好</td><td class="pv-down">-9.76%</td><td class="pv-down">-8.03%</td></tr>
+        <tr><td>阿斯麦（ASML）</td><td>利润大幅超预期并上调指引，但AI芯片股整体仍在回落</td><td class="pv-down">-2.30%</td><td class="pv-down">-0.30%</td></tr>
+        <tr><td>摩根大通（JPM）</td><td>昨日公布每股收益5.57美元，低于市场约5.90美元，为2023年以来首次不及预期</td><td class="pv-down">-1.42%</td><td class="pv-flat">+0.01%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="pv-section">
+  <h2>接下来需要盯的四件事</h2>
+  <ul class="pv-watch">
+    <li><b>AI芯片去风险是否延续</b><span>纳指100已跌破30,700–30,800的突破区间，下方关注30,200与30,000；芯片股同步下跌更像是板块整体减仓，而非个别公司业绩问题。</span></li>
+    <li><b>加息定价的下一步</b><span>9月已是2023年以来首次加息，市场对10月27–28日会议再加息定价约两成，对2027年底利率至少再高50个基点的概率约九成；任何进一步的鹰派表态都会继续压制利率敏感板块。</span></li>
+    <li><b>本周财报密集期</b><span>银行与半导体是本周焦点（已公布：JPM、GS、C、WFC、BAC、STT、ASML），市场更看指引而非单季是否超预期；超预期但指引平淡的公司同样被抛售。</span></li>
+    <li><b>能源与地缘溢价</b><span>9月汽油价格环比+9.1%、布伦特原油三季度上涨约四成，霍尔木兹海峡航运风险仍在；油价既支撑能源股，也是通胀黏性的来源。</span></li>
+  </ul>
+</section>
+
+<p class="pv-note">数据时间与口径：行情为 AInvest 快照（美东 2026-10-14 约10:20），"开盘跳空"= 今日开盘价 / 上一交易日收盘价 − 1，用于近似盘前定价；"开盘后最新"= 最新价 / 上一交易日收盘价 − 1。盘前逐笔成交数据当前不可得，故不以盘前报价直接标注。宏观数据、财报要点与加息定价来自 AInvest 端内文章（10月13–14日）。外部网页检索工具本次不可用（缺少接口密钥），Yahoo 行情接口限流后日线改用 Nasdaq 回退且为不复权数据，因此本页只展示可核验的当日快照与端内新闻事实。</p></main></body></html>

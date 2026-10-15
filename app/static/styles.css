@@ -4564,9 +4564,9 @@ p {
 .dayHeader { display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:8px; }
 .dayHeading { grid-column:1;grid-row:1; }
 .dayHeader #dayClock { grid-column:1;grid-row:2; }
-.dayCustomizeTasks { grid-column:2;grid-row:1 / 3;align-self:center;display:inline-flex;align-items:center;gap:8px;padding:8px 0 8px 8px;border:0;border-radius:6px;background:transparent;color:var(--muted);font:inherit;font-size:13px;white-space:nowrap;cursor:pointer; }
-.dayCustomizeTasks svg { width:16px;height:16px;transform:rotate(180deg);flex:none; }
+.dayCustomizeTasks { grid-column:2;grid-row:1 / 3;align-self:center;display:inline-flex;align-items:center;gap:2px;padding:8px 0 8px 8px;border:0;border-radius:6px;background:transparent;color:var(--muted);font:inherit;font-size:13px;white-space:nowrap;cursor:pointer; }
+.dayCustomizeTasks svg { width:10px;height:16px;transform:rotate(180deg);flex:none; }
 .dayCustomizeTasks:hover { color:var(--ink); }
 .dayCustomizeTasks:focus-visible { outline:2px solid var(--ink);outline-offset:4px; }
 @media(max-width:760px) { .dayHeading { grid-column:1 / -1; }.dayCustomizeTasks { grid-row:2; } }
-@media(max-width:400px) { .dayHeader { column-gap:8px; }.dayHeader #dayClock { font-size:11px; }.dayCustomizeTasks { font-size:12px;gap:4px; } }
+@media(max-width:400px) { .dayHeader { column-gap:8px; }.dayHeader #dayClock { font-size:11px; }.dayCustomizeTasks { font-size:12px;gap:2px; } }
