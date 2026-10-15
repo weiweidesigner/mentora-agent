@@ -200,5 +200,12 @@
       }
     ],
     "cacheScope": "actual-conversation-and-generated-artifacts"
-  }
+  },
+  "renderingRepairs": [
+    {
+      "date": "2026-10-15",
+      "artifact": "deepseek-tradingview-chart.html",
+      "change": "Correct advanced-chart watchlist to flat TradingView symbol strings; original conversation and source hashes preserved."
+    }
+  ]
 }
