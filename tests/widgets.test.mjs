@@ -155,3 +155,22 @@ test('old ticker strips become compact, pull following cards up, and remain resi
  s.d.querySelector('[data-card="one"] .widgetResize').dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
  const saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(saved.boards[0].cards[0].h,7);s.dom.window.close();const r=setup({storage:saved});assert.equal(r.d.querySelector('[data-card="one"]').style.height,'168px');r.dom.window.close();
 });
+
+function linkedBoard(){const data=twoCards();data.boards[0].cards.push({id:'list',title:'CRCL / TLT / HOOD',component:'tv-market-data',url:'/generated/list.html',status:'ready',x:0,y:40,w:12,h:18,parameters:{symbols:['NYSE:CRCL','NASDAQ:TLT','NASDAQ:HOOD']}});data.boards[0].cards[0].parameters.interval='W';return data;}
+test('quote-list symbol selection updates single-symbol TradingView cards and preserves the list, market, layout, interval and undo',async()=>{
+ const s=setup({storage:linkedBoard()});const source=s.d.querySelector('[data-card="list"] iframe'),market=s.d.querySelector('[data-card="two"] iframe');
+ s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();
+ const direct=s.calls.filter(c=>c.url==='/api/widgets/tradingview');assert.equal(direct.length,1);const body=JSON.parse(direct[0].options.body);assert.deepEqual(body.symbols,['NYSE:CRCL']);assert.equal(body.interval,'W');
+ assert.equal(s.calls.some(c=>c.url==='/api/widgets/plan'||c.url==='/api/chat/stream'),false);assert.equal(s.d.querySelector('[data-card="list"] iframe'),source);assert.equal(s.d.querySelector('[data-card="two"] iframe'),market);
+ let data=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(data.boards[0].focusSymbol,'NYSE:CRCL');assert.equal(data.boards[0].cards[0].w,6);assert.equal(data.boards[0].cards[0].parameters.interval,'W');assert.equal(s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').getAttribute('aria-pressed'),'true');
+ s.d.querySelector('#widgetUndo').click();data=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(data.boards[0].cards[0].parameters.symbols[0],'NASDAQ:AAPL');assert.notEqual(data.boards[0].focusSymbol,'NYSE:CRCL');s.dom.window.close();
+});
+test('list-only boards create one detail chart and reuse it for subsequent selections',async()=>{
+ const data=linkedBoard();data.boards[0].cards=data.boards[0].cards.filter(c=>c.id==='list');const s=setup({storage:data});
+ s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();
+ assert.equal(s.d.querySelectorAll('.widgetCard').length,2);s.d.querySelector('[data-link-symbol="NASDAQ:HOOD"]').click();await tick();await tick();
+ const payloads=s.calls.filter(c=>c.url==='/api/widgets/tradingview').map(c=>JSON.parse(c.options.body));assert.deepEqual(payloads.map(p=>p.symbols),[['NYSE:CRCL'],['NASDAQ:HOOD']]);assert.equal(s.d.querySelectorAll('.widgetCard').length,2);s.dom.window.close();
+});
+test('legacy list metadata can be recovered from its own saved TradingView document',()=>{
+ const data=linkedBoard();delete data.boards[0].cards[2].parameters;const s=setup({storage:data});const frame=s.d.querySelector('[data-card="list"] iframe'),config=frame.contentDocument.createElement('script');config.id='tv-config';config.type='application/json';config.textContent=JSON.stringify({widget:'market-data',config:{symbolsGroups:[{symbols:[{name:'NYSE:CRCL'}]}]}});frame.contentDocument.open();frame.contentDocument.write('<!doctype html><html><head></head><body></body></html>');frame.contentDocument.close();frame.contentDocument.body.append(config);frame.dispatchEvent(new s.w.Event('load'));assert.ok(s.d.querySelector('[data-link-symbol="NYSE:CRCL"]'));s.dom.window.close();
+});

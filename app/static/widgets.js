@@ -26,7 +26,7 @@
   function load() {
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
-      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;
     } catch { boards = []; }
     if (!boards.length) boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});
@@ -51,6 +51,46 @@
     for (let y=0;y<10000;y++) {
       for (let x=0;x<=12-card.w;x+=3) { card.x=x;card.y=y;if(!board.cards.some(c=>overlaps(c,card)))return; }
     }
+  }
+  const linkedSymbolPattern=/^[A-Z0-9_]+:[A-Z0-9_.!/^+\-]{1,80}$/;
+  function symbolLinks(card,node){
+    if(card.component!=='tv-market-data'||card.status!=='ready')return;
+    const symbols=[...new Set(card.parameters?.symbols||[])].filter(s=>linkedSymbolPattern.test(s));if(!symbols.length)return;
+    let links=node.querySelector('.widgetSymbolLinks');if(!links){links=document.createElement('nav');links.className='widgetSymbolLinks';links.setAttribute('aria-label','选择标的联动看板');node.insertBefore(links,node.children[1]||null);}
+    const busy=commandControllers.has(activeId)||jobs.has(activeId),selected=current()?.focusSymbol||'';
+    const signature=JSON.stringify([symbols,selected,busy]);if(links.dataset.signature===signature)return;links.dataset.signature=signature;
+    links.innerHTML=symbols.map(symbol=>`<button type="button" data-link-symbol="${esc(symbol)}" aria-label="联动到 ${esc(symbol.split(':')[1])}" aria-pressed="${selected===symbol}" ${busy?'disabled':''}>${esc(symbol.split(':')[1])}</button>`).join('');
+  }
+  function hydrateTradingView(card,spec,node){
+    if(!spec.widget||!spec.config)return;const cfg=spec.config;let symbols;
+    if(spec.widget==='market-data')symbols=(cfg.symbolsGroups||[]).flatMap(g=>(g.symbols||[]).map(s=>s.name));
+    else if(typeof cfg.symbol==='string')symbols=[cfg.symbol];
+    if(!symbols?.length)return;
+    const parameters={...card.parameters,symbols,...(cfg.interval?{interval:cfg.interval}:{})};
+    if(card.component!=='tv-'+spec.widget||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component='tv-'+spec.widget;card.parameters=parameters;save();}
+    symbolLinks(card,node);
+  }
+  async function linkSymbol(source,symbol){
+    const board=current();if(!board||!linkedSymbolPattern.test(symbol)||!(source.parameters?.symbols||[]).includes(symbol)||source.component!=='tv-market-data')return;
+    if(jobs.has(board.id)||commandControllers.has(board.id)||board.cards.some(c=>c.status==='loading')){notice('请等待当前组件更新完成后再切换标的。');return;}
+    const controller=new AbortController();commandControllers.set(board.id,controller);undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));board.focusSymbol=symbol;render();
+    let succeeded=0,failed=0;
+    try{
+      if(!catalog.length){const response=await fetch('/static/widget-catalog.json',{signal:controller.signal});if(!response.ok)throw Error('图表库暂不可用。');catalog=await response.json();}
+      const targets=board.cards.filter(c=>c!==source&&catalog.some(item=>item.id===c.component&&item.provider==='TradingView'&&item.inputMode==='symbol'));
+      // A list-only board gets one detail chart on the first explicit selection.
+      if(!targets.length)targets.push(null);
+      for(const card of targets){
+        if(controller.signal.aborted||!boards.includes(board)||!board.cards.includes(source))break;
+        if(card&&!board.cards.includes(card))continue;
+        const component=catalog.find(c=>c.id===(card?.component||'tv-advanced-chart'));if(!component)continue;
+        if(activeId===board.id)notice(`正在切换到 ${symbol.split(':')[1]}…`);
+        const result=await addTradingView(symbol,card?component:{...component,width:6},card?.id,'default',{...card?.parameters,symbols:[symbol],signal:controller.signal},board);
+        if(result?.status==='ready')succeeded++;else failed++;
+      }
+      if(boards.includes(board)){const text=controller.signal.aborted?'标的联动已停止。':succeeded?`已切换到 ${symbol.split(':')[1]}，更新了 ${succeeded} 个单标的组件。${failed?'部分组件未能加载，可重新生成。':''}`:'组件未能更新，请重试。';board.chat=[...(board.chat||[]),{role:'assistant',content:text}].slice(-40);}
+    }catch(error){if(boards.includes(board))board.chat=[...(board.chat||[]),{role:'assistant',content:error.name==='AbortError'?'标的联动已停止。':error.message}].slice(-40);}
+    finally{commandControllers.delete(board.id);save();if(activeId===board.id)render();}
   }
   function frameUrl(card) {
     const url = new URL(card.url, location.origin);
@@ -77,7 +117,7 @@
     el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="点击选中，拖动移动"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-size="narrow" title="缩窄图表" aria-label="缩窄图表">−</button><button type="button" data-size="wide" title="加宽图表" aria-label="加宽图表">＋</button><button type="button" data-open title="打开完整图表" aria-label="打开完整图表">↗</button><button type="button" data-remove title="移除图表" aria-label="移除图表">×</button></div></header>`;
     if (card.url && card.status==='ready') {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      frame.addEventListener('load',()=>{try{const spec=JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}');if(spec.widget==='ticker-tape'){card.component='tv-ticker-tape';const board=boards.find(b=>b.cards.includes(card));if(board&&compactTicker(board,card)){save();if(board.id===activeId)applyLayout();}}}catch{}if(card.customTitle)return;try {const doc=frame.contentDocument;let title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(doc?.querySelector('#tv-config'))title=title.replace(/\s*[·|\-]\s*TradingView\s*$/i,'');if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
+      frame.addEventListener('load',()=>{try{const spec=JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}');hydrateTradingView(card,spec,el);if(spec.widget==='ticker-tape'){card.component='tv-ticker-tape';const board=boards.find(b=>b.cards.includes(card));if(board&&compactTicker(board,card)){save();if(board.id===activeId)applyLayout();}}}catch{}if(card.customTitle)return;try {const doc=frame.contentDocument;let title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(doc?.querySelector('#tv-config'))title=title.replace(/\s*[·|\-]\s*TradingView\s*$/i,'');if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
     } else {
       const body=document.createElement('div');body.className='widgetCardBody';
       body.innerHTML=card.status==='loading'?`<div class="widgetLoading" aria-hidden="true"></div><p>${esc(card.loadingText||'正在获取数据、生成图表…')}</p>`:`<p>${esc(card.error||'图表暂不可用，请重新生成。')}</p><button type="button" data-retry>重新生成</button>`;el.append(body);
@@ -105,6 +145,7 @@
     const ids=new Set(board.cards.map(c=>c.id));for(const [id,node] of oldNodes)if(!ids.has(id))node.remove();
     for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText])){old.querySelector('.widgetCardTitle').textContent=card.title;}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
+    for(const card of board.cards){const node=canvas.querySelector(`[data-card="${CSS.escape(card.id)}"]`);if(node)symbolLinks(card,node);}
     updateSelection();renderChat();
     applyLayout();notice('');
   }
@@ -302,6 +343,7 @@
   workspace.addEventListener('click',event=>{const b=event.target.closest('[data-widget-prompt]');if(b){$('widgetPrompt').value=b.dataset.widgetPrompt;updateComposer();$('widgetPrompt').focus();}});
   canvas.addEventListener('click',event=>{
     const el=event.target.closest('[data-card]');if(!el){selectedCardId='';updateSelection();return;}const board=current(),card=board.cards.find(c=>c.id===el.dataset.card);if(!card)return;
+    const linked=event.target.closest('[data-link-symbol]');if(linked){linkSymbol(card,linked.dataset.linkSymbol);return;}
     if(!event.target.closest('button')){selectedCardId=card.id;updateSelection();}
     if(event.target.closest('[data-remove]')){board.cards=board.cards.filter(c=>c!==card);save();render();}
     if(event.target.closest('[data-open]')&&card.url)window.open(frameUrl(card),'_blank','noopener');
