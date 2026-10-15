@@ -264,7 +264,7 @@
     $('taskRunNow').disabled=!!task.activeRun;$('taskRunNow').textContent=task.activeRun?'运行中…':'立即运行';
     $('taskToggle').textContent=completed(task)?'重新安排':task.enabled?'暂停':'开启';
     $('taskScheduleSummary').textContent=`${flags[task.market]} ${names[task.market]} · ${schedule(task)}`;
-    $('taskCardTitle').textContent=task.title+' ›';$('taskCardStatus').textContent=canEdit?status(task):task.systemPreset?'公共研究任务':'分享结果';$('taskChatForm').hidden=!!task.activeRun;
+    $('taskCardTitle').textContent=task.title+' ›';$('taskCardStatus').textContent=canEdit?status(task):task.systemPreset?'公共研究任务':'分享结果';$('taskChatForm').hidden=!!task.activeRun||!task.lastRun;
     renderLists();
   }
   function finishRunThinking(article,task){
@@ -308,6 +308,7 @@
   async function paintRun(data, task, version) {
     if(version!==viewVersion)return;
     $('taskInfoCard').hidden=true;
+    $('taskChatForm').hidden=['queued','running'].includes(data.status)||!data.answer;
     const container=$('taskThread');
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
