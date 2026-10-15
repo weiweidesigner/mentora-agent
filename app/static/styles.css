@@ -4193,3 +4193,8 @@ p {
   -webkit-backdrop-filter:blur(18px) saturate(1.15);
  }
 }
+
+/* Scheduled tasks use a quiet solid background; glass and motion are for Home. */
+.shell.tasks-view>.homeBackdrop { display:none; }
+.shell.tasks-view .sidebarRail { background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none; }
+.shell.tasks-view .sidebarContent { background:var(--soft);backdrop-filter:none;-webkit-backdrop-filter:none;border-color:var(--line); }
