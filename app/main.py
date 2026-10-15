@@ -83,6 +83,7 @@ RUNS_DIR = ROOT / "outputs" / "runs"
 MODULE_REGISTRY_PATH = ROOT / "app" / "module_registry.json"
 SKILLS_DIR = ROOT / "app" / "skills"
 SKILL_SCRIPT_DIRS = (
+    SKILLS_DIR / "trading-view-chart" / "scripts",
     SKILLS_DIR / "generic-chart" / "scripts",
     SKILLS_DIR / "business-chart-recall" / "scripts",
     SKILLS_DIR / "yahoo-data" / "scripts",
@@ -6134,6 +6135,7 @@ def skill_category_for_script_path(path: Path) -> str:
     skill_name = relative.parts[0] if relative.parts else ""
     return {
         "generic-chart": "generic_chart",
+        "trading-view-chart": "generic_chart",
         "business-chart-recall": "chart_recall",
         "yahoo-data": "yahoo_data",
         "code-interpreter": "code_interpreter",
@@ -16224,9 +16226,15 @@ def build_script_command(
         clean_args = add_language_arg_if_supported(selected, clean_args, html_lang_for_question(question))
     if question.strip() and script_path_for_filename(selected.filename).parent.name == "scripts" and script_path_for_filename(selected.filename).parent.parent.name == "business-chart-recall":
         clean_args = add_language_arg_if_supported(selected, clean_args, kline_script_language(question) if selected.key == "kline" else html_lang_for_question(question), force=True)
+    if selected.filename == "trading_view_chart.py":
+        clean_args = add_language_arg_if_supported(selected, clean_args, html_lang_for_question(question))
     clean_args = normalize_generic_chart_payload_args(selected, clean_args, question)
     cmd = [sys.executable, str(script), *clean_args]
-    if selected.key == "kline":
+    if selected.filename == "trading_view_chart.py":
+        widget = cli_option_value(clean_args, "--widget") or "advanced-chart"
+        if code and widget in {"advanced-chart", "symbol-overview", "mini-chart", "single-ticker", "tickers", "ticker-tape", "symbol-info", "technical-analysis", "fundamental-data", "company-profile"}:
+            cmd.extend(["--symbol", code])
+    elif selected.key == "kline":
         cmd.extend(["--symbol", code])
     elif selected.filename not in GENERIC_CHART_PAYLOAD_SCRIPTS:
         cmd.extend(["--code", code])

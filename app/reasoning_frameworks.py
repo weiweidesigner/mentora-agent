@@ -226,6 +226,9 @@ class LocalAgentFrameworks:
                 family_by_script.update(
                     {path.name: family for path in directory.glob("*.py") if path.name not in non_visual}
                 )
+        tradingview_dir = self.project_root / "app" / "skills" / "trading-view-chart" / "scripts"
+        if tradingview_dir.is_dir():
+            family_by_script.update({path.name: "generic-chart" for path in tradingview_dir.glob("*.py")})
         candidates: list[dict[str, str]] = []
         for item in registry:
             if not isinstance(item, dict):
@@ -234,7 +237,7 @@ class LocalAgentFrameworks:
             family = family_by_script.get(script)
             if not family:
                 continue
-            skill_name = "business-chart-recall" if family == "business-chart" else "generic-chart"
+            skill_name = "trading-view-chart" if script == "trading_view_chart.py" else ("business-chart-recall" if family == "business-chart" else "generic-chart")
             schema_path = (
                 self.project_root / "app" / "skills" / skill_name / "schemas" / f"{Path(script).stem}.schema.json"
             )

@@ -322,5 +322,11 @@
     "script": "congress_trades.py",
     "label": "Congress Trades",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "trading_view_chart",
+    "script": "trading_view_chart.py",
+    "label": "TradingViewChart",
+    "description": "TradingView 官方交互式组件：advanced-chart K线、symbol-overview、mini-chart、行情条、市场概览、热力图、筛选器、技术分析、公司概况、财务数据、新闻和经济日历。用户明确要求 TradingView 或托管交互行情组件时优先使用。支持交易所前缀 symbol、theme、language；CLI: --widget --symbol/--code --interval --height --config-json --title --output --payload-output --schema --list-widgets。先读 trading-view-chart/SKILL.md 与 schema。只生成浏览器托管的嵌入图表，不返回可供推理的行情数值；数值分析继续使用原数据工具。"
   }
 ]
