@@ -26,7 +26,7 @@
   const mobile = () => window.matchMedia('(max-width: 760px)').matches;
   let market = 'CN'; try { market = localStorage.getItem('veya-day-market') || 'CN'; } catch {}
   if (!names[market]) market = 'CN';
-  let tasks = [], sceneTasks = [], recommendationScene = '', markets = [], publicKey = '', serverDelta = 0, busy = false, lastRefresh = 0;
+  let tasks = [], sceneTasks = [], markets = [], publicKey = '', serverDelta = 0, busy = false, lastRefresh = 0;
   let selectedId = '', selectedRun = '', pinnedRun = false, sharedEntry = null, resultVersion = '', viewVersion = 0;
   let lastDetailState = '';
   let sidebarExpanded = false;
@@ -213,11 +213,7 @@
     $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
-    const hasPresets=sceneTasks.length>0;if(hasPresets&&!recommendationScene)recommendationScene=homeScene()||'pre';
-    $('taskSceneTabs').hidden=!hasPresets;document.querySelector('.taskRecommendations').classList.toggle('has-scenes',hasPresets);
-    $('taskSceneTabs').innerHTML=hasPresets?Object.entries(sceneCopy).map(([key,copy])=>`<button type="button" data-recommendation-scene="${key}" aria-pressed="${key===recommendationScene}">${copy.emoji} ${copy.label}</button>`).join(''):'';
-    const items=hasPresets?recommendations.filter(t=>t.stage===recommendationScene):recommendations;
-    $('taskRecommendations').innerHTML=items.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
+    $('taskRecommendations').innerHTML=recommendations.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
     const url=new URL(location.href);
@@ -552,7 +548,6 @@
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
-      if(b.dataset.recommendationScene){recommendationScene=b.dataset.recommendationScene;renderLists();return;}
       if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
       if(b.dataset.confirmationRetry){const task=selected();if(task)await loadTaskConfirmation(task,viewVersion);return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}

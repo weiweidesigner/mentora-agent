@@ -212,8 +212,8 @@ test('shared scene results open the normal saved conversation without allowing e
 test('already scheduled presets appear in task lists, separate recommendations create new plans',async()=>{
  const presets=['pre','live','post','rest'].flatMap(stage=>[1,2,3].map(i=>({...base,id:stage+i,title:'已创建-'+stage+i,stage,time:'09:00',systemPreset:true})));
  const h=setup({tasks:[],sceneTasks:presets});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
- assert.equal(d.querySelectorAll('#taskLandingList [data-task-open]').length,12);assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,4);
- for(const scene of ['pre','live','post','rest']){d.querySelector(`[data-recommendation-scene="${scene}"]`).click();const cards=d.querySelectorAll('[data-recommendation]');assert.equal(cards.length,2);assert.ok([...cards].every(e=>!e.textContent.includes('已创建-')));}
+ assert.equal(d.querySelectorAll('#taskLandingList [data-task-open]').length,12);assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,0);assert.equal(d.querySelector('#taskSceneTabs'),null);
+ const cards=d.querySelectorAll('[data-recommendation]');assert.equal(cards.length,8);assert.ok([...cards].every(e=>!e.textContent.includes('已创建-')));
  d.querySelector('[data-recommendation]').click();await tick();assert.ok(h.requests.some(r=>r.path.endsWith('/plan')));assert.equal(h.saves.length,0);h.dom.window.close();
 });
 
