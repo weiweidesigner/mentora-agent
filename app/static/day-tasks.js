@@ -3,7 +3,7 @@
   const home = $('myDay'), workspace = $('taskWorkspace'), form = $('dayForm'), dialog = $('dayDialog');
   if (!home || !workspace) return;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const stages = {pre:'盘前机会',live:'盘中监控',post:'收盘回顾'};
+  const stages = {pre:'盘前机会',live:'盘中监控',post:'收盘回顾',rest:'休市时光'};
   const assets = {stocks:'股票',etf:'ETF',index:'指数',sector:'行业板块',watchlist:'自选列表'};
   const names = {CN:'A股',HK:'港股',US:'美股'}, flags = {CN:'🇨🇳',HK:'🇭🇰',US:'🇺🇸'};
   const zones = {CN:'Asia/Shanghai',HK:'Asia/Hong_Kong',US:'America/New_York'};
@@ -23,7 +23,7 @@
   const mobile = () => window.matchMedia('(max-width: 760px)').matches;
   let market = 'CN'; try { market = localStorage.getItem('veya-day-market') || 'CN'; } catch {}
   if (!names[market]) market = 'CN';
-  let tasks = [], markets = [], publicKey = '', serverDelta = 0, busy = false, lastRefresh = 0;
+  let tasks = [], sceneTasks = [], recommendationScene = '', markets = [], publicKey = '', serverDelta = 0, busy = false, lastRefresh = 0;
   let selectedId = '', selectedRun = '', pinnedRun = false, sharedEntry = null, resultVersion = '', viewVersion = 0;
   let lastDetailState = '';
   let sidebarExpanded = false;
@@ -92,7 +92,7 @@
   const dateText = (value, zone = 'Asia/Shanghai') => value ? new Intl.DateTimeFormat('zh-CN',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value)) : '';
   const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(Date.now()+serverDelta));
   const zoneFor = task => task.timezone === 'market' ? zones[task.market] : (task.timezone || 'Asia/Shanghai');
-  const selected = () => tasks.find(t => t.id === selectedId) || (sharedEntry?.task.id === selectedId ? sharedEntry.task : null);
+  const selected = () => [...tasks,...sceneTasks].find(t => t.id === selectedId) || (sharedEntry?.task.id === selectedId ? sharedEntry.task : null);
   const editable = task => Boolean(task && tasks.some(t => t.id === task.id));
   function message(text, target) { const node=$(target || (dialog.open ? 'dayDialogMessage' : workspace.hidden ? 'dayMessage' : 'taskMessage'));node.textContent=text;node.classList.toggle('is-success',/^定时任务已创建|^任务已保存/.test(text)); }
   async function api(path, method = 'GET', data) {
@@ -119,18 +119,25 @@
   function template(stage = 'pre', type = 'stocks', selectedMarket = market) {
     const asset = type==='watchlist'?'股票':assets[type];
     const questions = {
+      rest:`在{{market}}休市期间回顾最近完整交易周，梳理已确认事件与下次开市的观察清单。明确历史数据日期，不编造今日交易行情。`,
       pre:`结合最新隔夜市场、公告与今日事件，梳理{{market}}中{{symbols}}的${asset}盘前关注机会。按催化剂、观察指标和风险列出要点，注明数据时间；没有指定标的时分析全市场。`,
       live:`检查{{market}}中{{symbols}}的${asset}盘中表现，汇总价格、成交量与板块异动，分析可能原因与需要继续观察的信号。注明行情时间和延迟，不具备实时数据时明确说明。`,
       post:`复盘{{market}}中{{symbols}}的${asset}今日表现，说明涨跌驱动、市场强弱和重要事件，并列出下一交易日的关注清单。区分已确认事实与推测，注明数据时间。`
     };
     return {title:`${names[selectedMarket]}${type==='stocks'?'':assets[type]} · ${stages[stage]}`,market:selectedMarket,stage,assetType:type,symbols:'',question:questions[stage],cadence:'trading',date:'',endDate:'',weekdays:[0],monthDay:1,timeMode:stage==='live'?'fixed':stage==='pre'?'open':'close',offset:stage==='post'?15:-30,time:selectedMarket==='US'?'09:00':'08:30',timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false};
   }
-  function renderHome() {
-    const info=markets.find(m=>m.market===market), stage=info?.stage || 'pre';
-    $('dayMarketSelect').value=market;
-    $('dayClock').textContent=info ? `${stages[stage]} · ${info.status} · ${dateText(new Date(Date.now()+serverDelta).toISOString(),info.zone)}` : '正在同步市场时间…';
-    const rows=tasks.filter(t=>t.market===market && t.stage===stage && t.resultVersion);
-    $('dayPanel').innerHTML=rows.length ? `<div class="dayGrid">${rows.map(t=>`<button class="dayCard dayResultCard" type="button" data-task-open="${t.id}" data-task-run="${t.resultVersion}"><span class="dayCardTop"><span>${esc(stages[t.stage])}</span><span>${dateText(t.successAt,zoneFor(t)).split(' ').slice(-1)[0]}</span></span><h3>${esc(t.title)}</h3><p class="daySummary">${esc(plainSummary(t.summary))}</p><span class="dayResultFoot">查看任务与结果 <span aria-hidden="true">↗</span></span></button>`).join('')}</div>` : `<p class="dayHomeEmpty">${esc(stages[stage])}尚无生成结果，任务完成后会显示在这里。</p>`;
+  const sceneCopy={pre:{title:'新的一天，从容开场',label:'盘前',emoji:'🌅'},live:{title:'行情起伏，陪你看清',label:'盘中',emoji:'☀️'},post:{title:'收盘了，慢慢复盘',label:'盘后',emoji:'🌇'},rest:{title:'市场休息，也歇一歇',label:'休市',emoji:'🧳'}};
+  function homeScene(){const info=markets.find(m=>m.market==='CN');if(!info||info.calendarError)return null;if(info.closed||info.stage==='rest')return 'rest';if(info.openAt&&info.closeAt){const now=Date.now()+serverDelta;return now<new Date(info.openAt).getTime()?'pre':now<new Date(info.closeAt).getTime()?'live':'post';}return info.stage;}
+  function dayDate(value){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));}
+  function sceneArt(scene){if(scene==='rest')return '<svg viewBox="0 0 48 48" aria-hidden="true"><g class="dayTravel"><path d="m8 28 14-5 1-13 5-2 3 13 9-2 3 4-12 4-8 12-4 1 3-11-10 3z" fill="currentColor"/></g><path d="M4 39h11m20-28h9" stroke="currentColor" opacity=".3"/></svg>';return '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="daySunClip"><path d="M0 0h48v34H0z"/></clipPath></defs><g clip-path="url(#daySunClip)"><g class="daySun"><circle cx="24" cy="24" r="8" fill="currentColor"/><g class="daySunRays" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M24 8v-3m0 38v-3M8 24H5m38 0h-3M13 13l-2-2m26 26-2-2M13 35l-2 2m26-26-2 2"/></g></g></g><path class="dayHorizon" d="M5 35h38M13 40h22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';}
+  let displayedDayScene='';
+  function updateDayHeader(){const scene=homeScene(),copy=sceneCopy[scene];$('myDayTitle').textContent=copy?.title||'陪你等一个清晰的方向';const now=new Date(Date.now()+serverDelta),parts=Object.fromEntries(new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).map(p=>[p.type,p.value]));$('dayClock').dateTime=now.toISOString();$('dayClock').textContent=`${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;if(displayedDayScene!==scene){displayedDayScene=scene;$('daySceneArt').dataset.scene=scene||'';$('daySceneArt').setAttribute('aria-label',copy?.label||'同步市场时间');$('daySceneArt').innerHTML=sceneArt(scene||'pre');return true;}return false;}
+  function resultScene(t){if(t.resultScene)return t.resultScene;if(t.stage==='rest')return 'rest';if(t.timeMode==='open')return t.offset>0?'live':'pre';if(t.timeMode==='close')return t.offset<0?'live':'post';if(t.time){const close=t.market==='CN'?'15:00':'16:00';return t.time<'09:30'?'pre':t.time<close?'live':'post';}return t.stage;}
+  function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
+    const rows=[...tasks,...sceneTasks].filter(t=>(t.resultMarket||t.market)==='CN'&&resultScene(t)===scene&&t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date);
+    const matching=[...tasks,...sceneTasks].filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),next=matching.filter(t=>t.nextAt&&dayDate(t.nextAt)===date).sort((a,b)=>a.nextAt.localeCompare(b.nextAt))[0];
+    const empty=!scene?'正在同步交易日历…':matching.some(t=>t.activeRun)?'这一刻的观察正在整理，完成后会出现在这里。':next?'下一份观察将于 '+new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(next.nextAt))+' 开始生成。':'今天的这一时段暂无已完成的观察。';
+    $('dayPanel').innerHTML=rows.length?`<div class="daySceneGrid">${rows.map(t=>`<button class="caseCard daySceneCard" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(t.resultVersion)}"><div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span></div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p></button>`).join('')}</div>`:`<p class="dayHomeEmpty">${esc(empty)}</p>`;
   }
   function visibleTasks() {
     const query=$('taskSearch').value.trim().toLowerCase();
@@ -175,7 +182,11 @@
     $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
-    $('taskRecommendations').innerHTML=recommendations.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
+    const hasPresets=sceneTasks.length>0;if(hasPresets&&!recommendationScene)recommendationScene=homeScene()||'pre';
+    $('taskSceneTabs').hidden=!hasPresets;document.querySelector('.taskRecommendations').classList.toggle('has-scenes',hasPresets);
+    $('taskSceneTabs').innerHTML=hasPresets?Object.entries(sceneCopy).map(([key,copy])=>`<button type="button" data-recommendation-scene="${key}" aria-pressed="${key===recommendationScene}">${copy.emoji} ${copy.label}</button>`).join(''):'';
+    const items=hasPresets?sceneTasks.filter(t=>t.stage===recommendationScene).map(t=>({id:t.id,icon:t.emoji,title:t.title,description:t.time+' · '+(t.stage==='rest'?'非交易日':'交易日')+' · '+visibleQuestion(t).split('。')[0]})):recommendations;
+    $('taskRecommendations').innerHTML=items.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
     const url=new URL(location.href);
@@ -238,13 +249,13 @@
     if(version===viewVersion)await loadFollowups(data,task,version);
   }
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {
-    const task=tasks.find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
+    const task=[...tasks,...sceneTasks].find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
     if(!task)throw new Error('任务不存在，或当前浏览器没有该任务的访问权限');
     resetFollowup();selectedId=id;selectedRun=runId;pinnedRun=!!runId;resultVersion='';const version=++viewVersion;
     prepareDetail(task,editable(task));lastDetailState=detailState(task);
     $('taskThread').innerHTML='<p class="taskResultEmpty" role="status">正在读取任务运行记录…</p>';
     if(updateUrl)writeUrl(id,false,shared,runId);
-    if(!editable(task) && sharedEntry) {
+    if(!editable(task) && sharedEntry?.task.id===task.id) {
       $('taskRunSelect').hidden=true;$('taskRunState').textContent='分享的运行结果 · 可查看任务设置';
       await paintRun(sharedEntry,task,version);return;
     }
@@ -272,13 +283,13 @@
   async function refresh() {
     if(busy||!taskMenu.hidden)return;busy=true;
     try {
-      const data=await api('tasks');tasks=data.tasks;markets=data.markets;publicKey=data.pushPublicKey;serverDelta=new Date(data.serverTime).getTime()-Date.now();lastRefresh=Date.now();
+      const data=await api('tasks');tasks=data.tasks;sceneTasks=data.sceneTasks||[];markets=data.markets;publicKey=data.pushPublicKey;serverDelta=new Date(data.serverTime).getTime()-Date.now();lastRefresh=Date.now();
       renderHome();renderLists();
       if(initialTask){const id=initialTask;initialTask=null;await selectTask(id,{updateUrl:false,runId:initialRun});}
       else if(!workspace.hidden && selectedId) {
         const task=selected();
-        if(task && editable(task)) {
-          prepareDetail(task,true);
+        if(task && (editable(task)||task.systemPreset)) {
+          prepareDetail(task,editable(task));
           if(!chatController&&detailState(task)!==lastDetailState) await selectTask(task.id,{updateUrl:false,runId:pinnedRun?selectedRun:''});
         }
       }
@@ -459,7 +470,8 @@
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
-      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
+      if(b.dataset.recommendationScene){recommendationScene=b.dataset.recommendationScene;renderLists();return;}
+      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation),preset=sceneTasks.find(t=>t.id===b.dataset.recommendation);if(item||preset){const d=preset||recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
       if(b.dataset.confirmationRetry){const task=selected();if(task)await loadTaskConfirmation(task,viewVersion);return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
 
@@ -492,7 +504,7 @@
   for(const id of ['taskFilter','taskSidebarFilter'])$(id).addEventListener('change',e=>{filter=e.target.value;renderLists();});
   $('taskRunSelect').addEventListener('change',async e=>{try{await selectTask(selectedId,{runId:e.target.value});}catch(error){message(error.message);}});
   $('wizardQuestion').addEventListener('change',collectWizard);
-  $('dayMarketSelect').addEventListener('change',e=>{market=e.target.value;try{localStorage.setItem('veya-day-market',market);}catch{}renderHome();});
+  setInterval(()=>{if(updateDayHeader())renderHome();},1000);
   $('dayClose').onclick=$('dayCancelEdit').onclick=()=>dialog.close();
   form.addEventListener('change',updateFields);
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};

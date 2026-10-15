@@ -889,6 +889,7 @@ app.include_router(create_day_router(DAY_TASKS))
 @app.on_event('startup')
 def start_day_tasks() -> None:
     if os.getenv('VEYA_DAY_SCHEDULER', '1') != '0':
+        DAY_TASKS.seed_scene_presets()
         DAY_TASKS.start()
 
 

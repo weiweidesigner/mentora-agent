@@ -4496,3 +4496,41 @@ p {
 .wizardStepNavigation #wizardProgress { display:flex;align-items:center;justify-content:center;height:28px;min-width:32px;font-size:13px;line-height:20px;font-variant-numeric:tabular-nums; }
 .wizardStepNavigation #wizardClose { margin-left:4px; }
 @media(max-width:760px) { .wizardStepNavigation { gap:4px; }.wizardStepNavigation button { width:24px; }.wizardStepNavigation #wizardClose { margin-left:0; } }
+
+/* A scene-aware daily companion, using the same cards as the case carousel. */
+.dayHeader { align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:24px; }
+.dayHeader h2 { margin:0;font-size:26px;line-height:1.45; }
+.dayMoment { display:flex;align-items:center;gap:12px;flex:none; }
+.dayHeader #dayClock { max-width:none;font-size:13px;line-height:1.5;font-variant-numeric:tabular-nums;white-space:nowrap; }
+.daySceneArt { display:block;width:46px;height:46px;color:#e8a34c; }
+.daySceneArt svg { display:block;width:100%;height:100%;overflow:visible; }
+.daySun { transform-origin:24px 24px;filter:drop-shadow(0 0 4px #f2b65366); }
+.daySceneArt[data-scene=pre] .daySun { animation:day-rise 5s ease-in-out infinite; }
+.daySceneArt[data-scene=post] { color:#df8b57; }
+.daySceneArt[data-scene=post] .daySun { animation:day-set 5s ease-in-out infinite; }
+.daySceneArt[data-scene=live] { color:#e9b64b; }
+.daySceneArt[data-scene=live] .daySunRays { transform-origin:24px 24px;animation:day-rays 24s linear infinite; }
+.daySceneArt[data-scene=live] .dayHorizon { opacity:0; }
+.daySceneArt[data-scene=rest] { color:#6db5bb; }
+.dayTravel { animation:day-travel 4s ease-in-out infinite;transform-origin:center; }
+@keyframes day-rise { 0%,100% { transform:translateY(10px);opacity:.55; } 50% { transform:translateY(0);opacity:1; } }
+@keyframes day-set { 0%,100% { transform:translateY(0);opacity:1; } 50% { transform:translateY(12px);opacity:.5; } }
+@keyframes day-rays { to { transform:rotate(360deg); } }
+@keyframes day-travel { 0%,100% { transform:translate(-2px,2px) rotate(-5deg); } 50% { transform:translate(2px,-2px) rotate(3deg); } }
+.daySceneGrid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
+.daySceneGrid .caseCard { width:100%;min-width:0;max-width:none;height:auto;min-height:156px; }
+.daySceneCard .caseCardTop { display:flex;align-items:center;gap:8px;min-width:0; }
+.daySceneCard .caseCardTag { white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.daySceneCard h2 { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden; }
+.daySceneCard p { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden; }
+.daySceneCard .dayResultEmoji { flex:none;background:transparent;font-size:18px; }
+.taskSceneTabs { display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 24px; }
+.taskSceneTabs button { border:0;border-radius:999px;padding:8px 16px;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer; }
+.taskSceneTabs button[aria-pressed=true] { background:var(--soft-2);color:var(--ink); }
+.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.taskRecommendations.has-scenes .taskRecommendation:last-child { grid-column:auto; }
+.taskRecommendations.has-scenes .taskRecommendation { padding:20px 16px;align-items:flex-start; }
+.taskRecommendations.has-scenes .taskRecommendation small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden; }
+@media(max-width:1000px) { .daySceneGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:1fr; } }
+@media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayMoment { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { min-height:136px; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
+@media(prefers-reduced-motion:reduce) { .daySun,.daySunRays,.dayTravel { animation:none!important; } }

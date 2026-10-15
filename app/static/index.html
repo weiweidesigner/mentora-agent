@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-clarification-alignment" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-my-day-scenes" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -147,8 +147,8 @@
         </section>
         <section id="myDay" class="myDay" aria-labelledby="myDayTitle">
           <header class="dayHeader">
-            <div><h2 id="myDayTitle">我的一天</h2><p id="dayClock">正在同步市场时间…</p></div>
-            <label class="dayMarketSelect"><span class="srOnly">地区与市场</span><select id="dayMarketSelect" aria-label="地区与市场"><option value="CN">🇨🇳 A股</option><option value="HK">🇭🇰 港股</option><option value="US">🇺🇸 美股</option></select></label>
+            <h2 id="myDayTitle">新的一天，从容开场</h2>
+            <div class="dayMoment"><span id="daySceneArt" class="daySceneArt" role="img" aria-label="盘前"></span><time id="dayClock"></time></div>
           </header>
           <div id="dayPanel" class="dayPanel"><p class="dayEmpty" role="status">正在加载已生成的结果…</p></div>
           <p id="dayMessage" class="dayMessage" role="status" aria-live="polite"></p>
@@ -177,7 +177,7 @@
           <header class="taskLandingHeader"><h1><span class="taskDesktopLabel">安排任务</span><span class="taskMobileLabel">定时任务</span></h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
           <p class="taskLead">Mentora 可以帮你持续跟踪市场，在需要的时候带来更新。</p>
           <div id="taskLandingList" class="taskLandingList"></div>
-          <div class="taskRecommendations"><h2>推荐</h2><div id="taskRecommendations"></div></div>
+          <div class="taskRecommendations"><h2>推荐</h2><div id="taskSceneTabs" class="taskSceneTabs" aria-label="任务场景" hidden></div><div id="taskRecommendations"></div></div>
         </div>
         <section id="taskDetail" class="taskDetail" aria-label="任务运行与对话" hidden>
           <div id="taskThread" class="taskThread"></div>
@@ -217,7 +217,7 @@
             </details>
             <div hidden aria-hidden="true">
               <select name="market"><option value="CN">A股</option><option value="HK">港股</option><option value="US">美股</option></select>
-              <select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option></select>
+              <select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option><option value="rest">休市时光</option></select>
               <select name="assetType"><option value="stocks">股票</option><option value="etf">ETF</option><option value="index">指数</option><option value="sector">行业板块</option><option value="watchlist">自选列表</option></select>
               <select name="timeMode"><option value="fixed">固定时间</option><option value="open">相对开盘</option><option value="close">相对收盘</option></select>
               <input name="symbols" /><input name="enabled" type="checkbox" checked /><input name="newChat" type="checkbox" checked /><input name="browser" type="checkbox" />
@@ -259,6 +259,6 @@
     <script src="/static/home-background.js?v=light-blue-video-20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
-    <script src="/static/day-tasks.js?v=20261015-task-dialogue-polish"></script>
+    <script src="/static/day-tasks.js?v=20261015-my-day-scenes"></script>
   </body>
 </html>

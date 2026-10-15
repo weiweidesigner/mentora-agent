@@ -43,7 +43,7 @@ MARKETS = {
     'HK': {'name': '港股', 'flag': '🇭🇰', 'zone': 'Asia/Hong_Kong', 'exchange': 'XHKG'},
     'US': {'name': '美股', 'flag': '🇺🇸', 'zone': 'America/New_York', 'exchange': 'XNYS'},
 }
-STAGES = {'pre': '盘前机会', 'live': '盘中监控', 'post': '收盘回顾'}
+STAGES = {'pre': '盘前机会', 'live': '盘中监控', 'post': '收盘回顾', 'rest': '休市时光'}
 COOKIE = 'veya_day_owner'
 SECRET_FIELDS = ('feishuUrl', 'feishuSecret', 'wecomUrl', 'serverchanKey')
 
@@ -74,7 +74,7 @@ def market_state(market, now=None):
     try:
         s = session(market, local.date())
         if s is None:
-            result.update(status='今日休市', stage='post')
+            result.update(status='今日休市', stage='rest', closed=True)
         elif local < s['open'].to_pydatetime():
             pass
         elif local >= s['close'].to_pydatetime():
@@ -84,6 +84,8 @@ def market_state(market, now=None):
             if s['break_start'] is not None and not str(s['break_start']) == 'NaT':
                 if s['break_start'].to_pydatetime() <= local < s['break_end'].to_pydatetime():
                     result['status'] = '午间休市'
+        if s is not None:
+            result.update(closed=False,openAt=stamp(s['open'].to_pydatetime()),closeAt=stamp(s['close'].to_pydatetime()))
     except Exception:
         result.update(status='交易日历暂不可用', calendarError='无法确认交易日，交易日任务暂停调度')
     return result
@@ -92,7 +94,7 @@ def market_state(market, now=None):
 class TaskInput(BaseModel):
     title: str = Field(min_length=1, max_length=80)
     market: Literal['CN', 'HK', 'US'] = 'CN'
-    stage: Literal['pre', 'live', 'post'] = 'pre'
+    stage: Literal['pre', 'live', 'post', 'rest'] = 'pre'
     assetType: Literal['stocks', 'etf', 'index', 'sector', 'watchlist'] = 'stocks'
     symbols: str = Field(default='', max_length=500)
     question: str = Field(min_length=1, max_length=6000)
@@ -174,6 +176,8 @@ def next_occurrence(config, after):
             continue
         if config['timeMode'] == 'fixed':
             candidate = dt.datetime.combine(day, dt.time.fromisoformat(config['time']), zone)
+            if config.get('stage')=='rest' and session(market,candidate.astimezone(ZoneInfo(MARKETS[market]['zone'])).date()) is not None:
+                continue
             if config['cadence'] == 'trading':
                 # A fixed Beijing time for US stocks belongs to its exchange-local date.
                 exchange_day = candidate.astimezone(ZoneInfo(MARKETS[market]['zone'])).date()
@@ -187,6 +191,30 @@ def next_occurrence(config, after):
         if candidate > after:
             return stamp(candidate)
     return None
+
+
+def task_scene(config, at=None):
+    if config.get('stage')=='rest':return 'rest'
+    if config.get('timeMode')=='open':return 'pre' if config.get('offset',0)<=0 else 'live'
+    if config.get('timeMode')=='close':return 'post' if config.get('offset',0)>=0 else 'live'
+    time=dt.time.fromisoformat(config.get('time','09:00'))
+    zone=ZoneInfo(MARKETS[config['market']]['zone'] if config.get('timezone','market')=='market' else config['timezone'])
+    exchange=dt.datetime.combine((at or now_utc()).astimezone(zone).date(),time,zone).astimezone(ZoneInfo(MARKETS[config['market']]['zone'])).time()
+    close=dt.time(15,0) if config['market']=='CN' else dt.time(16,0)
+    return 'pre' if exchange<dt.time(9,30) else 'live' if exchange<close else 'post'
+
+
+def result_preview(markdown):
+    text=re.sub(r'\[\[AIME_[^\n]+?\]\]','',markdown or '')
+    text=re.sub(r'\[([^\]]+)\]\([^)]+\)',r'\1',text)
+    text=re.sub(r'[*_`]+','',text)
+    lines=[re.sub(r'^\s*(?:#{1,6}\s*|[-*>]\s*|\d+[.、]\s*)','',line).strip() for line in text.splitlines()]
+    lines=[line for line in lines if line and line not in ('核心结论','关键证据','结论','总结','分析结果') and not line.startswith(('来源','数据口径','http','|'))]
+    if not lines:return '',''
+    first=lines[0]
+    headline=re.split(r'[。！？\n]',first)[0][:64]
+    description=' '.join(lines[1:] if len(first)<=64 and len(lines)>1 else lines)[:240]
+    return headline,description
 
 
 def private_file(path, content):
@@ -280,11 +308,16 @@ class DayTasks:
         for name in SECRET_FIELDS:
             config[name + 'Configured'] = bool(config.pop(name, ''))
         last = db.execute('SELECT status,error,finished FROM runs WHERE id=?', (row['last_run'],)).fetchone()
-        success = db.execute('SELECT id,finished,answer FROM runs WHERE id=?', (row['success_run'],)).fetchone()
+        success = db.execute('SELECT id,created,config,finished,answer FROM runs WHERE id=?', (row['success_run'],)).fetchone()
         notice = db.execute('SELECT channel,status,error FROM deliveries WHERE run_id=?', (row['last_run'],)).fetchall()
         answer = json.loads(success['answer']) if success else {}
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))
-        return dict(config, id=row['id'], nextAt=row['next_at'], activeRun=row['active_run'],
+        from app.day_presets import SCENE_OWNER, PRESETS
+        snapshot=self.unpack(success['config']) if success else config
+        scene=task_scene(snapshot,dt.datetime.fromisoformat(success['created']) if success else None)
+        headline,description=result_preview(answer.get('interpretation',''))
+        emoji=next((p[2] for p in PRESETS if p[3]==config['title']),{'pre':'🌅','live':'☀️','post':'🌇','rest':'🧳'}.get(scene,'📋'))
+        return dict(config, systemPreset=row['owner']==SCENE_OWNER, scene=task_scene(config),resultScene=scene,resultMarket=snapshot['market'],resultDate=dt.datetime.fromisoformat(success['created']).astimezone(ZoneInfo(MARKETS[snapshot['market']]['zone'])).date().isoformat() if success else None,resultHeadline=headline,resultDescription=description,emoji=emoji, id=row['id'], nextAt=row['next_at'], activeRun=row['active_run'],
                     lastRun=dict(last) if last else None, successAt=success['finished'] if success else None,
                     resultVersion=success['id'] if success else None, summary=summary[:180],
                     notifications=[dict(n) for n in notice])
@@ -292,6 +325,28 @@ class DayTasks:
     def list(self, owner):
         with self.db() as db:
             return [self.public(db, r) for r in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY created', (owner,))]
+
+    def seed_scene_presets(self):
+        from app.day_presets import SCENE_OWNER,preset_payloads
+        with self.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            for task_id,emoji,payload in preset_payloads():
+                if db.execute('SELECT 1 FROM tasks WHERE id=?',(task_id,)).fetchone():continue
+                config=payload.model_dump()
+                next_at=next_occurrence(config,now_utc())
+                db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?)',(task_id,SCENE_OWNER,self.pack(config),next_at,stamp(now_utc())))
+                db.execute('INSERT INTO result_links(task_id,token) VALUES(?,?)',(task_id,secrets.token_urlsafe(32)))
+
+    def scene_tasks(self):
+        from app.day_presets import SCENE_OWNER
+        with self.db() as db:
+            return [self.public(db,row) for row in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY id',(SCENE_OWNER,))]
+
+    def readable(self,db,owner,task_id):
+        from app.day_presets import SCENE_OWNER
+        row=db.execute('SELECT * FROM tasks WHERE id=? AND deleted=0 AND owner IN (?,?)',(task_id,owner,SCENE_OWNER)).fetchone()
+        if not row:raise HTTPException(404,'任务不存在')
+        return row
 
     def save(self, owner, payload, task_id=None):
         config = payload.model_dump()
@@ -541,7 +596,7 @@ def create_router(service):
 
     @router.get('/tasks')
     def tasks(request: Request, response: Response):
-        return {'tasks': service.list(owner(request, response)), 'markets': [market_state(m) for m in MARKETS], 'serverTime': stamp(now_utc()), 'pushPublicKey': service.public_key}
+        return {'tasks': service.list(owner(request, response)), 'sceneTasks':service.scene_tasks(), 'markets': [market_state(m) for m in MARKETS], 'serverTime': stamp(now_utc()), 'pushPublicKey': service.public_key}
 
     @router.post('/plan')
     def plan(payload: dict, request: Request, response: Response):
@@ -615,16 +670,16 @@ def create_router(service):
     def runs(task_id: str, request: Request, response: Response):
         user = owner(request, response)
         with service.db() as db:
-            task = service.owned(db, user, task_id)
-            rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE task_id=? AND owner=? AND (id IN (SELECT id FROM runs WHERE task_id=? AND owner=? ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task_id, user, task_id, user, task['success_run'])).fetchall()
+            task = service.readable(db, user, task_id)
+            rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE task_id=? AND owner=? AND (id IN (SELECT id FROM runs WHERE task_id=? AND owner=? ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task_id, task['owner'], task_id, task['owner'], task['success_run'])).fetchall()
             return {'runs': [dict(row) for row in rows]}
 
     @router.get('/tasks/{task_id}/runs/{run_id}')
     def run_result(task_id: str, run_id: str, request: Request, response: Response):
         user = owner(request, response)
         with service.db() as db:
-            task = service.owned(db, user, task_id)
-            row = db.execute('SELECT * FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, user)).fetchone()
+            task = service.readable(db, user, task_id)
+            row = db.execute('SELECT * FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, task['owner'])).fetchone()
             if not row:
                 raise HTTPException(404, '运行记录不存在')
             answer = json.loads(row['answer']) if row['answer'] else None
@@ -635,7 +690,7 @@ def create_router(service):
     def result(task_id: str, request: Request, response: Response):
         user = owner(request, response)
         with service.db() as db:
-            task = service.owned(db, user, task_id)
+            task = service.readable(db, user, task_id)
             row = db.execute('SELECT * FROM runs WHERE id=?', (task['success_run'],)).fetchone()
             if not row:
                 raise HTTPException(404, '还没有成功结果')

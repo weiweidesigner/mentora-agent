@@ -9,7 +9,7 @@ const savedAnswerSource=appSource.slice(appSource.indexOf('async function render
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
-function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
+function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
  const dom=new JSDOM(html,{url,runScripts:'outside-only'}),w=dom.window,requests=[],saves=[];
  w.matchMedia=()=>({matches:mobile});w.setInterval=()=>0;w.structuredClone=structuredClone;w.requestAnimationFrame=f=>f();
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -24,7 +24,7 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
   else if(options.method==='PUT'){const id=path.split('/').at(-1),index=tasks.findIndex(t=>t.id===id);data={...tasks[index],...JSON.parse(options.body)};tasks[index]=data;}
   else if(options.method==='DELETE'){tasks=tasks.filter(t=>!path.endsWith('/'+t.id));data={ok:true};}
   else if(options.method==='POST'&&path.endsWith('/run')){const task=tasks.find(t=>path.includes('/'+t.id+'/'));task.activeRun='queued';task.lastRun={status:'queued'};data={runId:'queued'};}
-  else if(path.endsWith('/tasks'))data={tasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:'live',status:'交易中'}],serverTime:'2026-10-15T04:00:00Z',pushPublicKey:''};
+  else if(path.endsWith('/tasks'))data={tasks,sceneTasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:scene,status:scene==='rest'?'今日休市':'交易中'}],serverTime:'2026-10-15T04:00:00Z',pushPublicKey:''};
   else if(path.endsWith('/runs'))data={runs:path.includes('created')?[]:[{id:'run-new',status:'success',created:'2026-10-15T04:00:00Z',finished:'2026-10-15T04:00:00Z',available:true},{id:'run-old',status:'success',created:'2026-10-14T04:00:00Z',finished:'2026-10-14T04:00:00Z',available:true}]};
   else if(path.includes('/runs/'))data={question:'本次原始问句',cachedDate:'2026-10-15T04:00:00Z',answer:{interpretation:path.endsWith('run-old')?'上一次缓存内容':'最新缓存内容'}};
   else data={};
@@ -37,7 +37,7 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
 async function openScenarioEditor(d,id){d.querySelector('#taskSidebarNew').click();}
 
 test('My Day shows only generated results for the current market phase and links to that task',async()=>{
- const h=setup({tasks:[{...base,id:'live'},{...base,id:'pre',stage:'pre'},{...base,id:'pending',resultVersion:null},{...base,id:'us',market:'US'}]});await tick();
+ const h=setup({tasks:[{...base,id:'live'},{...base,id:'pre',stage:'pre',time:'08:30'},{...base,id:'pending',resultVersion:null},{...base,id:'us',market:'US'}]});await tick();
  const cards=h.w.document.querySelectorAll('#dayPanel [data-task-open]');assert.equal(cards.length,1);assert.equal(cards[0].dataset.taskOpen,'live');assert.doesNotMatch(cards[0].textContent,/\*\*|##/);
  assert.equal(h.w.document.querySelectorAll('#myDay [role=tab],#myDay [data-template]').length,0);
  cards[0].click();await tick();assert.equal(h.w.document.querySelector('#taskWorkspace').hidden,false);assert.equal(new URL(h.w.location).searchParams.get('task'),'live');
@@ -198,4 +198,17 @@ test('planning progress is clickable and opens the existing activity drawer with
  const h=setup({tasks:[]});await tick();const d=h.w.document,fetch=h.w.fetch;let release;
  h.w.fetch=async(path,options)=>path.endsWith('/plan')?new Promise(resolve=>{release=()=>resolve({ok:true,json:async()=>({reply:'请确认时间',draft:{...base},questions:[{field:'time',question:'几点收到？',options:[]}],ready:false})});}):fetch(path,options);
  d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const article=d.querySelector('#taskWizardTranscript .message.assistant');article.querySelector('.thinkingTrigger').click();assert.equal(article.dataset.activityOpened,'true');assert.match(article.querySelector('.thinkingSteps').textContent,/请求任务配置模型/);release();await tick();assert.equal(d.querySelector('#taskWizardTranscript .message.assistant'),article);assert.match(article.querySelector('.thinkingSteps').textContent,/需要补充参数/);h.dom.window.close();
+});
+
+test('My Day removes market picker and subtitle, shows a scene clock and only today’s matching result cards',async()=>{
+ const presets=['pre','live','post','rest'].map((stage,i)=>({...base,id:'preset-'+stage,title:'场景任务'+i,stage,time:['08:00','12:00','16:00','09:00'][i],systemPreset:true,resultScene:stage,resultDate:'2026-10-15',resultHeadline:'执行所得标题'+i,resultDescription:'执行所得正文'+i,emoji:'🌇'}));
+ for(const scene of ['pre','live','post','rest']){const h=setup({tasks:[],scene,sceneTasks:[...presets,{...presets[0],id:'old',resultScene:scene,resultDate:'2026-10-14'}]});await tick();const d=h.w.document;assert.equal(d.querySelector('#dayMarketSelect'),null);assert.equal(d.querySelector('.dayHeader p'),null);assert.match(d.querySelector('#dayClock').textContent,/2026年10月15日.*\d{2}:\d{2}:\d{2}/);assert.equal(d.querySelector('#daySceneArt').dataset.scene,scene);const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,1);assert.equal(cards[0].dataset.taskOpen,'preset-'+scene);assert.match(cards[0].querySelector('h2').textContent,/执行所得标题/);assert.match(cards[0].querySelector('p').textContent,/执行所得正文/);assert.match(cards[0].querySelector('.caseCardTag').textContent,/场景任务/);h.dom.window.close();}
+});
+
+test('shared scene results open the normal saved conversation without allowing edits',async()=>{
+ const t={...base,id:'public-result',systemPreset:true,resultScene:'live',resultDate:'2026-10-15',resultHeadline:'市场变化'};const h=setup({tasks:[],sceneTasks:[t]});await tick();const d=h.w.document;d.querySelector('#dayPanel [data-task-open]').click();await tick();assert.match(d.querySelector('#taskThread').textContent,/最新缓存内容/);assert.equal(d.querySelector('#taskRunNow').hidden,true);assert.equal(d.querySelector('#taskToggle').hidden,true);d.querySelector('#taskThread .thinkingTrigger').click();assert.equal(d.querySelector('#daySave').hidden,true);assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
+});
+
+test('twelve shared presets appear as three task recommendations in each scene tab',async()=>{
+ const presets=['pre','live','post','rest'].flatMap(stage=>[1,2,3].map(i=>({...base,id:stage+i,title:stage+i,stage,time:'09:00',systemPreset:true})));const h=setup({tasks:[],sceneTasks:presets});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,4);for(const scene of ['pre','live','post','rest']){d.querySelector(`[data-recommendation-scene="${scene}"]`).click();assert.equal(d.querySelectorAll('[data-recommendation]').length,3);assert.ok([...d.querySelectorAll('[data-recommendation]')].every(e=>e.dataset.recommendation.startsWith(scene)));}assert.equal(h.saves.length,0);h.dom.window.close();
 });
