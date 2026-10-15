@@ -4165,3 +4165,24 @@ p {
  .shell .desktopNavRail { width:28px;height:28px;border-radius:8px; }
  .shell .desktopNavRail .navigationIcon { width:16px;height:16px; }
 }
+
+/* One video behind the app; the sidebar is a frosted glass surface. */
+.shell { position:relative;isolation:isolate; }
+.shell>.homeBackdrop { display:block;inset:0;height:100%;min-height:0;z-index:-1; }
+.shell .conversation.is-empty { background:transparent; }
+@media(min-width:761px) {
+ .shell:is(.sidebar-open,.sidebar-collapsed) .appSidebar,
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarRail { background:transparent; }
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarContent {
+  background:color-mix(in srgb,var(--soft) 38%,transparent);
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+  border-color:color-mix(in srgb,var(--line) 72%,transparent);
+ }
+}
+@media(max-width:760px) {
+ .shell>.homeBackdrop { display:none;height:85dvh;min-height:480px; }
+ .shell:has(.conversation.is-empty):not(.tasks-view)>.homeBackdrop { display:block; }
+ .shell.sidebar-open .sidebarContent { background:color-mix(in srgb,var(--soft) 65%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px); }
+}
+@supports not (backdrop-filter:blur(1px)) { .shell .sidebarContent { background:var(--soft); } }

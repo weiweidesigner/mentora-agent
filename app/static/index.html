@@ -7,12 +7,16 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-shared-sidebar-panel" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-glass-sidebar" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
     <main class="shell sidebar-collapsed">
       <script>if (window.matchMedia('(min-width: 761px)').matches) { const shell = document.currentScript.parentElement; shell.classList.replace('sidebar-collapsed', 'sidebar-open'); }</script>
+        <div id="homeBackdrop" class="homeBackdrop" aria-hidden="true">
+          <video id="homeBackdropVideo" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="/static/assets/home-market-background.jpg" data-src="/static/assets/home-market-background.mp4" tabindex="-1"></video>
+          <div class="homeBackdropMask"></div>
+        </div>
       <aside id="appSidebar" class="appSidebar" aria-label="Veya 导航">
         <div class="sidebarRail">
           <button id="sidebarToggle" class="railButton is-active" type="button" aria-label="展开侧边栏" data-tip-open="展开侧边栏" data-tip-close="收起侧边栏">
@@ -110,10 +114,7 @@
         </div>
       </div>
       <section class="conversation is-empty" aria-label="图文对话分析">
-        <div id="homeBackdrop" class="homeBackdrop" aria-hidden="true">
-          <video id="homeBackdropVideo" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="/static/assets/home-market-background.jpg" data-src="/static/assets/home-market-background.mp4" tabindex="-1"></video>
-          <div class="homeBackdropMask"></div>
-        </div>
+
         <header id="caseDetailHeader" class="caseDetailHeader" hidden>
           <button id="caseBackButton" class="caseBackButton" type="button"><span class="caseBackLabel"><span aria-hidden="true">←</span> 返回首页</span><svg class="caseCloseIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
           <span id="caseCacheDate" class="caseCacheDate"></span>
@@ -262,7 +263,7 @@
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261015-embedded-layout"></script>
     <script src="/api/client-config.js"></script>
     <script src="/static/app.js?v=interface-20261015-solid-navigation"></script>
-    <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
+    <script src="/static/home-background.js?v=glass-20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
     <script src="/static/day-tasks.js?v=20261015-solid-navigation"></script>
   </body>
