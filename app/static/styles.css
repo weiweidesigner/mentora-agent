@@ -4186,3 +4186,10 @@ p {
  .shell.sidebar-open .sidebarContent { background:color-mix(in srgb,var(--soft) 65%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px); }
 }
 @supports not (backdrop-filter:blur(1px)) { .shell .sidebarContent { background:var(--soft); } }
+@media(min-width:761px) {
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarRail {
+  background:color-mix(in srgb,var(--soft) 38%,transparent);
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+ }
+}
