@@ -319,7 +319,7 @@ class DayTasks:
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))
         preview=''
         if row['active_run']:
-            recent=db.execute("SELECT event,payload FROM run_events WHERE run_id=? AND event IN ('status','agent_event','tool_step','answer_text') ORDER BY id DESC LIMIT 8",(row['active_run'],)).fetchall()
+            recent=db.execute("SELECT event,payload FROM run_events WHERE run_id=? AND event IN ('status','agent_event','tool_step','progress','answer_text') ORDER BY id DESC LIMIT 8",(row['active_run'],)).fetchall()
             for event in recent:
                 data=json.loads(event['payload'])
                 value=next((data.get(k) for k in ('detail','message','text','content','title') if isinstance(data.get(k),str) and data.get(k).strip()),'')
@@ -456,7 +456,7 @@ class DayTasks:
         return None
 
     def record_event(self,run_id,event,data):
-        if event not in {'status','route','agent_event','tool_step','answer_text','module','visualization','visualize_widget','vision_asset','module_error','final','error'}:return
+        if event not in {'status','route','agent_event','tool_step','progress','answer_text','module','visualization','visualize_widget','vision_asset','module_error','final','error'}:return
         if not isinstance(data,dict):return
         def clean(value):
             if isinstance(value,dict):return {k:('[redacted]' if re.search(r'api.?key|authorization|password|cookie|secret',k,re.I) else clean(v)) for k,v in value.items()}

@@ -435,6 +435,13 @@ function handleStreamEvent(article, eventName, data) {
     appendToolStep(article, data);
     return;
   }
+  if (eventName === "progress") {
+    const text = String(data?.text || "").replace(/\s+/g, " ").trim();
+    if (!text || article.activityEnded) return;
+    article.dataset.currentThinking = text;
+    updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
+    return;
+  }
   if (eventName === "answer_text") {
     renderStreamAnswerText(article, data);
     return;

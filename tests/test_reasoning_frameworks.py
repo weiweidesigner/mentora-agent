@@ -605,7 +605,7 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
         "'{\"type\":\"thread.started\",\"thread_id\":\"thread-123\"}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"command_execution\",\"command\":[\"echo\",\"ok\"],\"status\":\"completed\"}}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"I will load the relevant skills.\"}}' "
-        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"channel\":\"commentary\",\"text\":\"Internal execution note\"}}' "
+        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"channel\":\"commentary\",\"text\":\"Checking chart settings\"}}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"完成\"}}'\n",
         encoding="utf-8",
     )
@@ -617,7 +617,8 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
 
     names = [name for name, _data in events]
     final = next(data for name, data in events if name == "final")
-    assert names == ["status", "agent_event", "tool_step", "answer_text", "agent_event", "final"]
+    assert names == ["status", "agent_event", "tool_step", "progress", "answer_text", "agent_event", "final"]
+    assert [data["text"] for name, data in events if name == "progress"] == ["Checking chart settings"]
     assert final["engineSessionId"] == "thread-123"
     assert final["interpretation"] == "完成"
     assert [data["text"] for name, data in events if name == "answer_text"] == ["完成"]
@@ -819,3 +820,31 @@ def test_visualization_catalog_keeps_routing_bounded_and_semantic(tmp_path: Path
     assert len(candidates) == 45
     assert sum(len(item['description']) for item in candidates) < 45 * 400
     assert all('fiscal quarter' in item['description'] and 'reported revenue' in item['description'] for item in candidates)
+
+
+@pytest.mark.parametrize('bundled_tool', [False, True])
+def test_deepseek_routes_execution_commentary_to_progress(tmp_path, monkeypatch, bundled_tool):
+    generated=tmp_path/'outputs/generated';generated.mkdir(parents=True)
+    monkeypatch.setenv('DSH_HOME',str(tmp_path/'dsh'))
+    summary='我先读取 TradingView 组件规范，再加载苹果日线。'
+    class Harness:
+        def __init__(self,**kwargs):pass
+        def close(self):pass
+        def run(self,prompt,*,session_id,on_notification):
+            def emit(kind,data,owner=None):
+                on_notification(SimpleNamespace(method='session.event',payload={'sessionId':owner or session_id,'event':{'type':kind,'data':data}}))
+            emit('assistant/message',{'message':{'channel':'analysis','content':[{'type':'text','text':'private reasoning'}]}})
+            emit('assistant/message',{'message':{'content':[{'type':'text','text':'child private text'}]}},owner='child-session')
+            blocks=[{'type':'text','text':summary}]
+            if bundled_tool:blocks.append({'type':'tool_use','id':'load','name':'bash','input':{'command':'cat SKILL.md'}})
+            emit('assistant/message',{'message':{'content':blocks}})
+            emit('tool/call',{'callId':'load','name':'bash','arguments':{'command':'cat SKILL.md'}})
+            emit('assistant/message',{'message':{'content':[{'type':'text','text':'苹果日线已生成。'}]}})
+            return SimpleNamespace(session_id=session_id,final_response='苹果日线已生成。',events=[],notifications=[])
+    monkeypatch.setitem(sys.modules,'deepseek_harness',SimpleNamespace(DeepSeekHarness=Harness))
+    events=list(LocalAgentFrameworks(project_root=tmp_path,generated_dir=generated).stream('deepseek','用 TradingView 看苹果日线',[],session_key='progress-test'))
+    progress=[d['text'] for k,d in events if k=='progress']
+    assert progress==[summary.rstrip('。')]
+    assert [d['text'] for k,d in events if k=='answer_text']==['苹果日线已生成。']
+    assert next(d for k,d in events if k=='tool_step')['thoughtSummary']==summary.rstrip('。')
+    assert 'private reasoning' not in str(events) and 'child private text' not in str(events)

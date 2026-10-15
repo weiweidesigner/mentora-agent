@@ -601,6 +601,7 @@ class LocalAgentFrameworks:
 需要图表时，把独立 HTML 写入 {self.generated_dir}，文件名以 {framework}- 开头；前端只接收生成文件的绝对路径，不接收内嵌图表数据。在最终 Markdown 的相应位置单独写一行 [[AIME_CHART:绝对HTML路径]]。
 当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板或交互式 HTML 时，选择 streamviz 作为“展示阶段” Skill；它不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，再将精简的、证据驱动的展示 payload 文件交给 streamviz 渲染。根据问题选择 dashboard、comparison、timeline、flow 或 brief 布局，并按需组合表格、排序、时间线和叙事区块；不要把所有内容都压成指标卡。若这些结构不适合任务，使用 streamviz payload 的 html 字段生成任意自包含 HTML/CSS/SVG/Canvas 页面，而不是退回到卡片或表格。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。网关会自动把已生成 HTML 以流式方式呈现。
 最终答案末尾另起一行写 [[AIME_SKILLS:实际使用的Skill名称，以英文逗号分隔]]；未使用项目 Skill 时写 [[AIME_SKILLS:none]]。该标记只用于系统记录。
+所有面向用户的文字（包括执行前说明、工具间进度、commentary 和最终回答）都必须使用用户的语言。执行过程中只提供简短、具体的公开行动摘要，例如“我先核对苹果的图表设置，再加载日线”，供界面的动态进度文案使用；不要输出内部思维链。
 最终回答使用用户的语言，先给核心结论，再给关键证据和图表解读，最后给风险、数据时间与口径。结论强度必须与证据质量匹配；代理数据、降级数据或不完整数据必须显式披露。不得把内部规划、命令日志或密钥写进答案。
 联网搜索、新闻、公告、研报或网页事实的来源由 Skill 工具返回的结构化数据自动收集，并由 Mentora 现有溯源组件展示。最终正文不要加入 Markdown 来源链接、裸 URL、“来源：”引导或“来源/参考资料”清单。
 除非任务本身要求修改项目，否则不要改动 app、tests 或配置文件；生成物只能写入 outputs。
@@ -1387,7 +1388,11 @@ class LocalAgentFrameworks:
                 # Codex also emits interim execution commentary as agent_message.
                 # Buffer messages until the turn finishes; only the last answer
                 # belongs in the user-facing response body.
-                if item.get("channel") not in {"analysis", "commentary"}:
+                if item.get("channel") == "commentary":
+                    progress = self._public_thought_summary(item.get("text"))
+                    if progress:
+                        yield "progress", {"text": progress}
+                elif item.get("channel") != "analysis":
                     answer = str(item.get("text") or answer)
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
@@ -1569,6 +1574,8 @@ class LocalAgentFrameworks:
         runtime_sources: list[dict[str, str]] = []
         runtime_html_paths: list[Path] = []
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
+        pending_public_text = ""
+        latest_progress_summary = ""
         started_at = time.monotonic()
         run_timeout = self._deepseek_run_timeout_seconds()
         while worker.is_alive() or not notifications.empty():
@@ -1589,6 +1596,11 @@ class LocalAgentFrameworks:
             else:
                 event_type = ""
             if event_type in {"tool/call", "tool/result", "todo/write"}:
+                if event_type == "tool/call" and pending_public_text:
+                    latest_progress_summary = self._public_thought_summary(pending_public_text)
+                    if latest_progress_summary:
+                        yield "progress", {"text": latest_progress_summary}
+                    pending_public_text = ""
                 tool_index += 1
                 data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 runtime_sources.extend(self._sources_from_value(data))
@@ -1601,8 +1613,10 @@ class LocalAgentFrameworks:
                 if event_type == "tool/call":
                     name = str(data.get("name") or data.get("tool") or "工具")
                     thought_summary = self._public_thought_summary(
-                        data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"), data.get("description")
+                        data.get("thoughtSummary"), data.get("thought_summary"), latest_progress_summary,
+                        data.get("title"), data.get("description")
                     )
+                    latest_progress_summary = ""
                     if not thought_summary:
                         thought_summary = self._jev_tool_thought_summary(name, arguments)
                     if call_id:
@@ -1648,10 +1662,25 @@ class LocalAgentFrameworks:
                 data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 message = data.get("message") if isinstance(data.get("message"), dict) else data
                 content = message.get("content")
-                if message.get("channel") != "analysis" and isinstance(content, list):
-                    text = "".join(str(block.get("text") or "") for block in content if isinstance(block, dict) and block.get("type") == "text")
-                    if text.strip():
-                        yield "answer_text", {"text": text, "replace": True}
+                if message.get("channel") not in {"analysis", "reasoning"} and isinstance(content, list):
+                    text = "".join(str(block.get("text") or "") for block in content if isinstance(block, dict) and block.get("type") == "text").strip()
+                    has_tools = bool(message.get("tool_calls") or message.get("toolCalls")) or any(
+                        isinstance(block, dict) and block.get("type") in {"tool_use", "tool_call", "tool-call", "toolCall"}
+                        for block in content
+                    )
+                    if pending_public_text:
+                        latest_progress_summary = self._public_thought_summary(pending_public_text)
+                        if latest_progress_summary:
+                            yield "progress", {"text": latest_progress_summary}
+                        pending_public_text = ""
+                    if text and (has_tools or message.get("channel") == "commentary"):
+                        latest_progress_summary = self._public_thought_summary(text)
+                        if latest_progress_summary:
+                            yield "progress", {"text": latest_progress_summary}
+                    elif text:
+                        # A text-only message may still precede a separate tool/call.
+                        # Hold it until that boundary or until the run completes.
+                        pending_public_text = text
             elif method in {"subagent.started", "subagent.finished"}:
                 yield "agent_event", {
                     "engine": FRAMEWORKS["deepseek"],
@@ -1698,6 +1727,8 @@ class LocalAgentFrameworks:
                     )
             if fallback_path is not None:
                 answer = f"{answer.rstrip()}\n\n[[AIME_CHART:{fallback_path}]]"
+        if pending_public_text:
+            yield "answer_text", {"text": pending_public_text, "replace": True}
         actual_session_id = str(getattr(result, "session_id", "") or requested_session_id)
         run_id = f"deepseek-{actual_session_id}"
         yield "agent_event", {
