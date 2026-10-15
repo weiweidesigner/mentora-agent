@@ -29,7 +29,7 @@ test('generation uses the real research stream, persists separate charts and key
  assert.equal(d.querySelector('#widgetEmpty').hidden,true);dom.window.close();
 });
 test('manual library preserves selected component and symbol in request',async()=>{
- const{dom,w,d,calls}=setup();d.querySelector('#widgetLibraryOpen').click();await tick();
+ const{dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
  d.querySelector('[data-component="cash_flow"]').click();d.querySelector('#widgetSymbol').value='MSFT';d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/MSFT/);assert.match(body.question,/cash_flow.py/);assert.match(body.question,/只生成指定的一张/);dom.window.close();
 });
@@ -50,18 +50,18 @@ test('empty or failed output is visible and never inserts fabricated charts',asy
 });
 
 test('TradingView market widget uses its own skill and can be added without a stock code',async()=>{
- const {dom,w,d,calls}=setup();d.querySelector('#widgetLibraryOpen').click();await tick();
+ const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
  d.querySelector('[data-category="宏观分析"]').click();d.querySelector('[data-component="tv-economic-calendar"]').click();
  assert.equal(d.querySelector('#widgetSymbol').required,false);assert.equal(d.querySelector('#widgetSymbolLabel').textContent,'市场或范围（可选）');
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/trading-view-chart\/scripts\/trading_view_chart.py/);assert.match(body.question,/--widget economic-calendar/);assert.match(body.question,/全球重要经济数据/);assert.doesNotMatch(body.question,/tv-economic-calendar.py/);dom.window.close();
 });
 test('TradingView quote-list preserves multiple symbols and category changes select a visible component',async()=>{
- const {dom,w,d,calls}=setup();d.querySelector('#widgetLibraryOpen').click();await tick();
+ const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
  d.querySelector('[data-category="行情观察"]').click();assert.ok(d.querySelector('#widgetLibraryList [aria-pressed="true"]'));
  d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';assert.equal(d.querySelector('#widgetSymbol').required,true);
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/--widget market-data/);assert.match(body.question,/NASDAQ:AAPL,NASDAQ:NVDA/);assert.match(body.question,/symbolsGroups/);
- d.querySelector('#widgetLibraryOpen').click();await tick();d.querySelector('[data-category="宏观分析"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
+ d.querySelector('#widgetSidebarLibrary').click();await tick();d.querySelector('[data-category="宏观分析"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
  d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'NASDAQ:AAPL,NASDAQ:NVDA');dom.window.close();
 });
