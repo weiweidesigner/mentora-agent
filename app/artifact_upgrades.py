@@ -90,3 +90,28 @@ def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
     except (ValueError, KeyError, TypeError, IndexError):
         # Non-native/mixed/annotated layouts stay intact rather than lose data.
         return artifact
+
+
+@lru_cache(maxsize=1)
+def _native_grouped_bar():
+    script = Path(__file__).parent / "skills/generic-chart/scripts/grouped_bar.py"
+    spec = importlib.util.spec_from_file_location("saved_grouped_bar", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_legacy_grouped_bar(artifact: str, theme: str) -> str:
+    """Apply current axis/layout logic to native grouped bars using saved values."""
+    if 'class="chart-component"' not in artifact or 'data-chart-layout-version="2"' in artifact:
+        return artifact
+    if 'function sampledXAxisIndexes' not in artifact or 'function tooltipBounds' not in artifact:
+        return artifact
+    try:
+        config = _constant(artifact, "config")
+        if config.get("type") != "grouped-bar":
+            return artifact
+        config["themeMode"] = theme
+        return _native_grouped_bar().render_svg_chart(config, "bar")
+    except (ValueError, KeyError, TypeError):
+        return artifact

@@ -10,15 +10,15 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
     alias: [
       { find: /^streamviz-react$/, replacement: resolve("node_modules/streamviz-react/src/index.ts") },
+      { find: "../theme/artifact-theme.css?raw", replacement: resolve("app/skills/streamviz/assets/artifact-theme.css") + "?raw" },
       { find: "streamviz-react/styles.css", replacement: resolve("node_modules/streamviz-react/src/theme/styles.css") },
     ],
   },
   plugins: [react(), {
     name: "streamviz-artifact-theme",
     closeBundle() {
-      const themeSource = resolve("node_modules/streamviz-react/src/theme/artifact-theme.css");
+      const themeSource = resolve("app/skills/streamviz/assets/artifact-theme.css");
       copyFileSync(themeSource, resolve("app/static/vendor/streamviz/artifact-theme.css"));
-      copyFileSync(themeSource, resolve("app/skills/streamviz/assets/artifact-theme.css"));
     },
   }],
   // streamviz-react currently ships dependencies that still reference the

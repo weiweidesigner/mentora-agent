@@ -205,3 +205,9 @@
  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>strong{font-size:24px!important;line-height:1.2!important;white-space:nowrap}
  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>:is(small,em){font-size:12px;line-height:1.45}
 }
+
+/* Table headers stay on one line; each wide table owns its horizontal scroll. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.table-wrap,.sv-table-wrap,.pv-table-wrap){overflow-x:auto!important;max-width:100%;min-width:0}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) th{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap table{table-layout:auto!important;min-width:640px;width:100%}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap :is(th,td):nth-last-child(-n+2){white-space:nowrap!important;min-width:92px}

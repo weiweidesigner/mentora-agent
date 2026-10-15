@@ -47,3 +47,15 @@ def test_share_route_upgrades_old_layout_without_overwriting_file(tmp_path, monk
     response = presentation.share_streamviz_artifact(path.name, 'dark')
     assert 'data-mobile-columns="2"' in response.body.decode()
     assert path.read_text() == original
+
+
+def test_old_grouped_bar_is_rebuilt_with_same_saved_values():
+    from app.artifact_upgrades import _native_grouped_bar, upgrade_legacy_grouped_bar
+    native = _native_grouped_bar()
+    payload = {"type":"grouped-bar", "title":"Saved comparison", "props":{"xField":"name", "series":[{"field":"gap", "label":"Gap"},{"field":"now", "label":"Now"}]}, "data":[{"name":"Long category", "gap":-9.76, "now":.01}]}
+    config = native.normalize_xy_series(payload, "grouped-bar", "Test", "bar")
+    old = native.render_svg_chart(config, "bar").replace(' data-chart-layout-version="2"', '')
+    new = upgrade_legacy_grouped_bar(old, "dark")
+    assert 'data-chart-layout-version="2"' in new
+    assert _constant(old, "config")["data"] == _constant(new, "config")["data"]
+    assert _constant(new, "config")["themeMode"] == "dark"

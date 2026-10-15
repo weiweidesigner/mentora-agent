@@ -35,7 +35,8 @@ def test_streamviz_uses_pinned_repository_source_and_shared_theme() -> None:
     assert lock["packages"]["node_modules/streamviz-react"]["resolved"] == dependency
     config = (ROOT / "vite.streamviz.config.js").read_text(encoding="utf-8")
     assert "node_modules/streamviz-react/src/index.ts" in config
-    assert "node_modules/streamviz-react/src/theme/artifact-theme.css" in config
+    assert 'find: "../theme/artifact-theme.css?raw"' in config
+    assert 'resolve("app/skills/streamviz/assets/artifact-theme.css")' in config
 
 
 def test_streamviz_browser_bundle_has_no_node_process_dependency() -> None:
@@ -412,3 +413,9 @@ def test_chat_stream_preserves_public_text_and_real_widget_events_without_batch_
     assert response.status_code==200
     names=[line[7:] for line in response.text.splitlines() if line.startswith('event: ')]
     assert names==["module", "answer_text", "visualization", "final"]
+
+
+def test_embedded_runtime_bundles_the_current_mobile_metric_and_table_contract():
+    bundle = (ROOT / "app/static/vendor/streamviz/streamviz.js").read_text()
+    assert "Mobile summary metrics form compact swipeable cards" in bundle
+    assert "Table headers stay on one line" in bundle
