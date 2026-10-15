@@ -226,3 +226,43 @@ def test_cached_view_uses_the_original_resolved_question(client, service):
     with service.db() as db:
         token = db.execute('SELECT token FROM result_links WHERE task_id=?',(task['id'],)).fetchone()['token']
     assert TestClient(client.app).get('/api/day/shared/'+token).json()['question'] == '分析A股'
+
+
+def test_weekly_monthly_and_end_date_schedule():
+    assert next_occurrence(config(cadence='weekly',weekdays=[4]),moment('2026-10-15T02:00:00Z')).startswith('2026-10-16T01:00:00')
+    assert next_occurrence(config(cadence='monthly',monthDay=31),moment('2026-01-31T02:00:00Z')).startswith('2026-03-31T01:00:00')
+    assert next_occurrence(config(cadence='daily',endDate='2026-10-15'),moment('2026-10-15T02:00:00Z')) is None
+
+
+def test_run_history_is_owned_and_keeps_recent_conversations(client,service):
+    task=create(client,enabled=False).json()
+    for text in ['first saved answer','second saved answer']:
+        service.runner=lambda c,r,text=text:{'question':'resolved question','interpretation':text}
+        with service.db() as db:
+            owner=db.execute('SELECT owner FROM tasks WHERE id=?',(task['id'],)).fetchone()['owner']
+            service.enqueue(db,service.owned(db,owner,task['id']),automatic=True)
+        service.execute(service.claim())
+    service.prune()
+    response=client.get('/api/day/tasks/'+task['id']+'/runs');assert response.status_code==200
+    runs=response.json()['runs'];assert len(runs)==2 and all(r['available'] for r in runs)
+    assert all('config' not in r and 'owner' not in r for r in runs)
+    result=client.get('/api/day/tasks/'+task['id']+'/runs/'+runs[-1]['id']);assert result.json()['answer']['interpretation']=='first saved answer'
+    other=TestClient(client.app)
+    assert other.get('/api/day/tasks/'+task['id']+'/runs').status_code==404
+    assert other.get('/api/day/tasks/'+task['id']+'/runs/'+runs[0]['id']).status_code==404
+
+
+def test_context_reuse_is_opt_in_and_uses_only_own_previous_success(service):
+    t=service.save('alice',TaskInput(**config(enabled=False,newChat=False)))
+    captured=[]
+    def runner(c,r):
+        captured.append(c.get('_history', []))
+        return {'question':'resolved question','interpretation':'previous evidence'}
+    service.runner=runner
+    for _ in range(2):
+        with service.db() as db:
+            service.enqueue(db,service.owned(db,'alice',t['id']),automatic=True)
+        service.execute(service.claim())
+    assert captured[0]==[]
+    assert captured[1][0]['text']=='resolved question'
+    assert captured[1][1]['text']=='previous evidence'

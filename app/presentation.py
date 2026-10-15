@@ -871,10 +871,10 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
         f"任务阶段：{STAGES[config['stage']]}；标的类型：{config['assetType']}；"
         f"用户指定标的：{config['symbols'] or '未指定，请分析该市场整体，不要假设用户持仓或自选股'}。\n"
         "这是自动研究任务，只进行信息查询与分析；不得交易、修改账户、设置提醒或向外部渠道发送消息。"
-        "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。\n\n"
+        "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
-    response = chat(ChatRequest(question=context + question, sessionId='day-' + run_id, reasoningFramework='deepseek', themeMode='dark'))
+    response = chat(ChatRequest(question=context + question, sessionId='day-' + run_id, reasoningFramework='deepseek', themeMode='dark', history=config.get('_history', [])))
     answer = response.model_dump()
     answer['question'] = question
     return answer

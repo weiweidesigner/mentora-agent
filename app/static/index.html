@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-share-link-fix" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-workspace" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -22,6 +22,8 @@
           <button id="railNewChat" class="railButton" type="button" aria-label="新建对话" data-tip="新建对话   ⇧⌘O">
             <svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M343.291 560.334c-0.585 0.776-1.168 1.577-1.434 2.543l-45.09 170.896c-2.615 9.952 0.073 20.683 7.194 28.238 5.326 5.376 12.352 8.334 19.834 8.334 2.467 0 4.934-0.294 7.359-0.974l164.117-46.28c0.263 0 0.386 0.246 0.58 0.246 1.887 0 3.755-0.7 5.133-2.207l438.852-453.64C952.859 254.001 960 235.623 960 215.615c0-22.668-9.294-45.311-25.572-62.112l-41.432-42.911c-16.272-16.829-38.212-26.474-60.102-26.474-19.35 0-37.123 7.393-50.203 20.851L343.943 558.76c-0.462 0.437-0.341 1.07-0.652 1.574m553.58-337.287l-43.589 45.045-70.636-74.223 42.959-44.409c6.779-7.073 19.952-6.032 27.748 2.055l41.486 42.914c4.312 4.478 6.782 10.411 6.782 16.297-0.026 4.822-1.675 9.201-4.75 12.321m-475.557 344.41l316.655-327.405 70.709 74.268L492.606 641.1l-71.292-73.643z m-57.685 132.752l22.884-86.838 61.051 63.109-83.935 23.729z m561.043-297.381c-16.614 0-30.223 13.976-30.293 31.388v422.941c0 22.181-17.412 40.198-38.893 40.198H163.482c-21.453 0-38.937-18.017-38.937-40.198V166.824c0-22.209 17.485-40.226 38.937-40.226h445.681c16.701 0 30.268-14.046 30.268-31.312 0-17.244-13.567-31.287-30.268-31.287H158.855c-52.283 0-94.855 43.98-94.855 98.075V861.95c0 54.101 42.572 98.051 94.855 98.051h701.207c52.337 0 94.855-43.95 94.855-98.051V434c-0.047-17.196-13.634-31.172-30.245-31.172"></path></svg>
           </button>
+          <button id="railHome" class="railButton desktopNavRail" type="button" aria-label="首页"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m3 11 9-8 9 8v9H15v-6H9v6H3Z"/></svg></button>
+          <button id="railTasks" class="railButton desktopNavRail" type="button" aria-label="定时任务"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l-3 2"/></svg></button>
         </div>
         <div class="sidebarContent">
           <div class="sidebarTop">
@@ -38,11 +40,19 @@
             </button>
           </div>
           <nav class="sidebarNav">
+            <button id="navHome" class="sidebarAction taskNavLink is-selected" type="button" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m3 11 9-8 9 8v9H15v-6H9v6H3Z"/></svg><span>首页</span></button>
+            <button id="navTasks" class="sidebarAction taskNavLink" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l-3 2"/></svg><span>定时任务</span></button>
             <button id="newChatButton" class="sidebarAction is-primary" type="button">
               <svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M343.291 560.334c-0.585 0.776-1.168 1.577-1.434 2.543l-45.09 170.896c-2.615 9.952 0.073 20.683 7.194 28.238 5.326 5.376 12.352 8.334 19.834 8.334 2.467 0 4.934-0.294 7.359-0.974l164.117-46.28c0.263 0 0.386 0.246 0.58 0.246 1.887 0 3.755-0.7 5.133-2.207l438.852-453.64C952.859 254.001 960 235.623 960 215.615c0-22.668-9.294-45.311-25.572-62.112l-41.432-42.911c-16.272-16.829-38.212-26.474-60.102-26.474-19.35 0-37.123 7.393-50.203 20.851L343.943 558.76c-0.462 0.437-0.341 1.07-0.652 1.574m553.58-337.287l-43.589 45.045-70.636-74.223 42.959-44.409c6.779-7.073 19.952-6.032 27.748 2.055l41.486 42.914c4.312 4.478 6.782 10.411 6.782 16.297-0.026 4.822-1.675 9.201-4.75 12.321m-475.557 344.41l316.655-327.405 70.709 74.268L492.606 641.1l-71.292-73.643z m-57.685 132.752l22.884-86.838 61.051 63.109-83.935 23.729z m561.043-297.381c-16.614 0-30.223 13.976-30.293 31.388v422.941c0 22.181-17.412 40.198-38.893 40.198H163.482c-21.453 0-38.937-18.017-38.937-40.198V166.824c0-22.209 17.485-40.226 38.937-40.226h445.681c16.701 0 30.268-14.046 30.268-31.312 0-17.244-13.567-31.287-30.268-31.287H158.855c-52.283 0-94.855 43.98-94.855 98.075V861.95c0 54.101 42.572 98.051 94.855 98.051h701.207c52.337 0 94.855-43.95 94.855-98.051V434c-0.047-17.196-13.634-31.172-30.245-31.172"></path></svg>
               <span>新建对话</span>
             </button>
           </nav>
+          <section id="taskSidebar" class="taskSidebar" aria-label="定时任务列表" hidden>
+            <div class="taskSidebarTitle"><h2>定时任务</h2><button id="taskSidebarNew" class="dayIconButton" type="button" aria-label="新建定时任务">＋</button></div>
+            <label class="taskSearchLabel"><input id="taskSearch" type="search" placeholder="搜索任务" aria-label="搜索定时任务" /></label>
+            <select id="taskSidebarFilter" class="taskFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select>
+            <div id="taskSidebarList"></div>
+          </section>
           <div class="historyBlock">
             <div class="historyTitle">最近对话</div>
             <div id="historyList" class="historyList"></div>
@@ -134,15 +144,10 @@
         </section>
         <section id="myDay" class="myDay" aria-labelledby="myDayTitle">
           <header class="dayHeader">
-            <div><h2 id="myDayTitle">我的一天</h2><p>把关注交给 Veya，让分析按时抵达</p></div>
-            <button id="dayManage" class="dayButton" type="button">管理任务 <span aria-hidden="true">↗</span></button>
+            <div><h2 id="myDayTitle">我的一天</h2><p id="dayClock">正在同步市场时间…</p></div>
+            <label class="dayMarketSelect"><span class="srOnly">地区与市场</span><select id="dayMarketSelect" aria-label="地区与市场"><option value="CN">🇨🇳 A股</option><option value="HK">🇭🇰 港股</option><option value="US">🇺🇸 美股</option></select></label>
           </header>
-          <div class="dayControls">
-            <div id="dayMarkets" class="dayMarkets" role="group" aria-label="选择市场"></div>
-            <span id="dayClock" class="dayClock"></span>
-          </div>
-          <div id="dayStages" class="dayStages" role="tablist" aria-label="交易阶段"></div>
-          <div id="dayPanel" class="dayPanel" role="tabpanel"><p role="status">正在加载我的一天…</p></div>
+          <div id="dayPanel" class="dayPanel"><p class="dayEmpty" role="status">正在加载已生成的结果…</p></div>
           <p id="dayMessage" class="dayMessage" role="status" aria-live="polite"></p>
         </section>
         <section id="inspirationSquare" class="inspirationSquare" aria-labelledby="inspirationTitle">
@@ -159,35 +164,55 @@
           <button id="caseAskButton" class="caseAskButton" type="button">问一问</button>
         </div>
       </section>
-      <dialog id="dayDialog" class="dayDialog" aria-labelledby="dayDialogTitle">
-        <header class="dayDialogHeader"><div><span class="dayEyebrow">VEYA · MY DAY</span><h2 id="dayDialogTitle">定时任务</h2></div><button id="dayClose" class="dayIconButton" type="button" aria-label="关闭任务设置">×</button></header>
-        <div class="dayDialogBody">
-          <div class="dayManagerTop"><p>云端按时运行，电脑关机也不耽误。</p><button id="dayNew" class="dayButton" type="button">＋ 新建任务</button></div>
-          <div id="dayTaskList" class="dayTaskList"></div>
-          <form id="dayForm" class="dayForm" hidden>
-            <h3 id="dayFormTitle">新建任务</h3>
-            <label>任务名称<input name="title" maxlength="80" required placeholder="例如：我的盘前机会" /></label>
-            <div class="dayFieldRow">
-              <label>市场<select name="market"><option value="CN">🇨🇳 A股</option><option value="HK">🇭🇰 港股</option><option value="US">🇺🇸 美股</option></select></label>
-              <label>阶段<select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option></select></label>
+      <section id="taskWorkspace" class="taskWorkspace" aria-label="定时任务" hidden>
+        <header class="taskTopbar">
+          <div class="taskTopbarTitle"><button id="taskBack" class="dayTextButton" type="button" hidden>‹ 定时任务</button><span id="taskPageTitle">定时任务</span></div>
+          <div id="taskTopActions" class="taskTopActions" hidden><button id="taskRunNow" class="dayTextButton" type="button">立即运行</button><button id="taskToggle" class="dayTextButton" type="button">暂停</button><button id="taskSettings" class="dayIconButton" type="button" aria-label="任务设置">⋯</button></div>
+        </header>
+        <div id="taskLanding" class="taskLanding">
+          <header class="taskLandingHeader"><h1>定时任务</h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
+          <p class="taskLead">安排分析、跟踪变化，让 Veya 在你需要的时候带来更新。</p>
+          <form id="taskPromptForm" class="taskPromptForm"><textarea id="taskPrompt" rows="3" maxlength="6000" required aria-label="安排任务" placeholder="例如：每个交易日开盘前，梳理我的自选股机会"></textarea><div><button id="taskOpenCreate" class="dayTextButton" type="button">＋ 设置任务</button><button class="taskPromptSend" type="submit" aria-label="开始创建任务">↑</button></div></form>
+          <div id="taskLandingList" class="taskLandingList"></div>
+          <div class="taskRecommendations"><h2>推荐</h2><div id="taskRecommendations"></div></div>
+        </div>
+        <section id="taskDetail" class="taskDetail" aria-label="任务运行与对话" hidden>
+          <div class="taskRunToolbar"><span id="taskScheduleSummary"></span><select id="taskRunSelect" aria-label="选择运行记录"></select></div>
+          <div id="taskRunState" class="taskRunState" role="status"></div>
+          <div id="taskThread" class="taskThread"></div>
+        </section>
+        <section id="taskWizard" class="taskWizard" aria-label="创建任务对话" hidden><div id="taskWizardTranscript" class="taskWizardTranscript"></div><section class="taskClarification" aria-live="polite"><div class="taskClarificationTop"><button id="wizardPrevious" class="dayTextButton" type="button" aria-label="上一步">‹</button><span id="wizardProgress"></span><button id="wizardClose" class="dayIconButton" type="button" aria-label="退出创建">×</button></div><div id="wizardQuestion"></div><p id="wizardError" class="dayError" role="alert"></p></section></section>
+        <p id="taskMessage" class="dayMessage" role="status" aria-live="polite"></p>
+      </section>
+      <dialog id="dayDialog" class="dayDialog taskSettingsDialog" aria-labelledby="dayDialogTitle">
+        <header class="dayDialogHeader"><h2 id="dayDialogTitle">设置定时任务</h2><button id="dayClose" class="dayIconButton" type="button" aria-label="关闭任务设置">×</button></header>
+        <form id="dayForm" class="dayForm">
+          <div class="dayDialogBody">
+            <label>任务名称<input name="title" maxlength="80" required placeholder="给任务起个名字" /></label>
+            <label>任务内容<textarea name="question" rows="5" maxlength="6000" required placeholder="说明你希望 Veya 定时完成的分析…"></textarea></label>
+            <div class="taskScheduleGroup">
+              <label class="taskSettingRow">重复执行任务<input name="repeat" class="taskSwitch" type="checkbox" checked /></label>
+              <label class="taskSettingRow" id="dayCadenceLabel"><span>重复</span><select name="cadence"><option value="trading">交易日</option><option value="daily">每天</option><option value="weekly">每周</option><option value="monthly">每月</option><option value="once">指定日期一次</option></select></label>
+              <label class="taskSettingRow" id="dayWeekLabel" hidden><span>执行星期</span><select name="weekday"><option value="0">星期一</option><option value="1">星期二</option><option value="2">星期三</option><option value="3">星期四</option><option value="4">星期五</option><option value="5">星期六</option><option value="6">星期日</option></select></label>
+              <label class="taskSettingRow" id="dayMonthLabel" hidden><span>每月日期</span><input name="monthDay" type="number" min="1" max="31" value="1" /></label>
+              <label class="taskSettingRow" id="dayDateLabel" hidden><span>执行日期</span><input name="date" type="date" /></label>
+              <label class="taskSettingRow" id="dayTimeLabel"><span>时间</span><input name="time" type="time" value="09:00" required /></label>
+              <label class="taskSettingRow" id="dayOffsetLabel" hidden><span>偏移分钟（负数为提前）</span><input name="offset" type="number" min="-180" max="180" value="-30" /></label>
+              <label class="taskSettingRow" id="dayEndModeLabel"><span>结束重复</span><select name="endMode"><option value="never">永不</option><option value="date">指定日期</option></select></label>
+              <label class="taskSettingRow" id="dayEndLabel" hidden><span>结束日期</span><input name="endDate" type="date" /></label>
             </div>
-            <div class="dayFieldRow">
-              <label>标的类型<select name="assetType"><option value="stocks">股票</option><option value="etf">ETF</option><option value="index">指数</option><option value="sector">行业板块</option><option value="watchlist">自选列表</option></select></label>
-              <label>关注标的<input name="symbols" maxlength="500" placeholder="例如：AAPL, NVDA；留空分析全市场" /></label>
-            </div>
-            <label>问句内容<textarea name="question" rows="5" maxlength="6000" required placeholder="你希望 Veya 定时为你分析什么？"></textarea></label>
-            <p class="dayHelp">支持变量：{{date}} 当前日期 · {{market}} 市场 · {{symbols}} 标的。选择自选列表时，请填写标的。</p>
-            <div class="dayFieldRow">
-              <label>触发规则<select name="cadence"><option value="trading">所选市场交易日</option><option value="daily">每天（包括休市日）</option><option value="once">指定日期执行一次</option></select></label>
-              <label id="dayDateLabel" hidden>执行日期<input name="date" type="date" /></label>
-            </div>
-            <div class="dayFieldRow">
-              <label>时间方式<select name="timeMode"><option value="fixed">固定时间</option><option value="open">相对开盘</option><option value="close">相对收盘</option></select></label>
-              <label id="dayTimeLabel">执行时间<input name="time" type="time" value="09:00" required /></label>
-              <label id="dayOffsetLabel" hidden>偏移分钟（负数为提前）<input name="offset" type="number" min="-180" max="180" value="-30" /></label>
-            </div>
-            <label id="dayTimezoneLabel">时间所在时区<select name="timezone"><option value="market">跟随所选市场（自动处理夏令时）</option><option value="Asia/Shanghai">北京时间</option></select></label>
-            <label class="dayCheck"><input name="enabled" type="checkbox" checked /> 开启任务</label>
+            <details id="dayAdvanced" class="taskAdvanced"><summary>高级</summary>
+              <div class="taskScheduleGroup">
+                <label class="taskSettingRow" id="dayTimezoneLabel"><span>时区</span><select name="timezone"><option value="market">所选市场当地时间</option><option value="Asia/Shanghai">中国标准时间</option></select></label>
+                <label class="taskSettingRow"><span>市场</span><select name="market"><option value="CN">🇨🇳 A股</option><option value="HK">🇭🇰 港股</option><option value="US">🇺🇸 美股</option></select></label>
+                <label class="taskSettingRow"><span>所属阶段</span><select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option></select></label>
+                <label class="taskSettingRow"><span>时间方式</span><select name="timeMode"><option value="fixed">固定时间</option><option value="open">相对开盘</option><option value="close">相对收盘</option></select></label>
+                <label class="taskSettingRow"><span>标的类型</span><select name="assetType"><option value="stocks">股票</option><option value="etf">ETF</option><option value="index">指数</option><option value="sector">行业板块</option><option value="watchlist">自选列表</option></select></label>
+              </div>
+              <label class="taskSettingRow taskNewChatRow"><span>每次运行时开启新对话</span><input name="newChat" class="taskSwitch" type="checkbox" checked /></label>
+              <label class="taskSymbolsLabel">关注标的<input name="symbols" maxlength="500" placeholder="如 AAPL, NVDA；留空分析全市场" /></label>
+              <p class="dayHelp">问句支持 {{date}}、{{market}}、{{symbols}}。自选列表需要填写具体标的。</p>
+              <label class="taskSettingRow taskEnabledRow"><span>开启任务</span><input name="enabled" class="taskSwitch" type="checkbox" checked /></label>
             <fieldset class="dayNotifications"><legend>完成后通知我</legend>
               <label class="dayCheck"><input name="browser" type="checkbox" /> 浏览器通知</label>
               <button id="dayEnablePush" class="dayTextButton" type="button">开启当前浏览器通知</button><p id="dayPushState" class="dayHelp"></p>
@@ -199,12 +224,12 @@
               <div id="dayWecomFields" hidden><label>企业微信 Webhook<input name="wecomUrl" type="password" autocomplete="new-password" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=…" /></label></div>
               <p class="dayHelp">机器人收到摘要和带访问凭证的结果链接，收到链接的人可查看该任务最新结果，请勿公开转发。个人微信使用第三方推送服务，消息摘要和结果链接会经过该服务。浏览器通知需要授权和推送网络可用。</p>
             </fieldset>
+            </details>
             <p id="dayNextPreview" class="dayHelp"></p>
-            <div class="dayFormActions"><button id="dayCancelEdit" class="dayButton" type="button">取消</button><button id="daySave" class="dayButton dayPrimary" type="submit">保存任务</button></div>
-          </form>
-          <p id="dayDialogMessage" class="dayMessage" role="status" aria-live="polite"></p>
-          <p class="dayHelp dayPrivacy">任务保存在当前浏览器的身份下，清除 Cookie 后将无法找回。每个任务保留最新成功结果；暂停后已开始的执行仍会完成。</p>
-        </div>
+            <p id="dayDialogMessage" class="dayMessage" role="status" aria-live="polite"></p>
+          </div>
+          <footer class="dayFormActions"><button id="dayDelete" class="dayTextButton dayDelete" type="button" hidden>删除任务</button><div><button id="dayCancelEdit" class="dayButton" type="button">取消</button><button id="daySave" class="dayButton dayPrimary" type="submit">创建</button></div></footer>
+        </form>
       </dialog>
       <dialog id="generatedImageDialog" class="generatedImageDialog" aria-label="图片详情">
         <div class="generatedImageDialogHeader">
@@ -227,9 +252,9 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261015-embedded-layout"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261015-mobile-chart-layout"></script>
+    <script src="/static/app.js?v=interface-20261015-task-workspace"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
-    <script src="/static/cases.js?v=20261015-share-link-fix"></script>
-    <script src="/static/day-tasks.js?v=20261015-share-link-fix"></script>
+    <script src="/static/cases.js?v=20261015-task-workspace"></script>
+    <script src="/static/day-tasks.js?v=20261015-task-workspace"></script>
   </body>
 </html>

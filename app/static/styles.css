@@ -3804,3 +3804,174 @@ p {
  .dayTaskRow { flex-wrap:wrap; }
  .dayFieldRow { gap:12px; }
 }
+
+/* Scheduled tasks: one workspace for configuration and completed research. */
+.srOnly { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+.taskNavLink svg,.desktopNavRail svg { fill:none;stroke:currentColor;stroke-width:1.7; }
+.taskNavLink.is-selected { background:var(--soft); }
+.desktopNavRail { display:none; }
+.shell.sidebar-collapsed .desktopNavRail { display:flex; }
+.taskWorkspace[hidden],.taskWorkspace [hidden],.taskSidebar[hidden] { display:none!important; }
+.shell.tasks-view > .conversation,.shell.tasks-view .historyBlock { display:none!important; }
+.taskWorkspace { grid-column:2;display:flex;flex-direction:column;min-width:0;height:100dvh;overflow:hidden;background:var(--bg); }
+.taskTopbar { flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:68px;padding:12px 32px;border-bottom:1px solid var(--line); }
+.taskTopbarTitle { display:flex;gap:16px;align-items:center;min-width:0;font-size:16px;font-weight:550; }
+.taskTopbarTitle>span { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.taskTopbarTitle>button { flex:none;color:var(--muted); }
+.taskTopActions { display:flex;align-items:center;gap:20px;flex:none; }
+.taskTopActions .dayTextButton { font-size:13px; }
+.taskSidebar { display:flex;flex-direction:column;flex:1;min-height:0;padding-top:20px; }
+.taskSidebarTitle { display:flex;align-items:center;justify-content:space-between;padding:0 8px; }
+.taskSidebarTitle h2 { margin:0;font-size:15px;font-weight:600; }
+.taskSidebarTitle .dayIconButton { font-size:22px; }
+.taskSearchLabel { margin:12px 0; }
+.taskSearchLabel input { width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:9px 10px;font:inherit;font-size:12px; }
+.taskFilter { max-width:100%;width:max-content;padding:7px 10px;color:var(--ink);background:var(--panel,var(--soft));border:1px solid var(--line);border-radius:999px;font:inherit;font-size:12px;cursor:pointer; }
+.taskSidebar>.taskFilter { margin:0 8px 12px; }
+#taskSidebarList { overflow-y:auto;min-height:0; }
+.taskListItem { display:flex;align-items:center;gap:12px;width:100%;min-width:0;text-align:left;border:0;background:transparent;color:var(--ink);padding:16px 8px;border-radius:10px;cursor:pointer;font:inherit; }
+.taskListItem:hover,.taskListItem.is-selected { background:var(--soft); }
+.taskListItem>span:nth-child(2) { flex:1;min-width:0; }
+.taskListItem strong { display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.taskListItem small { display:block;margin-top:7px;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.taskListIcon { font-size:20px;color:var(--muted);flex:none; }
+.taskListArrow { flex:none;color:var(--muted); }
+.taskSidebar .taskListItem { gap:8px;padding:12px 8px; }
+.taskSidebar .taskListIcon { display:none; }
+.taskSidebar .taskListItem strong { font-size:13px; }
+.taskSidebar .taskListItem small { font-size:11px; }
+.taskListEmpty { padding:16px 8px;color:var(--muted);font-size:12px;line-height:1.7; }
+.shell.tasks-view .sidebarContent { display:flex;flex-direction:column; }
+.taskLanding { flex:1;min-height:0;overflow-y:auto;padding:48px 40px 64px; }
+.taskLanding>header,.taskLanding>p,.taskLanding>form,.taskLanding>.taskLandingList,.taskLanding>.taskRecommendations { max-width:720px;margin-left:auto;margin-right:auto; }
+.taskLandingHeader { display:flex;align-items:center;justify-content:space-between;gap:20px; }
+.taskLandingHeader h1 { margin:0;font-size:30px;letter-spacing:-.6px; }
+.taskLead { color:var(--muted);font-size:15px;line-height:1.8;margin-top:16px;margin-bottom:32px; }
+.taskPromptForm { border:1px solid var(--line);border-radius:22px;padding:18px;background:var(--panel,var(--soft)); }
+.taskPromptForm textarea { resize:vertical;width:100%;min-height:76px;max-height:200px;padding:0;border:0;outline:none;background:transparent;color:var(--ink);font:inherit;font-size:15px;line-height:1.7;user-select:text; }
+.taskPromptForm>div { display:flex;align-items:center;justify-content:space-between;margin-top:8px; }
+.taskPromptSend { width:34px;height:34px;border:0;border-radius:50%;background:var(--ink);color:var(--bg);font-size:25px;cursor:pointer; }
+.taskRecommendations { margin-top:36px; }
+.taskRecommendations h2 { color:var(--muted);font-size:14px;font-weight:500;margin:0 0 12px; }
+.taskRecommendation { width:100%;display:flex;align-items:center;gap:16px;text-align:left;padding:20px 8px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;cursor:pointer; }
+.taskRecommendation>span:nth-child(2) { flex:1;min-width:0; }
+.taskRecommendation strong { display:block;font-size:15px;font-weight:550; }
+.taskRecommendation small { display:block;color:var(--muted);font-size:13px;line-height:1.6;margin-top:5px; }
+.taskTemplateIcon { font-size:24px;width:32px;text-align:center;flex:none; }
+.taskLandingList { display:none; }
+.taskDetail { flex:1;min-height:0;overflow-y:auto; }
+.taskRunToolbar { position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 32px;background:var(--bg);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted); }
+.taskRunToolbar select { max-width:48%;min-width:0;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink);font:inherit;padding:7px; }
+.taskRunState { max-width:900px;margin:20px auto 0;padding:0 24px;font-size:12px;line-height:1.7;color:var(--muted); }
+.taskThread { width:min(100%,900px);padding:24px 24px 80px;margin:0 auto;min-width:0; }
+.taskRunDate { margin:0 0 28px;text-align:center;font-size:12px;color:var(--muted); }
+.taskUserBubble { margin:0 0 32px auto;max-width:82%;padding:16px 20px;border-radius:20px;background:var(--user);font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text; }
+.taskThread .scheduledAnswer { display:block;width:100%;max-width:none;margin:0;padding:0; }
+.taskSettingsLink { display:block;width:fit-content;max-width:100%;padding:0;margin:0 0 20px;border:0;background:none;color:var(--muted);font:inherit;font-size:14px;line-height:1.7;text-align:left;cursor:pointer;overflow-wrap:anywhere; }
+.taskSettingsLink:hover { color:var(--ink); }
+.taskAwaiting { padding:40px 0;text-align:center; }
+.taskAwaiting>span { font-size:38px;color:var(--muted); }
+.taskAwaiting h2 { font-size:22px;margin:20px 0; }
+.taskAwaiting p { max-width:560px;margin:12px auto;color:var(--muted);font-size:14px;line-height:1.8;overflow-wrap:anywhere; }
+.taskAwaiting .taskSettingsLink { margin:24px auto; }
+.taskResultEmpty { color:var(--muted);font-size:14px;line-height:1.8; }
+#taskMessage { flex:none;margin:0;padding:10px 24px;color:var(--muted); }
+#taskMessage:empty { display:none; }
+.dayMarketSelect select { color:var(--ink);background:var(--panel,var(--soft));border:1px solid var(--line);border-radius:999px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer; }
+.dayHeader { margin-bottom:22px; }
+.dayHeader #dayClock { font-size:12px;color:var(--muted);margin:0;line-height:1.7; }
+.dayResultCard { font:inherit;text-align:left;cursor:pointer; }
+.dayResultCard:hover { border-color:#9b8ce9; }
+.dayResultFoot { margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted); }
+.dayHomeEmpty { margin:0;padding:22px 0;color:var(--muted);font-size:13px;line-height:1.8;border-top:1px solid var(--line); }
+.taskSettingsDialog { inset:0;width:min(680px,calc(100% - 40px));height:auto;max-height:90dvh;margin:auto;border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 100px #0006; }
+.taskSettingsDialog .dayDialogHeader { padding:24px;border-bottom:0; }
+.taskSettingsDialog .dayDialogHeader h2 { margin:0;font-size:20px; }
+.taskSettingsDialog .dayForm { padding:0;margin:0;border:0;display:flex;flex-direction:column;min-height:0;overflow:hidden; }
+.taskSettingsDialog .dayDialogBody { padding:0 24px 20px;max-height:calc(90dvh - 150px);overflow-y:auto; }
+.taskSettingsDialog .dayFormActions { flex:none;margin:0;padding:16px 24px;border-top:1px solid var(--line);justify-content:space-between; }
+.taskSettingsDialog .dayFormActions>div { display:flex;gap:12px;margin-left:auto; }
+.taskSettingsDialog .dayButton { border-radius:999px;padding:10px 22px; }
+.taskSettingsDialog input[name=title] { font-size:15px; }
+.taskSettingsDialog textarea { min-height:126px;border-radius:14px; }
+.taskScheduleGroup { border:1px solid var(--line);border-radius:16px;padding:0 16px;margin:20px 0; }
+.dayForm .taskSettingRow { display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:16px;margin:0;min-height:58px;padding:12px 4px;font-size:14px; }
+.taskSettingRow+.taskSettingRow { border-top:1px solid var(--line); }
+.dayForm .taskSettingRow select,.dayForm .taskSettingRow input:not([type=checkbox]) { width:auto;max-width:64%;padding:6px 2px;border:0;border-radius:0;background:transparent;text-align:right;font-size:13px;color:var(--muted); }
+.dayForm .taskSettingRow input[type=number] { width:90px; }
+.taskSettingRow .taskSwitch { appearance:none;position:relative;flex:none;width:36px;height:22px;margin:0;border:0;border-radius:999px;background:var(--line);cursor:pointer; }
+.taskSwitch::before { content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s; }
+.taskSwitch:checked { background:#9b7aef; }
+.taskSwitch:checked::before { transform:translateX(14px); }
+.taskAdvanced { margin-top:22px; }
+.taskAdvanced summary { width:fit-content;color:var(--muted);font-size:14px;cursor:pointer; }
+.taskAdvanced .taskEnabledRow { padding:0 4px; }
+.taskAdvanced .dayNotifications { margin-bottom:12px; }
+.taskSettingsDialog .dayHelp { font-size:11px; }
+.taskSymbolsLabel { margin-top:20px; }
+.taskWizard { flex:1;min-height:0;display:flex;flex-direction:column; }
+.taskWizardTranscript { flex:1;min-height:100px;overflow-y:auto;width:min(100%,760px);margin:0 auto;padding:32px 24px; }
+.taskWizardReply { font-size:15px;line-height:1.9;color:var(--ink); }
+.taskClarification { width:min(calc(100% - 48px),720px);max-height:70dvh;overflow-y:auto;flex:none;margin:0 auto 24px;padding:24px;border:1px solid var(--line);border-radius:22px;background:var(--panel,var(--soft)); }
+.taskClarificationTop { display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px; }
+.taskClarificationTop .dayIconButton { margin-left:auto;font-size:22px; }
+.taskClarification h2 { font-size:18px;margin:14px 0 22px;line-height:1.6; }
+.wizardOptions { display:flex;flex-direction:column;gap:6px;margin-bottom:18px; }
+.wizardOptions button { width:100%;display:flex;justify-content:space-between;padding:13px 14px;border:1px solid transparent;border-radius:10px;color:var(--ink);background:transparent;font:inherit;font-size:14px;cursor:pointer;text-align:left; }
+.wizardOptions button[aria-pressed=true] { border-color:var(--line);background:var(--bg); }
+.wizardTimeOptions { flex-direction:row;gap:8px; }
+.wizardTimeOptions button { justify-content:center;gap:6px; }
+.wizardField { display:flex;flex-direction:column;gap:8px;margin:12px 0;font-size:12px;color:var(--muted); }
+.wizardField input,.wizardField select { width:100%;min-width:0;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;user-select:text; }
+.wizardActions { display:flex;align-items:center;justify-content:flex-end;gap:20px;margin-top:18px; }
+.wizardActions .dayButton { border-radius:999px; }
+.wizardSummary { margin:16px 0;color:var(--muted);font-size:12px;line-height:1.7; }
+.taskWorkspace button:focus-visible,.taskWorkspace input:focus-visible,.taskWorkspace select:focus-visible,.taskWorkspace textarea:focus-visible,.taskSidebar :is(button,input,select):focus-visible { outline:2px solid #9b8ce9;outline-offset:3px; }
+@media(max-width:760px) {
+ .desktopNavRail,.shell.sidebar-collapsed .desktopNavRail,.shell.tasks-view .taskSidebar { display:none; }
+ .taskWorkspace { grid-column:auto;height:calc(100dvh - 52px);margin-top:52px; }
+ .taskTopbar { min-height:56px;padding:10px 16px;gap:10px; }
+ .taskTopbarTitle { font-size:14px;gap:8px; }
+ .taskTopActions { gap:12px; }
+ .taskTopActions .dayTextButton { font-size:11px; }
+ .taskTopActions .dayIconButton { padding:0 4px;font-size:24px; }
+ .taskLanding { padding:26px 20px 48px; }
+ .taskLandingHeader h1 { font-size:28px; }
+ .taskLead { font-size:14px;margin:16px 0 26px; }
+ .taskPromptForm { padding:16px;border-radius:20px; }
+ .taskPromptForm textarea { font-size:16px; }
+ .taskLandingList { display:block;margin-top:24px; }
+ .taskLandingList .taskListItem { border-radius:0;border-bottom:1px solid var(--line);padding:20px 0; }
+ .taskRecommendations { margin-top:30px; }
+ .taskRunToolbar { padding:12px 16px;align-items:flex-start;font-size:11px; }
+ .taskRunToolbar>span { flex:1;min-width:0;line-height:1.7; }
+ .taskRunToolbar select { font-size:11px;max-width:50%; }
+ .taskRunState { padding:0 16px;font-size:11px;margin-top:14px; }
+ .taskThread { padding:20px 16px 60px; }
+ .taskUserBubble { max-width:90%;padding:14px 16px;font-size:14px;border-radius:18px; }
+ .taskSettingsDialog { inset:auto 0 0;width:100%;max-height:94dvh;border-radius:22px 22px 0 0; }
+ .taskSettingsDialog .dayDialogHeader { padding:20px; }
+ .taskSettingsDialog .dayDialogBody { padding:0 20px 16px;max-height:calc(94dvh - 142px); }
+ .taskSettingsDialog .dayFormActions { padding:14px 20px; }
+ .taskSettingsDialog .dayForm input:not([type=checkbox]),.taskSettingsDialog .dayForm textarea { font-size:16px; }
+ .dayForm .taskSettingRow { font-size:13px;gap:12px; }
+ .dayForm .taskSettingRow select,.dayForm .taskSettingRow input:not([type=checkbox]) { font-size:13px;max-width:66%; }
+ .dayHeader .dayMarketSelect select { font-size:12px;max-width:120px;padding:8px 10px; }
+ .dayHeader #dayClock { max-width:230px;font-size:11px; }
+ .taskClarification { width:calc(100% - 24px);padding:20px;margin-bottom:12px;max-height:68dvh; }
+ .taskClarification h2 { font-size:17px; }
+ .taskWizardTranscript { padding:22px 16px; }
+ .taskWizardReply { font-size:14px; }
+}
+.shell.tasks-view #newChatButton { display:none; }
+.taskListItem.is-selected,.taskNavLink.is-selected { background:var(--soft-2); }
+.taskNewChatRow { border:1px solid var(--line);border-radius:16px;padding:16px!important;margin-top:20px!important; }
+#taskMessage.is-success { color:#4fbf8b; }
+@media(max-width:760px) {
+ #navHome { display:none; }
+ .sidebarNav { display:flex;flex-direction:column; }
+ .shell.tasks-view #newChatButton { display:flex; }
+ #newChatButton { order:0; }
+ #navTasks { order:1; }
+ .shell.tasks-view .historyBlock { display:block!important; }
+}

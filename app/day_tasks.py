@@ -96,13 +96,17 @@ class TaskInput(BaseModel):
     assetType: Literal['stocks', 'etf', 'index', 'sector', 'watchlist'] = 'stocks'
     symbols: str = Field(default='', max_length=500)
     question: str = Field(min_length=1, max_length=6000)
-    cadence: Literal['daily', 'trading', 'once'] = 'trading'
+    cadence: Literal['daily', 'trading', 'once', 'weekly', 'monthly'] = 'trading'
     date: str = ''
+    endDate: str = ''
+    weekdays: list[int] = Field(default_factory=lambda: [0], min_length=1, max_length=7)
+    monthDay: int = Field(default=1, ge=1, le=31)
     time: str = '09:00'
     timeMode: Literal['fixed', 'open', 'close'] = 'fixed'
     offset: int = Field(default=-30, ge=-180, le=180)
     timezone: Literal['market', 'Asia/Shanghai'] = 'market'
     enabled: bool = True
+    newChat: bool = True
     browser: bool = False
     feishu: bool = False
     wecom: bool = False
@@ -121,6 +125,10 @@ class TaskInput(BaseModel):
             raise ValueError('时间格式应为 HH:MM')
         if self.assetType == 'watchlist' and not self.symbols.strip():
             raise ValueError('请选择自选列表中的具体标的，或改为全市场分析')
+        if any(day < 0 or day > 6 for day in self.weekdays):
+            raise ValueError('星期应为 0 至 6')
+        if self.endDate:
+            dt.date.fromisoformat(self.endDate)
         if self.cadence == 'once':
             dt.date.fromisoformat(self.date)
         if self.timeMode != 'fixed' and self.cadence == 'daily':
@@ -151,6 +159,12 @@ def next_occurrence(config, after):
     start = after.astimezone(zone).date()
     days = [dt.date.fromisoformat(config['date'])] if config['cadence'] == 'once' else [start + dt.timedelta(days=i) for i in range(370)]
     for day in days:
+        if config.get('endDate') and day > dt.date.fromisoformat(config['endDate']):
+            return None
+        if config['cadence'] == 'weekly' and day.weekday() not in config.get('weekdays', [0]):
+            continue
+        if config['cadence'] == 'monthly' and day.day != config.get('monthDay', 1):
+            continue
         if config['timeMode'] == 'fixed':
             candidate = dt.datetime.combine(day, dt.time.fromisoformat(config['time']), zone)
             if config['cadence'] == 'trading':
@@ -237,6 +251,10 @@ class DayTasks:
     def unpack(self, value):
         config = json.loads(value)
         config.setdefault('serverchan', False)
+        config.setdefault('newChat', True)
+        config.setdefault('endDate', '')
+        config.setdefault('weekdays', [0])
+        config.setdefault('monthDay', 1)
         for name in SECRET_FIELDS:
             config[name] = self.cipher.decrypt(config[name].encode()).decode() if config.get(name) else ''
         return config
@@ -354,7 +372,17 @@ class DayTasks:
     def execute(self, run):
         config = self.unpack(run['config'])
         try:
-            answer = self.runner(config, run['id'])
+            run_config = dict(config)
+            if not config.get('newChat', True):
+                with self.db() as db:
+                    previous = db.execute('SELECT r.config,r.answer FROM tasks t JOIN runs r ON r.id=t.success_run WHERE t.id=? AND t.owner=?', (run['task_id'], run['owner'])).fetchone()
+                if previous and previous['answer']:
+                    previous_answer = json.loads(previous['answer'])
+                    run_config['_history'] = [
+                        {'role': 'user', 'text': previous_answer.get('question') or self.unpack(previous['config'])['question']},
+                        {'role': 'assistant', 'text': str(previous_answer.get('interpretation', ''))[:16000]},
+                    ]
+            answer = self.runner(run_config, run['id'])
             if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
                 raise ValueError('empty result')
             with self.db() as db:
@@ -432,7 +460,7 @@ class DayTasks:
         with self.db() as db:
             # The homepage has one result. Retain at most twenty recent logs per
             # task and snapshots still needed by the notification outbox.
-            db.execute("UPDATE runs SET answer=NULL WHERE status='success' AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND id NOT IN (SELECT run_id FROM deliveries WHERE status='pending')")
+            db.execute("UPDATE runs SET answer=NULL WHERE status='success' AND id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20) AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND id NOT IN (SELECT run_id FROM deliveries WHERE status='pending')")
             db.execute("DELETE FROM deliveries WHERE status!='pending' AND run_id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20)")
             db.execute("DELETE FROM runs WHERE id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20) AND id NOT IN (SELECT run_id FROM deliveries) AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND status NOT IN ('running','queued')")
 
@@ -532,6 +560,26 @@ def create_router(service):
             db.execute("UPDATE deliveries SET status='cancelled' WHERE run_id IN (SELECT id FROM runs WHERE task_id=?) AND status='pending'", (task_id,))
         return {'ok': True}
 
+    @router.get('/tasks/{task_id}/runs')
+    def runs(task_id: str, request: Request, response: Response):
+        user = owner(request, response)
+        with service.db() as db:
+            task = service.owned(db, user, task_id)
+            rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE task_id=? AND owner=? AND (id IN (SELECT id FROM runs WHERE task_id=? AND owner=? ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task_id, user, task_id, user, task['success_run'])).fetchall()
+            return {'runs': [dict(row) for row in rows]}
+
+    @router.get('/tasks/{task_id}/runs/{run_id}')
+    def run_result(task_id: str, run_id: str, request: Request, response: Response):
+        user = owner(request, response)
+        with service.db() as db:
+            task = service.owned(db, user, task_id)
+            row = db.execute('SELECT * FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, user)).fetchone()
+            if not row:
+                raise HTTPException(404, '运行记录不存在')
+            answer = json.loads(row['answer']) if row['answer'] else None
+            snapshot = service.unpack(row['config'])
+            return {'taskId': task_id, 'runId': row['id'], 'status': row['status'], 'question': (answer or {}).get('question') or snapshot['question'], 'answer': answer, 'cachedDate': row['finished'] or row['created'], 'error': row['error']}
+
     @router.get('/tasks/{task_id}/result')
     def result(task_id: str, request: Request, response: Response):
         user = owner(request, response)
@@ -545,7 +593,7 @@ def create_router(service):
             return {'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
 
     @router.get('/shared/{token}')
-    def shared(token: str, response: Response):
+    def shared(token: str, request: Request, response: Response):
         response.headers['Cache-Control'] = 'no-store'
         response.headers['Referrer-Policy'] = 'no-referrer'
         with service.db() as db:
@@ -554,7 +602,10 @@ def create_router(service):
                 raise HTTPException(404, '结果不存在或尚未完成')
             config = service.unpack(row['config'])
             answer = json.loads(row['answer'])
-            return {'title': config['title'], 'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
+            snapshot = {key: value for key, value in config.items() if key not in SECRET_FIELDS}
+            snapshot['id'] = row['task_id']
+            visitor = hashlib.sha256(request.cookies.get(COOKIE, '').encode()).hexdigest()
+            return {'taskId': row['task_id'], 'runId': row['id'], 'task': snapshot, 'canEdit': visitor == row['owner'], 'title': config['title'], 'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
 
     @router.post('/subscriptions')
     def subscribe(payload: dict[str, Any], request: Request, response: Response):
