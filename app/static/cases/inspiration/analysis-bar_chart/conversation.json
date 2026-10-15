@@ -10,12 +10,12 @@
       "script": "deepseek",
       "reason": "由 DeepSeek Harness 自主规划并执行。"
     },
-    "htmlUrl": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html",
-    "reportUrl": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html",
+    "htmlUrl": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html?v=20261015-tooltip-coordinates",
+    "reportUrl": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html?v=20261015-tooltip-coordinates",
     "reportArtifacts": [
       {
         "path": "case:inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html",
-        "url": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html"
+        "url": "/static/cases/inspiration/analysis-bar_chart/inspiration-real-analysis-bar_chart-aapl-revenue-quarterly.html?v=20261015-tooltip-coordinates"
       }
     ],
     "payloadUrl": null,

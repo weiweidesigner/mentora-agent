@@ -10,16 +10,16 @@
       "script": "generic-chart + business-chart-recall + code-interpreter + external-search + internal-search + yahoo-data + vision-chart-analyst + advisor-text-generation",
       "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
-    "reportUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
+    "htmlUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html?v=20261015-tooltip-coordinates",
+    "reportUrl": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html?v=20261015-tooltip-coordinates",
     "reportArtifacts": [
       {
         "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html",
-        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html"
+        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-aapl-fy26q3.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html",
-        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html"
+        "url": "/static/cases/inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-bar_line-revenue-margin.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:inspiration/analysis-mind_map/inspiration-real-analysis-mind_map-cash-flow-aapl.html",

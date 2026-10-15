@@ -10,12 +10,12 @@
       "script": "business-chart-recall + generic-chart + yahoo-data",
       "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
-    "reportUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
+    "htmlUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html?v=20261015-tooltip-coordinates",
+    "reportUrl": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html?v=20261015-tooltip-coordinates",
     "reportArtifacts": [
       {
         "path": "case:inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html",
-        "url": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html"
+        "url": "/static/cases/inspiration/analysis-double_ring_pie/inspiration-real-analysis-double_ring_pie-aapl-fy2025.html?v=20261015-tooltip-coordinates"
       }
     ],
     "payloadUrl": null,

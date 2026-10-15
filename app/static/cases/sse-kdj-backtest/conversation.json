@@ -7,22 +7,22 @@
     "reportArtifacts": [
       {
         "path": "case:sse-kdj-backtest/deepseek-kdj-winrate.html",
-        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-winrate.html"
+        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-winrate.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:sse-kdj-backtest/deepseek-kdj-equity.html",
-        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-equity.html"
+        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-equity.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:sse-kdj-backtest/deepseek-kdj-event.html",
-        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-event.html"
+        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-event.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:sse-kdj-backtest/deepseek-kdj-yearly.html",
-        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-yearly.html"
+        "url": "/static/cases/sse-kdj-backtest/deepseek-kdj-yearly.html?v=20261015-tooltip-coordinates"
       }
     ],
-    "reportUrl": "/static/cases/sse-kdj-backtest/deepseek-kdj-winrate.html",
+    "reportUrl": "/static/cases/sse-kdj-backtest/deepseek-kdj-winrate.html?v=20261015-tooltip-coordinates",
     "sources": [],
     "lang": "zh-CN"
   },

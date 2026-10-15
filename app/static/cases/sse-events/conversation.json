@@ -7,11 +7,11 @@
     "reportArtifacts": [
       {
         "path": "case:sse-events/case-sse-line-events.html",
-        "url": "/static/cases/sse-events/case-sse-line-events.html",
+        "url": "/static/cases/sse-events/case-sse-line-events.html?v=20261015-tooltip-coordinates",
         "renderMode": "iframe"
       }
     ],
-    "reportUrl": "/static/cases/sse-events/case-sse-line-events.html",
+    "reportUrl": "/static/cases/sse-events/case-sse-line-events.html?v=20261015-tooltip-coordinates",
     "sources": [
       {
         "url": "https://www.news.cn/20260106/b98bf1f60b1441319c714c333a43bf7c/c.html",

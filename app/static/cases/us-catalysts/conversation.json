@@ -7,18 +7,18 @@
     "reportArtifacts": [
       {
         "path": "case:us-catalysts/deepseek-case-us-catalysts-mindmap.html",
-        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html"
+        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:us-catalysts/deepseek-case-us-catalysts-returns-bar.html",
-        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-returns-bar.html"
+        "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-returns-bar.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:us-catalysts/deepseek-case-us-catalysts-calendar-streamviz.html",
         "url": "/static/cases/us-catalysts/deepseek-case-us-catalysts-calendar-streamviz.html"
       }
     ],
-    "reportUrl": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html",
+    "reportUrl": "/static/cases/us-catalysts/deepseek-case-us-catalysts-mindmap.html?v=20261015-tooltip-coordinates",
     "sources": [
       {
         "siteName": "finance.yahoo.com",

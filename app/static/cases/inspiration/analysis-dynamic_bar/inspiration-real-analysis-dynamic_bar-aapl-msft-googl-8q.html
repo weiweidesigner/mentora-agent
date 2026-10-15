@@ -412,8 +412,9 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
   const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
   let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
   const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
-  let localPortal=null,localSource=null;
+  let localPortal=null,localSource=null,localObserver=null;
   const hideLocalPortal=()=>{
+    localObserver?.disconnect();localObserver=null;
     if(localPortal)localPortal.hidden=true;
     if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
   };
@@ -448,7 +449,11 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
     for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
     localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
     localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
-    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    localObserver?.disconnect();
+    if(localSource&&localSource!==tip)localSource.style.removeProperty('visibility');
+    localSource=tip;
+    const conceal=()=>{if(tip.style.visibility!=='hidden'||tip.style.getPropertyPriority('visibility')!=='important')tip.style.setProperty('visibility','hidden','important');};
+    conceal();localObserver=new MutationObserver(conceal);localObserver.observe(tip,{attributes:true,attributeFilter:['style']});
     return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
   };
 
@@ -495,10 +500,12 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
     tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
     if(placement.outer){
       const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      // Pointer coordinates belong to the chart frame; the portal belongs to the host viewport.
+      const pointerY=originY+event.clientY-placement.top;
       let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
       if(!active.matches('.hit-area')){
-        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=event.clientY+14;}
-        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=event.clientY-h/2;}
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=pointerY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=pointerY-h/2;}
       }
       px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
       portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
@@ -623,5 +630,6 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
   } catch (_) {}
 })();
 </script>
+
 </body>
 </html>

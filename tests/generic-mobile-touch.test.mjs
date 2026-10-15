@@ -146,3 +146,37 @@ test('ECharts repaint cannot reveal a second tooltip behind the touch portal', a
     assert(w.document.querySelector('.generic-local-tooltip-portal').hidden);
   } finally {w.close();}
 });
+
+for (const [hitClass, tipClass, yOffset] of [['pie-slice','pie-tooltip',-20],['ring-arc','ring-tooltip',-20],['treemap-cell','treemap-tooltip',14]]) {
+  test(`${hitClass} touch portal uses the host viewport through nested and scrolled frames`, () => {
+    const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only'});
+    const host=dom.window, outer=host.document.querySelector('iframe');
+    outer.contentDocument.body.innerHTML='<iframe></iframe>';
+    const inner=outer.contentDocument.querySelector('iframe'),w=inner.contentWindow;
+    w.document.body.innerHTML=`<div class="stage"><svg><path class="${hitClass}"/></svg><aside class="${tipClass}">Apple</aside></div>`;
+    let frameTop=240;
+    outer.getBoundingClientRect=()=>({left:10,top:frameTop});
+    inner.getBoundingClientRect=()=>({left:20,top:100});
+    const stage=w.document.querySelector('.stage'),source=w.document.querySelector('aside'),hit=w.document.querySelector('path');
+    Object.defineProperties(source,{offsetParent:{value:stage},offsetWidth:{value:120},offsetHeight:{value:40}});
+    Object.defineProperties(stage,{clientWidth:{value:320},clientHeight:{value:360}});
+    stage.getBoundingClientRect=()=>({left:5,top:60});
+    // jsdom has no layout; give the portaled tooltip the same dimensions as its source.
+    Object.defineProperties(host.HTMLElement.prototype,{offsetWidth:{get(){return this.classList.contains('generic-local-tooltip-portal')?120:0;}},offsetHeight:{get(){return this.classList.contains('generic-local-tooltip-portal')?40:0;}}});
+    w.document.elementFromPoint=()=>hit;
+    w.hideTooltip=()=>source.classList.remove('active');
+    hit.addEventListener('mouseenter',()=>source.classList.add('active'));
+    hit.addEventListener('mouseleave',w.hideTooltip);
+    w.eval(runtime);
+    const touch=()=>{const e=new w.Event('pointerdown',{bubbles:true});Object.assign(e,{pointerType:'touch',pointerId:1,clientX:50,clientY:140});hit.dispatchEvent(e);};
+    try {
+      touch();const portal=host.document.querySelector('.generic-local-tooltip-portal');
+      assert.equal(portal.style.top,`${240+100+140+yOffset}px`);
+      assert.equal(portal.style.left,'94px');
+      host.dispatchEvent(new host.Event('scroll'));assert(portal.hidden);
+      frameTop=-40;touch();
+      assert.equal(portal.style.top,`${-40+100+140+yOffset}px`);
+      assert.equal(portal.hidden,false);
+    } finally {host.close();}
+  });
+}

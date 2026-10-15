@@ -93,3 +93,13 @@ def test_bubble_layout_upgrade_keeps_data_and_annotation_but_replaces_touch_runt
     assert 'new MutationObserver(conceal)' in upgraded
     assert "formatter:'当月波动最高',position:'left',distance:8" in upgraded
     assert current.split('const payload=')[1].split(';\n')[0] == upgraded.split('const payload=')[1].split(';\n')[0]
+
+
+def test_saved_chart_touch_runtime_refreshes_even_after_layout_repairs():
+    from app.artifact_upgrades import upgrade_legacy_mobile_charts
+    old = '<html><head><style data-mobile-chart-repair="3"></style></head><body><style id="genericMobileTouchStyle"></style><script id="genericMobileTouch">oldRuntime();</script></body></html>'
+    upgraded = upgrade_legacy_mobile_charts(old, 'dark')
+    assert 'const pointerY=originY+event.clientY-placement.top;' in upgraded
+    assert 'oldRuntime()' not in upgraded
+    assert upgraded.count('id="genericMobileTouch"') == 1
+    assert upgrade_legacy_mobile_charts(upgraded, 'dark') == upgraded

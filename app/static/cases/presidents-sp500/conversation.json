@@ -7,18 +7,18 @@
     "reportArtifacts": [
       {
         "path": "case:presidents-sp500/deepseek-case-presidents-sp500-dynamic-line.html",
-        "url": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-dynamic-line.html"
+        "url": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-dynamic-line.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:presidents-sp500/deepseek-case-presidents-sp500-grouped-bar.html",
-        "url": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-grouped-bar.html"
+        "url": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-grouped-bar.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:presidents-sp500/deepseek-case-presidents-sp500-streamviz.html",
         "url": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-streamviz.html"
       }
     ],
-    "reportUrl": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-dynamic-line.html",
+    "reportUrl": "/static/cases/presidents-sp500/deepseek-case-presidents-sp500-dynamic-line.html?v=20261015-tooltip-coordinates",
     "sources": [
       {
         "siteName": "cdn-api.cboe.com",

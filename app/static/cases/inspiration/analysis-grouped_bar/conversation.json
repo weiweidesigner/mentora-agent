@@ -10,16 +10,16 @@
       "script": "generic-chart + yahoo-data + business-chart-recall + vision-chart-analyst",
       "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
-    "reportUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
+    "htmlUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html?v=20261015-tooltip-coordinates",
+    "reportUrl": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html?v=20261015-tooltip-coordinates",
     "reportArtifacts": [
       {
         "path": "case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html",
-        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html"
+        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-latest-fy.html?v=20261015-tooltip-coordinates"
       },
       {
         "path": "case:inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html",
-        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html"
+        "url": "/static/cases/inspiration/analysis-grouped_bar/inspiration-real-analysis-grouped_bar-fy-revenue-trend.html?v=20261015-tooltip-coordinates"
       }
     ],
     "payloadUrl": null,
