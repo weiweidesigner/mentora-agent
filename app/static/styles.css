@@ -4281,3 +4281,11 @@ p {
 @media(max-width:760px) { :root[data-theme="light"] .shell.sidebar-open .sidebarContent { background:rgba(255,255,255,.86);border-color:#d6dee8; } }
 :root[data-theme="light"] .homeBackdrop video { opacity:.65;filter:blur(12px) saturate(.8) brightness(1.05); }
 :root[data-theme="light"] .homeBackdropMask { background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,.4) 40%,rgba(252,251,252,.88) 76%,var(--bg) 100%); }
+
+/* Dark mode keeps the app rail darker than the raised sidebar panel. */
+@media(min-width:761px) {
+ :root[data-theme="dark"] .shell .sidebarRail { background:rgba(8,12,18,.74); }
+ :root[data-theme="dark"] .shell .sidebarContent { background:rgba(29,36,47,.76);border-color:rgba(78,92,112,.52);box-shadow:inset 1px 0 0 rgba(220,232,255,.025),4px 0 18px rgba(0,0,0,.12); }
+ :root[data-theme="dark"] .shell.tasks-view .sidebarRail { background:#0b1017; }
+ :root[data-theme="dark"] .shell.tasks-view .sidebarContent { background:#1b222d; }
+}
