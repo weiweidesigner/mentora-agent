@@ -237,7 +237,7 @@
   function prepareDetail(task, canEdit) {
     enterWorkspace();$('taskLanding').hidden=true;$('taskWizard').hidden=true;$('taskDetail').hidden=false;
     $('taskBack').hidden=false;$('taskTopActions').hidden=false;$('taskPageTitle').textContent=task.title;
-    $('taskInfoCard').hidden=!task.lastRun&&!task.resultVersion;
+    $('taskInfoCard').hidden=true;
     $('taskRunNow').hidden=$('taskToggle').hidden=!canEdit;
     $('taskRunNow').disabled=!!task.activeRun;$('taskRunNow').textContent=task.activeRun?'运行中…':'立即运行';
     $('taskToggle').textContent=completed(task)?'重新安排':task.enabled?'暂停':'开启';
@@ -285,7 +285,7 @@
   }
   async function paintRun(data, task, version) {
     if(version!==viewVersion)return;
-    $('taskInfoCard').hidden=false;
+    $('taskInfoCard').hidden=true;
     const container=$('taskThread');
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
