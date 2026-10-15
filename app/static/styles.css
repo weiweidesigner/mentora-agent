@@ -4587,3 +4587,11 @@ html { -webkit-tap-highlight-color:transparent; }
 /* Composer visibility follows the task view, including asynchronous navigation. */
 .taskWorkspace[data-task-view="waiting"] #taskChatForm,.taskWorkspace[data-task-view="loading"] #taskChatForm{display:none!important}
 .shell.tasks-view #chatForm{display:none!important}
+
+/* Use the supplied brand artwork for financial chart providers. */
+.caseCardIcon.caseCardBrandIcon{background:transparent;overflow:hidden;color:inherit}
+.caseCardBrandIcon img{display:block;width:100%;height:100%;object-fit:contain}
+.caseCardBrandIcon--tradingview img{width:138%;height:138%;max-width:none;grid-area:1/1}
+.caseCardBrandIcon .brandLogoDark{display:none}
+html[data-theme="dark"] .caseCardBrandIcon .brandLogoLight{display:none}
+html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}

@@ -129,9 +129,19 @@
     '<path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="6" width="4" height="7" rx="1"/><rect x="10" y="10" width="4" height="6" rx="1"/><rect x="16" y="5" width="4" height="9" rx="1"/>',
   ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
 
+  const cardIcon = (row, index) => {
+    if (row.category === "charts" && row.tool === "TradingViewChart") {
+      return '<span class="caseCardIcon caseCardBrandIcon caseCardBrandIcon--tradingview" aria-hidden="true"><img class="brandLogoLight" src="/static/assets/brands/tradingview-black.png" alt=""><img class="brandLogoDark" src="/static/assets/brands/tradingview-white.png" alt=""></span>';
+    }
+    if (row.category === "charts" && row.id.startsWith("business-")) {
+      return '<span class="caseCardIcon caseCardBrandIcon" aria-hidden="true"><img src="/static/assets/brands/ainvest.png" alt=""></span>';
+    }
+    return `<span class="caseCardIcon">${icons[index % icons.length]}</span>`;
+  };
+
   const cardHtml = (row, index) => `
       <button class="caseCard" type="button" data-case="${escapeHtml(row.id)}" style="--case-accent:${["#6d5efc", "#2784df", "#c17632", "#358a73", "#9661cb", "#5272b7"][index % 6]}">
-        <div class="caseCardTop"><span class="caseCardIcon">${icons[index % icons.length]}</span><span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
+        <div class="caseCardTop">${cardIcon(row, index)}<span class="caseCardTag">${escapeHtml(row.tag)}</span></div>
         <h2>${row.mobileTitle ? `<span class="caseCardTitleFull">${escapeHtml(row.title)}</span><span class="caseCardTitleMobile">${escapeHtml(row.mobileTitle)}</span>` : escapeHtml(row.title)}</h2>
         <p>${escapeHtml(row.preview)}</p>
       </button>`;
