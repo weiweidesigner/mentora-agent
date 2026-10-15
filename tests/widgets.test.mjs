@@ -111,3 +111,23 @@ test('sidebar chat persists per board, forwards follow-up history and keeps boar
  s.d.querySelector('[data-board="board"]').click();assert.match(s.d.querySelector('#widgetChatLog').textContent,/第一张/);s.dom.window.close();
  const restored=setup({storage});assert.match(restored.d.querySelector('#widgetChatLog').textContent,/第一张/);restored.dom.window.close();
 });
+
+
+test('TradingView detail links can open independent tabs without inheriting the board sandbox',()=>{
+ const s=setup({storage:twoCards()});
+ const frame=s.d.querySelector('[data-card="one"] iframe');
+ const permissions=frame.getAttribute('sandbox').split(/\s+/);
+ assert.ok(permissions.includes('allow-popups'));
+ assert.ok(permissions.includes('allow-popups-to-escape-sandbox'));
+ assert.ok(!permissions.includes('allow-top-navigation'));
+ s.dom.window.close();
+});
+test('mobile chat opener stays open and an edited title survives iframe loading and reload',async()=>{
+ const s=setup({storage:twoCards(),plan:{reply:'已修改标题。',actions:[{type:'update',cardId:'one',title:'科技股行情'}]}});
+ s.w.setSidebarCollapsed=value=>s.d.querySelector('.shell').classList.toggle('sidebar-open',!value);
+ s.d.addEventListener('click',e=>{if(!e.target.closest('#appSidebar'))s.w.setSidebarCollapsed(true);});
+ s.d.querySelector('#widgetChatToggle').click();assert.ok(s.d.querySelector('.shell').classList.contains('sidebar-open'));
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'标题改成科技股行情');await tick();await tick();
+ const storage=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(storage.boards[0].cards[0].customTitle,true);
+ s.dom.window.close();const r=setup({storage});const frame=r.d.querySelector('[data-card="one"] iframe');frame.contentDocument.title='原有标题';frame.dispatchEvent(new r.w.Event('load'));assert.equal(r.d.querySelector('[data-card="one"] .widgetCardTitle').textContent,'科技股行情');r.dom.window.close();
+});
