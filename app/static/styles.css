@@ -254,20 +254,7 @@ textarea {
   stroke-linejoin: round;
 }
 
-.sidebarCollapseButton:hover::after {
-  content: attr(data-tip);
-  position: absolute;
-  right: 34px;
-  top: 50%;
-  z-index: 20;
-  transform: translateY(-50%);
-  white-space: nowrap;
-  border-radius: 8px;
-  padding: 6px 9px;
-  background: #181c24;
-  color: #eef2f7;
-  font-size: 12px;
-}
+
 
 .sidebarNav {
   display: grid;
