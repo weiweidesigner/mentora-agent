@@ -71,7 +71,7 @@
       frame.addEventListener('load',()=>{try {const doc=frame.contentDocument;const title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
     } else {
       const body=document.createElement('div');body.className='widgetCardBody';
-      body.innerHTML=card.status==='loading'?'<div class="widgetLoading" aria-hidden="true"></div><p>正在获取数据、生成图表…</p>':`<p>${esc(card.error||'图表暂不可用，请重新生成。')}</p><button type="button" data-retry>重新生成</button>`;el.append(body);
+      body.innerHTML=card.status==='loading'?`<div class="widgetLoading" aria-hidden="true"></div><p>${esc(card.loadingText||'正在获取数据、生成图表…')}</p>`:`<p>${esc(card.error||'图表暂不可用，请重新生成。')}</p><button type="button" data-retry>重新生成</button>`;el.append(body);
     }
     const resize=document.createElement('div');resize.className='widgetResize';resize.title='拖动调整宽高';resize.setAttribute('role','slider');resize.tabIndex=0;resize.setAttribute('aria-label','调整图表尺寸，方向键调整');resize.setAttribute('aria-valuemin','3');resize.setAttribute('aria-valuemax','12');resize.setAttribute('aria-valuenow',card.w);el.append(resize);
     return el;
@@ -119,11 +119,35 @@
     const input=$('widgetSymbol'),mode=selected?.inputMode||'symbol';
     if(input.dataset.mode&&input.dataset.mode!==mode){libraryInputs[input.dataset.mode]=input.value;input.value=libraryInputs[mode]||'';}input.dataset.mode=mode;
     $('widgetSymbolLabel').textContent=market?'市场或范围（可选）':group?'关注标的（可多个）':'关注标的';
+    const directMarket=market&&selected?.provider==='TradingView';
+    $('widgetSymbol').hidden=directMarket;$('widgetMarket').hidden=!directMarket;
+    if(directMarket){const options=selected.widget==='screener'?[['default','美股'],['china','中国 A 股'],['hongkong','港股'],['japan','日本'],['uk','英国'],['germany','德国']]:selected.widget==='economic-calendar'?[['default','全球'],['us','美国'],['cn','中国'],['eu','欧元区'],['gb','英国'],['jp','日本']]:[['default',selected.defaultScope||'默认市场']];$('widgetMarket').innerHTML=options.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');}
     $('widgetSymbol').required=!market;
     $('widgetSymbol').placeholder=market?`留空使用：${selected.defaultScope}`:selected?.provider==='TradingView'?(group?'例如 NASDAQ:AAPL、NASDAQ:MSFT、NASDAQ:NVDA':'例如 NASDAQ:AAPL、HKEX:700'):'例如 AAPL、NVDA 或 MSFT';
     $('widgetLibraryNote').textContent=selected?.provider==='TradingView'?'由 TradingView 托管展示；行情可能受交易所延迟与可用性限制。':'公司财务图表适用于美股，按生成时的数据展示。';
   }
-  async function generate(message, component=null, retryId=null) {
+  async function addTradingView(message, component, retryId, market='default') {
+    const board=current();if(!board)return;
+    if(board.cards.length>=60&&!retryId){notice('当前看板最多放置 60 张图表，请新建看板继续。');return;}
+    const widget=component.widget||component.id.slice(3),isMarket=['screener','crypto-mkt-screener','stock-heatmap','crypto-heatmap','market-overview','economic-calendar','top-stories'].includes(widget);
+    const symbols=isMarket?[]:message.split(/[,，、;；\s]+/).map(s=>s.trim()).filter(Boolean);
+    let card=retryId&&board.cards.find(c=>c.id===retryId);
+    if(card)Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market});
+    else {card={id:uid(),title:component.title,w:component.width||6,h:component.height||18,status:'loading',loadingText:'正在加载 TradingView…',url:'',request:message,component:component.id,market};place(board,card);board.cards.push(card);}
+    save();render();
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000);
+    try {
+      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,symbols,market,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN'})});
+      const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'组件添加失败，请重试。');
+      const url=safeUrl(result.url);if(!url)throw Error('组件没有返回可用的地址。');
+      if(!boards.includes(board)||!board.cards.includes(card))return;
+      Object.assign(card,{url,title:result.title||component.title,status:'ready',createdAt:new Date().toISOString()});
+    } catch(error){if(boards.includes(board)&&board.cards.includes(card)){card.status='error';card.error=error.name==='AbortError'?'组件加载超时，请重试。':error.message;}}
+    finally{clearTimeout(timeout);save();if(activeId===board.id)render();}
+  }
+  async function generate(message, component=null, retryId=null, market='default') {
+    if(component?.provider==='TradingView'||component?.id?.startsWith('tv-'))return addTradingView(message,component,retryId,market);
+
     if(['kline','multi_intraday'].includes(component?.id)){notice('该行情组件已从看板库移除，请选择其他图表。');return;}
     const board=current();if(!board||jobs.has(board.id)){notice('当前看板正在生成，请稍候或切换看板。');return;}
     if(board.cards.length>=60&&!retryId){notice('当前看板最多放置 60 张图表，请新建看板继续。');return;}
@@ -136,8 +160,7 @@
     if(board.title==='我的看板'&&!component){const named=message.match(/(?:做|建|生成|创建)(?:一[个张])?(.{2,16}?看板)/),symbol=message.match(/\b[A-Z][A-Z0-9.-]{0,9}\b/);if(named)board.title=named[1];else if(symbol)board.title=symbol[0]+' 看板';}
     save();render();
     let final=null, failure='';
-    const tvWidget=component?.widget||(component?.id?.startsWith('tv-')?component.id.slice(3):'');
-    const request=tvWidget?`请按用户关注的标的或市场范围「${message}」，生成一个独立的 TradingView「${component.title}」组件。使用 app/skills/trading-view-chart/scripts/trading_view_chart.py，--widget ${tvWidget}。先阅读 trading-view-chart/SKILL.md、schemas/trading_view_chart.schema.json 和 widgets.json，保留官方署名，使用当前主题和中文。单标的核对交易所前缀；多标的按该组件的 symbols、symbolsGroups 或 tabs 契约构造 --config-json；市场型组件不要传 --symbol。股票筛选器默认美股市场。不要替换成原生业务图表，不要额外取数解读，托管图表不等于已提取行情数值。`:component?`请为标的 ${message} 生成一个独立的「${component.title}」金融业务图表，使用 business-chart-recall 的 ${component.id}.py。`:`请根据我的需求，为金融看板选择并生成 2 到 6 张各自独立的金融业务图表：${message}`;
+    const request=component?`请为标的 ${message} 生成一个独立的「${component.title}」金融业务图表，使用 business-chart-recall 的 ${component.id}.py。`:`请根据我的需求，为金融看板选择并生成 2 到 6 张各自独立的金融业务图表：${message}`;
     const question=`${request}\n这是 Widget 画布请求。看板库已移除股价与 K 线（kline.py）、多股分时（multi_intraday.py），不得调用或加入这两个组件，也不要用自定义价格走势图替代它们。现在支持 trading-view-chart 技能的 18 种官方托管组件：价格走势、行情列表、筛选器、热力图、技术分析、财务概览、新闻、经济日历等，可根据业务需求选用；行情展示优先选择 TradingView。原生业务图表继续用于财务、估值、评级等分析。用户明确要求被移除的原生组件时说明已移除，可选择 TradingView。请遵守项目技能路由，调用现有业务组件的原生脚本取真实数据；先阅读各组件 schema，保留原生交互、主题、语言和数据来源。原生公司财报、估值与评级只用于契约支持的美股公司，其他资产只选匹配组件。每个图表单独输出 standalone HTML 到 outputs/generated，并各用 AIME_CHART 标记返回，方便画布分别拖拽。不要合并为一份报告、不要创建 dashboard 外壳、不要用示例或编造数据填充。手动指定图表时只生成指定的一张。数据不可用时明确说明，不使用无关标的代替。标题自然具体，不预写未经证实的结论。当前看板已有：${board.cards.filter(c=>c.status==='ready').map(c=>c.title).join('；')||'暂无'}。`;
     try {
       const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question,sessionId:`widget-${board.id}-${pendingId}`,history:board.messages.slice(0,-1),images:[],reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='light'?'light':'dark'})});
@@ -182,7 +205,7 @@
   $('widgetSearch').oninput=renderLibrary;
   $('widgetCategories').onclick=event=>{const b=event.target.closest('[data-category]');if(b){category=b.dataset.category;renderLibrary();}};
   $('widgetLibraryList').onclick=event=>{const b=event.target.closest('[data-component]');if(b){componentId=b.dataset.component;renderLibrary();}};
-  $('widgetAddForm').onsubmit=event=>{event.preventDefault();const symbol=$('widgetSymbol').value.trim(),component=catalog.find(c=>c.id===componentId);if(!component||(!symbol&&component.inputMode!=='market'))return;if(jobs.has(activeId)){notice('请等待当前图表完成后再添加。');return;}$('widgetLibrary').close();generate(symbol||component.defaultScope,component);};
+  $('widgetAddForm').onsubmit=event=>{event.preventDefault();const symbol=$('widgetSymbol').value.trim(),component=catalog.find(c=>c.id===componentId);if(!component||(!symbol&&component.inputMode!=='market'))return;if(jobs.has(activeId)&&component.provider!=='TradingView'){notice('请等待当前图表完成后再添加。');return;}$('widgetLibrary').close();generate(symbol||component.defaultScope,component,null,component.inputMode==='market'&&component.provider==='TradingView'?$('widgetMarket').value:'default');};
   $('widgetForm').onsubmit=event=>{event.preventDefault();const text=$('widgetPrompt').value.trim();if(!text||jobs.has(activeId))return;$('widgetPrompt').value='';updateComposer();generate(text);};
   function updateComposer(){const input=$('widgetPrompt');input.style.height='40px';const height=Math.max(40,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.style.overflowY=input.scrollHeight>height?'auto':'hidden';input.closest('.widgetComposerBox').classList.toggle('is-multiline',height>44);$('widgetGenerate').classList.toggle('is-ready',!!input.value.trim());}
   $('widgetPrompt').oninput=updateComposer;
@@ -193,7 +216,7 @@
     const el=event.target.closest('[data-card]');if(!el)return;const board=current(),card=board.cards.find(c=>c.id===el.dataset.card);if(!card)return;
     if(event.target.closest('[data-remove]')){board.cards=board.cards.filter(c=>c!==card);save();render();}
     if(event.target.closest('[data-open]')&&card.url)window.open(frameUrl(card),'_blank','noopener');
-    if(event.target.closest('[data-retry]'))generate(card.request,catalog.find(c=>c.id===card.component)|| (card.component?{id:card.component,title:card.title}:null),card.id);
+    if(event.target.closest('[data-retry]'))generate(card.request,catalog.find(c=>c.id===card.component)|| (card.component?{id:card.component,title:card.title}:null),card.id,card.market||'default');
     const size=event.target.closest('[data-size]');if(size){card.w=clamp(card.w+(size.dataset.size==='wide'?3:-3),3,12);settle(board,card);save();applyLayout();}
   });
   canvas.addEventListener('keydown',event=>{

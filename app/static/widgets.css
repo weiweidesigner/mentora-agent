@@ -53,3 +53,5 @@
 .widgetSidebar #widgetNew{margin-bottom:4px}.widgetSidebarAction{display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;text-align:left;color:var(--muted);background:transparent;border:0;border-radius:8px;padding:10px 8px;margin:0 0 20px;cursor:pointer}.widgetSidebarAction:hover{background:var(--soft-2);color:var(--ink)}.widgetSidebarAction svg{flex:none}
 
 .widgetWorkspace .widgetComposerArea{display:none}
+
+.widgetAddForm select{width:100%;box-sizing:border-box;margin-top:8px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:14px}.widgetAddForm [hidden]{display:none!important}

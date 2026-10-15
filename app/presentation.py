@@ -21,6 +21,7 @@ from app.reasoning_frameworks import FRAMEWORKS, LocalAgentFrameworks, Reasoning
 from app.native_streamviz import stream_native_widget
 from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_grouped_bar, upgrade_legacy_mobile_charts, upgrade_legacy_mobile_charts
 from app.local_glm_adapter import router as local_glm_router
+from app.widget_library import router as widget_library_router
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
 
@@ -38,6 +39,7 @@ LEGACY_ARTIFACT_REDIRECTS = {
 
 app = FastAPI(title="Mentora presentation gateway")
 app.include_router(local_glm_router)
+app.include_router(widget_library_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 

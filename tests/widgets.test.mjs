@@ -12,7 +12,7 @@ function setup({storage,reply,blocked=false}={}) {
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(value){this.open=false;this.returnValue=value;this.dispatchEvent(new w.Event('close'));};
  if(storage)w.localStorage.setItem('mentora-widget-boards-v1',JSON.stringify(storage));
  if(blocked)Object.defineProperty(w,'localStorage',{get(){throw Error('blocked');}});
- const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.includes('catalog'))return{ok:true,json:async()=>catalog};return{ok:true,body:reply};};
+ const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.includes('catalog'))return{ok:true,json:async()=>catalog};if(url==='/api/widgets/tradingview')return{ok:true,json:async()=>({url:'/generated/direct-tv.html',title:'TradingView 直接添加',mode:'direct'})};return{ok:true,body:reply};};
  w.readEventStream=async(body,callback)=>{if(typeof body==='function')await body(callback);else callback('final',{reportArtifacts:[{url:'/generated/real-kline.html',title:'苹果近期股价'},{url:'/generated/real-revenue.html',title:'苹果营收构成'}],interpretation:'真实研究结果'});};
  w.eval(source);return {dom,w,d:w.document,calls};
 }
@@ -49,19 +49,17 @@ test('empty or failed output is visible and never inserts fabricated charts',asy
  const s=setup({reply:async cb=>cb('error',{detail:'数据源暂不可用'})});submit(s.w,s.d,'看看 NVDA');await tick();assert.equal(s.d.querySelectorAll('.widgetCard iframe').length,0);assert.match(s.d.querySelector('.widgetCardBody').textContent,/数据源暂不可用/);assert.ok(s.d.querySelector('[data-retry]'));s.dom.window.close();
 });
 
-test('TradingView market widget uses its own skill and can be added without a stock code',async()=>{
- const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
- d.querySelector('[data-category="宏观分析"]').click();d.querySelector('[data-component="tv-economic-calendar"]').click();
- assert.equal(d.querySelector('#widgetSymbol').required,false);assert.equal(d.querySelector('#widgetSymbolLabel').textContent,'市场或范围（可选）');
+test('manual TradingView screener adds directly without any chat or model request',async()=>{
+ const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();d.querySelector('[data-component="tv-screener"]').click();
+ assert.equal(d.querySelector('#widgetSymbol').hidden,true);d.querySelector('#widgetMarket').value='hongkong';
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
- const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/trading-view-chart\/scripts\/trading_view_chart.py/);assert.match(body.question,/--widget economic-calendar/);assert.match(body.question,/全球重要经济数据/);assert.doesNotMatch(body.question,/tv-economic-calendar.py/);dom.window.close();
+ assert.equal(calls.some(c=>c.url==='/api/chat/stream'),false);const body=JSON.parse(calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'screener');assert.equal(body.market,'hongkong');assert.deepEqual(body.symbols,[]);assert.equal(d.querySelectorAll('.widgetCard iframe').length,1);dom.window.close();
 });
-test('TradingView quote-list preserves multiple symbols and category changes select a visible component',async()=>{
+test('manual TradingView quote-list preserves multiple symbols and uses direct endpoint',async()=>{
  const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
- d.querySelector('[data-category="行情观察"]').click();assert.ok(d.querySelector('#widgetLibraryList [aria-pressed="true"]'));
- d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';assert.equal(d.querySelector('#widgetSymbol').required,true);
+ d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
- const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/--widget market-data/);assert.match(body.question,/NASDAQ:AAPL,NASDAQ:NVDA/);assert.match(body.question,/symbolsGroups/);
+ assert.equal(calls.some(c=>c.url==='/api/chat/stream'),false);const body=JSON.parse(calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'market-data');assert.deepEqual(body.symbols,['NASDAQ:AAPL','NASDAQ:NVDA']);
  d.querySelector('#widgetSidebarLibrary').click();await tick();d.querySelector('[data-category="宏观分析"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
  d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'NASDAQ:AAPL,NASDAQ:NVDA');dom.window.close();
 });
