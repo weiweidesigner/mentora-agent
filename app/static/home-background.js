@@ -7,14 +7,16 @@
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let playVersion = 0;
   const shouldPlay = () => !document.hidden && !motion.matches && !navigator.connection?.saveData
+    && conversation?.classList.contains('is-empty') && conversation.scrollTop < backdrop.offsetHeight
     && !document.querySelector('.shell')?.classList.contains('tasks-view')
-    && (desktop.matches || (conversation?.classList.contains('is-empty') && conversation.scrollTop < backdrop.offsetHeight && !document.querySelector('.shell')?.classList.contains('tasks-view')))
     && !document.querySelector('.shell')?.classList.contains('case-overlay-open');
   function sync() {
+    backdrop.style.transform = `translateY(${-Math.max(0, conversation.scrollTop)}px)`;
     const version = ++playVersion;
     if (!shouldPlay()) { video.pause(); return; }
     if (!video.getAttribute('src')) video.src = video.dataset.src;
     video.muted = true;
+    if (!video.paused) return;
     video.play().then(() => {
       if (version !== playVersion && !shouldPlay()) video.pause();
     }).catch(() => { /* Keep the poster when autoplay is unavailable. */ });

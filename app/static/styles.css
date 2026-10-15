@@ -4198,3 +4198,10 @@ p {
 .shell.tasks-view>.homeBackdrop { display:none; }
 .shell.tasks-view .sidebarRail { background:var(--bg);backdrop-filter:none;-webkit-backdrop-filter:none; }
 .shell.tasks-view .sidebarContent { background:var(--soft);backdrop-filter:none;-webkit-backdrop-filter:none;border-color:var(--line); }
+
+/* The video belongs to the home hero and scrolls out with that region. */
+.shell>.homeBackdrop { display:none;inset:0 0 auto;height:100dvh;min-height:540px;will-change:transform; }
+.shell:has(.conversation.is-empty):not(.tasks-view)>.homeBackdrop { display:block; }
+.homeBackdropMask { background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.4) 40%,rgba(255,255,255,.8) 72%,var(--bg) 100%); }
+:root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(14,19,26,.24) 0%,rgba(14,19,26,.4) 40%,rgba(14,19,26,.8) 72%,var(--bg) 100%); }
+@media(max-width:760px) { .shell>.homeBackdrop { height:85dvh;min-height:480px; } }
