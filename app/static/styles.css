@@ -4120,10 +4120,10 @@ p {
 #taskChatError { margin:6px 12px 0;font-size:12px;color:var(--muted); }
 #taskChatError:empty { display:none; }
 @media(min-width:761px) {
- .shell.tasks-view .sidebarContent { border-radius:20px 0 0 20px;background:var(--soft); }
- .shell.tasks-view .appSidebar { background:var(--bg);border-right:0; }
- .shell.tasks-view .sidebarRail { border-right:0;background:var(--bg); }
- .shell.tasks-view .sidebarContent { border:1px solid var(--line);border-right:1px solid var(--line); }
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarContent { border-radius:20px 0 0 20px;background:var(--soft); }
+ .shell:is(.sidebar-open,.sidebar-collapsed) .appSidebar { background:var(--bg);border-right:0; }
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarRail { border-right:0;background:var(--bg); }
+ .shell:is(.sidebar-open,.sidebar-collapsed) .sidebarContent { border:1px solid var(--line);border-right:1px solid var(--line); }
  .shell.tasks-view .taskSidebarTitle { height:34px;min-height:34px;align-items:center; }
  .shell.tasks-view .taskSidebarTitle h2 { line-height:24px; }
  .shell.tasks-view .sidebarTop .sidebarCollapseButton { top:18px;width:30px;height:30px; }
