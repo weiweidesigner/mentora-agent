@@ -166,13 +166,8 @@ test('all inspiration cards have portable, non-empty caches and complete compone
     assert.equal(cached.question,row.question);
     assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
     assert.ok(cached.answer.interpretation.trim());
-    if(row.generation==='actual-tool-execution'){
-      assert.equal(cached.provenance.generation,'actual-tool-execution');
-      assert.ok(cached.activity.elapsedMs>0);
-    }else{
-      assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
-      assert.ok(cached.activity.elapsedMs>1000);
-    }
+    assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
+    assert.ok(cached.activity.elapsedMs>1000);
     assert.equal(cached.activity.elapsedMs,cached.activity.stages.reduce((total,stage)=>total+stage.endedAt-stage.startedAt,0));
     assert.ok(cached.activity.steps.length>0);
     for(const artifact of cached.answer.reportArtifacts){
@@ -235,9 +230,18 @@ test('financial gallery covers every TradingView widget exactly once',()=>{
   assert.equal(row.category,'charts');
   const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
   assert.equal(cached.provenance.widget,row.widget);
-  const artifact=cached.answer.reportArtifacts[0];
-  const document=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
-  const config=JSON.parse(document.match(/<script id="tv-config" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(row.generation,'actual-veya-chat-stream');
+  assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
+  assert.ok(cached.provenance.sessionId);
+  assert.match(cached.provenance.sourceAnswerSha256,/^[0-9a-f]{64}$/);
+  const entries=cached.answer.reportArtifacts.map(artifact=>{
+   const document=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
+   const match=document.match(/<script id="tv-config" type="application\/json">([\s\S]*?)<\/script>/);
+   return {document,config:match?JSON.parse(match[1]):null};
+  });
+  const entry=entries.find(item=>item.config?.widget===row.widget);
+  assert.ok(entry,`missing actual widget result: ${row.widget}`);
+  const {document,config}=entry;
   assert.equal(config.widget,row.widget);
   assert.equal(config.config.locale,'zh_CN');
   assert.equal(config.script,widgets[row.widget].script);

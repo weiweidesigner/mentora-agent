@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>样本市值构成：BTC 与 ETH 合计占 78.5%</title>
+<script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script>
+<style>
+*{box-sizing:border-box}
+:root{--chart-text-primary:#171b22;--chart-text-secondary:#5f6876;--chart-tooltip-bg:#303030}
+:root[data-theme="dark"]{color-scheme:dark;--chart-text-primary:#f1f5f9;--chart-text-secondary:#c1cad7;--chart-tooltip-bg:#202733}
+html,body{width:100%;height:100%;margin:0;background:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--chart-text-primary)}
+.treemap-component{position:relative;width:100%;min-height:360px;padding:18px 22px 16px;background:transparent;overflow:visible}
+.treemap-title{min-height:22px;margin:0;color:var(--chart-text-primary);font-size:16px;font-weight:800;line-height:1.25}
+.treemap-subtitle{margin:2px 0 6px;color:var(--chart-text-secondary);font-size:13px;line-height:1.35}
+.treemap-subtitle:empty{display:none}
+.treemap-stage{position:relative;width:100%;height:274px;border:0;border-radius:0;overflow:hidden;background:transparent}
+.treemap-cell{position:absolute;display:flex;flex-direction:column;justify-content:flex-start;gap:5px;padding:12px;border:0;border-radius:0;overflow:hidden;color:var(--treemap-text-color,#ffffff);text-shadow:var(--treemap-text-shadow,none);cursor:crosshair;box-shadow:none;transition:filter .14s ease,box-shadow .14s ease}
+.treemap-cell:hover{filter:brightness(1.03);z-index:5;box-shadow:0 8px 18px rgba(15,23,42,.12)}
+.treemap-label{font-size:13px;font-weight:800;line-height:1.18;white-space:normal;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:break-word;word-break:normal}
+.treemap-value{font-size:12px;font-weight:650;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.94}
+.treemap-cell.has-children{justify-content:flex-start;padding:11px 12px 9px}
+.treemap-cell.has-children:hover{z-index:auto;transform:none;box-shadow:none;filter:brightness(1.04)}
+.treemap-cell.has-children .treemap-value{display:none}
+.treemap-cell.is-child-dimmed{opacity:.42;filter:saturate(.8)}
+.treemap-cell.is-small{padding:5px;border-radius:0}
+.treemap-cell.is-small .treemap-label,.treemap-cell.is-small .treemap-value{display:none}
+.treemap-cell.label-compact{gap:3px;padding:8px}
+.treemap-cell.label-compact .treemap-label{font-size:12px;-webkit-line-clamp:1;line-height:1.12}
+.treemap-cell.label-compact .treemap-value{font-size:11px;line-height:1.12}
+.treemap-cell.label-value-only{padding:5px}
+.treemap-cell.label-value-only .treemap-label{display:none}
+.treemap-cell.label-value-only .treemap-value{font-size:10px;line-height:1.1}
+.treemap-cell.label-name-only .treemap-value{display:none}
+.treemap-cell.label-name-only .treemap-label{-webkit-line-clamp:2}
+.treemap-tooltip{position:absolute;z-index:10;min-width:176px;padding:9px 11px;background:var(--chart-tooltip-bg);color:#ffffff;border:0;border-radius:6px;font-size:13px;line-height:1.45;pointer-events:none;opacity:0;visibility:hidden;box-shadow:0 10px 24px rgba(15,23,42,.18)}
+.treemap-tooltip.active{opacity:1;visibility:visible}
+.tooltip-title{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
+.tooltip-dot,.legend-dot{width:9px;height:9px;border-radius:2px;flex:none}
+.tooltip-value{padding-left:17px;white-space:nowrap}
+.treemap-legend{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;margin-top:13px;padding-top:1px;color:var(--chart-text-secondary);font-size:13px;line-height:1.2}
+.legend-item{display:flex;align-items:center;gap:7px;min-width:0}
+.legend-label{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.treemap-component.hide-legend .treemap-legend{display:none}
+@media(max-width:640px){.treemap-component{min-height:0;padding:0 0 10px}.treemap-title{min-height:18px;font-size:14px;line-height:1.2}.treemap-subtitle{margin:2px 0 6px;font-size:12px;line-height:1.3}.treemap-stage{height:auto;min-height:0;aspect-ratio:900/700}.treemap-cell{padding:9px;border-radius:0}.treemap-legend{gap:8px 12px;margin-top:8px;font-size:12px}.treemap-label,.treemap-tooltip{font-size:12px}}
+</style>
+</head>
+<body>
+<section class="treemap-component" data-component-contract="{&quot;type&quot;: &quot;treemap&quot;, &quot;name&quot;: &quot;treemap&quot;, &quot;visualChannelMappings&quot;: [{&quot;semantic&quot;: &quot;矩形列表&quot;, &quot;field&quot;: &quot;items&quot;, &quot;aliases&quot;: [&quot;data&quot;, &quot;nodes&quot;, &quot;segments&quot;], &quot;visualChannel&quot;: &quot;treemap.rect.area&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;分类名称&quot;, &quot;field&quot;: &quot;items[].label&quot;, &quot;aliases&quot;: [&quot;name&quot;, &quot;category&quot;], &quot;visualChannel&quot;: &quot;treemap.rect.label&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;面积数值&quot;, &quot;field&quot;: &quot;items[].value&quot;, &quot;aliases&quot;: [&quot;size&quot;, &quot;amount&quot;], &quot;visualChannel&quot;: &quot;treemap.rect.area&quot;, &quot;required&quot;: true}, {&quot;semantic&quot;: &quot;展示值&quot;, &quot;field&quot;: &quot;items[].displayValue&quot;, &quot;aliases&quot;: [&quot;formattedValue&quot;], &quot;visualChannel&quot;: &quot;treemap.rect.valueLabel&quot;}, {&quot;semantic&quot;: &quot;矩形颜色&quot;, &quot;field&quot;: &quot;items[].color&quot;, &quot;aliases&quot;: [&quot;fill&quot;], &quot;visualChannel&quot;: &quot;treemap.rect.color&quot;}, {&quot;semantic&quot;: &quot;子节点&quot;, &quot;field&quot;: &quot;items[].children&quot;, &quot;aliases&quot;: [&quot;children&quot;, &quot;items&quot;], &quot;visualChannel&quot;: &quot;treemap.hierarchy.children&quot;}, {&quot;semantic&quot;: &quot;标题&quot;, &quot;field&quot;: &quot;title&quot;, &quot;aliases&quot;: [&quot;name&quot;], &quot;visualChannel&quot;: &quot;text.title&quot;}, {&quot;semantic&quot;: &quot;下标题&quot;, &quot;field&quot;: &quot;subtitle&quot;, &quot;aliases&quot;: [&quot;subTitle&quot;, &quot;caption&quot;], &quot;visualChannel&quot;: &quot;text.subtitle&quot;}, {&quot;semantic&quot;: &quot;图例显示&quot;, &quot;field&quot;: &quot;showLegend&quot;, &quot;visualChannel&quot;: &quot;legend.visibility&quot;, &quot;default&quot;: true}], &quot;dataContract&quot;: [{&quot;field&quot;: &quot;items[].label&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;treemap.rect.label&quot;}, {&quot;field&quot;: &quot;items[].value&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;treemap.rect.area&quot;}, {&quot;field&quot;: &quot;items[].displayValue&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;treemap.rect.valueLabel&quot;}, {&quot;field&quot;: &quot;items[].color&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;treemap.rect.color&quot;}, {&quot;field&quot;: &quot;items[].children&quot;, &quot;type&quot;: &quot;array&quot;, &quot;channel&quot;: &quot;treemap.hierarchy.children&quot;}, {&quot;field&quot;: &quot;title&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.title&quot;}, {&quot;field&quot;: &quot;subtitle&quot;, &quot;type&quot;: &quot;string&quot;, &quot;channel&quot;: &quot;text.subtitle&quot;}, {&quot;field&quot;: &quot;height&quot;, &quot;type&quot;: &quot;number&quot;, &quot;channel&quot;: &quot;layout.height&quot;}, {&quot;field&quot;: &quot;showLegend&quot;, &quot;type&quot;: &quot;boolean&quot;, &quot;channel&quot;: &quot;legend.visibility&quot;}], &quot;builtInDataSources&quot;: []}">
+  <h2 class="treemap-title">样本市值构成：BTC 与 ETH 合计占 78.5%</h2>
+  <div class="treemap-subtitle"></div>
+  <div class="treemap-stage" role="img" aria-label="样本市值构成：BTC 与 ETH 合计占 78.5%"></div>
+  <div class="treemap-legend"></div>
+  <div class="treemap-tooltip"></div>
+</section>
+<script>
+const config = {"items": [{"_id": "0", "label": "比特币 BTC", "value": 1630000000000.0, "displayValue": "1.63万亿元", "color": "#5b6cff", "colorEnd": "#6b7bff", "textColor": "#ffffff", "textShadow": "0 1px 2px rgba(15,23,42,.22)", "children": []}, {"_id": "1", "label": "以太坊 ETH", "value": 288660000000.0, "displayValue": "2,887亿元", "color": "#e85b85", "colorEnd": "#ea6b91", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "2", "label": "泰达币 USDT", "value": 183790000000.0, "displayValue": "1,838亿元", "color": "#19b59f", "colorEnd": "#17a792", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "3", "label": "币安币 BNB", "value": 95840000000.0, "displayValue": "958亿元", "color": "#ee9b24", "colorEnd": "#db8f21", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "4", "label": "索拉纳 SOL", "value": 60570000000.0, "displayValue": "606亿元", "color": "#74a82b", "colorEnd": "#82b140", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "5", "label": "瑞波币 XRP", "value": 82580000000.0, "displayValue": "826亿元", "color": "#24b7d4", "colorEnd": "#21a8c3", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "6", "label": "USD Coin USDC", "value": 72710000000.0, "displayValue": "727亿元", "color": "#ef7040", "colorEnd": "#f17e53", "textColor": "#202633", "textShadow": "none", "children": []}, {"_id": "7", "label": "波场 TRX", "value": 31550000000.0, "displayValue": "316亿元", "color": "#66758a", "colorEnd": "#758396", "textColor": "#ffffff", "textShadow": "0 1px 2px rgba(15,23,42,.22)", "children": []}], "title": "样本市值构成：BTC 与 ETH 合计占 78.5%", "subtitle": "", "height": 360, "unit": "", "showLegend": true, "showValues": true, "minLabelArea": 2600.0};
+const root = document.querySelector('.treemap-component');
+const stage = root.querySelector('.treemap-stage');
+const legend = root.querySelector('.treemap-legend');
+const tooltip = root.querySelector('.treemap-tooltip');
+root.classList.toggle('hide-legend', !config.showLegend);
+
+const totalValue = items => items.reduce((sum, item) => sum + Number(item.value || 0), 0);
+const groupSplit = items => {
+  const sorted = [...items].sort((a,b) => Number(b.value || 0) - Number(a.value || 0));
+  const total = totalValue(sorted);
+  const a = [];
+  const b = [];
+  let aSum = 0;
+  sorted.forEach(item => {
+    if (aSum <= total / 2 || b.length === 0) {
+      a.push(item);
+      aSum += Number(item.value || 0);
+    } else {
+      b.push(item);
+    }
+  });
+  return [a, b.length ? b : a.splice(Math.ceil(a.length / 2))];
+};
+const layoutItems = (items, x, y, w, h, depth = 0, parentId = '') => {
+  if (!items.length || w <= 0 || h <= 0) return [];
+  if (items.length === 1) {
+    const item = items[0];
+    const rect = {item, x, y, w, h, depth, parentId};
+    if (item.children && item.children.length && w * h > config.minLabelArea * 2.4 && h > 86) {
+      const inset = 0;
+      const headerH = Math.min(34, Math.max(30, h * .13));
+      return [
+        rect,
+        ...layoutItems(
+          item.children,
+          x + inset,
+          y + headerH,
+          Math.max(0, w - inset * 2),
+          Math.max(0, h - headerH - inset),
+          depth + 1,
+          item._id || ''
+        ),
+      ];
+    }
+    return [rect];
+  }
+  const [left, right] = groupSplit(items);
+  const leftSum = totalValue(left);
+  const rightSum = totalValue(right);
+  const ratio = leftSum / Math.max(leftSum + rightSum, 1);
+  if (w >= h) {
+    const leftW = Math.round(w * ratio);
+    return [
+      ...layoutItems(left, x, y, leftW, h, depth, parentId),
+      ...layoutItems(right, x + leftW, y, w - leftW, h, depth, parentId),
+    ];
+  }
+  const topH = Math.round(h * ratio);
+  return [
+    ...layoutItems(left, x, y, w, topH, depth, parentId),
+    ...layoutItems(right, x, y + topH, w, h - topH, depth, parentId),
+  ];
+};
+function setChildDim(parentId, active) {
+  if (!parentId) return;
+  stage.querySelectorAll('.treemap-cell').forEach(cell => {
+    if (cell.dataset.parentId === parentId) cell.classList.toggle('is-child-dimmed', active);
+  });
+}
+function render() {
+  stage.innerHTML = '';
+  legend.innerHTML = '';
+  const width = stage.clientWidth || 640;
+  const height = stage.clientHeight || 280;
+  const stagePad = 0;
+  const gap = 0;
+  layoutItems(config.items, stagePad, stagePad, width - stagePad * 2, height - stagePad * 2).forEach(rect => {
+    const item = rect.item;
+    const cell = document.createElement('div');
+    const area = rect.w * rect.h;
+    const inset = 0;
+    const hasChildren = item.children && item.children.length;
+    const renderedW = Math.max(0, rect.w - inset);
+    const renderedH = Math.max(0, rect.h - inset);
+    const labelMode = getLabelMode(renderedW, renderedH, area, hasChildren);
+    cell.className = `treemap-cell ${hasChildren ? 'has-children' : ''} ${labelMode}`;
+    cell.dataset.itemId = item._id || '';
+    cell.dataset.parentId = rect.parentId || '';
+    cell.style.left = `${rect.x + inset / 2}px`;
+    cell.style.top = `${rect.y + inset / 2}px`;
+    cell.style.width = `${renderedW}px`;
+    cell.style.height = `${renderedH}px`;
+    cell.style.background = `linear-gradient(135deg, ${item.color} 0%, ${item.colorEnd || item.color} 100%)`;
+    cell.style.setProperty('--treemap-text-color', item.textColor || '#fff');
+    cell.style.setProperty('--treemap-text-shadow', item.textShadow || 'none');
+    cell.innerHTML = `<div class="treemap-label">${item.label}</div>${config.showValues ? `<div class="treemap-value">${item.displayValue}</div>` : ''}`;
+    cell.addEventListener('mouseenter', event => {
+      if (hasChildren) setChildDim(item._id, true);
+      showTooltip(event, item);
+    });
+    cell.addEventListener('mousemove', event => showTooltip(event, item));
+    cell.addEventListener('mouseleave', () => {
+      if (hasChildren) setChildDim(item._id, false);
+      hideTooltip();
+    });
+    stage.appendChild(cell);
+  });
+  if (config.showLegend) {
+    config.items.forEach(item => {
+      const node = document.createElement('div');
+      node.className = 'legend-item';
+      node.innerHTML = `<i class="legend-dot" style="background:${item.color}"></i><span class="legend-label">${item.label}</span>`;
+      legend.appendChild(node);
+    });
+  }
+}
+function getLabelMode(width, height, area, hasChildren) {
+  if (area < config.minLabelArea || width < 42 || height < 24) return 'is-small';
+  if (hasChildren) {
+    if (width < 74 || height < 30) return 'is-small';
+    if (width < 112 || height < 42) return 'label-compact label-name-only';
+    return 'label-name-only';
+  }
+  if (height < 38 || width < 70) return config.showValues ? 'label-compact label-value-only' : 'is-small';
+  if (height < 54 || width < 112) return 'label-compact label-name-only';
+  if (height < 66 || width < 136) return 'label-compact';
+  return '';
+}
+function showTooltip(event, item) {
+  tooltip.innerHTML = `<div class="tooltip-title"><i class="tooltip-dot" style="background:${item.color}"></i>${item.label}</div><div class="tooltip-value">${item.displayValue}</div>`;
+  tooltip.classList.add('active');
+  const rootRect = root.getBoundingClientRect();
+  const x = event.clientX - rootRect.left + 14;
+  const y = event.clientY - rootRect.top + 14;
+  const left = Math.min(root.clientWidth - tooltip.offsetWidth - 8, Math.max(8, x));
+  const top = Math.min(root.clientHeight - tooltip.offsetHeight - 8, Math.max(8, y));
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+function hideTooltip() {
+  tooltip.classList.remove('active');
+}
+window.addEventListener('resize', render);
+render();
+</script>
+<style id="genericMobileTouchStyle">
+svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!important}
+#viewport svg{touch-action:auto!important}
+.treemap-cell{-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+</style>
+<script id="genericMobileTouch">
+(() => {
+  const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
+  let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
+  const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
+  let localPortal=null,localSource=null,localObserver=null;
+  const hideLocalPortal=()=>{
+    localObserver?.disconnect();localObserver=null;
+    if(localPortal)localPortal.hidden=true;
+    if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
+  };
+  const localTooltipContext=()=>{
+    try{
+      let current=window,left=0,top=0;
+      while(current.frameElement&&current.parent!==current){
+        if(!current.parent.document)break;
+        const rect=current.frameElement.getBoundingClientRect();left+=rect.left;top+=rect.top;current=current.parent;
+      }
+      return {doc:current.document,win:current,left,top};
+    }catch(_){return null;}
+  };
+  const copyTooltipNode=source=>{
+    if(source.nodeType===3)return document.createTextNode(source.textContent);
+    if(source.nodeType!==1||!['DIV','SPAN','I','B','STRONG','SMALL','BR','UL','LI','P'].includes(source.tagName))return document.createDocumentFragment();
+    const node=document.createElement(source.tagName.toLowerCase()),style=getComputedStyle(source);
+    for(const property of ['display','gap','align-items','justify-content','padding','margin','color','background-color','border-radius','font-size','font-weight','font-family','line-height','white-space','text-align','flex-shrink','width','height'])node.style.setProperty(property,style.getPropertyValue(property));
+    for(const child of source.childNodes)node.append(copyTooltipNode(child));
+    return node;
+  };
+  const showLocalPortal=(tip,rect)=>{
+    const ctx=localTooltipContext();if(!ctx)return null;
+    if(!ctx.doc.getElementById('generic-local-tooltip-style')){
+      const style=ctx.doc.createElement('style');style.id='generic-local-tooltip-style';
+      style.textContent=`.generic-local-tooltip-portal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;box-shadow:none;background:var(--local-tip-bg)}.generic-local-tooltip-portal[hidden]{display:none}.generic-local-tooltip-portal[data-arrow="bottom"]::after{content:"";position:absolute;left:var(--local-tip-arrow-x,50%);bottom:-7px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid var(--local-tip-bg)}.generic-local-tooltip-portal[data-arrow="side"]::after{content:"";position:absolute;top:50%;width:10px;height:10px;background:var(--local-tip-bg);transform:translateY(-50%) rotate(45deg)}.generic-local-tooltip-portal[data-side="right"]::after{left:-5px}.generic-local-tooltip-portal[data-side="left"]::after{right:-5px}`;
+      ctx.doc.head.append(style);
+    }
+    if(!localPortal){localPortal=ctx.doc.createElement('aside');localPortal.className='generic-local-tooltip-portal';localPortal.setAttribute('role','tooltip');ctx.doc.body.append(localPortal);}
+    const style=getComputedStyle(tip);localPortal.replaceChildren(...Array.from(tip.childNodes,copyTooltipNode));
+    localPortal.style.setProperty('--local-tip-bg',style.backgroundColor);
+    for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
+    localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
+    localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
+    localObserver?.disconnect();
+    if(localSource&&localSource!==tip)localSource.style.removeProperty('visibility');
+    localSource=tip;
+    const conceal=()=>{if(tip.style.visibility!=='hidden'||tip.style.getPropertyPriority('visibility')!=='important')tip.style.setProperty('visibility','hidden','important');};
+    conceal();localObserver=new MutationObserver(conceal);localObserver.observe(tip,{attributes:true,attributeFilter:['style']});
+    return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
+  };
+
+  const clear = event => {
+    hideLocalPortal();
+    clearTimeout(dismissTimer);dismissTimer=null;
+    const hadTooltip=Boolean(active||nativeHovered);
+    emit(active,'mouseleave',event);active=null;nativeHovered=false;placement=null;
+    // Compatibility mouse events may open a native portal without setting active.
+    if(hadTooltip&&typeof hideTooltip==='function')hideTooltip();
+    if(canvasState){canvasState.instance.dispatchAction({type:'hideTip'});canvasState.instance.dispatchAction({type:'downplay'});canvasState=null;}
+  };
+  const dismiss = () => {gesture=null;clear({clientX:0,clientY:0});};
+  const followTooltip = event => {
+    if(!active)return;
+    if(!placement){
+      const ctx=active.matches('.hover-zone,.hit-area')&&typeof parentTooltipContext==='function'?parentTooltipContext():null;
+      if(ctx){
+        const tip=ctx.element||(typeof parentTooltipElement==='function'?parentTooltipElement(ctx):null);
+        if(tip)placement={tip,offset:ctx.offsetLeft||0,width:tip.offsetWidth,viewport:ctx.win.innerWidth};
+      }else{
+        const tip=document.querySelector('.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip');
+        const parent=tip?.offsetParent;
+        if(tip&&parent){
+          const rect=parent.getBoundingClientRect();
+          placement={tip,offset:-rect.left,top:rect.top,width:tip.offsetWidth,height:tip.offsetHeight,viewport:parent.clientWidth,parentHeight:parent.clientHeight,local:true,outer:showLocalPortal(tip,rect)};
+        }
+      }
+      if(!placement)return;
+    }
+    const {tip,offset,width,viewport}=placement,anchor=offset+event.clientX;
+    let left=anchor-width/2;
+    if(placement.local&&!active.matches('.hit-area')){
+      const y=event.clientY-placement.top;
+      if(active.matches('.treemap-cell')){
+        left=anchor+14;tip.style.top=Math.max(8,Math.min(placement.parentHeight-placement.height-8,y+14))+'px';
+      }else{
+        const side=anchor<viewport/2?'right':'left';tip.dataset.side=side;
+        left=side==='right'?anchor+14:anchor-width-14;
+        tip.style.top=Math.max(1,Math.min(placement.parentHeight-placement.height-1,y-placement.height/2))+'px';
+      }
+    }
+    left=Math.max(8,Math.min(Math.max(8,viewport-width-8),left));
+    tip.style.left=left+'px';tip.style.setProperty('--arrow-left',Math.max(14,Math.min(width-14,anchor-left))+'px');
+    if(placement.outer){
+      const {portal,host,left:originX,top:originY,width:w,height:h}=placement.outer;
+      // Pointer coordinates belong to the chart frame; the portal belongs to the host viewport.
+      const pointerY=originY+event.clientY-placement.top;
+      let px=originX+anchor-w/2,py=originY+parseFloat(tip.style.top||'0');
+      if(!active.matches('.hit-area')){
+        if(active.matches('.treemap-cell')){px=originX+anchor+14;py=pointerY+14;}
+        else{const side=anchor<viewport/2?'right':'left';portal.dataset.side=side;px=side==='right'?originX+anchor+14:originX+anchor-w-14;py=pointerY-h/2;}
+      }
+      px=Math.max(8,Math.min(host.innerWidth-w-8,px));py=Math.max(8,Math.min(host.innerHeight-h-8,py));
+      portal.style.left=px+'px';portal.style.top=py+'px';portal.style.setProperty('--local-tip-arrow-x',Math.max(14,Math.min(w-14,originX+anchor-px))+'px');
+    }
+  };
+  const direction = (state,x,y) => {
+    if(state.direction==='pending'){
+      const dx=Math.abs(x-state.x),dy=Math.abs(y-state.y);
+      if(Math.max(dx,dy)>6)state.direction=dx>=dy?'horizontal':'vertical';
+    }
+    return state.direction;
+  };
+  const selectCanvas = event => {
+    const dom=event.target?.closest?.('#chart')||event.target?.closest?.('canvas')?.parentElement?.closest('#chart');
+    const instance=dom&&window.echarts?.getInstanceByDom(dom);
+    if(!instance)return false;
+    const now=performance.now();
+    if(!canvasState||canvasState.instance!==instance){
+      clear(event);
+      canvasState={instance,dom,updated:-Infinity,selected:null};
+    }
+    const state=canvasState;
+    if(now-state.updated>160){state.option=instance.getOption();state.rect=dom.getBoundingClientRect();state.updated=now;}
+    const option=state.option,tooltipOption=option.tooltip?.[0];
+    // Respect components which intentionally have no tooltip (dynamic line).
+    if(tooltipOption?.show===false){canvasState=null;return false;}
+    const x=(event.clientX-state.rect.left)*instance.getWidth()/state.rect.width;
+    const y=(event.clientY-state.rect.top)*instance.getHeight()/state.rect.height;
+    if(!instance.containPixel({gridIndex:0},[x,y]))return false;
+    let nearest=null,distance=Infinity;
+    (option.series||[]).forEach((series,seriesIndex)=>{
+      if(!Array.isArray(series.data))return;
+      if(series.type==='bar'){
+        const category=instance.convertFromPixel({seriesIndex},[x,y]);
+        const categoryAxis=option.yAxis?.[0]?.type==='category'?1:0;
+        const index=Math.round(Array.isArray(category)?category[categoryAxis]:category);
+        if(index>=0&&index<series.data.length)nearest={seriesIndex,dataIndex:index};
+      }else if(series.type==='scatter'||series.type==='line'){
+        series.data.forEach((item,dataIndex)=>{
+          const value=item?.value??item,point=instance.convertToPixel({seriesIndex},Array.isArray(value)?value.slice(0,2):[dataIndex,value]);
+          if(!Array.isArray(point)||!point.every(Number.isFinite))return;
+          const d=(point[0]-x)**2+(point[1]-y)**2;
+          if(d<distance){distance=d;nearest={seriesIndex,dataIndex};}
+        });
+      }
+    });
+    if(!nearest)return false;
+    const key=nearest.seriesIndex+':'+nearest.dataIndex;
+    if(state.selected!==key){instance.dispatchAction({type:'downplay'});instance.dispatchAction({type:'highlight',...nearest});state.selected=key;}
+    if(state.contentKey!==key||state.contentAt!==state.updated){
+      instance.dispatchAction({type:'showTip',...nearest,position:[x,y]});state.contentKey=key;state.contentAt=state.updated;
+    }
+    const tip=dom.querySelector('.generic-canvas-tooltip');
+    if(tip){
+      if(!state.outer||state.content!==tip.innerHTML){state.outer=showLocalPortal(tip,state.rect);state.content=tip.innerHTML;}
+      tip.style.setProperty('visibility','hidden','important');
+      if(state.outer){
+        const {portal,host,left:originX,top:originY,width:w,height:h}=state.outer;
+        portal.style.left=Math.max(8,Math.min(host.innerWidth-w-8,originX+x-w/2))+'px';
+        portal.style.top=Math.max(8,Math.min(host.innerHeight-h-8,originY+y-h-14))+'px';
+      }
+    }
+    return true;
+  };
+
+  const select = event => {
+    if(selectCanvas(event))return;
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest(hits)||event.target?.closest(hits)||null;
+    if(target!==active){clear(event);active=target;emit(active,'mouseenter',event);}
+    // Keep the data DOM stable within one datum; only move the floating layer.
+    followTooltip(event);
+  };
+  document.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='touch')clear(event);
+    if(event.pointerType!=='touch'||event.target.closest?.('.markmap,.range-shell,button,input'))return;
+    if(!event.target.closest?.('svg,canvas,.treemap-cell,#chart'))return;
+    gesture={id:event.pointerId,x:event.clientX,y:event.clientY,direction:'pending'};
+    select(event);
+  },{capture:true,passive:true});
+  document.addEventListener('pointermove',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    const mode=direction(gesture,event.clientX,event.clientY);
+    if(mode==='vertical'){clear(event);event.stopImmediatePropagation();return;
+    }
+    if(mode==='horizontal'){select(event);if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  document.addEventListener('pointerup',event=>{
+    if(!gesture||event.pointerId!==gesture.id)return;
+    if(gesture.direction!=='vertical')select(event);
+    gesture=null;
+    dismissTimer=setTimeout(dismiss,1200);
+  },{passive:true});
+  document.addEventListener('pointercancel',event=>{gesture=null;clear(event);},{passive:true});
+  // Track the touch stream independently: pointercancel happens when the
+  // browser starts scrolling, before legacy touchmove listeners finish.
+  document.addEventListener('touchstart',event=>{
+    if(event.touches.length!==1||event.target.closest?.('.markmap,.range-shell,input,textarea,select')){touchOrigin=null;return;}
+    const t=event.touches[0];touchOrigin={x:t.clientX,y:t.clientY,direction:'pending'};
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    if(!touchOrigin||event.touches.length!==1)return;
+    const t=event.touches[0],mode=direction(touchOrigin,t.clientX,t.clientY);
+    if(mode==='vertical')event.stopImmediatePropagation();
+    else if(mode==='horizontal'){select({clientX:t.clientX,clientY:t.clientY,target:event.target});if(canvasState)event.stopImmediatePropagation();}
+  },{capture:true,passive:true});
+  for(const type of ['touchend','touchcancel'])document.addEventListener(type,()=>{touchOrigin=null;},{passive:true});
+  for(const type of ['mouseover','mouseenter','mousemove'])document.addEventListener(type,event=>{
+    if(event.sourceCapabilities?.firesTouchEvents){event.stopImmediatePropagation();return;}
+    if(event.target.closest?.(hits))nativeHovered=true;
+  },{capture:true,passive:true});
+  document.addEventListener('click',event=>{
+    if(canvasState&&event.sourceCapabilities?.firesTouchEvents&&event.target.closest?.('#chart'))event.stopImmediatePropagation();
+  },{capture:true,passive:true});
+  let host=window;
+  try {
+    while(host){
+      for(const type of ['scroll','resize','pagehide','veya:chat-navigate'])host.addEventListener(type,dismiss,{capture:true,passive:true});
+      if(host!==window)host.document.addEventListener('pointerdown',dismiss,{capture:true,passive:true});
+      const doc=host.document;doc.addEventListener('visibilitychange',()=>{if(doc.hidden)dismiss();},{passive:true});
+      if(host===host.parent)break;host=host.parent;
+    }
+  } catch (_) {}
+})();
+</script>
+
+</body>
+</html>

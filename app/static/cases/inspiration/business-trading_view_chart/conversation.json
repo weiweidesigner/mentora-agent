@@ -92,6 +92,13 @@
     "widget": "advanced-chart",
     "symbol": "NASDAQ:AAPL",
     "cacheScope": "conversation-and-widget-configuration",
-    "marketData": "TradingView-hosted; browser-loaded, potentially delayed and not frozen with the conversation"
+    "marketData": "TradingView-hosted; browser-loaded, potentially delayed and not frozen with the conversation",
+    "sourceAnswerSha256": "ca31750f996e2afc673e432d868227e60d8a80c58db92fb6f757d6e9e3a16fb6",
+    "sourceArtifacts": [
+      {
+        "name": "deepseek-tradingview-aapl-daily.html",
+        "sha256": "cecd61318134ce919a7c4d6e01ab6ebe84b766f8d3f009130e520d2cbe37c1f4"
+      }
+    ]
   }
 }
