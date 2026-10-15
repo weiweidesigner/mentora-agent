@@ -103,7 +103,7 @@ def _native_grouped_bar():
 
 def upgrade_legacy_grouped_bar(artifact: str, theme: str) -> str:
     """Apply current axis/layout logic to native grouped bars using saved values."""
-    if 'class="chart-component"' in artifact and 'config' in artifact and 'const positive = Math.min(divisions - 1' not in artifact:
+    if 'class="chart-component"' in artifact and 'config' in artifact and 'const zeroGridScaleVersion = 3;' not in artifact:
         try:
             config = _constant(artifact, 'config')
             if config.get('type') == 'grouped-bar':
