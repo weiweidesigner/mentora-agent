@@ -4570,3 +4570,6 @@ p {
 .dayCustomizeTasks:focus-visible { outline:2px solid var(--ink);outline-offset:4px; }
 @media(max-width:760px) { .dayHeading { grid-column:1 / -1; }.dayCustomizeTasks { grid-row:2; } }
 @media(max-width:400px) { .dayHeader { column-gap:8px; }.dayHeader #dayClock { font-size:11px; }.dayCustomizeTasks { font-size:12px;gap:2px; } }
+
+/* Suppress the browser tap flash without changing selected states or keyboard focus. */
+html { -webkit-tap-highlight-color:transparent; }

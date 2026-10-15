@@ -213,3 +213,6 @@
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) th{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap table{table-layout:auto!important;min-width:640px;width:100%}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap :is(th,td):nth-last-child(-n+2){white-space:nowrap!important;min-width:92px}
+
+/* Touch feedback is handled by the host; avoid native tap overlay blocks. */
+html{-webkit-tap-highlight-color:transparent}

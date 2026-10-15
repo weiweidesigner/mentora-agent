@@ -1,5 +1,6 @@
 // Saved chart documents receive the same palette as their host before rendering.
 (() => {
+  document.documentElement.style.webkitTapHighlightColor = "transparent";
   const requested = new URLSearchParams(location.search).get("theme");
   let theme = requested === "dark" ? "dark" : "light";
   if (!requested) {
