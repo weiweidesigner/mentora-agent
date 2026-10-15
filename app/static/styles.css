@@ -4289,3 +4289,19 @@ p {
  :root[data-theme="dark"] .shell.tasks-view .sidebarRail { background:#0b1017; }
  :root[data-theme="dark"] .shell.tasks-view .sidebarContent { background:#1b222d; }
 }
+
+/* Light task workspace: neutral surfaces and quiet secondary detail. */
+:root[data-theme="light"] .shell.tasks-view { --bg:#fcfcfc;--ink:#303030;--muted:#919191;--line:#ececec;--soft:#f6f6f6;--soft-2:#ededed; }
+:root[data-theme="light"] .shell.tasks-view .taskWorkspace { background:#fcfcfc; }
+:root[data-theme="light"] .shell.tasks-view .sidebarRail { background:#f7f7f7; }
+:root[data-theme="light"] .shell.tasks-view .sidebarContent { background:#fff;border-color:#ededed;box-shadow:3px 0 16px rgba(0,0,0,.018); }
+:root[data-theme="light"] .shell.tasks-view .taskSidebarTitle h2 { color:#303030;font-weight:550; }
+:root[data-theme="light"] .shell.tasks-view .taskSidebarCreate { color:#555; }
+:root[data-theme="light"] .shell.tasks-view .taskSidebar .taskListItem strong { color:#5e5e5e; }
+:root[data-theme="light"] .shell.tasks-view .taskListItem.is-selected { background:#f0f0f0; }
+:root[data-theme="light"] .shell.tasks-view .taskRecommendation { border-color:#e5e5e5; }
+:root[data-theme="light"] .shell.tasks-view .taskRecommendation strong { color:#363636; }
+:root[data-theme="light"] .shell.tasks-view .taskRecommendation small,:root[data-theme="light"] .shell.tasks-view .taskLead { color:#969696; }
+:root[data-theme="light"] .shell.tasks-view .taskRecommendation:hover { background:#f6f6f6;border-color:#d8d8d8; }
+:root[data-theme="light"] .shell.tasks-view .desktopNavRail { color:#979797; }
+:root[data-theme="light"] .shell.tasks-view .desktopNavRail.is-active { color:#202020;background:#ededed; }
