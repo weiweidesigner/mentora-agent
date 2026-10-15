@@ -14,3 +14,22 @@
 @media(max-width:760px){#navWidgets{order:2}}
 @media(max-width:760px){.widgetWorkspace{grid-column:1/-1;padding-top:64px}.widgetTopbar{padding:12px 16px}.widgetBrand{font-size:19px}.widgetBrand span{display:none}.widgetTopActions{font-size:11px}.widgetNavigation{padding:4px 16px 12px;gap:2px}#widgetLibraryOpen{padding:7px;font-size:12px}#widgetTabs button{font-size:13px;padding:7px 9px}.widgetScroll{padding:16px 16px 32px}.widgetComposerArea{padding:8px 16px 14px}.widgetEmpty{padding:24px}.widgetEmpty h2{font-size:18px}.widgetEmpty p{font-size:13px}.widgetSuggestions{flex-direction:column;margin-top:20px}.widgetLibrary{padding:20px}.widgetLibraryList{grid-template-columns:1fr}.widgetCardActions button{padding:5px}.widgetCardHeader{height:42px}.widgetAddForm{gap:8px}.widgetAddForm button{padding:8px}.widgetResize{width:32px;height:32px}}
 @media(prefers-reduced-motion:reduce){.widgetLoading{animation:none}}
+
+/* Widget owns the sidebar list; the right pane shows only the selected board. */
+.widgetSidebar[hidden]{display:none!important}
+.shell.widgets-view .sidebarTop,.shell.widgets-view .sidebarNav,.shell.widgets-view .historyBlock{display:none!important}
+.shell.widgets-view .sidebarContent{display:flex;flex-direction:column;overflow:hidden}
+.widgetSidebar{display:flex;flex-direction:column;min-height:0;flex:1;padding:0 0 16px}
+.widgetSidebar h2{font-size:18px;font-weight:600;line-height:28px;margin:0;padding:0 8px 20px}
+.widgetSidebar #widgetNew{display:flex;align-items:center;gap:8px;text-align:left;color:var(--muted);background:transparent;border:0;border-radius:8px;padding:10px 8px;margin:0 0 20px;font:inherit;font-size:14px;cursor:pointer}
+.widgetSidebar #widgetNew>span{font-size:22px;line-height:20px}
+.widgetSidebar #widgetNew:hover{background:var(--soft-2);color:var(--ink)}
+.widgetSidebarLabel{color:var(--muted);font-size:12px;padding:0 8px 10px}
+.widgetSidebar #widgetTabs{display:flex;flex-direction:column;align-items:stretch;gap:4px;overflow:auto;flex:1;min-height:0;scrollbar-width:thin}
+.widgetSidebar #widgetTabs button{flex:none;display:block;width:100%;text-align:left;font:inherit;font-size:14px;line-height:22px;padding:10px 12px;border:0;border-radius:8px;overflow:hidden;text-overflow:ellipsis;background:transparent;color:var(--muted);cursor:pointer}
+.widgetSidebar #widgetTabs button:hover,.widgetSidebar #widgetTabs button[aria-selected=true]{background:var(--soft-2);color:var(--ink)}
+.widgetTopbar{border-bottom:1px solid var(--line);padding-bottom:22px}
+.widgetBrand{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:20px}
+.widgetTopActions{flex:none;align-items:center}
+@media(min-width:761px){.shell.widgets-view,.shell.widgets-view.sidebar-collapsed{grid-template-columns:332px minmax(0,1fr) 0}.shell.widgets-view .sidebarContent{padding:24px 12px 16px}.shell.widgets-view #sidebarToggle{display:none!important}}
+@media(max-width:760px){.shell.widgets-view .sidebarContent{padding:20px 12px 16px}.widgetTopbar{padding:12px 16px;gap:8px}.widgetBrand{font-size:17px}.widgetTopActions{gap:2px}.widgetTopActions button{padding:6px}.widgetSidebar h2{padding-bottom:16px}}

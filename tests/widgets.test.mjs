@@ -19,7 +19,7 @@ function setup({storage,reply,blocked=false}={}) {
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
 test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>c.id==='kline'));for(const c of catalog){assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
- const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));
+ const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,false);assert.ok(d.querySelector('#widgetSidebar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的看板');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
  assert.equal(calls[0].url,'/api/chat/stream');const body=JSON.parse(calls[0].options.body);assert.match(body.question,/原生脚本取真实数据/);assert.match(body.question,/各自独立/);
  assert.equal(d.querySelectorAll('.widgetCard iframe').length,2);assert.match(d.querySelector('.widgetCard iframe').src,/share-artifact\/real-kline.html/);
