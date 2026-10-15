@@ -281,10 +281,10 @@
     el('timeMode').value='fixed';el('date').value=task.date||today();el('wecom').checked=false;
     el('repeat').checked=task.cadence!=='once';el('weekday').value=(task.weekdays||[0])[0];el('monthDay').value=task.monthDay||1;
     el('endMode').value=task.endDate?'date':'never';
-    for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=task[name+'Configured']?'已保存（留空沿用）':name==='serverchanKey'?'SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'填写官方机器人 Webhook 地址';}
+    for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=name==='serverchanKey'?'输入 SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'输入飞书机器人 Webhook';}
     $('dayDialogTitle').textContent=readOnly?'定时任务设置':editing?'编辑任务':'设置定时任务';
     $('daySave').textContent=editing?'保存':'创建';$('daySave').hidden=readOnly;$('dayDelete').hidden=!editing||readOnly;
-    $('dayDelete').disabled=!!task.activeRun;$('dayAdvanced').open=readOnly;
+    $('dayDelete').disabled=!!task.activeRun;$('dayAdvanced').open=false;
     $('dayEnablePush').hidden=readOnly;
     updateFields();
     if(readOnly)form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);
