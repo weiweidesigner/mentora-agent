@@ -42,7 +42,7 @@
   async function renderTaskAnswer(article, answer, question) {
     article.dataset.lang=typeof detectLanguage==='function'?detectLanguage(question):'zh-CN';
     article.shareSession={...answer,id:`task-${selectedId}-${selectedRun||'setup'}-${Date.now()}-${++answerSequence}`,title:selected()?.title||'定时任务',question,messages:[{role:'user',text:question}]};
-    if(typeof renderSavedAssistantAnswer==='function')await renderSavedAssistantAnswer(article,answer,{question,thinkingElapsed:answer.thinkingElapsed,thinkingLabel:answer.thinkingElapsed>0?'已思考 '+formatDuration(answer.thinkingElapsed):'查看执行记录'});
+    if(typeof renderSavedAssistantAnswer==='function')await renderSavedAssistantAnswer(article,answer,{question,thinkingElapsed:answer.thinkingElapsed,thinkingLabel:selected()?.title||'定时任务',thinkingAriaLabel:'打开任务设置：'+(selected()?.title||'定时任务'),onThinkingClick:()=>{const task=selected();if(task)edit(task,!editable(task));}});
     else {const bubble=document.createElement('div');bubble.className='bubble assistantBubble';const report=document.createElement('div');report.className='mixedReport';bubble.append(report);article.append(bubble);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(article,answer,report,()=>{});else report.textContent=answer.interpretation||'';}
   }
   async function renderFollowup(turn, target=$('taskFollowups')) {

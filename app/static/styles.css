@@ -3892,7 +3892,7 @@ p {
 .dayForm .taskSettingRow input[type=number] { width:90px; }
 .taskSettingRow .taskSwitch { appearance:none;position:relative;flex:none;width:36px;height:22px;margin:0;border:0;border-radius:999px;background:var(--line);cursor:pointer; }
 .taskSwitch::before { content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s; }
-.taskSwitch:checked { background:#9b7aef; }
+.taskSwitch:checked { background:#111;box-shadow:inset 0 0 0 1px #ffffff24; }
 .taskSwitch:checked::before { transform:translateX(14px); }
 .taskAdvanced { margin-top:22px; }
 .taskAdvanced summary { width:fit-content;color:var(--muted);font-size:14px;cursor:pointer; }
@@ -4354,10 +4354,10 @@ p {
 .taskListRow .taskListItem,.shell.tasks-view .taskSidebar .taskListRow .taskListItem { position:relative;padding-right:44px; }
 .taskMoreButton { position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:28px;height:28px;padding:5px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;opacity:0;pointer-events:none; }
 .taskMoreButton svg { width:18px;height:18px;fill:currentColor; }
-.taskListRow:hover .taskMoreButton,.taskListRow:focus-within .taskMoreButton,.taskListRow:has(.taskListItem.is-selected) .taskMoreButton,.taskMoreButton[aria-expanded=true] { opacity:1;pointer-events:auto; }
+.taskListRow:hover .taskMoreButton,.taskListRow:has(:focus-visible) .taskMoreButton,.taskMoreButton[aria-expanded=true] { opacity:1;pointer-events:auto; }
 .taskMoreButton:hover,.taskMoreButton[aria-expanded=true] { background:var(--soft-2);color:var(--ink); }
 .taskListRow .taskListComplete { position:absolute;right:12px;top:50%;transform:translateY(-50%); }
-.taskListRow:hover .taskListComplete,.taskListRow:focus-within .taskListComplete,.taskListRow:has(.taskListItem.is-selected) .taskListComplete,.taskListRow:has(.taskMoreButton[aria-expanded=true]) .taskListComplete { opacity:0; }
+.taskListRow:hover .taskListComplete,.taskListRow:has(:focus-visible) .taskListComplete,.taskListRow:has(.taskMoreButton[aria-expanded=true]) .taskListComplete { opacity:0; }
 .taskMoreMenu { position:fixed;inset:auto;margin:0;padding:8px;max-height:calc(100dvh - 24px);overflow-y:auto;border:1px solid var(--line);border-radius:17px;background:var(--soft);color:var(--ink);box-shadow:0 10px 32px rgba(0,0,0,.16);z-index:1000; }
 .taskMoreMenu[hidden] { display:none; }
 .taskMoreMenu button { display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:9px;background:transparent;color:inherit;font:inherit;font-size:14px;text-align:left;cursor:pointer; }

@@ -4224,7 +4224,7 @@ def get_share_session(session_id: str) -> dict[str, Any]:
 
 
 def standalone_share_html(session: dict[str, Any]) -> str:
-    title = html.escape(str(session.get("question") or session.get("title") or "Veya"))
+    title = html.escape(str(session.get("question") or session.get("title") or "Mentora"))
     answer_html = str(session.get("answerHtml") or "").strip()
     answer_html = answer_html.replace("http://127.0.0.1:8000/", "/")
     answer_html = re.sub(r'(<iframe\b[^>]*?)\sstyle="[^"]*"', r"\1", answer_html, flags=re.I)
@@ -4362,7 +4362,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
     except StudioAgentError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    # Legacy local orchestration is intentionally unreachable. Veya's
+    # Legacy local orchestration is intentionally unreachable. Mentora's
     # production request path is now a display gateway for AutoGen Studio.
     original_question = question
     if not payload.images and is_action_only_ainvest_request(original_question):
@@ -4613,7 +4613,7 @@ def chat_stream(payload: ChatRequest) -> StreamingResponse:
         },
     )
 
-    # Legacy local orchestration is intentionally unreachable. Veya's
+    # Legacy local orchestration is intentionally unreachable. Mentora's
     # production request path is now a display gateway for AutoGen Studio.
     uploaded_images = list(payload.images or [])
     user_text_question = (payload.question or "").strip()
@@ -7540,7 +7540,7 @@ def legacy_route_with_model(question: str) -> dict[str, Any]:
 def autogen_component_contract(script: str) -> dict[str, Any]:
     component = ALLOWED_COMPONENTS_BY_FILE.get(script)
     if component is None:
-        raise AutoGenPlanningError(f"未知 Veya 组件: {script}")
+        raise AutoGenPlanningError(f"未知 Mentora 组件: {script}")
     schema = chart_schema_for_script(script)
     business_schema = business_chart_schema_summary(script)
     return {
@@ -7553,7 +7553,7 @@ def autogen_component_contract(script: str) -> dict[str, Any]:
 
 
 def route_with_model(question: str) -> dict[str, Any]:
-    """Plan with AutoGen while preserving Veya's route/execution contract."""
+    """Plan with AutoGen while preserving Mentora's route/execution contract."""
     if AICHART_AGENT_ENGINE == "legacy":
         return legacy_route_with_model(question)
     api_key = model_api_key()

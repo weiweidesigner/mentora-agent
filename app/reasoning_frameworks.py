@@ -39,7 +39,7 @@ FRAMEWORKS = {
 
 
 class LocalAgentFrameworks:
-    """Adapters that normalize local agent runtimes to Veya's SSE contract."""
+    """Adapters that normalize local agent runtimes to Mentora's SSE contract."""
 
     def __init__(
         self,
@@ -532,7 +532,7 @@ class LocalAgentFrameworks:
             inference_model=inference_model,
         )
         payload["reportArtifacts"][0]["imageUrl"] = f"/generated/{image.name}"
-        payload["selectedSkill"]["reason"] = "Veya 直接执行并验证了本地 flux-image Skill。"
+        payload["selectedSkill"]["reason"] = "Mentora 直接执行并验证了本地 flux-image Skill。"
         payload["status"] = ["FLUX.2 [klein] 4B 已生成图片"]
         yield "agent_event", {
             "engine": FRAMEWORKS[framework], "agent": "FLUX.2 [klein] 4B", "phase": "run", "status": "completed",
@@ -584,8 +584,8 @@ class LocalAgentFrameworks:
         return (f"""用户请求：
 {question}{image_note}{history_note}
 
-你是 Veya 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
-请直接完成用户任务，而不是解释如何完成。任务匹配 Veya 项目 Skill 时必须先从 .agents/skills 选择对应 Skill，完整读取它指向的 app/skills 规范，再按规范调用脚本；不要用临时代码替代已有 Skill。
+你是 Mentora 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
+请直接完成用户任务，而不是解释如何完成。任务匹配 Mentora 项目 Skill 时必须先从 .agents/skills 选择对应 Skill，完整读取它指向的 app/skills 规范，再按规范调用脚本；不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
 按用户问题的实际范围选择所需的数据源、分析步骤和图表数量；每张图应回答一个明确问题。避免重复取数，能批量获取时优先批量获取。数据源因限流、超时或无数据失败时，尝试另一个匹配来源并说明降级情况。
 根据指标、资产、数据形态和用户指定的展示方式，在业务图表与通用图表 Skill 中选择最合适的组件；不要仅因为问题涉及股票就固定选择业务图表。
@@ -599,7 +599,7 @@ class LocalAgentFrameworks:
 当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板或交互式 HTML 时，选择 streamviz 作为“展示阶段” Skill；它不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，再将精简的、证据驱动的展示 payload 文件交给 streamviz 渲染。根据问题选择 dashboard、comparison、timeline、flow 或 brief 布局，并按需组合表格、排序、时间线和叙事区块；不要把所有内容都压成指标卡。若这些结构不适合任务，使用 streamviz payload 的 html 字段生成任意自包含 HTML/CSS/SVG/Canvas 页面，而不是退回到卡片或表格。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。网关会自动把已生成 HTML 以流式方式呈现。
 最终答案末尾另起一行写 [[AIME_SKILLS:实际使用的Skill名称，以英文逗号分隔]]；未使用项目 Skill 时写 [[AIME_SKILLS:none]]。该标记只用于系统记录。
 最终回答使用用户的语言，先给核心结论，再给关键证据和图表解读，最后给风险、数据时间与口径。结论强度必须与证据质量匹配；代理数据、降级数据或不完整数据必须显式披露。不得把内部规划、命令日志或密钥写进答案。
-联网搜索、新闻、公告、研报或网页事实的来源由 Skill 工具返回的结构化数据自动收集，并由 Veya 现有溯源组件展示。最终正文不要加入 Markdown 来源链接、裸 URL、“来源：”引导或“来源/参考资料”清单。
+联网搜索、新闻、公告、研报或网页事实的来源由 Skill 工具返回的结构化数据自动收集，并由 Mentora 现有溯源组件展示。最终正文不要加入 Markdown 来源链接、裸 URL、“来源：”引导或“来源/参考资料”清单。
 除非任务本身要求修改项目，否则不要改动 app、tests 或配置文件；生成物只能写入 outputs。
 如果运行时支持工具步骤的 thoughtSummary 元数据，只提供一句面向用户的进度摘要，说明当前判断或行动目的；不要返回原始思维链、内部推理过程、命令或参数。"""
                 + guidance_note)
@@ -871,7 +871,7 @@ class LocalAgentFrameworks:
                 "label": " + ".join(skill_names) if skill_names else FRAMEWORKS[framework],
                 "script": " + ".join(skill_names) if skill_names else framework,
                 "reason": (
-                    f"由 {FRAMEWORKS[framework]} 选择并执行 Veya 项目 Skill。"
+                    f"由 {FRAMEWORKS[framework]} 选择并执行 Mentora 项目 Skill。"
                     if skill_names else f"由 {FRAMEWORKS[framework]} 自主规划并执行。"
                 ),
             },
@@ -1176,7 +1176,7 @@ class LocalAgentFrameworks:
             skill_catalog = self._skill_catalog(include_scripts=False)
             prompt = (
                 f"用户请求：{question}\n"
-                "你是 Veya 的本地 Agent。根据用户意图自主选择 Skill 和脚本；以下目录只是可用能力，不是固定路由：\n"
+                "你是 Mentora 的本地 Agent。根据用户意图自主选择 Skill 和脚本；以下目录只是可用能力，不是固定路由：\n"
                 f"{skill_catalog}\n"
                 "目录不提供脚本契约；在读取所选 Skill 文件前，不要猜脚本名称或 CLI 参数。"
                 "选择 Skill 后，下一步直接调用一个真实工具读取它的桥接 SKILL.md；"
@@ -1246,7 +1246,7 @@ class LocalAgentFrameworks:
                     "--config",
                     'model_provider="aimechart_glm"',
                     "--config",
-                    'model_providers.aimechart_glm.name="Veya GLM tool adapter"',
+                    'model_providers.aimechart_glm.name="Mentora GLM tool adapter"',
                     "--config",
                     f"model_providers.aimechart_glm.base_url={json.dumps(adapter_url)}",
                     "--config",

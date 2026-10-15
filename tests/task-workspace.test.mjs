@@ -128,8 +128,8 @@ test('scheduled output uses the saved history answer shell without inventing exe
  const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document;
  assert.ok(d.querySelector('#taskThread .message.user .bubble.userBubble'));
  const article=d.querySelector('#taskThread .message.assistant');assert.ok(article.querySelector('.bubble.assistantBubble .finalAnswer .mixedReport'));
- assert.equal(article.querySelector('.thinkingSummaryText').textContent,'查看执行记录');assert.equal(article.dataset.elapsedUnrecorded,'true');
- article.querySelector('.thinkingTrigger').click();assert.equal(article.dataset.activityOpened,'true');assert.equal(article.querySelector('.deferredActions').hidden,false);assert.ok(article.querySelector('.shareResultButton'));assert.equal(article.querySelector('[data-edit-task]'),null);
+ assert.equal(article.querySelector('.thinkingSummaryText').textContent,base.title);assert.equal(article.dataset.elapsedUnrecorded,'true');
+ article.querySelector('.thinkingTrigger').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#dayForm input[name=title]').value,base.title);assert.equal(article.dataset.activityOpened,undefined);assert.equal(article.querySelector('.deferredActions').hidden,false);assert.ok(article.querySelector('.shareResultButton'));assert.equal(article.querySelector('[data-edit-task]'),null);
  assert.equal(h.requests.some(r=>r.method==='POST'||r.path.includes('/chat')),false);h.dom.window.close();
 });
 

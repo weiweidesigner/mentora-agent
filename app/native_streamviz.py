@@ -40,7 +40,7 @@ WIDGET_TOOL = {
     },
 }
 
-SYSTEM_PROMPT = """You are Veya's StreamViz visual-artifact generator. When the user asks for a
+SYSTEM_PROMPT = """You are Mentora's StreamViz visual-artifact generator. When the user asks for a
 diagram, dashboard, conceptual visual, simple infographic, or illustrative chart, call
 visualize_show_widget exactly once.
 

@@ -415,7 +415,7 @@ class DayTasks:
         prefix = os.getenv('AICHART_BASE_PATH', '').rstrip('/')
         with self.db() as db:
             token = db.execute('SELECT token FROM result_links WHERE task_id=?', (run['task_id'],)).fetchone()['token']
-        link = f"{os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/veya/').rstrip('/')}/?dayShare={token}"
+        link = f"{os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')}/?dayShare={token}"
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))[:900]
         content = f"{config['title']}\n{MARKETS[config['market']]['name']} · {STAGES[config['stage']]}\n{run['finished']}\n\n{summary}\n\n查看最新完整分析：{link}"
         if delivery['channel'] == 'wecom':
@@ -531,7 +531,7 @@ def create_router(service):
 
     def writer(request, response):
         if request.headers.get('x-veya-day') != '1':
-            raise HTTPException(403, '请从 Veya 任务面板操作')
+            raise HTTPException(403, '请从 Mentora 任务面板操作')
         if request.headers.get('sec-fetch-site') == 'cross-site':
             raise HTTPException(403, '不支持跨站请求')
         return owner(request, response)
@@ -635,7 +635,7 @@ def create_router(service):
     def service_worker():
         return Response('''self.addEventListener('push', event => {
           const data = event.data ? event.data.json() : {};
-          event.waitUntil(self.registration.showNotification(data.title || 'Veya 分析已完成', {
+          event.waitUntil(self.registration.showNotification(data.title || 'Mentora 分析已完成', {
             body: data.body || '点击查看最新分析', tag: data.tag, data: {url: data.url}
           }));
         });

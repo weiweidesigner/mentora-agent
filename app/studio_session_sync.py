@@ -23,7 +23,7 @@ class StudioSessionMirror:
         self.enabled = os.getenv("AUTOGEN_STUDIO_SESSION_SYNC", "1").strip().lower() not in {"0", "false", "off"}
         self.user_id = os.getenv("AUTOGEN_STUDIO_USER_ID", "guestuser@gmail.com").strip() or "guestuser@gmail.com"
         self.team_id = int(os.getenv("AUTOGEN_STUDIO_TEAM_ID", "1"))
-        self.session_name = os.getenv("AUTOGEN_STUDIO_SESSION_NAME", "Veya · AgentChat").strip()
+        self.session_name = os.getenv("AUTOGEN_STUDIO_SESSION_NAME", "Mentora · AgentChat").strip()
         self._lock = threading.RLock()
         self._run_ids: dict[str, int] = {}
         self._started_at: dict[str, float] = {}
@@ -203,7 +203,7 @@ class StudioSessionMirror:
                         "metadata": config.get("metadata") or {},
                     }
                 )
-        stop_reason = str(payload.get("message") or ("Veya AgentChat run completed" if status == "COMPLETE" else "Veya AgentChat run failed"))
+        stop_reason = str(payload.get("message") or ("Mentora AgentChat run completed" if status == "COMPLETE" else "Mentora AgentChat run failed"))
         duration = max(0.0, ts - self._started_at.get(run.run_id, run.created_at))
         team_result = {
             "task_result": {"messages": summaries, "stop_reason": stop_reason},
@@ -296,7 +296,7 @@ class StudioSessionMirror:
                             connection,
                             run,
                             existing_run_id,
-                            {"status": "completed", "message": "Veya 历史 AgentChat 运行已补录"},
+                            {"status": "completed", "message": "Mentora 历史 AgentChat 运行已补录"},
                             float(records[-1].get("ts") or path.stat().st_mtime),
                         )
                     continue
@@ -319,7 +319,7 @@ class StudioSessionMirror:
                         "phase": "run",
                         "status": "completed",
                         "agent": "aime_chart_orchestrator",
-                        "message": "Veya 历史 AgentChat 运行已补录",
+                        "message": "Mentora 历史 AgentChat 运行已补录",
                     },
                     ts=float(records[-1].get("ts") or path.stat().st_mtime),
                 )

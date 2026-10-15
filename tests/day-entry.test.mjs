@@ -45,5 +45,7 @@ test('notification opens a read-only task conversation despite blocked storage a
 
 test('nginx canonical redirect preserves old notification parameters', () => {
   const nginx = readFileSync(new URL('../deploy/nginx-veya.conf',import.meta.url),'utf8');
-  assert.match(nginx,/location = \/veya \{ return 302 \/veya\/\$is_args\$args; \}/);
+  const canonical = readFileSync(new URL('../deploy/nginx-mentora.conf',import.meta.url),'utf8');
+  assert.match(canonical,/location \/mentora\/ \{/);
+  assert.match(nginx,/location = \/veya \{ return 302 \/mentora\/\$is_args\$args; \}/);
 });

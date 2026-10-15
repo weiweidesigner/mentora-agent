@@ -2276,7 +2276,7 @@ function transientShareSessionForArticle(article) {
   const question = nearbyUserQuestionForArticle(article);
   const title = currentSession?.title && currentSession.title !== "新建对话"
     ? currentSession.title
-    : (question || document.title || "Veya");
+    : (question || document.title || "Mentora");
   return {
     id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     title,
@@ -3715,7 +3715,7 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
   if (options.thinkingElapsed > 0) article.dataset.cachedElapsedMs = String(options.thinkingElapsed);
   article.innerHTML = `
     <div class="bubble assistantBubble">
-      <button class="thinkingTrigger is-complete" type="button" aria-label="查看活动">
+      <button class="thinkingTrigger is-complete" type="button" aria-label="${escapeHtml(options.thinkingAriaLabel || "查看活动")}">
         <span class="thinkingSummaryText">${escapeHtml(options.thinkingLabel || "查看执行记录")}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
       </button>
@@ -3727,7 +3727,7 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
       </div>
     </div>`;
   refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
-  article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
+  article.querySelector(".thinkingTrigger").addEventListener("click", options.onThinkingClick || (() => toggleActivityDrawer(article)));
   await renderMixedReportFlow(article, {...data, sources:article.activitySources}, article.querySelector(".mixedReport"), () => {
     article.querySelector(".deferredActions").hidden = false;
     attachResultActionHandlers(article);
@@ -3844,7 +3844,7 @@ function openShareDialog(article) {
   if (mixedReport?.innerHTML) session.answerHtml = mixedReport.innerHTML;
   activeShareSession = session;
   if (currentSession?.id === session.id) saveCurrentSession();
-  const title = session.question || session.title || "Veya";
+  const title = session.question || session.title || "Mentora";
   const shareTitle = document.querySelector("#shareTitle");
   if (shareTitle) shareTitle.textContent = title;
   if (sharePreviewTitle) sharePreviewTitle.textContent = "";
@@ -3906,7 +3906,7 @@ function shareAnswerMarkup(session) {
 }
 
 function buildShareAnswerDocument(session) {
-  const title = escapeHtml(session?.question || session?.title || "Veya");
+  const title = escapeHtml(session?.question || session?.title || "Mentora");
   const theme = session?.themeMode === "dark" ? "dark" : "light";
   const answer = shareAnswerMarkup(session);
   const pageBackground = theme === "dark" ? "#10131a" : "#f7f8fa";
@@ -4047,7 +4047,7 @@ async function persistShareSession(session) {
 
 async function saveShareImage() {
   if (!activeShareSession || !saveShareImageButton) return;
-  const title = activeShareSession.title || activeShareSession.question || "Veya";
+  const title = activeShareSession.title || activeShareSession.question || "Mentora";
   saveShareImageButton.disabled = true;
   if (saveShareImageText) saveShareImageText.textContent = "正在生成…";
   try {

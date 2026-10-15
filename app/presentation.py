@@ -36,7 +36,7 @@ LEGACY_ARTIFACT_REDIRECTS = {
     "/generated/native-streamviz-bf812c5bdd59.html": "/generated/deepseek-ashare-review-streamviz-20261009.html",
 }
 
-app = FastAPI(title="Veya presentation gateway")
+app = FastAPI(title="Mentora presentation gateway")
 app.include_router(local_glm_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
@@ -541,13 +541,13 @@ def _share_artifact_frames(session: dict[str, Any]) -> str:
     theme_query = "?theme=dark" if theme_mode == "dark" else ""
     return "".join(
         f'<iframe class="reportDocumentFrame" src="{html.escape(("/share-artifact/" + quote(Path(url).name) if url.startswith("/generated/") else url) + theme_query, quote=True)}" '
-        f'title="Veya 报告 {index}" scrolling="no"></iframe>'
+        f'title="Mentora 报告 {index}" scrolling="no"></iframe>'
         for index, url in enumerate(urls, start=1)
     )
 
 
 def standalone_share_html(session: dict[str, Any]) -> str:
-    title = html.escape(str(session.get("question") or session.get("title") or "Veya"))
+    title = html.escape(str(session.get("question") or session.get("title") or "Mentora"))
     answer_html = _strip_streamviz_artifact_hosts(str(session.get("answerHtml") or "").strip())
     answer_html = answer_html.replace("http://127.0.0.1:8000/", "/")
     answer_html = re.sub(r'(<iframe\b[^>]*?)\sstyle="[^"]*"', r"\1", answer_html, flags=re.I)
@@ -796,7 +796,7 @@ def wecom_status() -> dict[str, Any]:
 
 
 def wecom_session_markdown(session: dict[str, Any]) -> str:
-    title = str(session.get("question") or session.get("title") or "Veya").strip()
+    title = str(session.get("question") or session.get("title") or "Mentora").strip()
     interpretation = str(session.get("interpretation") or "").strip()
     if not interpretation:
         raw_html = str(session.get("answerHtml") or "")

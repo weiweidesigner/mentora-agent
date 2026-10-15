@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Veya</title>
+    <title>Mentora</title>
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
-    <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-conversational-create" />
+    <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015" />
+    <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-mentora" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -17,12 +17,12 @@
           <video id="homeBackdropVideo" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="/static/assets/home-market-background.jpg" data-src="/static/assets/home-market-background.mp4" data-dark-poster="/static/assets/home-market-background.jpg" data-light-src="/static/assets/home-light-background.mp4" data-light-poster="/static/assets/home-light-background.jpg" tabindex="-1"></video>
           <div class="homeBackdropMask"></div>
         </div>
-      <aside id="appSidebar" class="appSidebar" aria-label="Veya 导航">
+      <aside id="appSidebar" class="appSidebar" aria-label="Mentora 导航">
         <div class="sidebarRail">
           <button id="sidebarToggle" class="railButton is-active" type="button" aria-label="展开侧边栏" data-tip-open="展开侧边栏" data-tip-close="收起侧边栏">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"></rect><path d="M10 5v14"></path></svg>
           </button>
-          <button type="button" class="mobileBrand" aria-label="Veya，回到顶部"><img src="/static/assets/veya-logo.png?v=20261013" alt=""><span>Veya</span></button>
+          <button type="button" class="mobileBrand" aria-label="Mentora，回到顶部"><img src="/static/assets/mentora-logo.svg?v=20261015" alt=""><span>Mentora</span></button>
           <button id="railNewChat" class="railButton" type="button" aria-label="新建对话" data-tip="新建对话   ⇧⌘O">
             <svg class="navigationIcon" viewBox="0 0 1024 1024" aria-hidden="true"><path d="M864.644414 583.785931a31.108414 31.108414 0 0 1 62.252138 0v229.058207a116.665379 116.665379 0 0 1-116.66538 116.665379H213.768828A116.70069 116.70069 0 0 1 97.103448 812.844138V216.381793a116.630069 116.630069 0 0 1 116.524138-116.665379h257.97738a31.108414 31.108414 0 0 1 0 62.252138H213.592276a54.377931 54.377931 0 0 0-54.272 54.413241V812.844138a54.448552 54.448552 0 0 0 54.448552 54.413241h596.462344a54.448552 54.448552 0 0 0 54.413242-54.413241v-229.022897z"/><path d="M421.252414 558.644966l-16.278069 91.100689 89.441103-17.549241 352.856276-352.856276-73.339586-73.374897-352.679724 352.679725z m-50.882207-37.075863l366.874483-366.945103a51.870897 51.870897 0 0 1 73.339586 0l88.02869 88.02869a51.906207 51.906207 0 0 1 0 73.339586L531.703172 682.902069a31.073103 31.073103 0 0 1-16.030896 8.545103l-143.36 28.107035a31.073103 31.073103 0 0 1-36.652138-36.016552l26.059034-145.478621a31.108414 31.108414 0 0 1 8.615725-16.489931z"/></svg>
           </button>
@@ -31,9 +31,9 @@
         </div>
         <div class="sidebarContent">
           <div class="sidebarTop">
-            <button id="brandHomeButton" class="brandHomeButton" type="button" aria-label="Veya 首页">
-              <img class="brandMark" src="/static/assets/veya-logo.png?v=20261013" alt="" />
-              <span class="brandName">Veya</span>
+            <button id="brandHomeButton" class="brandHomeButton" type="button" aria-label="Mentora 首页">
+              <img class="brandMark" src="/static/assets/mentora-logo.svg?v=20261015" alt="" />
+              <span class="brandName">Mentora</span>
             </button>
             <button id="themeModeControl" class="themeToggleButton" type="button" aria-label="切换到深色模式" aria-pressed="false" title="切换到深色模式">
               <svg class="themeIconSun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5"></path></svg>
@@ -93,8 +93,8 @@
           </div>
           <div class="sharePreview">
             <div class="sharePreviewFrame">
-              <div id="sharePreviewTitle" class="sharePreviewTitle">Veya</div>
-              <iframe id="sharePreviewIframe" class="sharePreviewIframe" title="Veya 分享报告" scrolling="no"></iframe>
+              <div id="sharePreviewTitle" class="sharePreviewTitle">Mentora</div>
+              <iframe id="sharePreviewIframe" class="sharePreviewIframe" title="Mentora 分享报告" scrolling="no"></iframe>
             </div>
           </div>
           <div class="shareActions">
@@ -120,10 +120,10 @@
           <span id="caseCacheDate" class="caseCacheDate"></span>
         </header>
         <div id="messages" class="messages"></div>
-        <div class="homeHero" aria-hidden="true">看见数据背后的价值</div>
+        <div class="homeHero" aria-hidden="true">你的投资搭子</div>
 
         <form id="chatForm" class="composer">
-          <div class="composerHint">看见数据背后的价值</div>
+          <div class="composerHint">你的投资搭子</div>
           <div class="composerBox">
             <div id="attachmentPreview" class="attachmentPreview" aria-live="polite"></div>
             <input id="imageInput" class="imageInput" type="file" accept="image/*" multiple />
@@ -175,7 +175,7 @@
         <div id="taskLanding" class="taskLanding">
           <div class="taskLandingMark" aria-hidden="true"><img src="/static/assets/task-clock.svg" alt="" /></div>
           <header class="taskLandingHeader"><h1><span class="taskDesktopLabel">安排任务</span><span class="taskMobileLabel">定时任务</span></h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
-          <p class="taskLead">Veya 可以帮你持续跟踪市场，在需要的时候带来更新。</p>
+          <p class="taskLead">Mentora 可以帮你持续跟踪市场，在需要的时候带来更新。</p>
           <form id="taskPromptForm" class="taskPromptForm taskCreationComposer"><textarea id="taskPrompt" rows="1" maxlength="5000" required aria-label="安排任务" placeholder="描述你想定时完成的事…"></textarea><button class="taskPromptSend" type="submit" aria-label="发送任务问句"><span class="sendArrow" aria-hidden="true"></span></button></form>
           <div id="taskLandingList" class="taskLandingList"></div>
           <div class="taskRecommendations"><h2>推荐</h2><div id="taskRecommendations"></div></div>
@@ -197,7 +197,7 @@
             <div id="wizardQuestion"></div><p id="wizardError" class="dayError" role="alert"></p>
           </section>
         </section>
-        <form id="taskChatForm" class="taskChatForm composer" hidden><div class="composerBox taskChatComposer"><div id="taskAttachmentPreview" class="attachmentPreview" hidden></div><input id="taskImageInput" class="imageInput" type="file" accept="image/*" multiple /><button id="taskAttachButton" class="attachButton" type="button" aria-label="添加图片"><span aria-hidden="true"></span></button><textarea id="taskChatInput" rows="1" maxlength="6000" aria-label="继续对话" placeholder="继续询问 Veya"></textarea><button id="taskChatSend" type="submit" aria-label="发送追问"><span class="sendArrow" aria-hidden="true"></span></button></div><p id="taskChatError" role="status"></p></form>
+        <form id="taskChatForm" class="taskChatForm composer" hidden><div class="composerBox taskChatComposer"><div id="taskAttachmentPreview" class="attachmentPreview" hidden></div><input id="taskImageInput" class="imageInput" type="file" accept="image/*" multiple /><button id="taskAttachButton" class="attachButton" type="button" aria-label="添加图片"><span aria-hidden="true"></span></button><textarea id="taskChatInput" rows="1" maxlength="6000" aria-label="继续对话" placeholder="继续询问 Mentora"></textarea><button id="taskChatSend" type="submit" aria-label="发送追问"><span class="sendArrow" aria-hidden="true"></span></button></div><p id="taskChatError" role="status"></p></form>
         <p id="taskMessage" class="dayMessage" role="status" aria-live="polite"></p>
       </section>
       <dialog id="dayDialog" class="dayDialog taskSettingsDialog" aria-labelledby="dayDialogTitle">
@@ -205,7 +205,7 @@
         <form id="dayForm" class="dayForm">
           <div class="dayDialogBody">
             <input name="title" class="editorTitle" aria-label="任务名称" maxlength="80" required placeholder="任务名称" />
-            <textarea name="question" class="editorQuestion" aria-label="任务内容" rows="5" maxlength="6000" required placeholder="说明你希望 Veya 定时完成的事…"></textarea>
+            <textarea name="question" class="editorQuestion" aria-label="任务内容" rows="5" maxlength="6000" required placeholder="说明你希望 Mentora 定时完成的事…"></textarea>
             <div class="taskScheduleGroup editorSchedule">
               <label class="taskSettingRow">重复执行任务<input name="repeat" class="taskSwitch" type="checkbox" checked /></label>
 <div class="taskSettingRow" id="dayCadenceLabel"><span>重复</span><div class="editorControl"><select name="cadence" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="重复频率"><option value="daily">每天</option><option value="weekdays">工作日</option><option value="weekly">每周</option><option value="monthly">每月</option><option value="custom">自定义</option><option value="trading">交易日</option></select><button type="button" class="editorSelect" data-editor-field="cadence" aria-haspopup="dialog" aria-expanded="false" aria-label="重复频率"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayWeekLabel" hidden><span>执行星期</span><div class="editorControl"><select name="weekday" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行星期"><option value="0">星期一</option><option value="1">星期二</option><option value="2">星期三</option><option value="3">星期四</option><option value="4">星期五</option><option value="5">星期六</option><option value="6">星期日</option></select><button type="button" class="editorSelect" data-editor-field="weekday" aria-haspopup="dialog" aria-expanded="false" aria-label="执行星期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div>              <div id="dayCustomLabel" class="taskSettingRow editorCustomDays" hidden><span>重复日期</span><div id="editorWeekdays" aria-label="自定义重复日期"><button type="button" data-editor-weekday="0" aria-pressed="false">一</button><button type="button" data-editor-weekday="1" aria-pressed="false">二</button><button type="button" data-editor-weekday="2" aria-pressed="false">三</button><button type="button" data-editor-weekday="3" aria-pressed="false">四</button><button type="button" data-editor-weekday="4" aria-pressed="false">五</button><button type="button" data-editor-weekday="5" aria-pressed="false">六</button><button type="button" data-editor-weekday="6" aria-pressed="false">日</button></div></div><div class="taskSettingRow" id="dayMonthLabel" hidden><span>每月日期</span><input name="monthDay" type="number" min="1" max="31" value="1" aria-label="每月日期" /></div><div class="taskSettingRow" id="dayDateLabel" hidden><span>执行日期</span><div class="editorControl"><input name="date" type="date" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行日期" /><button type="button" class="editorSelect" data-editor-field="date" aria-haspopup="dialog" aria-expanded="false" aria-label="执行日期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayTimeLabel"><span>时间</span><div class="editorControl"><input name="time" type="time" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行时间" /><button type="button" class="editorSelect" data-editor-field="time" aria-haspopup="dialog" aria-expanded="false" aria-label="执行时间"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayOffsetLabel" hidden><span>偏移分钟</span><input name="offset" type="number" min="-180" max="180" value="-30" /></div><div class="taskSettingRow" id="dayEndModeLabel"><span>结束重复</span><div class="editorControl"><select name="endMode" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="结束重复"><option value="never">永不</option><option value="date">指定日期</option></select><button type="button" class="editorSelect" data-editor-field="endMode" aria-haspopup="dialog" aria-expanded="false" aria-label="结束重复"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayEndLabel" hidden><span>日期</span><div class="editorControl"><input name="endDate" type="date" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="结束日期" /><button type="button" class="editorSelect" data-editor-field="endDate" aria-haspopup="dialog" aria-expanded="false" aria-label="结束日期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div>            </div>
@@ -256,10 +256,10 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261015-embedded-layout"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261015-task-share"></script>
+    <script src="/static/app.js?v=20261015-mentora"></script>
     <script src="/static/home-background.js?v=light-blue-video-20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
-    <script src="/static/day-tasks.js?v=20261015-conversational-create"></script>
+    <script src="/static/day-tasks.js?v=20261015-mentora"></script>
   </body>
 </html>

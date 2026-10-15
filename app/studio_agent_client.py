@@ -31,7 +31,7 @@ class StudioAgentClient:
         self.ws_base = re.sub(r"^http", "ws", self.http_base, count=1)
         self.user_id = os.getenv("AUTOGEN_STUDIO_USER_ID", "guestuser@gmail.com").strip() or "guestuser@gmail.com"
         self.team_id = int(os.getenv("AUTOGEN_STUDIO_TEAM_ID", "1"))
-        self.session_name = os.getenv("AUTOGEN_STUDIO_SESSION_NAME", "Veya · AgentChat").strip()
+        self.session_name = os.getenv("AUTOGEN_STUDIO_SESSION_NAME", "Mentora · AgentChat").strip()
         self.generated_dir = generated_dir.resolve()
         self.project_root = project_root.resolve()
         self.studio_artifact_root = Path(
@@ -70,7 +70,7 @@ class StudioAgentClient:
             return self.session_name, ""
         marker = hashlib.sha256(key.encode("utf-8")).hexdigest()[:10]
         display = re.sub(r"[\r\n\t]+", " ", str(title or "New Chat")).strip() or "New Chat"
-        return f"Veya · {display[:48]} · {marker}", marker
+        return f"Mentora · {display[:48]} · {marker}", marker
 
     def ensure_session(self, session_key: str = "", title: str = "") -> dict[str, Any]:
         desired_name, marker = self._session_identity(session_key, title)

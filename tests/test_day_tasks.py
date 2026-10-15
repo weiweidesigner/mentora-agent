@@ -212,7 +212,7 @@ def test_serverchan_secret_and_official_delivery(service, monkeypatch):
     monkeypatch.setattr('app.day_tasks.requests.post',lambda url,**kwargs:(calls.append((url,kwargs)),Response())[1])
     service.deliver()
     assert calls[0][0]=='https://sctapi.ftqq.com/SCT12345secret.send'
-    assert '/veya/?dayShare=' in calls[0][1]['data']['desp']
+    assert '/mentora/?dayShare=' in calls[0][1]['data']['desp']
     assert calls[0][1]['allow_redirects'] is False
     assert service.list('alice')[0]['notifications'][0]['status']=='sent'
 

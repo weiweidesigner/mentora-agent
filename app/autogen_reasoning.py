@@ -97,7 +97,7 @@ async def _plan_async(
     trace: list[str] = []
 
     def search_components(query: str) -> str:
-        """Search the Veya component catalog by business intent or chart semantics."""
+        """Search the Mentora component catalog by business intent or chart semantics."""
         trace.append("search:" + str(query)[:120])
         return json.dumps(_search_catalog(modules, query), ensure_ascii=False)
 
@@ -112,7 +112,7 @@ async def _plan_async(
         return json.dumps({"ok": True, **contract}, ensure_ascii=False)
 
     def submit_analysis_plan(plan_json: str) -> str:
-        """Submit the final Veya route JSON after all selected component contracts were read."""
+        """Submit the final Mentora route JSON after all selected component contracts were read."""
         nonlocal submitted
         trace.append("submit")
         try:
@@ -144,8 +144,8 @@ async def _plan_async(
     # retrieved through tools only when the agent needs them.
     catalog = _search_catalog(modules, question, limit=16)
     system_message = (
-        "你是 Veya 的 AutoGen ReAct 规划 Agent。你只负责推理和生成工具执行计划，"
-        "不能直接生成图表，也不能回答最终分析结论。Veya 原有执行器会执行计划并保留全部前端展示逻辑。\n"
+        "你是 Mentora 的 AutoGen ReAct 规划 Agent。你只负责推理和生成工具执行计划，"
+        "不能直接生成图表，也不能回答最终分析结论。Mentora 原有执行器会执行计划并保留全部前端展示逻辑。\n"
         "工作顺序必须是：1) 用 search_components 按用户业务语义寻找候选组件；"
         "2) 对最终选择的每个脚本调用 get_component_contract，核对真实 CLI/schema；"
         "3) 调用 submit_analysis_plan 提交计划。计划通过后停止。\n"
@@ -301,7 +301,7 @@ async def _complete_text_async(
         "aime_chart_interpreter",
         model_client=model_client,
         system_message=(
-            "你是 Veya 的综合解读 Agent。严格依据任务中提供的数据证据生成结果，"
+            "你是 Mentora 的综合解读 Agent。严格依据任务中提供的数据证据生成结果，"
             "遵守任务指定的语言和 JSON schema，不得编造数据，不得提及内部实现。"
             + AUTOGEN_INTERPRETER_VISUAL_GUIDANCE
         ),
