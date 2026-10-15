@@ -103,6 +103,7 @@ def _native_grouped_bar():
 
 def upgrade_legacy_grouped_bar(artifact: str, theme: str) -> str:
     """Apply current axis/layout logic to native grouped bars using saved values."""
+    artifact = artifact.replace('const divisions = Math.max(2, Math.round(gridCount || 5));', 'const divisions = Math.max(2, Math.round(gridCount || 5)) - 1;')
     if 'class="chart-component"' not in artifact or 'data-chart-layout-version="2"' in artifact:
         return artifact
     if 'function sampledXAxisIndexes' not in artifact or 'function tooltipBounds' not in artifact:
