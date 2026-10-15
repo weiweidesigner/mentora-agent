@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "cachedAt": "2026-10-14T17:26:40.269014+08:00",
+  "version": 3,
+  "cachedAt": "2026-10-15T19:53:45.156133+08:00",
   "categories": [
     {
       "id": "reports",
@@ -10,7 +10,7 @@
     {
       "id": "charts",
       "title": "金融图表",
-      "subtitle": "33 个业务图表案例，从行情、财报到估值与资金。"
+      "subtitle": "从行情走势到财报估值，用交互图表看清市场与公司。"
     },
     {
       "id": "analysis",
@@ -29,6 +29,19 @@
     }
   ],
   "cases": [
+    {
+      "id": "business-trading_view_chart",
+      "title": "苹果 · TradingView 交互日线",
+      "tag": "TradingView",
+      "question": "用 TradingView 看看苹果最近的日线走势，我想自己切换周期和技术指标。",
+      "preview": "在苹果日线图中缩放和拖动，切换周期、叠加技术指标，按自己的节奏查看走势。",
+      "cachedDate": "2026-10-15",
+      "conversationUrl": "/static/cases/inspiration/business-trading_view_chart/conversation.json",
+      "category": "charts",
+      "featured": true,
+      "generation": "actual-veya-chat-stream",
+      "mobileTitle": "苹果交互日线"
+    },
     {
       "id": "business-about_company",
       "title": "NVDA · 公司档案",
@@ -798,11 +811,11 @@
     }
   ],
   "counts": {
-    "reports": 3,
-    "charts": 33,
+    "charts": 34,
     "analysis": 17,
+    "reports": 3,
     "videos": 3,
     "art": 3,
-    "total": 59
+    "total": 60
   }
 }

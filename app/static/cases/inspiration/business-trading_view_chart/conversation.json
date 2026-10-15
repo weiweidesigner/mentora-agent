@@ -1,0 +1,97 @@
+{
+  "question": "用 TradingView 看看苹果最近的日线走势，我想自己切换周期和技术指标。",
+  "cachedAt": "2026-10-15T19:53:45.156133+08:00",
+  "answer": {
+    "question": "用 TradingView 看看苹果最近的日线走势，我想自己切换周期和技术指标。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart,yahoo-data,code-interpreter,advisor-text-generation",
+      "label": "trading-view-chart + yahoo-data + code-interpreter + advisor-text-generation",
+      "script": "trading-view-chart + yahoo-data + code-interpreter + advisor-text-generation",
+      "reason": "由 DeepSeek Harness 选择并执行 Mentora 项目 Skill。"
+    },
+    "htmlUrl": "/static/cases/inspiration/business-trading_view_chart/tradingview-aapl-daily.html",
+    "reportUrl": "/static/cases/inspiration/business-trading_view_chart/tradingview-aapl-daily.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/business-trading_view_chart/tradingview-aapl-daily.html",
+        "url": "/static/cases/inspiration/business-trading_view_chart/tradingview-aapl-daily.html"
+      }
+    ],
+    "payloadUrl": null,
+    "interpretation": "## 核心结论\n\n苹果（NASDAQ:AAPL）日线目前是**多头结构下的高位新高**：最新收盘 342.96 美元（最新交易日 2026-10-14）就是半年区间内的最高收盘，价格同时站在 MA5/MA20/MA60 之上（340.45 / 336.81 / 324.56）。但**上涨动能已明显放缓**：近 60 个交易日只涨 4.64%，而近半年累计 +32.47%，且最新交易日放量（为 20 日均量的 1.31 倍）并没有伴随 5 日量能同步扩张（5 日/20 日均量 = 0.99），属于高位窄幅整理后的再创新高，而不是加速突破。\n\n下面是可直接交互的 TradingView 官方图表，默认已设为**日线（1D）**，图上工具栏可自行切换 1 分钟到月线、添加/删除技术指标、比较标的和日期区间，绘图侧栏也已打开：\n\n[[AIME_CHART:case:inspiration/business-trading_view_chart/tradingview-aapl-daily.html]]\n\n**图内要点**：默认叠加了一条简单移动平均线，顶部工具栏保留「周期切换 + Indicators（指标）+ 比较 + 日期区间」按钮；该组件随主题切换（浅色/深色均可）、语言为简体中文、时区为 Asia/Shanghai，鼠标悬停可读取每根日线的开高低收与成交量。\n\n## 关键证据（截至 2026-10-14）\n\n| 指标 | 数值 |\n|---|---|\n| 最新收盘 | 342.96（当日 +0.50%） |\n| 近 5 / 20 / 60 交易日涨跌 | +1.87% / +3.17% / +4.64% |\n| 近半年（132 个交易日）累计 | +32.47% |\n| 收盘价 vs MA5 / MA20 / MA60 | +0.74% / +1.83% / +5.67% |\n| 区间最高收盘 / 最低收盘 | 342.96（2026-10-14）/ 258.83（2026-04-14） |\n| 期间最大回撤 | −12.71%（2026-06-02 → 2026-06-25） |\n| 近 20 日区间 / 振幅 | 329.40 ~ 342.96 / 4.12% |\n\n三点解读：一是**趋势未破**，均线呈多头排列且价格创区间新高，说明 6 月那轮 −12.7% 回撤已被完全收复；二是**斜率放缓**，60 日涨幅只有半年涨幅的约七分之一，近 20 日振幅仅 4.12%，属于高位缩量爬升，追高的性价比低于 4—6 月；三是**量价略背离**，只有最新单日放量，5 日量能并未跟随，因此这根新高需要后续 2—3 个交易日量能确认。\n\n## 风险与口径\n\n- **观察位**：短期防线为 MA20 约 336.8，中期防线为 MA60 约 324.6；有效跌破 MA20 意味着本轮高位爬升节奏被打破。\n- **历史波动参考**：近半年内出现过一次 −12.7% 的中级回撤，说明该股在上升趋势中仍会用 10% 量级的调整释放压力。\n- **数据口径**：表格中所有数值来自 Yahoo 数据接口的美国个股日线历史回退源（Nasdaq 历史日线，**未复权**，不含分红调整），最新交易日为 2026-10-14；TradingView 组件本身只做展示、不提供本回答中的任何数值，其行情由 TradingView 提供，部分市场可能延迟。\n- 若你想看更长周期，建议在图上切到周线核对 MA60 附近的支撑是否与日线结论一致，避免日线单一周期误判。\n\n**案例说明**：对话分析与图表配置缓存于 2026 年 10 月 15 日，上文数值对应其标注的历史交易日。打开图表后，行情仍由 TradingView 加载，可能更新或延迟，与缓存分析的时点可能不同。",
+    "status": [
+      "DeepSeek Harness 已完成处理"
+    ],
+    "agentRunId": "deepseek-cached-tradingview-case-1792065056",
+    "studioSessionId": null,
+    "engineSessionId": "cached-tradingview-case-1792065056",
+    "reasoningFramework": "deepseek",
+    "inferenceModel": "deepseek-v4-flash",
+    "sources": [
+      {
+        "siteName": "tradingview.com",
+        "url": "https://www.tradingview.com/widget-docs/widgets/charts/advanced-chart/",
+        "title": "tradingview.com",
+        "summary": "",
+        "iconUrl": ""
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "visualRoute": {
+      "applied": false,
+      "fallback": "agent-selection",
+      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 451 {\"title\":\"Typesafe is not available in your region.\",\"status\":451}",
+      "candidateCount": 46
+    }
+  },
+  "activity": {
+    "label": "执行记录",
+    "steps": [
+      {
+        "title": "核对 TradingView 图表设置",
+        "detail": "本次加载：trading-view-chart\n已核对官方组件规范、日线周期与中文界面配置。",
+        "state": "done",
+        "elapsedMs": 3823
+      },
+      {
+        "title": "生成苹果交互日线",
+        "detail": "调用：TradingViewChart\n结果：NASDAQ:AAPL，日线 D，保留周期切换、技术指标与绘图工具。",
+        "state": "done",
+        "elapsedMs": 18371
+      },
+      {
+        "title": "整理走势与使用说明",
+        "detail": "已完成日线走势解读，并区分缓存分析的历史时点与 TradingView 图内行情。",
+        "state": "done",
+        "elapsedMs": 92238
+      }
+    ],
+    "startedAt": 1792065132918,
+    "endedAt": 1792065225156,
+    "elapsedMs": 92238,
+    "durationSource": "measured-chat-stream",
+    "stages": [
+      {
+        "name": "实际对话生成",
+        "startedAt": 1792065132918,
+        "endedAt": 1792065225156,
+        "elapsedMs": 92238
+      }
+    ],
+    "detailSource": "cached-tool-results"
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "sessionId": "cached-tradingview-case-1792065056",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "model": "deepseek-v4-flash",
+    "widget": "advanced-chart",
+    "symbol": "NASDAQ:AAPL",
+    "cacheScope": "conversation-and-widget-configuration",
+    "marketData": "TradingView-hosted; browser-loaded, potentially delayed and not frozen with the conversation"
+  }
+}

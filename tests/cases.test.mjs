@@ -157,9 +157,9 @@ test('inspiration categories switch by click and keyboard and replay without inf
 test('all inspiration cards have portable, non-empty caches and complete component coverage', () => {
   const root=new URL('../app/static/cases/inspiration/',import.meta.url);
   const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
-  assert.equal(catalog.cases.length,59);
-  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,59);
-  const counts={reports:3,charts:33,analysis:17,videos:3,art:3};
+  assert.equal(catalog.cases.length,60);
+  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,60);
+  const counts={reports:3,charts:34,analysis:17,videos:3,art:3};
   for(const [category,count] of Object.entries(counts))assert.equal(catalog.cases.filter(row=>row.category===category).length,count);
   for(const row of catalog.cases){
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
