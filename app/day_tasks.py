@@ -616,6 +616,13 @@ class DayTasks:
         # still be finishing. The OS releases it safely at process termination.
 
 
+def task_result_question(task_owner, current_config, run_config, answer):
+    from app.day_presets import SCENE_OWNER
+    if task_owner == SCENE_OWNER:
+        return current_config['question']
+    return (answer or {}).get('question') or run_config['question']
+
+
 def create_router(service):
     router = APIRouter(prefix='/api/day')
 
@@ -747,7 +754,7 @@ def create_router(service):
                 raise HTTPException(404, '运行记录不存在')
             answer = json.loads(row['answer']) if row['answer'] else None
             snapshot = service.unpack(row['config'])
-            return {'taskId': task_id, 'runId': row['id'], 'status': row['status'], 'question': (answer or {}).get('question') or snapshot['question'], 'answer': answer, 'cachedDate': row['finished'] or row['created'], 'error': row['error']}
+            return {'taskId': task_id, 'runId': row['id'], 'status': row['status'], 'question': task_result_question(task['owner'],service.unpack(task['config']),snapshot,answer), 'answer': answer, 'cachedDate': row['finished'] or row['created'], 'error': row['error']}
 
     @router.get('/tasks/{task_id}/result')
     def result(task_id: str, request: Request, response: Response):
@@ -759,7 +766,7 @@ def create_router(service):
                 raise HTTPException(404, '还没有成功结果')
             config = service.unpack(row['config'])
             answer = json.loads(row['answer'])
-            return {'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
+            return {'question': task_result_question(task['owner'],service.unpack(task['config']),config,answer), 'answer': answer, 'cachedDate': row['finished']}
 
     @router.get('/shared/{token}')
     def shared(token: str, request: Request, response: Response):
@@ -772,9 +779,13 @@ def create_router(service):
             config = service.unpack(row['config'])
             answer = json.loads(row['answer'])
             snapshot = {key: value for key, value in config.items() if key not in SECRET_FIELDS}
+            from app.day_presets import SCENE_OWNER
+            if row['owner']==SCENE_OWNER:
+                snapshot=service.unpack(row['current_config'])
+                snapshot['systemPreset']=True
             snapshot['id'] = row['task_id']
             visitor = hashlib.sha256(request.cookies.get(COOKIE, '').encode()).hexdigest()
-            return {'taskId': row['task_id'], 'runId': row['id'], 'task': snapshot, 'canEdit': visitor == row['owner'], 'title': config['title'], 'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
+            return {'taskId': row['task_id'], 'runId': row['id'], 'task': snapshot, 'canEdit': visitor == row['owner'], 'title': config['title'], 'question': task_result_question(row['owner'],service.unpack(row['current_config']),config,answer), 'answer': answer, 'cachedDate': row['finished']}
 
     @router.post('/subscriptions')
     def subscribe(payload: dict[str, Any], request: Request, response: Response):

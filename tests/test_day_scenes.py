@@ -75,3 +75,21 @@ def test_preset_copy_updates_without_changing_schedule_or_user_tasks(tmp_path):
     assert current['question'].startswith('帮我看看')
     assert current['time']=='07:45' and current['nextAt']==task['nextAt']
     assert all('项目已有金融研究技能' not in payload.question for _,_,payload in preset_payloads())
+
+
+def test_existing_preset_results_and_shared_views_use_current_natural_question(tmp_path):
+    service=DayTasks(tmp_path,lambda *_:{'question':'使用项目已有金融研究技能获取可靠证据。','interpretation':'保留的原始结果','reportArtifacts':[]})
+    service.seed_scene_presets();task=service.scene_tasks()[0]
+    with service.db() as db:service.enqueue(db,service.owned(db,SCENE_OWNER,task['id']))
+    service.execute(service.claim())
+    app=FastAPI();app.include_router(create_router(service));client=TestClient(app)
+    run=client.get(f"/api/day/tasks/{task['id']}/runs").json()['runs'][0]
+    with service.db() as db:token=db.execute('SELECT token FROM result_links WHERE task_id=?',(task['id'],)).fetchone()['token']
+    for url in [f"/api/day/tasks/{task['id']}/runs/{run['id']}",f"/api/day/tasks/{task['id']}/result",f"/api/day/shared/{token}"]:
+        result=client.get(url).json()
+        assert result['question']==task['question']
+        assert result['answer']['interpretation']=='保留的原始结果'
+        assert result['answer']['question']=='使用项目已有金融研究技能获取可靠证据。'
+    shared=client.get(f'/api/day/shared/{token}').json()
+    assert shared['task']['systemPreset'] is True
+    assert shared['task']['question']==task['question']
