@@ -4554,8 +4554,8 @@ p {
   background:conic-gradient(from var(--day-edge-angle),transparent 0deg 205deg,#7c71ff55 240deg,#9c8aff 285deg,#7fe6f4 325deg,transparent 360deg);
   -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
   -webkit-mask-composite:xor;mask-composite:exclude;
-  animation:day-neon-edge 4s linear infinite;animation-delay:var(--day-edge-delay,0s);
+  animation:day-neon-edge 4s linear infinite;
 }
 .daySceneCard.is-running { box-shadow:0 0 12px #8c78ff12,inset 0 0 10px #81e8f407; }
-@keyframes day-neon-edge { to { --day-edge-angle:360deg; } }
+@keyframes day-neon-edge { from { --day-edge-angle:0deg; } to { --day-edge-angle:360deg; } }
 @media(prefers-reduced-motion:reduce) { .daySceneCard.is-running::before { animation:none; } }

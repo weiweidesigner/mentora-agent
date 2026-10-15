@@ -137,15 +137,33 @@
   let displayedDayScene='';
   function updateDayHeader(){const scene=homeScene(),copy=sceneCopy[scene];$('myDayTitle').textContent=copy?.title||'陪你等一个清晰的方向';const now=new Date(Date.now()+serverDelta),parts=Object.fromEntries(new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).map(p=>[p.type,p.value]));$('dayClock').dateTime=now.toISOString();$('dayClock').textContent=`${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;if(displayedDayScene!==scene){displayedDayScene=scene;$('daySceneArt').dataset.scene=scene||'';$('daySceneArt').setAttribute('aria-label',copy?.label||'同步市场时间');$('daySceneArt').innerHTML=sceneArt(scene||'pre');return true;}return false;}
   function resultScene(t){if(t.resultScene)return t.resultScene;if(t.stage==='rest')return 'rest';if(t.timeMode==='open')return t.offset>0?'live':'pre';if(t.timeMode==='close')return t.offset<0?'live':'post';if(t.time){const close=t.market==='CN'?'15:00':'16:00';return t.time<'09:30'?'pre':t.time<close?'live':'post';}return t.stage;}
+  function updateHomePanel(markup){
+    const panel=$('dayPanel'),template=document.createElement('template');template.innerHTML=markup;
+    const nextGrid=template.content.querySelector('.daySceneGrid'),grid=panel.querySelector('.daySceneGrid');
+    if(!nextGrid||!grid){panel.replaceChildren(template.content);return;}
+    // Keep running card elements mounted so polling cannot restart their edge animations.
+    const existing=new Map(Array.from(grid.children).map(card=>[card.dataset.taskOpen,card]));
+    Array.from(nextGrid.children).forEach((incoming,index)=>{
+      const current=existing.get(incoming.dataset.taskOpen),card=current||incoming;
+      if(current){
+        existing.delete(incoming.dataset.taskOpen);
+        if(current.className!==incoming.className)current.className=incoming.className;
+        if(current.dataset.taskRun!==incoming.dataset.taskRun)current.dataset.taskRun=incoming.dataset.taskRun;
+        if(current.innerHTML!==incoming.innerHTML)current.innerHTML=incoming.innerHTML;
+      }
+      if(grid.children[index]!==card)grid.insertBefore(card,grid.children[index]||null);
+    });
+    for(const card of existing.values())card.remove();
+  }
   function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
     const ready=t=>t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date&&resultScene(t)===scene;
     const rows=[...sceneTasks.filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),...tasks.filter(t=>(t.resultMarket||t.market)==='CN'&&((t.activeRun&&(t.scene||resultScene(t))===scene)||ready(t)))];
-    $('dayPanel').innerHTML=rows.length?`<div class="daySceneGrid">${rows.map(t=>{
+    updateHomePanel(rows.length?`<div class="daySceneGrid">${rows.map(t=>{
       const active=!!t.activeRun,done=!active&&ready(t),running=active&&t.lastRun?.status==='running',run=active?t.activeRun:done?t.resultVersion:'';
       const label=running?'正在运行任务':active?'等待运行':!t.enabled?'已暂停':t.lastRun?.status==='failed'?'执行未完成':'等待执行';
       const description=plainSummary(visibleQuestion(t).split(' 使用项目已有金融研究技能')[0]);
-      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" style="--day-edge-delay:-${((Date.now()+serverDelta)%4000)/1000}s" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
-    }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`;
+      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
+    }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`);
   }
 
   function visibleTasks() {

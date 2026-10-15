@@ -231,3 +231,15 @@ test('running task replays real events into the normal live renderer and finishe
  h.w.fetch=async(path,options)=>{if(path.includes('/events?'))return {ok:true,body:{}};if(path.endsWith('/runs'))return {ok:true,json:async()=>({runs:[{id:'run-active',status:completed?'success':'running',created:'2026-10-15T04:00:00Z'}]})};if(path.endsWith('/runs/run-active'))return {ok:true,json:async()=>({runId:'run-active',question:'实际运行问句',status:completed?'success':'running',answer:completed?{interpretation:'最终研究结论'}:null})};return fetch(path,options);};
  d.querySelector('[data-task-open="active"]').click();await tick();assert.equal(d.querySelector('#taskChatForm').hidden,true);send('tool_step',{_taskEventId:1,detail:'检索公开公告'});send('answer_text',{_taskEventId:2,text:'正在输出的研究结果'});assert.match(d.querySelector('#taskThread').textContent,/正在输出的研究结果/);assert.deepEqual(events,['tool_step','answer_text']);send('final',{_taskEventId:3,interpretation:'最终研究结论'});const trigger=d.querySelector('#taskThread .thinkingTrigger');assert.equal(trigger.textContent,t.title);trigger.click();assert.equal(d.querySelector('#dayDialog').open,true);send('run_state',{status:'success'});await tick();assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
 });
+
+
+test('polling preserves running cards and spinners rather than restarting their animations',async()=>{
+ const running={...base,id:'running',systemPreset:true,scene:'live',activeRun:'active-run',lastRun:{status:'running'}};
+ const h=setup({tasks:[],sceneTasks:[running]});await tick();const d=h.w.document,card=d.querySelector('#dayPanel [data-task-open="running"]'),spinner=card.querySelector('.dayRunSpinner');
+ Object.defineProperty(d,'hidden',{value:false,configurable:true});
+ d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();
+ assert.equal(d.querySelector('#dayPanel [data-task-open="running"]'),card);assert.equal(card.querySelector('.dayRunSpinner'),spinner);
+ assert.equal(card.getAttribute('style'),null);
+ running.title='更新后的任务名称';d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();assert.equal(d.querySelector('#dayPanel [data-task-open="running"]'),card);assert.match(card.textContent,/更新后的任务名称/);
+ running.activeRun=null;running.lastRun={status:'success'};d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();assert.equal(card.classList.contains('is-running'),false);assert.equal(card.querySelector('.dayRunSpinner'),null);h.dom.window.close();
+});
