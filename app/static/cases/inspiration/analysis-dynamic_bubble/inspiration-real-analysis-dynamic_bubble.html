@@ -44,7 +44,7 @@ html,body{margin:0;width:100%;height:auto;min-height:0;background:transparent;co
  .timeLabel{min-width:42px;font-size:11px}
  #speedBtn{height:28px;min-height:28px;line-height:28px;min-width:38px;padding:0 9px}
 }
-</style></head><body><div id="wrap" data-renderer-version="dynamic-bubble-v15"><div id="header"><div id="title">三巨头月度收益-波动-成交额动态：NVDA波动最高且成交额最大（2026-04–2026-09）</div><div id="legend"></div></div><div id="chart"></div><div id="empty">暂无可渲染数据</div><div id="timelineBar" class="is-hidden"><button id="playBtn" type="button" aria-label="播放"></button><button id="speedBtn" type="button">1x</button><div id="startLabel" class="timeLabel"></div><div id="sliderWrap"><div id="sliderTrack"><span id="sliderFill"></span></div><input id="timelineRange" type="range" min="0" max="0" value="0" aria-label="时间轴" /></div><div id="endLabel" class="timeLabel"></div></div></div>
+</style><style data-mobile-chart-repair="3">@media(max-width:720px){#title{white-space:normal!important;overflow-wrap:anywhere;overflow:visible!important;text-overflow:clip!important}#wrap{max-height:none!important}#header{right:0!important}}</style></head><body><div id="wrap" data-renderer-version="dynamic-bubble-v15"><div id="header"><div id="title">三巨头月度收益-波动-成交额动态：NVDA波动最高且成交额最大（2026-04–2026-09）</div><div id="legend"></div></div><div id="chart"></div><div id="empty">暂无可渲染数据</div><div id="timelineBar" class="is-hidden"><button id="playBtn" type="button" aria-label="播放"></button><button id="speedBtn" type="button">1x</button><div id="startLabel" class="timeLabel"></div><div id="sliderWrap"><div id="sliderTrack"><span id="sliderFill"></span></div><input id="timelineRange" type="range" min="0" max="0" value="0" aria-label="时间轴" /></div><div id="endLabel" class="timeLabel"></div></div></div>
 <script>
 const darkMode = document.documentElement.dataset.theme === 'dark';
 const chartText = darkMode ? '#c1cad7' : '#687386';
@@ -80,7 +80,7 @@ function layout(){
  return {
   gridLeft:0,
   gridRight:1,
-  top:small?104:128,
+  top:Math.max(small?104:128, document.getElementById("header").offsetTop+document.getElementById("header").offsetHeight+34),
   bottom:small?76:84
  };
 }
@@ -138,9 +138,9 @@ function buildSeries(frame){
  const frameRows=validRowsForFrame(frame);
  const riskLeader = [...frameRows].sort((a,b)=>num(b[enc.x])-num(a[enc.x]))[0];
  const riskMark = group => ({
-   symbol: 'circle', symbolSize: 0,
+   symbol: 'circle', symbolSize: 0, silent:true,tooltip:{show:false}, silent:true,tooltip:{show:false},
    itemStyle: {color: 'transparent'},
-   label: {show:true,formatter:'当月波动最高',position:'bottom',distance:42,color:chartText,fontSize:11},
+   label: {show:true,formatter:'当月波动最高',position:'left',distance:8,color:chartText,fontSize:11},
    data: riskLeader && (!group || String(riskLeader[enc.series])===group)
      ? [{coord:[num(riskLeader[enc.x]),num(riskLeader[enc.y])]}] : []
  });
@@ -205,6 +205,7 @@ function renderChart(){
  const xScale=axisScale(frameRows.map(r=>num(r[enc.x])));
  const yScale=axisScale(frameRows.map(r=>num(r[enc.y])));
  const l=layout();
+ if(compact()){document.getElementById("wrap").style.height=Math.max(320,l.top+l.bottom+160)+"px";chart.resize();}
  applyLayoutToDom();
  setTimelineState();
   chart.setOption({
@@ -214,7 +215,7 @@ function renderChart(){
   animationEasingUpdate:"cubicInOut",
   grid:{left:l.gridLeft,right:l.gridRight,top:l.top,bottom:l.bottom,containLabel:true},
   legend:{show:false},
-  tooltip:{className:"generic-canvas-tooltip",trigger:"item",backgroundColor:darkMode ? "#202733" : "rgba(255,255,255,.98)",borderColor:chartBorder,extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:darkMode ? "#f1f5f9" : "#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
+  tooltip:{className:"generic-canvas-tooltip",trigger:"item",confine:true,triggerOn:matchMedia("(pointer:coarse)").matches?"none":"mousemove|click",backgroundColor:darkMode ? "#202733" : "rgba(255,255,255,.98)",borderColor:chartBorder,extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:darkMode ? "#f1f5f9" : "#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
   xAxis:{type:"value",min:xScale.min,max:xScale.max,interval:xScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),margin:10,hideOverlap:true,showMinLabel:false,showMaxLabel:false},axisLine:{lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
   yAxis:{type:"value",min:yScale.min,max:yScale.max,interval:yScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),inside:false,align:"right",padding:0,margin:3,hideOverlap:true},axisLine:{show:true,lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
   graphic:[
@@ -248,8 +249,9 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
   const hits = '.hover-zone,.hit-area,.pie-slice,.ring-arc,.treemap-cell';
   let gesture = null, active = null, dismissTimer = null, nativeHovered = false, touchOrigin = null, placement = null, canvasState = null;
   const emit = (node,type,event) => node?.dispatchEvent(new MouseEvent(type,{clientX:event.clientX,clientY:event.clientY,bubbles:false}));
-  let localPortal=null,localSource=null;
+  let localPortal=null,localSource=null,localObserver=null;
   const hideLocalPortal=()=>{
+    localObserver?.disconnect();localObserver=null;
     if(localPortal)localPortal.hidden=true;
     if(localSource){localSource.style.removeProperty('visibility');localSource=null;}
   };
@@ -284,7 +286,11 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
     for(const property of ['color','padding','font-size','font-family','line-height','border-radius','border','box-shadow'])localPortal.style.setProperty(property,style.getPropertyValue(property));
     localPortal.style.width=Math.min(tip.offsetWidth,ctx.win.innerWidth-16)+'px';localPortal.hidden=false;
     localPortal.dataset.arrow=tip.matches('.waterfall-tooltip')?'bottom':tip.matches('.pie-tooltip')?'side':'none';
-    localSource=tip;tip.style.setProperty('visibility','hidden','important');
+    localObserver?.disconnect();
+    if(localSource&&localSource!==tip)localSource.style.removeProperty('visibility');
+    localSource=tip;
+    const conceal=()=>{if(tip.style.visibility!=='hidden'||tip.style.getPropertyPriority('visibility')!=='important')tip.style.setProperty('visibility','hidden','important');};
+    conceal();localObserver=new MutationObserver(conceal);localObserver.observe(tip,{attributes:true,attributeFilter:['style']});
     return {portal:localPortal,host:ctx.win,left:ctx.left+rect.left,top:ctx.top+rect.top,width:localPortal.offsetWidth,height:localPortal.offsetHeight};
   };
 
@@ -459,5 +465,7 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
   } catch (_) {}
 })();
 </script>
+
+
 
 </body></html>

@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from app.studio_agent_client import StudioAgentClient, StudioAgentError
 from app.reasoning_frameworks import FRAMEWORKS, LocalAgentFrameworks, ReasoningFrameworkError
 from app.native_streamviz import stream_native_widget
-from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_grouped_bar
+from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_grouped_bar, upgrade_legacy_mobile_charts, upgrade_legacy_mobile_charts
 from app.local_glm_adapter import router as local_glm_router
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
@@ -657,6 +657,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
         raise HTTPException(status_code=500, detail="cannot read generated artifact") from exc
     artifact = upgrade_legacy_intraday(artifact, theme)
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
+    artifact = upgrade_legacy_mobile_charts(artifact, theme)
+    artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = sync_native_kline_theme(artifact, theme)
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'
     # The host selects a palette; all artifact styling belongs to StreamViz.

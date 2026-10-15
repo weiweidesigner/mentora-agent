@@ -639,7 +639,7 @@ function dismissReportTooltip() {
   document.querySelectorAll('.bar-line-tooltip-portal,.group-line-tooltip-portal,.bar-chart-tooltip-portal,.grouped-bar-tooltip-portal').forEach(tip=>tip.classList.remove('active'));
   if (reportTooltipPortal) reportTooltipPortal.hidden = true;
   if (activeReportTooltip) {
-    activeReportTooltip.tip.classList.remove("show", "active");
+    activeReportTooltip.tip.classList.remove("show", "active", "visible");
     activeReportTooltip = null;
   }
 }
@@ -673,7 +673,7 @@ function installReportTooltipPortal(frame) {
         return;
       }
       const style = win.getComputedStyle(tip);
-      const shown = tip.matches(".show,.active") || tip.style.opacity === "1";
+      const shown = tip.matches(".show,.active,.visible") || tip.style.opacity === "1";
       if (!shown || style.display === "none") {
         if (activeReportTooltip?.tip === tip && reportTooltipPortal) reportTooltipPortal.hidden = true;
         return;
@@ -4392,7 +4392,10 @@ function resizeReportDocumentFrame(frame) {
     try {
       const doc = frame.contentDocument;
       frame.style.minHeight = "0";
-      frame.style.height = `${contentHeight(doc)}px`;
+      const height = contentHeight(doc);
+      // Native charts may include two pixels for the iframe edge. Avoid a
+      // resize loop between their height message and this intrinsic measure.
+      if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${height}px`;
     } catch {
       frame.style.minHeight = "0";
       frame.style.height = "620px";
@@ -4422,7 +4425,7 @@ window.addEventListener("message", (event) => {
   const height = Number(data.height);
   if (!Number.isFinite(height) || height <= 80) return;
   frame.style.minHeight = "0";
-  frame.style.height = `${Math.ceil(height)}px`;
+  if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${Math.ceil(height)}px`;
 });
 
 function scrollToMessageStart(article) {

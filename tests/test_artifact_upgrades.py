@@ -59,3 +59,37 @@ def test_old_grouped_bar_is_rebuilt_with_same_saved_values():
     assert 'data-chart-layout-version="2"' in new
     assert _constant(old, "config")["data"] == _constant(new, "config")["data"]
     assert _constant(new, "config")["themeMode"] == "dark"
+
+
+def test_mobile_payout_upgrade_preserves_model_title_and_financial_records():
+    from pathlib import Path
+    from app.artifact_upgrades import upgrade_legacy_mobile_charts
+    native_path = Path(__file__).parents[1] / 'app/static/cases/inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html'
+    current = native_path.read_text()
+    # The title was historically carried by the heading runtime, not the data.
+    old = current.replace(' data-mobile-layout="2"', '')
+    payload_pattern = r'<script id="payload" type="application/json">(.*?)</script>'
+    import re
+    before = json.loads(html.unescape(re.search(payload_pattern, old, re.S)[1]))
+    before.pop('customTitle', None)
+    old = re.sub(payload_pattern, lambda _: '<script id="payload" type="application/json">'+json.dumps(before, ensure_ascii=False)+'</script>', old, flags=re.S)
+    upgraded = upgrade_legacy_mobile_charts(old, 'dark')
+    after = json.loads(html.unescape(re.search(payload_pattern, upgraded, re.S)[1]))
+    assert after['records'] == before['records']
+    assert after['customTitle'] == '苹果分红率创13年新低：利润快增稀释派息'
+    assert 'data-mobile-layout="2"' in upgraded
+    assert 'data-theme="dark"' in upgraded
+    assert upgrade_legacy_mobile_charts(upgraded, 'dark') == upgraded
+
+
+def test_bubble_layout_upgrade_keeps_data_and_annotation_but_replaces_touch_runtime():
+    from pathlib import Path
+    from app.artifact_upgrades import upgrade_legacy_mobile_charts
+    path = Path(__file__).parents[1] / 'app/static/cases/inspiration/analysis-dynamic_bubble/inspiration-real-analysis-dynamic_bubble.html'
+    current = path.read_text()
+    old = current.replace('data-mobile-chart-repair="3"', 'data-mobile-chart-repair="old"')
+    upgraded = upgrade_legacy_mobile_charts(old, 'dark')
+    assert upgraded.count('id="genericMobileTouch"') == 1
+    assert 'new MutationObserver(conceal)' in upgraded
+    assert "formatter:'当月波动最高',position:'left',distance:8" in upgraded
+    assert current.split('const payload=')[1].split(';\n')[0] == upgraded.split('const payload=')[1].split(';\n')[0]

@@ -3,7 +3,7 @@
 <head><script src="/static/cases/theme.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>派息率</title>
+  <title>苹果分红率创13年新低：利润快增稀释派息</title>
   <style>
 :root{color-scheme:light;--business-text-16181c:#16181c;--business-text-707276:#707276;--business-border-ececec:#ececec;--business-border-777:#777;--business-text-74777c:#74777c;--business-text-5f6267:#5f6267;--business-text-404247:#404247;--business-text-8a8a8a:#8a8a8a;--business-bg-f1f1f1:#f1f1f1;--business-bg-5f5f5f:#5f5f5f;--business-bg-fff:#fff;--business-bg-9b9b9b:#9b9b9b;--business-text-f2f2f2:#f2f2f2;--business-text-fff:#fff;--business-text-ddd:#ddd;--business-border-ddd:#ddd;--business-border-9b9b9b:#9b9b9b;}
 :root[data-theme="dark"]{color-scheme:dark;--business-text-16181c:#e8edf5;--business-text-707276:#a8b3c4;--business-border-ececec:#293646;--business-border-777:#566477;--business-text-74777c:#a8b3c4;--business-text-5f6267:#a8b3c4;--business-text-404247:#e8edf5;--business-text-8a8a8a:#a8b3c4;--business-bg-f1f1f1:#202b3a;--business-bg-5f5f5f:#263242;--business-bg-fff:#202b3a;--business-bg-9b9b9b:#516078;--business-text-f2f2f2:#f5f7fb;--business-text-fff:#f5f7fb;--business-text-ddd:#a8b3c4;--business-border-ddd:#293646;--business-border-9b9b9b:#566477;}
@@ -138,12 +138,12 @@
       content: "";
       position: absolute;
       left: var(--arrow-x);
-      bottom: -7px;
+      top: -7px;
       width: 12px;
       height: 8px;
       background: rgba(48,48,48,.92);
       transform: translateX(-50%);
-      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      clip-path: polygon(50% 0, 0 100%, 100% 100%);
     }
     .tooltip.visible { opacity: 1; }
     .tip-title { color:var(--business-text-fff); font-weight: 800; margin-bottom: 5px; }
@@ -154,7 +154,9 @@
     @media (max-width: 760px) {
       .payout-ratio { padding: 0; }
       h1 { font-size: 16px; margin-bottom: 12px; }
-      .legend { gap: 14px; margin: 6px 0 0; font-size: 12px; }
+      .legend { gap: 8px 12px; margin: 6px 0 0; font-size: 11px; }
+      .legend-item { gap: 5px; }
+      .dot { width: 8px; height: 8px; }
       .stage { height: 240px; }
     }
   </style>
@@ -165,8 +167,8 @@
     })();
     </script></head>
 <body>
-  <main class="payout-ratio">
-    <h1>派息率</h1>
+  <main class="payout-ratio" data-mobile-layout="2">
+    <h1>苹果分红率创13年新低：利润快增稀释派息</h1>
     <div class="stage" id="stage"><svg id="chart" role="img"></svg></div>
     <div class="legend" id="legend"></div>
     <div class="range-shell" id="rangeShell">
@@ -178,7 +180,7 @@
     </div>
     <div class="tooltip" id="tooltip"></div>
   </main>
-  <script id="payload" type="application/json">{"type": "payout-ratio", "name": "分红率", "title": "派息率", "code": "AAPL", "series": [{"key": "parent_holder_net_profit", "label": "归母净利润", "type": "bar", "color": "#2863f4"}, {"key": "dividend_cash_total", "label": "现金分红总额", "type": "bar", "color": "#39c2e6"}, {"key": "pay_out_ratio", "label": "派息率", "type": "line", "color": "#ff6845"}], "records": [{"label": "2012", "year": "2012", "parent_holder_net_profit": 41.733, "dividend_cash_total": 2.4841259, "pay_out_ratio": 0.05952425897970431}, {"label": "2013", "year": "2013", "parent_holder_net_profit": 37.037, "dividend_cash_total": 10.6151328, "pay_out_ratio": 0.2866088722088722}, {"label": "2014", "year": "2014", "parent_holder_net_profit": 39.51, "dividend_cash_total": 11.11300833, "pay_out_ratio": 0.28127077524677296}, {"label": "2015", "year": "2015", "parent_holder_net_profit": 53.394, "dividend_cash_total": 11.4552574, "pay_out_ratio": 0.2145420346855452}, {"label": "2016", "year": "2016", "parent_holder_net_profit": 45.687, "dividend_cash_total": 11.97590004, "pay_out_ratio": 0.2621292717840961}, {"label": "2017", "year": "2017", "parent_holder_net_profit": 48.351, "dividend_cash_total": 12.56875905, "pay_out_ratio": 0.2599482751132345}, {"label": "2018", "year": "2018", "parent_holder_net_profit": 59.531, "dividend_cash_total": 13.54514147, "pay_out_ratio": 0.2275308909643715}, {"label": "2019", "year": "2019", "parent_holder_net_profit": 55.256, "dividend_cash_total": 13.92889129, "pay_out_ratio": 0.2520792545605907}, {"label": "2020", "year": "2020", "parent_holder_net_profit": 57.411, "dividend_cash_total": 13.85060823, "pay_out_ratio": 0.24125356168678477}, {"label": "2021", "year": "2021", "parent_holder_net_profit": 94.68, "dividend_cash_total": 14.23484443, "pay_out_ratio": 0.15034689934516265}, {"label": "2022", "year": "2022", "parent_holder_net_profit": 99.803, "dividend_cash_total": 14.61854895, "pay_out_ratio": 0.1464740433654299}, {"label": "2023", "year": "2023", "parent_holder_net_profit": 96.995, "dividend_cash_total": 14.82501888, "pay_out_ratio": 0.15284312469714934}, {"label": "2024", "year": "2024", "parent_holder_net_profit": 93.736, "dividend_cash_total": 15.07326667, "pay_out_ratio": 0.16080552477169924}, {"label": "2025", "year": "2025", "parent_holder_net_profit": 112.01, "dividend_cash_total": 15.27629016, "pay_out_ratio": 0.1363832707793947}], "source": {"provider": "AInvest abroad/finance/v2/dividend_programme", "symbol": "AAPL", "unit": {"money": "B USD", "ratio": "ratio"}, "rawExtends": {"market": "185", "sec_id": "S000007526", "code": "AAPL", "org_id": "T000038499", "trade_target": null, "code_hq": "AAPL", "ths_code": "AAPL.O", "category": "usa"}}, "language": "zh-CN", "labels": {"title": "派息率", "series": {"parent_holder_net_profit": "归母净利润", "dividend_cash_total": "现金分红总额", "pay_out_ratio": "派息率"}}, "componentUi": {"Business": "主营业务", "Type": "类型", "Stock": "股票", "Value": "价值", "Dividend": "分红", "Ratio": "占比", "Total": "合计", "range start": "起始周期", "range end": "结束周期", "Payout Ratio": "分红率"}, "theme": "light"}</script>
+  <script id="payload" type="application/json">{"type": "payout-ratio", "name": "分红率", "title": "苹果分红率创13年新低：利润快增稀释派息", "code": "AAPL", "series": [{"key": "parent_holder_net_profit", "label": "归母净利润", "type": "bar", "color": "#2863f4"}, {"key": "dividend_cash_total", "label": "现金分红总额", "type": "bar", "color": "#39c2e6"}, {"key": "pay_out_ratio", "label": "派息率", "type": "line", "color": "#ff6845"}], "records": [{"label": "2012", "year": "2012", "parent_holder_net_profit": 41.733, "dividend_cash_total": 2.4841259, "pay_out_ratio": 0.05952425897970431}, {"label": "2013", "year": "2013", "parent_holder_net_profit": 37.037, "dividend_cash_total": 10.6151328, "pay_out_ratio": 0.2866088722088722}, {"label": "2014", "year": "2014", "parent_holder_net_profit": 39.51, "dividend_cash_total": 11.11300833, "pay_out_ratio": 0.28127077524677296}, {"label": "2015", "year": "2015", "parent_holder_net_profit": 53.394, "dividend_cash_total": 11.4552574, "pay_out_ratio": 0.2145420346855452}, {"label": "2016", "year": "2016", "parent_holder_net_profit": 45.687, "dividend_cash_total": 11.97590004, "pay_out_ratio": 0.2621292717840961}, {"label": "2017", "year": "2017", "parent_holder_net_profit": 48.351, "dividend_cash_total": 12.56875905, "pay_out_ratio": 0.2599482751132345}, {"label": "2018", "year": "2018", "parent_holder_net_profit": 59.531, "dividend_cash_total": 13.54514147, "pay_out_ratio": 0.2275308909643715}, {"label": "2019", "year": "2019", "parent_holder_net_profit": 55.256, "dividend_cash_total": 13.92889129, "pay_out_ratio": 0.2520792545605907}, {"label": "2020", "year": "2020", "parent_holder_net_profit": 57.411, "dividend_cash_total": 13.85060823, "pay_out_ratio": 0.24125356168678477}, {"label": "2021", "year": "2021", "parent_holder_net_profit": 94.68, "dividend_cash_total": 14.23484443, "pay_out_ratio": 0.15034689934516265}, {"label": "2022", "year": "2022", "parent_holder_net_profit": 99.803, "dividend_cash_total": 14.61854895, "pay_out_ratio": 0.1464740433654299}, {"label": "2023", "year": "2023", "parent_holder_net_profit": 96.995, "dividend_cash_total": 14.82501888, "pay_out_ratio": 0.15284312469714934}, {"label": "2024", "year": "2024", "parent_holder_net_profit": 93.736, "dividend_cash_total": 15.07326667, "pay_out_ratio": 0.16080552477169924}, {"label": "2025", "year": "2025", "parent_holder_net_profit": 112.01, "dividend_cash_total": 15.27629016, "pay_out_ratio": 0.1363832707793947}], "source": {"provider": "AInvest abroad/finance/v2/dividend_programme", "symbol": "AAPL", "unit": {"money": "B USD", "ratio": "ratio"}, "rawExtends": {"market": "185", "sec_id": "S000007526", "code": "AAPL", "org_id": "T000038499", "trade_target": null, "code_hq": "AAPL", "ths_code": "AAPL.O", "category": "usa"}}, "language": "zh-CN", "labels": {"title": "派息率", "series": {"parent_holder_net_profit": "归母净利润", "dividend_cash_total": "现金分红总额", "pay_out_ratio": "派息率"}}, "componentUi": {"Business": "主营业务", "Type": "类型", "Stock": "股票", "Value": "价值", "Dividend": "分红", "Ratio": "占比", "Total": "合计", "range start": "起始周期", "range end": "结束周期", "Payout Ratio": "分红率"}, "theme": "light", "customTitle": "苹果分红率创13年新低：利润快增稀释派息"}</script>
   <script>
     const payload = JSON.parse(document.getElementById('payload').textContent);
     const records = payload.records || [];
@@ -256,7 +258,7 @@
         margin,
         Math.min(window.innerWidth - margin - width, clientX - width / 2)
       );
-      const top = anchorY - height - gap;
+      const top = Math.max(margin, Math.min(window.innerHeight - height - margin, anchorY + gap));
       const arrowX = Math.max(12, Math.min(width - 12, clientX - left));
       els.tooltip.style.left = left + 'px';
       els.tooltip.style.top = top + 'px';
@@ -274,8 +276,8 @@
     function render() {
       clear(els.chart);
       const data = visibleRecords();
-      const width = Math.max(360, Math.round(els.stage.clientWidth || 900));
-      const height = Math.max(220, Math.round(els.stage.clientHeight || 280));
+      const width = Math.max(1, Math.round(els.stage.clientWidth || 900));
+      const height = Math.max(1, Math.round(els.stage.clientHeight || 280));
       els.chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
       if (!data.length) return;
       const moneyValues = [];
@@ -287,28 +289,29 @@
       const rawMoneyMin = Math.min(0, ...moneyValues);
       const rawMoneyMax = Math.max(0, ...moneyValues);
       const moneyPad = Math.max(1, (rawMoneyMax - rawMoneyMin) * .16);
-      const moneyMin = rawMoneyMin - moneyPad;
+      const moneyMin = rawMoneyMin < 0 ? rawMoneyMin - moneyPad : 0;
       const moneyMax = rawMoneyMax + moneyPad;
       const rawRatioMin = Math.min(0, ...ratioValues);
       const rawRatioMax = Math.max(.01, ...ratioValues);
       const ratioPad = Math.max(.02, (rawRatioMax - rawRatioMin) * .22);
-      const ratioMin = rawRatioMin - ratioPad;
+      const ratioMin = rawRatioMin < 0 ? rawRatioMin - ratioPad : 0;
       const ratioMax = rawRatioMax + ratioPad;
 
       const ratioTicks = Array.from({ length: 5 }, (_, i) => ratioMax - (ratioMax - ratioMin) * i / 4);
       const moneyTicks = Array.from({ length: 5 }, (_, i) => moneyMax - (moneyMax - moneyMin) * i / 4);
       const leftAxisLabels = ratioTicks.map(value => fmtPct(value));
       const rightAxisLabels = moneyTicks.map(value => Math.abs(value) < .005 ? '0' : fmtB(value));
-      const estimateTextWidth = label => String(label || '').length * 7.2;
+      const measure = document.createElement('canvas').getContext('2d');
+      measure.font = '12px Inter, system-ui, sans-serif';
+      const estimateTextWidth = label => measure.measureText(String(label || '')).width;
       const axisLabelWidth = Math.max(
         44,
         ...leftAxisLabels.map(estimateTextWidth),
         ...rightAxisLabels.map(estimateTextWidth)
       );
-      const axisGap = 10;
+      const axisGap = width <= 720 ? 6 : 10;
       const edgePad = 2;
-      const sideMargin = Math.ceil(axisLabelWidth + axisGap + edgePad);
-      const margin = { top: 12, right: sideMargin, bottom: 42, left: sideMargin };
+      const margin = { top: 12, right: Math.ceil(Math.max(...rightAxisLabels.map(estimateTextWidth))+axisGap+edgePad), bottom: 42, left: Math.ceil(Math.max(...leftAxisLabels.map(estimateTextWidth))+axisGap+edgePad) };
 
       const chartW = Math.max(1, width - margin.left - margin.right);
       const chartH = Math.max(1, height - margin.top - margin.bottom);
@@ -333,7 +336,10 @@
       const barW = Math.max(3, Math.min(38, groupW / Math.max(1, bars.length) - gap));
       const linePoints = [];
       const canShowLineLabels = xStep >= 54;
-      const canShowAllX = data.length <= 8 || xStep >= 74;
+      measure.font = '13px Inter, system-ui, sans-serif';
+      const labelWidths = data.map(row => estimateTextWidth(row.label));
+      const canShowAllX = labelWidths.every((w,i) => i === 0 || xStep >= (w+labelWidths[i-1])/2+12);
+      const sampledX = new Set([0, Math.floor((data.length-1)/2), data.length-1]);
       function clearBands() { hoverLayer.querySelectorAll('.hover-band').forEach(node => node.classList.remove('active')); }
       data.forEach((record, index) => {
         const cx = margin.left + xStep * index + xStep / 2;
@@ -354,7 +360,7 @@
             svgEl('text', { x: cx, y: Math.max(12, y - 9), class: 'line-label' }, labelLayer).textContent = fmtPct(record[line.key]);
           }
         }
-        if (canShowAllX || index === 0 || index === data.length - 1) {
+        if (canShowAllX || sampledX.has(index)) {
           svgEl('text', { x: cx, y: height - 10, 'text-anchor': 'middle', class: 'x-label' }, labelLayer).textContent = record.label;
         }
         const zone = svgEl('rect', { x: bandLeft, y: margin.top, width: xStep, height: chartH, class: 'hover-zone' }, zoneLayer);
@@ -405,5 +411,18 @@
     render();
     window.addEventListener('resize', () => window.requestAnimationFrame(render));
   </script>
-<style data-business-heading-style>.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="苹果分红率创13年新低：利润快增稀释派息";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
+<style data-business-heading-style>
+svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-highlight-color:transparent}
+.case-single-tab{display:none!important}
+@media(max-width:720px){
+ .component{height:auto!important;min-height:0!important}
+ .stage,.trend-stage,.waterfall-stage{height:210px!important;min-height:0!important}
+ .chart-panel .chart{height:190px!important;aspect-ratio:auto!important}
+ .range-filter{height:48px!important;padding:5px 16px 6px!important;box-sizing:border-box}
+ .range-shell,.time-range-shell{padding-inline:16px!important;box-sizing:border-box}
+ .ring-stage{height:200px!important} .ring-stage svg{width:190px!important;height:190px!important}
+ .intraday-card{min-width:0!important;width:100%;height:400px!important}
+ .intraday-row{--columns:1;grid-auto-columns:100%!important;gap:10px}
+}
+.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="苹果分红率创13年新低：利润快增稀释派息";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
 </html>

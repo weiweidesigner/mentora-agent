@@ -186,7 +186,7 @@ body.is-fullscreen.is-forced-landscape #wrap{
 :root[data-theme="dark"] #journeyZoomButton{border-color:#334052}
 #journeyZoomButton:hover{background:rgba(148,163,184,.12)}
 #journeyZoomButton svg{display:block;width:100%;height:100%;fill:currentColor}
-</style></head>
+</style><style data-mobile-chart-repair="3">@media(max-width:720px){#fullscreenBtn{display:none!important}#title{right:0!important;padding-right:0!important}}</style></head>
 <body>
 <div id="wrap">
   <div id="title">AAPL 最近四份财报经营旅程 从产品增长到股东现金回报</div>
@@ -706,5 +706,5 @@ svg:not(.markmap),canvas,#chart,#chart>div,.range-shell{touch-action:pan-y!impor
 })();
 </script>
 
-</body>
+<script>(()=>{const crop=()=>{const s=document.querySelector('#diagram svg');if(!s)return;const b=s.getBBox(),v=s.viewBox.baseVal;if(b.height>0&&v.y<b.y-4){const bottom=Math.max(v.y+v.height,b.y+b.height+4);s.setAttribute('viewBox',`${v.x} ${b.y-4} ${v.width} ${bottom-b.y+4}`);if(typeof naturalHeight!=='undefined')naturalHeight=bottom-b.y+4;if(typeof fitDiagram==='function')fitDiagram();if(typeof postChartHeight==='function')postChartHeight();}};const d=document.getElementById('diagram');if(d)new MutationObserver(crop).observe(d,{childList:true});requestAnimationFrame(crop);})();</script></body>
 </html>

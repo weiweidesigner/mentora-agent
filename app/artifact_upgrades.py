@@ -115,3 +115,60 @@ def upgrade_legacy_grouped_bar(artifact: str, theme: str) -> str:
         return _native_grouped_bar().render_svg_chart(config, "bar")
     except (ValueError, KeyError, TypeError):
         return artifact
+
+
+@lru_cache(maxsize=1)
+def _native_payout_ratio():
+    script = Path(__file__).parent / "skills/business-chart-recall/scripts/payout_ratio.py"
+    spec = importlib.util.spec_from_file_location("saved_payout_ratio", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
+    """Repair saved native layouts without changing their data or custom marks."""
+    if 'class="payout-ratio"' in artifact and 'data-mobile-layout="2"' not in artifact:
+        import html
+        payload = re.search(r'<script id="payload" type="application/json">(.*?)</script>', artifact, re.S)
+        if payload:
+            try:
+                values = json.loads(html.unescape(payload.group(1)))
+                values['theme'] = theme
+                # Older case files applied the model title outside the payload.
+                heading = re.search(r'<h1\b[^>]*>(.*?)</h1>', artifact, re.S)
+                model_title = re.search(r'const modelTitle\s*=\s*', artifact)
+                if model_title:
+                    title = json.JSONDecoder().raw_decode(artifact[model_title.end():])[0]
+                    if isinstance(title, str) and title:
+                        values['customTitle'] = title
+                if not values.get('customTitle') and heading:
+                    values['customTitle'] = html.unescape(re.sub('<[^>]+>', '', heading.group(1)))
+                artifact = _native_payout_ratio().render_html(values)
+            except (ValueError, TypeError, KeyError):
+                pass
+    if 'data-mobile-chart-repair="3"' in artifact:
+        return artifact
+    styles = []
+    script = ''
+    if 'id="fullscreenBtn"' in artifact and ('journeySvg' in artifact or 'flowchart' in artifact.lower()):
+        styles.append('@media(max-width:720px){#fullscreenBtn{display:none!important}#title{right:0!important;padding-right:0!important}}')
+    if 'journeySvg' in artifact:
+        # Mermaid includes empty space above its first section in its viewBox.
+        script = """<script>(()=>{const crop=()=>{const s=document.querySelector('#diagram svg');if(!s)return;const b=s.getBBox(),v=s.viewBox.baseVal;if(b.height>0&&v.y<b.y-4){const bottom=Math.max(v.y+v.height,b.y+b.height+4);s.setAttribute('viewBox',`${v.x} ${b.y-4} ${v.width} ${bottom-b.y+4}`);if(typeof naturalHeight!=='undefined')naturalHeight=bottom-b.y+4;if(typeof fitDiagram==='function')fitDiagram();if(typeof postChartHeight==='function')postChartHeight();}};const d=document.getElementById('diagram');if(d)new MutationObserver(crop).observe(d,{childList:true});requestAnimationFrame(crop);})();</script>"""
+    if 'class="treemap-component"' in artifact:
+        styles.append('@media(max-width:720px){.treemap-component{width:100%!important;margin-inline:0!important;padding-inline:0!important}}')
+    if 'dynamic-bubble-v' in artifact:
+        styles.append('@media(max-width:720px){#title{white-space:normal!important;overflow-wrap:anywhere;overflow:visible!important;text-overflow:clip!important}#wrap{max-height:none!important}#header{right:0!important}}')
+        artifact = artifact.replace('top:small?104:128,', 'top:Math.max(small?104:128, document.getElementById("header").offsetTop+document.getElementById("header").offsetHeight+34),')
+        artifact = artifact.replace('trigger:"item",backgroundColor:', 'trigger:"item",confine:true,triggerOn:matchMedia("(pointer:coarse)").matches?"none":"mousemove|click",backgroundColor:')
+        artifact = artifact.replace(' const l=layout();\n applyLayoutToDom();', ' const l=layout();\n if(compact()){document.getElementById("wrap").style.height=Math.max(320,l.top+l.bottom+160)+"px";chart.resize();}\n applyLayoutToDom();')
+        # Keep the case-specific leader annotation inside the rightmost bubble.
+        artifact = artifact.replace("formatter:'当月波动最高',position:'bottom',distance:42", "formatter:'当月波动最高',position:'left',distance:8")
+        artifact = artifact.replace("symbol: 'circle', symbolSize: 0,", "symbol: 'circle', symbolSize: 0, silent:true,tooltip:{show:false},")
+        runtime = (Path(__file__).parent / 'skills/generic-chart/runtime/mobile_interactions.html').read_text()
+        artifact = re.sub(r'<style id="genericMobileTouchStyle">.*?</script>', lambda _: runtime, artifact, count=1, flags=re.S)
+    if styles or script:
+        artifact = artifact.replace('</head>', '<style data-mobile-chart-repair="3">'+''.join(styles)+'</style></head>', 1)
+        artifact = artifact.replace('</body>', script+'</body>', 1)
+    return artifact

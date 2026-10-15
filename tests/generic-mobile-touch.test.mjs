@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
-const saved = readFileSync(new URL('../app/static/cases/presidents-sp500/deepseek-case-presidents-sp500-grouped-bar.html', import.meta.url), 'utf8');
+const saved = readFileSync(new URL('../app/skills/generic-chart/runtime/mobile_interactions.html', import.meta.url), 'utf8');
 const runtime = saved.match(/<script id="genericMobileTouch">([\s\S]*?)<\/script>/)[1];
 function fixture() {
   const dom = new JSDOM('<svg id="chart"><rect class="hover-zone"/></svg><aside class="tip"></aside><button>其他位置</button>', { runScripts: 'outside-only' });
@@ -124,4 +124,25 @@ test('canvas tooltip interaction preserves a component with tooltips explicitly 
   const f=fixture(),actions=[],dom=f.window.document.querySelector('#chart');dom.getBoundingClientRect=()=>({left:0,top:0,width:390,height:400});
   f.window.echarts={getInstanceByDom:()=>({getOption:()=>({tooltip:[{show:false}]}),dispatchAction:a=>actions.push(a)})};
   try{f.touch('pointerdown');f.touch('pointerup');assert(!actions.some(a=>a.type==='showTip'));}finally{f.close();}
+});
+
+
+test('ECharts repaint cannot reveal a second tooltip behind the touch portal', async () => {
+  const dom = new JSDOM('<div id="chart"><canvas></canvas><div class="generic-canvas-tooltip" style="opacity:1;background:rgb(32,39,51)">NVDA</div></div>', {runScripts:'outside-only'});
+  const w=dom.window, chart=w.document.querySelector('#chart'), tip=w.document.querySelector('.generic-canvas-tooltip'), canvas=w.document.querySelector('canvas');
+  const instance={getWidth:()=>320,getHeight:()=>300,getOption:()=>({tooltip:[{}],series:[{type:'scatter',data:[[1,2]]}]}),containPixel:()=>true,convertToPixel:()=>[30,50],dispatchAction:a=>{if(a.type==='showTip')tip.style.visibility='visible';}};
+  w.echarts={getInstanceByDom:()=>instance};
+  Object.defineProperties(tip,{offsetWidth:{value:180},offsetHeight:{value:90}});
+  chart.getBoundingClientRect=()=>({left:0,top:0,width:320,height:300});
+  try {
+    w.eval(runtime);
+    const event=new w.Event('pointerdown',{bubbles:true});Object.assign(event,{pointerType:'touch',pointerId:1,clientX:30,clientY:50});canvas.dispatchEvent(event);
+    await new Promise(r=>setTimeout(r,0));
+    assert.equal(tip.style.visibility,'hidden');
+    assert.equal(w.document.querySelectorAll('.generic-local-tooltip-portal:not([hidden])').length,1);
+    tip.style.visibility='visible';await new Promise(r=>setTimeout(r,0));
+    assert.equal(tip.style.visibility,'hidden');
+    w.dispatchEvent(new w.Event('scroll'));
+    assert(w.document.querySelector('.generic-local-tooltip-portal').hidden);
+  } finally {w.close();}
 });
