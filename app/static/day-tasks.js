@@ -77,10 +77,13 @@
     } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}
     finally{if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
-  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt]);
+  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
   let originalQuestionTemplate = '', originalVisibleQuestion = '';
   let wizardDraft = null, wizardStep = 0, saving = false;
+  const creationRecords=new Map();
+  function creationRecord(id){if(creationRecords.has(id))return creationRecords.get(id);try{const record=JSON.parse(localStorage.getItem('veya-task-created:'+id)||'null');if(record&&Array.isArray(record.answers)){creationRecords.set(id,record);return record;}}catch{}return null;}
+  function rememberCreation(id,record){creationRecords.set(id,record);try{localStorage.setItem('veya-task-created:'+id,JSON.stringify(record));}catch{}}
   const initial = new URLSearchParams(location.search);
   let initialTask = initial.get('task') || initial.get('dayResult');
   const initialRun = initial.get('run') || '';
@@ -214,6 +217,7 @@
   function prepareDetail(task, canEdit) {
     enterWorkspace();$('taskLanding').hidden=true;$('taskWizard').hidden=true;$('taskDetail').hidden=false;
     $('taskBack').hidden=false;$('taskTopActions').hidden=false;$('taskPageTitle').textContent=task.title;
+    $('taskInfoCard').hidden=!task.lastRun&&!task.resultVersion;
     $('taskRunNow').hidden=$('taskToggle').hidden=!canEdit;
     $('taskRunNow').disabled=!!task.activeRun;$('taskRunNow').textContent=task.activeRun?'运行中…':'立即运行';
     $('taskToggle').textContent=completed(task)?'重新安排':task.enabled?'暂停':'开启';
@@ -223,6 +227,7 @@
   }
   async function paintRun(data, task, version) {
     if(version!==viewVersion)return;
+    $('taskInfoCard').hidden=false;
     const container=$('taskThread');
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
@@ -248,9 +253,10 @@
     $('taskRunSelect').hidden=!runs.length;
     $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
     if(!runs.length) {
-      $('taskThread').innerHTML=`<div class="taskAwaiting"><span aria-hidden="true">◷</span><h2>任务已设置</h2><p>${esc(task.question)}</p><p>${task.nextAt?'首次执行：'+esc(dateText(task.nextAt,zoneFor(task))):'暂无运行记录，可以开启任务或立即运行。'}</p><button type="button" class="taskSettingsLink" data-edit-task="1">${esc(task.title)} ›</button></div>`;
+      renderCreatedTask(task);
       $('taskRunState').textContent=task.enabled?'已开启 · 云端将按计划执行':'任务已暂停';
-      resultVersion=task.resultVersion;await loadFollowups({question:task.question},task,version);return;
+      resultVersion=task.resultVersion;
+      await loadFollowups({question:task.question,answer:{interpretation:`任务已${task.enabled?'创建并启用':'暂停'}：${task.title}。执行安排：${schedule(task)}。${task.nextAt?'首次执行：'+dateText(task.nextAt,zoneFor(task)):''}。任务内容：${task.question}`}},task,version);return;
     }
     const run=runs.find(r=>r.id===runId) || runs[0];selectedRun=run.id;$('taskRunSelect').value=run.id;
     $('taskRunState').textContent=task.activeRun?'任务正在云端运行，关闭页面也会继续。':task.lastRun?.status==='failed'?'最近一次执行失败，可切换查看上次成功结果。':!task.enabled&&!completed(task)?'任务已暂停，可查看已保存的运行结果。':task.nextAt?'下次执行：'+dateText(task.nextAt,zoneFor(task)):'已完成本次安排';
@@ -336,43 +342,70 @@
     if(data.timeMode!=='fixed')data.timezone='market';
     return data;
   }
-  function beginWizard(question, preset=null) {
-    showLanding(false);$('taskLanding').hidden=true;$('taskWizard').hidden=false;$('taskPageTitle').textContent='新建任务';$('taskBack').hidden=false;
+  function visibleQuestion(d){return String(d.question||'').replace(/\{\{market\}\}/g,names[d.market]).replace(/\{\{symbols\}\}/g,d.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');}
+  function focusChoices(d){
+    if(d.assetType==='watchlist')return ['价格与成交量变化','公告与重大新闻','财报日期与后续事件','风险与待核实事项'];
+    if(d.stage==='live')return ['指数与市场涨跌分布','成交量与异常变化','行业及 ETF 强弱','可能催化与后续观察'];
+    if(d.stage==='post')return ['主要指数与市场广度','行业强弱与量能变化','今日重要新闻','下一交易日事件与风险'];
+    return ['隔夜市场与宏观日历','重要新闻与行业催化','公告及财报安排','今日观察清单与风险'];
+  }
+  function beginWizard(question,preset=null){
+    showLanding(false);$('taskLanding').hidden=true;$('taskWizard').hidden=false;$('taskClarification').hidden=false;$('taskPageTitle').textContent='新建任务';$('taskBack').hidden=false;
     wizardStep=0;wizardDraft=template();
     if(/美股|美东|纳斯达克|AAPL|NVDA/i.test(question))wizardDraft.market='US';else if(/港股|恒生/.test(question))wizardDraft.market='HK';
     wizardDraft.assetType=/ETF/i.test(question)?'etf':/指数/.test(question)?'index':/板块|行业/.test(question)?'sector':/自选/.test(question)?'watchlist':'stocks';
     wizardDraft.stage=/盘后|收盘|复盘/.test(question)?'post':/盘中|异动|监控/.test(question)?'live':'pre';
     wizardDraft.timeMode='fixed';wizardDraft.time=wizardDraft.market==='US'?'09:00':'08:30';
-    wizardDraft.cadence=/每月/.test(question)?'monthly':/每周/.test(question)?'weekly':/每天|每日/.test(question)?'daily':'trading';
+    wizardDraft.cadence=/每月/.test(question)?'monthly':/每周|每星期/.test(question)?'weekly':/工作日/.test(question)?'weekdays':/每天|每日/.test(question)?'daily':/仅一次|只执行一次/.test(question)?'once':'trading';
     wizardDraft.question=question;wizardDraft.title=question.replace(/\{\{[^}]+\}\}/g,'').slice(0,24)||'我的定时分析';
-    const time=question.match(/([01]?\d|2[0-3])[:：]([0-5]\d)/);if(time)wizardDraft.time=time[1].padStart(2,'0')+':'+time[2];
-    wizardDraft.date=today();
-    if(preset)wizardDraft={...wizardDraft,...preset,date:today()};
-    $('taskWizardTranscript').innerHTML=`<div class="taskUserBubble">${esc(question)}</div><div class="taskWizardReply">我会按你设置的时间自动执行，并把结果保存在这个任务中。先确认分析范围和执行安排。</div>`;
-    writeUrl();renderWizard();
+    const time=question.match(/(上午|下午|晚上|中午)?\s*([01]?\d|2[0-3])(?:[:：]([0-5]\d)|[点时](?:([0-5]?\d)分?)?)/);if(time){let hour=Number(time[2]);if(/下午|晚上|中午/.test(time[1]||'')&&hour<12)hour+=12;wizardDraft.time=String(hour).padStart(2,'0')+':'+String(time[3]||time[4]||'00').padStart(2,'0');}
+    const weekday=question.match(/(?:每周|星期|周)([一二三四五六日天])/);if(weekday)wizardDraft.weekdays=['一二三四五六日'.indexOf(weekday[1]==='天'?'日':weekday[1])];
+    const day=question.match(/每月\s*(\d{1,2})[日号]/);if(day)wizardDraft.monthDay=Math.max(1,Math.min(31,Number(day[1])));
+    wizardDraft.date=today();if(preset)wizardDraft={...wizardDraft,...preset,date:today()};
+    wizardDraft.focus=focusChoices(wizardDraft).slice(0,3);wizardDraft.scopeNote='';wizardDraft.originalQuestion=visibleQuestion(wizardDraft);
+    renderWizardTranscript();writeUrl();renderWizard();
   }
-  function collectWizard() {
-    if(!wizardDraft)return;
-    if($('wizardSymbols'))wizardDraft.symbols=$('wizardSymbols').value;
-    if($('wizardCadence'))wizardDraft.cadence=$('wizardCadence').value;
+  function renderWizardTranscript(submitting=false){
+    const target=$('taskWizardTranscript');target.replaceChildren();renderTaskUser(wizardDraft.originalQuestion,[],target);
+    const article=document.createElement('article');article.className='message assistant';article.innerHTML='<div class="bubble assistantBubble"><p class="wizardIntro">可以，我会按计划完成这项任务，并把结果保存在对话里。创建前，先确认关注内容、执行频率和时间。</p><p class="wizardWaiting">正在等待你的回答</p></div>';target.append(article);
+    if(submitting){article.querySelector('.wizardWaiting').remove();renderTaskUser(wizardAnswers(wizardDraft).map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);const waiting=document.createElement('p');waiting.className='wizardCreating';waiting.textContent='正在创建计划任务…';target.append(waiting);target.scrollTop=target.scrollHeight;}
+  }
+  function collectWizard(){if(!wizardDraft)return;
+    for(const [id,key] of [['wizardSymbols','symbols'],['wizardCadence','cadence'],['wizardDate','date'],['wizardTime','time'],['wizardTimezone','timezone'],['wizardScopeNote','scopeNote'],['wizardTitle','title']])if($(id))wizardDraft[key]=$(id).value;
     if($('wizardWeekday'))wizardDraft.weekdays=[Number($('wizardWeekday').value)];
     if($('wizardMonthDay'))wizardDraft.monthDay=Number($('wizardMonthDay').value)||1;
-    if($('wizardDate'))wizardDraft.date=$('wizardDate').value;
-    if($('wizardTime'))wizardDraft.time=$('wizardTime').value;
-    if($('wizardTimezone'))wizardDraft.timezone=$('wizardTimezone').value;
+    if($('wizardFocusOptions'))wizardDraft.focus=[...document.querySelectorAll('[name=wizardFocus]:checked')].map(e=>e.value);
+    if($('wizardCustomDays'))wizardDraft.weekdays=[...document.querySelectorAll('[name=wizardCustomDay]:checked')].map(e=>Number(e.value));
   }
-  function renderWizard() {
-    $('wizardProgress').textContent=`第 ${wizardStep+1} / 3 步`;$('wizardPrevious').disabled=wizardStep===0;$('wizardError').textContent='';
-    const d=wizardDraft;let content='';
-    if(wizardStep===0)content=`<h2>这份分析关注哪个市场？</h2><div class="wizardOptions">${Object.keys(names).map(m=>`<button type="button" data-wizard-market="${m}" aria-pressed="${m===d.market}">${flags[m]} ${names[m]}<span>${m===d.market?'✓':''}</span></button>`).join('')}</div><label class="wizardField">关注标的${d.assetType==='watchlist'?'（自选列表必填）':'（可选）'}<input id="wizardSymbols" maxlength="500" placeholder="如 AAPL, NVDA；留空关注全市场" value="${esc(d.symbols)}" /></label>`;
-    if(wizardStep===1)content=`<h2>希望多长时间运行一次？</h2><label class="wizardField">重复频率<select id="wizardCadence">${Object.entries(cadences).map(([k,v])=>`<option value="${k}" ${k===d.cadence?'selected':''}>${v}</option>`).join('')}</select></label>${d.cadence==='weekly'?`<label class="wizardField">每周哪一天<select id="wizardWeekday">${[...'一二三四五六日'].map((v,i)=>`<option value="${i}" ${i===d.weekdays[0]?'selected':''}>星期${v}</option>`).join('')}</select></label>`:d.cadence==='monthly'?`<label class="wizardField">每月几日<input id="wizardMonthDay" type="number" min="1" max="31" value="${d.monthDay}" /></label>`:d.cadence==='once'?`<label class="wizardField">执行日期<input id="wizardDate" type="date" required value="${d.date}" /></label>`:''}`;
-    if(wizardStep===2)content=`<h2>希望在什么时间收到？</h2><div class="wizardOptions wizardTimeOptions">${(d.market==='US'?['09:00','12:00','16:30']:['08:30','12:00','16:30']).map(time=>`<button type="button" data-wizard-time="${time}" aria-pressed="${time===d.time}">${time}<span>${time===d.time?'✓':''}</span></button>`).join('')}</div><div class="dayFieldRow"><label class="wizardField">具体时间<input id="wizardTime" type="time" required value="${d.time}" /></label><label class="wizardField">时区<select id="wizardTimezone"><option value="market" ${d.timezone==='market'?'selected':''}>${d.market==='US'?'美东时间':'北京时间'}</option><option value="Asia/Shanghai" ${d.timezone==='Asia/Shanghai'?'selected':''}>中国标准时间</option></select></label></div><p class="wizardSummary">${esc(names[d.market])} · ${esc(schedule(d))}</p>`;
-    $('wizardQuestion').innerHTML=content+`<div class="wizardActions">${wizardStep===2?'<button class="dayTextButton" type="button" id="wizardAdvanced">更多设置</button>':''}<button type="button" class="dayButton dayPrimary" id="wizardNext">${wizardStep===2?'创建并启用':'下一步'}</button></div>`;
+  function wizardAnswers(d){return [{question:'这份任务重点关注哪些内容？',answer:`${names[d.market]} · ${assets[d.assetType]}${d.symbols?' · '+d.symbols:' · 全市场'}；${d.focus.join('、')||'按原始问句完成'}${d.scopeNote?'；'+d.scopeNote:''}`},{question:'希望多长时间运行一次？',answer:d.cadence==='monthly'?`每月 ${d.monthDay} 日`:d.cadence==='weekly'||d.cadence==='custom'?'每周'+d.weekdays.map(i=>'一二三四五六日'[i]).join('、'):d.cadence==='once'?`仅一次 · ${d.date}`:cadences[d.cadence]},{question:'希望在什么时间收到？',answer:`${d.time} · ${d.timezone==='market'?names[d.market]+'当地时间':el('timezone').querySelector(`option[value="${d.timezone}"]`)?.textContent||d.timezone}`}];}
+  function renderWizard(){
+    const d=wizardDraft;$('wizardProgress').textContent=`${wizardStep+1} / 3`;$('wizardPrevious').disabled=wizardStep===0;$('wizardForward').disabled=wizardStep===2;$('wizardError').textContent='';
+    $('wizardQuestionTitle').textContent=['1. 这份任务重点关注哪些内容？','2. 希望多长时间运行一次？','3. 希望在什么时间收到？'][wizardStep];
+    let content='';
+    if(wizardStep===0)content=`<div class="wizardMarketOptions" aria-label="分析市场">${Object.keys(names).map(m=>`<button type="button" data-wizard-market="${m}" aria-pressed="${m===d.market}">${flags[m]} ${names[m]}</button>`).join('')}</div><div id="wizardFocusOptions" class="wizardFocusOptions">${focusChoices(d).map(f=>`<label><input type="checkbox" name="wizardFocus" value="${esc(f)}" ${d.focus.includes(f)?'checked':''}/><span>${esc(f)}</span></label>`).join('')}</div><label class="wizardField">关注标的${d.assetType==='watchlist'?'（必填）':'（可选）'}<input id="wizardSymbols" maxlength="500" placeholder="如 AAPL, NVDA；留空关注全市场" value="${esc(d.symbols)}" /></label><label class="wizardField wizardNote"><span>补充要求（可选）</span><input id="wizardScopeNote" maxlength="500" placeholder="补充你想关注的内容…" value="${esc(d.scopeNote)}" /></label>`;
+    if(wizardStep===1)content=`<label class="wizardField">重复频率<select id="wizardCadence">${Object.entries(cadences).map(([k,v])=>`<option value="${k}" ${k===d.cadence?'selected':''}>${v}</option>`).join('')}</select></label>${d.cadence==='weekly'?`<label class="wizardField">每周哪一天<select id="wizardWeekday">${[...'一二三四五六日'].map((v,i)=>`<option value="${i}" ${i===d.weekdays[0]?'selected':''}>星期${v}</option>`).join('')}</select></label>`:d.cadence==='monthly'?`<label class="wizardField">每月几日<input id="wizardMonthDay" type="number" min="1" max="31" value="${d.monthDay}" /></label>`:d.cadence==='once'?`<label class="wizardField">执行日期<input id="wizardDate" type="date" required value="${d.date}" /></label>`:d.cadence==='custom'?`<fieldset id="wizardCustomDays" class="wizardCustomDays"><legend>执行星期</legend>${[...'一二三四五六日'].map((v,i)=>`<label><input type="checkbox" name="wizardCustomDay" value="${i}" ${d.weekdays.includes(i)?'checked':''}/><span>${v}</span></label>`).join('')}</fieldset>`:''}<p class="wizardHint">时间安排会以这里确认的设置为准。</p>`;
+    if(wizardStep===2)content=`<div class="wizardOptions wizardTimeOptions">${[...new Set([d.time,'08:30','12:00','16:30'])].map(time=>`<button type="button" data-wizard-time="${time}" aria-pressed="${time===d.time}">${time}<span>${time===d.time?'✓':''}</span></button>`).join('')}</div><div class="dayFieldRow"><label class="wizardField">具体时间<input id="wizardTime" type="time" required value="${d.time}" /></label><label class="wizardField">时区<select id="wizardTimezone">${[...el('timezone').options].map(o=>`<option value="${o.value}" ${o.value===d.timezone?'selected':''}>${esc(o.value==='market'?names[d.market]+'当地时间':o.textContent)}</option>`).join('')}</select></label></div><label class="wizardField">任务名称<input id="wizardTitle" maxlength="80" required value="${esc(d.title)}" /></label><p class="wizardSummary">${esc(names[d.market])} · ${esc(schedule(d))}</p><p class="wizardHint">确认后会发送你的回答，并创建启用中的任务。微信和飞书推送默认关闭。</p>`;
+    $('wizardQuestion').innerHTML=content+`<div class="wizardActions">${wizardStep===0?'<button class="dayTextButton" type="button" id="wizardSkip">按默认范围继续</button>':''}${wizardStep===2?'<button class="dayTextButton" type="button" id="wizardAdvanced">高级设置</button>':''}<button type="button" class="dayButton dayPrimary" id="wizardNext">${wizardStep===2?'发送并创建':'下一步'}</button></div>`;
   }
-  async function saveDraft(data) {
-    if(saving)return;saving=true;
-    try{const task=await api('tasks','POST',data);tasks.push(task);wizardDraft=null;renderHome();await selectTask(task.id);message('定时任务已创建并启用。','taskMessage');}
+  async function advanceWizard(){if(saving)return;collectWizard();
+    if(wizardStep===0&&wizardDraft.assetType==='watchlist'&&!wizardDraft.symbols.trim())throw new Error('请填写自选列表中的具体标的');
+    if(wizardStep===1){if(wizardDraft.cadence==='custom'&&!wizardDraft.weekdays.length)throw new Error('请选择至少一个执行星期');if(wizardDraft.cadence==='monthly'&&(!Number.isInteger(wizardDraft.monthDay)||wizardDraft.monthDay<1||wizardDraft.monthDay>31))throw new Error('每月日期应为 1 至 31');if(wizardDraft.cadence==='once'&&!wizardDraft.date)throw new Error('请选择执行日期');}
+    if(wizardStep<2){wizardStep++;renderWizard();return;}
+    if(!$('wizardTime').checkValidity()||!wizardDraft.time)throw new Error('请选择有效的执行时间');if(!wizardDraft.title.trim())throw new Error('请填写任务名称');
+    await saveDraft();
+  }
+  async function saveDraft(){if(saving)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),focus:d.focus.slice(),note:d.scopeNote};
+    const {focus,scopeNote,originalQuestion,...data}=d;data.question=d.question+(focus.length?'\n\n重点关注：'+focus.join('、')+'。':'')+(scopeNote?'\n补充要求：'+scopeNote:'');data.weekdays=data.cadence==='custom'?d.weekdays:data.cadence==='weekly'?[d.weekdays[0]??0]:[0];data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
+    $('taskClarification').hidden=true;renderWizardTranscript(true);
+    try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);}message('定时任务已创建并启用。','taskMessage');}
+    catch(error){if(wizardDraft!==d||workspace.hidden)return;$('taskClarification').hidden=false;renderWizard();$('wizardError').textContent=error.message;const waiting=$('taskWizardTranscript').querySelector('.wizardCreating');if(waiting)waiting.textContent='创建未完成，请检查设置后重试。';throw error;}
     finally{saving=false;}
+  }
+  function renderCreatedTask(task){const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
+    renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
+    if(record?.answers?.length){const intro=document.createElement('article');intro.className='message assistant';intro.innerHTML='<div class="bubble assistantBubble"><p>创建前，我们确认了任务范围和执行安排。</p></div>';target.append(intro);renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);}
+    const article=document.createElement('article');article.className='message assistant taskCreatedAnswer';const zone=zoneFor(task),focus=Array.isArray(record?.focus)&&record.focus.length?record.focus:['按任务问句完成分析并注明数据时间','区分可靠事实、判断与缺失信息'];
+    article.innerHTML=`<div class="bubble assistantBubble"><div class="taskCreatedLink"><span class="taskCreatedClock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l-3 3"/></svg></span><div><strong>${esc(task.title)}</strong><small>${esc(schedule(task))}</small></div><button class="dayButton" type="button" data-edit-task="1">打开</button></div><span class="taskCreatedStatus ${task.enabled?'':'is-paused'}">${task.enabled?'✓ 已创建并启用':'已暂停'}</span><p>你的<strong>${esc(task.title)}</strong>定时任务已设置${task.enabled?'成功':''}。</p><section class="taskCreatedSummary"><header><strong>${esc(task.title)}</strong><span aria-hidden="true"><svg class="taskCreatedCalendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 6 3 3 5-6"/></svg></span></header><h2>${esc(compactSchedule(task))}</h2><p>${esc(zone==='Asia/Shanghai'?'北京时间':zone==='Asia/Hong_Kong'?'香港时间':zone==='America/New_York'?'美国东部时间':el('timezone').querySelector(`option[value="${zone}"]`)?.textContent||zone)}（${esc(zone)}）</p><div class="taskCreatedFirst">首次执行：${task.nextAt?esc(dateText(task.nextAt,zone)):'暂无未来执行时间'}</div><p>分析范围：${esc(names[task.market])}${task.symbols?' · '+esc(task.symbols):' · 全市场'}</p></section><p>每次报告将包含：</p><ol class="taskCreatedFocus">${focus.map(item=>`<li>${esc(item)}</li>`).join('')}</ol><p class="taskCreatedNote">任务会在计划时间查询可用的市场数据、公告和新闻，注明数据截至时间，并区分事实与判断。缺少可靠数据时会明确说明。</p></div>`;target.append(article);requestAnimationFrame(()=>article.scrollIntoView?.({block:'start'}));
   }
   async function enablePush() {
     if(!window.isSecureContext || !('serviceWorker'in navigator) || !('PushManager'in window))throw new Error('当前浏览器不支持推送，请使用 HTTPS 下的 Chrome');
@@ -414,14 +447,14 @@
   $('taskDeleteCancel').onclick=()=>$('taskDeleteDialog').close();
   $('taskDeleteConfirm').onclick=async()=>{const task=tasks.find(t=>t.id===deleteTaskId);if(!task||task.activeRun)return;const button=$('taskDeleteConfirm');button.disabled=true;try{await api('tasks/'+task.id,'DELETE');tasks=tasks.filter(t=>t.id!==task.id);$('taskDeleteDialog').close();if(selectedId===task.id)showLanding();else renderLists();renderHome();message('任务已删除。','taskMessage');}catch(error){$('taskDeleteMessage').textContent=error.message;}finally{button.disabled=false;}};
   async function toggleTask(task) {await api('tasks/'+task.id,'PUT',{...task,enabled:!task.enabled});await refresh();message(task.enabled?'已暂停后续执行，已有结果仍保留。':'任务已开启。','taskMessage');}
-  function newTask() {enterWorkspace();if(mobile())beginWizard($('taskPrompt').value.trim()||template().question);else edit(template());}
+  function newTask() {showLanding();$('taskPrompt').value='';$('taskPrompt').focus();}
   document.addEventListener('click',async event=>{
     const b=event.target.closest('button');if(!b)return;
     if(b.dataset.taskMore){event.stopPropagation();openTaskMenu(b);return;}
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
-      if(b.dataset.template){const d=template(b.dataset.template);if(mobile())beginWizard(d.question);else edit(d);return;}
-      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);if(mobile())beginWizard(d.question,d);else edit(d);}return;}
+      if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
+      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
       if(b.dataset.wizardMarket){collectWizard();wizardDraft.market=b.dataset.wizardMarket;renderWizard();return;}
       if(b.dataset.wizardTime){collectWizard();wizardDraft.time=b.dataset.wizardTime;renderWizard();return;}
@@ -436,11 +469,12 @@
         case'taskToggle':if(completed(selected())){edit(selected());break;}b.disabled=true;await toggleTask(selected());b.disabled=false;break;
         case'taskRunNow':b.disabled=true;await api('tasks/'+selectedId+'/run','POST');pinnedRun=false;await refresh();await selectTask(selectedId,{updateUrl:false});message('任务已提交到云端，关闭页面后仍会执行。','taskMessage');break;
         case'wizardPrevious':collectWizard();wizardStep=Math.max(0,wizardStep-1);renderWizard();break;
-        case'wizardAdvanced':collectWizard();edit(wizardDraft);break;
-        case'wizardNext':collectWizard();if(wizardStep===0&&wizardDraft.assetType==='watchlist'&&!wizardDraft.symbols.trim())throw new Error('请填写自选列表中的具体标的');if(wizardStep<2){wizardStep++;renderWizard();}else{if(!$('wizardTime').value)throw new Error('请选择执行时间');b.disabled=true;try{await saveDraft({...wizardDraft,enabled:true});}finally{b.disabled=false;}}break;
+        case'wizardAdvanced':collectWizard();edit({...wizardDraft,question:wizardDraft.question+(wizardDraft.focus.length?'\n\n重点关注：'+wizardDraft.focus.join('、'):'')+(wizardDraft.scopeNote?'\n补充要求：'+wizardDraft.scopeNote:'')});break;
+        case'wizardNext':case'wizardForward':case'wizardSkip':await advanceWizard();break;
       }
     }catch(error){if(!workspace.hidden&& !$('taskWizard').hidden)$('wizardError').textContent=error.message;else message(error.message);b.disabled=false;}
   });
+  $('taskPrompt').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('taskPromptForm').requestSubmit();}});
   $('taskPromptForm').addEventListener('submit',e=>{e.preventDefault();const question=$('taskPrompt').value.trim();if(question)beginWizard(question);});
   $('taskChatForm').addEventListener('submit',sendFollowup);
   $('taskAttachButton').addEventListener('click',()=>$('taskImageInput').click());
@@ -453,14 +487,16 @@
   $('taskSearch').addEventListener('input',renderLists);
   for(const id of ['taskFilter','taskSidebarFilter'])$(id).addEventListener('change',e=>{filter=e.target.value;renderLists();});
   $('taskRunSelect').addEventListener('change',async e=>{try{await selectTask(selectedId,{runId:e.target.value});}catch(error){message(error.message);}});
-  $('wizardQuestion').addEventListener('change',e=>{collectWizard();if(e.target.id==='wizardCadence')renderWizard();});
+  function syncWizardTime(){if(!wizardDraft)return;document.querySelectorAll('[data-wizard-time]').forEach(button=>{const active=button.dataset.wizardTime===wizardDraft.time;button.setAttribute('aria-pressed',String(active));button.querySelector('span').textContent=active?'✓':'';});const summary=$('wizardQuestion').querySelector('.wizardSummary');if(summary)summary.textContent=names[wizardDraft.market]+' · '+schedule(wizardDraft);}
+  $('wizardQuestion').addEventListener('change',e=>{collectWizard();if(e.target.id==='wizardCadence')renderWizard();else syncWizardTime();});
+  $('wizardQuestion').addEventListener('input',e=>{if(e.target.id==='wizardTime'){collectWizard();syncWizardTime();}});
   $('dayMarketSelect').addEventListener('change',e=>{market=e.target.value;try{localStorage.setItem('veya-day-market',market);}catch{}renderHome();});
   $('dayClose').onclick=$('dayCancelEdit').onclick=()=>dialog.close();
   form.addEventListener('change',updateFields);
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
-    try{const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',payload());tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。','taskMessage');}
+    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:draft.focus.slice(),note:draft.scopeNote});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});

@@ -32,6 +32,12 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
  w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
 }
 
+function openScenarioEditor(d,id){
+ d.querySelector(`[data-recommendation="${id}"]`).click();
+ if(['announcements','watchlist'].includes(id))d.querySelector('#wizardSymbols').value='600519.SH';
+ d.querySelector('#wizardNext').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardAdvanced').click();
+}
+
 test('My Day shows only generated results for the current market phase and links to that task',async()=>{
  const h=setup({tasks:[{...base,id:'live'},{...base,id:'pre',stage:'pre'},{...base,id:'pending',resultVersion:null},{...base,id:'us',market:'US'}]});await tick();
  const cards=h.w.document.querySelectorAll('#dayPanel [data-task-open]');assert.equal(cards.length,1);assert.equal(cards[0].dataset.taskOpen,'live');assert.doesNotMatch(cards[0].textContent,/\*\*|##/);
@@ -63,7 +69,7 @@ test('scenario cards prefill distinct schedules and preserve the mobile task dra
  const h=setup({tasks:[]});await tick();const d=h.w.document;
  d.querySelector('#navTasks').click();const cards=[...d.querySelectorAll('[data-recommendation]')];assert.equal(cards.length,6);
  for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){
-  d.querySelector(`[data-recommendation="${id}"]`).click();const f=d.querySelector('#dayForm');assert.equal(f.elements.stage.value,stage);assert.equal(f.elements.assetType.value,type);assert.equal(f.elements.time.value,time);assert.equal(f.elements.timeMode.value,'fixed');assert.ok(f.elements.question.value.length>80);d.querySelector('#dayClose').click();
+  openScenarioEditor(d,id);const f=d.querySelector('#dayForm');assert.equal(f.elements.stage.value,stage);assert.equal(f.elements.assetType.value,type);assert.equal(f.elements.time.value,time);assert.equal(f.elements.timeMode.value,'fixed');assert.ok(f.elements.question.value.length>80);d.querySelector('#dayClose').click();d.querySelector('#wizardClose').click();
  }
  assert.equal(h.saves.length,0);h.dom.window.close();
  const m=setup({mobile:true,tasks:[]});await tick();const md=m.w.document;
@@ -91,7 +97,7 @@ test('attachment plus previews, removes and sends images with the follow-up',asy
 
 test('task editor hides tokens, preserves dynamic templates and saves custom days and time zone',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;
- d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm');
+ d.querySelector('#navTasks').click();openScenarioEditor(d,'morning');const f=d.querySelector('#dayForm');
  assert.doesNotMatch(f.elements.question.value,/\{\{/);assert.match(f.elements.question.value,/A股/);
  d.querySelector('[data-editor-field="cadence"]').click();d.querySelector('[data-editor-value="custom"]').click();assert.equal(d.querySelector('#dayCustomLabel').hidden,false);d.querySelector('[data-editor-weekday="2"]').click();
  d.querySelector('[data-editor-field="timezone"]').click();d.querySelector('#editorZoneSearch').value='美国东部';d.querySelector('#editorZoneSearch').dispatchEvent(new h.w.Event('input',{bubbles:true}));assert.equal(d.querySelectorAll('#editorZoneList .editorOption').length,1);d.querySelector('[data-editor-value="America/New_York"]').click();
@@ -102,7 +108,7 @@ test('task editor hides tokens, preserves dynamic templates and saves custom day
 
 test('calendar supports end date selection and turning repeat off schedules one date',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;
- d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm');
+ d.querySelector('#navTasks').click();openScenarioEditor(d,'morning');const f=d.querySelector('#dayForm');
  d.querySelector('[data-editor-field="endMode"]').click();d.querySelector('[data-editor-value="date"]').click();assert.equal(d.querySelector('#dayEndLabel').hidden,false);
  d.querySelector('[data-editor-field="endDate"]').click();d.querySelector('[data-editor-month="1"]').click();const date=d.querySelector('[data-editor-date]');const expected=date.dataset.editorDate;date.click();assert.equal(f.elements.endDate.value,expected);
  f.elements.repeat.checked=false;f.elements.repeat.dispatchEvent(new h.w.Event('change',{bubbles:true}));assert.equal(d.querySelector('#dayDateLabel').hidden,false);assert.equal(d.querySelector('#dayCadenceLabel').hidden,true);
@@ -111,7 +117,7 @@ test('calendar supports end date selection and turning repeat off schedules one 
 
 test('push channels always open switched off, including tasks with saved delivery settings',async()=>{
  const h=setup({tasks:[{...base,id:'live',serverchan:true,feishu:true,serverchanKeyConfigured:true,feishuUrlConfigured:true}]});await tick();const d=h.w.document;
- d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
+ d.querySelector('#navTasks').click();openScenarioEditor(d,'morning');const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
  assert.equal(advanced.open,false);assert.ok(advanced.contains(d.querySelector('.editorNotifications')));assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayDelete'),null);
  advanced.open=true;d.querySelector('#dayClose').click();d.querySelector('#taskSidebarList [data-task-open="live"]').click();await tick();d.querySelector('#taskCardTitle').click();
  assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayServerchanFields').hidden,true);assert.equal(d.querySelector('#dayFeishuFields').hidden,true);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'输入 SCT 开头的 SendKey');assert.equal(f.elements.feishuUrl.placeholder,'输入飞书机器人 Webhook');assert.equal(d.querySelector('#dayDelete'),null);
@@ -174,4 +180,41 @@ test('shared task menu exposes no owner mutations and tasks without results cann
  const shared={taskId:'shared',runId:'run',task:{...base,id:'shared'},question:'分享问句',answer:{interpretation:'缓存内容'},cachedDate:base.successAt};
  const h=setup({tasks:[],shared,url:'https://example.com/veya/?dayShare=read-only'});await tick();const d=h.w.document;d.querySelector('[data-task-more="shared"]').click();assert.equal(d.querySelector('[data-task-action="toggle"]'),null);assert.equal(d.querySelector('[data-task-action="run"]'),null);assert.equal(d.querySelector('[data-task-action="delete"]'),null);assert.match(d.querySelector('[data-task-action="edit"]').textContent,/查看设置/);h.dom.window.close();
  const pending=setup({tasks:[{...base,id:'pending',resultVersion:null}],url:'https://example.com/veya/?tab=tasks'});await tick();pending.w.document.querySelector('[data-task-more="pending"]').click();assert.equal(pending.w.document.querySelector('[data-task-action="share"]').disabled,true);pending.dom.window.close();
+});
+
+test('desktop recommendations create a real task only after interactive answers are sent, then Open edits it',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="closing"]').click();
+ assert.equal(d.querySelector('#dayDialog').open,false);assert.equal(d.querySelector('#taskWizard').hidden,false);assert.doesNotMatch(d.querySelector('#taskWizardTranscript').textContent,/\{\{/);assert.equal(d.querySelectorAll('[name=wizardFocus]').length,4);
+ d.querySelector('[name=wizardFocus]').checked=false;d.querySelector('#wizardScopeNote').value='重点比较上周变化';d.querySelector('#wizardNext').click();
+ d.querySelector('#wizardCadence').value='weekly';d.querySelector('#wizardCadence').dispatchEvent(new h.w.Event('change',{bubbles:true}));d.querySelector('#wizardWeekday').value='6';d.querySelector('#wizardPrevious').click();assert.equal(d.querySelector('#wizardScopeNote').value,'重点比较上周变化');assert.equal(d.querySelector('[name=wizardFocus]').checked,false);d.querySelector('#wizardNext').click();assert.equal(d.querySelector('#wizardWeekday').value,'6');d.querySelector('#wizardNext').click();
+ d.querySelector('#wizardTime').value='09:00';d.querySelector('#wizardTimezone').value='Asia/Shanghai';d.querySelector('#wizardTitle').value='每周市场复盘';assert.equal(h.saves.length,0);
+ d.querySelector('#wizardNext').click();await tick();assert.equal(h.saves.length,1);assert.equal(h.saves[0].cadence,'weekly');assert.deepEqual(h.saves[0].weekdays,[6]);assert.equal(h.saves[0].time,'09:00');assert.equal(h.saves[0].timezone,'Asia/Shanghai');assert.match(h.saves[0].question,/重点比较上周变化/);assert.equal(h.saves[0].serverchan,false);assert.equal(h.saves[0].feishu,false);
+ assert.equal(d.querySelectorAll('#taskThread .message.user').length,2);assert.match(d.querySelector('#taskThread').textContent,/已创建并启用/);assert.match(d.querySelector('.taskCreatedSummary').textContent,/每周日 9:00|每周日 09:00/);assert.equal(d.querySelector('#taskInfoCard').hidden,true);
+ d.querySelector('.taskCreatedLink [data-edit-task]').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#dayForm').elements.title.value,'每周市场复盘');assert.equal(d.querySelector('#dayForm').elements.cadence.value,'weekly');assert.equal(d.querySelector('#dayForm').elements.weekday.value,'6');
+ const record=h.w.localStorage.getItem('veya-task-created:created');assert.ok(record);const task={...base,...h.saves[0],id:'created',lastRun:null,resultVersion:null,nextAt:'2026-11-05T10:30:00Z'};h.dom.window.close();
+ const restored=setup({tasks:[task],url:'https://example.com/veya/?tab=tasks&task=created'});restored.w.localStorage.setItem('veya-task-created:created',record);await tick();assert.equal(restored.w.document.querySelectorAll('#taskThread .message.user').length,2);assert.match(restored.w.document.querySelector('#taskThread').textContent,/重点比较上周变化/);assert.equal(restored.saves.length,0);restored.dom.window.close();
+});
+
+test('creation validates custom days and retries a failed save without claiming success or duplicating tasks',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="intraday"]').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardCadence').value='custom';d.querySelector('#wizardCadence').dispatchEvent(new h.w.Event('change',{bubbles:true}));d.querySelectorAll('[name=wizardCustomDay]').forEach(e=>e.checked=false);d.querySelector('#wizardNext').click();await tick();assert.match(d.querySelector('#wizardError').textContent,/至少一个执行星期/);assert.equal(h.saves.length,0);
+ d.querySelector('[name=wizardCustomDay][value="2"]').checked=true;d.querySelector('#wizardNext').click();const original=h.w.fetch;let fail=true;h.w.fetch=async(path,options)=>{if(fail&&options?.method==='POST'&&path.endsWith('/tasks')){fail=false;throw new Error('网络暂时不可用');}return original(path,options);};d.querySelector('#wizardNext').click();await tick();assert.equal(h.saves.length,0);assert.equal(d.querySelector('#taskClarification').hidden,false);assert.match(d.querySelector('#wizardError').textContent,/网络暂时不可用/);assert.equal(d.querySelector('.taskCreatedStatus'),null);
+ d.querySelector('#wizardNext').click();d.querySelector('#wizardNext')?.click();await tick();assert.equal(h.saves.length,1);assert.deepEqual(h.saves[0].weekdays,[2]);assert.equal(d.querySelectorAll('#taskThread .taskCreatedAnswer').length,1);h.dom.window.close();
+});
+
+test('new-task composer accepts a natural-language schedule before opening clarification',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();d.querySelector('#taskSidebarNew').click();assert.equal(d.activeElement.id,'taskPrompt');
+ d.querySelector('#taskPrompt').value='每周日 上午9点复盘美股指数';d.querySelector('#taskPromptForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));assert.match(d.querySelector('#taskWizardTranscript').textContent,/每周日 上午9点复盘美股指数/);d.querySelector('#wizardNext').click();assert.equal(d.querySelector('#wizardCadence').value,'weekly');assert.equal(d.querySelector('#wizardWeekday').value,'6');d.querySelector('#wizardNext').click();assert.equal(d.querySelector('#wizardTime').value,'09:00');assert.equal(h.saves.length,0);h.dom.window.close();
+});
+
+test('a saved task is confirmed even if fetching its empty run history temporarily fails',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document,original=h.w.fetch;
+ h.w.fetch=async(path,options)=>{if(path.endsWith('/runs'))throw new Error('记录暂不可用');return original(path,options);};d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardNext').click();await tick();assert.equal(h.saves.length,1);assert.match(d.querySelector('.taskCreatedStatus').textContent,/已创建并启用/);assert.equal(d.querySelector('#taskWizard').hidden,true);assert.ok(d.querySelector('.taskCreatedLink [data-edit-task]'));h.dom.window.close();
+});
+
+test('finishing a submitted creation does not pull the user back after they navigate home',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document,original=h.w.fetch;let finish;
+ h.w.fetch=(path,options)=>options?.method==='POST'&&path.endsWith('/tasks')?new Promise(resolve=>{finish=async()=>resolve(await original(path,options));}):original(path,options);
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardNext').click();d.querySelector('#wizardNext').click();d.querySelector('#navHome').click();await finish();await tick();assert.equal(h.saves.length,1);assert.equal(d.querySelector('#taskWorkspace').hidden,true);assert.ok(h.w.localStorage.getItem('veya-task-created:created'));h.dom.window.close();
 });
