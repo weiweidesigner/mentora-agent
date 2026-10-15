@@ -28,17 +28,28 @@
   let lastDetailState = '';
   let sidebarExpanded = false;
   let chatHistory = [], chatKey = '', chatController = null;
-  let taskImages = [];
+  let taskImages = [], answerSequence = 0;
   function renderTaskImages(){const preview=$('taskAttachmentPreview');preview.hidden=!taskImages.length;preview.innerHTML=taskImages.map((image,i)=>`<div class="attachmentThumb"><img src="${esc(image.dataUrl)}" alt="${esc(image.name)}"/><button type="button" class="attachmentRemove" data-remove-task-image="${i}" aria-label="移除图片">×</button></div>`).join('');preview.closest('.composerBox').classList.toggle('has-attachments',!!taskImages.length);updateChatComposer();}
   async function addTaskImages(files){try{for(const file of Array.from(files||[])){if(taskImages.length>=6)break;if(!file.type.startsWith('image/'))continue;if(file.size>8*1024*1024)throw new Error('单张图片不能超过 8 MB');const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('图片读取失败'));reader.readAsDataURL(file);});taskImages.push({name:file.name,mimeType:file.type,dataUrl});}renderTaskImages();}catch(error){$('taskChatError').textContent=error.message;}}
   function stopFollowup() {chatController?.abort();chatController=null;}
   function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';taskImages=[];renderTaskImages();$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;}
+  function renderTaskUser(text, images, target, task=null) {
+    const article=document.createElement('article');target.append(article);
+    if(typeof renderUserMessage==='function')renderUserMessage(article,text,images||[],{allowEdit:!!task&&editable(task),onEdit:()=>edit(task)});
+    else {article.className='message user';const bubble=document.createElement('div');bubble.className='bubble userBubble';bubble.textContent=text;for(const image of images||[]){const img=document.createElement('img');img.src=image.dataUrl;img.alt=image.name||'附图';bubble.append(img);}article.append(bubble);}
+    return article;
+  }
+  async function renderTaskAnswer(article, answer, question) {
+    article.dataset.lang=typeof detectLanguage==='function'?detectLanguage(question):'zh-CN';
+    article.shareSession={...answer,id:`task-${selectedId}-${selectedRun||'setup'}-${Date.now()}-${++answerSequence}`,title:selected()?.title||'定时任务',question,messages:[{role:'user',text:question}]};
+    if(typeof renderSavedAssistantAnswer==='function')await renderSavedAssistantAnswer(article,answer,{question,thinkingElapsed:answer.thinkingElapsed,thinkingLabel:answer.thinkingElapsed>0?'已思考 '+formatDuration(answer.thinkingElapsed):'查看执行记录'});
+    else {const bubble=document.createElement('div');bubble.className='bubble assistantBubble';const report=document.createElement('div');report.className='mixedReport';bubble.append(report);article.append(bubble);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(article,answer,report,()=>{});else report.textContent=answer.interpretation||'';}
+  }
   async function renderFollowup(turn, target=$('taskFollowups')) {
-    const node=document.createElement(turn.role==='user'?'div':'article');
-    node.className=turn.role==='user'?'taskUserBubble':'message assistant scheduledAnswer taskChatAnswer';target.append(node);
-    if(turn.role==='user'){node.textContent=turn.text;for(const image of turn.images||[]){const img=document.createElement('img');img.className='taskChatImage';img.src=image.dataUrl;img.alt=image.name||'附图';node.append(img);}}
-    else {const report=document.createElement('div');report.className='mixedReport';node.append(report);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(node,structuredClone(turn.answer||{interpretation:turn.text}),report,()=>{});else report.textContent=turn.text;}
-    return node;
+    if(turn.role==='user')return renderTaskUser(turn.text,turn.images,target);
+    const article=document.createElement('article');article.className='message assistant taskChatAnswer';target.append(article);
+    await renderTaskAnswer(article,structuredClone(turn.answer||{interpretation:turn.text}),chatHistory.filter(t=>t.role==='user').at(-1)?.text||'');
+    return article;
   }
   async function loadFollowups(data, task, version) {
     const initialText=String(data.answer?.interpretation||'');
@@ -188,18 +199,10 @@
     const container=$('taskThread');
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
-    const date=document.createElement('p');date.className='taskRunDate';date.textContent=dateText(data.cachedDate,zoneFor(task));container.append(date);
-    const question=document.createElement('div');question.className='taskUserBubble';question.textContent=data.question || task.question;container.append(question);
-    const article=document.createElement('article');article.className='message assistant scheduledAnswer';article.dataset.lang='zh-CN';
-    const settings=document.createElement('button');settings.type='button';settings.className='taskSettingsLink';settings.dataset.editTask='1';settings.textContent=task.title+' ›';settings.setAttribute('aria-label','定时任务设置：'+task.title);article.append(settings);
-    const report=document.createElement('div');report.className='mixedReport';article.append(report);container.append(article);
-    if (data.answer) {
-      const answer=structuredClone(data.answer);article.activitySources=answer.sources || [];
-      if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(article,answer,report,()=>{});
-      else report.textContent=answer.interpretation || '';
-    } else {
-      report.innerHTML=`<p class="taskResultEmpty">${esc(data.error || (data.status==='running'?'正在云端执行，完成后会自动显示结果。':data.status==='queued'?'任务正在排队。':data.status==='success'?'这条旧记录未保留完整内容。新运行会保留近期对话结果。':'本次执行没有生成结果。'))}</p>`;
-    }
+    renderTaskUser(data.question||task.question,[],container,task);
+    const article=document.createElement('article');article.className='message assistant';container.append(article);
+    if(data.answer)await renderTaskAnswer(article,structuredClone(data.answer),data.question||task.question);
+    else {const text=document.createElement('p');text.className='taskResultEmpty';text.textContent=data.error||(data.status==='running'?'正在云端执行，完成后会自动显示结果。':data.status==='queued'?'任务正在排队。':data.status==='success'?'这条旧记录未保留完整内容。新运行会保留近期对话结果。':'本次执行没有生成结果。');article.append(text);}
     if(version===viewVersion)await loadFollowups(data,task,version);
   }
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {

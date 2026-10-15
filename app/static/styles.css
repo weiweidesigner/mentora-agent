@@ -4331,3 +4331,13 @@ p {
 :root[data-theme="light"] .taskSettingsDialog .editorTitle:focus-visible,:root[data-theme="light"] .taskSettingsDialog .editorQuestion:focus-visible { outline:none;border-color:#bbb; }
 :root[data-theme="light"] .taskSettingsDialog .editorPopover { background:#fff;border-color:#e7e7e7;box-shadow:0 10px 28px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.04); }
 :root[data-theme="light"] .taskSettingsDialog .dayButton:not(.dayPrimary) { background:#f5f5f5;border-color:transparent;color:#242424; }
+
+/* Saved task runs and history use the same message measure and bubble styles. */
+.taskThread,.taskFollowups { width:100%;max-width:none;padding:28px 24px 24px;margin:0 auto; }
+.taskThread .message,.taskFollowups .message { width:min(100%,1120px); }
+.taskInfoCard { width:min(calc(100% - 48px),1120px); }
+.taskChatForm.composer { width:min(calc(100% - 48px),1120px); }
+@media(max-width:760px) {
+ .taskThread,.taskFollowups { padding:20px 12px 24px; }
+ .taskInfoCard,.taskChatForm.composer { width:calc(100% - 24px); }
+}

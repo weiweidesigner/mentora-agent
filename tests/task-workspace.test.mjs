@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const editorSource=readFileSync(new URL('../app/static/task-editor.js',import.meta.url),'utf8');
+const appSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+const savedAnswerSource=appSource.slice(appSource.indexOf('async function renderSavedAssistantAnswer('),appSource.indexOf('function restoreSession(sessionId)'));
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
@@ -12,7 +14,7 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
  w.matchMedia=()=>({matches:mobile});w.setInterval=()=>0;w.structuredClone=structuredClone;w.requestAnimationFrame=f=>f();
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
  w.setSidebarCollapsed=()=>{};w.closeActivityDrawer=()=>{};w.startNewChat=()=>w.dispatchEvent(new w.Event('veya:chat-navigate'));
- w.renderMixedReportFlow=async (_article,answer,container)=>{container.textContent=answer.interpretation;};
+ w.renderMixedReportFlow=async (_article,answer,container,onDone)=>{container.textContent=answer.interpretation;onDone?.();};
  w.fetch=async (path,options={})=>{
   requests.push({path,method:options.method||'GET'});let data;
   if(options.method==='POST'&&path.endsWith('/tasks')){data={...base,...JSON.parse(options.body),id:'created',resultVersion:null,lastRun:null,nextAt:'2026-11-05T10:30:00Z'};saves.push(JSON.parse(options.body));tasks.push(data);}
@@ -22,7 +24,8 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
   else data={};
   return {ok:true,json:async()=>data};
  };
- w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
+ w.mergeSourcesByUrl=(sources)=>sources;w.sourcesFromInsightMarkdown=()=>[];w.detectLanguage=()=>"zh-CN";w.escapeHtml=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;');w.buildCapabilityBar=()=>'';w.buildResultActions=()=>'<button class=shareResultButton>分享</button>';w.refreshSavedToolStepTitles=()=>{};w.attachResultActionHandlers=()=>{};w.toggleActivityDrawer=article=>article.dataset.activityOpened='true';
+ w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
 }
 
 test('My Day shows only generated results for the current market phase and links to that task',async()=>{
@@ -30,8 +33,8 @@ test('My Day shows only generated results for the current market phase and links
  const cards=h.w.document.querySelectorAll('#dayPanel [data-task-open]');assert.equal(cards.length,1);assert.equal(cards[0].dataset.taskOpen,'live');assert.doesNotMatch(cards[0].textContent,/\*\*|##/);
  assert.equal(h.w.document.querySelectorAll('#myDay [role=tab],#myDay [data-template]').length,0);
  cards[0].click();await tick();assert.equal(h.w.document.querySelector('#taskWorkspace').hidden,false);assert.equal(new URL(h.w.location).searchParams.get('task'),'live');
- assert.match(h.w.document.querySelector('#taskThread').textContent,/最新缓存内容/);assert.equal(h.w.document.querySelectorAll('#taskThread .thinkingTrigger').length,0);
- h.w.document.querySelector('#taskThread [data-edit-task]').click();assert.equal(h.w.document.querySelector('#dayDialog').open,true);assert.equal(h.w.document.querySelector('#dayForm input[name=title]').value,base.title);
+ assert.match(h.w.document.querySelector('#taskThread').textContent,/最新缓存内容/);assert.equal(h.w.document.querySelectorAll('#taskThread .thinkingTrigger').length,1);
+ h.w.document.querySelector('#taskCardTitle').click();assert.equal(h.w.document.querySelector('#dayDialog').open,true);assert.equal(h.w.document.querySelector('#dayForm input[name=title]').value,base.title);
  assert.equal(h.w.document.querySelectorAll('#dayAdvanced [name=model],#dayAdvanced [name=strength]').length,0);h.dom.window.close();
 });
 
@@ -106,7 +109,25 @@ test('advanced contains opt-in push settings and reopens collapsed with saved ch
  const h=setup({tasks:[{...base,id:'live',serverchan:true,feishu:true,serverchanKeyConfigured:true,feishuUrlConfigured:true}]});await tick();const d=h.w.document;
  d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
  assert.equal(advanced.open,false);assert.ok(advanced.contains(d.querySelector('.editorNotifications')));assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayDelete'),null);
- advanced.open=true;d.querySelector('#dayClose').click();d.querySelector('#taskSidebarList [data-task-open="live"]').click();await tick();d.querySelector('#taskThread [data-edit-task]').click();
+ advanced.open=true;d.querySelector('#dayClose').click();d.querySelector('#taskSidebarList [data-task-open="live"]').click();await tick();d.querySelector('#taskCardTitle').click();
  assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,true);assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'输入 SCT 开头的 SendKey');assert.equal(f.elements.feishuUrl.placeholder,'输入飞书机器人 Webhook');assert.equal(d.querySelector('#dayDelete'),null);
  assert.equal(h.requests.some(r=>r.method==='DELETE'),false);h.dom.window.close();
+});
+
+test('scheduled output uses the saved history answer shell without inventing execution duration',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document;
+ assert.ok(d.querySelector('#taskThread .message.user .bubble.userBubble'));
+ const article=d.querySelector('#taskThread .message.assistant');assert.ok(article.querySelector('.bubble.assistantBubble .finalAnswer .mixedReport'));
+ assert.equal(article.querySelector('.thinkingSummaryText').textContent,'查看执行记录');assert.equal(article.dataset.elapsedUnrecorded,'true');
+ article.querySelector('.thinkingTrigger').click();assert.equal(article.dataset.activityOpened,'true');assert.equal(article.querySelector('.deferredActions').hidden,false);assert.ok(article.querySelector('.shareResultButton'));assert.equal(article.querySelector('[data-edit-task]'),null);
+ assert.equal(h.requests.some(r=>r.method==='POST'||r.path.includes('/chat')),false);h.dom.window.close();
+});
+
+test('ordinary history still restores through the same saved answer renderer',async()=>{
+ const h=setup({tasks:[]});await tick();const w=h.w,d=w.document;
+ w.loadSessions=()=>[{id:'saved',question:'历史问句',interpretation:'原始历史答案',thinkingElapsed:42000,sources:[],messages:[]}];
+ w.recoverLegacySessionArtifacts=()=>false;w.DEFAULT_INFERENCE_MODEL='model';w.DEFAULT_REASONING_FRAMEWORK='deepseek';w.messages=d.querySelector('#messages');w.conversation=d.querySelector('.conversation');
+ w.addUserMessage=text=>{const article=d.createElement('article');article.className='message user';article.textContent=text;w.messages.append(article);};w.appendMessage=article=>w.messages.append(article);w.copyFor=()=> '已思考';w.formatDuration=ms=>`${ms/1000}s`;w.closeActivityDrawer=()=>{};w.renderHistory=()=>{};
+ w.eval(appSource.slice(appSource.indexOf('function restoreSession(sessionId)'),appSource.indexOf('async function restoreSharedSessionFromUrl()')));
+ w.restoreSession('saved');await tick();assert.match(w.messages.textContent,/历史问句/);assert.match(w.messages.textContent,/原始历史答案/);assert.match(w.messages.querySelector('.thinkingSummaryText').textContent,/42s/);assert.equal(w.messages.querySelector('.message.assistant').dataset.elapsedUnrecorded,'false');assert.equal(w.messages.querySelector('.deferredActions').hidden,false);h.dom.window.close();
 });

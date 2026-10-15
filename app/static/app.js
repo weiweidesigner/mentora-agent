@@ -363,7 +363,7 @@ shareDialog?.addEventListener("click", (event) => {
 });
 copyShareLinkButton?.addEventListener("click", copyShareLink);
 saveShareImageButton?.addEventListener("click", saveShareImage);
-messages?.addEventListener("click", (event) => {
+function handleSavedResultAction(event) {
   const shareButton = event.target?.closest?.(".shareResultButton");
   if (shareButton) {
     event.preventDefault();
@@ -380,7 +380,9 @@ messages?.addEventListener("click", (event) => {
     if (article) toggleActivityDrawer(article);
     return;
   }
-});
+}
+messages?.addEventListener("click", handleSavedResultAction);
+document.getElementById("taskWorkspace")?.addEventListener("click", handleSavedResultAction);
 
 function createAssistantMessage(question) {
   const lang = normalizeLang(detectLanguage(question));
@@ -1059,7 +1061,7 @@ function addUserMessage(text, options = {}) {
   return article;
 }
 
-function renderUserMessage(article, text, images = []) {
+function renderUserMessage(article, text, images = [], options = {}) {
   article.className = "message user";
   article.dataset.rawText = text;
   const imageItems = Array.isArray(images) ? images : [];
@@ -1083,9 +1085,9 @@ function renderUserMessage(article, text, images = []) {
           <span class="actionIcon copyIcon" aria-hidden="true">${COPY_MESSAGE_ICON}</span>
           <span class="actionIcon checkIcon" aria-hidden="true">${CHECK_ICON}</span>
         </button>
-        <button class="userActionButton editUserMessage" type="button" data-tooltip="编辑消息" aria-label="编辑消息">
+        ${options.allowEdit === false ? "" : `<button class="userActionButton editUserMessage" type="button" data-tooltip="编辑消息" aria-label="编辑消息">
           <span class="actionIcon" aria-hidden="true">${EDIT_MESSAGE_ICON}</span>
-        </button>
+        </button>`}
       </div>
     </div>
   `;
@@ -1093,7 +1095,7 @@ function renderUserMessage(article, text, images = []) {
   copyButton?.addEventListener("mouseenter", () => setUserBubbleSelection(article, true));
   copyButton?.addEventListener("mouseleave", () => setUserBubbleSelection(article, false));
   copyButton?.addEventListener("click", () => copyUserMessage(article));
-  article.querySelector(".editUserMessage")?.addEventListener("click", () => beginEditUserMessage(article));
+  article.querySelector(".editUserMessage")?.addEventListener("click", () => options.onEdit ? options.onEdit() : beginEditUserMessage(article));
 }
 
 async function copyUserMessage(article) {
@@ -2833,7 +2835,7 @@ function updateThinkingSummary(article, prefix, options = {}) {
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
   }
   if (activeActivityArticle === article && activityElapsed) {
-    activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+    activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
   }
 }
 
@@ -2871,7 +2873,7 @@ function syncActivityDrawer(article) {
   const state = article.dataset.thinkingState || "active";
   const lang = normalizeLang(article.dataset.lang || "en");
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
-  activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
+  activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
   const steps = Array.from(article.querySelectorAll(".thinkingSteps li"))
     .map((item) => `<li class="${item.className}">${item.innerHTML}</li>`)
@@ -2909,7 +2911,7 @@ function scrollActivityToLatest(shouldStick = activityAutoFollow) {
 
 function buildActivityTerminal(article, lang, elapsed, state) {
   if (!article.activityEnded) return "";
-  const title = state === "error" ? `${copyFor(lang, "stoppedAfter")} ${formatDuration(elapsed)}` : `${copyFor(lang, "thoughtFor")} ${formatDuration(elapsed)}`;
+  const title = article.dataset.elapsedUnrecorded === "true" ? "执行已完成" : state === "error" ? `${copyFor(lang, "stoppedAfter")} ${formatDuration(elapsed)}` : `${copyFor(lang, "thoughtFor")} ${formatDuration(elapsed)}`;
   const detail = state === "error" ? copyFor(lang, "stoppedLabel") : copyFor(lang, "completedLabel");
   return `
     <li class="is-terminal ${state === "error" ? "is-error" : "is-done"}">
@@ -3697,6 +3699,41 @@ function renderHistory() {
   });
 }
 
+// History and scheduled runs share the same answer shell and report renderer.
+async function renderSavedAssistantAnswer(article, data, options = {}) {
+  const lang = article.dataset.lang || detectLanguage(options.question || "");
+  article.dataset.lang = lang;
+  article.dataset.thinkingState = "done";
+  article.activityEnded = true;
+  article.activitySources = mergeSourcesByUrl(Array.isArray(data.sources) ? data.sources : [], sourcesFromInsightMarkdown(data.interpretation || ""));
+  article.activitySourceCount = article.activitySources.length;
+  article.videos = Array.isArray(data.videos) ? data.videos : [];
+  article.actionLinks = Array.isArray(data.actionLinks) ? data.actionLinks : [];
+  article.agentEvents = article.agentEvents || [];
+  article.activityStepKeys = new Set();
+  article.dataset.elapsedUnrecorded = String(!(options.thinkingElapsed > 0));
+  if (options.thinkingElapsed > 0) article.dataset.cachedElapsedMs = String(options.thinkingElapsed);
+  article.innerHTML = `
+    <div class="bubble assistantBubble">
+      <button class="thinkingTrigger is-complete" type="button" aria-label="查看活动">
+        <span class="thinkingSummaryText">${escapeHtml(options.thinkingLabel || "查看执行记录")}</span>
+        <span class="thinkingChevron" aria-hidden="true"></span>
+      </button>
+      <ol class="thinkingSteps" hidden>${options.thinkingStepsHtml || ""}</ol>
+      <div class="finalAnswer">
+        <section class="mixedReport" aria-live="polite"></section>
+        ${buildCapabilityBar(article.actionLinks, lang)}
+        <div class="deferredActions" hidden>${buildResultActions(article, lang)}</div>
+      </div>
+    </div>`;
+  refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
+  article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
+  await renderMixedReportFlow(article, {...data, sources:article.activitySources}, article.querySelector(".mixedReport"), () => {
+    article.querySelector(".deferredActions").hidden = false;
+    attachResultActionHandlers(article);
+  });
+}
+
 function restoreSession(sessionId) {
   window.dispatchEvent(new Event("veya:chat-navigate"));
   const session = loadSessions().find((item) => item.id === sessionId);
@@ -3741,29 +3778,11 @@ function restoreSession(sessionId) {
     article.actionLinks = Array.isArray(session.actionLinks) ? session.actionLinks : [];
     article.activityStepKeys = new Set();
     article.shareSession = session;
-    article.innerHTML = `
-      <div class="bubble assistantBubble">
-        <button class="thinkingTrigger is-complete" type="button" aria-label="查看活动">
-          <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thoughtFor"))} ${escapeHtml(formatDuration(session.thinkingElapsed || 0))}</span>
-          <span class="thinkingChevron" aria-hidden="true"></span>
-        </button>
-        <ol class="thinkingSteps" hidden>${session.thinkingStepsHtml || ""}</ol>
-        <div class="finalAnswer">
-          <section class="mixedReport" aria-live="polite"></section>
-          ${buildCapabilityBar(article.actionLinks, lang)}
-          <div class="deferredActions" hidden></div>
-        </div>
-      </div>
-    `;
-    refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
-    const deferredActions = article.querySelector(".deferredActions");
-    if (deferredActions) deferredActions.innerHTML = buildResultActions(article, lang);
     appendMessage(article, true);
-    article.querySelector(".thinkingTrigger")?.addEventListener("click", () => toggleActivityDrawer(article));
-    renderMixedReportFlow(article, { reportUrl: session.reportUrl, reportArtifacts: session.reportArtifacts || [], interpretation: session.interpretation || "", sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks }, article.querySelector(".mixedReport"), () => {
-      const actions = article.querySelector(".deferredActions");
-      if (actions) actions.hidden = false;
-      attachResultActionHandlers(article);
+    renderSavedAssistantAnswer(article, { reportUrl: session.reportUrl, reportArtifacts: session.reportArtifacts || [], interpretation: session.interpretation || "", sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks }, {
+      thinkingLabel: `${copyFor(lang, "thoughtFor")} ${formatDuration(session.thinkingElapsed || 0)}`,
+      thinkingStepsHtml: session.thinkingStepsHtml || "",
+      thinkingElapsed: session.thinkingElapsed,
     });
   } else if (session.error) {
     const article = createAssistantMessage(session.question || session.title || "");
