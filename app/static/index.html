@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-neutral-night" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-clarification-alignment" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -192,7 +192,7 @@
         <section id="taskWizard" class="taskWizard" aria-label="创建任务对话" hidden>
           <div id="taskWizardTranscript" class="taskWizardTranscript"></div>
           <section id="taskClarification" class="taskClarification" aria-label="任务创建澄清" aria-live="polite">
-            <header class="taskClarificationTop"><h2 id="wizardQuestionTitle"></h2><div class="wizardStepNavigation"><button id="wizardPrevious" class="dayTextButton" type="button" aria-label="上一步">‹</button><span id="wizardProgress"></span><button id="wizardForward" class="dayTextButton" type="button" aria-label="下一步">›</button><button id="wizardClose" class="dayIconButton" type="button" aria-label="退出创建">×</button></div></header>
+            <header class="taskClarificationTop"><h2 id="wizardQuestionTitle"></h2><div class="wizardStepNavigation"><button id="wizardPrevious" class="dayTextButton" type="button" aria-label="上一步"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><span id="wizardProgress"></span><button id="wizardForward" class="dayTextButton" type="button" aria-label="下一步"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button><button id="wizardClose" class="dayIconButton" type="button" aria-label="退出创建"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div></header>
             <div id="wizardQuestion"></div><p id="wizardError" class="dayError" role="alert"></p>
           </section>
         </section>
