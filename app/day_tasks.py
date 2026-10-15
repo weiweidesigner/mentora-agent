@@ -230,6 +230,9 @@ class DayTasks:
             CREATE TABLE IF NOT EXISTS subscriptions (
                 endpoint TEXT PRIMARY KEY, owner TEXT NOT NULL, payload TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS task_confirmations (
+                task_id TEXT PRIMARY KEY, config_key TEXT NOT NULL, answer TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS deliveries (
                 id TEXT PRIMARY KEY, run_id TEXT NOT NULL, owner TEXT NOT NULL,
                 channel TEXT NOT NULL, target TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
@@ -560,6 +563,30 @@ def create_router(service):
     @router.post('/tasks')
     def add(payload: TaskInput, request: Request, response: Response):
         return service.save(writer(request, response), payload)
+
+    @router.post('/tasks/{task_id}/confirmation')
+    def confirmation(task_id: str, request: Request, response: Response):
+        user=writer(request,response)
+        with service.db() as db:
+            row=service.owned(db,user,task_id)
+            # Invalidate generated prose when the task's actual configuration changes.
+            task=service.unpack(row['config'])
+            task['nextAt']=row['next_at']
+            key=hashlib.sha256(row['config'].encode()).hexdigest()
+            cached=db.execute('SELECT answer FROM task_confirmations WHERE task_id=? AND config_key=?',(task_id,key)).fetchone()
+        if cached:return {'answer':cached['answer']}
+        from app.task_planner import task_confirmation
+        try:
+            answer=task_confirmation(task)
+        except Exception as exc:
+            log.warning('Task confirmation unavailable: %s',type(exc).__name__)
+            raise HTTPException(502,'确认答复暂时未能生成，任务已保存，可以重试。') from exc
+        with service.db() as db:
+            current=service.owned(db,user,task_id)
+            if hashlib.sha256(current['config'].encode()).hexdigest()!=key:
+                raise HTTPException(409,'任务配置已变更，请重新查看。')
+            db.execute('INSERT OR REPLACE INTO task_confirmations(task_id,config_key,answer) VALUES(?,?,?)',(task_id,key,answer))
+        return {'answer':answer}
 
     @router.put('/tasks/{task_id}')
     def edit(task_id: str, payload: TaskInput, request: Request, response: Response):

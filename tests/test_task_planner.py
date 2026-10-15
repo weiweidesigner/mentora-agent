@@ -47,3 +47,35 @@ def test_plan_endpoint_never_creates_or_runs_tasks(tmp_path,monkeypatch):
     with service.db() as db:
         assert db.execute('SELECT count(*) FROM tasks').fetchone()[0]==0
         assert db.execute('SELECT count(*) FROM runs').fetchone()[0]==0
+
+
+def test_confirmation_uses_saved_config_is_cached_and_is_owner_scoped(tmp_path,monkeypatch):
+    service=DayTasks(tmp_path,lambda *_:{})
+    app=FastAPI();app.include_router(create_router(service));client=TestClient(app)
+    headers={'X-Veya-Day':'1'}
+    task=client.post('/api/day/tasks',json={'title':'日常观察','question':'复盘市场','time':'09:00','enabled':False,'serverchanKey':'SCTsecret'},headers=headers).json()
+    calls=[]
+    def model(context):
+        calls.append(context)
+        return {'answer':'已安排每天九点的市场回顾。'}
+    monkeypatch.setattr('app.task_planner.model_plan',model)
+    path=f"/api/day/tasks/{task['id']}/confirmation"
+    assert client.post(path,headers=headers).json()['answer']=='已安排每天九点的市场回顾。'
+    assert client.post(path,headers=headers).status_code==200
+    assert len(calls)==1 and 'SCTsecret' not in str(calls)
+    assert calls[0]['task']['enabled'] is False
+    stranger=TestClient(app)
+    assert stranger.post(path,headers=headers).status_code==404
+    client.put(f"/api/day/tasks/{task['id']}",json={**task,'title':'更新的回顾'},headers=headers)
+    assert client.post(path,headers=headers).status_code==200 and len(calls)==2
+
+
+def test_failed_confirmation_does_not_recreate_or_enable_a_saved_task(tmp_path,monkeypatch):
+    service=DayTasks(tmp_path,lambda *_:{})
+    app=FastAPI();app.include_router(create_router(service));client=TestClient(app);headers={'X-Veya-Day':'1'}
+    task=client.post('/api/day/tasks',json={'title':'回顾','question':'复盘市场','enabled':False},headers=headers).json()
+    def fail(_):raise RuntimeError('unavailable')
+    monkeypatch.setattr('app.task_planner.model_plan',fail)
+    assert client.post(f"/api/day/tasks/{task['id']}/confirmation",headers=headers).status_code==502
+    tasks=client.get('/api/day/tasks').json()['tasks']
+    assert len(tasks)==1 and tasks[0]['enabled'] is False

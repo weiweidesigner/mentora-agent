@@ -256,7 +256,7 @@
       renderCreatedTask(task);
       $('taskRunState').textContent=task.enabled?'已开启 · 云端将按计划执行':'任务已暂停';
       resultVersion=task.resultVersion;
-      await loadFollowups({question:task.question,answer:{interpretation:`任务已${task.enabled?'创建并启用':'暂停'}：${task.title}。执行安排：${schedule(task)}。${task.nextAt?'首次执行：'+dateText(task.nextAt,zoneFor(task)):''}。任务内容：${task.question}`}},task,version);return;
+      await loadFollowups({question:task.question,answer:{interpretation:`任务已${task.enabled?'创建并启用':'暂停'}：${task.title}。执行安排：${schedule(task)}。${task.nextAt?'首次执行：'+dateText(task.nextAt,zoneFor(task)):''}。任务内容：${task.question}`}},task,version);await loadTaskConfirmation(task,version);return;
     }
     const run=runs.find(r=>r.id===runId) || runs[0];selectedRun=run.id;$('taskRunSelect').value=run.id;
     $('taskRunState').textContent=task.activeRun?'任务正在云端运行，关闭页面也会继续。':task.lastRun?.status==='failed'?'最近一次执行失败，可切换查看上次成功结果。':!task.enabled&&!completed(task)?'任务已暂停，可查看已保存的运行结果。':task.nextAt?'下次执行：'+dateText(task.nextAt,zoneFor(task)):'已完成本次安排';
@@ -345,61 +345,72 @@
   function visibleQuestion(d){return String(d.question||'').replace(/\{\{market\}\}/g,names[d.market]).replace(/\{\{symbols\}\}/g,d.symbols||(d.assetType==='watchlist'?'待确认的自选股':'全市场')).replace(/\{\{date\}\}/g,'执行当天');}
   async function beginWizard(question,preset=null){
     showLanding(false);$('taskLanding').hidden=true;$('taskWizard').hidden=false;$('taskClarification').hidden=false;$('taskPageTitle').textContent='新建任务';$('taskBack').hidden=false;
-    wizardStep=0;wizardDraft={...(preset||{}),question:preset?.question||question,originalQuestion:question,questions:[],answers:[],focus:[],scopeNote:'',reply:'正在理解任务并确认需要补充的参数…',ready:false};
+    wizardStep=0;wizardDraft={...(preset||{}),question:preset?.question||question,originalQuestion:question,questions:[],answers:[],focus:[],scopeNote:'',reply:'正在理解任务并确认需要补充的参数…',ready:false,startedAt:Date.now(),activity:[{title:'收到任务问句',detail:question}]};
     renderWizardTranscript();await requestPlan();
   }
   function wizardAnswers(d){return (d.answers||[]).map(a=>({question:a.question,answer:a.answer}));}
   function renderWizardTranscript(submitting=false){
     const d=wizardDraft,target=$('taskWizardTranscript');target.replaceChildren();renderTaskUser(d.originalQuestion,[],target);
     for(const round of d.rounds||[]){const a=document.createElement('article');a.className='message assistant';const b=document.createElement('div');b.className='bubble assistantBubble';b.textContent=round.reply;a.append(b);target.append(a);renderTaskUser(round.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);}
-    const article=document.createElement('article');article.className='message assistant';const bubble=document.createElement('div');bubble.className='bubble assistantBubble';const intro=document.createElement('p');intro.className='wizardIntro';intro.textContent=d.reply;bubble.append(intro);article.append(bubble);target.append(article);
-    if(submitting){const waiting=document.createElement('p');waiting.className='wizardCreating';waiting.textContent='正在创建计划任务…';target.append(waiting);}target.scrollTop=target.scrollHeight;
+    const article=d.activityArticle||document.createElement('article');d.activityArticle=article;article.className='message assistant';article.dataset.lang='zh-CN';article.dataset.startedAt=d.startedAt;article.dataset.thinkingState=d.planning||submitting?'active':'done';article.activityEnded=!(d.planning||submitting);article.activitySources=[];
+    article.innerHTML=`<div class="bubble assistantBubble"><button type="button" class="thinkingTrigger ${d.planning||submitting?'is-thinking':'is-complete'}" aria-label="查看任务配置过程"><span class="thinkingSummaryText">${esc(submitting?'正在创建计划任务…':d.planning?d.reply:'查看任务配置过程')}</span><span class="thinkingChevron" aria-hidden="true"></span></button><ol class="thinkingSteps" hidden>${(d.activity||[]).map(a=>`<li class="is-done"><div class="activityStepTitle">${esc(a.title)}</div><div class="activityStepDetail">${esc(a.detail||'')}</div></li>`).join('')}</ol>${!d.planning&&!submitting?`<p class="wizardIntro">${esc(d.reply)}</p>`:''}</div>`;
+    article.querySelector('.thinkingTrigger').onclick=()=>{if(typeof toggleActivityDrawer==='function')toggleActivityDrawer(article);};target.append(article);if(typeof syncActivityDrawer==='function')syncActivityDrawer(article);target.scrollTop=target.scrollHeight;
   }
   function collectWizard(){if(!wizardDraft)return;const q=wizardDraft.questions[wizardStep];if(!q)return;
     const control=$('wizardAnswer');let value;
     if(q.options.length){const chosen=[...document.querySelectorAll('[name=wizardAnswer]:checked')];value=q.multiple?chosen.map(e=>q.options[Number(e.value)].value):chosen.length?q.options[Number(chosen[0].value)].value:undefined;}
     else if(control){value=control.value;if(q.field==='monthDay')value=Number(value);if(q.field==='weekdays')value=String(value).split(',').filter(Boolean).map(Number);}
-    q.value=value;if(value!==undefined&&(value!==''||q.field==='endDate')&&q.field!=='question')wizardDraft[q.field]=value;
+    q.selection=value;q.custom=$('wizardCustomAnswer')?.value||'';q.value=q.custom.trim()?[...(Array.isArray(value)?value:value===undefined||value===''?[]:[value]),q.custom.trim()].join('；'):value;if(!q.custom.trim()&&value!==undefined&&(value!==''||q.field==='endDate')&&q.field!=='question')wizardDraft[q.field]=value;
   }
-  function answerLabel(q){if(q.options.length){const values=Array.isArray(q.value)?q.value:[q.value];return q.options.filter(o=>values.includes(o.value)).map(o=>o.label).join('、');}return q.field==='endDate'&&!q.value?'永不':String(q.value??'');}
+  function answerLabel(q){if(q.custom?.trim())return String(q.value);if(q.options.length){const values=Array.isArray(q.value)?q.value:[q.value];return q.options.filter(o=>values.includes(o.value)).map(o=>o.label).join('、');}return q.field==='endDate'&&!q.value?'永不':String(q.value??'');}
   function renderWizard(){const d=wizardDraft;if(!d)return;
     $('taskClarification').hidden=false;$('wizardError').textContent='';$('wizardPrevious').disabled=wizardStep===0;$('wizardForward').disabled=wizardStep>=d.questions.length-1;
     $('wizardProgress').textContent=d.questions.length?`${wizardStep+1} / ${d.questions.length}`:'';
     const q=d.questions[wizardStep];$('wizardQuestionTitle').textContent=q?q.question:'确认任务安排';let content='';
     if(q){
-      if(q.options.length){content=`<div class="wizardFocusOptions">${q.options.map((o,i)=>{const values=Array.isArray(q.value)?q.value:[q.value];return `<label><input type="${q.multiple?'checkbox':'radio'}" name="wizardAnswer" value="${i}" ${values.includes(o.value)?'checked':''}/><span>${esc(o.label)}</span></label>`;}).join('')}</div>`;}
-      else if(q.field==='timezone'){content=`<label class="wizardField">时区<select id="wizardAnswer">${[...el('timezone').options].map(o=>`<option value="${esc(o.value)}" ${o.value===q.value?'selected':''}>${esc(o.textContent)}</option>`).join('')}</select></label>`;}
-      else if(q.field==='cadence'){content=`<label class="wizardField">重复<select id="wizardAnswer"><option value="">请选择</option>${Object.entries(cadences).map(([v,label])=>`<option value="${v}" ${v===q.value?'selected':''}>${label}</option>`).join('')}</select></label>`;}
-      else {const type=q.field==='time'?'time':['date','endDate'].includes(q.field)?'date':q.field==='monthDay'?'number':'text';content=q.field==='question'?`<label class="wizardField">任务内容<textarea id="wizardAnswer" maxlength="6000" rows="4">${esc(q.value||'')}</textarea></label>`:`<label class="wizardField">${esc(q.question)}<input id="wizardAnswer" type="${type}" ${type==='number'?'min="1" max="31"':''} maxlength="6000" value="${esc(Array.isArray(q.value)?q.value.join(','):q.value??'')}"/></label>`;}
-
+      if(q.options.length){content=`<div class="wizardFocusOptions">${q.options.map((o,i)=>{const selected=q.selection??q.value,values=Array.isArray(selected)?selected:[selected];return `<label><input type="${q.multiple?'checkbox':'radio'}" name="wizardAnswer" value="${i}" ${values.includes(o.value)?'checked':''}/><span>${esc(o.label)}</span></label>`;}).join('')}</div>`;}
+      else if(q.field==='timezone'){content=`<label class="wizardField">时区<select id="wizardAnswer">${[...el('timezone').options].map(o=>`<option value="${esc(o.value)}" ${o.value===(q.selection??q.value)?'selected':''}>${esc(o.textContent)}</option>`).join('')}</select></label>`;}
+      else if(q.field==='cadence'){content=`<label class="wizardField">重复<select id="wizardAnswer"><option value="">请选择</option>${Object.entries(cadences).map(([v,label])=>`<option value="${v}" ${v===(q.selection??q.value)?'selected':''}>${label}</option>`).join('')}</select></label>`;}
+      else {const type=q.field==='time'?'time':['date','endDate'].includes(q.field)?'date':q.field==='monthDay'?'number':'text';content=q.field==='question'?`<label class="wizardField">任务内容<textarea id="wizardAnswer" maxlength="6000" rows="4">${esc(q.value||'')}</textarea></label>`:`<label class="wizardField">${esc(q.question)}<input id="wizardAnswer" type="${type}" ${type==='number'?'min="1" max="31"':''} maxlength="6000" value="${esc(Array.isArray(q.selection??q.value)?(q.selection??q.value).join(','):q.selection??q.value??'')}"/></label>`;}
+      if(q.options.length||!['title','question'].includes(q.field))content+=`<label class="wizardField wizardCustomField"><textarea id="wizardCustomAnswer" rows="2" maxlength="3000" aria-label="自定义回答" placeholder="输入你的回答或补充要求…">${esc(q.custom||'')}</textarea></label>`;
     }else content=`<div class="wizardSummary"><strong>${esc(d.title||'')}</strong><p>${esc(d.question||'')}</p><p>${esc(schedule(d))}</p>${d.endDate?`<p>结束日期：${esc(d.endDate)}</p>`:''}</div>`;
-    $('wizardQuestion').innerHTML=content+`<div class="wizardActions"><button class="dayTextButton" type="button" id="wizardAdvanced">打开设置面板</button><button type="button" class="dayButton dayPrimary" id="wizardNext">${q?(wizardStep===d.questions.length-1?'发送回答并创建':'下一步'):'创建任务'}</button></div>`;
+    $('wizardQuestion').innerHTML=content+`<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardNext">${q?(wizardStep===d.questions.length-1?'发送回答并创建':'下一步'):'创建任务'}</button></div>`;
   }
-  async function requestPlan(){const d=wizardDraft;if(!d||d.planning)return;d.planning=true;$('taskClarification').hidden=true;const version=viewVersion;
-    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:d,answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
-      Object.assign(d,plan.draft,{reply:plan.reply,questions:plan.questions,ready:plan.ready});wizardStep=0;renderWizardTranscript();renderWizard();
-    }catch(error){if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;d.reply='暂时未能生成任务配置。你可以重试，或打开新建任务面板继续填写。';renderWizardTranscript();$('taskClarification').hidden=false;$('wizardQuestionTitle').textContent='配置生成失败';$('wizardProgress').textContent='';$('wizardPrevious').disabled=$('wizardForward').disabled=true;$('wizardQuestion').innerHTML='<div class="wizardActions"><button type="button" class="dayTextButton" id="wizardAdvanced">打开设置面板</button><button type="button" class="dayButton dayPrimary" id="wizardRetry">重试</button></div>';$('wizardError').textContent=error.message;}
+  async function requestPlan(){const d=wizardDraft;if(!d||d.planning)return;d.planning=true;(d.activity||=[]).push({title:'请求任务配置模型',detail:'根据任务面板支持的参数生成草稿与澄清问题。'});renderWizardTranscript();$('taskClarification').hidden=true;const version=viewVersion;
+    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:Object.fromEntries(['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'].filter(k=>d[k]!==undefined).map(k=>[k,d[k]])),answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
+      Object.assign(d,plan.draft,{reply:plan.reply,questions:plan.questions,ready:plan.ready});d.planning=false;d.activity.push({title:plan.ready?'任务参数已确认':'需要补充参数',detail:plan.reply});wizardStep=0;renderWizardTranscript();renderWizard();
+    }catch(error){if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;d.planning=false;d.reply='暂时未能生成任务配置，请重试。';d.activity.push({title:'配置请求失败',detail:error.message});renderWizardTranscript();$('taskClarification').hidden=false;$('wizardQuestionTitle').textContent='配置生成失败';$('wizardProgress').textContent='';$('wizardPrevious').disabled=$('wizardForward').disabled=true;$('wizardQuestion').innerHTML='<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardRetry">重试</button></div>';$('wizardError').textContent=error.message;}
     finally{d.planning=false;}
   }
   async function advanceWizard(){if(saving||!wizardDraft||wizardDraft.planning)return;collectWizard();const d=wizardDraft,q=d.questions[wizardStep];
     if(q){if(q.field!=='endDate'&&(q.value===undefined||q.value===''||(Array.isArray(q.value)&&!q.value.length)))throw new Error('请先回答这个问题');
-      const control=$('wizardAnswer');if(control&&!control.checkValidity())throw new Error('请填写有效的参数');
+      const control=$('wizardAnswer');if(control&&!q.custom?.trim()&&!control.checkValidity())throw new Error('请填写有效的参数');
       if(wizardStep<d.questions.length-1){wizardStep++;renderWizard();return;}
-      const answers=d.questions.map(q=>({field:q.field,question:q.question,value:q.value,answer:answerLabel(q)}));d.answers.push(...answers);(d.rounds||= []).push({reply:d.reply,answers});d.reply='正在根据你的回答生成任务配置…';renderWizardTranscript();await requestPlan();if(wizardDraft===d&&d.ready&&!d.questions.length)await saveDraft();return;
+      const answers=d.questions.map(q=>({field:q.field,question:q.question,value:q.value,answer:answerLabel(q)}));d.answers.push(...answers);d.activity.push({title:'收到澄清回答',detail:answers.map(a=>a.question+' '+a.answer).join('；')});(d.rounds||= []).push({reply:d.reply,answers});d.reply='正在根据你的回答生成任务配置…';renderWizardTranscript();await requestPlan();if(wizardDraft===d&&d.ready&&!d.questions.length)await saveDraft();return;
     }
     if(d.ready)await saveDraft();
   }
-  async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),focus:[d.question]};
+  async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),activity:d.activity||[]};
     const data={};for(const key of ['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'])if(d[key]!==undefined)data[key]=d[key];data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
-    $('taskClarification').hidden=true;renderWizardTranscript(true);
-    try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);}message('定时任务已创建并启用。','taskMessage');}
+    d.activity.push({title:'保存任务',detail:schedule(d)});$('taskClarification').hidden=true;renderWizardTranscript(true);
+    try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);await loadTaskConfirmation(task,viewVersion);}message('','taskMessage');}
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}
   }
+  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
   function renderCreatedTask(task){const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
     renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
-    if(record?.answers?.length){const intro=document.createElement('article');intro.className='message assistant';intro.innerHTML='<div class="bubble assistantBubble"><p>创建前，我们确认了任务范围和执行安排。</p></div>';target.append(intro);renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);}
-    const article=document.createElement('article');article.className='message assistant taskCreatedAnswer';const zone=zoneFor(task),focus=Array.isArray(record?.focus)&&record.focus.length?record.focus:['按任务问句完成分析并注明数据时间','区分可靠事实、判断与缺失信息'];
-    article.innerHTML=`<div class="bubble assistantBubble"><div class="taskCreatedLink"><span class="taskCreatedClock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l-3 3"/></svg></span><div><strong>${esc(task.title)}</strong><small>${esc(schedule(task))}</small></div><button class="dayButton" type="button" data-edit-task="1">打开</button></div><span class="taskCreatedStatus ${task.enabled?'':'is-paused'}">${task.enabled?'✓ 已创建并启用':'已暂停'}</span><p>你的<strong>${esc(task.title)}</strong>定时任务已设置${task.enabled?'成功':''}。</p><section class="taskCreatedSummary"><header><strong>${esc(task.title)}</strong><span aria-hidden="true"><svg class="taskCreatedCalendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-12 6 3 3 5-6"/></svg></span></header><h2>${esc(compactSchedule(task))}</h2><p>${esc(zone==='Asia/Shanghai'?'北京时间':zone==='Asia/Hong_Kong'?'香港时间':zone==='America/New_York'?'美国东部时间':el('timezone').querySelector(`option[value="${zone}"]`)?.textContent||zone)}（${esc(zone)}）</p><div class="taskCreatedFirst">首次执行：${task.nextAt?esc(dateText(task.nextAt,zone)):'暂无未来执行时间'}</div><p>分析范围：${esc(names[task.market])}${task.symbols?' · '+esc(task.symbols):' · 全市场'}</p></section><p>每次报告将包含：</p><ol class="taskCreatedFocus">${focus.map(item=>`<li>${esc(item)}</li>`).join('')}</ol><p class="taskCreatedNote">任务会在计划时间查询可用的市场数据、公告和新闻，注明数据截至时间，并区分事实与判断。缺少可靠数据时会明确说明。</p></div>`;target.append(article);requestAnimationFrame(()=>article.scrollIntoView?.({block:'start'}));
+    if(record?.answers?.length)renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);
+    const article=document.createElement('article');article.className='message assistant taskCreatedAnswer';article.dataset.lang='zh-CN';article.dataset.thinkingState='done';article.dataset.elapsedUnrecorded='true';article.activityEnded=true;article.activitySources=[];
+    const reply=record?.confirmationConfig===confirmationConfig(task)?record.confirmation:'';
+    article.innerHTML=`<div class="bubble assistantBubble"><button type="button" class="thinkingTrigger is-complete" aria-label="查看任务创建过程"><span class="thinkingSummaryText">查看任务创建过程</span><span class="thinkingChevron" aria-hidden="true"></span></button><ol class="thinkingSteps" hidden>${[...(record?.activity||[]),{title:'任务已保存',detail:task.title+' · '+schedule(task)}].map(a=>`<li class="is-done"><div class="activityStepTitle">${esc(a.title)}</div><div class="activityStepDetail">${esc(a.detail||'')}</div></li>`).join('')}</ol><div class="taskCreatedLink"><span class="taskCreatedClock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l-3 3"/></svg></span><div><strong>${esc(task.title)}</strong><small>${esc(schedule(task))}</small></div><button class="dayButton" type="button" data-edit-task="1">打开</button></div><div class="taskCreatedReply">${esc(reply||'')}</div></div>`;
+    article.querySelector('.thinkingTrigger').onclick=()=>{if(typeof toggleActivityDrawer==='function')toggleActivityDrawer(article);};target.append(article);requestAnimationFrame(()=>article.scrollIntoView?.({block:'start'}));
+  }
+  async function loadTaskConfirmation(task,version){if(!editable(task))return;
+    const config=confirmationConfig(task),record=creationRecord(task.id)||{},reply=$('taskThread').querySelector('.taskCreatedReply');if(!reply)return;
+    if(record.confirmationConfig===config&&record.confirmation)return;
+    reply.textContent='正在生成确认答复…';
+    try{const result=await api('tasks/'+task.id+'/confirmation','POST');if(!result.answer)throw new Error('确认答复暂时未能生成');rememberCreation(task.id,{...record,confirmation:result.answer,confirmationConfig:config});if(version===viewVersion&&selectedId===task.id)reply.textContent=result.answer;}
+    catch(error){if(version!==viewVersion||selectedId!==task.id)return;reply.innerHTML='<button type="button" class="dayTextButton" data-confirmation-retry="1">重新生成确认答复</button>';}
   }
   async function enablePush() {
     if(!window.isSecureContext || !('serviceWorker'in navigator) || !('PushManager'in window))throw new Error('当前浏览器不支持推送，请使用 HTTPS 下的 Chrome');
@@ -449,6 +460,7 @@
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
       if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
+      if(b.dataset.confirmationRetry){const task=selected();if(task)await loadTaskConfirmation(task,viewVersion);return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
 
 
@@ -463,8 +475,7 @@
         case'taskToggle':if(completed(selected())){edit(selected());break;}b.disabled=true;await toggleTask(selected());b.disabled=false;break;
         case'taskRunNow':b.disabled=true;await api('tasks/'+selectedId+'/run','POST');pinnedRun=false;await refresh();await selectTask(selectedId,{updateUrl:false});message('任务已提交到云端，关闭页面后仍会执行。','taskMessage');break;
         case'wizardPrevious':collectWizard();wizardStep=Math.max(0,wizardStep-1);renderWizard();break;
-        case'wizardAdvanced':collectWizard();edit({...template(),...wizardDraft});break;
-        case'wizardRetry':await requestPlan();break;
+                case'wizardRetry':await requestPlan();break;
         case'wizardNext':case'wizardForward':case'wizardSkip':await advanceWizard();break;
       }
     }catch(error){if(!workspace.hidden&& !$('taskWizard').hidden)$('wizardError').textContent=error.message;else message(error.message);b.disabled=false;}
@@ -487,7 +498,7 @@
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
-    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。','taskMessage');}
+    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});

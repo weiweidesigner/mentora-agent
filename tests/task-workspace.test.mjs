@@ -16,8 +16,9 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
  w.setSidebarCollapsed=()=>{};w.closeActivityDrawer=()=>{};w.startNewChat=()=>w.dispatchEvent(new w.Event('veya:chat-navigate'));
  w.renderMixedReportFlow=async (_article,answer,container,onDone)=>{container.textContent=answer.interpretation;onDone?.();};
  w.fetch=async (path,options={})=>{
-  requests.push({path,method:options.method||'GET'});let data;
-  if(path.endsWith('/plan')){const p=JSON.parse(options.body);data={reply:'请确认何时收到这份报告。',draft:{...base,...p.draft},questions:p.answers.length?[]:[{field:'time',question:'你希望几点收到？',options:[],multiple:false}],ready:!!p.answers.length};if(p.answers.length)data.draft.time=p.answers.at(-1).value;}
+  requests.push({path,method:options.method||'GET',body:options.body?JSON.parse(options.body):null});let data;
+  if(path.endsWith('/confirmation'))data={answer:'会按你确认的时间生成这份报告。'};
+  else if(path.endsWith('/plan')){const p=JSON.parse(options.body);data={reply:'请确认何时收到这份报告。',draft:{...base,...p.draft},questions:p.answers.length?[]:[{field:'time',question:'你希望几点收到？',options:[],multiple:false}],ready:!!p.answers.length};if(p.answers.length)data.draft.time=p.answers.at(-1).value;}
   else if(options.method==='POST'&&path.endsWith('/tasks')){data={...base,...JSON.parse(options.body),id:'created',resultVersion:null,lastRun:null,nextAt:'2026-11-05T10:30:00Z'};saves.push(JSON.parse(options.body));tasks.push(data);}
   else if(path.includes('/shared/'))data=shared||{};
   else if(options.method==='PUT'){const id=path.split('/').at(-1),index=tasks.findIndex(t=>t.id===id);data={...tasks[index],...JSON.parse(options.body)};tasks[index]=data;}
@@ -33,7 +34,7 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
  w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
 }
 
-async function openScenarioEditor(d,id){d.querySelector(`[data-recommendation="${id}"]`).click();await tick();d.querySelector('#wizardAdvanced').click();}
+async function openScenarioEditor(d,id){d.querySelector('#taskSidebarNew').click();}
 
 test('My Day shows only generated results for the current market phase and links to that task',async()=>{
  const h=setup({tasks:[{...base,id:'live'},{...base,id:'pre',stage:'pre'},{...base,id:'pending',resultVersion:null},{...base,id:'us',market:'US'}]});await tick();
@@ -56,10 +57,10 @@ test('new task opens the existing panel and task landing has no composer',async(
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelector('#taskPromptForm'),null);d.querySelector('#taskSidebarNew').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#taskWizard').hidden,true);assert.equal(h.requests.some(r=>r.path.endsWith('/plan')),false);h.dom.window.close();
 });
 
-test('recommendations ask the model with their scenario parameters and can open the same editor',async()=>{
+test('recommendations pass scenario parameters to the model without exposing a settings shortcut',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
- for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){await openScenarioEditor(d,id);const f=d.querySelector('#dayForm');assert.equal(f.elements.stage.value,stage);assert.equal(f.elements.assetType.value,type);assert.equal(f.elements.time.value,time);d.querySelector('#dayClose').click();d.querySelector('#wizardClose').click();}
- assert.equal(h.requests.filter(r=>r.path.endsWith('/plan')).length,6);assert.equal(h.saves.length,0);h.dom.window.close();
+ for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){d.querySelector(`[data-recommendation="${id}"]`).click();await tick();const draft=h.requests.filter(r=>r.path.endsWith('/plan')).at(-1).body.draft;assert.equal(draft.stage,stage);assert.equal(draft.assetType,type);assert.equal(draft.time,time);assert.equal(d.querySelector('#wizardAdvanced'),null);d.querySelector('#wizardClose').click();}
+ assert.equal(h.saves.length,0);h.dom.window.close();
 });
 
 test('follow-up uses the selected cached answer and restores replies without rerunning analysis',async()=>{
@@ -185,4 +186,16 @@ test('planning failure never falls back to canned questions or creates a task',a
 
 test('leaving a pending model request never reopens the wizard',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document,original=h.w.fetch;let release;h.w.fetch=async(path,options)=>path.endsWith('/plan')?new Promise(resolve=>{release=()=>resolve({ok:true,json:async()=>({reply:'配置已就绪',draft:{...base},questions:[],ready:true})});}):original(path,options);d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();d.querySelector('#navHome').click();release();await tick();assert.equal(d.querySelector('#taskWorkspace').hidden,true);assert.equal(h.saves.length,0);h.dom.window.close();
+});
+
+test('custom answers bypass preset values and native time validity and reach the model',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document,fetch=h.w.fetch;let answer;
+ h.w.fetch=async(path,options)=>{if(path.endsWith('/plan')){const p=JSON.parse(options.body);if(!p.answers.length)return {ok:true,json:async()=>({reply:'请确认时间',draft:{...base},questions:[{field:'time',question:'几点收到？',multiple:false,options:[{label:'8点',value:'08:00'}]}],ready:false})};answer=p.answers.at(-1);return {ok:true,json:async()=>({reply:'已确认',draft:{...base,time:'08:45'},questions:[],ready:true})};}return fetch(path,options);};
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();await tick();d.querySelector('#wizardCustomAnswer').value='北京时间8:45，周末不要发送';d.querySelector('#wizardNext').click();await tick();await tick();assert.match(answer.value,/北京时间8:45/);assert.equal(h.saves[0].time,'08:45');assert.equal(d.querySelector('.taskCreatedSummary'),null);assert.equal(d.querySelector('.taskCreatedStatus'),null);assert.equal(d.querySelector('#taskMessage').textContent,'');assert.match(d.querySelector('.taskCreatedReply').textContent,/会按你确认/);h.dom.window.close();
+});
+
+test('planning progress is clickable and opens the existing activity drawer with actual steps',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document,fetch=h.w.fetch;let release;
+ h.w.fetch=async(path,options)=>path.endsWith('/plan')?new Promise(resolve=>{release=()=>resolve({ok:true,json:async()=>({reply:'请确认时间',draft:{...base},questions:[{field:'time',question:'几点收到？',options:[]}],ready:false})});}):fetch(path,options);
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const article=d.querySelector('#taskWizardTranscript .message.assistant');article.querySelector('.thinkingTrigger').click();assert.equal(article.dataset.activityOpened,'true');assert.match(article.querySelector('.thinkingSteps').textContent,/请求任务配置模型/);release();await tick();assert.equal(d.querySelector('#taskWizardTranscript .message.assistant'),article);assert.match(article.querySelector('.thinkingSteps').textContent,/需要补充参数/);h.dom.window.close();
 });
