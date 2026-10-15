@@ -1,11 +1,5 @@
 [
   {
-    "id": "kline",
-    "title": "股价与 K 线",
-    "category": "行情与资金",
-    "description": "价格走势、成交量与技术指标，支持股票、ETF 和数字币。"
-  },
-  {
     "id": "multi_intraday",
     "title": "多股分时",
     "category": "行情与资金",

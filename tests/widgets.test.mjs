@@ -17,7 +17,7 @@ function setup({storage,reply,blocked=false}={}) {
  w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
-test('catalogue refers only to existing native business components',()=>{for(const c of catalog){assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
+test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>c.id==='kline'));for(const c of catalog){assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
