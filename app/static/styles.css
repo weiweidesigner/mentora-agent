@@ -4307,10 +4307,6 @@ p {
 /* Notification settings live inside the collapsed advanced section. */
 .editorChannelName { display:inline-flex;align-items:center;gap:10px; }
 .editorChannelName img { width:22px;height:22px;flex:none; }
-.taskSettingsDialog .dayDelete { display:inline-flex;align-items:center;gap:7px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--danger) 35%,transparent);border-radius:999px;font-size:13px;color:var(--danger); }
-.taskSettingsDialog .dayDelete[hidden] { display:none; }
-.taskSettingsDialog .dayDelete svg { width:16px;height:16px; }
-.taskSettingsDialog .dayDelete:hover { background:color-mix(in srgb,var(--danger) 8%,transparent); }
 
 /* Keep both sidebar headers on the same row when switching workspaces. */
 @media(min-width:761px) {
@@ -4321,3 +4317,17 @@ p {
 }
 .editorCalendarGrid button.is-today { box-shadow:none; }
 .editorCalendarGrid button.is-selected,.editorCalendarGrid button.is-selected:hover,.editorCalendarGrid button.is-selected:focus-visible { background:var(--ink);color:var(--bg);box-shadow:none; }
+
+/* Light task overlays use white surfaces and a soft, translucent page wash. */
+:root[data-theme="light"] .taskSettingsDialog {
+ --bg:#fff;--ink:#242424;--muted:#858585;--line:#e8e8e8;--soft:#f6f6f6;--soft-2:#ededed;
+ background:#fff;border:1px solid #e7e7e7;box-shadow:0 14px 34px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.035);
+}
+:root[data-theme="light"] .taskSettingsDialog::backdrop { background:rgba(242,242,242,.66);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px); }
+:root[data-theme="light"] .taskSettingsDialog .dayDialogHeader h2 { font-size:18px; }
+:root[data-theme="light"] .taskSettingsDialog .dayDialogHeader .dayIconButton { color:#999; }
+:root[data-theme="light"] .taskSettingsDialog .editorSchedule { background:#fff;border-color:#dedede; }
+:root[data-theme="light"] .taskSettingsDialog .editorTitle,:root[data-theme="light"] .taskSettingsDialog .editorQuestion { background:#fff;border-color:#e7e7e7; }
+:root[data-theme="light"] .taskSettingsDialog .editorTitle:focus-visible,:root[data-theme="light"] .taskSettingsDialog .editorQuestion:focus-visible { outline:none;border-color:#bbb; }
+:root[data-theme="light"] .taskSettingsDialog .editorPopover { background:#fff;border-color:#e7e7e7;box-shadow:0 10px 28px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.04); }
+:root[data-theme="light"] .taskSettingsDialog .dayButton:not(.dayPrimary) { background:#f5f5f5;border-color:transparent;color:#242424; }

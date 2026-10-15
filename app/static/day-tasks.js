@@ -283,8 +283,8 @@
     el('endMode').value=task.endDate?'date':'never';
     for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=name==='serverchanKey'?'输入 SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'输入飞书机器人 Webhook';}
     $('dayDialogTitle').textContent=readOnly?'定时任务设置':editing?'编辑任务':'设置定时任务';
-    $('daySave').textContent=editing?'保存':'创建';$('daySave').hidden=readOnly;$('dayDelete').hidden=!editing||readOnly;
-    $('dayDelete').disabled=!!task.activeRun;$('dayAdvanced').open=false;
+    $('daySave').textContent=editing?'保存':'创建';$('daySave').hidden=readOnly;
+    $('dayAdvanced').open=false;
     $('dayEnablePush').hidden=readOnly;
     updateFields();
     if(readOnly)form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);
@@ -401,7 +401,6 @@
     try{const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',payload());tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
-  $('dayDelete').onclick=async()=>{const b=$('dayDelete');b.disabled=true;try{await api('tasks/'+editing,'DELETE');tasks=tasks.filter(t=>t.id!==editing);dialog.close();showLanding();renderHome();message('任务已删除。','taskMessage');}catch(error){message(error.message,'dayDialogMessage');}finally{b.disabled=false;}};
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   window.addEventListener('veya:chat-navigate',()=>{if(internalNavigation)return;shellMode(false);viewVersion++;selectedId='';const url=new URL(location.href);['tab','task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);});
   window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search);if(p.get('dayShare'))openShared(p.get('dayShare')).catch(e=>message(e.message));else if(p.get('tab')==='tasks'){if(p.get('task'))selectTask(p.get('task'),{updateUrl:false,runId:p.get('run')||''}).catch(e=>message(e.message));else showLanding(false);}else shellMode(false);});

@@ -105,8 +105,8 @@ test('calendar supports end date selection and turning repeat off schedules one 
 test('advanced contains opt-in push settings and reopens collapsed with saved channels preserved',async()=>{
  const h=setup({tasks:[{...base,id:'live',serverchan:true,feishu:true,serverchanKeyConfigured:true,feishuUrlConfigured:true}]});await tick();const d=h.w.document;
  d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
- assert.equal(advanced.open,false);assert.ok(advanced.contains(d.querySelector('.editorNotifications')));assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayDelete').hidden,true);
+ assert.equal(advanced.open,false);assert.ok(advanced.contains(d.querySelector('.editorNotifications')));assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayDelete'),null);
  advanced.open=true;d.querySelector('#dayClose').click();d.querySelector('#taskSidebarList [data-task-open="live"]').click();await tick();d.querySelector('#taskThread [data-edit-task]').click();
- assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,true);assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'输入 SCT 开头的 SendKey');assert.equal(f.elements.feishuUrl.placeholder,'输入飞书机器人 Webhook');assert.equal(d.querySelector('#dayDelete').hidden,false);
- d.querySelector('#dayDelete').click();await tick();assert.ok(h.requests.some(r=>r.method==='DELETE'&&r.path.endsWith('/tasks/live')));assert.equal(d.querySelector('#dayDialog').open,false);assert.equal(d.querySelector('#taskSidebarList [data-task-open="live"]'),null);h.dom.window.close();
+ assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,true);assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'输入 SCT 开头的 SendKey');assert.equal(f.elements.feishuUrl.placeholder,'输入飞书机器人 Webhook');assert.equal(d.querySelector('#dayDelete'),null);
+ assert.equal(h.requests.some(r=>r.method==='DELETE'),false);h.dom.window.close();
 });
