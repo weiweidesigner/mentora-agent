@@ -10,12 +10,12 @@
       "script": "business-chart-recall",
       "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html",
-    "reportUrl": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html",
+    "htmlUrl": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html?v=20261015-rating-layout",
+    "reportUrl": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html?v=20261015-rating-layout",
     "reportArtifacts": [
       {
         "path": "case:inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html",
-        "url": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html"
+        "url": "/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html?v=20261015-rating-layout"
       }
     ],
     "payloadUrl": null,

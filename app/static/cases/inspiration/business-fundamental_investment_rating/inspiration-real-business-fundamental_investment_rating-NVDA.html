@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="zh-CN" data-theme="light">
-<head><script src="/static/cases/theme.js"></script>
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>基本面评级</title>
+<title>NVDA基本面五维评分：增长强估值弱</title>
 <style>:root{--business-border-eef1f4:#eef1f4;--business-border-e1e6eb:#e1e6eb;}:root[data-theme="dark"]{--business-border-eef1f4:#293646;--business-border-e1e6eb:#293646;}
 
 :root{color-scheme:light;--business-bg-ffffff:#ffffff;--business-text-151820:#151820;--business-text-747b86:#747b86;--business-border-e7ebef:#e7ebef;--business-border-d8dde3:#d8dde3;--business-border-b7bec8:#b7bec8;--business-text-11151c:#11151c;--business-text-2f3540:#2f3540;--business-border-c7ced6:#c7ced6;--business-text-1d232c:#1d232c;}
@@ -30,9 +30,9 @@ body {
 }
 .module {
   width:100%;
-  max-width:820px;
+  max-width:none;
   margin:0;
-  min-height:560px;
+  min-height:0;
   padding:0;
   background:transparent;
 }
@@ -142,15 +142,16 @@ body {
   .radar-wrap { width:min(340px, 92vw); margin-top:8px; margin-bottom:16px; }
   .sections { padding-top:18px; }
 }
+.module{width:100%;max-width:none;min-height:0}.header{align-items:center;flex-wrap:wrap;gap:8px 16px}.header>.title,.header>div:first-child:not(.summary){flex:1;min-width:0}.summary{display:flex;align-items:baseline;gap:12px;flex:none}.rating{margin:0;font-size:14px;line-height:1.4}.score strong{font-size:24px}.radar-wrap{width:min(480px,100%);margin:8px auto;aspect-ratio:420/350}.sections{padding-top:12px}.sections::before{display:none}.radar path{stroke-width:4!important}.radar circle[fill="none"]{stroke-width:1.6!important}@media(max-width:720px){.header{flex-direction:row}.header>.title,.header>div:first-child:not(.summary){flex-basis:100%}.summary{gap:12px}.radar-wrap{width:min(400px,100%);margin:4px auto}.sections{padding-top:8px}}
 </style>
 <script data-business-theme-runtime>
     (() => {
       const requested = new URLSearchParams(location.search).get('theme');
       if (requested === 'dark' || requested === 'light') document.documentElement.dataset.theme = requested;
     })();
-    </script></head>
+    </script><link rel="stylesheet" href="/static/cases/theme.css"><script src="/static/cases/theme.js"></script></head>
 <body>
-<main class="module">
+<main class="module" data-rating-layout="2">
   <header class="header">
     <h1 class="title" id="title"></h1>
     <div class="summary">
@@ -159,7 +160,7 @@ body {
     </div>
   </header>
   <div class="radar-wrap">
-    <svg id="radar" class="radar" viewBox="0 0 420 420" role="img" aria-label="Fundamental investment rating radar"></svg>
+    <svg id="radar" class="radar" viewBox="0 0 420 350" role="img" aria-label="Fundamental investment rating radar"></svg>
   </div>
   <section class="sections">
     <h2 class="section-title">基本面分析</h2>
@@ -167,7 +168,7 @@ body {
   </section>
 </main>
 <script>
-const payload = {"type": "fundamental-investment-rating", "name": "基本面评级", "title": "基本面评级", "code": "NVDA", "market": "185", "exchange": "NASDAQ", "overallScore": 5.6, "overallScoreLabel": "5.60 / 10", "rating": "中性", "dimensions": [{"key": "value", "label": "价值", "score": 3.7}, {"key": "future", "label": "未来增长", "score": 7.4}, {"key": "past", "label": "历史表现", "score": 6.0}, {"key": "health", "label": "财务健康", "score": 6.8}, {"key": "dividend", "label": "分红", "score": 4.2}], "insights": [{"kind": "fundamental-1", "tone": "neutral", "text": "The overall valuation of NVDA is reasonable."}, {"kind": "fundamental-2", "tone": "neutral", "text": "NVDA's revenue will have seen strong growth in the next few years."}, {"kind": "fundamental-3", "tone": "neutral", "text": "NVDA's primary product is Data Center, with Data Center accounting for 89.7% of total revenue."}, {"kind": "fundamental-4", "tone": "neutral", "text": "NVDA has a debt-to-equity ratio of 39.9%, indicating a relatively low debt risk."}, {"kind": "fundamental-5", "tone": "neutral", "text": "NVDA's current dividend payout ratio is in the middle of the industry."}], "source": {"provider": "AInvest analysis page", "url": "https://www.ainvest.com/stocks/NASDAQ-NVDA/analysis/#fundamental-section-future"}, "extraction": {"mode": "live-playwright-with-fundamental-tab", "httpStatus": 202, "note": "Component built-in extractor failed on the live page; values extracted from the same rendered AInvest Fundamental tab."}, "language": "zh-CN", "componentUi": {"Exchange": "交易所", "Business": "主营业务", "Neutral": "中性", "Stock": "股票", "Fundamental Investment Rating": "基本面评级", "Fundamental Analysis": "基本面分析", "Rating": "评级", "Value": "价值", "Future": "未来增长", "Past": "历史表现", "Health": "财务健康", "Dividend": "分红", "No fundamental analysis text is available.": "暂无基本面分析文本。", "Investment Rating": "综合投资评级"}, "theme": "light", "uiRating": "评级"};
+const payload = {"type": "fundamental-investment-rating", "name": "基本面评级", "title": "NVDA基本面五维评分：增长强估值弱", "code": "NVDA", "market": "185", "exchange": "NASDAQ", "overallScore": 5.6, "overallScoreLabel": "5.60 / 10", "rating": "中性", "dimensions": [{"key": "value", "label": "价值", "score": 3.7}, {"key": "future", "label": "未来增长", "score": 7.4}, {"key": "past", "label": "历史表现", "score": 6.0}, {"key": "health", "label": "财务健康", "score": 6.8}, {"key": "dividend", "label": "分红", "score": 4.2}], "insights": [{"kind": "fundamental-1", "tone": "neutral", "text": "NVDA 的整体估值合理。", "sourceText": "The overall valuation of NVDA is reasonable."}, {"kind": "fundamental-2", "tone": "neutral", "text": "预计 NVDA 的营收在未来几年将强劲增长。", "sourceText": "NVDA's revenue will have seen strong growth in the next few years."}, {"kind": "fundamental-3", "tone": "neutral", "text": "NVDA 的主要业务是数据中心，数据中心占总营收的 89.7%。", "sourceText": "NVDA's primary product is Data Center, with Data Center accounting for 89.7% of total revenue."}, {"kind": "fundamental-4", "tone": "neutral", "text": "NVDA 的债务权益比为 39.9%，债务风险相对较低。", "sourceText": "NVDA has a debt-to-equity ratio of 39.9%, indicating a relatively low debt risk."}, {"kind": "fundamental-5", "tone": "neutral", "text": "NVDA 当前的股息支付率处于行业中等水平。", "sourceText": "NVDA's current dividend payout ratio is in the middle of the industry."}], "source": {"provider": "AInvest analysis page", "url": "https://www.ainvest.com/stocks/NASDAQ-NVDA/analysis/#fundamental-section-future"}, "extraction": {"mode": "live-playwright-with-fundamental-tab", "httpStatus": 202, "note": "Component built-in extractor failed on the live page; values extracted from the same rendered AInvest Fundamental tab."}, "language": "zh-CN", "componentUi": {"Exchange": "交易所", "Business": "主营业务", "Neutral": "中性", "Stock": "股票", "Fundamental Investment Rating": "基本面评级", "Fundamental Analysis": "基本面分析", "Rating": "评级", "Value": "价值", "Future": "未来增长", "Past": "历史表现", "Health": "财务健康", "Dividend": "分红", "No fundamental analysis text is available.": "暂无基本面分析文本。", "Investment Rating": "综合投资评级"}, "theme": "light", "uiRating": "评级", "customTitle": "NVDA基本面五维评分：增长强估值弱"};
 const titleEl = document.getElementById('title');
 const scoreEl = document.getElementById('overallScore');
 const ratingEl = document.getElementById('rating');
@@ -229,25 +230,18 @@ function renderRadar() {
     const found = dims.find(item => String(item.key || '').toLowerCase() === axis.key || String(item.label || '').toLowerCase() === axis.label.toLowerCase());
     return { ...axis, score: Number(found?.score || 0) };
   });
-  const cx = 210, cy = 205, r = 130;
+  const cx = 210, cy = 184, r = 130;
   radar.innerHTML = '';
   [0.22, 0.40, 0.58, 0.76, 0.94].forEach((scale, i) => {
-    radar.appendChild(el('circle', {cx, cy, r:r*scale, fill:'none', stroke:i % 2 ? 'var(--business-border-eef1f4)' : 'var(--business-border-e1e6eb)', 'stroke-width':22}));
-  });
-  const outerEdge = r * 0.94 + 11;
-  axes.forEach(axis => {
-    const [x2, y2] = polar(cx, cy, outerEdge, axis.angle);
-    radar.appendChild(el('line', {x1:cx, y1:cy, x2, y2, stroke:'var(--business-border-c7ced6)', 'stroke-width':3, 'stroke-linecap':'butt'}));
+    radar.appendChild(el('circle', {cx, cy, r:r*scale, fill:'none', stroke:i % 2 ? 'var(--business-border-eef1f4)' : 'var(--business-border-e1e6eb)', 'stroke-width':1.6, 'vector-effect':'non-scaling-stroke'}));
   });
   const points = axes.map(axis =>
     polar(cx, cy, r * Math.max(0, Math.min(10, axis.score)) / 10, axis.angle)
   );
-  radar.appendChild(el('path', {d:smoothClosedPath(points), fill:'var(--accent-fill)', stroke:'var(--accent)', 'stroke-width':5, 'stroke-linejoin':'round'}));
+  radar.appendChild(el('path', {d:smoothClosedPath(points), fill:'var(--accent-fill)', stroke:'var(--accent)', 'stroke-width':4, 'vector-effect':'non-scaling-stroke', 'stroke-linejoin':'round'}));
   axes.forEach(axis => {
-    const [lx, ly] = polar(cx, cy, r + 42, axis.angle);
-    const label = el('text', {x:lx, y:ly, 'text-anchor':'middle', 'dominant-baseline':'middle', 'font-size':13, 'font-weight':800, 'letter-spacing':1.5, fill:'var(--business-text-1d232c)'});
-    const rotate = axis.angle === 0 ? 0 : (axis.angle > 180 ? axis.angle - 360 : axis.angle);
-    label.setAttribute('transform', `rotate(${rotate}, ${lx}, ${ly})`);
+    const [lx, ly] = polar(cx, cy, r + 20, axis.angle);
+    const label = el('text', {x:lx, y:ly, 'text-anchor':'middle', 'dominant-baseline':'middle', 'font-size':16, 'font-weight':650, 'letter-spacing':0, fill:'var(--business-text-1d232c)'});
     label.textContent = axis.label;
     radar.appendChild(label);
   });
@@ -258,5 +252,18 @@ function renderRadar() {
 }
 renderRadar();
 </script>
-<style data-business-heading-style>.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="NVDA基本面五维评分：增长强估值弱";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
+<style data-business-heading-style>
+svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-highlight-color:transparent}
+.case-single-tab{display:none!important}
+@media(max-width:720px){
+ .component{height:auto!important;min-height:0!important}
+ .stage,.trend-stage,.waterfall-stage{height:210px!important;min-height:0!important}
+ .chart-panel .chart{height:190px!important;aspect-ratio:auto!important}
+ .range-filter{height:48px!important;padding:5px 16px 6px!important;box-sizing:border-box}
+ .range-shell,.time-range-shell{padding-inline:16px!important;box-sizing:border-box}
+ .ring-stage{height:200px!important} .ring-stage svg{width:190px!important;height:190px!important}
+ .intraday-card{min-width:0!important;width:100%;height:400px!important}
+ .intraday-row{--columns:1;grid-auto-columns:100%!important;gap:10px}
+}
+.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="NVDA基本面五维评分：增长强估值弱";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
 </html>

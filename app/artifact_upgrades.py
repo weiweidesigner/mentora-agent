@@ -134,6 +134,48 @@ def _native_payout_ratio():
     return module
 
 
+@lru_cache(maxsize=3)
+def _native_rating(name):
+    script = Path(__file__).parent / ('skills/business-chart-recall/scripts/' + name + '.py')
+    spec = importlib.util.spec_from_file_location('saved_' + name, script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_legacy_ratings(artifact, theme):
+    if 'id="radar"' not in artifact or 'data-rating-layout="2"' in artifact:
+        return artifact
+    try:
+        payload = _constant(artifact, 'payload')
+        name = {'fundamental-investment-rating':'fundamental_investment_rating', 'investment-rating':'investment_rating'}.get(payload.get('type'))
+        if not name:
+            return artifact
+        payload['theme'] = theme
+        title = re.search(r'const modelTitle\s*=\s*', artifact)
+        if title:
+            payload['customTitle'] = json.JSONDecoder().raw_decode(artifact[title.end():])[0]
+        return _native_rating(name).render_document(payload)
+    except (ValueError,KeyError,TypeError):
+        return artifact
+
+
+def upgrade_legacy_revenue_player(artifact, theme):
+    if 'id="timeline"' not in artifact or 'data-revenue-player="2"' in artifact:
+        return artifact
+    try:
+        payload = _constant(artifact, 'payload')
+        if payload.get('type') != 'revenue-expenses':
+            return artifact
+        payload['theme'] = theme
+        title = re.search(r'const modelTitle\s*=\s*', artifact)
+        if title:
+            payload['customTitle'] = json.JSONDecoder().raw_decode(artifact[title.end():])[0]
+        return _native_rating('revenue_expenses').render_document(payload)
+    except (ValueError,KeyError,TypeError):
+        return artifact
+
+
 def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
     """Repair saved native layouts without changing their data or custom marks."""
     if 'class="payout-ratio"' in artifact and 'data-mobile-layout="2"' not in artifact:
@@ -155,6 +197,8 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
                 artifact = _native_payout_ratio().render_html(values)
             except (ValueError, TypeError, KeyError):
                 pass
+    artifact = upgrade_legacy_ratings(artifact, theme)
+    artifact = upgrade_legacy_revenue_player(artifact, theme)
     artifact = artifact.replace('const yLabelReserve = width < 700 ? 72 : 46;', 'const yLabelReserve = width < 700 ? 42 : 46;')
     # Saved charts may already have layout repairs but still contain an older touch runtime.
     if 'id="genericMobileTouch"' in artifact and 'const pointerY=originY+event.clientY-placement.top;' not in artifact:
