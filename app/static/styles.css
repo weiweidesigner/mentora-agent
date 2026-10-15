@@ -4268,3 +4268,14 @@ p {
 .taskSettingsDialog .editorTitle:focus-visible,.taskSettingsDialog .editorQuestion:focus-visible { outline-offset:-1px; }
 .editorPopover { background:var(--soft); }
 .editorZoneSearch input:focus-visible { outline:none; }
+
+/* Light mode: a soft video wash and a distinct white sidebar panel. */
+:root[data-theme="light"] .homeBackdrop video { opacity:.18;filter:blur(14px) saturate(.35) brightness(1.3);transform:scale(1.04); }
+:root[data-theme="light"] .homeBackdropMask { background:linear-gradient(180deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.62) 40%,rgba(252,251,252,.9) 75%,var(--bg) 100%); }
+@media(min-width:761px) {
+ :root[data-theme="light"] .shell .sidebarRail { background:rgba(224,231,240,.72); }
+ :root[data-theme="light"] .shell .sidebarContent { background:rgba(255,255,255,.82);border-color:rgba(181,193,209,.62);box-shadow:inset 1px 0 0 #fff,4px 0 18px rgba(44,63,91,.035); }
+ :root[data-theme="light"] .shell.tasks-view .sidebarRail { background:#edf0f5; }
+ :root[data-theme="light"] .shell.tasks-view .sidebarContent { background:#fff; }
+}
+@media(max-width:760px) { :root[data-theme="light"] .shell.sidebar-open .sidebarContent { background:rgba(255,255,255,.86);border-color:#d6dee8; } }
