@@ -18,16 +18,12 @@
         "url": "/static/cases/inspiration/tradingview-market-overview/deepseek-tradingview-spx-ndx.html"
       },
       {
-        "path": "case:inspiration/tradingview-market-overview/deepseek-tradingview-us-market-overview.html",
-        "url": "/static/cases/inspiration/tradingview-market-overview/deepseek-tradingview-us-market-overview.html"
-      },
-      {
         "path": "case:inspiration/tradingview-market-overview/deepseek-us-indices-1y-cumret.html",
         "url": "/static/cases/inspiration/tradingview-market-overview/deepseek-us-indices-1y-cumret.html"
       }
     ],
     "payloadUrl": null,
-    "interpretation": "已完成取数、计算、渲染与视觉校验。以下是结果。\n\n---\n\n## 核心结论\n\n过去一年两大指数同步上行、**纳斯达克100 明显领先**：以代理价格计算，纳指100 近一年 +21.09%，标普500 +16.07%，超额 5.02 个百分点。两者在 **2026 年 10 月 6 日同日创下 52 周收盘新高**，随后 5 个交易日同步回调，但**纳指100 回调更深**（-3.80% vs 标普500 -0.98%），距高点回撤分别为 -4.04% 与 -1.22%。也就是说，当前是\"高位、同步、但成长股弹性更大\"的格局，尚未出现趋势破坏。\n\n## 关键指标（截至 2026-10-14 收盘）\n\n| 指标 | 标普500（SPY 代理） | 纳斯达克100（QQQ 代理） |\n|---|---|---|\n| 最新收盘价 | 769.60 | 728.95 |\n| 近 1 日 | -1.08% | -1.97% |\n| 近 5 个交易日 | -0.98% | -3.80% |\n| 近 1 个月 | +1.61% | +3.46% |\n| 近 3 个月 | +2.51% | +3.26% |\n| 年初至今 | +12.86% | +18.66% |\n| 近 1 年 | +16.07% | +21.09% |\n| 52 周最高收盘（2026-10-06） | 779.09 | 759.66 |\n| 52 周最低收盘（2026-03-30） | 631.97 | 558.28 |\n| 距 52 周高点 | -1.22% | -4.04% |\n\n从 3 月 30 日的 52 周低点到 10 月 6 日高点，标普500 反弹约 23%、纳指100 约 36%，这是近一年超额收益的主要来源：**底部反弹阶段和反弹后的主升段，纳指100 的弹性都更大**。\n\n## 图表\n\n**1）TradingView 主图：标普500 日线**（右侧自选列表已放入标普500与纳斯达克100，可直接点击切换；含区间切换、画线工具）\n\n[[AIME_CHART:case:inspiration/tradingview-market-overview/deepseek-tradingview-spx-ndx.html]]\n\n**2）TradingView 大盘概览：指数与波动率**（标普500、纳斯达克100、道指、罗素2000、VIX，含 12 个月迷你走势，用于判断回调是全局性还是仅限科技权重）\n\n[[AIME_CHART:case:inspiration/tradingview-market-overview/deepseek-tradingview-us-market-overview.html]]\n\n**3）近一年累计收益率对比（基准日 2025-10-13 = 0）**\n\n[[AIME_CHART:case:inspiration/tradingview-market-overview/deepseek-us-indices-1y-cumret.html]]\n\n这张图回答的是\"差距是什么时候、以什么方式拉开的\"：2025 年底到 2026 年一季度两条线基本贴合、同步震荡；**2026 年 3 月底前后出现全年最深的一段共同回撤**；此后同步反弹，但纳指100 在 2026 年年中起稳定运行于标普500 上方，并在此前的高点区把领先幅度扩大到约 5 个百分点。最右侧两条线的开口就是你当前承担的风格风险敞口。\n\n## 风险与数据口径（重要）\n\n- **指数数据为 ETF 代理**：Yahoo 指数直连接口本次被限流（HTTP 429），已降级到 Nasdaq 历史接口，标普500 使用 **SPY**、纳斯达克100 使用 **QQQ** 作为明确披露的代理，因此上表是**ETF 价格，不是指数点位**（SPY ≈ 769.60、QQQ ≈ 728.95）。\n- **价格为价格收益，不含股息**，数据源未提供复权收盘价。SPY 分红率高于 QQQ，若按总收益口径，两者近一年的差距会**小于** 5.02 个百分点。\n- 一年按 252 个交易日折算，基准日为 2025-10-13；数据截至 **2026-10-14 美股收盘**，非实时盘中数据。\n- TradingView 组件是托管展示型，**不产出可提取数值**，行情可能延迟或受交易所权限限制；本回答中的所有数字均来自上述代理数据，未从组件中读取。组件内使用的是 SP:SPX、NASDAQ:NDX、DJ:DJI、TVC:RUT、TVC:VIX，若个别符号在你的网络环境下不可用，该行会显示为空。\n- 单周 3%–4% 的回撤在纳指100 历史上属常见波动，不构成趋势判断依据；如需确认，建议结合组件中的 VIX 与罗素2000 看回调是否扩散至非科技板块。\n\n**缓存说明**：以上为真实对话生成时的答案与分析。图内行情、新闻或日历内容仍由 TradingView 加载，可能更新或延迟，与缓存分析的时点可能不同。",
+    "interpretation": "已完成取数、计算、渲染与视觉校验。以下是结果。\n\n---\n\n## 核心结论\n\n过去一年两大指数同步上行、**纳斯达克100 明显领先**：以代理价格计算，纳指100 近一年 +21.09%，标普500 +16.07%，超额 5.02 个百分点。两者在 **2026 年 10 月 6 日同日创下 52 周收盘新高**，随后 5 个交易日同步回调，但**纳指100 回调更深**（-3.80% vs 标普500 -0.98%），距高点回撤分别为 -4.04% 与 -1.22%。也就是说，当前是\"高位、同步、但成长股弹性更大\"的格局，尚未出现趋势破坏。\n\n## 关键指标（截至 2026-10-14 收盘）\n\n| 指标 | 标普500（SPY 代理） | 纳斯达克100（QQQ 代理） |\n|---|---|---|\n| 最新收盘价 | 769.60 | 728.95 |\n| 近 1 日 | -1.08% | -1.97% |\n| 近 5 个交易日 | -0.98% | -3.80% |\n| 近 1 个月 | +1.61% | +3.46% |\n| 近 3 个月 | +2.51% | +3.26% |\n| 年初至今 | +12.86% | +18.66% |\n| 近 1 年 | +16.07% | +21.09% |\n| 52 周最高收盘（2026-10-06） | 779.09 | 759.66 |\n| 52 周最低收盘（2026-03-30） | 631.97 | 558.28 |\n| 距 52 周高点 | -1.22% | -4.04% |\n\n从 3 月 30 日的 52 周低点到 10 月 6 日高点，标普500 反弹约 23%、纳指100 约 36%，这是近一年超额收益的主要来源：**底部反弹阶段和反弹后的主升段，纳指100 的弹性都更大**。\n\n## 图表\n\n**1）TradingView 主图：标普500 日线**（右侧自选列表已放入标普500与纳斯达克100，可直接点击切换；含区间切换、画线工具）\n\n[[AIME_CHART:case:inspiration/tradingview-market-overview/deepseek-tradingview-spx-ndx.html]]\n\n**2）近一年累计收益率对比（基准日 2025-10-13 = 0）**\n\n[[AIME_CHART:case:inspiration/tradingview-market-overview/deepseek-us-indices-1y-cumret.html]]\n\n这张图回答的是\"差距是什么时候、以什么方式拉开的\"：2025 年底到 2026 年一季度两条线基本贴合、同步震荡；**2026 年 3 月底前后出现全年最深的一段共同回撤**；此后同步反弹，但纳指100 在 2026 年年中起稳定运行于标普500 上方，并在此前的高点区把领先幅度扩大到约 5 个百分点。最右侧两条线的开口就是你当前承担的风格风险敞口。\n\n## 风险与数据口径（重要）\n\n- **指数数据为 ETF 代理**：Yahoo 指数直连接口本次被限流（HTTP 429），已降级到 Nasdaq 历史接口，标普500 使用 **SPY**、纳斯达克100 使用 **QQQ** 作为明确披露的代理，因此上表是**ETF 价格，不是指数点位**（SPY ≈ 769.60、QQQ ≈ 728.95）。\n- **价格为价格收益，不含股息**，数据源未提供复权收盘价。SPY 分红率高于 QQQ，若按总收益口径，两者近一年的差距会**小于** 5.02 个百分点。\n- 一年按 252 个交易日折算，基准日为 2025-10-13；数据截至 **2026-10-14 美股收盘**，非实时盘中数据。\n- TradingView 组件是托管展示型，**不产出可提取数值**，行情可能延迟或受交易所权限限制；本回答中的所有数字均来自上述代理数据，未从组件中读取。交互主图使用 SP:SPX、NASDAQ:NDX，具体可用性以 TradingView 返回结果为准。\n- 单周 3%–4% 的回撤在纳指100 历史上属常见波动，不构成趋势判断依据；如需确认，还需要另行核查波动率与小盘股表现，判断回调是否扩散至非科技板块。\n\n**缓存说明**：以上为真实对话生成时的答案与分析。图内行情、新闻或日历内容仍由 TradingView 加载，可能更新或延迟，与缓存分析的时点可能不同。",
     "status": [
       "DeepSeek Harness 已完成处理"
     ],
@@ -439,6 +435,15 @@
         "sha256": "32fb058b2adfb61a23945ba94effe520a21fe2b877e68de3d0c9a97378ce74bf"
       }
     ],
-    "cacheScope": "actual-conversation-and-generated-artifacts"
+    "cacheScope": "actual-conversation-and-generated-artifacts",
+    "displayEdits": [
+      {
+        "reason": "Removed the empty TradingView index and volatility overview after it returned no data; retained the other charts.",
+        "artifact": "deepseek-tradingview-us-market-overview.html",
+        "date": "2026-10-15",
+        "widget": "market-overview",
+        "action": "remove-unavailable"
+      }
+    ]
   }
 }

@@ -217,7 +217,7 @@ test('gallery summaries and replay questions are readable product copy',()=>{
   }
 });
 
-test('financial gallery covers every TradingView widget exactly once',()=>{
+test('financial gallery tracks every TradingView widget and excludes explicitly retired empty results',()=>{
  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
  const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
  const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));
@@ -240,6 +240,8 @@ test('financial gallery covers every TradingView widget exactly once',()=>{
    return {document,config:match?JSON.parse(match[1]):null};
   });
   const entry=entries.find(item=>item.config?.widget===row.widget);
+  const retired=cached.provenance.displayEdits?.find(edit=>edit.widget===row.widget&&edit.action==='remove-unavailable');
+  if(retired){assert.equal(entry,undefined);assert.ok(retired.reason);assert.equal(cached.answer.reportArtifacts.some(a=>a.url.endsWith('/'+retired.artifact)),false);assert.equal(cached.answer.interpretation.includes(retired.artifact),false);continue;}
   assert.ok(entry,`missing actual widget result: ${row.widget}`);
   const {document,config}=entry;
   assert.equal(config.widget,row.widget);
