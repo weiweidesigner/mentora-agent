@@ -15,9 +15,9 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   const conversation = w.document.querySelector('main'), input = w.document.querySelector('input'), messages = w.document.querySelector('#messages'), form = w.document.querySelector('form');
   form.requestSubmit = () => sent.push(input.value);
   const context = vm.createContext({window:w, document:w.document, history:w.history, location:w.location, URL, URLSearchParams, structuredClone, performance,
-    ResizeObserver: class { observe() {} disconnect() {} }, requestAnimationFrame: fn => { if (fn.name !== 'moveLanes') fn(); }, conversation, input, messages, form,
+    ResizeObserver: class { observe() {} disconnect() {} }, requestAnimationFrame: fn => { if (fn.name !== 'moveLanes') w.setTimeout(fn,0); }, conversation, input, messages, form,
     escapeHtml: value => value, isMobileLayout: () => false, closeActivityDrawer: () => {}, updateComposerState: () => {},
-    startNewChat: () => {w.dispatchEvent(new w.Event('veya:chat-navigate')); messages.innerHTML=''; conversation.classList.add('is-empty'); input.value='';},
+    startNewChat: () => {w.dispatchEvent(new w.Event('veya:chat-navigate')); messages.innerHTML=''; conversation.classList.add('is-empty'); input.value=''; conversation.scrollTop=0;},
     addUserMessage: question => {const el=w.document.createElement('p');el.textContent=question;messages.append(el);},
     createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
     sanitizeUserFacingInsight: value => value, formatInsight: value => `<p>${value}</p>`,
@@ -25,7 +25,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     fetch: async url => {requests.push(url); const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0]; return {ok:true,json:async()=>url.includes('/inspiration/manifest.json')?catalog:url.endsWith('manifest.json')?rows:{question:row.question,answer:{interpretation:text}}};},
   });
   vm.runInContext(source,context);
-  return {w, requests, sent, conversation, messages};
+  return {w, requests, sent, conversation, messages, startNewChat: context.startNewChat};
 }
 test('case replay loads cached conversation without inference; ask fills an editable draft', async () => {
   const h=setup();await tick();
@@ -248,4 +248,30 @@ test('financial gallery covers every TradingView widget exactly once',()=>{
   assert.match(document,/tradingview-widget-copyright/);
   assert.match(cached.answer.interpretation,/TradingView.*加载|TradingView.*更新/);
  }
+});
+
+
+test('closing a case restores the previous home scroll; new chat still starts at the top', async () => {
+  const h=setup();await tick();
+  const lane=h.w.document.querySelector('.caseLane');
+  for(const exit of ['button','escape','history']) {
+    h.conversation.scrollTop=1640;
+    lane.scrollLeft=215;
+    h.w.document.querySelector('.caseCard').click();await tick();
+    assert.equal(h.w.document.querySelector('.caseHomeBackground').scrollTop,1640);
+    h.messages.scrollTop=650;
+    if(exit==='button') h.w.document.querySelector('#caseBackButton').click();
+    else if(exit==='escape') h.w.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape'}));
+    else {
+      h.w.history.replaceState(null,'','/');
+      h.w.dispatchEvent(new h.w.PopStateEvent('popstate'));
+    }
+    await tick();
+    assert.equal(h.conversation.scrollTop,1640,exit+' restores home position');
+    assert.equal(lane.scrollLeft,215);
+  }
+  h.w.document.querySelector('.caseCard').click();await tick();
+  h.startNewChat();await tick();
+  assert.equal(h.conversation.scrollTop,0,'explicit new chat resets to top');
+  h.w.close();
 });

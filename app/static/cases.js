@@ -15,9 +15,8 @@
   const responseCache = new Map();
   let overlay = null;
   let restoreOverlayNodes = null;
-  let restoreHomeScroll = true;
-  function mountCaseOverlay() {
-    const homeScrollTop = conversation.scrollTop;
+  let restoreHomeScroll = false;
+  function mountCaseOverlay(homeScrollTop) {
     const horizontalPositions = [...conversation.querySelectorAll('.caseLane,#inspirationTabs')]
       .map(node => [node, node.scrollLeft]);
     const origin = document.createComment("case conversation location");
@@ -257,9 +256,13 @@
     const row = (window.veyaCases || []).find((item) => item.id === id);
     if (!row) return;
     returnFocus = document.activeElement?.matches(`[data-case="${id}"]`) ? document.activeElement : document.querySelector(`[data-case="${id}"]`);
+    // Capture before startNewChat resets the shared conversation scroller.
+    const homeScrollTop = overlay
+      ? document.querySelector(".caseHomeBackground").scrollTop
+      : conversation.scrollTop;
     openingCase = true;
     try { startNewChat(false, false); } finally { openingCase = false; }
-    mountCaseOverlay();
+    mountCaseOverlay(homeScrollTop);
     input.blur();
     const version = ++loadVersion;
     selectedCase = row;
@@ -337,7 +340,8 @@
   });
 
   function closeCase() {
-    startNewChat(false, false);
+    restoreHomeScroll = true;
+    try { startNewChat(false, false); } finally { restoreHomeScroll = false; }
     returnFocus?.focus({ preventScroll: true });
   }
   back?.addEventListener("click", closeCase);
@@ -366,7 +370,7 @@
     const question = selectedCase.question;
     ask.disabled = true;
     restoreHomeScroll = false;
-    try { startNewChat(false, false); } finally { restoreHomeScroll = true; }
+    try { startNewChat(false, false); } finally { restoreHomeScroll = false; }
     input.value = question;
     updateComposerState();
     input.focus({ preventScroll: true });
@@ -374,7 +378,7 @@
   window.addEventListener("popstate", () => {
     const id = new URLSearchParams(location.search).get("case");
     if (id) showCase(id, false);
-    else if (selectedCase) startNewChat(false, false);
+    else if (selectedCase) closeCase();
   });
 
   fetch("/static/cases/manifest.json", { cache: "no-store" }).then((response) => {
