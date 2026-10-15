@@ -11,7 +11,7 @@
   let boards = [], activeId = '', catalog = [], category = '全部', componentId = '', internal = false, nameAction = 'rename';
   const jobs = new Map();
   const current = () => boards.find(b => b.id === activeId);
-  function notice(text) { $('widgetStatus').textContent = text; }
+  function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text; }
   function safeUrl(value) {
     try { const u = new URL(value, location.href); return u.origin === location.origin && /\/(generated|share-artifact)\/[^/]+\.html$/.test(u.pathname) ? u.pathname + u.search : ''; } catch { return ''; }
   }
@@ -83,7 +83,7 @@
     canvas.setAttribute('role','tabpanel');canvas.setAttribute('aria-labelledby',`widget-tab-${board.id}`);
     canvas.replaceChildren(...board.cards.map(cardNode));$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId);$('widgetStop').hidden=!jobs.has(activeId);
-    applyLayout();notice(jobs.has(activeId)?'正在生成图表，你可以切换看板继续浏览…':'布局自动保存在当前浏览器');
+    applyLayout();notice(jobs.has(activeId)?'正在生成图表，你可以切换看板继续浏览…':'');
   }
   function route(push=true) {
     const url=new URL(location.href);['task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));url.searchParams.set('tab','widgets');url.searchParams.set('board',activeId);history[push?'pushState':'replaceState'](null,'',url);
@@ -176,7 +176,7 @@
   $('widgetDelete').onclick=()=>{if(!confirm(`删除「${current().title}」及其看板布局？`))return;jobs.get(activeId)?.abort();boards=boards.filter(b=>b.id!==activeId);if(!boards.length)boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});activeId=boards[0].id;save();route();render();};
   $('widgetTabs').onclick=event=>{const button=event.target.closest('[data-board]');if(!button)return;activeId=button.dataset.board;save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);};
   $('widgetTabs').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();const i=boards.findIndex(b=>b.id===activeId);activeId=boards[(i+(['ArrowRight','ArrowDown'].includes(event.key)?1:boards.length-1))%boards.length].id;save();route();render();$('widgetTabs').querySelector('[aria-selected=true]')?.focus();});
-  $('widgetComposerAdd').onclick=library;$('widgetLibraryOpen').onclick=library;$('widgetEmptyAdd').onclick=library;$('widgetLibraryClose').onclick=()=>$('widgetLibrary').close();
+  $('widgetLibraryOpen').onclick=library;$('widgetEmptyAdd').onclick=library;$('widgetLibraryClose').onclick=()=>$('widgetLibrary').close();
   $('widgetSearch').oninput=renderLibrary;
   $('widgetCategories').onclick=event=>{const b=event.target.closest('[data-category]');if(b){category=b.dataset.category;renderLibrary();}};
   $('widgetLibraryList').onclick=event=>{const b=event.target.closest('[data-component]');if(b){componentId=b.dataset.component;renderLibrary();}};
