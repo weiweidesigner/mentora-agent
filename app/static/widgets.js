@@ -207,7 +207,7 @@
     $('widgetScope').textContent=card?`已选：${card.title} ×`:'';
     $('widgetScope').hidden=!card;
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
-    $('widgetPrompt').placeholder=card?'描述你想对这张卡片做的调整…':'调整布局、添加组件或修改参数…';
+    $('widgetPrompt').placeholder=card?'想怎样调整这张卡片？':'想怎样调整看板？';
     $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=commandControllers.has(activeId);
     for(const node of canvas.children)node.classList.toggle('is-selected',node.dataset.card===selectedCardId);
   }
