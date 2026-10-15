@@ -4321,7 +4321,7 @@ p {
 /* Light task overlays use white surfaces and a soft, translucent page wash. */
 :root[data-theme="light"] .taskSettingsDialog {
  --bg:#fff;--ink:#242424;--muted:#858585;--line:#e8e8e8;--soft:#f6f6f6;--soft-2:#ededed;
- background:#fff;border:1px solid #e7e7e7;box-shadow:0 14px 34px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.035);
+ height:fit-content;background:#fff;border:1px solid #e7e7e7;box-shadow:0 14px 34px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.035);
 }
 :root[data-theme="light"] .taskSettingsDialog::backdrop { background:rgba(242,242,242,.66);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px); }
 :root[data-theme="light"] .taskSettingsDialog .dayDialogHeader h2 { font-size:18px; }
