@@ -15,6 +15,7 @@
   let tasks = [], markets = [], publicKey = '', serverDelta = 0, busy = false, lastRefresh = 0;
   let selectedId = '', selectedRun = '', pinnedRun = false, sharedEntry = null, resultVersion = '', viewVersion = 0;
   let lastDetailState = '';
+  let sidebarExpanded = false;
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
   let wizardDraft = null, wizardStep = 0, saving = false;
@@ -75,7 +76,10 @@
   function renderLists() {
     const rows=visibleTasks();
     if(sharedEntry && selectedId===sharedEntry.task.id && !tasks.some(t=>t.id===selectedId))rows.push({...sharedEntry.task,sharedReadOnly:true});
-    $('taskSidebarList').innerHTML=taskRows(rows,true)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
+    $('taskSidebarList').innerHTML=taskRows(sidebarExpanded?rows:rows.slice(0,5),true)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
+    $('taskSidebarExpand').hidden=rows.length<=5;
+    $('taskSidebarExpand').textContent=sidebarExpanded?'收起显示':'展开显示';
+    $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
     $('taskRecommendations').innerHTML=Object.entries(stages).map(([key,label])=>`<button type="button" class="taskRecommendation" data-template="${key}"><span class="taskTemplateIcon" aria-hidden="true">${key==='pre'?'☀':key==='live'?'◉':'☾'}</span><span><strong>${label}</strong><small>${key==='pre'?'开盘前梳理事件、催化与关注清单':key==='live'?'定时检查异动、成交量和板块变化':'收盘后复盘市场与自选标的'}</small></span><span aria-hidden="true">＋</span></button>`).join('');
@@ -293,6 +297,8 @@
         case'navHome':case'railHome':if(typeof startNewChat==='function')startNewChat(false,false);if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
         case'taskBack':case'wizardClose':showLanding();break;
         case'taskSidebarNew':case'taskOpenCreate':newTask();break;
+        case'taskSearchToggle':{const field=$('taskSearchField');field.hidden=!field.hidden;b.setAttribute('aria-expanded',String(!field.hidden));if(!field.hidden)$('taskSearch').focus();else{$('taskSearch').value='';renderLists();}break;}
+        case'taskSidebarExpand':sidebarExpanded=!sidebarExpanded;renderLists();break;
         case'taskSettings':if(selected())edit(selected(),!editable(selected()));break;
         case'taskToggle':if(completed(selected())){edit(selected());break;}b.disabled=true;await toggleTask(selected());b.disabled=false;break;
         case'taskRunNow':b.disabled=true;await api('tasks/'+selectedId+'/run','POST');pinnedRun=false;await refresh();await selectTask(selectedId,{updateUrl:false});message('任务已提交到云端，关闭页面后仍会执行。','taskMessage');break;

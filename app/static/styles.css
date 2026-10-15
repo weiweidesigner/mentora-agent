@@ -4051,3 +4051,32 @@ p {
  .shell.tasks-view .sidebarTop .sidebarCollapseButton { position:absolute;right:12px;top:14px; }
  .shell.tasks-view .sidebarTop .themeToggleButton { display:flex;position:absolute;right:16px;bottom:16px; }
 }
+
+/* Compact task list with header search and an icon filter. */
+.shell.tasks-view #themeModeControl { display:none; }
+.taskSearchLabel[hidden] { display:none; }
+.taskSidebarIcon { display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer; }
+.taskSidebarIcon:hover { background:var(--soft-2);color:var(--ink); }
+.taskSidebarIcon svg,.taskSidebarFilterControl svg { width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round; }
+.taskSidebarSection { display:flex;align-items:center;justify-content:space-between;flex:none;padding:0 8px;margin:24px 0 12px;color:var(--muted);font-size:13px;font-weight:550; }
+.taskSidebarFilterControl { display:flex;align-items:center;justify-content:center;position:relative;width:30px;height:30px;border-radius:7px;cursor:pointer; }
+.taskSidebarFilterControl:hover { background:var(--soft-2);color:var(--ink); }
+.taskSidebarFilterControl select { position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer; }
+.taskSidebarFilterControl:focus-within,.taskSidebarIcon:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
+.taskSidebarExpand { flex:none;padding:12px 8px;text-align:left;color:var(--muted);font-size:13px; }
+@media(min-width:761px) {
+ .shell.tasks-view .taskSidebarTitle { padding-right:38px; }
+ .shell.tasks-view .taskSidebarTitle h2 { font-weight:550; }
+ .shell.tasks-view .taskSidebarCreate { margin:14px 0 4px;font-weight:400;color:var(--muted); }
+ .shell.tasks-view .taskSidebarCreate:hover { color:var(--ink); }
+ .shell.tasks-view .taskSidebar .taskListItem { padding:10px 8px; }
+ .shell.tasks-view .taskSidebar .taskListItem strong { color:var(--ink);font-size:14px;font-weight:400; }
+ .shell.tasks-view .taskSidebar .taskListItem small { font-size:12px;margin-top:5px; }
+ .shell.tasks-view .taskSidebar .taskListArrow { display:none; }
+}
+@media(min-width:761px) {
+ .shell.tasks-view .sidebarContent { padding-top:16px; }
+ .shell.tasks-view .taskSidebarCreate { margin:8px 0 4px;padding:6px 8px;min-height:36px;line-height:1; }
+ .shell.tasks-view .taskSidebarCreate>span { font-size:22px;line-height:1; }
+ .taskSidebarSection { margin-top:16px;margin-bottom:8px; }
+}

@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-persistent-nav" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-compact-task-list" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -48,11 +48,12 @@
             </button>
           </nav>
           <section id="taskSidebar" class="taskSidebar" aria-label="定时任务列表" hidden>
-            <div class="taskSidebarTitle"><h2>定时任务</h2></div>
+            <div class="taskSidebarTitle"><h2>定时任务</h2><button id="taskSearchToggle" class="taskSidebarIcon" type="button" aria-label="搜索任务" aria-expanded="false" aria-controls="taskSearchField"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg></button></div>
             <button id="taskSidebarNew" class="taskSidebarCreate dayTextButton" type="button" aria-label="新建定时任务"><span aria-hidden="true">＋</span> 新建任务</button>
-            <label class="taskSearchLabel"><input id="taskSearch" type="search" placeholder="搜索任务" aria-label="搜索定时任务" /></label>
-            <select id="taskSidebarFilter" class="taskFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select>
+            <label id="taskSearchField" class="taskSearchLabel" hidden><input id="taskSearch" type="search" placeholder="搜索任务" aria-label="搜索定时任务" /></label>
+            <div class="taskSidebarSection"><span id="taskSidebarSectionTitle">即将执行</span><label class="taskSidebarFilterControl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M6 12h12M9 18h6"/></svg><select id="taskSidebarFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></label></div>
             <div id="taskSidebarList"></div>
+            <button id="taskSidebarExpand" class="dayTextButton taskSidebarExpand" type="button" hidden>展开显示</button>
           </section>
           <div class="historyBlock">
             <div class="historyTitle">最近对话</div>
@@ -257,6 +258,6 @@
     <script src="/static/app.js?v=interface-20261015-task-workspace"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
-    <script src="/static/day-tasks.js?v=20261015-persistent-nav"></script>
+    <script src="/static/day-tasks.js?v=20261015-compact-task-list"></script>
   </body>
 </html>
