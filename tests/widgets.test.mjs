@@ -78,7 +78,7 @@ test('card selection scopes model edits, applies parameter changes directly, and
 test('layout-only command preserves live iframe elements and the scope can return to the whole board',async()=>{
  const s=setup({storage:twoCards(),plan:{reply:'已改为上下排列。',actions:[{type:'update',cardId:'one',layout:{x:0,y:0,w:12}},{type:'update',cardId:'two',layout:{x:0,y:19,w:12}}]}});
  const detached=[];const observer=new s.w.MutationObserver(records=>records.forEach(r=>detached.push(...r.removedNodes)));observer.observe(s.d.querySelector('#widgetCanvas'),{childList:true});
- const original=s.d.querySelector('[data-card="two"] iframe');s.d.querySelector('[data-card="one"] .widgetCardHeader').click();s.d.querySelector('#widgetScope').click();assert.equal(s.d.querySelector('#widgetScope').textContent,'整个看板');
+ const original=s.d.querySelector('[data-card="two"] iframe');s.d.querySelector('[data-card="one"] .widgetCardHeader').click();s.d.querySelector('#widgetScope').click();assert.equal(s.d.querySelector('#widgetScope').textContent,'');assert.equal(s.d.querySelector('#widgetScope').hidden,true);
  submit(s.w,s.d,'上下排列');await tick();await tick();assert.equal(s.d.querySelector('[data-card="two"] iframe'),original);assert.equal(detached.length,0);observer.disconnect();
  assert.equal(s.calls.some(c=>c.url==='/api/widgets/tradingview'||c.url==='/api/chat/stream'),false);s.dom.window.close();
 });
