@@ -51,3 +51,5 @@
 .widgetWorkspace .widgetEmpty{display:none}
 
 .widgetSidebar #widgetNew{margin-bottom:4px}.widgetSidebarAction{display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;text-align:left;color:var(--muted);background:transparent;border:0;border-radius:8px;padding:10px 8px;margin:0 0 20px;cursor:pointer}.widgetSidebarAction:hover{background:var(--soft-2);color:var(--ink)}.widgetSidebarAction svg{flex:none}
+
+.widgetWorkspace .widgetComposerArea{display:none}

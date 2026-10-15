@@ -163,6 +163,7 @@
   }, { passive: true });
 
   function clearCaseView() {
+    window.dispatchEvent(new window.Event("veya:case-chat-reset"));
     window.clearTimeout(scrollIdleTimer);
     setScrollHidden(false);
     lastScrollTop = 0;
@@ -298,6 +299,7 @@
       }
       if (version !== loadVersion) return;
       const cached = structuredClone(responseCache.get(id));
+      window.dispatchEvent(new window.CustomEvent("veya:case-chat-ready", {detail:{row,question:cached.question,answer:cached.answer}}));
       if (id === "presidents-sp500") {
         cached.answer.reportArtifacts?.forEach((artifact) => {
           if (artifact.path?.endsWith("/deepseek-case-presidents-sp500-dynamic-line.html")) artifact.caseDemoLoadingMs = 800;
@@ -365,6 +367,7 @@
       event.stopImmediatePropagation();
       if (videoOverlay) videoOverlay.querySelector(".aimeVideoClose")?.click();
       else if (document.querySelector(".activityDrawer.is-open")) { closeActivityDrawer(); back?.focus({ preventScroll: true }); }
+      else if (overlay?.querySelector(".caseChatDrawer:not([hidden])")) window.dispatchEvent(new window.Event("veya:case-chat-close"));
       else closeCase();
     }
     if (event.key === "Tab" && overlay) {
