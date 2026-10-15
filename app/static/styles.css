@@ -4347,3 +4347,34 @@ p {
 .taskListComplete svg { width:18px;height:18px; }
 .taskSidebar .taskListItem:is(.is-paused,.is-completed) strong,
 :root[data-theme="light"] .shell.tasks-view .taskSidebar .taskListItem:is(.is-paused,.is-completed) strong { color:var(--muted); }
+
+/* Per-task actions stay separate from the button that opens the conversation. */
+.taskListRow { position:relative;min-width:0;border-radius:10px; }
+.taskListRow:hover,.taskListRow:has(.taskMoreButton[aria-expanded=true]) { background:var(--soft); }
+.taskListRow .taskListItem,.shell.tasks-view .taskSidebar .taskListRow .taskListItem { position:relative;padding-right:44px; }
+.taskMoreButton { position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:28px;height:28px;padding:5px;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;opacity:0;pointer-events:none; }
+.taskMoreButton svg { width:18px;height:18px;fill:currentColor; }
+.taskListRow:hover .taskMoreButton,.taskListRow:focus-within .taskMoreButton,.taskListRow:has(.taskListItem.is-selected) .taskMoreButton,.taskMoreButton[aria-expanded=true] { opacity:1;pointer-events:auto; }
+.taskMoreButton:hover,.taskMoreButton[aria-expanded=true] { background:var(--soft-2);color:var(--ink); }
+.taskListRow .taskListComplete { position:absolute;right:12px;top:50%;transform:translateY(-50%); }
+.taskListRow:hover .taskListComplete,.taskListRow:focus-within .taskListComplete,.taskListRow:has(.taskListItem.is-selected) .taskListComplete,.taskListRow:has(.taskMoreButton[aria-expanded=true]) .taskListComplete { opacity:0; }
+.taskMoreMenu { position:fixed;inset:auto;margin:0;padding:8px;max-height:calc(100dvh - 24px);overflow-y:auto;border:1px solid var(--line);border-radius:17px;background:var(--soft);color:var(--ink);box-shadow:0 10px 32px rgba(0,0,0,.16);z-index:1000; }
+.taskMoreMenu[hidden] { display:none; }
+.taskMoreMenu button { display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:9px;background:transparent;color:inherit;font:inherit;font-size:14px;text-align:left;cursor:pointer; }
+.taskMoreMenu button svg { width:20px;height:20px;flex:none; }
+.taskMoreMenu button:hover,.taskMoreMenu button:focus-visible { background:var(--soft-2);outline:none; }
+.taskMoreMenu button:disabled { color:var(--muted);opacity:.5;cursor:default; }
+.taskMoreMenu button.is-danger { color:#ef4444; }
+.taskMoreMenu hr { border:0;border-top:1px solid var(--line);margin:6px 12px; }
+:root[data-theme=light] .taskMoreMenu { background:#fff;border-color:#e2e2e2;box-shadow:0 8px 24px rgba(0,0,0,.10); }
+.taskDeleteDialog { width:min(400px,calc(100% - 32px));padding:24px;border:1px solid var(--line);border-radius:22px;background:var(--bg);color:var(--ink);box-shadow:0 12px 40px #0002; }
+.taskDeleteDialog::backdrop { background:#0005;backdrop-filter:blur(2px); }
+.taskDeleteDialog h2 { margin:0 0 16px;font-size:20px; }
+.taskDeleteDialog p { font-size:14px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere; }
+.taskDeleteDialog footer { display:flex;justify-content:flex-end;gap:10px;margin-top:24px; }
+.taskDeleteDialog .taskDeleteConfirm { background:#e53935;color:#fff;border-color:transparent; }
+:root[data-theme=light] .taskDeleteDialog { background:#fff; }
+:root[data-theme=light] .taskDeleteDialog::backdrop { background:rgba(242,242,242,.6); }
+@media(hover:none) { .taskMoreButton { opacity:1;pointer-events:auto; }.taskListRow .taskListComplete { right:44px; }.taskListRow .taskListComplete~.taskMoreButton { right:8px; } }
+
+@media(hover:none) { .taskListRow .taskListItem.is-completed,.shell.tasks-view .taskSidebar .taskListRow .taskListItem.is-completed { padding-right:72px; } }

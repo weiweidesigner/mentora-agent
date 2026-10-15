@@ -9,7 +9,7 @@ const savedAnswerSource=appSource.slice(appSource.indexOf('async function render
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
-function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/'}={}) {
+function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
  const dom=new JSDOM(html,{url,runScripts:'outside-only'}),w=dom.window,requests=[],saves=[];
  w.matchMedia=()=>({matches:mobile});w.setInterval=()=>0;w.structuredClone=structuredClone;w.requestAnimationFrame=f=>f();
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -18,6 +18,10 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
  w.fetch=async (path,options={})=>{
   requests.push({path,method:options.method||'GET'});let data;
   if(options.method==='POST'&&path.endsWith('/tasks')){data={...base,...JSON.parse(options.body),id:'created',resultVersion:null,lastRun:null,nextAt:'2026-11-05T10:30:00Z'};saves.push(JSON.parse(options.body));tasks.push(data);}
+  else if(path.includes('/shared/'))data=shared||{};
+  else if(options.method==='PUT'){const id=path.split('/').at(-1),index=tasks.findIndex(t=>t.id===id);data={...tasks[index],...JSON.parse(options.body)};tasks[index]=data;}
+  else if(options.method==='DELETE'){tasks=tasks.filter(t=>!path.endsWith('/'+t.id));data={ok:true};}
+  else if(options.method==='POST'&&path.endsWith('/run')){const task=tasks.find(t=>path.includes('/'+t.id+'/'));task.activeRun='queued';task.lastRun={status:'queued'};data={runId:'queued'};}
   else if(path.endsWith('/tasks'))data={tasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:'live',status:'交易中'}],serverTime:'2026-10-15T04:00:00Z',pushPublicKey:''};
   else if(path.endsWith('/runs'))data={runs:path.includes('created')?[]:[{id:'run-new',status:'success',created:'2026-10-15T04:00:00Z',finished:'2026-10-15T04:00:00Z',available:true},{id:'run-old',status:'success',created:'2026-10-14T04:00:00Z',finished:'2026-10-14T04:00:00Z',available:true}]};
   else if(path.includes('/runs/'))data={question:'本次原始问句',cachedDate:'2026-10-15T04:00:00Z',answer:{interpretation:path.endsWith('run-old')?'上一次缓存内容':'最新缓存内容'}};
@@ -142,4 +146,32 @@ test('sidebar summarizes upcoming, monitoring, monthly, paused and completed tas
 test('sidebar dates use the task time zone and failed or queued runs never get a completion mark',async()=>{
  const h=setup({tasks:[{...base,id:'us',market:'US',timezone:'America/New_York',time:'08:00',nextAt:'2026-10-15T12:00:00Z'},{...base,id:'queued',activeRun:'queued',lastRun:{status:'queued'}},{...base,id:'failed',cadence:'once',enabled:false,nextAt:null,lastRun:{status:'failed'}}]});await tick();const d=h.w.document;
  assert.equal(d.querySelector('[data-task-open="us"] small').textContent,'今天 8时 · 每天 8:00');assert.equal(d.querySelector('[data-task-open="queued"] small').textContent,'排队中');assert.equal(d.querySelector('[data-task-open="failed"] small').textContent,'运行失败');assert.equal(d.querySelector('[data-task-open="failed"] .taskListComplete'),null);h.dom.window.close();
+});
+
+test('more menu opens separately from the task and exposes pause, run, edit, share and delete',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks'});await tick();const d=h.w.document;
+ d.querySelector('[data-task-more="live"]').click();assert.equal(d.querySelector('#taskMoreMenu').hidden,false);assert.equal(d.querySelector('#taskDetail').hidden,true);assert.equal(new URL(h.w.location).searchParams.get('task'),null);assert.deepEqual([...d.querySelectorAll('#taskMoreMenu [data-task-action]')].map(b=>b.dataset.taskAction),['toggle','run','edit','share','delete']);
+ d.querySelector('[data-task-action="toggle"]').click();await tick();assert.ok(h.requests.some(r=>r.method==='PUT'));assert.match(d.querySelector('#taskSidebarList small').textContent,/已暂停/);
+ d.querySelector('[data-task-more="live"]').click();assert.match(d.querySelector('[data-task-action="toggle"]').textContent,/开启/);d.querySelector('[data-task-action="edit"]').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#dayForm').elements.title.value,base.title);d.querySelector('#dayClose').click();
+ d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="run"]').click();await tick();assert.equal(h.requests.filter(r=>r.method==='POST'&&r.path.endsWith('/run')).length,1);d.querySelector('[data-task-more="live"]').click();assert.equal(d.querySelector('[data-task-action="run"]').disabled,true);assert.equal(d.querySelector('[data-task-action="delete"]').disabled,true);
+ d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(d.querySelector('#taskMoreMenu').hidden,true);h.dom.window.close();
+});
+
+test('delete menu requires confirmation; cancelling never deletes and confirmation removes only that task',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document;
+ d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="delete"]').click();assert.equal(d.querySelector('#taskDeleteDialog').open,true);assert.equal(h.requests.some(r=>r.method==='DELETE'),false);d.querySelector('#taskDeleteCancel').click();assert.equal(d.querySelector('#taskDeleteDialog').open,false);assert.equal(h.requests.some(r=>r.method==='DELETE'),false);
+ d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="delete"]').click();d.querySelector('#taskDeleteConfirm').click();await tick();assert.equal(h.requests.filter(r=>r.method==='DELETE').length,1);assert.equal(d.querySelector('[data-task-open="live"]'),null);assert.equal(d.querySelector('#taskDeleteDialog').open,false);h.dom.window.close();
+});
+
+test('share menu passes the selected cached conversation to the shared preview without new analysis',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document;let snapshot;
+ h.w.openShareDialog=article=>snapshot=structuredClone(article.shareSession);
+ d.querySelector('#taskRunSelect').value='run-old';d.querySelector('#taskRunSelect').dispatchEvent(new h.w.Event('change'));await tick();d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="share"]').click();await tick();
+ assert.equal(snapshot.question,'本次原始问句');assert.equal(snapshot.interpretation,'上一次缓存内容');assert.equal(h.requests.some(r=>r.method==='POST'||r.path.includes('/chat')),false);h.dom.window.close();
+});
+
+test('shared task menu exposes no owner mutations and tasks without results cannot share',async()=>{
+ const shared={taskId:'shared',runId:'run',task:{...base,id:'shared'},question:'分享问句',answer:{interpretation:'缓存内容'},cachedDate:base.successAt};
+ const h=setup({tasks:[],shared,url:'https://example.com/veya/?dayShare=read-only'});await tick();const d=h.w.document;d.querySelector('[data-task-more="shared"]').click();assert.equal(d.querySelector('[data-task-action="toggle"]'),null);assert.equal(d.querySelector('[data-task-action="run"]'),null);assert.equal(d.querySelector('[data-task-action="delete"]'),null);assert.match(d.querySelector('[data-task-action="edit"]').textContent,/查看设置/);h.dom.window.close();
+ const pending=setup({tasks:[{...base,id:'pending',resultVersion:null}],url:'https://example.com/veya/?tab=tasks'});await tick();pending.w.document.querySelector('[data-task-more="pending"]').click();assert.equal(pending.w.document.querySelector('[data-task-action="share"]').disabled,true);pending.dom.window.close();
 });

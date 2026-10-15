@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-status" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-more" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -225,6 +225,10 @@
           <footer class="dayFormActions"><div><button id="dayCancelEdit" class="dayButton" type="button">取消</button><button id="daySave" class="dayButton dayPrimary" type="submit">创建</button></div></footer>
         </form>
       </dialog>
+      <dialog id="taskDeleteDialog" class="taskDeleteDialog" aria-labelledby="taskDeleteTitle">
+        <h2 id="taskDeleteTitle">删除任务？</h2><p>将删除“<strong id="taskDeleteName"></strong>”及其任务入口，并停止后续执行。</p>
+        <p id="taskDeleteMessage" class="dayMessage" role="status"></p><footer><button id="taskDeleteCancel" class="dayButton" type="button">取消</button><button id="taskDeleteConfirm" class="dayButton taskDeleteConfirm" type="button">删除</button></footer>
+      </dialog>
       <dialog id="generatedImageDialog" class="generatedImageDialog" aria-label="图片详情">
         <div class="generatedImageDialogHeader">
           <span>图片详情</span>
@@ -246,10 +250,10 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261015-embedded-layout"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261015-shared-answer"></script>
+    <script src="/static/app.js?v=interface-20261015-task-share"></script>
     <script src="/static/home-background.js?v=light-blue-video-20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
-    <script src="/static/day-tasks.js?v=20261015-task-status"></script>
+    <script src="/static/day-tasks.js?v=20261015-task-more"></script>
   </body>
 </html>

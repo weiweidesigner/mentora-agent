@@ -419,3 +419,15 @@ def test_embedded_runtime_bundles_the_current_mobile_metric_and_table_contract()
     bundle = (ROOT / "app/static/vendor/streamviz/streamviz.js").read_text()
     assert "Mobile summary metrics form compact swipeable cards" in bundle
     assert "Table headers stay on one line" in bundle
+
+
+def test_shared_cached_case_keeps_its_report_frame_and_rejects_nonlocal_urls():
+    page = presentation.standalone_share_html({
+        "question": "缓存问句", "answerHtml": '<div class="streamvizArtifactHost"><div>live host</div></div><p>缓存正文</p>',
+        "reportArtifacts": [{"url": "/static/cases/ashare-dashboard/case-ashare-streamviz-report.html"}, {"url": "https://example.com/report.html"}, {"url": "/static/cases/../private.html"}],
+    })
+    assert 'src="/static/cases/ashare-dashboard/case-ashare-streamviz-report.html"' in page
+    assert "缓存问句" in page and "缓存正文" in page
+    assert "live host" not in page
+    assert 'src="https://example.com/report.html"' not in page
+    assert '/static/cases/../private.html' not in page

@@ -523,22 +523,24 @@ def _strip_streamviz_artifact_hosts(markup: str) -> str:
 def _share_artifact_frames(session: dict[str, Any]) -> str:
     artifacts = session.get("reportArtifacts") if isinstance(session.get("reportArtifacts"), list) else []
     urls: list[str] = []
+    def supported(url: str) -> bool:
+        return url.endswith(".html") and ".." not in url.split("/") and url.startswith(("/generated/", "/static/cases/"))
     for artifact in artifacts:
         if not isinstance(artifact, dict):
             continue
         url = canonical_host_url(str(artifact.get("url") or artifact.get("htmlUrl") or "").strip())
         url = LEGACY_ARTIFACT_REDIRECTS.get(url, url)
-        if url.startswith("/generated/") and url.endswith(".html") and url not in urls:
+        if supported(url) and url not in urls:
             urls.append(url)
     if not urls:
         report_url = canonical_host_url(str(session.get("reportUrl") or "").strip())
         report_url = LEGACY_ARTIFACT_REDIRECTS.get(report_url, report_url)
-        if report_url.startswith("/generated/") and report_url.endswith(".html"):
+        if supported(report_url):
             urls.append(report_url)
     theme_mode = "dark" if session.get("themeMode") == "dark" else "light"
     theme_query = "?theme=dark" if theme_mode == "dark" else ""
     return "".join(
-        f'<iframe class="reportDocumentFrame" src="/share-artifact/{quote(Path(url).name)}{theme_query}" '
+        f'<iframe class="reportDocumentFrame" src="{html.escape(("/share-artifact/" + quote(Path(url).name) if url.startswith("/generated/") else url) + theme_query, quote=True)}" '
         f'title="Veya 报告 {index}" scrolling="no"></iframe>'
         for index, url in enumerate(urls, start=1)
     )

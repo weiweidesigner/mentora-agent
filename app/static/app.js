@@ -4001,7 +4001,10 @@ function prepareSharePreviewFrame(frame) {
 
 async function copyShareLink() {
   if (!activeShareSession) return;
-  await persistShareSession(activeShareSession);
+  if (!await persistShareSession(activeShareSession)) {
+    if (copyShareLinkText) copyShareLinkText.textContent = "生成链接失败，请重试";
+    return;
+  }
   const url = shareUrlForSession(activeShareSession);
   let copied = false;
   try {
