@@ -83,7 +83,8 @@
     $('widgetTabs').innerHTML=boards.map(b=>`<button role="tab" id="widget-tab-${esc(b.id)}" aria-selected="${b.id===activeId}" data-board="${esc(b.id)}" aria-controls="widgetCanvas">${esc(b.title)}</button>`).join('');
     canvas.setAttribute('role','tabpanel');canvas.setAttribute('aria-labelledby',`widget-tab-${board.id}`);
     const oldNodes=new Map([...canvas.children].map(el=>[el.dataset.card,el]));
-    canvas.replaceChildren(...board.cards.map(card=>{const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText])){old.querySelector('.widgetCardTitle').textContent=card.title;return old;}return cardNode(card);}));$('widgetEmpty').hidden=!!board.cards.length;
+    const ids=new Set(board.cards.map(c=>c.id));for(const [id,node] of oldNodes)if(!ids.has(id))node.remove();
+    for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText])){old.querySelector('.widgetCardTitle').textContent=card.title;}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
     updateSelection();
     applyLayout();notice(jobs.has(activeId)?'正在生成图表，你可以切换看板继续浏览…':'');
