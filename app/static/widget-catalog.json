@@ -1,0 +1,176 @@
+[
+  {
+    "id": "kline",
+    "title": "股价与 K 线",
+    "category": "行情与资金",
+    "description": "价格走势、成交量与技术指标，支持股票、ETF 和数字币。"
+  },
+  {
+    "id": "multi_intraday",
+    "title": "多股分时",
+    "category": "行情与资金",
+    "description": "把多只股票的日内走势放在一起比较。"
+  },
+  {
+    "id": "trade_flow",
+    "title": "资金与订单流",
+    "category": "行情与资金",
+    "description": "观察买卖订单、资金流向及盘中变化。"
+  },
+  {
+    "id": "volume_profile",
+    "title": "成交量分布",
+    "category": "行情与资金",
+    "description": "查看不同价格区间的成交量与成交结构。"
+  },
+  {
+    "id": "key_stats",
+    "title": "行情关键指标",
+    "category": "行情与资金",
+    "description": "日内区间、52 周区间、市值和成交统计。"
+  },
+  {
+    "id": "shareholder_returns",
+    "title": "股东回报对比",
+    "category": "行情与资金",
+    "description": "对比个股、行业和市场的不同周期回报。"
+  },
+  {
+    "id": "income_statement",
+    "title": "营收与利润",
+    "category": "财务与经营",
+    "description": "对比营收、利润与盈利能力的历史变化。"
+  },
+  {
+    "id": "balance_sheet",
+    "title": "资产负债表",
+    "category": "财务与经营",
+    "description": "查看资产、负债、权益与偿债能力。"
+  },
+  {
+    "id": "cash_flow",
+    "title": "现金流",
+    "category": "财务与经营",
+    "description": "观察经营、投资与融资现金流。"
+  },
+  {
+    "id": "key_financial_indicators",
+    "title": "关键财务指标",
+    "category": "财务与经营",
+    "description": "查看 EPS、ROE、净利率和债务等关键指标。"
+  },
+  {
+    "id": "revenue_sources",
+    "title": "产品收入构成",
+    "category": "财务与经营",
+    "description": "拆分各产品、业务线的收入贡献。"
+  },
+  {
+    "id": "revenue_geography",
+    "title": "地区收入构成",
+    "category": "财务与经营",
+    "description": "比较各地理市场的收入规模与占比。"
+  },
+  {
+    "id": "revenue_expenses",
+    "title": "收入与费用流向",
+    "category": "财务与经营",
+    "description": "用流向图拆解收入、成本、费用与利润。"
+  },
+  {
+    "id": "capital_structure",
+    "title": "资本结构",
+    "category": "财务与经营",
+    "description": "对比市值、负债、现金与企业价值。"
+  },
+  {
+    "id": "valuation",
+    "title": "估值概览",
+    "category": "估值与预期",
+    "description": "查看市盈率、市销率等估值数据。"
+  },
+  {
+    "id": "investment_rating",
+    "title": "综合投资评级",
+    "category": "估值与预期",
+    "description": "综合基本面、技术面与情绪的投资评分。"
+  },
+  {
+    "id": "fundamental_investment_rating",
+    "title": "基本面评分",
+    "category": "估值与预期",
+    "description": "比较价值、增长、健康、历史表现和分红。"
+  },
+  {
+    "id": "wall_street_consensus",
+    "title": "华尔街共识",
+    "category": "估值与预期",
+    "description": "查看分析师评级、目标价与市场共识。"
+  },
+  {
+    "id": "average_rating_history",
+    "title": "评级历史",
+    "category": "估值与预期",
+    "description": "跟踪平均分析师评级的历史变化。"
+  },
+  {
+    "id": "price_target_vs_actual",
+    "title": "目标价与股价",
+    "category": "估值与预期",
+    "description": "比较分析师目标价与实际股价。"
+  },
+  {
+    "id": "analyst_recommendations",
+    "title": "分析师推荐",
+    "category": "估值与预期",
+    "description": "观察买入、持有、卖出评级及近期调整。"
+  },
+  {
+    "id": "revenue_estimate",
+    "title": "营收实际与预期",
+    "category": "估值与预期",
+    "description": "比较实际营收与市场预期，关注下次披露。"
+  },
+  {
+    "id": "eps_estimate",
+    "title": "每股收益实际与预期",
+    "category": "估值与预期",
+    "description": "比较实际 EPS 与预期，观察业绩差异。"
+  },
+  {
+    "id": "payout_ratio",
+    "title": "分红率",
+    "category": "持股与分红",
+    "description": "比较净利润、现金分红与派息比例。"
+  },
+  {
+    "id": "dividend_yield",
+    "title": "股息率历史",
+    "category": "持股与分红",
+    "description": "查看股息收益率的历史变化。"
+  },
+  {
+    "id": "insider_trades",
+    "title": "内部人交易",
+    "category": "持股与分红",
+    "description": "查看内部人买卖与近期交易记录。"
+  },
+  {
+    "id": "institution_trades",
+    "title": "机构交易",
+    "category": "持股与分红",
+    "description": "观察机构买卖活动与交易明细。"
+  },
+  {
+    "id": "congress_trades",
+    "title": "议员交易",
+    "category": "持股与分红",
+    "description": "查看议员交易摘要与个股走势。"
+  },
+  {
+    "id": "seasonals",
+    "title": "季节性表现",
+    "category": "持股与分红",
+    "description": "比较历年不同月份的季节性收益。"
+  }
+]
