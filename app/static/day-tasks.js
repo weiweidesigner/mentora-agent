@@ -334,10 +334,11 @@
     $('taskRunSelect').hidden=!runs.length;
     $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
     if(!runs.length) {
-      if(task.systemPreset){
-        $('taskThread').replaceChildren();renderTaskUser(task.question,[],$('taskThread'),task);
-        const p=document.createElement('p');p.className='taskResultEmpty';p.textContent=task.enabled&&task.nextAt?'等待执行 · '+dateText(task.nextAt,zoneFor(task)):'暂无执行安排';$('taskThread').append(p);
-        $('taskRunState').textContent=p.textContent;$('taskChatForm').hidden=true;return;
+      if(task.systemPreset || (task.enabled && task.nextAt)){
+        const waiting=document.createElement('section');waiting.className='taskWaitingState';waiting.setAttribute('role','status');
+        waiting.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>等待执行</h2><p>任务开启时间</p><time></time>';
+        const time=waiting.querySelector('time');time.textContent=task.nextAt?dateText(task.nextAt,zoneFor(task)):'暂无执行安排';if(task.nextAt)time.dateTime=task.nextAt;
+        $('taskThread').replaceChildren(waiting);$('taskRunState').textContent='';$('taskChatForm').hidden=true;return;
       }
       renderCreatedTask(task);
       $('taskRunState').textContent=task.enabled?'已开启 · 云端将按计划执行':'任务已暂停';
