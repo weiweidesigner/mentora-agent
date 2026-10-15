@@ -246,3 +246,22 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
         artifact = artifact.replace('</head>', '<style data-mobile-chart-repair="3">'+''.join(styles)+'</style></head>', 1)
         artifact = artifact.replace('</body>', script+'</body>', 1)
     return artifact
+
+
+def upgrade_widget_tradingview(artifact: str) -> str:
+    """Use one dashboard card title and omit the host's extra TradingView chrome.
+
+    Only canvas=1 activates this styling. Provider iframe branding is untouched.
+    Applies to historical generated HTML as well as new direct embeds.
+    """
+    if 'id="tv-config"' not in artifact or 'data-widget-tv-chrome' in artifact:
+        return artifact
+    chrome = '''<script data-widget-tv-chrome>if(new URLSearchParams(location.search).get('canvas')==='1')document.documentElement.dataset.widgetCanvas='true';</script>
+<style data-widget-tv-chrome>
+html[data-widget-canvas],html[data-widget-canvas] body{height:100%;overflow:hidden}
+html[data-widget-canvas] main{height:100%;display:flex;flex-direction:column;border:0!important;border-radius:0!important;background:transparent!important}
+html[data-widget-canvas] main>header,html[data-widget-canvas] main>footer,html[data-widget-canvas] .tradingview-widget-copyright{display:none!important}
+html[data-widget-canvas] .stage{flex:1;min-height:0;height:auto!important}
+html[data-widget-canvas] #mount,html[data-widget-canvas] .tradingview-widget-container,html[data-widget-canvas] .tradingview-widget-container__widget{height:100%!important}
+</style>'''
+    return re.sub(r'</head\s*>', lambda _: chrome+'</head>', artifact, count=1, flags=re.I)

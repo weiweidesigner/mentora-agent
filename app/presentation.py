@@ -22,6 +22,8 @@ from app.native_streamviz import stream_native_widget
 from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_grouped_bar, upgrade_legacy_mobile_charts, upgrade_legacy_mobile_charts
 from app.local_glm_adapter import router as local_glm_router
 from app.widget_library import router as widget_library_router
+from app.widget_planner import router as widget_planner_router
+from app.artifact_upgrades import upgrade_widget_tradingview
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
 
@@ -40,6 +42,7 @@ LEGACY_ARTIFACT_REDIRECTS = {
 app = FastAPI(title="Mentora presentation gateway")
 app.include_router(local_glm_router)
 app.include_router(widget_library_router)
+app.include_router(widget_planner_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
@@ -663,6 +666,7 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = sync_native_kline_theme(artifact, theme)
+    artifact = upgrade_widget_tradingview(artifact)
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'
     if 'data-sv-chart-geometry' not in artifact:
         geometry = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
