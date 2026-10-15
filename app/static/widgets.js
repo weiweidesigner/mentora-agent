@@ -16,13 +16,21 @@
   function safeUrl(value) {
     try { const u = new URL(value, location.href); return u.origin === location.origin && /\/(generated|share-artifact)\/[^/]+\.html$/.test(u.pathname) ? u.pathname + u.search : ''; } catch { return ''; }
   }
+  const minRows=card=>card.component==='tv-ticker-tape'?6:10;
+  function compactTicker(board,card){
+    if(card.component!=='tv-ticker-tape'||card.compactTickerVersion===1)return false;
+    card.compactTickerVersion=1;const previous=card.h;card.h=6;const delta=previous-card.h;if(delta<=0)return false;
+    for(const other of [...board.cards].sort((a,b)=>a.y-b.y)){if(other===card||other.y<card.y+previous)continue;const candidate={...other,y:other.y-delta};if(!board.cards.some(c=>c!==other&&overlaps(c,candidate)))other.y=candidate.y;}
+    return true;
+  }
   function load() {
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
-      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,10,40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;
     } catch { boards = []; }
     if (!boards.length) boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});
+    for(const board of boards)for(const card of board.cards)compactTicker(board,card);
     if (!current()) activeId = boards[0].id;
   }
   function save() {
@@ -33,7 +41,7 @@
   function settle(board, anchor) {
     const placed = [];
     for (const card of [anchor,...board.cards.filter(c=>c!==anchor)].filter(Boolean)) {
-      card.w=clamp(card.w,3,12);card.x=clamp(card.x,0,12-card.w);card.h=clamp(card.h,10,40);card.y=Math.max(0,card.y);
+      card.w=clamp(card.w,3,12);card.x=clamp(card.x,0,12-card.w);card.h=clamp(card.h,minRows(card),40);card.y=Math.max(0,card.y);
       let hit; while ((hit=placed.find(p=>overlaps(p,card)))) card.y=hit.y+hit.h+1;
       placed.push(card);
     }
@@ -69,7 +77,7 @@
     el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="点击选中，拖动移动"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-size="narrow" title="缩窄图表" aria-label="缩窄图表">−</button><button type="button" data-size="wide" title="加宽图表" aria-label="加宽图表">＋</button><button type="button" data-open title="打开完整图表" aria-label="打开完整图表">↗</button><button type="button" data-remove title="移除图表" aria-label="移除图表">×</button></div></header>`;
     if (card.url && card.status==='ready') {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      frame.addEventListener('load',()=>{if(card.customTitle)return;try {const doc=frame.contentDocument;let title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(doc?.querySelector('#tv-config'))title=title.replace(/\s*[·|\-]\s*TradingView\s*$/i,'');if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
+      frame.addEventListener('load',()=>{try{const spec=JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}');if(spec.widget==='ticker-tape'){card.component='tv-ticker-tape';const board=boards.find(b=>b.cards.includes(card));if(board&&compactTicker(board,card)){save();if(board.id===activeId)applyLayout();}}}catch{}if(card.customTitle)return;try {const doc=frame.contentDocument;let title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(doc?.querySelector('#tv-config'))title=title.replace(/\s*[·|\-]\s*TradingView\s*$/i,'');if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
     } else {
       const body=document.createElement('div');body.className='widgetCardBody';
       body.innerHTML=card.status==='loading'?`<div class="widgetLoading" aria-hidden="true"></div><p>${esc(card.loadingText||'正在获取数据、生成图表…')}</p>`:`<p>${esc(card.error||'图表暂不可用，请重新生成。')}</p><button type="button" data-retry>重新生成</button>`;el.append(body);
@@ -304,7 +312,7 @@
     if(['Enter',' '].includes(event.key)&&event.target.classList.contains('widgetCardHeader')){event.preventDefault();selectedCardId=event.target.closest('[data-card]').dataset.card;updateSelection();return;}
     if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)||event.target.closest('button'))return;
     const el=event.target.closest('[data-card]');if(!el)return;event.preventDefault();const board=current(),card=board.cards.find(c=>c.id===el.dataset.card),resize=event.target.classList.contains('widgetResize');
-    if(resize){card.w=clamp(card.w+(event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0),3,12);card.h=clamp(card.h+(event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0),10,40);event.target.setAttribute('aria-valuenow',card.w);}else {card.x=clamp(card.x+(event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0),0,12-card.w);card.y=Math.max(0,card.y+(event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0));}
+    if(resize){card.w=clamp(card.w+(event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0),3,12);card.h=clamp(card.h+(event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0),minRows(card),40);event.target.setAttribute('aria-valuenow',card.w);}else {card.x=clamp(card.x+(event.key==='ArrowRight'?1:event.key==='ArrowLeft'?-1:0),0,12-card.w);card.y=Math.max(0,card.y+(event.key==='ArrowDown'?1:event.key==='ArrowUp'?-1:0));}
     settle(board,card);save();applyLayout();
   });
   canvas.addEventListener('pointerdown',event=>{
@@ -313,7 +321,7 @@
     selectedCardId=card.id;updateSelection();event.preventDefault();const resize=handle.classList.contains('widgetResize'),start={px:event.clientX,py:event.clientY,x:card.x,y:card.y,w:card.w,h:card.h},unit=(canvas.clientWidth+GAP)/12;
     el.classList.add('is-moving');canvas.classList.add('is-interacting');handle.setPointerCapture(event.pointerId);
     const move=e=>{const dx=e.clientX-start.px,dy=e.clientY-start.py;
-      if(resize){card.w=mobile()?start.w:clamp(Math.round(start.w+dx/unit),3,12);card.h=clamp(Math.round(start.h+dy/ROW),10,40);}else {card.x=mobile()?0:clamp(Math.round(start.x+dx/unit),0,12-card.w);card.y=Math.max(0,Math.round(start.y+dy/ROW));}
+      if(resize){card.w=mobile()?start.w:clamp(Math.round(start.w+dx/unit),3,12);card.h=clamp(Math.round(start.h+dy/ROW),minRows(card),40);}else {card.x=mobile()?0:clamp(Math.round(start.x+dx/unit),0,12-card.w);card.y=Math.max(0,Math.round(start.y+dy/ROW));}
       applyLayout();
     };
     const end=e=>{handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',end);handle.removeEventListener('pointercancel',end);if(handle.hasPointerCapture(e.pointerId))handle.releasePointerCapture(e.pointerId);el.classList.remove('is-moving');canvas.classList.remove('is-interacting');settle(board,card);save();applyLayout();};

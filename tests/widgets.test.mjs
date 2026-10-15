@@ -149,3 +149,9 @@ test('widget chat uses home bubbles, safe Markdown, and the shared multiline com
  assert.equal(input.closest('.composerBox').classList.contains('is-multiline'),true);assert.equal(input.style.height,'90px');
  input.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));assert.equal(s.calls.some(c=>c.url==='/api/widgets/plan'),false);s.dom.window.close();
 });
+test('old ticker strips become compact, pull following cards up, and remain resizeable after migration',()=>{
+ const storage=twoCards();Object.assign(storage.boards[0].cards[0],{component:'tv-ticker-tape',w:12,h:18});Object.assign(storage.boards[0].cards[1],{x:0,y:19,w:12});
+ const s=setup({storage});assert.equal(s.d.querySelector('[data-card="one"]').style.height,'144px');assert.equal(s.d.querySelector('[data-card="two"]').style.top,'168px');
+ s.d.querySelector('[data-card="one"] .widgetResize').dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
+ const saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(saved.boards[0].cards[0].h,7);s.dom.window.close();const r=setup({storage:saved});assert.equal(r.d.querySelector('[data-card="one"]').style.height,'168px');r.dom.window.close();
+});

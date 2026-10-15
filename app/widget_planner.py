@@ -30,7 +30,7 @@ class Geometry(BaseModel):
     x: int | None = Field(default=None, ge=0, le=11)
     y: int | None = Field(default=None, ge=0, le=10000)
     w: int | None = Field(default=None, ge=3, le=12)
-    h: int | None = Field(default=None, ge=10, le=40)
+    h: int | None = Field(default=None, ge=6, le=40)
 
 
 class Card(BaseModel):
@@ -124,7 +124,7 @@ def model_plan(context: dict) -> dict:
 update: {"type":"update","cardId":"已有id","layout":{"x":0,"y":0,"w":6,"h":18},"parameters":{"symbols":["NASDAQ:AAPL"],"market":"default","interval":"D"},"title":"可选新标题"}，只写需要更改的字段；componentId 可选，用于替换组件。
 add: {"type":"add","componentId":"catalogue中的id","parameters":{"symbols":[...]},"layout":{可选位置尺寸}}。
 remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_board","title":"48字以内"}。
-布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，h=10..40。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
+布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，普通图表h=10..40，滚动行情条tv-ticker-tape默认h=6、最低6。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
 TradingView使用tv-开头的组件id，行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
@@ -179,6 +179,8 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                 if card is not None:
                     card['parameters']=merged;card['component']=component_id
             if action.layout:
+                if action.layout.h is not None and action.layout.h < (6 if component_id=='tv-ticker-tape' else 10):
+                    raise ValueError('该组件的高度过小。')
                 w = action.layout.w or (card['w'] if card else 6)
                 x = action.layout.x if action.layout.x is not None else (card['x'] if card else 0)
                 if x+w>12:

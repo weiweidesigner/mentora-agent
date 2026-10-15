@@ -82,3 +82,13 @@ def test_follow_up_history_is_passed_as_context(monkeypatch):
     planner.plan_widgets(planner.PlanningInput(message='改成周线', history=[{'role':'user','content':'看苹果行情'},{'role':'assistant','content':'已添加苹果日线。'}], board={'id':'b','title':'看板','cards':[]}))
     assert seen[0]['history'][1]['content'] == '已添加苹果日线。'
     assert seen[0]['message'] == '改成周线'
+
+def test_compact_ticker_height_is_supported_without_shrinking_normal_charts():
+    from app import widget_planner as planner
+    import pytest
+    payload=planner.PlanningInput(message='加一个紧凑行情条',board={'id':'b','title':'看板','cards':[]})
+    result={'reply':'已添加。','actions':[{'type':'add','componentId':'tv-ticker-tape','parameters':{'symbols':['NASDAQ:AAPL']},'layout':{'h':6}}]}
+    assert planner.validate_plan(result,payload,[])['actions'][0]['layout']['h']==6
+    result['actions'][0]['componentId']='tv-advanced-chart'
+    with pytest.raises(ValueError,match='高度过小'):
+        planner.validate_plan(result,payload,[])
