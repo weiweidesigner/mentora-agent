@@ -5,7 +5,8 @@
     const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);
     if(original.length!==4||!original.every(Number.isFinite))return;
     svg.dataset.svGeometry='true';
-    if(svg.matches('.hist'))svg.style.height='240px';
+    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';
+    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';
     const wrap=document.createElement('div');wrap.className='sv-geometry';
     Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});
     svg.before(wrap);wrap.append(svg);

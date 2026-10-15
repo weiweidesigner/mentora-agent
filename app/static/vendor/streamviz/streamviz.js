@@ -10456,18 +10456,18 @@ function Xe(e = {}) {
 }
 //#endregion
 //#region node_modules/streamviz-react/src/theme/styles.css
-var Ze = g(), Qe = /* @__PURE__ */ new WeakMap(), $e = /* @__PURE__ */ new Map();
-function et() {
+var Ze = g(), Qe = "/* Keep SVG geometry responsive while labels and endpoint markers retain pixel dimensions. */\n(() => {\n  const repair = () => document.querySelectorAll('.chartbox svg[viewBox][preserveAspectRatio=\"none\"]:not([data-sv-geometry])').forEach(svg => {\n    if (!svg.matches('.line,.hist,.xlab')) return;\n    const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);\n    if(original.length!==4||!original.every(Number.isFinite))return;\n    svg.dataset.svGeometry='true';\n    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';\n    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';\n    const wrap=document.createElement('div');wrap.className='sv-geometry';\n    Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});\n    svg.before(wrap);wrap.append(svg);\n    svg.closest('.chartbox').style.overflowX='auto';\n    const labels=[...svg.querySelectorAll(':scope > text')].map(text=>{\n      const label=document.createElement('span');label.textContent=text.textContent;\n      const anchor=text.getAttribute('text-anchor')||'start';\n      Object.assign(label.style,{position:'absolute',fontSize:parseFloat(text.getAttribute('font-size')||'12')+'px',lineHeight:'1',whiteSpace:'nowrap',pointerEvents:'none',color:text.getAttribute('fill')||'var(--sv-text-secondary)',transform:`translate(${anchor==='middle'?'-50%':anchor==='end'?'-100%':'0'},-80%)`});\n      wrap.append(label);text.remove();return {label,x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))};\n    });\n    const dots=[...svg.querySelectorAll(':scope > circle')].map(circle=>{\n      const dot=document.createElement('span');Object.assign(dot.style,{position:'absolute',width:'7px',height:'7px',borderRadius:'50%',background:circle.getAttribute('fill'),transform:'translate(-50%,-50%)',pointerEvents:'none'});\n      wrap.append(dot);circle.remove();return {label:dot,x:Number(circle.getAttribute('cx')),y:Number(circle.getAttribute('cy'))};\n    });\n    let minY=original[1];\n    for(const line of svg.querySelectorAll('polyline[points]'))for(const point of line.getAttribute('points').trim().split(/\\s+/)){const y=Number(point.split(',')[1]);if(Number.isFinite(y))minY=Math.min(minY,y);}\n    // The saved report's x labels are siblings rather than children of .xl.\n    const external=svg.matches('.line')?svg.closest('.chartbox').nextElementSibling:null;\n    const xlabels=external?.matches('.xl')?[...external.querySelectorAll('span')].map(label=>({label,x:parseFloat(label.style.left)/100*original[2]})):[];\n    const layout=()=>{\n      const rect=svg.getBoundingClientRect();if(!rect.width||!rect.height)return;\n      const dx=5*original[2]/rect.width,dy=svg.matches('.xlab')?0:8*original[3]/rect.height;\n      const box=[original[0]-dx,minY-dy,original[2]+2*dx,original[1]+original[3]-minY+2*dy];\n      svg.setAttribute('viewBox',box.join(' '));\n      for(const {label,x,y} of [...labels,...dots]){label.style.left=(x-box[0])/box[2]*100+'%';label.style.top=(y-box[1])/box[3]*100+'%';}\n      for(const {label,x} of xlabels)label.style.left=(x-box[0])/box[2]*100+'%';\n    };\n    layout();if(typeof ResizeObserver==='function')new ResizeObserver(layout).observe(wrap);\n  });\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();\n})();\n", $e = /* @__PURE__ */ new WeakMap(), et = /* @__PURE__ */ new Map();
+function tt() {
 	return { mode: document.documentElement.dataset.theme === "dark" ? "dark" : "light" };
 }
-function tt(e, t = {}) {
+function nt(e, t = {}) {
 	if (!(e instanceof Element)) return null;
-	let n = Qe.get(e);
-	n || (n = (0, Ze.createRoot)(e), Qe.set(e, n)), $e.set(e, t);
-	let r = Xe(t);
-	return n.render(/* @__PURE__ */ (0, ze.jsx)(qe, {
+	let n = $e.get(e);
+	n || (n = (0, Ze.createRoot)(e), $e.set(e, n)), et.set(e, t);
+	let r = Xe(t), i = (e) => typeof e == "string" && e.includes("chartbox") && !e.includes("data-sv-chart-geometry") ? e + "<script data-sv-chart-geometry>" + Qe + "<\/script>" : e;
+	return r.code = i(r.code), r.exportCode &&= i(r.exportCode), n.render(/* @__PURE__ */ (0, ze.jsx)(qe, {
 		...r,
-		theme: et(),
+		theme: tt(),
 		notify: (e, t) => {
 			window.dispatchEvent(new CustomEvent("aime:streamviz-notify", { detail: {
 				message: e,
@@ -10479,16 +10479,16 @@ function tt(e, t = {}) {
 		}
 	})), e;
 }
-function nt(e) {
-	let t = Qe.get(e);
-	t && (t.unmount(), Qe.delete(e), $e.delete(e));
+function rt(e) {
+	let t = $e.get(e);
+	t && (t.unmount(), $e.delete(e), et.delete(e));
 }
 window.AimeStreamViz = Object.freeze({
-	mount: tt,
-	update: tt,
-	unmount: nt
+	mount: nt,
+	update: nt,
+	unmount: rt
 }), window.addEventListener("aime:theme-change", () => {
-	$e.forEach((e, t) => tt(t, e));
+	et.forEach((e, t) => nt(t, e));
 }), window.dispatchEvent(new CustomEvent("aime:streamviz-ready"));
 //#endregion
 
