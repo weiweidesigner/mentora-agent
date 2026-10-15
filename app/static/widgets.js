@@ -122,7 +122,7 @@
     else {pending={id:uid(),title:component?`${component.title} · ${message}`:'正在构建看板',w:6,h:18,status:'loading',url:'',request:message,component:component?.id||''};place(board,pending);board.cards.push(pending);}
     const pendingId=pending.id;
     board.messages.push({role:'user',content:message});board.messages=board.messages.slice(-12);
-    if(board.title==='我的看板'&&!component)board.title=message.slice(0,24);
+    if(board.title==='我的看板'&&!component){const named=message.match(/(?:做|建|生成|创建)(?:一[个张])?(.{2,16}?看板)/),symbol=message.match(/\b[A-Z][A-Z0-9.-]{0,9}\b/);if(named)board.title=named[1];else if(symbol)board.title=symbol[0]+' 看板';}
     save();render();
     let final=null, failure='';
     const request=component?`请为标的 ${message} 生成一个独立的「${component.title}」金融业务图表，使用 business-chart-recall 的 ${component.id}.py。`:`请根据我的需求，为金融看板选择并生成 2 到 6 张各自独立的金融业务图表：${message}`;
