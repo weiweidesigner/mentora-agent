@@ -605,7 +605,7 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
         "'{\"type\":\"thread.started\",\"thread_id\":\"thread-123\"}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"command_execution\",\"command\":[\"echo\",\"ok\"],\"status\":\"completed\"}}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"I will load the relevant skills.\"}}' "
-        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"channel\":\"commentary\",\"text\":\"Checking chart settings\"}}' "
+        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"channel\":\"commentary\",\"text\":\"正在检查图表设置\"}}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"完成\"}}'\n",
         encoding="utf-8",
     )
@@ -618,7 +618,7 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
     names = [name for name, _data in events]
     final = next(data for name, data in events if name == "final")
     assert names == ["status", "agent_event", "tool_step", "progress", "answer_text", "agent_event", "final"]
-    assert [data["text"] for name, data in events if name == "progress"] == ["Checking chart settings"]
+    assert [data["text"] for name, data in events if name == "progress"] == ["正在检查图表设置"]
     assert final["engineSessionId"] == "thread-123"
     assert final["interpretation"] == "完成"
     assert [data["text"] for name, data in events if name == "answer_text"] == ["完成"]
@@ -848,3 +848,24 @@ def test_deepseek_routes_execution_commentary_to_progress(tmp_path, monkeypatch,
     assert [d['text'] for k,d in events if k=='answer_text']==['苹果日线已生成。']
     assert next(d for k,d in events if k=='tool_step')['thoughtSummary']==summary.rstrip('。')
     assert 'private reasoning' not in str(events) and 'child private text' not in str(events)
+
+
+def test_public_progress_localization_is_cached_and_failure_keeps_fallback(tmp_path, monkeypatch):
+    monkeypatch.setenv('DEEPSEEK_API_KEY','test-key')
+    calls=[]
+    class Client:
+        def __init__(self,**kwargs):self.chat=SimpleNamespace(completions=self)
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def create(self,**kwargs):
+            calls.append(kwargs)
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='我先读取 TradingView 组件规范。'))])
+    monkeypatch.setitem(sys.modules,'openai',SimpleNamespace(OpenAI=Client))
+    client=LocalAgentFrameworks(project_root=tmp_path,generated_dir=tmp_path/'outputs')
+    text="I'll read the TradingView skill first."
+    assert client._localized_progress(text,'用 TradingView 看苹果')=='我先读取 TradingView 组件规范'
+    assert client._localized_progress(text,'用 TradingView 看苹果')=='我先读取 TradingView 组件规范'
+    assert len(calls)==1
+    assert json.loads(calls[0]['messages'][1]['content'])['public_progress']==text
+    monkeypatch.delenv('DEEPSEEK_API_KEY')
+    assert client._localized_progress('Loading the chart.','展示日线')==''
