@@ -104,11 +104,11 @@ python3 app/skills/streamviz/scripts/render_streamviz.py \
 
 ## 表达边界
 
-- 报告的区块用留白分隔，不添加贯穿页面的亮色分割线；指标小卡片默认透明背景、1px 语义边框、8px 圆角、无阴影，按可用宽度平铺并自动换行；移动端最小列宽 120px、卡间距 12px，不能强制铺深色卡片背景。需要状态底色时使用语义状态变量，不能混用固定颜色。
+- 报告的区块用留白分隔，不添加贯穿页面的亮色分割线；指标小卡片默认透明背景、1px 语义边框、8px 圆角、无阴影，桌面按可用宽度并列与换行；移动端以约 196–260px 宽的小卡片横向滑动、靠边吸附，卡间距 10px，不能强制铺深色卡片背景。需要状态底色时使用语义状态变量，不能混用固定颜色。
 
 - 标题→说明、说明→图表、标题→图表的组件间距统一为 8px，清除默认段落上下 margin，不能叠加间距。折线图顶部轴标签所需的 8px 安全空间放在图表内部 padding，不扩大标题下边距。
 - 紧凑布局统一使用卡片间距 16px、卡片内边距 12px、组件内间距 8px。HTML 折线圆点采用中心定位 `translate(-50%,-50%)`，与折线使用同一套百分比坐标，禁止用圆点左边缘对齐数据坐标。
-- 所有 Grid/Flex 子容器设置 `min-width:0`，防止内部固定宽度图表撑开整页。小指标卡使用 `repeat(auto-fit,minmax(min(100%,150px),1fr))` 按实际容器宽度并列、放不下自动换行，不因移动端断点强制单列；大图表可单列。标签换行，宽表格仅在自身容器滚动。必须核对 320px/390px 下页面没有横向溢出，图表数值不裁切。
+- 所有 Grid/Flex 子容器设置 `min-width:0`，防止内部固定宽度图表撑开整页。小指标卡桌面使用 `repeat(auto-fit,minmax(min(100%,150px),1fr))`；移动端指标组使用 `data-sv-layout="metrics"` 或 `.sv-metrics`，展示单行横向滑动的小卡片，不能把每张指标卡撑成整行纵向铺开；大图表可单列。标签换行，宽表格仅在自身容器滚动。必须核对 320px/390px 下页面没有横向溢出，图表数值不裁切。
 - 宽屏折线可使用 StreamViz 的 `sv-responsive-line` 组件：`sv-line-body` 内以 `sv-line-y-axis` 和 `sv-line-plot` 分列，SVG 只绘制线和网格，用 `preserveAspectRatio="none"` 填满固定 CSS 高度绘图区；文字在 HTML 的 `sv-line-x-axis`、`sv-line-values` 中保持像素字号。不要在折线末端把长名称和百分比塞出 viewBox；末端数值默认并入下方图例，确保名称、负号和百分号完整。不要给满宽图设置固定像素 max-width 和自动居中留白。
 - 主题由 StreamViz 的 `assets/artifact-theme.css` 统一维护，同时提供 light/dark 两套配色。宿主只传递主题模式；不在项目层为看板另写颜色覆盖，不生成两份不同数据的页面。自定义 HTML 的背景、边框、文字、状态和图表系列必须使用 `--sv-surface-primary`、`--sv-surface-secondary`、`--sv-border-subtle`、`--sv-text-primary`、`--sv-text-secondary`、`--sv-status-*`、`--sv-chart-series-*` 等变量。SVG 的 fill/stroke 同样使用变量。脚本自动将两套主题打包到独立 HTML 中，旧产物由 StreamViz 兼容规则映射。
 - 窄堆叠区间不能硬塞数字：标签放不下时保留真实比例，将完整家数与占比移到图例或条外，并给区间提供可访问说明；禁止为了容纳文字而扩大区间比例。堆叠分段应禁止 flex shrink，避免标签宽度改变数据比例。
