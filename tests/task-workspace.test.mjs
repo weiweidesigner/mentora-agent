@@ -209,17 +209,20 @@ test('shared scene results open the normal saved conversation without allowing e
  const t={...base,id:'public-result',systemPreset:true,resultScene:'live',resultDate:'2026-10-15',resultHeadline:'市场变化'};const h=setup({tasks:[],sceneTasks:[t]});await tick();const d=h.w.document;d.querySelector('#dayPanel [data-task-open]').click();await tick();assert.match(d.querySelector('#taskThread').textContent,/最新缓存内容/);assert.equal(d.querySelector('#taskRunNow').hidden,true);assert.equal(d.querySelector('#taskToggle').hidden,true);d.querySelector('#taskThread .thinkingTrigger').click();assert.equal(d.querySelector('#daySave').hidden,true);assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
 });
 
-test('twelve shared presets appear as three task recommendations in each scene tab',async()=>{
- const presets=['pre','live','post','rest'].flatMap(stage=>[1,2,3].map(i=>({...base,id:stage+i,title:stage+i,stage,time:'09:00',systemPreset:true})));const h=setup({tasks:[],sceneTasks:presets});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,4);for(const scene of ['pre','live','post','rest']){d.querySelector(`[data-recommendation-scene="${scene}"]`).click();assert.equal(d.querySelectorAll('[data-recommendation]').length,3);assert.ok([...d.querySelectorAll('[data-recommendation]')].every(e=>e.dataset.recommendation.startsWith(scene)));}assert.equal(h.saves.length,0);h.dom.window.close();
+test('already scheduled presets appear in task lists, separate recommendations create new plans',async()=>{
+ const presets=['pre','live','post','rest'].flatMap(stage=>[1,2,3].map(i=>({...base,id:stage+i,title:'已创建-'+stage+i,stage,time:'09:00',systemPreset:true})));
+ const h=setup({tasks:[],sceneTasks:presets});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
+ assert.equal(d.querySelectorAll('#taskLandingList [data-task-open]').length,12);assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,4);
+ for(const scene of ['pre','live','post','rest']){d.querySelector(`[data-recommendation-scene="${scene}"]`).click();const cards=d.querySelectorAll('[data-recommendation]');assert.equal(cards.length,2);assert.ok([...cards].every(e=>!e.textContent.includes('已创建-')));}
+ d.querySelector('[data-recommendation]').click();await tick();assert.ok(h.requests.some(r=>r.path.endsWith('/plan')));assert.equal(h.saves.length,0);h.dom.window.close();
 });
-
 
 test('scene presets show scheduled, running and unread results and viewing clears only that result',async()=>{
  const t={...base,systemPreset:true,scene:'live',resultScene:'live',resultDate:'2026-10-15'};
  const h=setup({tasks:[],sceneTasks:[{...t,id:'waiting',resultVersion:null,lastRun:null},{...t,id:'running',activeRun:'run-active',lastRun:{status:'running'},livePreview:'正在核验最新成交量与行情时间'},{...t,id:'done'}]});await tick();const d=h.w.document;
  const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,3);
  assert.match(cards[0].textContent,/等待执行/);assert.match(cards[1].textContent,/正在运行任务/);assert.equal(cards[1].querySelector('p').textContent,base.question);assert.doesNotMatch(cards[1].textContent,/核验最新成交量/);assert.ok(cards[1].classList.contains('is-running'));assert.ok(cards[1].querySelector('.dayRunSpinner'));assert.equal(cards[1].dataset.taskRun,'run-active');
- assert.ok(cards[2].querySelector('[aria-label="未读结果"]'));cards[2].click();await tick();assert.equal(d.querySelector('[data-task-open="done"] .dayUnreadDot'),null);assert.equal(JSON.parse(h.w.localStorage.getItem('mentora-task-seen')).done,'run-new');assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
+ assert.equal(cards[2].querySelector('.dayResultEmoji'),null);assert.ok(cards[2].querySelector('[aria-label="未读结果"]'));cards[2].click();await tick();assert.equal(d.querySelector('[data-task-open="done"] .dayUnreadDot'),null);assert.equal(JSON.parse(h.w.localStorage.getItem('mentora-task-seen')).done,'run-new');assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
 });
 
 test('running task replays real events into the normal live renderer and finishes with settings entry',async()=>{

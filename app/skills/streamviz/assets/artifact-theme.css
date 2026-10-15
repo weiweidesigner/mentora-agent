@@ -12,6 +12,8 @@
 :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
 :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
 :is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Embedded reports use the host column in both palettes, without a second centered canvas. */
+:is([data-aime-streamviz-root],[data-visualize-root])>:is(div,main,section,article):not(:is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric])){width:100%!important;max-width:none!important;margin-inline:0!important}
 /* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
 :is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
 :is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}

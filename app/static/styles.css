@@ -4527,7 +4527,7 @@ p {
 .taskSceneTabs { display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 24px; }
 .taskSceneTabs button { border:0;border-radius:999px;padding:8px 16px;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer; }
 .taskSceneTabs button[aria-pressed=true] { background:var(--soft-2);color:var(--ink); }
-.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .taskRecommendations.has-scenes .taskRecommendation:last-child { grid-column:auto; }
 .taskRecommendations.has-scenes .taskRecommendation { padding:20px 16px;align-items:flex-start; }
 .taskRecommendations.has-scenes .taskRecommendation small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden; }

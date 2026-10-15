@@ -8,13 +8,16 @@
   const names = {CN:'A股',HK:'港股',US:'美股'}, flags = {CN:'🇨🇳',HK:'🇭🇰',US:'🇺🇸'};
   const zones = {CN:'Asia/Shanghai',HK:'Asia/Hong_Kong',US:'America/New_York'};
   const cadences = {trading:'交易日',daily:'每天',weekdays:'工作日',weekly:'每周',monthly:'每月',custom:'自定义',once:'指定日期一次'};
+  // Optional plans to create, separate from the already scheduled scene tasks.
   const recommendations = [
-    {id:'morning',icon:'🌅',title:'隔夜市场与今日大事',stage:'pre',type:'index',time:'09:00',description:'开盘前汇总隔夜欧美市场、宏观日历和重要催化，列出今日观察清单。',question:'在交易日开盘前，整理{{market}}隔夜市场简报：对比欧美主要指数与重要宏观事件，梳理今日经济数据、政策与行业催化，列出需要观察的指标和风险。关注{{symbols}}，未指定时覆盖主要指数。注明来源与数据时间，区分事实与推测。'},
-    {id:'announcements',icon:'🗓️',title:'自选股公告与财报提醒',stage:'pre',type:'watchlist',time:'09:00',description:'每天开盘前检查自选股公告、财报日期与重大新闻，标出值得关注的变化。',question:'在每个交易日开盘前，检查{{market}}自选股{{symbols}}自上一交易日收盘以来的公告、财报披露、业绩预告与重大新闻，并列出未来七天已确认的财报日期。逐一注明事件时间、来源、潜在影响与待核实事项；没有新变化时简要说明，不编造事件。'},
-    {id:'intraday',icon:'📊',title:'上午指数与量能观察',stage:'live',type:'index',time:'10:30',description:'交易日 10:30 检查主要指数、成交量和市场涨跌分布，解释盘中异动。',question:'每个交易日当地时间10:30，检查{{market}}主要指数及{{symbols}}的盘中表现，比较涨跌幅、成交量与历史同期水平，观察上涨下跌家数、领涨领跌方向和异常变化。区分数据事实与可能原因，列出后续观察信号；明确行情时间、延迟和缺失信息。'},
-    {id:'sectors',icon:'🔎',title:'午后行业与 ETF 强弱追踪',stage:'live',type:'etf',time:'14:00',description:'交易日 14:00 对比行业与 ETF 的涨跌、量能和相对强弱，跟踪热点变化。',question:'每个交易日当地时间14:00，比较{{market}}行业与ETF的盘中涨跌、量能和相对大盘强弱，优先覆盖{{symbols}}，未指定时选取有可靠行情的代表性行业ETF。梳理强弱方向、热点轮动和可能催化，说明筛选口径、行情时间与数据限制，不将成交量直接当作资金净流入。'},
-    {id:'closing',icon:'🌇',title:'收盘复盘与明日关注',stage:'post',type:'index',description:'收盘后复盘指数、市场广度和行业表现，整理下一交易日的事件与风险。',question:'在{{market}}收盘后生成一份复盘：覆盖主要指数、市场广度、成交量、行业强弱与重要新闻，关注{{symbols}}，未指定时覆盖全市场。解释今日变化并区分已确认驱动与推测，整理下一交易日已确认事件、观察指标和风险。注明行情日期与数据时间，尚无收盘数据时明确说明。'},
-    {id:'watchlist',icon:'📋',title:'自选股每日跟踪',stage:'post',type:'watchlist',description:'收盘后逐只回顾自选股的价格、量能与新闻变化，形成持续跟踪记录。',question:'每个交易日收盘后，逐只跟踪{{market}}自选股{{symbols}}的收盘价、当日涨跌、成交量变化、公告和可靠新闻。用简洁表格对比，解释值得关注的变化，列出后续事件与风险；明确数据时间及缺失项。不把本次记录当作实时行情，也不预设用户的持仓与交易意图。'}
+    {id:'morning',icon:'🗓️',title:'经济数据与政策日历',stage:'pre',type:'index',time:'09:00',description:'跟踪你关注的经济数据和政策日程，提前整理已确认的发布安排。',question:'在{{market}}开盘前整理用户关注的经济数据与政策日历，列出已确认的发布时间、前值、可靠预期与关注点。创建前澄清关注地区、事件范围及提醒时间；注明来源，区分已发布数据与待发布日程。'},
+    {id:'announcements',icon:'📄',title:'自选股公告与财报提醒',stage:'pre',type:'watchlist',time:'09:00',description:'为你的自选股检查公告与财报日期，标出值得关注的新变化。',question:'每天开盘前检查{{market}}自选股{{symbols}}的公告、业绩预告、财报披露及已确认的未来七天财报日期。创建前先澄清自选股名单和提醒时间，不假设用户持仓。逐一注明时间和来源，没有新变化时简要说明。'},
+    {id:'intraday',icon:'🔔',title:'关注标的价量异动观察',stage:'live',type:'index',time:'10:30',description:'按你指定的标的和观察条件，定时核验价格、量能与相关消息。',question:'盘中观察{{market}}用户指定标的{{symbols}}的价格、量能与相关消息。创建前澄清标的、观察时间和希望关注的变化条件。比较可靠历史同期口径，说明行情时间和延迟，仅提供研究观察，不下单，也不创建外部价格提醒。'},
+    {id:'sectors',icon:'⚖️',title:'行业 ETF 相对强弱对照',stage:'live',type:'etf',time:'14:00',description:'选择几只行业 ETF，对照相对表现、量能和共同驱动因素。',question:'定时比较{{market}}中用户选择的ETF {{symbols}}，对照涨跌、量能与相对基准表现，梳理共同驱动与分歧。创建前澄清ETF名单、基准与执行时间。注明数据日期与来源，不将成交量直接解释为资金流入。'},
+    {id:'closing',icon:'📒',title:'投资观察笔记回顾',stage:'post',type:'index',description:'回顾你在对话中记录的投资观察，整理已验证变化与待核实问题。',question:'收盘后回顾用户在对话中记录的{{market}}投资观察与{{symbols}}相关研究笔记，对照新证据，整理已验证变化、尚未解决的问题和后续观察清单。创建前澄清笔记来源、跟踪范围与时间。只使用用户实际提供的记录，不假设持仓、收益或交易。'},
+    {id:'watchlist',icon:'💰',title:'自选股分红与派息日历',stage:'post',type:'watchlist',description:'跟踪自选股已公告的分红、除权除息和派息安排。',question:'定时检查{{market}}自选股{{symbols}}已公告的分红、股权登记、除权除息与派息安排，区分已确认事项和未确认预期。创建前澄清股票名单与执行时间。注明公告日期、来源及币种，不预测未公告的分红。'},
+    {id:'weekend-research',icon:'🔎',title:'周末自选股研究',stage:'rest',type:'watchlist',time:'09:00',description:'利用休市时间梳理关注公司的业务变化、近期财报与研究问题。',question:'在{{market}}休市日研究用户选择的公司{{symbols}}，结合已披露财报、公告与可靠资料，梳理业务变化和待核实问题。创建前澄清公司名单、研究重点、重复频率与时间。明确数据截至日期，不把历史收盘数据作为实时行情。'},
+    {id:'next-week-earnings',icon:'📅',title:'下周财报观察清单',stage:'rest',type:'index',time:'17:00',description:'为关注的公司整理下周已确认的财报日期与重点观察指标。',question:'在{{market}}休市日整理用户关注公司{{symbols}}下周已确认的财报日期、发布时段与观察指标，区分官方已确认日期和第三方预计日期。创建前澄清公司范围、执行日期与时间；注明来源，不编造一致预期或财报结果。'}
   ];
   function recommendedTask(item) {
     return {...template(item.stage,item.type),title:item.title,question:item.question,timeMode:'fixed',time:item.time||(market==='CN'?'15:30':'16:30'),timezone:'market'};
@@ -162,13 +165,14 @@
       const active=!!t.activeRun,done=!active&&ready(t),running=active&&t.lastRun?.status==='running',run=active?t.activeRun:done?t.resultVersion:'';
       const label=running?'正在运行任务':active?'等待运行':!t.enabled?'已暂停':t.lastRun?.status==='failed'?'执行未完成':'等待执行';
       const description=plainSummary(visibleQuestion(t).split(' 使用项目已有金融研究技能')[0]);
-      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
+      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
     }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`);
   }
 
   function visibleTasks() {
     const query=$('taskSearch').value.trim().toLowerCase();
-    return tasks.filter(t=>(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query)));
+    const presets=sceneTasks.slice().sort((a,b)=>Number((b.scene||b.stage)===homeScene())-Number((a.scene||a.stage)===homeScene())||Number(!!b.activeRun)-Number(!!a.activeRun)||String(a.nextAt||'').localeCompare(String(b.nextAt||'')));
+    return [...tasks,...presets].filter(t=>(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query)));
   }
   function sidebarDate(value, task, includeTime=true, relative=true) {
     if(!value||!Number.isFinite(new Date(value).getTime()))return '';
@@ -202,7 +206,7 @@
   function renderLists() {
     closeTaskMenu();
     const rows=visibleTasks();
-    if(sharedEntry && selectedId===sharedEntry.task.id && !tasks.some(t=>t.id===selectedId))rows.push({...sharedEntry.task,sharedReadOnly:true});
+    if(sharedEntry && selectedId===sharedEntry.task.id && !rows.some(t=>t.id===selectedId))rows.push({...sharedEntry.task,sharedReadOnly:true});
     $('taskSidebarList').innerHTML=taskRows(sidebarExpanded?rows:rows.slice(0,5),true)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskSidebarExpand').hidden=rows.length<=5;
     $('taskSidebarExpand').textContent=sidebarExpanded?'收起显示':'展开显示';
@@ -212,7 +216,7 @@
     const hasPresets=sceneTasks.length>0;if(hasPresets&&!recommendationScene)recommendationScene=homeScene()||'pre';
     $('taskSceneTabs').hidden=!hasPresets;document.querySelector('.taskRecommendations').classList.toggle('has-scenes',hasPresets);
     $('taskSceneTabs').innerHTML=hasPresets?Object.entries(sceneCopy).map(([key,copy])=>`<button type="button" data-recommendation-scene="${key}" aria-pressed="${key===recommendationScene}">${copy.emoji} ${copy.label}</button>`).join(''):'';
-    const items=hasPresets?sceneTasks.filter(t=>t.stage===recommendationScene).map(t=>({id:t.id,icon:t.emoji,title:t.title,description:t.time+' · '+(t.stage==='rest'?'非交易日':'交易日')+' · '+visibleQuestion(t).split('。')[0]})):recommendations;
+    const items=hasPresets?recommendations.filter(t=>t.stage===recommendationScene):recommendations;
     $('taskRecommendations').innerHTML=items.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
@@ -507,7 +511,7 @@
   let menuAnchor=null,menuTaskId='',deleteTaskId='';
   const menuIcon=path=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
   function closeTaskMenu(restoreFocus=false){const anchor=menuAnchor;if(anchor)anchor.setAttribute('aria-expanded','false');if(taskMenu.hidePopover&&taskMenu.matches(':popover-open'))taskMenu.hidePopover();taskMenu.hidden=true;menuAnchor=null;menuTaskId='';if(restoreFocus)anchor?.focus();}
-  function openTaskMenu(button){if(menuAnchor===button&&!taskMenu.hidden){closeTaskMenu();return;}closeTaskMenu();const task=tasks.find(t=>t.id===button.dataset.taskMore)||(sharedEntry?.task.id===button.dataset.taskMore?sharedEntry.task:null);if(!task)return;
+  function openTaskMenu(button){if(menuAnchor===button&&!taskMenu.hidden){closeTaskMenu();return;}closeTaskMenu();const task=[...tasks,...sceneTasks].find(t=>t.id===button.dataset.taskMore)||(sharedEntry?.task.id===button.dataset.taskMore?sharedEntry.task:null);if(!task)return;
     menuAnchor=button;menuTaskId=task.id;taskMenu.setAttribute('aria-label','任务操作：'+task.title);button.setAttribute('aria-expanded','true');
     const action=(id,label,icon,disabled=false,danger=false)=>`<button type="button" role="menuitem" data-task-action="${id}" class="${danger?'is-danger':''}" ${disabled?'disabled':''}>${menuIcon(icon)}<span>${label}</span></button>`;
     const toggle=completed(task)?'重新安排':task.enabled?'暂停':'开启';
@@ -521,7 +525,7 @@
     if(typeof openShareDialog!=='function')throw new Error('分享面板暂时不可用，请刷新重试');
     openShareDialog(article);
   }
-  taskMenu.addEventListener('click',async event=>{const button=event.target.closest('[data-task-action]');if(!button||button.disabled)return;const task=tasks.find(t=>t.id===menuTaskId)||(sharedEntry?.task.id===menuTaskId?sharedEntry.task:null),action=button.dataset.taskAction;closeTaskMenu();if(!task)return;
+  taskMenu.addEventListener('click',async event=>{const button=event.target.closest('[data-task-action]');if(!button||button.disabled)return;const task=[...tasks,...sceneTasks].find(t=>t.id===menuTaskId)||(sharedEntry?.task.id===menuTaskId?sharedEntry.task:null),action=button.dataset.taskAction;closeTaskMenu();if(!task)return;
     try{if(action==='share'){await shareTask(task);return;}if(action==='edit'){edit(task,!editable(task));return;}if(!editable(task))return;
       if(action==='toggle'){if(completed(task))edit(task);else await toggleTask(task);}
       if(action==='run'){await api('tasks/'+task.id+'/run','POST');await refresh();await selectTask(task.id);message('任务已提交到云端，关闭页面后仍会执行。','taskMessage');}
@@ -542,7 +546,7 @@
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
       if(b.dataset.recommendationScene){recommendationScene=b.dataset.recommendationScene;renderLists();return;}
-      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation),preset=sceneTasks.find(t=>t.id===b.dataset.recommendation);if(item||preset){const d=preset||recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
+      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
       if(b.dataset.confirmationRetry){const task=selected();if(task)await loadTaskConfirmation(task,viewVersion);return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
 
