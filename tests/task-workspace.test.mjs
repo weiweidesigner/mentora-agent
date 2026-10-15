@@ -131,3 +131,15 @@ test('ordinary history still restores through the same saved answer renderer',as
  w.eval(appSource.slice(appSource.indexOf('function restoreSession(sessionId)'),appSource.indexOf('async function restoreSharedSessionFromUrl()')));
  w.restoreSession('saved');await tick();assert.match(w.messages.textContent,/历史问句/);assert.match(w.messages.textContent,/原始历史答案/);assert.match(w.messages.querySelector('.thinkingSummaryText').textContent,/42s/);assert.equal(w.messages.querySelector('.message.assistant').dataset.elapsedUnrecorded,'false');assert.equal(w.messages.querySelector('.deferredActions').hidden,false);h.dom.window.close();
 });
+
+test('sidebar summarizes upcoming, monitoring, monthly, paused and completed task states',async()=>{
+ const h=setup({tasks:[{...base,id:'daily',time:'08:00',nextAt:'2026-10-16T00:00:00Z'},{...base,id:'monitor',activeRun:'running',lastRun:{status:'running'}},{...base,id:'monthly',cadence:'monthly',monthDay:1,nextAt:'2026-11-01T00:00:00Z'},{...base,id:'paused',enabled:false},{...base,id:'done',cadence:'once',enabled:false,nextAt:null,lastRun:{status:'success',finished:'2026-05-15T02:00:00Z'}}]});await tick();const d=h.w.document;
+ const row=id=>d.querySelector(`#taskSidebarList [data-task-open="${id}"]`),subtitle=id=>row(id).querySelector('small').textContent;
+ assert.equal(subtitle('daily'),'明天 8时 · 每天 8:00');assert.equal(subtitle('monitor'),'监控中');assert.equal(subtitle('monthly'),'11月1日 · 每月');assert.equal(subtitle('paused'),'已暂停 · 每天 12:00');assert.equal(subtitle('done'),'已完成 · 5月15日 10:00');assert.ok(row('done').querySelector('.taskListComplete svg'));assert.ok(row('paused').classList.contains('is-paused'));
+ d.querySelector('#taskSidebarFilter').value='completed';d.querySelector('#taskSidebarFilter').dispatchEvent(new h.w.Event('change'));assert.equal(d.querySelectorAll('#taskSidebarList [data-task-open]').length,1);assert.ok(row('done'));h.dom.window.close();
+});
+
+test('sidebar dates use the task time zone and failed or queued runs never get a completion mark',async()=>{
+ const h=setup({tasks:[{...base,id:'us',market:'US',timezone:'America/New_York',time:'08:00',nextAt:'2026-10-15T12:00:00Z'},{...base,id:'queued',activeRun:'queued',lastRun:{status:'queued'}},{...base,id:'failed',cadence:'once',enabled:false,nextAt:null,lastRun:{status:'failed'}}]});await tick();const d=h.w.document;
+ assert.equal(d.querySelector('[data-task-open="us"] small').textContent,'今天 8时 · 每天 8:00');assert.equal(d.querySelector('[data-task-open="queued"] small').textContent,'排队中');assert.equal(d.querySelector('[data-task-open="failed"] small').textContent,'运行失败');assert.equal(d.querySelector('[data-task-open="failed"] .taskListComplete'),null);h.dom.window.close();
+});

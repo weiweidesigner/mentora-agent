@@ -98,7 +98,7 @@
     if (!response.ok) {const detail=Array.isArray(body.detail)?body.detail.map(x=>x.msg).join('；'):body.detail;throw new Error(typeof detail==='string'?detail:'请求失败，请稍后重试');}
     return body;
   }
-  function completed(task) {return !task.activeRun && !!task.lastRun && (task.cadence==='once' && !task.enabled || !!task.endDate && !task.nextAt && task.enabled);}
+  function completed(task) {return !task.activeRun && task.lastRun?.status==='success' && (task.cadence==='once' && !task.enabled || !!task.endDate && !task.nextAt && task.enabled);}
   function status(task) {
     if(task.sharedReadOnly)return '分享结果';
     if (task.activeRun) return task.lastRun?.status==='running'?'正在运行':'排队中';
@@ -133,8 +133,34 @@
     const query=$('taskSearch').value.trim().toLowerCase();
     return tasks.filter(t=>(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query)));
   }
+  function sidebarDate(value, task, includeTime=true, relative=true) {
+    if(!value||!Number.isFinite(new Date(value).getTime()))return '';
+    const zone=zoneFor(task),parts=date=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hourCycle:'h23'}).formatToParts(date).map(p=>[p.type,p.value]));
+    const d=parts(new Date(value)),now=parts(new Date(Date.now()+serverDelta));
+    const day=n=>Date.UTC(Number(n.year),Number(n.month)-1,Number(n.day));
+    const delta=Math.round((day(d)-day(now))/86400000);
+    const label=includeTime&&relative&&delta===0?'今天':includeTime&&relative&&delta===1?'明天':`${d.year!==now.year?d.year+'年':''}${Number(d.month)}月${Number(d.day)}日`;
+    const clock=relative?`${Number(d.hour)}${Number(d.minute)?':'+d.minute:'时'}`:`${String(d.hour).padStart(2,'0')}:${d.minute}`;
+    return includeTime?`${label} ${clock}`:label;
+  }
+  function compactSchedule(task) {
+    const time=task.timeMode==='fixed'?String(task.time||'').replace(/^0/,''): `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'}${Math.abs(task.offset)}分钟`;
+    const repeat=task.cadence==='weekly'?'每周'+'一二三四五六日'[(task.weekdays||[0])[0]]:task.cadence==='custom'?'每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、'):cadences[task.cadence]||'';
+    return task.cadence==='once'?'仅一次':`${repeat}${time?' '+time:''}`;
+  }
+  function taskSubtitle(task) {
+    if(task.sharedReadOnly)return '分享结果 · '+compactSchedule(task);
+    if(task.activeRun)return task.lastRun?.status==='running'?(task.stage==='live'?'监控中':'正在运行'):'排队中';
+    if(completed(task))return '已完成'+(task.lastRun?.finished||task.successAt?' · '+sidebarDate(task.lastRun?.finished||task.successAt,task,true,false):'');
+    if(task.cadence==='once'&&task.lastRun?.status==='failed')return '运行失败'+(task.lastRun.finished?' · '+sidebarDate(task.lastRun.finished,task,true,false):'');
+    if(!task.enabled)return '已暂停 · '+compactSchedule(task);
+    const next=sidebarDate(task.nextAt,task,!['monthly','weekly','custom'].includes(task.cadence));
+    const repeat=task.cadence==='monthly'?'每月':task.cadence==='once'?'仅一次':compactSchedule(task);
+    const timing=next?`${next} · ${repeat}`:'等待执行 · '+repeat;
+    return (task.lastRun?.status==='failed'?'运行失败 · ':'')+timing;
+  }
   function taskRows(rows, sidebar=false) {
-    return rows.map(t=>`<button type="button" class="taskListItem ${selectedId===t.id?'is-selected':''}" data-task-open="${t.id}" ${selectedId===t.id?'aria-current="true"':''}><span class="taskListIcon" aria-hidden="true">◷</span><span><strong>${esc(t.title)}</strong><small>${esc(status(t))} · ${esc(sidebar?(t.nextAt?'下次 '+dateText(t.nextAt,zoneFor(t)):schedule(t)):schedule(t))}</small></span><span class="taskListArrow" aria-hidden="true">${completed(t)?'✓':'›'}</span></button>`).join('');
+    return rows.map(t=>`<button type="button" class="taskListItem ${selectedId===t.id?'is-selected':''} ${completed(t)?'is-completed':!t.enabled?'is-paused':''}" data-task-open="${t.id}" ${selectedId===t.id?'aria-current="true"':''}><span class="taskListIcon" aria-hidden="true">◷</span><span><strong>${esc(t.title)}</strong><small>${esc(taskSubtitle(t))}</small></span>${completed(t)?'<span class="taskListComplete" aria-label="已完成"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>':'<span class="taskListArrow" aria-hidden="true">›</span>'}</button>`).join('');
   }
   function renderLists() {
     const rows=visibleTasks();

@@ -4341,3 +4341,9 @@ p {
  .taskThread,.taskFollowups { padding:20px 12px 24px; }
  .taskInfoCard,.taskChatForm.composer { width:calc(100% - 24px); }
 }
+
+/* Task state summaries follow the schedule rather than a generic active label. */
+.taskListComplete { display:inline-flex;align-items:center;flex:none;color:var(--muted); }
+.taskListComplete svg { width:18px;height:18px; }
+.taskSidebar .taskListItem:is(.is-paused,.is-completed) strong,
+:root[data-theme="light"] .shell.tasks-view .taskSidebar .taskListItem:is(.is-paused,.is-completed) strong { color:var(--muted); }
