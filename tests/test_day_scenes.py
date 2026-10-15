@@ -60,3 +60,18 @@ def test_public_preset_reports_are_readable_but_mutations_stay_owner_only(tmp_pa
 def test_preview_comes_from_execution_text_not_task_instructions():
     assert result_preview('## 核心结论\n\n**市场温和上涨。** 成交有所回升。\n[[AIME_CHART:/tmp/test.html]]')[0]=='市场温和上涨'
     assert result_preview('')==('','')
+
+
+def test_preset_copy_updates_without_changing_schedule_or_user_tasks(tmp_path):
+    service=DayTasks(tmp_path,lambda *_:{})
+    service.seed_scene_presets()
+    task=service.scene_tasks()[0]
+    with service.db() as db:
+        row=db.execute('SELECT * FROM tasks WHERE id=?',(task['id'],)).fetchone()
+        config=service.unpack(row['config']);config['question']='旧的技术指令';config['time']='07:45'
+        db.execute('UPDATE tasks SET config=? WHERE id=?',(service.pack(config),task['id']))
+    service.seed_scene_presets()
+    current=service.scene_tasks()[0]
+    assert current['question'].startswith('帮我看看')
+    assert current['time']=='07:45' and current['nextAt']==task['nextAt']
+    assert all('项目已有金融研究技能' not in payload.question for _,_,payload in preset_payloads())

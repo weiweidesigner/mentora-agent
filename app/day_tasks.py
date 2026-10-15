@@ -345,7 +345,14 @@ class DayTasks:
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
             for task_id,emoji,payload in preset_payloads():
-                if db.execute('SELECT 1 FROM tasks WHERE id=?',(task_id,)).fetchone():continue
+                existing=db.execute('SELECT * FROM tasks WHERE id=?',(task_id,)).fetchone()
+                if existing:
+                    if existing['owner']==SCENE_OWNER:
+                        config=self.unpack(existing['config'])
+                        if config['question']!=payload.question:
+                            config['question']=payload.question
+                            db.execute('UPDATE tasks SET config=? WHERE id=?',(self.pack(config),task_id))
+                    continue
                 config=payload.model_dump()
                 next_at=next_occurrence(config,now_utc())
                 db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?)',(task_id,SCENE_OWNER,self.pack(config),next_at,stamp(now_utc())))

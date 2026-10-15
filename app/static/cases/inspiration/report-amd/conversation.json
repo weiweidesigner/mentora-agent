@@ -10,20 +10,20 @@
       "script": "streamviz + yahoo-data + business-chart-recall + code-interpreter + internal-search + external-search",
       "reason": "由 DeepSeek Harness 选择并执行 Veya 项目 Skill。"
     },
-    "htmlUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
-    "reportUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
+    "htmlUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html?v=20261015-chart-layout",
+    "reportUrl": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html?v=20261015-chart-layout",
     "reportArtifacts": [
       {
         "path": "case:inspiration/report-amd/inspiration-real-report-amd-streamviz.html",
-        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html"
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-streamviz.html?v=20261015-chart-layout"
       },
       {
         "path": "case:inspiration/report-amd/inspiration-real-report-amd-kline.html",
-        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html"
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html?v=20261015-chart-layout"
       },
       {
         "path": "case:inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html",
-        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html"
+        "url": "/static/cases/inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html?v=20261015-chart-layout"
       }
     ],
     "payloadUrl": null,

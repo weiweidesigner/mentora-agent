@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>pie</title>
-<style>
+<style>:root{--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-chart-series-4:#d97706;--sv-chart-series-5:#8e4ec6;--sv-chart-series-6:#0090ff;--sv-chart-series-7:#ab4aba;--sv-chart-series-8:#46a758;}:root[data-theme="dark"]{--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-chart-series-4:#f6ad55;--sv-chart-series-5:#d19dff;--sv-chart-series-6:#70b8ff;--sv-chart-series-7:#e796f3;--sv-chart-series-8:#7ce2bd;}
 :root{color-scheme:light;--business-text-151922:#151922;--business-text-687386:#687386;--business-text-fff:#fff;--business-text-4b5563:#4b5563;}
 :root[data-theme="dark"]{color-scheme:dark;--business-text-151922:#f1f5f9;--business-text-687386:#c1cad7;--business-text-fff:#f1f5f9;--business-text-4b5563:#c1cad7;}
 
@@ -78,7 +78,7 @@ svg{display:block;width:100%;height:100%;overflow:visible}
   </div>
 </section>
 <script>
-const config = {"items": [{"label": "iPhone", "value": 209586.0, "displayValue": "209.59 B (50.4%)", "color": "#8b5cf6", "percent": 50.361759030759735}, {"label": "服务", "value": 109158.0, "displayValue": "109.16 B (26.2%)", "color": "#4bc3d5", "percent": 26.22975242754607}, {"label": "可穿戴、家居与配件", "value": 35686.0, "displayValue": "35.69 B (8.6%)", "color": "#f9730c", "percent": 8.575046676646778}, {"label": "Mac", "value": 33708.0, "displayValue": "33.71 B (8.1%)", "color": "#8b5cf6", "percent": 8.099749856425758}, {"label": "iPad", "value": 28023.0, "displayValue": "28.02 B (6.7%)", "color": "#2ab7a1", "percent": 6.733692008621663}], "title": "苹果 AAPL · FY2025 各产品营收构成", "centerLabel": "总净销售额", "centerValue": "416.16 B 美元", "subtitle": "AAPL · 按产品类别净销售额 · FY2025（截至 2025-09-27）", "badgeLabel": "期间: FY2025", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": true, "ringWidth": 28, "height": 360, "_chartMarkup": {"version": 1, "chartScript": "pie.py", "selectionMode": "user-specified", "effectiveMaxMarks": 1, "applied": [{"index": 0, "type": "item-style", "reason": "item color applied"}], "skipped": []}};
+const config = {"items": [{"label": "iPhone", "value": 209586.0, "displayValue": "209.59 B (50.4%)", "color": "var(--sv-chart-series-1)", "percent": 50.361759030759735}, {"label": "服务", "value": 109158.0, "displayValue": "109.16 B (26.2%)", "color": "var(--sv-chart-series-2)", "percent": 26.22975242754607}, {"label": "可穿戴、家居与配件", "value": 35686.0, "displayValue": "35.69 B (8.6%)", "color": "var(--sv-chart-series-4)", "percent": 8.575046676646778}, {"label": "Mac", "value": 33708.0, "displayValue": "33.71 B (8.1%)", "color": "var(--sv-chart-series-5)", "percent": 8.099749856425758}, {"label": "iPad", "value": 28023.0, "displayValue": "28.02 B (6.7%)", "color": "var(--sv-chart-series-6)", "percent": 6.733692008621663}], "title": "苹果 AAPL · FY2025 各产品营收构成", "centerLabel": "总净销售额", "centerValue": "416.16 B 美元", "subtitle": "AAPL · 按产品类别净销售额 · FY2025（截至 2025-09-27）", "badgeLabel": "期间: FY2025", "legendPosition": "bottom", "showLegendValues": false, "showCenterLabel": true, "ringWidth": 28, "height": 360, "_chartMarkup": {"version": 1, "chartScript": "pie.py", "selectionMode": "user-specified", "effectiveMaxMarks": 1, "applied": [{"index": 0, "type": "item-style", "reason": "item color applied"}], "skipped": []}};
 const root = document.querySelector('.pie-component');
 const stage = root.querySelector('.pie-stage');
 const svg = root.querySelector('svg');

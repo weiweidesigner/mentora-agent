@@ -68,7 +68,8 @@ def render_blocks(blocks: list[dict[str, Any]]) -> str:
 
 def render(payload: dict[str, Any]) -> str:
     theme_css = (Path(__file__).resolve().parents[1] / "assets/artifact-theme.css").read_text(encoding="utf-8")
-    theme_style = f'<style data-streamviz-theme="dual">{theme_css}</style>'
+    geometry_js = (Path(__file__).resolve().parents[1] / 'assets/chart-geometry.js').read_text(encoding='utf-8')
+    theme_style = f'<style data-streamviz-theme="dual">{theme_css}</style><script data-sv-chart-geometry>{geometry_js}</script>'
     artifact_html = str(payload.get("html") or "").strip()
     if artifact_html:
         # This is intentionally an escape hatch for evidence-backed custom

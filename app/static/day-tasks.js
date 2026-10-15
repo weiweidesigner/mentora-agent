@@ -311,7 +311,7 @@
     const container=$('taskThread');
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
-    renderTaskUser(data.question||task.question,[],container,task);
+    renderTaskUser(task.systemPreset?task.question:(data.question||task.question),[],container,task);
     if(['queued','running'].includes(data.status)){void streamRun(data,task,version,container);return;}
     const article=document.createElement('article');article.className='message assistant';container.append(article);
     if(data.answer){await renderTaskAnswer(article,structuredClone(data.answer),data.question||task.question);if(version===viewVersion)markSeen(task,data.runId||selectedRun);}

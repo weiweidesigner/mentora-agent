@@ -660,9 +660,11 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_intraday(artifact, theme)
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
-    artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = sync_native_kline_theme(artifact, theme)
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'
+    if 'data-sv-chart-geometry' not in artifact:
+        geometry = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
+        runtime_theme += '<script data-sv-chart-geometry>' + geometry + '</script>'
     # The host selects a palette; all artifact styling belongs to StreamViz.
     artifact = re.sub(
         r"<html\b([^>]*)>",
@@ -671,7 +673,7 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
         artifact, count=1, flags=re.I,
     )
     if re.search(r"</head\s*>", artifact, flags=re.I):
-        document = re.sub(r"</head\s*>", f"{runtime_theme}</head>", artifact, count=1, flags=re.I)
+        document = re.sub(r"</head\s*>", lambda _: f"{runtime_theme}</head>", artifact, count=1, flags=re.I)
     else:
         document = f'<!doctype html><html lang="zh-CN" data-theme="{theme}"><head><meta charset="utf-8">{runtime_theme}</head><body>{artifact}</body></html>'
     return HTMLResponse(document, headers={"Cache-Control": "no-store"})

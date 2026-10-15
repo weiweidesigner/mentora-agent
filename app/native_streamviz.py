@@ -255,9 +255,10 @@ def _save_widget(generated_dir: Path, title: str, code: str) -> dict[str, str] |
         return None
     code = _flatten_native_canvas(code)
     theme_css = (Path(__file__).parent / "skills/streamviz/assets/artifact-theme.css").read_text(encoding="utf-8")
+    geometry_js = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
     code = ('<!doctype html><html data-theme="light"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<style data-streamviz-theme="dual">{theme_css}</style></head><body>'
+            f'<style data-streamviz-theme="dual">{theme_css}</style><script data-sv-chart-geometry>{geometry_js}</script></head><body>'
             f'<main data-aime-streamviz-root="true">{code}</main></body></html>')
     name = f"native-streamviz-{uuid.uuid4().hex[:12]}.html"
     path = generated_dir / name

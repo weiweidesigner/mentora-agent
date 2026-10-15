@@ -216,3 +216,7 @@
 
 /* Touch feedback is handled by the host; avoid native tap overlay blocks. */
 html{-webkit-tap-highlight-color:transparent}
+
+/* Additional categorical series stay distinct from the first three in both themes. */
+:root:not([data-theme="dark"]){--sv-chart-series-4:#d97706;--sv-chart-series-5:#8e4ec6;--sv-chart-series-6:#0090ff;--sv-chart-series-7:#ab4aba;--sv-chart-series-8:#46a758}
+:root[data-theme="dark"]{--sv-chart-series-4:#f6ad55;--sv-chart-series-5:#d19dff;--sv-chart-series-6:#70b8ff;--sv-chart-series-7:#e796f3;--sv-chart-series-8:#7ce2bd}

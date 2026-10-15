@@ -147,6 +147,7 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
                 artifact = _native_payout_ratio().render_html(values)
             except (ValueError, TypeError, KeyError):
                 pass
+    artifact = artifact.replace('const yLabelReserve = width < 700 ? 72 : 46;', 'const yLabelReserve = width < 700 ? 42 : 46;')
     # Saved charts may already have layout repairs but still contain an older touch runtime.
     if 'id="genericMobileTouch"' in artifact and 'const pointerY=originY+event.clientY-placement.top;' not in artifact:
         runtime = (Path(__file__).parent / 'skills/generic-chart/runtime/mobile_interactions.html').read_text()
