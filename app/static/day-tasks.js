@@ -552,7 +552,7 @@
 
 
       switch(b.id){
-        case'navTasks':case'railTasks':showLanding();if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
+        case'dayCustomizeTasks':case'navTasks':case'railTasks':showLanding();if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
         case'navHome':case'railHome':if(typeof startNewChat==='function')startNewChat(false,false);if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
         case'taskBack':case'wizardClose':showLanding();break;
         case'taskSidebarNew':case'taskOpenCreate':newTask();break;
