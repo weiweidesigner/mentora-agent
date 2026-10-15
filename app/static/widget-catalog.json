@@ -1,11 +1,5 @@
 [
   {
-    "id": "multi_intraday",
-    "title": "多股分时",
-    "category": "行情与资金",
-    "description": "把多只股票的日内走势放在一起比较。"
-  },
-  {
     "id": "trade_flow",
     "title": "资金与订单流",
     "category": "行情与资金",
