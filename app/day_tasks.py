@@ -540,6 +540,23 @@ def create_router(service):
     def tasks(request: Request, response: Response):
         return {'tasks': service.list(owner(request, response)), 'markets': [market_state(m) for m in MARKETS], 'serverTime': stamp(now_utc()), 'pushPublicKey': service.public_key}
 
+    @router.post('/plan')
+    def plan(payload: dict, request: Request, response: Response):
+        writer(request, response)
+        from app.task_planner import PlanningInput, plan_task
+        from pydantic import ValidationError
+        try:
+            parsed = PlanningInput.model_validate(payload)
+        except ValidationError as exc:
+            raise HTTPException(422, '任务问句或回答格式无效') from exc
+        try:
+            return plan_task(parsed)
+        except (ValueError, RuntimeError) as exc:
+            raise HTTPException(502, str(exc)[:300]) from exc
+        except Exception as exc:
+            log.warning('Task planning unavailable: %s', type(exc).__name__)
+            raise HTTPException(502, '任务配置生成暂时失败，请重试或使用新建任务面板。') from exc
+
     @router.post('/tasks')
     def add(payload: TaskInput, request: Request, response: Response):
         return service.save(writer(request, response), payload)
