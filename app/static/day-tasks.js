@@ -95,6 +95,7 @@
     $('taskSidebar').hidden=!active;
     document.querySelector('.historyBlock').hidden=active&&!mobile();
     $('navHome').classList.toggle('is-selected',!active);$('navTasks').classList.toggle('is-selected',active);
+    $('railHome').classList.toggle('is-active',!active);$('railTasks').classList.toggle('is-active',active);
     for(const [id,current] of [['navHome',!active],['navTasks',active]]){if(current)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}
     if (mobile() && typeof setSidebarCollapsed==='function') setSidebarCollapsed(true);
   }

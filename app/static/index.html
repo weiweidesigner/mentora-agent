@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-market-select" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-desktop-columns" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -48,7 +48,8 @@
             </button>
           </nav>
           <section id="taskSidebar" class="taskSidebar" aria-label="定时任务列表" hidden>
-            <div class="taskSidebarTitle"><h2>定时任务</h2><button id="taskSidebarNew" class="dayIconButton" type="button" aria-label="新建定时任务">＋</button></div>
+            <div class="taskSidebarTitle"><h2>定时任务</h2></div>
+            <button id="taskSidebarNew" class="taskSidebarCreate dayTextButton" type="button" aria-label="新建定时任务"><span aria-hidden="true">＋</span> 新建任务</button>
             <label class="taskSearchLabel"><input id="taskSearch" type="search" placeholder="搜索任务" aria-label="搜索定时任务" /></label>
             <select id="taskSidebarFilter" class="taskFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select>
             <div id="taskSidebarList"></div>
@@ -170,7 +171,8 @@
           <div id="taskTopActions" class="taskTopActions" hidden><button id="taskRunNow" class="dayTextButton" type="button">立即运行</button><button id="taskToggle" class="dayTextButton" type="button">暂停</button><button id="taskSettings" class="dayIconButton" type="button" aria-label="任务设置">⋯</button></div>
         </header>
         <div id="taskLanding" class="taskLanding">
-          <header class="taskLandingHeader"><h1>定时任务</h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
+          <div class="taskLandingMark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="19"/><path d="M24 12v13l-8 5" stroke-linecap="round"/></svg></div>
+          <header class="taskLandingHeader"><h1><span class="taskDesktopLabel">安排任务</span><span class="taskMobileLabel">定时任务</span></h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
           <p class="taskLead">安排分析、跟踪变化，让 Veya 在你需要的时候带来更新。</p>
           <form id="taskPromptForm" class="taskPromptForm"><textarea id="taskPrompt" rows="3" maxlength="6000" required aria-label="安排任务" placeholder="例如：每个交易日开盘前，梳理我的自选股机会"></textarea><div><button id="taskOpenCreate" class="dayTextButton" type="button">＋ 设置任务</button><button class="taskPromptSend" type="submit" aria-label="开始创建任务">↑</button></div></form>
           <div id="taskLandingList" class="taskLandingList"></div>
@@ -255,6 +257,6 @@
     <script src="/static/app.js?v=interface-20261015-task-workspace"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
-    <script src="/static/day-tasks.js?v=20261015-task-workspace"></script>
+    <script src="/static/day-tasks.js?v=20261015-desktop-columns"></script>
   </body>
 </html>

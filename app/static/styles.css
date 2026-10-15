@@ -3979,3 +3979,52 @@ p {
  #navTasks { order:1; }
  .shell.tasks-view .historyBlock { display:block!important; }
 }
+
+/* Desktop task navigation: fixed app rail, independent task list, content canvas. */
+.taskSidebarCreate { display:flex;align-items:center;gap:8px;padding:12px 8px;text-align:left;font-size:14px; }
+.taskSidebarCreate>span { font-size:23px;font-weight:300; }
+.taskLandingMark,.taskDesktopLabel { display:none; }
+@media(min-width:761px) {
+ .shell.tasks-view { grid-template-columns:332px minmax(0,1fr) 0; }
+ .shell.tasks-view.sidebar-collapsed { grid-template-columns:56px minmax(0,1fr) 0; }
+ .shell.tasks-view .appSidebar { display:flex;height:100dvh; }
+ .shell.tasks-view .sidebarRail { display:flex;flex:none;border-right:1px solid var(--line);gap:14px;padding-top:14px; }
+ .shell.tasks-view .desktopNavRail { display:flex;align-items:center;justify-content:center; }
+ .shell.tasks-view #railHome { order:0; }
+ .shell.tasks-view #railNewChat { order:1; }
+ .shell.tasks-view #railTasks { order:2; }
+ .shell.tasks-view #sidebarToggle { order:3;margin-top:auto; }
+ .shell.tasks-view .railButton.is-active { background:var(--soft-2); }
+ .shell.tasks-view .sidebarContent { flex:1;position:relative;height:100%;padding:20px 12px 16px; }
+ .shell.tasks-view.sidebar-collapsed .sidebarContent { display:none; }
+ .shell.tasks-view .sidebarNav { display:none; }
+ .shell.tasks-view .sidebarTop { position:absolute;right:12px;top:14px;padding:0;min-height:34px; }
+ .shell.tasks-view .sidebarTop .brandHomeButton,.shell.tasks-view .sidebarTop .themeToggleButton { display:none; }
+ .shell.tasks-view .taskSidebar { padding-top:0; }
+ .shell.tasks-view .taskSidebarTitle { min-height:28px;padding:0 42px 0 8px; }
+ .shell.tasks-view .taskSidebarTitle h2 { font-size:17px; }
+ .shell.tasks-view .taskSidebarCreate { margin:14px 0 8px; }
+ .shell.tasks-view .taskSearchLabel { margin:8px 0 16px; }
+ .shell.tasks-view .taskSearchLabel input { background:transparent; }
+ .shell.tasks-view .taskSidebar>.taskFilter { border:0;border-radius:0;background:transparent;color:var(--muted);padding-left:0;margin-top:8px; }
+ .shell.tasks-view .taskSidebar .taskListItem { padding:12px 10px; }
+ .taskWorkspace:has(#taskLanding:not([hidden]))>.taskTopbar { display:none; }
+ .taskLanding { display:flex;flex-direction:column;justify-content:center;padding:64px 40px; }
+ .taskLandingMark { display:block;width:48px;height:48px;flex:none;margin:0 auto 20px;color:var(--muted); }
+ .taskLandingMark svg { width:100%;height:100%; }
+ .taskDesktopLabel { display:inline; }
+ .taskMobileLabel { display:none; }
+ .taskLandingHeader { justify-content:center;width:100%; }
+ .taskLandingHeader h1 { font-size:24px;font-weight:550;letter-spacing:0; }
+ .taskLandingHeader .taskFilter,.taskLanding .taskPromptForm { display:none; }
+ .taskLanding .taskLead { text-align:center;margin-top:12px;margin-bottom:44px; }
+ .taskLanding .taskRecommendations { width:100%;max-width:760px;margin-top:0; }
+ .taskLanding .taskRecommendations h2 { display:none; }
+ #taskRecommendations { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px; }
+ .taskRecommendation { border:1px dashed var(--line);border-radius:18px;padding:24px 20px;min-height:112px;align-items:center; }
+ .taskRecommendation:hover { background:var(--soft); }
+ .taskRecommendation>span:last-child { display:none; }
+ .taskRecommendation:last-child:nth-child(odd) { grid-column:1/-1; }
+ .taskThread { width:min(100%,880px);padding-top:40px; }
+}
+@media(min-width:761px) and (max-height:700px) { .taskLanding { justify-content:flex-start;padding-top:48px; } }
