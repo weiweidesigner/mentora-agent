@@ -137,41 +137,15 @@
   let displayedDayScene='';
   function updateDayHeader(){const scene=homeScene(),copy=sceneCopy[scene];$('myDayTitle').textContent=copy?.title||'陪你等一个清晰的方向';const now=new Date(Date.now()+serverDelta),parts=Object.fromEntries(new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).map(p=>[p.type,p.value]));$('dayClock').dateTime=now.toISOString();$('dayClock').textContent=`${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;if(displayedDayScene!==scene){displayedDayScene=scene;$('daySceneArt').dataset.scene=scene||'';$('daySceneArt').setAttribute('aria-label',copy?.label||'同步市场时间');$('daySceneArt').innerHTML=sceneArt(scene||'pre');return true;}return false;}
   function resultScene(t){if(t.resultScene)return t.resultScene;if(t.stage==='rest')return 'rest';if(t.timeMode==='open')return t.offset>0?'live':'pre';if(t.timeMode==='close')return t.offset<0?'live':'post';if(t.time){const close=t.market==='CN'?'15:00':'16:00';return t.time<'09:30'?'pre':t.time<close?'live':'post';}return t.stage;}
-  const homeStreams=new Map(),homeProgress=new Map();
-  function syncHomeStreams(rows){
-    if(typeof readEventStream!=='function'||typeof toolActivityTitle!=='function')return;
-    const active=new Map(rows.filter(t=>t.activeRun).map(t=>[t.activeRun,t]));
-    for(const [run,controller] of homeStreams)if(!active.has(run)){controller.abort();homeStreams.delete(run);homeProgress.delete(run);}
-    for(const [run,task] of active){
-      if(homeStreams.has(run))continue;
-      const controller=new AbortController();homeStreams.set(run,controller);
-      void (async()=>{
-        try{
-          const response=await fetch('/api/day/tasks/'+encodeURIComponent(task.id)+'/runs/'+encodeURIComponent(run)+'/events',{signal:controller.signal});
-          if(!response.ok||!response.body)return;
-          await readEventStream(response.body,(event,data)=>{
-            if(controller.signal.aborted)return;
-            let text='';
-            if(event==='tool_step')text=toolActivityTitle(data,String(data.script||''),String(data.tool||''),String(data.code||''),Array.isArray(data.params)?data.params:[],Array.isArray(data.shellCommand)?data.shellCommand:[],'zh-CN');
-            else if(['status','agent_event'].includes(event))text=data.detail||data.message||'';
-            else if(event==='answer_text')text=data.text||'';
-            if(text){text=plainSummary(text).slice(-300);homeProgress.set(run,text);const card=Array.from($('dayPanel').querySelectorAll('[data-task-open]')).find(el=>el.dataset.taskOpen===task.id);const preview=card?.querySelector('.dayLivePreview');if(preview)preview.textContent=text;}
-            if(event==='run_state'){lastRefresh=0;void refresh();}
-          });
-        }catch{}finally{if(homeStreams.get(run)===controller)homeStreams.delete(run);}
-      })();
-    }
-  }
   function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
     const ready=t=>t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date&&resultScene(t)===scene;
     const rows=[...sceneTasks.filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),...tasks.filter(t=>(t.resultMarket||t.market)==='CN'&&((t.activeRun&&(t.scene||resultScene(t))===scene)||ready(t)))];
     $('dayPanel').innerHTML=rows.length?`<div class="daySceneGrid">${rows.map(t=>{
       const active=!!t.activeRun,done=!active&&ready(t),running=active&&t.lastRun?.status==='running',run=active?t.activeRun:done?t.resultVersion:'';
       const label=running?'正在运行任务':active?'等待运行':!t.enabled?'已暂停':t.lastRun?.status==='failed'?'执行未完成':'等待执行';
-      const progress=active?(homeProgress.get(t.activeRun)||t.livePreview||(running?'正在连接研究进度…':'任务正在排队，开始后会显示执行进度。')):t.lastRun?.status==='failed'?'本次执行未完成，点击查看运行记录。':t.nextAt?'计划于 '+dateText(t.nextAt,zoneFor(t))+' 执行。':'暂无执行安排';
-      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayLivePreview">${esc(progress)}</p>`}</button>`;
+      const description=plainSummary(visibleQuestion(t).split(' 使用项目已有金融研究技能')[0]);
+      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" style="--day-edge-delay:-${((Date.now()+serverDelta)%4000)/1000}s" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardIcon dayResultEmoji" aria-hidden="true">${esc(t.emoji||sceneCopy[scene]?.emoji||'📋')}</span><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
     }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`;
-    syncHomeStreams(rows);
   }
 
   function visibleTasks() {

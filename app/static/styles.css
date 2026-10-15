@@ -4518,12 +4518,12 @@ p {
 @keyframes day-rays { to { transform:rotate(360deg); } }
 @keyframes day-travel { 0%,100% { transform:translate(-2px,2px) rotate(-5deg); } 50% { transform:translate(2px,-2px) rotate(3deg); } }
 .daySceneGrid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
-.daySceneGrid .caseCard { width:100%;min-width:0;max-width:none;height:auto;min-height:156px; }
-.daySceneCard .caseCardTop { display:flex;align-items:center;gap:8px;min-width:0; }
+.daySceneGrid .caseCard { width:100%;min-width:0;max-width:none;height:116px;min-height:116px;padding:12px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start; }
+.daySceneCard .caseCardTop { display:flex;align-items:center;gap:8px;min-width:0;min-height:20px;margin-bottom:4px; }
 .daySceneCard .caseCardTag { white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.daySceneCard h2 { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden; }
-.daySceneCard p { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden; }
-.daySceneCard .dayResultEmoji { flex:none;background:transparent;font-size:18px; }
+.daySceneCard h2 { margin:0 0 4px;font-size:16px;line-height:1.3;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden; }
+.daySceneCard p { font-size:13px;line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden; }
+.daySceneCard .dayResultEmoji { flex:none;width:20px;height:20px;background:transparent;font-size:18px; }
 .taskSceneTabs { display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 24px; }
 .taskSceneTabs button { border:0;border-radius:999px;padding:8px 16px;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer; }
 .taskSceneTabs button[aria-pressed=true] { background:var(--soft-2);color:var(--ink); }
@@ -4532,7 +4532,7 @@ p {
 .taskRecommendations.has-scenes .taskRecommendation { padding:20px 16px;align-items:flex-start; }
 .taskRecommendations.has-scenes .taskRecommendation small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden; }
 @media(max-width:1000px) { .daySceneGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:1fr; } }
-@media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayHeading { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { min-height:136px; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
+@media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayHeading { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { height:112px;min-height:112px; }.daySceneCard h2 { font-size:15px; }.daySceneCard p { font-size:12px;line-height:1.5; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
 @media(prefers-reduced-motion:reduce) { .daySun,.daySunRays,.dayTravel { animation:none!important; } }
 
 /* Keep the scene beside the greeting and its clock on the line below. */
@@ -4540,10 +4540,22 @@ p {
 .dayHeading { align-items:center;gap:12px; }
 .daySceneArt { display:flex;align-items:center;justify-content:center; }
 .daySceneCard { position:relative; }
-.daySceneCard .dayLivePreview { -webkit-line-clamp:2; }
+
 .dayTaskStatus { color:var(--muted);font-size:12px;min-height:24px; }
 .dayRunSpinner { display:inline-block;width:12px;height:12px;flex:none;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:day-task-spin .85s linear infinite; }
 .dayRunSpinner.is-queued { animation-duration:1.8s;opacity:.55; }
 .dayUnreadDot { display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:#ed4d50;margin-left:auto; }
 @keyframes day-task-spin { to { transform:rotate(360deg); } }
 @media(prefers-reduced-motion:reduce) { .dayRunSpinner { animation:none; } }
+
+@property --day-edge-angle { syntax:"<angle>";initial-value:0deg;inherits:false; }
+.daySceneCard.is-running::before {
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;
+  background:conic-gradient(from var(--day-edge-angle),transparent 0deg 205deg,#7c71ff55 240deg,#9c8aff 285deg,#7fe6f4 325deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:day-neon-edge 4s linear infinite;animation-delay:var(--day-edge-delay,0s);
+}
+.daySceneCard.is-running { box-shadow:0 0 12px #8c78ff12,inset 0 0 10px #81e8f407; }
+@keyframes day-neon-edge { to { --day-edge-angle:360deg; } }
+@media(prefers-reduced-motion:reduce) { .daySceneCard.is-running::before { animation:none; } }

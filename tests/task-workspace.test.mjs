@@ -218,7 +218,7 @@ test('scene presets show scheduled, running and unread results and viewing clear
  const t={...base,systemPreset:true,scene:'live',resultScene:'live',resultDate:'2026-10-15'};
  const h=setup({tasks:[],sceneTasks:[{...t,id:'waiting',resultVersion:null,lastRun:null},{...t,id:'running',activeRun:'run-active',lastRun:{status:'running'},livePreview:'正在核验最新成交量与行情时间'},{...t,id:'done'}]});await tick();const d=h.w.document;
  const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,3);
- assert.match(cards[0].textContent,/等待执行/);assert.match(cards[1].textContent,/正在运行任务/);assert.match(cards[1].querySelector('p').textContent,/核验最新成交量/);assert.ok(cards[1].querySelector('.dayRunSpinner'));assert.equal(cards[1].dataset.taskRun,'run-active');
+ assert.match(cards[0].textContent,/等待执行/);assert.match(cards[1].textContent,/正在运行任务/);assert.equal(cards[1].querySelector('p').textContent,base.question);assert.doesNotMatch(cards[1].textContent,/核验最新成交量/);assert.ok(cards[1].classList.contains('is-running'));assert.ok(cards[1].querySelector('.dayRunSpinner'));assert.equal(cards[1].dataset.taskRun,'run-active');
  assert.ok(cards[2].querySelector('[aria-label="未读结果"]'));cards[2].click();await tick();assert.equal(d.querySelector('[data-task-open="done"] .dayUnreadDot'),null);assert.equal(JSON.parse(h.w.localStorage.getItem('mentora-task-seen')).done,'run-new');assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
 });
 
