@@ -781,7 +781,7 @@ def create_router(service):
             snapshot = {key: value for key, value in config.items() if key not in SECRET_FIELDS}
             from app.day_presets import SCENE_OWNER
             if row['owner']==SCENE_OWNER:
-                snapshot=service.unpack(row['current_config'])
+                snapshot={key:value for key,value in service.unpack(row['current_config']).items() if key not in SECRET_FIELDS}
                 snapshot['systemPreset']=True
             snapshot['id'] = row['task_id']
             visitor = hashlib.sha256(request.cookies.get(COOKIE, '').encode()).hexdigest()
