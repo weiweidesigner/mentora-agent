@@ -4279,3 +4279,5 @@ p {
  :root[data-theme="light"] .shell.tasks-view .sidebarContent { background:#fff; }
 }
 @media(max-width:760px) { :root[data-theme="light"] .shell.sidebar-open .sidebarContent { background:rgba(255,255,255,.86);border-color:#d6dee8; } }
+:root[data-theme="light"] .homeBackdrop video { opacity:.65;filter:blur(12px) saturate(.8) brightness(1.05); }
+:root[data-theme="light"] .homeBackdropMask { background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(255,255,255,.4) 40%,rgba(252,251,252,.88) 76%,var(--bg) 100%); }
