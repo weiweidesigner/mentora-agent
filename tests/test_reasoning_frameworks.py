@@ -604,6 +604,8 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
         "printf '%s\\n' "
         "'{\"type\":\"thread.started\",\"thread_id\":\"thread-123\"}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"command_execution\",\"command\":[\"echo\",\"ok\"],\"status\":\"completed\"}}' "
+        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"I will load the relevant skills.\"}}' "
+        "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"channel\":\"commentary\",\"text\":\"Internal execution note\"}}' "
         "'{\"type\":\"item.completed\",\"item\":{\"type\":\"agent_message\",\"text\":\"完成\"}}'\n",
         encoding="utf-8",
     )
@@ -618,6 +620,7 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
     assert names == ["status", "agent_event", "tool_step", "answer_text", "agent_event", "final"]
     assert final["engineSessionId"] == "thread-123"
     assert final["interpretation"] == "完成"
+    assert [data["text"] for name, data in events if name == "answer_text"] == ["完成"]
 
 
 def test_deepseek_sdk_streams_events_and_returns_real_session_id(

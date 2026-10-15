@@ -1378,9 +1378,11 @@ class LocalAgentFrameworks:
                     if skill_name not in observed_skills:
                         observed_skills.append(skill_name)
             if event_type == "item.completed" and item.get("type") == "agent_message":
-                answer = str(item.get("text") or answer)
-                if answer and item.get("channel") != "analysis":
-                    yield "answer_text", {"text": answer, "replace": True}
+                # Codex also emits interim execution commentary as agent_message.
+                # Buffer messages until the turn finishes; only the last answer
+                # belongs in the user-facing response body.
+                if item.get("channel") not in {"analysis", "commentary"}:
+                    answer = str(item.get("text") or answer)
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
                 message = str(error.get("message") or "Codex 执行失败")
@@ -1458,6 +1460,7 @@ class LocalAgentFrameworks:
         if observed_skills:
             answer = re.sub(r"(?m)^\s*\[\[AIME_SKILLS:[^\]\n]+\]\]\s*$", "", answer).rstrip()
             answer += f"\n\n[[AIME_SKILLS:{','.join(observed_skills)}]]"
+        yield "answer_text", {"text": answer, "replace": True}
         run_id = f"codex-{thread_id or session_key}"
         self._write_codex_trace(f"===== 运行完成 | runId: {run_id} =====")
         yield "agent_event", {
