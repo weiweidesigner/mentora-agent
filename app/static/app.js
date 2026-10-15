@@ -3486,6 +3486,7 @@ function startNewChat(createSession = false, focusInput = false) {
   if (focusInput) input.focus();
   else input.blur();
   if (createSession) ensureCurrentSession("");
+  conversation.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }
 
 function updateComposerState() {
