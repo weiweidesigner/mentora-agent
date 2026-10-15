@@ -82,7 +82,11 @@
     const messages=Array.isArray(board.chat)?board.chat:[];
     const signature=JSON.stringify([board.id,messages,commandControllers.has(board.id)]);if(log.dataset.signature===signature)return;log.dataset.signature=signature;
     const entries=messages.length?messages:[{role:'assistant',content:'想在这张看板里关注什么？告诉我想看的标的和图表，也可以选中卡片后直接调整。'}];
-    log.innerHTML=entries.map(m=>`<article class="widgetChatMessage is-${m.role==='user'?'user':'assistant'}"><span class="widgetMessageAuthor">${m.role==='user'?'你':'Mentora Widget'}</span>${m.scope?`<span class="widgetMessageScope">${esc(m.scope)}</span>`:''}<div>${esc(m.content)}</div></article>`).join('')+(commandControllers.has(board.id)?'<article class="widgetChatMessage is-assistant is-pending"><span class="widgetMessageAuthor">Mentora Widget</span>正在处理…</article>':'');log.scrollTop=log.scrollHeight;
+    log.innerHTML=entries.map(m=>{
+      const user=m.role==='user',content=user?esc(m.content):typeof formatInsight==='function'?formatInsight(m.content):esc(m.content);
+      const scope=m.scope?`<span class="widgetMessageScope">${esc(m.scope)}</span>`:'';
+      return `<article class="message widgetChatMessage ${user?'user is-user':'assistant is-assistant'}">${user?`<div class="userMessageWrap"><div class="bubble userBubble">${scope}${content}</div></div>`:`<div class="bubble assistantBubble"><div class="streamingAnswer">${scope}${content}</div></div>`}</article>`;
+    }).join('')+(commandControllers.has(board.id)?'<article class="message assistant widgetChatMessage is-pending"><div class="bubble assistantBubble"><span class="thinkingSummaryText" role="status">正在处理…</span></div></article>':'');log.scrollTop=log.scrollHeight;
   }
   function render() {
     const board=current();if(!board)return;
@@ -283,7 +287,7 @@
     finally{resolvingSymbol=false;submit.disabled=false;}
   };
   $('widgetForm').onsubmit=event=>{event.preventDefault();const text=$('widgetPrompt').value.trim();if(!text||jobs.has(activeId)||commandControllers.has(activeId))return;$('widgetPrompt').value='';updateComposer();runCommand(text);};
-  function updateComposer(){const input=$('widgetPrompt');input.style.height='40px';const height=Math.max(40,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.style.overflowY=input.scrollHeight>height?'auto':'hidden';input.closest('.widgetComposerBox').classList.toggle('is-multiline',height>44);$('widgetGenerate').classList.toggle('is-ready',!!input.value.trim());}
+  function updateComposer(){const input=$('widgetPrompt'),box=input.closest('.widgetComposerBox');if(typeof resizeComposerInput==='function')resizeComposerInput(input,box);else{input.style.height='38px';const height=Math.max(38,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.style.overflowY=input.scrollHeight>height?'auto':'hidden';box.classList.toggle('is-multiline',input.value.includes('\n')||height>40);}$('widgetGenerate').classList.toggle('is-ready',!!input.value.trim());}
   $('widgetPrompt').oninput=updateComposer;
   $('widgetPrompt').onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();$('widgetForm').requestSubmit();}};
   $('widgetStop').onclick=()=>{commandControllers.get(activeId)?.abort();jobs.get(activeId)?.abort();};

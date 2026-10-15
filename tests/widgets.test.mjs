@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const source=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8');
+const homeSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../app/static/widget-catalog.json',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,15));
 function setup({storage,reply,plan,blocked=false}={}) {
@@ -14,6 +15,8 @@ function setup({storage,reply,plan,blocked=false}={}) {
  if(blocked)Object.defineProperty(w,'localStorage',{get(){throw Error('blocked');}});
  const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.includes('catalog'))return{ok:true,json:async()=>catalog};if(url==='/api/widgets/plan')return{ok:true,json:async()=>typeof plan==='function'?plan(JSON.parse(options.body)):plan||{reply:'已添加图表。',actions:[{type:'add',componentId:'cash_flow',parameters:{symbols:['AAPL']}}]}};if(url==='/api/widgets/tradingview')return{ok:true,json:async()=>({url:'/generated/direct-tv.html',title:'TradingView 直接添加',mode:'direct'})};return{ok:true,body:reply};};
  w.readEventStream=async(body,callback)=>{if(typeof body==='function')await body(callback);else callback('final',{reportArtifacts:[{url:'/generated/real-kline.html',title:'苹果近期股价'},{url:'/generated/real-revenue.html',title:'苹果营收构成'}],interpretation:'真实研究结果'});};
+ w.eval(homeSource.slice(homeSource.indexOf('function formatInsight(')));
+ w.eval(homeSource.slice(homeSource.indexOf('function resizeComposerInput('),homeSource.indexOf('function ensureCurrentSession(')));
  w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
@@ -130,4 +133,19 @@ test('mobile chat opener stays open and an edited title survives iframe loading 
  s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'标题改成科技股行情');await tick();await tick();
  const storage=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(storage.boards[0].cards[0].customTitle,true);
  s.dom.window.close();const r=setup({storage});const frame=r.d.querySelector('[data-card="one"] iframe');frame.contentDocument.title='原有标题';frame.dispatchEvent(new r.w.Event('load'));assert.equal(r.d.querySelector('[data-card="one"] .widgetCardTitle').textContent,'科技股行情');r.dom.window.close();
+});
+
+
+test('widget chat uses home bubbles, safe Markdown, and the shared multiline composer',()=>{
+ const storage=twoCards();storage.boards[0].chat=[{role:'user',content:'看一下苹果\n保留换行 <img src=x onerror=alert(1)>'},{role:'assistant',content:'**已添加**\n\n- 苹果走势\n- 微软走势\n\n<script>alert(1)</script>'}];
+ const s=setup({storage});
+ const user=s.d.querySelector('#widgetChatLog .message.user .bubble.userBubble');
+ assert.match(user.textContent,/保留换行/);assert.equal(user.querySelector('img'),null);
+ const answer=s.d.querySelector('#widgetChatLog .message.assistant .assistantBubble .streamingAnswer');
+ assert.equal(answer.querySelector('strong').textContent,'已添加');assert.equal(answer.querySelectorAll('li').length,2);assert.equal(answer.querySelector('script'),null);
+ assert.equal(s.d.querySelector('.widgetMessageAuthor'),null);
+ const input=s.d.querySelector('#widgetPrompt');input.style.lineHeight='24px';input.style.padding='7px 0';Object.defineProperty(input,'scrollHeight',{get:()=>90});
+ input.value='第一行\n第二行';input.dispatchEvent(new s.w.Event('input'));
+ assert.equal(input.closest('.composerBox').classList.contains('is-multiline'),true);assert.equal(input.style.height,'90px');
+ input.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));assert.equal(s.calls.some(c=>c.url==='/api/widgets/plan'),false);s.dom.window.close();
 });

@@ -3504,7 +3504,8 @@ function updateComposerState() {
   button.classList.toggle("is-ready", hasText || hasImages);
 }
 
-function resizeComposerInput() {
+function resizeComposerInput(inputElement = input, boxElement = composerBox) {
+  const input = inputElement, composerBox = boxElement;
   if (!input) return;
   const measuredScrollHeight = () => {
     const originalValue = input.value;
