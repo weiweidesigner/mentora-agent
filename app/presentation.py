@@ -856,3 +856,40 @@ with sync_playwright() as p:
         detail = (result.stderr or result.stdout or "chart screenshot failed")[-600:]
         raise HTTPException(status_code=500, detail=f"图表截图失败：{detail}")
     return FileResponse(png_path, media_type="image/png", filename=png_path.name)
+
+
+# Daily research uses exactly the same skill-based execution path as chat.
+from app.day_tasks import DayTasks, create_router as create_day_router, MARKETS, STAGES
+
+
+def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    local_time = dt.datetime.now(ZoneInfo(MARKETS[config['market']]['zone']))
+    context = (
+        f"当前市场：{MARKETS[config['market']]['name']}；市场当地时间：{local_time.isoformat()}；"
+        f"任务阶段：{STAGES[config['stage']]}；标的类型：{config['assetType']}；"
+        f"用户指定标的：{config['symbols'] or '未指定，请分析该市场整体，不要假设用户持仓或自选股'}。\n"
+        "这是自动研究任务，只进行信息查询与分析；不得交易、修改账户、设置提醒或向外部渠道发送消息。"
+        "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。\n\n"
+    )
+    question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
+    response = chat(ChatRequest(question=context + question, sessionId='day-' + run_id, reasoningFramework='deepseek', themeMode='dark'))
+    answer = response.model_dump()
+    answer['question'] = question
+    return answer
+
+
+DAY_TASKS = DayTasks(Path(os.getenv('VEYA_DAY_DATA_DIR', str(ROOT / 'outputs' / 'day-tasks'))), run_daily_research)
+app.include_router(create_day_router(DAY_TASKS))
+
+
+@app.on_event('startup')
+def start_day_tasks() -> None:
+    if os.getenv('VEYA_DAY_SCHEDULER', '1') != '0':
+        DAY_TASKS.start()
+
+
+@app.on_event('shutdown')
+def stop_day_tasks() -> None:
+    DAY_TASKS.stop()

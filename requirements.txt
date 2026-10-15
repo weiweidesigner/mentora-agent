@@ -31,3 +31,7 @@ typesafe-sdk>=0.6.0,<0.7.0
 -r .dependencies/chart-markup/requirements.txt
 -r .dependencies/vision-chart-analyst/requirements.txt
 -r .dependencies/flux-image/requirements.txt
+
+# Server-side daily research scheduling and browser push.
+exchange-calendars==4.13.2
+pywebpush==2.5.0

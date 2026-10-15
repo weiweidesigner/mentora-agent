@@ -28,7 +28,7 @@
     home.setAttribute("aria-hidden", "true");
     origin.before(home);
     const moved = [];
-    conversation.querySelectorAll(":scope > #homeBackdrop,:scope > .homeHero,:scope > #chatForm,:scope > #homeCases,:scope > #inspirationSquare").forEach(node => {
+    conversation.querySelectorAll(":scope > #homeBackdrop,:scope > .homeHero,:scope > #chatForm,:scope > #homeCases,:scope > #myDay,:scope > #inspirationSquare").forEach(node => {
       const slot = document.createComment("home component location");
       node.before(slot);
       moved.push([node, slot]);
@@ -169,6 +169,8 @@
     const url = new URL(window.location.href);
     if (!openingCase && url.searchParams.has("case")) {
       url.searchParams.delete("case");
+      url.searchParams.delete("dayResult");
+      url.searchParams.delete("dayShare");
       history.replaceState(null, "", url);
     }
   }
@@ -324,6 +326,16 @@
     }
   }
 
+  // Daily results share the same cached-answer viewer, refreshed on each open.
+  window.addEventListener("veya:open-day-result", event => {
+    const row = event.detail;
+    if (!row?.id || !row.id.startsWith("day-")) return;
+    window.veyaCases = (window.veyaCases || []).filter(item => item.id !== row.id);
+    window.veyaCases.push(row);
+    responseCache.delete(row.id);
+    showCase(row.id);
+  });
+
   function closeCase() {
     startNewChat(false, false);
     returnFocus?.focus({ preventScroll: true });
@@ -369,7 +381,7 @@
     if (!response.ok) throw new Error("Case catalog unavailable");
     return response.json();
   }).then((rows) => {
-    window.veyaCases = rows;
+    window.veyaCases = [...rows, ...(window.veyaCases || []).filter(row => row.id.startsWith("day-"))];
     loadInspiration(cardHtml);
     const desktop = window.matchMedia("(min-width:761px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
