@@ -10,12 +10,12 @@
       "script": "deepseek",
       "reason": "由 DeepSeek Harness 自主规划并执行。"
     },
-    "htmlUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
-    "reportUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
+    "htmlUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html?v=20261015-returns-layout",
+    "reportUrl": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html?v=20261015-returns-layout",
     "reportArtifacts": [
       {
         "path": "case:inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
-        "url": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html"
+        "url": "/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html?v=20261015-returns-layout"
       }
     ],
     "payloadUrl": null,

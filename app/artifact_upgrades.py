@@ -134,7 +134,7 @@ def _native_payout_ratio():
     return module
 
 
-@lru_cache(maxsize=3)
+@lru_cache(maxsize=4)
 def _native_rating(name):
     script = Path(__file__).parent / ('skills/business-chart-recall/scripts/' + name + '.py')
     spec = importlib.util.spec_from_file_location('saved_' + name, script)
@@ -176,6 +176,22 @@ def upgrade_legacy_revenue_player(artifact, theme):
         return artifact
 
 
+def upgrade_legacy_shareholder_returns(artifact, theme):
+    if 'data-returns-layout="2"' in artifact or 'const payload = ' not in artifact:
+        return artifact
+    try:
+        payload = _constant(artifact, 'payload')
+        if payload.get('type') != 'shareholder-returns':
+            return artifact
+        payload['theme'] = theme
+        title = re.search(r'const modelTitle\s*=\s*', artifact)
+        if title:
+            payload['customTitle'] = json.JSONDecoder().raw_decode(artifact[title.end():])[0]
+        return _native_rating('shareholder_returns').render_document(payload)
+    except (ValueError,KeyError,TypeError):
+        return artifact
+
+
 def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
     """Repair saved native layouts without changing their data or custom marks."""
     if 'class="payout-ratio"' in artifact and 'data-mobile-layout="2"' not in artifact:
@@ -199,6 +215,7 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
                 pass
     artifact = upgrade_legacy_ratings(artifact, theme)
     artifact = upgrade_legacy_revenue_player(artifact, theme)
+    artifact = upgrade_legacy_shareholder_returns(artifact, theme)
     artifact = artifact.replace('const yLabelReserve = width < 700 ? 72 : 46;', 'const yLabelReserve = width < 700 ? 42 : 46;')
     # Saved charts may already have layout repairs but still contain an older touch runtime.
     if 'id="genericMobileTouch"' in artifact and 'const pointerY=originY+event.clientY-placement.top;' not in artifact:

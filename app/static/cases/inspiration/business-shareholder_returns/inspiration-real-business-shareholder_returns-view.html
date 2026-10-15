@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN" data-sv-preview="light" data-financial-market="US">
-<head><script src="/static/cases/theme.js"></script>
+<head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>AAPL 股东回报 · 个股 / 行业 / 市场对比</title>
@@ -11,16 +11,16 @@ html[data-sv-preview="dark"]{color-scheme:dark;--sv-surface-primary:#151b24;--sv
 html[data-sv-preview="light"]{color-scheme:light;--sv-surface-primary:#ffffff;--sv-surface-secondary:#f4f6f9;--sv-text-primary:#101828;--sv-text-secondary:#5a6679;--sv-border-subtle:#e3e8ef;--sv-price-up:#12805c;--sv-price-down:#c0392b;--sv-price-flat:#7a8699;}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;color:var(--sv-text-primary);background:transparent;padding:18px 16px 24px}
-.wrap{max-width:1080px;margin:0 auto}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;color:var(--sv-text-primary);background:transparent;padding:0}
+.wrap{width:100%;max-width:none;margin:0}
 .bar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
 .bar h2{margin:0;font-size:17px;line-height:1.25;font-weight:800;color:var(--sv-text-primary)}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;background:var(--sv-surface-secondary);color:var(--sv-text-secondary);font-size:12px;line-height:1.3}
 button{font:inherit;font-size:12.5px;color:var(--sv-text-primary);background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:8px;padding:7px 13px;cursor:pointer}
 button:hover{border-color:var(--sv-text-secondary)}
-.surface{background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:12px;padding:10px}
-.frame{display:block;width:100%;height:600px;border:0;background:transparent;border-radius:8px}
+.surface{background:transparent;border:0;border-radius:0;padding:0}
+.frame{display:block;width:100%;height:400px;border:0;background:transparent;border-radius:8px}
 .caption{margin:8px 2px 0;color:var(--sv-text-secondary);font-size:12px;line-height:1.6}
 h3{margin:22px 0 8px;font-size:14.5px;font-weight:800;color:var(--sv-text-primary)}
 table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
@@ -31,7 +31,7 @@ thead th{color:var(--sv-text-secondary);font-weight:600;font-size:12px}
 td.up,th.up{color:var(--sv-price-up)}
 td.down,th.down{color:var(--sv-price-down)}
 td.flat{color:var(--sv-price-flat)}
-.tbl-scroll{overflow-x:auto;background:var(--sv-surface-primary);border:1px solid var(--sv-border-subtle);border-radius:12px;padding:12px 14px}
+.tbl-scroll{overflow-x:auto;background:transparent;border:0;border-radius:0;padding:0}tbody tr:last-child td{border-bottom:0}
 </style>
 </head>
 <body data-financial-market="US">
@@ -86,11 +86,17 @@ const LIGHT = 'inspiration-real-business-shareholder_returns.html';
 const DARK = 'inspiration-real-business-shareholder_returns-dark-frame.html';
 function setTheme(mode) {
   document.documentElement.dataset.svPreview = mode;
-  frame.src = mode === 'dark' ? DARK : LIGHT;
+  frame.src = (mode === 'dark' ? DARK : LIGHT)+'?theme='+mode+'&v=20261015-returns-layout';
   toggle.textContent = mode === 'dark' ? '切换浅色' : '切换深色';
 }
 toggle.addEventListener('click', () => setTheme(document.documentElement.dataset.svPreview === 'dark' ? 'light' : 'dark'));
-const preferred = document.documentElement.dataset.theme || 'light';
+frame.addEventListener('load',()=>{
+  const doc=frame.contentDocument;if(!doc)return;
+  const heading=doc.querySelector('.chart-head');if(heading)heading.remove();
+  const fit=()=>{const chart=doc.querySelector('.chart-shell');if(chart)frame.style.height=Math.ceil(chart.getBoundingClientRect().height)+'px';};
+  fit();if(typeof ResizeObserver==='function')new ResizeObserver(fit).observe(doc.body);
+});
+const preferred = new URLSearchParams(location.search).get('theme') || document.documentElement.dataset.theme || 'light';
 setTheme(preferred);
 </script>
 <style data-business-heading-style>.kline-title strong[data-business-title],[data-business-title]{font-size:18px!important;font-weight:700!important;line-height:1.4!important;letter-spacing:0!important;margin:0 0 8px!important;white-space:normal!important;overflow-wrap:anywhere;color:inherit}@media(max-width:720px){.kline-title strong[data-business-title],[data-business-title]{font-size:16px!important}}</style><script data-business-heading-runtime>(()=>{const modelTitle="AAPL三年股东回报：跑赢美股却落后消费电子行业";const apply=()=>{let heading=document.querySelector('h1:not(.company-name),h2:not(.panel-title):not(.section-title):not(.actions-title),.page-title,.component-title,.chart-title,.multi-title,#title,.pie-title,.waterfall-title,.title,.kline-title strong');if(!heading && modelTitle){heading=document.createElement('h1');const host=document.querySelector('main,.wrap,.component')||document.body;host.prepend(heading);}if(heading){heading.dataset.businessTitle='true';if(modelTitle){heading.textContent=modelTitle;document.title=modelTitle;}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();})();</script></body>
