@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-composer" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-attachments" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -190,7 +190,7 @@
           <div id="taskFollowups" class="taskFollowups" aria-live="polite"></div>
         </section>
         <section id="taskWizard" class="taskWizard" aria-label="创建任务对话" hidden><div id="taskWizardTranscript" class="taskWizardTranscript"></div><section class="taskClarification" aria-live="polite"><div class="taskClarificationTop"><button id="wizardPrevious" class="dayTextButton" type="button" aria-label="上一步">‹</button><span id="wizardProgress"></span><button id="wizardClose" class="dayIconButton" type="button" aria-label="退出创建">×</button></div><div id="wizardQuestion"></div><p id="wizardError" class="dayError" role="alert"></p></section></section>
-        <form id="taskChatForm" class="taskChatForm composer" hidden><div class="composerBox taskChatComposer"><textarea id="taskChatInput" rows="1" maxlength="6000" required aria-label="继续对话" placeholder="继续询问 Veya"></textarea><button id="taskChatSend" type="submit" aria-label="发送追问"><span class="sendArrow" aria-hidden="true"></span></button></div><p id="taskChatError" role="status"></p></form>
+        <form id="taskChatForm" class="taskChatForm composer" hidden><div class="composerBox taskChatComposer"><div id="taskAttachmentPreview" class="attachmentPreview" hidden></div><input id="taskImageInput" class="imageInput" type="file" accept="image/*" multiple /><button id="taskAttachButton" class="attachButton" type="button" aria-label="添加图片"><span aria-hidden="true"></span></button><textarea id="taskChatInput" rows="1" maxlength="6000" aria-label="继续对话" placeholder="继续询问 Veya"></textarea><button id="taskChatSend" type="submit" aria-label="发送追问"><span class="sendArrow" aria-hidden="true"></span></button></div><p id="taskChatError" role="status"></p></form>
         <p id="taskMessage" class="dayMessage" role="status" aria-live="polite"></p>
       </section>
       <dialog id="dayDialog" class="dayDialog taskSettingsDialog" aria-labelledby="dayDialogTitle">
@@ -261,9 +261,9 @@
     </main>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261015-embedded-layout"></script>
     <script src="/api/client-config.js"></script>
-    <script src="/static/app.js?v=interface-20261015-task-workspace"></script>
+    <script src="/static/app.js?v=interface-20261015-task-attachments"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
-    <script src="/static/day-tasks.js?v=20261015-task-composer"></script>
+    <script src="/static/day-tasks.js?v=20261015-task-attachments"></script>
   </body>
 </html>

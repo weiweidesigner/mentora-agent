@@ -28,12 +28,15 @@
   let lastDetailState = '';
   let sidebarExpanded = false;
   let chatHistory = [], chatKey = '', chatController = null;
+  let taskImages = [];
+  function renderTaskImages(){const preview=$('taskAttachmentPreview');preview.hidden=!taskImages.length;preview.innerHTML=taskImages.map((image,i)=>`<div class="attachmentThumb"><img src="${esc(image.dataUrl)}" alt="${esc(image.name)}"/><button type="button" class="attachmentRemove" data-remove-task-image="${i}" aria-label="移除图片">×</button></div>`).join('');preview.closest('.composerBox').classList.toggle('has-attachments',!!taskImages.length);updateChatComposer();}
+  async function addTaskImages(files){try{for(const file of Array.from(files||[])){if(taskImages.length>=6)break;if(!file.type.startsWith('image/'))continue;if(file.size>8*1024*1024)throw new Error('单张图片不能超过 8 MB');const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('图片读取失败'));reader.readAsDataURL(file);});taskImages.push({name:file.name,mimeType:file.type,dataUrl});}renderTaskImages();}catch(error){$('taskChatError').textContent=error.message;}}
   function stopFollowup() {chatController?.abort();chatController=null;}
-  function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;}
+  function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';taskImages=[];renderTaskImages();$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;}
   async function renderFollowup(turn, target=$('taskFollowups')) {
     const node=document.createElement(turn.role==='user'?'div':'article');
     node.className=turn.role==='user'?'taskUserBubble':'message assistant scheduledAnswer taskChatAnswer';target.append(node);
-    if(turn.role==='user')node.textContent=turn.text;
+    if(turn.role==='user'){node.textContent=turn.text;for(const image of turn.images||[]){const img=document.createElement('img');img.className='taskChatImage';img.src=image.dataUrl;img.alt=image.name||'附图';node.append(img);}}
     else {const report=document.createElement('div');report.className='mixedReport';node.append(report);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(node,structuredClone(turn.answer||{interpretation:turn.text}),report,()=>{});else report.textContent=turn.text;}
     return node;
   }
@@ -46,20 +49,21 @@
     $('taskChatSend').disabled=false;
   }
   async function sendFollowup(event) {
-    event.preventDefault();const text=$('taskChatInput').value.trim();if(!text||chatController||!selectedId||!chatKey)return;
-    const controller=new AbortController(),version=viewVersion,key=chatKey,prior=chatHistory.slice(-10).map(({role,text})=>({role,text}));chatController=controller;
+    event.preventDefault();const text=$('taskChatInput').value.trim()||(taskImages.length?'请结合图片继续分析':'');if(!text||chatController||!selectedId||!chatKey)return;
+    const images=taskImages.slice();taskImages=[];renderTaskImages();
+    const controller=new AbortController(),version=viewVersion,key=chatKey,prior=chatHistory.slice(-10).map(({role,text,images})=>({role,text,...(images?.length?{images}:{})}));chatController=controller;
     $('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;$('taskChatError').textContent='';
-    const user={role:'user',text},userNode=await renderFollowup(user);const waiting=document.createElement('p');waiting.className='taskResultEmpty';waiting.textContent='正在分析…';$('taskFollowups').append(waiting);waiting.scrollIntoView?.({block:'nearest'});
+    const user={role:'user',text,...(images.length?{images}:{})},userNode=await renderFollowup(user);const waiting=document.createElement('p');waiting.className='taskResultEmpty';waiting.textContent='正在分析…';$('taskFollowups').append(waiting);waiting.scrollIntoView?.({block:'nearest'});
     let answer=null,streamError='';
     try {
-      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question:text,history:prior,sessionTitle:selected()?.title||'定时任务追问',reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='dark'?'dark':'light'})});
+      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question:text,images,history:prior,sessionTitle:selected()?.title||'定时任务追问',reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='dark'?'dark':'light'})});
       if(!response.ok||!response.body){const error=await response.json().catch(()=>({}));throw new Error(error.detail||'请求失败，请重试');}
       await readEventStream(response.body,(event,data)=>{if(event==='final')answer=data;if(event==='error')streamError=data.detail||data.message||'分析失败';});
       if(controller.signal.aborted||version!==viewVersion)return;
       if(!answer)throw new Error(streamError||'本次没有返回结果，请重试');
       waiting.remove();const turn={role:'assistant',text:answer.interpretation||'',answer};chatHistory.push(user,turn);await renderFollowup(turn);
       try{localStorage.setItem(key,JSON.stringify(chatHistory.slice(chatHistory[1]?.role==='assistant'?2:0).slice(-20)));}catch{$('taskChatError').textContent='当前浏览器无法保存追问记录，刷新后可能丢失。';}
-    } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;}}
+    } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}
     finally{if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt]);
@@ -362,6 +366,10 @@
   });
   $('taskPromptForm').addEventListener('submit',e=>{e.preventDefault();const question=$('taskPrompt').value.trim();if(question)beginWizard(question);});
   $('taskChatForm').addEventListener('submit',sendFollowup);
+  $('taskAttachButton').addEventListener('click',()=>$('taskImageInput').click());
+  $('taskImageInput').addEventListener('change',async e=>{await addTaskImages(e.target.files);e.target.value='';});
+  $('taskAttachmentPreview').addEventListener('click',e=>{const button=e.target.closest('[data-remove-task-image]');if(button){taskImages.splice(Number(button.dataset.removeTaskImage),1);renderTaskImages();}});
+  document.addEventListener('paste',e=>{if(workspace.hidden||$('taskDetail').hidden)return;const files=Array.from(e.clipboardData?.files||[]).filter(f=>f.type.startsWith('image/'));if(files.length){e.preventDefault();addTaskImages(files);}});
   function updateChatComposer(){const input=$('taskChatInput');input.style.height='40px';const height=Math.max(40,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.closest('.taskChatComposer').classList.toggle('is-multiline',height>44);$('taskChatSend').classList.toggle('is-ready',!!input.value.trim());}
   $('taskChatInput').addEventListener('input',updateChatComposer);
   $('taskChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('taskChatForm').requestSubmit();}});

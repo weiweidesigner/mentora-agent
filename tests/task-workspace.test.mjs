@@ -71,3 +71,12 @@ test('follow-up uses the selected cached answer and restores replies without rer
  const stored=JSON.parse(h.w.localStorage.getItem('veya-task-chat:live:run-new'));assert.equal(stored.length,2);
  d.querySelector('#taskBack').click();d.querySelector('#taskSidebarList [data-task-open]').click();await tick();assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);h.dom.window.close();
 });
+
+test('attachment plus previews, removes and sends images with the follow-up',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document,fetch=h.w.fetch;let payload;
+ h.w.fetch=async(path,options)=>{if(path==='/api/chat/stream'){payload=JSON.parse(options.body);return {ok:true,body:{}};}return fetch(path,options);};h.w.readEventStream=async(_body,callback)=>callback('final',{interpretation:'附图已处理'});
+ const file=new h.w.File(['image'], 'chart.png',{type:'image/png'}),input=d.querySelector('#taskImageInput');Object.defineProperty(input,'files',{value:[file]});
+ input.dispatchEvent(new h.w.Event('change'));await tick();assert.equal(d.querySelectorAll('#taskAttachmentPreview img').length,1);
+ d.querySelector('[data-remove-task-image]').click();assert.equal(d.querySelectorAll('#taskAttachmentPreview img').length,0);
+ input.dispatchEvent(new h.w.Event('change'));await tick();d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(payload.images[0].name,'chart.png');assert.match(payload.images[0].dataUrl,/^data:image\/png;base64,/);assert.equal(d.querySelectorAll('#taskFollowups img').length,1);h.dom.window.close();
+});
