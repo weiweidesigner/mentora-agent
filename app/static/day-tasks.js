@@ -8,7 +8,8 @@
   const assets = {stocks:'股票', etf:'ETF', index:'指数', sector:'行业板块', watchlist:'自选列表'};
   const icons = {pre:'☀', live:'◉', post:'☾'};
   const marketNames = {CN:'A股', HK:'港股', US:'美股'};
-  let market = localStorage.getItem('veya-day-market') || 'CN';
+  let market = 'CN';
+  try { market = localStorage.getItem('veya-day-market') || 'CN'; } catch {}
   if (!marketNames[market]) market = 'CN';
   let pinnedStage = false;
   let stage = 'pre', editing = null, tasks = [], markets = [], publicKey = '', busy = false, firstLoad = true;
@@ -131,7 +132,6 @@
       if (firstLoad || !pinnedStage) {stage = markets.find(m => m.market === market)?.stage || 'pre'; firstLoad = false;}
       render();
       if (deepLink) {const id = deepLink; deepLink = null; await view(id);}
-      if (shareLink) {const token = shareLink; shareLink = null; await viewShared(token);}
     } catch (error) {message(error.message); if (firstLoad) $('dayPanel').innerHTML = '<p class="dayEmpty">任务暂时无法加载。<button id="dayRetry" class="dayTextButton" type="button">重新加载</button></p>';}
     finally {busy = false;}
   }
@@ -166,7 +166,7 @@
   root.addEventListener('click', async event => {
     const b = event.target.closest('button'); if (!b) return;
     try {
-      if (b.dataset.market) {pinnedStage = false; market = b.dataset.market; localStorage.setItem('veya-day-market',market); stage = markets.find(m=>m.market===market)?.stage || 'pre'; render();}
+      if (b.dataset.market) {pinnedStage = false; market = b.dataset.market; try { localStorage.setItem('veya-day-market',market); } catch {} stage = markets.find(m=>m.market===market)?.stage || 'pre'; render();}
       else if (b.dataset.stage) {pinnedStage = true; stage = b.dataset.stage; render(); $('day-tab-' + stage).focus();}
       else if (b.dataset.template) edit(template(stage, b.dataset.template));
       else if (b.dataset.edit) edit(tasks.find(t=>t.id===b.dataset.edit));
@@ -205,6 +205,11 @@
     try {await api('tasks' + (editing ? '/' + editing : ''), editing ? 'PUT' : 'POST', payload()); form.hidden=true; await refresh(); message(el('enabled').checked ? '任务已保存，云端会按时执行。' : '任务已保存为暂停状态，可随时开启。');}
     catch(error){message(error.message);} finally {b.disabled=false;}
   });
+  // A notification link must not depend on cookies, personal task loading or storage.
+  if (shareLink) {
+    const token = shareLink; shareLink = null;
+    viewShared(token).catch(error => {message(error.message, false); root.scrollIntoView?.({block:'start'});});
+  }
   refresh();
   setInterval(() => {renderClock(); if (!document.hidden && Date.now()-lastRefresh>15000) refresh();}, 5000);
   document.addEventListener('visibilitychange', () => {if(!document.hidden) refresh();});

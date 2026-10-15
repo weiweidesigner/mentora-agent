@@ -76,7 +76,10 @@ const SUPPORTED_FRAMEWORKS = new Set(["deepseek", "codex"]);
 const DEFAULT_REASONING_FRAMEWORK = SUPPORTED_FRAMEWORKS.has(window.AIME_CHAT_CONFIG?.reasoningFramework)
   ? window.AIME_CHAT_CONFIG.reasoningFramework : "deepseek";
 const DEFAULT_INFERENCE_MODEL = "deepseek-v4-flash";
-const storedThemeMode = localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+const storedThemeMode = (() => {
+  try { return localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark"; }
+  catch { return "dark"; }
+})();
 
 function currentThemeMode() {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -150,8 +153,6 @@ activityBody?.addEventListener(
   { passive: true },
 );
 
-renderHistory();
-restoreSharedSessionFromUrl();
 const mobileShellQuery = window.matchMedia("(max-width: 760px)");
 
 function isMobileLayout() {
@@ -170,6 +171,9 @@ function syncResponsiveShell() {
 
 syncResponsiveShell();
 mobileShellQuery.addEventListener?.("change", syncResponsiveShell);
+
+renderHistory();
+restoreSharedSessionFromUrl();
 
 sidebarToggle?.addEventListener("click", () => {
   const isCollapsed = shell.classList.toggle("sidebar-collapsed");

@@ -7,14 +7,15 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-my-day" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-share-link-fix" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
-    <main class="shell sidebar-open">
+    <main class="shell sidebar-collapsed">
+      <script>if (window.matchMedia('(min-width: 761px)').matches) { const shell = document.currentScript.parentElement; shell.classList.replace('sidebar-collapsed', 'sidebar-open'); }</script>
       <aside id="appSidebar" class="appSidebar" aria-label="Veya 导航">
         <div class="sidebarRail">
-          <button id="sidebarToggle" class="railButton is-active" type="button" aria-label="收起侧边栏" data-tip-open="展开侧边栏" data-tip-close="收起侧边栏">
+          <button id="sidebarToggle" class="railButton is-active" type="button" aria-label="展开侧边栏" data-tip-open="展开侧边栏" data-tip-close="收起侧边栏">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"></rect><path d="M10 5v14"></path></svg>
           </button>
           <button type="button" class="mobileBrand" aria-label="Veya，回到顶部"><img src="/static/assets/veya-logo.png?v=20261013" alt=""><span>Veya</span></button>
@@ -228,7 +229,7 @@
     <script src="/api/client-config.js"></script>
     <script src="/static/app.js?v=interface-20261015-mobile-chart-layout"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
-    <script src="/static/cases.js?v=20261015-my-day"></script>
-    <script src="/static/day-tasks.js?v=20261015-my-day"></script>
+    <script src="/static/cases.js?v=20261015-share-link-fix"></script>
+    <script src="/static/day-tasks.js?v=20261015-share-link-fix"></script>
   </body>
 </html>
