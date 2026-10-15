@@ -29,7 +29,7 @@
   let sidebarExpanded = false;
   let chatHistory = [], chatKey = '', chatController = null;
   function stopFollowup() {chatController?.abort();chatController=null;}
-  function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';$('taskChatSend').disabled=true;}
+  function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;}
   async function renderFollowup(turn, target=$('taskFollowups')) {
     const node=document.createElement(turn.role==='user'?'div':'article');
     node.className=turn.role==='user'?'taskUserBubble':'message assistant scheduledAnswer taskChatAnswer';target.append(node);
@@ -48,7 +48,7 @@
   async function sendFollowup(event) {
     event.preventDefault();const text=$('taskChatInput').value.trim();if(!text||chatController||!selectedId||!chatKey)return;
     const controller=new AbortController(),version=viewVersion,key=chatKey,prior=chatHistory.slice(-10).map(({role,text})=>({role,text}));chatController=controller;
-    $('taskChatInput').value='';$('taskChatSend').disabled=true;$('taskChatError').textContent='';
+    $('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;$('taskChatError').textContent='';
     const user={role:'user',text},userNode=await renderFollowup(user);const waiting=document.createElement('p');waiting.className='taskResultEmpty';waiting.textContent='正在分析…';$('taskFollowups').append(waiting);waiting.scrollIntoView?.({block:'nearest'});
     let answer=null,streamError='';
     try {
@@ -362,6 +362,8 @@
   });
   $('taskPromptForm').addEventListener('submit',e=>{e.preventDefault();const question=$('taskPrompt').value.trim();if(question)beginWizard(question);});
   $('taskChatForm').addEventListener('submit',sendFollowup);
+  function updateChatComposer(){const input=$('taskChatInput');input.style.height='40px';const height=Math.max(40,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.closest('.taskChatComposer').classList.toggle('is-multiline',height>44);$('taskChatSend').classList.toggle('is-ready',!!input.value.trim());}
+  $('taskChatInput').addEventListener('input',updateChatComposer);
   $('taskChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('taskChatForm').requestSubmit();}});
   $('taskSearch').addEventListener('input',renderLists);
   for(const id of ['taskFilter','taskSidebarFilter'])$(id).addEventListener('change',e=>{filter=e.target.value;renderLists();});

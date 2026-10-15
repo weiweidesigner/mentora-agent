@@ -4136,3 +4136,17 @@ p {
  .taskChatBox { padding:10px 12px 10px 16px; }
  .taskChatBox textarea { font-size:16px; }
 }
+
+/* Compact app navigation, and the same composer surface as the homepage. */
+@media(min-width:761px) {
+ .shell .desktopNavRail { width:30px;height:30px;border-radius:8px; }
+ .shell .desktopNavRail .navigationIcon { width:18px;height:18px; }
+}
+.taskChatForm.composer { width:min(calc(100% - 48px),832px);margin:0 auto;padding:12px 0 max(16px,env(safe-area-inset-bottom));background:transparent; }
+.taskChatComposer.composerBox { grid-template-columns:minmax(0,1fr) 40px;gap:8px;padding:8px 9px 8px 20px;border-radius:999px;border-color:rgba(17,24,39,.11);box-shadow:0 10px 28px rgba(17,24,39,.07); }
+.taskChatComposer textarea { height:40px;background:transparent;overflow-y:auto; }
+.taskChatComposer button { width:40px;height:40px; }
+.taskChatComposer.is-multiline { grid-template-rows:auto 40px;border-radius:20px;padding:12px; }
+.taskChatComposer.is-multiline textarea { grid-column:1/-1; }
+.taskChatComposer.is-multiline #taskChatSend { grid-column:2;grid-row:2; }
+@media(max-width:760px) { .taskChatForm.composer { width:calc(100% - 24px);padding-top:8px; } }
