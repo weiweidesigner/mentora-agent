@@ -174,3 +174,11 @@ test('list-only boards create one detail chart and reuse it for subsequent selec
 test('legacy list metadata can be recovered from its own saved TradingView document',()=>{
  const data=linkedBoard();delete data.boards[0].cards[2].parameters;const s=setup({storage:data});const frame=s.d.querySelector('[data-card="list"] iframe'),config=frame.contentDocument.createElement('script');config.id='tv-config';config.type='application/json';config.textContent=JSON.stringify({widget:'market-data',config:{symbolsGroups:[{symbols:[{name:'NYSE:CRCL'}]}]}});frame.contentDocument.open();frame.contentDocument.write('<!doctype html><html><head></head><body></body></html>');frame.contentDocument.close();frame.contentDocument.body.append(config);frame.dispatchEvent(new s.w.Event('load'));assert.ok(s.d.querySelector('[data-link-symbol="NYSE:CRCL"]'));s.dom.window.close();
 });
+
+
+test('symbol switching leaves chat unchanged and migrates only exact legacy assistant notices',async()=>{
+ const data=linkedBoard(),notice='已切换到 CRCL，更新了 5 个单标的组件。';data.boards[0].chat=[{role:'user',content:notice},{role:'assistant',content:'你可以继续调整图表。'},{role:'assistant',content:notice},{role:'assistant',content:'已切换到 TLT，更新了 5 个单标的组件。'}];
+ const s=setup({storage:data});const before=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.equal(before.length,2);assert.equal(before[0].role,'user');assert.equal(before[0].content,notice);
+ s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();assert.equal(s.d.querySelector('#widgetChatLog .is-pending'),null);await tick();await tick();
+ const after=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.deepEqual(after,before);assert.doesNotMatch(s.d.querySelector('#widgetChatLog').textContent,/已切换到 TLT/);s.dom.window.close();
+});

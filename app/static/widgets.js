@@ -9,7 +9,7 @@
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Number(v) || lo));
   const mobile = () => window.innerWidth <= 760;
   let boards = [], activeId = '', catalog = [], category = '全部', componentId = '', internal = false, nameAction = 'rename';
-  const jobs = new Map(), libraryInputs = {}, commandControllers=new Map(), undoByBoard=new Map();
+  const jobs = new Map(), libraryInputs = {}, commandControllers=new Map(), undoByBoard=new Map(), symbolSwitches=new Set();
   let selectedCardId="";
   const current = () => boards.find(b => b.id === activeId);
   function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text; }
@@ -23,11 +23,13 @@
     for(const other of [...board.cards].sort((a,b)=>a.y-b.y)){if(other===card||other.y<card.y+previous)continue;const candidate={...other,y:other.y-delta};if(!board.cards.some(c=>c!==other&&overlaps(c,candidate)))other.y=candidate.y;}
     return true;
   }
+  const isOldSymbolNotice=m=>m?.role==='assistant'&&!m.scope&&/^已切换到 [A-Z0-9_.!/^+\-]+，更新了 \d+ 个单标的组件。(?:部分组件未能加载，可重新生成。)?$/.test(m.content||'');
   function load() {
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
-      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string').slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&!isOldSymbolNotice(m)).slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),40),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;
+      if((Array.isArray(data.boards)?data.boards:[]).some(b=>Array.isArray(b?.chat)&&b.chat.some(isOldSymbolNotice)))localStorage.setItem(KEY,JSON.stringify({...data,boards}));
     } catch { boards = []; }
     if (!boards.length) boards.push({id:uid(),title:'我的看板',cards:[],messages:[]});
     for(const board of boards)for(const card of board.cards)compactTicker(board,card);
@@ -73,8 +75,8 @@
   async function linkSymbol(source,symbol){
     const board=current();if(!board||!linkedSymbolPattern.test(symbol)||!(source.parameters?.symbols||[]).includes(symbol)||source.component!=='tv-market-data')return;
     if(jobs.has(board.id)||commandControllers.has(board.id)||board.cards.some(c=>c.status==='loading')){notice('请等待当前组件更新完成后再切换标的。');return;}
-    const controller=new AbortController();commandControllers.set(board.id,controller);undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));board.focusSymbol=symbol;render();
-    let succeeded=0,failed=0;
+    const controller=new AbortController();symbolSwitches.add(board.id);commandControllers.set(board.id,controller);undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));board.focusSymbol=symbol;render();
+    let failed=0,feedback='';
     try{
       if(!catalog.length){const response=await fetch('/static/widget-catalog.json',{signal:controller.signal});if(!response.ok)throw Error('图表库暂不可用。');catalog=await response.json();}
       const targets=board.cards.filter(c=>c!==source&&catalog.some(item=>item.id===c.component&&item.provider==='TradingView'&&item.inputMode==='symbol'));
@@ -84,13 +86,13 @@
         if(controller.signal.aborted||!boards.includes(board)||!board.cards.includes(source))break;
         if(card&&!board.cards.includes(card))continue;
         const component=catalog.find(c=>c.id===(card?.component||'tv-advanced-chart'));if(!component)continue;
-        if(activeId===board.id)notice(`正在切换到 ${symbol.split(':')[1]}…`);
         const result=await addTradingView(symbol,card?component:{...component,width:6},card?.id,'default',{...card?.parameters,symbols:[symbol],signal:controller.signal},board);
-        if(result?.status==='ready')succeeded++;else failed++;
+        if(result?.status!=='ready')failed++;
       }
-      if(boards.includes(board)){const text=controller.signal.aborted?'标的联动已停止。':succeeded?`已切换到 ${symbol.split(':')[1]}，更新了 ${succeeded} 个单标的组件。${failed?'部分组件未能加载，可重新生成。':''}`:'组件未能更新，请重试。';board.chat=[...(board.chat||[]),{role:'assistant',content:text}].slice(-40);}
-    }catch(error){if(boards.includes(board))board.chat=[...(board.chat||[]),{role:'assistant',content:error.name==='AbortError'?'标的联动已停止。':error.message}].slice(-40);}
-    finally{commandControllers.delete(board.id);save();if(activeId===board.id)render();}
+      if(!controller.signal.aborted&&failed)feedback='部分组件未能加载，可在对应卡片重新生成。';
+    }catch(error){if(error.name!=='AbortError')feedback=error.message;}
+    finally{symbolSwitches.delete(board.id);commandControllers.delete(board.id);save();if(activeId===board.id){render();if(feedback)notice(feedback);}}
+
   }
   function frameUrl(card) {
     const url = new URL(card.url, location.origin);
@@ -128,13 +130,14 @@
   function renderChat(){
     const board=current(),log=$('widgetChatLog');if(!board)return;
     const messages=Array.isArray(board.chat)?board.chat:[];
-    const signature=JSON.stringify([board.id,messages,commandControllers.has(board.id)]);if(log.dataset.signature===signature)return;log.dataset.signature=signature;
+    const pending=commandControllers.has(board.id)&&!symbolSwitches.has(board.id);
+    const signature=JSON.stringify([board.id,messages,pending]);if(log.dataset.signature===signature)return;log.dataset.signature=signature;
     const entries=messages.length?messages:[{role:'assistant',content:'想在这张看板里关注什么？告诉我想看的标的和图表，也可以选中卡片后直接调整。'}];
     log.innerHTML=entries.map(m=>{
       const user=m.role==='user',content=user?esc(m.content):typeof formatInsight==='function'?formatInsight(m.content):esc(m.content);
       const scope=m.scope?`<span class="widgetMessageScope">${esc(m.scope)}</span>`:'';
       return `<article class="message widgetChatMessage ${user?'user is-user':'assistant is-assistant'}">${user?`<div class="userMessageWrap"><div class="bubble userBubble">${scope}${content}</div></div>`:`<div class="bubble assistantBubble"><div class="streamingAnswer">${scope}${content}</div></div>`}</article>`;
-    }).join('')+(commandControllers.has(board.id)?'<article class="message assistant widgetChatMessage is-pending"><div class="bubble assistantBubble"><span class="thinkingSummaryText" role="status">正在处理…</span></div></article>':'');log.scrollTop=log.scrollHeight;
+    }).join('')+(pending?'<article class="message assistant widgetChatMessage is-pending"><div class="bubble assistantBubble"><span class="thinkingSummaryText" role="status">正在处理…</span></div></article>':'');log.scrollTop=log.scrollHeight;
   }
   function render() {
     const board=current();if(!board)return;
