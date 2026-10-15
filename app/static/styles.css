@@ -4155,3 +4155,13 @@ p {
 .taskChatComposer.is-multiline #taskChatSend { grid-column:3;grid-row:2; }
 .taskChatComposer.has-attachments .attachmentPreview { grid-column:1/-1; }
 .taskChatImage { display:block;max-width:100%;max-height:280px;border-radius:12px;margin-top:12px;object-fit:contain; }
+
+/* Filled current destination, outlined inactive destination. */
+.desktopNavRail .navigationSolid { display:none; }
+.desktopNavRail.is-active .navigationOutline { display:none; }
+.desktopNavRail.is-active .navigationSolid { display:block; }
+.desktopNavRail .navigationClockHands { fill:none;stroke:var(--soft-2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round; }
+@media(min-width:761px) {
+ .shell .desktopNavRail { width:28px;height:28px;border-radius:8px; }
+ .shell .desktopNavRail .navigationIcon { width:16px;height:16px; }
+}
