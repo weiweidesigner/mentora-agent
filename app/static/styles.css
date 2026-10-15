@@ -4484,7 +4484,7 @@ p {
 :root[data-theme="dark"] .composer textarea::placeholder { color:#888; }
 :root[data-theme="dark"] .themeModeButton:hover { background:#242424;color:#f5f5f5; }
 :root[data-theme="dark"] .themeModeButton.is-active { background:#343434;color:#eee; }
-:root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(16,16,16,.24) 0%,rgba(16,16,16,.4) 40%,rgba(16,16,16,.8) 72%,#101010 100%); }
+:root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(0,0,0,.52) 0%,rgba(0,0,0,.66) 40%,rgba(0,0,0,.9) 72%,#101010 100%); }
 :root[data-theme="dark"] :is(.caseCard,.userEditCancel,.attachmentThumb,.historyEmpty,.thinkingSteps,.sourceCard,.capabilityBarLink) { background:#181818;border-color:#303030; }
 :root[data-theme="dark"] .composer button.attachButton:hover { background:#242424;color:#f5f5f5; }
 
