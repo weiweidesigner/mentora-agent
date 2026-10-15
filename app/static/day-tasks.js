@@ -307,6 +307,7 @@
   }
   async function paintRun(data, task, version) {
     if(version!==viewVersion)return;
+    workspace.dataset.taskView='result';
     $('taskInfoCard').hidden=true;
     $('taskChatForm').hidden=['queued','running'].includes(data.status)||!data.answer;
     const container=$('taskThread');
@@ -319,11 +320,19 @@
     else {const text=document.createElement('p');text.className='taskResultEmpty';text.textContent=data.error||(data.status==='running'?'正在云端执行，完成后会自动显示结果。':data.status==='queued'?'任务正在排队。':data.status==='success'?'这条旧记录未保留完整内容。新运行会保留近期对话结果。':'本次执行没有生成结果。');article.append(text);}
     if(version===viewVersion)await loadFollowups(data,task,version);
   }
+  function renderWaitingTask(task){
+    const waiting=document.createElement('section');waiting.className='taskWaitingState';waiting.setAttribute('role','status');
+    waiting.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>等待执行</h2><p>任务开启时间</p><time></time>';
+    const time=waiting.querySelector('time');time.textContent=task.nextAt?dateText(task.nextAt,zoneFor(task)):'暂无执行安排';if(task.nextAt)time.dateTime=task.nextAt;
+    workspace.dataset.taskView='waiting';$('taskThread').replaceChildren(waiting);$('taskRunState').textContent='';$('taskChatForm').hidden=true;return;
+  }
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {
     const task=[...tasks,...sceneTasks].find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
     if(!task)throw new Error('任务不存在，或当前浏览器没有该任务的访问权限');
     resetFollowup();selectedId=id;selectedRun=runId;pinnedRun=!!runId;resultVersion='';const version=++viewVersion;
+    workspace.dataset.taskView='loading';$('taskChatForm').hidden=true;
     prepareDetail(task,editable(task));lastDetailState=detailState(task);
+    if(!runId&&!shared&&!task.lastRun&&!task.activeRun&&(task.systemPreset||(task.enabled&&task.nextAt))){renderWaitingTask(task);if(updateUrl)writeUrl(id);return;}
     $('taskThread').innerHTML='<p class="taskResultEmpty" role="status">正在读取任务运行记录…</p>';
     if(updateUrl)writeUrl(id,false,shared,runId);
     if(!editable(task) && sharedEntry?.task.id===task.id) {
@@ -336,10 +345,7 @@
     $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
     if(!runs.length) {
       if(task.systemPreset || (task.enabled && task.nextAt)){
-        const waiting=document.createElement('section');waiting.className='taskWaitingState';waiting.setAttribute('role','status');
-        waiting.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>等待执行</h2><p>任务开启时间</p><time></time>';
-        const time=waiting.querySelector('time');time.textContent=task.nextAt?dateText(task.nextAt,zoneFor(task)):'暂无执行安排';if(task.nextAt)time.dateTime=task.nextAt;
-        $('taskThread').replaceChildren(waiting);$('taskRunState').textContent='';$('taskChatForm').hidden=true;return;
+        renderWaitingTask(task);return;
       }
       renderCreatedTask(task);
       $('taskRunState').textContent=task.enabled?'已开启 · 云端将按计划执行':'任务已暂停';
@@ -366,7 +372,6 @@
       else if(!workspace.hidden && selectedId) {
         const task=selected();
         if(task && (editable(task)||task.systemPreset)) {
-          if(!runController)prepareDetail(task,editable(task));
           if(!chatController&&!runController&&detailState(task)!==lastDetailState) await selectTask(task.id,{updateUrl:false,runId:pinnedRun?selectedRun:''});
         }
       }
@@ -485,7 +490,7 @@
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}
   }
   function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
-  function renderCreatedTask(task){const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
+  function renderCreatedTask(task){workspace.dataset.taskView='result';const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
     renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
     if(record?.answers?.length)renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);
     const article=document.createElement('article');article.className='message assistant taskCreatedAnswer';article.dataset.lang='zh-CN';article.dataset.thinkingState='done';article.dataset.elapsedUnrecorded='true';article.activityEnded=true;article.activitySources=[];
@@ -594,7 +599,8 @@
   window.addEventListener('veya:chat-navigate',()=>{closeTaskMenu();if(internalNavigation)return;shellMode(false);viewVersion++;selectedId='';const url=new URL(location.href);['tab','task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);});
   window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search);if(p.get('dayShare'))openShared(p.get('dayShare')).catch(e=>message(e.message));else if(p.get('tab')==='tasks'){if(p.get('task'))selectTask(p.get('task'),{updateUrl:false,runId:p.get('run')||''}).catch(e=>message(e.message));else showLanding(false);}else shellMode(false);});
   window.matchMedia('(max-width: 760px)').addEventListener?.('change',()=>{if(!workspace.hidden)shellMode(true);});
-  if(initial.get('tab')==='tasks'||initialTask)showLanding(false);
+  if(initialTask){enterWorkspace();workspace.dataset.taskView='loading';$('taskLanding').hidden=true;$('taskDetail').hidden=false;$('taskWizard').hidden=true;$('taskChatForm').hidden=true;}
+  else if(initial.get('tab')==='tasks')showLanding(false);
   if(initialShare)openShared(initialShare).catch(error=>{showLanding(false);message(error.message,'taskMessage');});
   refresh();
   setInterval(()=>{if(!document.hidden&&Date.now()-lastRefresh>([...tasks,...sceneTasks].some(t=>t.activeRun)?1500:15000))refresh();},2000);

@@ -4583,3 +4583,7 @@ html { -webkit-tap-highlight-color:transparent; }
 .taskWaitingState time{font-size:15px;line-height:1.4;font-variant-numeric:tabular-nums}
 
 .taskWorkspace:has(.taskWaitingState) #taskChatForm{display:none!important}
+
+/* Composer visibility follows the task view, including asynchronous navigation. */
+.taskWorkspace[data-task-view="waiting"] #taskChatForm,.taskWorkspace[data-task-view="loading"] #taskChatForm{display:none!important}
+.shell.tasks-view #chatForm{display:none!important}
