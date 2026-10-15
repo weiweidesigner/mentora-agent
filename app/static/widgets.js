@@ -26,7 +26,7 @@
     if (!current()) activeId = boards[0].id;
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({version:1,activeId,boards})); notice(jobs.has(activeId)?'正在生成图表，你可以切换看板继续浏览…':'已自动保存 · 当前浏览器'); }
+    try { localStorage.setItem(KEY, JSON.stringify({version:1,activeId,boards}));  }
     catch { notice('浏览器存储空间不足，当前更改尚未保存。'); }
   }
   function overlaps(a,b) { return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
