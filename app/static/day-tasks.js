@@ -281,7 +281,8 @@
     originalVisibleQuestion=String(task.question).replace(/\{\{market\}\}/g,names[task.market]||'所选市场').replace(/\{\{symbols\}\}/g,task.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');
     el('question').value=originalVisibleQuestion;
     if(task.timeMode!=='fixed'&&task.nextAt)el('time').value=new Intl.DateTimeFormat('en-GB',{timeZone:zoneFor(task),hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(task.nextAt));
-    el('timeMode').value='fixed';el('date').value=task.date||today();el('wecom').checked=false;
+    el('timeMode').value='fixed';el('date').value=task.date||today();
+    for(const channel of ['serverchan','feishu','wecom'])el(channel).checked=false;
     el('repeat').checked=task.cadence!=='once';el('weekday').value=(task.weekdays||[0])[0];el('monthDay').value=task.monthDay||1;
     el('endMode').value=task.endDate?'date':'never';
     for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=name==='serverchanKey'?'输入 SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'输入飞书机器人 Webhook';}
