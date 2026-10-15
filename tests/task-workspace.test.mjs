@@ -61,3 +61,13 @@ test('scenario cards prefill distinct schedules and preserve the mobile task dra
  const m=setup({mobile:true,tasks:[]});await tick();const md=m.w.document;
  md.querySelector('#navTasks').click();md.querySelector('[data-recommendation="sectors"]').click();md.querySelector('#wizardNext').click();md.querySelector('#wizardNext').click();assert.equal(md.querySelector('#wizardTime').value,'14:00');assert.equal(m.saves.length,0);m.dom.window.close();
 });
+
+test('follow-up uses the selected cached answer and restores replies without rerunning analysis',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document,fetch=h.w.fetch;let payload;
+ h.w.fetch=async(path,options)=>{if(path==='/api/chat/stream'){payload=JSON.parse(options.body);return {ok:true,body:{}};}return fetch(path,options);};
+ h.w.readEventStream=async(_body,callback)=>callback('final',{interpretation:'这是基于缓存结果的追问回答'});
+ assert.equal(d.querySelector('#taskChatForm').hidden,false);d.querySelector('#taskChatInput').value='进一步解释量能';d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
+ assert.equal(payload.question,'进一步解释量能');assert.equal(payload.history[1].text,'最新缓存内容');assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);
+ const stored=JSON.parse(h.w.localStorage.getItem('veya-task-chat:live:run-new'));assert.equal(stored.length,2);
+ d.querySelector('#taskBack').click();d.querySelector('#taskSidebarList [data-task-open]').click();await tick();assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);h.dom.window.close();
+});

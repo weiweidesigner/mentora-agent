@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-scenarios" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-conversation" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -169,7 +169,7 @@
       <section id="taskWorkspace" class="taskWorkspace" aria-label="定时任务" hidden>
         <header class="taskTopbar">
           <div class="taskTopbarTitle"><button id="taskBack" class="dayTextButton" type="button" hidden>‹ 定时任务</button><span id="taskPageTitle">定时任务</span></div>
-          <div id="taskTopActions" class="taskTopActions" hidden><button id="taskRunNow" class="dayTextButton" type="button">立即运行</button><button id="taskToggle" class="dayTextButton" type="button">暂停</button><button id="taskSettings" class="dayIconButton" type="button" aria-label="任务设置">⋯</button></div>
+
         </header>
         <div id="taskLanding" class="taskLanding">
           <div class="taskLandingMark" aria-hidden="true"><img src="/static/assets/task-clock.svg" alt="" /></div>
@@ -180,11 +180,17 @@
           <div class="taskRecommendations"><h2>推荐</h2><div id="taskRecommendations"></div></div>
         </div>
         <section id="taskDetail" class="taskDetail" aria-label="任务运行与对话" hidden>
-          <div class="taskRunToolbar"><span id="taskScheduleSummary"></span><select id="taskRunSelect" aria-label="选择运行记录"></select></div>
-          <div id="taskRunState" class="taskRunState" role="status"></div>
           <div id="taskThread" class="taskThread"></div>
+          <section id="taskInfoCard" class="taskInfoCard" aria-label="定时任务设置与运行记录">
+            <div class="taskInfoHeading"><button id="taskCardTitle" class="taskSettingsLink" type="button" data-edit-task="1"></button><span id="taskCardStatus"></span></div>
+            <p id="taskScheduleSummary"></p>
+            <p id="taskRunState" role="status"></p>
+            <div class="taskInfoActions"><select id="taskRunSelect" aria-label="选择运行记录"></select><div id="taskTopActions" class="taskTopActions" hidden><button id="taskRunNow" class="dayTextButton" type="button">立即运行</button><button id="taskToggle" class="dayTextButton" type="button">暂停</button><button id="taskSettings" class="dayIconButton" type="button" aria-label="任务设置">⋯</button></div></div>
+          </section>
+          <div id="taskFollowups" class="taskFollowups" aria-live="polite"></div>
         </section>
         <section id="taskWizard" class="taskWizard" aria-label="创建任务对话" hidden><div id="taskWizardTranscript" class="taskWizardTranscript"></div><section class="taskClarification" aria-live="polite"><div class="taskClarificationTop"><button id="wizardPrevious" class="dayTextButton" type="button" aria-label="上一步">‹</button><span id="wizardProgress"></span><button id="wizardClose" class="dayIconButton" type="button" aria-label="退出创建">×</button></div><div id="wizardQuestion"></div><p id="wizardError" class="dayError" role="alert"></p></section></section>
+        <form id="taskChatForm" class="taskChatForm" hidden><div class="taskChatBox"><textarea id="taskChatInput" rows="1" maxlength="6000" required aria-label="继续对话" placeholder="继续询问 Veya"></textarea><button id="taskChatSend" type="submit" aria-label="发送追问">↑</button></div><p id="taskChatError" role="status"></p></form>
         <p id="taskMessage" class="dayMessage" role="status" aria-live="polite"></p>
       </section>
       <dialog id="dayDialog" class="dayDialog taskSettingsDialog" aria-labelledby="dayDialogTitle">
@@ -258,6 +264,6 @@
     <script src="/static/app.js?v=interface-20261015-task-workspace"></script>
     <script src="/static/home-background.js?v=20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
-    <script src="/static/day-tasks.js?v=20261015-task-scenarios"></script>
+    <script src="/static/day-tasks.js?v=20261015-task-conversation"></script>
   </body>
 </html>

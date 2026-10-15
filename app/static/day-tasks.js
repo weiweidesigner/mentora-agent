@@ -27,6 +27,41 @@
   let selectedId = '', selectedRun = '', pinnedRun = false, sharedEntry = null, resultVersion = '', viewVersion = 0;
   let lastDetailState = '';
   let sidebarExpanded = false;
+  let chatHistory = [], chatKey = '', chatController = null;
+  function stopFollowup() {chatController?.abort();chatController=null;}
+  function resetFollowup() {stopFollowup();chatHistory=[];chatKey='';$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';$('taskChatSend').disabled=true;}
+  async function renderFollowup(turn, target=$('taskFollowups')) {
+    const node=document.createElement(turn.role==='user'?'div':'article');
+    node.className=turn.role==='user'?'taskUserBubble':'message assistant scheduledAnswer taskChatAnswer';target.append(node);
+    if(turn.role==='user')node.textContent=turn.text;
+    else {const report=document.createElement('div');report.className='mixedReport';node.append(report);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(node,structuredClone(turn.answer||{interpretation:turn.text}),report,()=>{});else report.textContent=turn.text;}
+    return node;
+  }
+  async function loadFollowups(data, task, version) {
+    const initialText=String(data.answer?.interpretation||'');
+    chatHistory=[{role:'user',text:data.question||task.question},{role:'assistant',text:initialText||`任务已设置：${task.title}，${schedule(task)}。`}];
+    chatKey=`veya-task-chat:${task.id}:${selectedRun||data.runId||task.resultVersion||'setup'}`;
+    let turns=[];try{turns=JSON.parse(localStorage.getItem(chatKey)||'[]');if(!Array.isArray(turns))turns=[];}catch{}
+    for(const turn of turns.slice(-20)){if(version!==viewVersion)return;if(!['user','assistant'].includes(turn.role)||typeof turn.text!=='string')continue;chatHistory.push(turn);await renderFollowup(turn);}
+    $('taskChatSend').disabled=false;
+  }
+  async function sendFollowup(event) {
+    event.preventDefault();const text=$('taskChatInput').value.trim();if(!text||chatController||!selectedId||!chatKey)return;
+    const controller=new AbortController(),version=viewVersion,key=chatKey,prior=chatHistory.slice(-10).map(({role,text})=>({role,text}));chatController=controller;
+    $('taskChatInput').value='';$('taskChatSend').disabled=true;$('taskChatError').textContent='';
+    const user={role:'user',text},userNode=await renderFollowup(user);const waiting=document.createElement('p');waiting.className='taskResultEmpty';waiting.textContent='正在分析…';$('taskFollowups').append(waiting);waiting.scrollIntoView?.({block:'nearest'});
+    let answer=null,streamError='';
+    try {
+      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question:text,history:prior,sessionTitle:selected()?.title||'定时任务追问',reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='dark'?'dark':'light'})});
+      if(!response.ok||!response.body){const error=await response.json().catch(()=>({}));throw new Error(error.detail||'请求失败，请重试');}
+      await readEventStream(response.body,(event,data)=>{if(event==='final')answer=data;if(event==='error')streamError=data.detail||data.message||'分析失败';});
+      if(controller.signal.aborted||version!==viewVersion)return;
+      if(!answer)throw new Error(streamError||'本次没有返回结果，请重试');
+      waiting.remove();const turn={role:'assistant',text:answer.interpretation||'',answer};chatHistory.push(user,turn);await renderFollowup(turn);
+      try{localStorage.setItem(key,JSON.stringify(chatHistory.slice(chatHistory[1]?.role==='assistant'?2:0).slice(-20)));}catch{$('taskChatError').textContent='当前浏览器无法保存追问记录，刷新后可能丢失。';}
+    } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;}}
+    finally{if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
+  }
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
   let wizardDraft = null, wizardStep = 0, saving = false;
@@ -105,6 +140,7 @@
     history[replace?'replaceState':'pushState']({tab:'tasks',task:taskId},'',url);
   }
   function shellMode(active) {
+    if(!active)stopFollowup();
     document.querySelector('.shell').classList.toggle('tasks-view',active);
     workspace.hidden=!active;
     $('taskSidebar').hidden=!active;
@@ -125,6 +161,7 @@
     if(typeof closeActivityDrawer==='function')closeActivityDrawer();
   }
   function showLanding(updateUrl=true) {
+    resetFollowup();$('taskChatForm').hidden=true;
     enterWorkspace();selectedId='';selectedRun='';resultVersion='';viewVersion++;
     $('taskLanding').hidden=false;$('taskDetail').hidden=true;$('taskWizard').hidden=true;$('taskBack').hidden=true;$('taskTopActions').hidden=true;
     $('taskPageTitle').textContent='定时任务';message('','taskMessage');renderLists();
@@ -137,6 +174,7 @@
     $('taskRunNow').disabled=!!task.activeRun;$('taskRunNow').textContent=task.activeRun?'运行中…':'立即运行';
     $('taskToggle').textContent=completed(task)?'重新安排':task.enabled?'暂停':'开启';
     $('taskScheduleSummary').textContent=`${flags[task.market]} ${names[task.market]} · ${schedule(task)}`;
+    $('taskCardTitle').textContent=task.title+' ›';$('taskCardStatus').textContent=canEdit?status(task):'分享结果';$('taskChatForm').hidden=false;
     renderLists();
   }
   async function paintRun(data, task, version) {
@@ -156,11 +194,12 @@
     } else {
       report.innerHTML=`<p class="taskResultEmpty">${esc(data.error || (data.status==='running'?'正在云端执行，完成后会自动显示结果。':data.status==='queued'?'任务正在排队。':data.status==='success'?'这条旧记录未保留完整内容。新运行会保留近期对话结果。':'本次执行没有生成结果。'))}</p>`;
     }
+    if(version===viewVersion)await loadFollowups(data,task,version);
   }
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {
     const task=tasks.find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
     if(!task)throw new Error('任务不存在，或当前浏览器没有该任务的访问权限');
-    selectedId=id;selectedRun=runId;pinnedRun=!!runId;resultVersion='';const version=++viewVersion;
+    resetFollowup();selectedId=id;selectedRun=runId;pinnedRun=!!runId;resultVersion='';const version=++viewVersion;
     prepareDetail(task,editable(task));lastDetailState=detailState(task);
     $('taskThread').innerHTML='<p class="taskResultEmpty" role="status">正在读取任务运行记录…</p>';
     if(updateUrl)writeUrl(id,false,shared,runId);
@@ -175,7 +214,7 @@
     if(!runs.length) {
       $('taskThread').innerHTML=`<div class="taskAwaiting"><span aria-hidden="true">◷</span><h2>任务已设置</h2><p>${esc(task.question)}</p><p>${task.nextAt?'首次执行：'+esc(dateText(task.nextAt,zoneFor(task))):'暂无运行记录，可以开启任务或立即运行。'}</p><button type="button" class="taskSettingsLink" data-edit-task="1">${esc(task.title)} ›</button></div>`;
       $('taskRunState').textContent=task.enabled?'已开启 · 云端将按计划执行':'任务已暂停';
-      resultVersion=task.resultVersion;return;
+      resultVersion=task.resultVersion;await loadFollowups({question:task.question},task,version);return;
     }
     const run=runs.find(r=>r.id===runId) || runs[0];selectedRun=run.id;$('taskRunSelect').value=run.id;
     $('taskRunState').textContent=task.activeRun?'任务正在云端运行，关闭页面也会继续。':task.lastRun?.status==='failed'?'最近一次执行失败，可切换查看上次成功结果。':!task.enabled&&!completed(task)?'任务已暂停，可查看已保存的运行结果。':task.nextAt?'下次执行：'+dateText(task.nextAt,zoneFor(task)):'已完成本次安排';
@@ -198,7 +237,7 @@
         const task=selected();
         if(task && editable(task)) {
           prepareDetail(task,true);
-          if(detailState(task)!==lastDetailState) await selectTask(task.id,{updateUrl:false,runId:pinnedRun?selectedRun:''});
+          if(!chatController&&detailState(task)!==lastDetailState) await selectTask(task.id,{updateUrl:false,runId:pinnedRun?selectedRun:''});
         }
       }
     } catch(error){message(error.message);} finally{busy=false;}
@@ -322,6 +361,8 @@
     }catch(error){if(!workspace.hidden&& !$('taskWizard').hidden)$('wizardError').textContent=error.message;else message(error.message);b.disabled=false;}
   });
   $('taskPromptForm').addEventListener('submit',e=>{e.preventDefault();const question=$('taskPrompt').value.trim();if(question)beginWizard(question);});
+  $('taskChatForm').addEventListener('submit',sendFollowup);
+  $('taskChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('taskChatForm').requestSubmit();}});
   $('taskSearch').addEventListener('input',renderLists);
   for(const id of ['taskFilter','taskSidebarFilter'])$(id).addEventListener('change',e=>{filter=e.target.value;renderLists();});
   $('taskRunSelect').addEventListener('change',async e=>{try{await selectTask(selectedId,{runId:e.target.value});}catch(error){message(error.message);}});
