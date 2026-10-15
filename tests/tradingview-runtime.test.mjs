@@ -25,3 +25,36 @@ test('cached advanced chart uses valid watchlist and ignores repeated host theme
   assert.equal(JSON.parse(next.textContent).theme,'light');
   dom.window.close();
 });
+
+test('every cached TradingView type sends the host theme and keeps transparent frames on its surface',async()=>{
+  const {readdirSync}=await import('node:fs');
+  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
+  const widgets=new Set();
+  let count=0;
+  for(const name of readdirSync(root,{recursive:true})) {
+    if(!name.endsWith('.html'))continue;
+    const source=readFileSync(new URL(name,root),'utf8');
+    if(!source.includes('id="tv-config"'))continue;
+    for(const theme of ['dark','light']) {
+      const dom=new JSDOM(source,{
+        url:`https://example.com/chart.html?theme=${theme}`,runScripts:'dangerously',
+        beforeParse(w){w.ResizeObserver=class{observe(){}};w.setTimeout=()=>1;w.clearTimeout=()=>{};},
+      });
+      await new Promise(resolve=>setImmediate(resolve));
+      const d=dom.window.document;
+      const spec=JSON.parse(d.querySelector('#tv-config').textContent);
+      widgets.add(spec.widget);
+      const cfg=JSON.parse(d.querySelector('#mount script').textContent);
+      assert.equal(cfg.colorTheme||cfg.theme,theme,name);
+      const iframe=d.createElement('iframe');d.querySelector('#mount').append(iframe);
+      assert.equal(dom.window.getComputedStyle(iframe).colorScheme,'normal',name+' must not inherit dark color-scheme');
+      d.documentElement.dataset.theme=theme==='dark'?'light':'dark';
+      await new Promise(resolve=>setImmediate(resolve));
+      const changed=JSON.parse(d.querySelector('#mount script').textContent);
+      assert.equal(changed.colorTheme||changed.theme,theme==='dark'?'light':'dark',name+' follows toggles');
+      dom.window.close();
+    }
+    count++;
+  }
+  assert.equal(widgets.size,18);assert.equal(count,27);
+});
