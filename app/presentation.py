@@ -876,9 +876,14 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
         "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
-    response = chat(ChatRequest(question=context + question, sessionId='day-' + run_id, reasoningFramework='deepseek', themeMode='dark', history=config.get('_history', [])))
-    answer = response.model_dump()
-    answer['question'] = question
+    payload=ChatRequest(question=context+question,sessionId='day-'+run_id,reasoningFramework='deepseek',themeMode='dark',history=config.get('_history',[]))
+    answer=None
+    for event_name,data in framework_events(payload):
+        if event_name=='error':raise RuntimeError('Scheduled research stream failed')
+        if event_name=='final':
+            answer=ChatResponse(**data).model_dump();answer['question']=question;data=answer
+        if callable(config.get('_emit_event')):config['_emit_event'](event_name,data)
+    if answer is None:raise RuntimeError('Scheduled research returned no final answer')
     return answer
 
 

@@ -4534,3 +4534,15 @@ p {
 @media(max-width:1000px) { .daySceneGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }.taskRecommendations.has-scenes #taskRecommendations { grid-template-columns:1fr; } }
 @media(max-width:760px) { .dayHeader { gap:12px; }.dayHeader h2 { font-size:22px; }.dayMoment { gap:8px; }.daySceneArt { width:36px;height:36px; }.dayHeader #dayClock { font-size:12px; }.daySceneGrid { grid-template-columns:1fr; }.daySceneGrid .caseCard { min-height:136px; }.taskSceneTabs { justify-content:flex-start;margin-top:16px; } }
 @media(prefers-reduced-motion:reduce) { .daySun,.daySunRays,.dayTravel { animation:none!important; } }
+
+/* Keep the scene clock beside the greeting on a shared center line. */
+.dayHeader { justify-content:flex-start;align-items:center;column-gap:20px; }
+.dayMoment { align-items:center; }
+.daySceneArt { display:flex;align-items:center;justify-content:center; }
+.daySceneCard { position:relative; }
+.daySceneCard .dayLivePreview { -webkit-line-clamp:2; }
+.dayTaskStatus { color:var(--muted);font-size:12px;min-height:24px; }
+.dayRunSpinner { display:inline-block;width:12px;height:12px;flex:none;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:day-task-spin .85s linear infinite; }
+.dayUnreadDot { display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:#ed4d50;margin-left:auto; }
+@keyframes day-task-spin { to { transform:rotate(360deg); } }
+@media(prefers-reduced-motion:reduce) { .dayRunSpinner { animation:none; } }

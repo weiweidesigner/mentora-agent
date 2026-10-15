@@ -32,6 +32,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, model_validator
 
 from app.wecom_channel import WeComRobotClient, validate_webhook_url
@@ -258,6 +259,10 @@ class DayTasks:
             CREATE TABLE IF NOT EXISTS subscriptions (
                 endpoint TEXT PRIMARY KEY, owner TEXT NOT NULL, payload TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS run_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, event TEXT NOT NULL, payload TEXT NOT NULL, created TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS run_event_cursor ON run_events(run_id,id);
             CREATE TABLE IF NOT EXISTS task_confirmations (
                 task_id TEXT PRIMARY KEY, config_key TEXT NOT NULL, answer TEXT NOT NULL
             );
@@ -307,17 +312,26 @@ class DayTasks:
         config = self.unpack(row['config'])
         for name in SECRET_FIELDS:
             config[name + 'Configured'] = bool(config.pop(name, ''))
-        last = db.execute('SELECT status,error,finished FROM runs WHERE id=?', (row['last_run'],)).fetchone()
+        last = db.execute('SELECT status,error,created,finished FROM runs WHERE id=?', (row['last_run'],)).fetchone()
         success = db.execute('SELECT id,created,config,finished,answer FROM runs WHERE id=?', (row['success_run'],)).fetchone()
         notice = db.execute('SELECT channel,status,error FROM deliveries WHERE run_id=?', (row['last_run'],)).fetchall()
         answer = json.loads(success['answer']) if success else {}
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))
+        preview=''
+        if row['active_run']:
+            recent=db.execute("SELECT event,payload FROM run_events WHERE run_id=? AND event IN ('status','agent_event','tool_step','answer_text') ORDER BY id DESC LIMIT 8",(row['active_run'],)).fetchall()
+            for event in recent:
+                data=json.loads(event['payload'])
+                value=next((data.get(k) for k in ('detail','message','text','content','title') if isinstance(data.get(k),str) and data.get(k).strip()),'')
+                if value:
+                    preview=re.sub(r'[*_`#]','',value).strip()[-300:]
+                    break
         from app.day_presets import SCENE_OWNER, PRESETS
         snapshot=self.unpack(success['config']) if success else config
         scene=task_scene(snapshot,dt.datetime.fromisoformat(success['created']) if success else None)
         headline,description=result_preview(answer.get('interpretation',''))
         emoji=next((p[2] for p in PRESETS if p[3]==config['title']),{'pre':'🌅','live':'☀️','post':'🌇','rest':'🧳'}.get(scene,'📋'))
-        return dict(config, systemPreset=row['owner']==SCENE_OWNER, scene=task_scene(config),resultScene=scene,resultMarket=snapshot['market'],resultDate=dt.datetime.fromisoformat(success['created']).astimezone(ZoneInfo(MARKETS[snapshot['market']]['zone'])).date().isoformat() if success else None,resultHeadline=headline,resultDescription=description,emoji=emoji, id=row['id'], nextAt=row['next_at'], activeRun=row['active_run'],
+        return dict(config, livePreview=preview, systemPreset=row['owner']==SCENE_OWNER, scene=task_scene(config),resultScene=scene,resultMarket=snapshot['market'],resultDate=dt.datetime.fromisoformat(success['created']).astimezone(ZoneInfo(MARKETS[snapshot['market']]['zone'])).date().isoformat() if success else None,resultHeadline=headline,resultDescription=description,emoji=emoji, id=row['id'], nextAt=row['next_at'], activeRun=row['active_run'],
                     lastRun=dict(last) if last else None, successAt=success['finished'] if success else None,
                     resultVersion=success['id'] if success else None, summary=summary[:180],
                     notifications=[dict(n) for n in notice])
@@ -434,10 +448,23 @@ class DayTasks:
                 return dict(row)
         return None
 
+    def record_event(self,run_id,event,data):
+        if event not in {'status','route','agent_event','tool_step','answer_text','module','visualization','visualize_widget','vision_asset','module_error','final','error'}:return
+        if not isinstance(data,dict):return
+        def clean(value):
+            if isinstance(value,dict):return {k:('[redacted]' if re.search(r'api.?key|authorization|password|cookie|secret',k,re.I) else clean(v)) for k,v in value.items()}
+            if isinstance(value,list):return [clean(v) for v in value]
+            return value
+        payload=json.dumps(clean(data),ensure_ascii=False,default=str)
+        with self.db() as db:
+            db.execute('INSERT INTO run_events(run_id,event,payload,created) VALUES(?,?,?,?)',(run_id,event,payload,stamp(now_utc())))
+
     def execute(self, run):
         config = self.unpack(run['config'])
         try:
+            self.record_event(run['id'],'status',{'status':'start','message':'正在运行任务','detail':'研究任务已开始，正在读取任务内容与可用技能。','lang':'zh-CN'})
             run_config = dict(config)
+            run_config['_emit_event']=lambda name,data:self.record_event(run['id'],name,data)
             if not config.get('newChat', True):
                 with self.db() as db:
                     previous = db.execute('SELECT r.config,r.answer FROM tasks t JOIN runs r ON r.id=t.success_run WHERE t.id=? AND t.owner=?', (run['task_id'], run['owner'])).fetchone()
@@ -451,6 +478,9 @@ class DayTasks:
             if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
                 raise ValueError('empty result')
             with self.db() as db:
+                has_final=db.execute("SELECT 1 FROM run_events WHERE run_id=? AND event='final' LIMIT 1",(run['id'],)).fetchone()
+            if not has_final:self.record_event(run['id'],'final',answer)
+            with self.db() as db:
                 db.execute('BEGIN IMMEDIATE')
                 db.execute("UPDATE runs SET status='success',answer=?,finished=? WHERE id=?", (json.dumps(answer, ensure_ascii=False), stamp(now_utc()), run['id']))
                 db.execute('UPDATE tasks SET success_run=?,active_run=NULL WHERE id=? AND active_run=?', (run['id'], run['task_id'], run['id']))
@@ -463,6 +493,7 @@ class DayTasks:
                                 db.execute('INSERT INTO deliveries(id,run_id,owner,channel,target,next_at) VALUES(?,?,?,?,?,?)', (str(uuid.uuid4()), run['id'], run['owner'], channel, json.dumps(target), stamp(now_utc())))
         except Exception:
             log.exception('Daily research task failed: %s', run['id'])
+            self.record_event(run['id'],'error',{'detail':'分析未完成，请稍后重试；上次成功结果已保留','lang':'zh-CN'})
             with self.db() as db:
                 db.execute("UPDATE runs SET status='failed',error=?,finished=? WHERE id=?", ('分析未完成，请稍后重试；上次成功结果已保留', stamp(now_utc()), run['id']))
                 db.execute('UPDATE tasks SET active_run=NULL WHERE id=? AND active_run=?', (run['task_id'], run['id']))
@@ -528,6 +559,8 @@ class DayTasks:
             db.execute("UPDATE runs SET answer=NULL WHERE status='success' AND id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20) AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND id NOT IN (SELECT run_id FROM deliveries WHERE status='pending')")
             db.execute("DELETE FROM deliveries WHERE status!='pending' AND run_id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20)")
             db.execute("DELETE FROM runs WHERE id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20) AND id NOT IN (SELECT run_id FROM deliveries) AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND status NOT IN ('running','queued')")
+
+            db.execute('DELETE FROM run_events WHERE run_id NOT IN (SELECT id FROM runs)')
 
     def start(self):
         if self.lock_file:
@@ -673,6 +706,29 @@ def create_router(service):
             task = service.readable(db, user, task_id)
             rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE task_id=? AND owner=? AND (id IN (SELECT id FROM runs WHERE task_id=? AND owner=? ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task_id, task['owner'], task_id, task['owner'], task['success_run'])).fetchall()
             return {'runs': [dict(row) for row in rows]}
+
+    @router.get('/tasks/{task_id}/runs/{run_id}/events')
+    def run_events(task_id: str,run_id: str,request: Request,response: Response,after: int=0):
+        user=owner(request,response)
+        with service.db() as db:
+            task=service.readable(db,user,task_id)
+            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?',(run_id,task_id,task['owner'])).fetchone():raise HTTPException(404,'运行记录不存在')
+        def stream():
+            cursor=max(0,after)
+            while True:
+                with service.db() as db:
+                    rows=db.execute('SELECT id,event,payload FROM run_events WHERE run_id=? AND id>? ORDER BY id LIMIT 100',(run_id,cursor)).fetchall()
+                    run=db.execute('SELECT status FROM runs WHERE id=?',(run_id,)).fetchone()
+                for row in rows:
+                    cursor=row['id'];data=json.loads(row['payload']);data['_taskEventId']=cursor
+                    yield 'id: '+str(cursor)+'\nevent: '+row['event']+'\ndata: '+json.dumps(data,ensure_ascii=False)+'\n\n'
+                if len(rows)==100:continue
+                if not run or run['status'] in ('success','failed'):
+                    yield 'event: run_state\ndata: '+json.dumps({'status':run['status'] if run else 'missing'})+'\n\n'
+                    return
+                yield ': keepalive\n\n'
+                time.sleep(.5)
+        return StreamingResponse(stream(),media_type='text/event-stream',headers={'Cache-Control':'no-store','X-Accel-Buffering':'no','Referrer-Policy':'no-referrer'})
 
     @router.get('/tasks/{task_id}/runs/{run_id}')
     def run_result(task_id: str, run_id: str, request: Request, response: Response):

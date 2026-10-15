@@ -384,7 +384,7 @@ function handleSavedResultAction(event) {
 messages?.addEventListener("click", handleSavedResultAction);
 document.getElementById("taskWorkspace")?.addEventListener("click", handleSavedResultAction);
 
-function createAssistantMessage(question) {
+function createAssistantMessage(question, options = {}) {
   const lang = normalizeLang(detectLanguage(question));
   const article = document.createElement("article");
   article.className = "message assistant";
@@ -409,7 +409,9 @@ function createAssistantMessage(question) {
     </div>
   `;
   article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
-  appendMessage(article, true);
+  article.taskContext = options.taskContext || null;
+  if (options.target) options.target.append(article);
+  else appendMessage(article, true);
   return article;
 }
 
@@ -458,7 +460,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "error") {
-    showError(article, data.detail || "生成失败");
+    showError(article, data.detail || "生成失败", {skipSessionRecord:!!article.taskContext});
   }
 }
 
@@ -2192,7 +2194,9 @@ function renderFinalAnswer(article, data) {
   article.activitySourceCount = article.activitySources.length;
   article.videos = Array.isArray(data.videos) ? data.videos : [];
   article.actionLinks = Array.isArray(data.actionLinks) ? data.actionLinks : [];
-  article.shareSession = buildShareSessionForArticle(article, data);
+  article.shareSession = article.taskContext
+    ? {...data, ...article.taskContext, messages:[{role:"user",text:article.taskContext.question}]}
+    : buildShareSessionForArticle(article, data);
   const actionsHtml = buildResultActions(article, article.dataset.lang || "en");
   const capabilityBarHtml = buildCapabilityBar(article.actionLinks, article.dataset.lang || "en");
   // Keep the live hosts connected until the final layout atomically moves them.
@@ -2220,9 +2224,9 @@ function renderFinalAnswer(article, data) {
     attachResultActionHandlers(article);
   };
   renderMixedReportFlow(article, data, finalShell.querySelector(".mixedReport"), revealActions);
-  recordAssistantResult(data);
+  if (!article.taskContext) recordAssistantResult(data);
   syncActivityDrawer(article);
-  scrollToMessageStart(article);
+  if (!article.taskContext) scrollToMessageStart(article);
 }
 
 function buildShareSessionForArticle(article, data = {}) {
