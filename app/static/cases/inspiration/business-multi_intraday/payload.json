@@ -25,5 +25,8 @@
       "source": "ainvest"
     }
   ],
-  "customTitle": "苹果微软英伟达分时走势对比"
+  "customTitle": "苹果微软英伟达分时走势对比",
+  "props": {
+    "mobileColumns": 2
+  }
 }

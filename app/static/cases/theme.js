@@ -102,7 +102,7 @@ svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-hi
   };
   const initControls = () => {
     const row=document.querySelector('.intraday-row');
-    if(row && !document.querySelector('.intraday-tabs')) {
+    if(row && !document.querySelector('.multi-intraday[data-mobile-columns]') && !document.querySelector('.intraday-tabs')) {
       const tabs=document.createElement('nav');tabs.className='intraday-tabs';tabs.setAttribute('aria-label','分时股票');
       [...row.children].forEach((card,i)=>{const button=document.createElement('button');button.type='button';button.textContent=card.querySelector('iframe')?.title.split(' ')[0]||String(i+1);button.setAttribute('aria-selected',String(i===0));button.addEventListener('click',()=>{row.scrollTo({left:card.offsetLeft-row.offsetLeft,behavior:'smooth'});[...tabs.children].forEach((b,n)=>b.setAttribute('aria-selected',String(n===i)));});tabs.append(button);});row.before(tabs);
       row.addEventListener('scroll',()=>{const index=Math.round(row.scrollLeft/Math.max(1,row.clientWidth+10));[...tabs.children].forEach((b,i)=>b.setAttribute('aria-selected',String(i===index)));},{passive:true});

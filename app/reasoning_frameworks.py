@@ -356,6 +356,7 @@ class LocalAgentFrameworks:
             "evidenceStrategyConfidence": decision.evidence_strategy_confidence,
             "markStrategy": decision.mark_strategy,
             "markStrategyConfidence": decision.mark_strategy_confidence,
+            "mobileColumns": decision.mobile_columns,
             "candidateCount": decision.candidate_count,
         }
 
@@ -382,6 +383,8 @@ class LocalAgentFrameworks:
             "JEV 可视化语义计划（这是组件与叙事约束，不是数据证据）：",
             f"- 主图：{decision.primary_script}；回答维度：{decision.primary_purpose or '用户问题的核心判断'}。",
         ]
+        if any(Path(script).name == "multi_intraday.py" for script in decision.selected_scripts):
+            lines.append(f"- 多分时图移动端采用每行 {decision.mobile_columns} 张卡片的换行网格，CLI 必须传 --mobile-columns {decision.mobile_columns}；不要改成股票 tab 或横向分页。")
         if decision.supporting_script:
             lines.append(
                 f"- 辅助图：{decision.supporting_script}；补充维度："

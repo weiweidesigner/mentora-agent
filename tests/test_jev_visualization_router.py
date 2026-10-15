@@ -326,3 +326,13 @@ def test_visualization_scope_keeps_existing_modules_when_jev_fails() -> None:
     assert scoped == modules
     assert metadata["applied"] is False
     assert metadata["fallback"] == "model"
+
+
+def test_intraday_grid_density_reaches_both_agent_planners():
+    from app.reasoning_frameworks import LocalAgentFrameworks
+    decision = JevVisualizationDecision(selected_scripts=("multi_intraday.py",), primary_script="multi_intraday.py", supporting_script=None, primary_confidence=.9, supporting_confidence=0, provider_model="test", candidate_count=1, mobile_columns=4)
+    guidance = LocalAgentFrameworks._visualization_guidance(decision)
+    assert "--mobile-columns 4" in guidance
+    metadata = LocalAgentFrameworks._visualization_route_metadata(decision)
+    assert metadata["mobileColumns"] == 4
+    assert "--mobile-columns 4" in main.jev_visual_semantics_prompt(metadata)
