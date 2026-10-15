@@ -86,3 +86,17 @@ test('library has no search or hosting notice and no field for parameter-free co
  const s=setup();s.d.querySelector('#widgetSidebarLibrary').click();await tick();assert.equal(s.d.querySelector('#widgetLibrary h2').textContent,'图表库');assert.equal(s.d.querySelector('#widgetSearch'),null);assert.equal(s.d.querySelector('#widgetLibraryNote'),null);
  s.d.querySelector('[data-component="tv-crypto-heatmap"]').click();assert.equal(s.d.querySelector('#widgetParameterField').hidden,true);s.d.querySelector('[data-component="tv-screener"]').click();assert.equal(s.d.querySelector('#widgetParameterField').hidden,false);assert.equal(s.d.querySelector('#widgetMarket').hidden,false);s.dom.window.close();
 });
+
+test('single-scope widgets hide the field and submit default after switching from another market',async()=>{
+ for(const component of catalog.filter(c=>c.provider==='TradingView'&&c.inputMode==='market'&&!['screener','economic-calendar'].includes(c.widget))){
+  const s=setup();s.d.querySelector('#widgetSidebarLibrary').click();await tick();
+  s.d.querySelector('[data-component="tv-screener"]').click();s.d.querySelector('#widgetMarket').value='china';
+  s.d.querySelector(`[data-component="${component.id}"]`).click();
+  assert.equal(s.d.querySelector('#widgetParameterField').hidden,true,component.id);
+  assert.equal(s.d.querySelector('#widgetMarket').value,'default',component.id);
+  assert.doesNotMatch(s.d.querySelector('#widgetSymbolLabel').textContent,/可选/);
+  s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();
+  const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
+  assert.equal(body.market,'default');assert.deepEqual(body.symbols,[]);s.dom.window.close();
+ }
+});
