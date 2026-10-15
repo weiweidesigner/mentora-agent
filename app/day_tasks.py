@@ -541,7 +541,8 @@ def create_router(service):
             if not row:
                 raise HTTPException(404, '还没有成功结果')
             config = service.unpack(row['config'])
-            return {'question': config['question'], 'answer': json.loads(row['answer']), 'cachedDate': row['finished']}
+            answer = json.loads(row['answer'])
+            return {'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
 
     @router.get('/shared/{token}')
     def shared(token: str, response: Response):
@@ -552,7 +553,8 @@ def create_router(service):
             if not row:
                 raise HTTPException(404, '结果不存在或尚未完成')
             config = service.unpack(row['config'])
-            return {'title': config['title'], 'question': config['question'], 'answer': json.loads(row['answer']), 'cachedDate': row['finished']}
+            answer = json.loads(row['answer'])
+            return {'title': config['title'], 'question': answer.get('question') or config['question'], 'answer': answer, 'cachedDate': row['finished']}
 
     @router.post('/subscriptions')
     def subscribe(payload: dict[str, Any], request: Request, response: Response):

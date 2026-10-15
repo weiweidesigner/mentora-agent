@@ -215,3 +215,14 @@ def test_serverchan_secret_and_official_delivery(service, monkeypatch):
     assert '/veya/?dayShare=' in calls[0][1]['data']['desp']
     assert calls[0][1]['allow_redirects'] is False
     assert service.list('alice')[0]['notifications'][0]['status']=='sent'
+
+
+def test_cached_view_uses_the_original_resolved_question(client, service):
+    task = create(client, enabled=False).json()
+    service.runner = lambda c,r: {'question':'分析A股', 'interpretation':'缓存答案'}
+    client.post('/api/day/tasks/'+task['id']+'/run', headers={'X-Veya-Day':'1'})
+    service.execute(service.claim())
+    assert client.get('/api/day/tasks/'+task['id']+'/result').json()['question'] == '分析A股'
+    with service.db() as db:
+        token = db.execute('SELECT token FROM result_links WHERE task_id=?',(task['id'],)).fetchone()['token']
+    assert TestClient(client.app).get('/api/day/shared/'+token).json()['question'] == '分析A股'
