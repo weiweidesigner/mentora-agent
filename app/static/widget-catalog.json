@@ -1,164 +1,434 @@
 [
   {
-    "id": "trade_flow",
-    "title": "资金与订单流",
-    "category": "行情与资金",
-    "description": "观察买卖订单、资金流向及盘中变化。"
+    "id": "tv-screener",
+    "widget": "screener",
+    "provider": "TradingView",
+    "title": "股票筛选器",
+    "category": "选股",
+    "description": "按估值、表现等条件筛选股票，发现研究对象。",
+    "inputMode": "market",
+    "defaultScope": "美股",
+    "width": 12,
+    "height": 22
   },
   {
-    "id": "volume_profile",
-    "title": "成交量分布",
-    "category": "行情与资金",
-    "description": "查看不同价格区间的成交量与成交结构。"
+    "id": "tv-crypto-mkt-screener",
+    "widget": "crypto-mkt-screener",
+    "provider": "TradingView",
+    "title": "数字货币筛选器",
+    "category": "选股",
+    "description": "筛选数字货币，比较市值、表现与成交情况。",
+    "inputMode": "market",
+    "defaultScope": "数字货币市场",
+    "width": 12,
+    "height": 22
+  },
+  {
+    "id": "tv-stock-heatmap",
+    "widget": "stock-heatmap",
+    "provider": "TradingView",
+    "title": "股票市场热力图",
+    "category": "选股",
+    "description": "按板块浏览市场涨跌，寻找强弱分化。",
+    "inputMode": "market",
+    "defaultScope": "标普 500",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-crypto-heatmap",
+    "widget": "crypto-heatmap",
+    "provider": "TradingView",
+    "title": "数字货币热力图",
+    "category": "选股",
+    "description": "从市场热力图观察数字货币的相对表现。",
+    "inputMode": "market",
+    "defaultScope": "数字货币市场",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-technical-analysis",
+    "widget": "technical-analysis",
+    "provider": "TradingView",
+    "title": "技术分析仪表盘",
+    "category": "个股诊断",
+    "description": "查看均线、震荡指标及综合技术信号。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-symbol-info",
+    "widget": "symbol-info",
+    "provider": "TradingView",
+    "title": "标的概况",
+    "category": "个股诊断",
+    "description": "查看指定标的的行情概况与基本资料。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-company-profile",
+    "widget": "company-profile",
+    "provider": "TradingView",
+    "title": "公司介绍",
+    "category": "个股诊断",
+    "description": "了解公司业务、行业及基础资料。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
   },
   {
     "id": "key_stats",
     "title": "行情关键指标",
-    "category": "行情与资金",
-    "description": "日内区间、52 周区间、市值和成交统计。"
-  },
-  {
-    "id": "shareholder_returns",
-    "title": "股东回报对比",
-    "category": "行情与资金",
-    "description": "对比个股、行业和市场的不同周期回报。"
-  },
-  {
-    "id": "income_statement",
-    "title": "营收与利润",
-    "category": "财务与经营",
-    "description": "对比营收、利润与盈利能力的历史变化。"
-  },
-  {
-    "id": "balance_sheet",
-    "title": "资产负债表",
-    "category": "财务与经营",
-    "description": "查看资产、负债、权益与偿债能力。"
-  },
-  {
-    "id": "cash_flow",
-    "title": "现金流",
-    "category": "财务与经营",
-    "description": "观察经营、投资与融资现金流。"
-  },
-  {
-    "id": "key_financial_indicators",
-    "title": "关键财务指标",
-    "category": "财务与经营",
-    "description": "查看 EPS、ROE、净利率和债务等关键指标。"
-  },
-  {
-    "id": "revenue_sources",
-    "title": "产品收入构成",
-    "category": "财务与经营",
-    "description": "拆分各产品、业务线的收入贡献。"
-  },
-  {
-    "id": "revenue_geography",
-    "title": "地区收入构成",
-    "category": "财务与经营",
-    "description": "比较各地理市场的收入规模与占比。"
-  },
-  {
-    "id": "revenue_expenses",
-    "title": "收入与费用流向",
-    "category": "财务与经营",
-    "description": "用流向图拆解收入、成本、费用与利润。"
-  },
-  {
-    "id": "capital_structure",
-    "title": "资本结构",
-    "category": "财务与经营",
-    "description": "对比市值、负债、现金与企业价值。"
+    "category": "个股诊断",
+    "description": "日内区间、52 周区间、市值和成交统计。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "valuation",
     "title": "估值概览",
-    "category": "估值与预期",
-    "description": "查看市盈率、市销率等估值数据。"
+    "category": "个股诊断",
+    "description": "查看市盈率、市销率等估值数据。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "investment_rating",
     "title": "综合投资评级",
-    "category": "估值与预期",
-    "description": "综合基本面、技术面与情绪的投资评分。"
+    "category": "个股诊断",
+    "description": "综合基本面、技术面与情绪的投资评分。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "fundamental_investment_rating",
     "title": "基本面评分",
-    "category": "估值与预期",
-    "description": "比较价值、增长、健康、历史表现和分红。"
+    "category": "个股诊断",
+    "description": "比较价值、增长、健康、历史表现和分红。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "wall_street_consensus",
     "title": "华尔街共识",
-    "category": "估值与预期",
-    "description": "查看分析师评级、目标价与市场共识。"
+    "category": "个股诊断",
+    "description": "查看分析师评级、目标价与市场共识。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "average_rating_history",
     "title": "评级历史",
-    "category": "估值与预期",
-    "description": "跟踪平均分析师评级的历史变化。"
+    "category": "个股诊断",
+    "description": "跟踪平均分析师评级的历史变化。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "price_target_vs_actual",
     "title": "目标价与股价",
-    "category": "估值与预期",
-    "description": "比较分析师目标价与实际股价。"
+    "category": "个股诊断",
+    "description": "比较分析师目标价与实际股价。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "analyst_recommendations",
     "title": "分析师推荐",
-    "category": "估值与预期",
-    "description": "观察买入、持有、卖出评级及近期调整。"
+    "category": "个股诊断",
+    "description": "观察买入、持有、卖出评级及近期调整。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "tv-advanced-chart",
+    "widget": "advanced-chart",
+    "provider": "TradingView",
+    "title": "交互行情图",
+    "category": "行情观察",
+    "description": "切换周期、标的与技术指标，观察价格走势。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 12,
+    "height": 22
+  },
+  {
+    "id": "tv-symbol-overview",
+    "widget": "symbol-overview",
+    "provider": "TradingView",
+    "title": "多标的走势概览",
+    "category": "行情观察",
+    "description": "把关注的多个标的放在一个走势概览中。",
+    "inputMode": "group",
+    "defaultScope": "",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-mini-chart",
+    "widget": "mini-chart",
+    "provider": "TradingView",
+    "title": "迷你走势图",
+    "category": "行情观察",
+    "description": "用紧凑图表观察一个标的的价格变化。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-market-data",
+    "widget": "market-data",
+    "provider": "TradingView",
+    "title": "标的行情列表",
+    "category": "行情观察",
+    "description": "按分组展示多个标的的报价与涨跌。",
+    "inputMode": "group",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-ticker-tape",
+    "widget": "ticker-tape",
+    "provider": "TradingView",
+    "title": "滚动行情条",
+    "category": "行情观察",
+    "description": "以横向行情条关注多个标的的报价变化。",
+    "inputMode": "group",
+    "defaultScope": "",
+    "width": 12,
+    "height": 10
+  },
+  {
+    "id": "tv-single-ticker",
+    "widget": "single-ticker",
+    "provider": "TradingView",
+    "title": "单标的报价卡",
+    "category": "行情观察",
+    "description": "用报价卡关注一个标的的行情。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 10
+  },
+  {
+    "id": "tv-tickers",
+    "widget": "tickers",
+    "provider": "TradingView",
+    "title": "多标的报价卡",
+    "category": "行情观察",
+    "description": "同时查看多个标的的紧凑报价卡。",
+    "inputMode": "group",
+    "defaultScope": "",
+    "width": 6,
+    "height": 10
+  },
+  {
+    "id": "tv-fundamental-data",
+    "widget": "fundamental-data",
+    "provider": "TradingView",
+    "title": "财务数据概览",
+    "category": "财务分析",
+    "description": "查看 TradingView 提供的公司财务数据。",
+    "inputMode": "symbol",
+    "defaultScope": "",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "income_statement",
+    "title": "营收与利润",
+    "category": "财务分析",
+    "description": "对比营收、利润与盈利能力的历史变化。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "balance_sheet",
+    "title": "资产负债表",
+    "category": "财务分析",
+    "description": "查看资产、负债、权益与偿债能力。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "cash_flow",
+    "title": "现金流",
+    "category": "财务分析",
+    "description": "观察经营、投资与融资现金流。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "key_financial_indicators",
+    "title": "关键财务指标",
+    "category": "财务分析",
+    "description": "查看 EPS、ROE、净利率和债务等关键指标。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "revenue_sources",
+    "title": "产品收入构成",
+    "category": "财务分析",
+    "description": "拆分各产品、业务线的收入贡献。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "revenue_geography",
+    "title": "地区收入构成",
+    "category": "财务分析",
+    "description": "比较各地理市场的收入规模与占比。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "revenue_expenses",
+    "title": "收入与费用流向",
+    "category": "财务分析",
+    "description": "用流向图拆解收入、成本、费用与利润。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "capital_structure",
+    "title": "资本结构",
+    "category": "财务分析",
+    "description": "对比市值、负债、现金与企业价值。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "revenue_estimate",
     "title": "营收实际与预期",
-    "category": "估值与预期",
-    "description": "比较实际营收与市场预期，关注下次披露。"
+    "category": "财务分析",
+    "description": "比较实际营收与市场预期，关注下次披露。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "eps_estimate",
     "title": "每股收益实际与预期",
-    "category": "估值与预期",
-    "description": "比较实际 EPS 与预期，观察业绩差异。"
+    "category": "财务分析",
+    "description": "比较实际 EPS 与预期，观察业绩差异。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "trade_flow",
+    "title": "资金与订单流",
+    "category": "资金与回报",
+    "description": "观察买卖订单、资金流向及盘中变化。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "volume_profile",
+    "title": "成交量分布",
+    "category": "资金与回报",
+    "description": "查看不同价格区间的成交量与成交结构。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "shareholder_returns",
+    "title": "股东回报对比",
+    "category": "资金与回报",
+    "description": "对比个股、行业和市场的不同周期回报。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "payout_ratio",
     "title": "分红率",
-    "category": "持股与分红",
-    "description": "比较净利润、现金分红与派息比例。"
+    "category": "资金与回报",
+    "description": "比较净利润、现金分红与派息比例。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "dividend_yield",
     "title": "股息率历史",
-    "category": "持股与分红",
-    "description": "查看股息收益率的历史变化。"
+    "category": "资金与回报",
+    "description": "查看股息收益率的历史变化。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "insider_trades",
     "title": "内部人交易",
-    "category": "持股与分红",
-    "description": "查看内部人买卖与近期交易记录。"
+    "category": "资金与回报",
+    "description": "查看内部人买卖与近期交易记录。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "institution_trades",
     "title": "机构交易",
-    "category": "持股与分红",
-    "description": "观察机构买卖活动与交易明细。"
+    "category": "资金与回报",
+    "description": "观察机构买卖活动与交易明细。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "congress_trades",
     "title": "议员交易",
-    "category": "持股与分红",
-    "description": "查看议员交易摘要与个股走势。"
+    "category": "资金与回报",
+    "description": "查看议员交易摘要与个股走势。",
+    "provider": "business",
+    "inputMode": "symbol"
   },
   {
     "id": "seasonals",
     "title": "季节性表现",
-    "category": "持股与分红",
-    "description": "比较历年不同月份的季节性收益。"
+    "category": "资金与回报",
+    "description": "比较历年不同月份的季节性收益。",
+    "provider": "business",
+    "inputMode": "symbol"
+  },
+  {
+    "id": "tv-market-overview",
+    "widget": "market-overview",
+    "provider": "TradingView",
+    "title": "全球市场概览",
+    "category": "宏观分析",
+    "description": "按分组观察主要指数、商品、债券或汇率。",
+    "inputMode": "market",
+    "defaultScope": "全球主要市场",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-economic-calendar",
+    "widget": "economic-calendar",
+    "provider": "TradingView",
+    "title": "经济日历",
+    "category": "宏观分析",
+    "description": "关注重要经济数据的发布日程与结果。",
+    "inputMode": "market",
+    "defaultScope": "全球重要经济数据",
+    "width": 6,
+    "height": 22
+  },
+  {
+    "id": "tv-top-stories",
+    "widget": "top-stories",
+    "provider": "TradingView",
+    "title": "市场新闻",
+    "category": "宏观分析",
+    "description": "查看市场新闻动态，可指定关注市场或标的。",
+    "inputMode": "market",
+    "defaultScope": "全球市场新闻",
+    "width": 6,
+    "height": 18
   }
 ]

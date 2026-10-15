@@ -17,7 +17,7 @@ function setup({storage,reply,blocked=false}={}) {
  w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
-test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));for(const c of catalog){assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
+test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(catalog.filter(c=>c.provider==='TradingView').length,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,false);assert.ok(d.querySelector('#widgetSidebar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的看板');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
@@ -47,4 +47,19 @@ test('unsafe URLs are rejected, unfinished jobs show retry, storage denial remai
 });
 test('empty or failed output is visible and never inserts fabricated charts',async()=>{
  const s=setup({reply:async cb=>cb('error',{detail:'数据源暂不可用'})});submit(s.w,s.d,'看看 NVDA');await tick();assert.equal(s.d.querySelectorAll('.widgetCard iframe').length,0);assert.match(s.d.querySelector('.widgetCardBody').textContent,/数据源暂不可用/);assert.ok(s.d.querySelector('[data-retry]'));s.dom.window.close();
+});
+
+test('TradingView market widget uses its own skill and can be added without a stock code',async()=>{
+ const {dom,w,d,calls}=setup();d.querySelector('#widgetLibraryOpen').click();await tick();
+ d.querySelector('[data-category="宏观分析"]').click();d.querySelector('[data-component="tv-economic-calendar"]').click();
+ assert.equal(d.querySelector('#widgetSymbol').required,false);assert.equal(d.querySelector('#widgetSymbolLabel').textContent,'市场或范围（可选）');
+ d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+ const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/trading-view-chart\/scripts\/trading_view_chart.py/);assert.match(body.question,/--widget economic-calendar/);assert.match(body.question,/全球重要经济数据/);assert.doesNotMatch(body.question,/tv-economic-calendar.py/);dom.window.close();
+});
+test('TradingView quote-list preserves multiple symbols and category changes select a visible component',async()=>{
+ const {dom,w,d,calls}=setup();d.querySelector('#widgetLibraryOpen').click();await tick();
+ d.querySelector('[data-category="行情观察"]').click();assert.ok(d.querySelector('#widgetLibraryList [aria-pressed="true"]'));
+ d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';assert.equal(d.querySelector('#widgetSymbol').required,true);
+ d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+ const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/--widget market-data/);assert.match(body.question,/NASDAQ:AAPL,NASDAQ:NVDA/);assert.match(body.question,/symbolsGroups/);dom.window.close();
 });

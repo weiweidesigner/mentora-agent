@@ -44,3 +44,5 @@
 .widgetTopActions{flex:none;align-items:center}
 @media(min-width:761px){.shell.widgets-view,.shell.widgets-view.sidebar-collapsed{grid-template-columns:332px minmax(0,1fr) 0}.shell.widgets-view .sidebarContent{padding:24px 12px 16px}.shell.widgets-view #sidebarToggle{display:none!important}}
 @media(max-width:760px){.shell.widgets-view .sidebarContent{padding:20px 12px 16px}.widgetTopbar{padding:12px 16px;gap:8px}.widgetBrand{font-size:17px}.widgetTopActions{gap:2px}.widgetTopActions button{padding:6px}.widgetSidebar h2{padding-bottom:16px}}
+
+.widgetLibraryList button strong{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.widgetProvider{font-size:10px;line-height:16px;font-weight:400;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;white-space:nowrap}
