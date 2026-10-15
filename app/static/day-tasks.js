@@ -8,6 +8,17 @@
   const names = {CN:'A股',HK:'港股',US:'美股'}, flags = {CN:'🇨🇳',HK:'🇭🇰',US:'🇺🇸'};
   const zones = {CN:'Asia/Shanghai',HK:'Asia/Hong_Kong',US:'America/New_York'};
   const cadences = {trading:'交易日',daily:'每天',weekly:'每周',monthly:'每月',once:'指定日期一次'};
+  const recommendations = [
+    {id:'morning',icon:'🌅',title:'隔夜市场与今日大事',stage:'pre',type:'index',time:'09:00',description:'开盘前汇总隔夜欧美市场、宏观日历和重要催化，列出今日观察清单。',question:'在交易日开盘前，整理{{market}}隔夜市场简报：对比欧美主要指数与重要宏观事件，梳理今日经济数据、政策与行业催化，列出需要观察的指标和风险。关注{{symbols}}，未指定时覆盖主要指数。注明来源与数据时间，区分事实与推测。'},
+    {id:'announcements',icon:'🗓️',title:'自选股公告与财报提醒',stage:'pre',type:'watchlist',time:'09:00',description:'每天开盘前检查自选股公告、财报日期与重大新闻，标出值得关注的变化。',question:'在每个交易日开盘前，检查{{market}}自选股{{symbols}}自上一交易日收盘以来的公告、财报披露、业绩预告与重大新闻，并列出未来七天已确认的财报日期。逐一注明事件时间、来源、潜在影响与待核实事项；没有新变化时简要说明，不编造事件。'},
+    {id:'intraday',icon:'📊',title:'上午指数与量能观察',stage:'live',type:'index',time:'10:30',description:'交易日 10:30 检查主要指数、成交量和市场涨跌分布，解释盘中异动。',question:'每个交易日当地时间10:30，检查{{market}}主要指数及{{symbols}}的盘中表现，比较涨跌幅、成交量与历史同期水平，观察上涨下跌家数、领涨领跌方向和异常变化。区分数据事实与可能原因，列出后续观察信号；明确行情时间、延迟和缺失信息。'},
+    {id:'sectors',icon:'🔎',title:'午后行业与 ETF 强弱追踪',stage:'live',type:'etf',time:'14:00',description:'交易日 14:00 对比行业与 ETF 的涨跌、量能和相对强弱，跟踪热点变化。',question:'每个交易日当地时间14:00，比较{{market}}行业与ETF的盘中涨跌、量能和相对大盘强弱，优先覆盖{{symbols}}，未指定时选取有可靠行情的代表性行业ETF。梳理强弱方向、热点轮动和可能催化，说明筛选口径、行情时间与数据限制，不将成交量直接当作资金净流入。'},
+    {id:'closing',icon:'🌇',title:'收盘复盘与明日关注',stage:'post',type:'index',description:'收盘后复盘指数、市场广度和行业表现，整理下一交易日的事件与风险。',question:'在{{market}}收盘后生成一份复盘：覆盖主要指数、市场广度、成交量、行业强弱与重要新闻，关注{{symbols}}，未指定时覆盖全市场。解释今日变化并区分已确认驱动与推测，整理下一交易日已确认事件、观察指标和风险。注明行情日期与数据时间，尚无收盘数据时明确说明。'},
+    {id:'watchlist',icon:'📋',title:'自选股每日跟踪',stage:'post',type:'watchlist',description:'收盘后逐只回顾自选股的价格、量能与新闻变化，形成持续跟踪记录。',question:'每个交易日收盘后，逐只跟踪{{market}}自选股{{symbols}}的收盘价、当日涨跌、成交量变化、公告和可靠新闻。用简洁表格对比，解释值得关注的变化，列出后续事件与风险；明确数据时间及缺失项。不把本次记录当作实时行情，也不预设用户的持仓与交易意图。'}
+  ];
+  function recommendedTask(item) {
+    return {...template(item.stage,item.type),title:item.title,question:item.question,timeMode:'fixed',time:item.time||(market==='CN'?'15:30':'16:30'),timezone:'market'};
+  }
   const el = name => form.elements.namedItem(name);
   const mobile = () => window.matchMedia('(max-width: 760px)').matches;
   let market = 'CN'; try { market = localStorage.getItem('veya-day-market') || 'CN'; } catch {}
@@ -82,7 +93,7 @@
     $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
-    $('taskRecommendations').innerHTML=Object.entries(stages).map(([key,label])=>`<button type="button" class="taskRecommendation" data-template="${key}"><span class="taskTemplateIcon" aria-hidden="true">${key==='pre'?'☀':key==='live'?'◉':'☾'}</span><span><strong>${label}</strong><small>${key==='pre'?'开盘前梳理事件、催化与关注清单':key==='live'?'定时检查异动、成交量和板块变化':'收盘后复盘市场与自选标的'}</small></span><span aria-hidden="true">＋</span></button>`).join('');
+    $('taskRecommendations').innerHTML=recommendations.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
     const url=new URL(location.href);
@@ -236,7 +247,7 @@
     if(data.timeMode!=='fixed')data.timezone='market';
     return data;
   }
-  function beginWizard(question) {
+  function beginWizard(question, preset=null) {
     showLanding(false);$('taskLanding').hidden=true;$('taskWizard').hidden=false;$('taskPageTitle').textContent='新建任务';$('taskBack').hidden=false;
     wizardStep=0;wizardDraft=template();
     if(/美股|美东|纳斯达克|AAPL|NVDA/i.test(question))wizardDraft.market='US';else if(/港股|恒生/.test(question))wizardDraft.market='HK';
@@ -247,6 +258,7 @@
     wizardDraft.question=question;wizardDraft.title=question.replace(/\{\{[^}]+\}\}/g,'').slice(0,24)||'我的定时分析';
     const time=question.match(/([01]?\d|2[0-3])[:：]([0-5]\d)/);if(time)wizardDraft.time=time[1].padStart(2,'0')+':'+time[2];
     wizardDraft.date=today();
+    if(preset)wizardDraft={...wizardDraft,...preset,date:today()};
     $('taskWizardTranscript').innerHTML=`<div class="taskUserBubble">${esc(question)}</div><div class="taskWizardReply">我会按你设置的时间自动执行，并把结果保存在这个任务中。先确认分析范围和执行安排。</div>`;
     writeUrl();renderWizard();
   }
@@ -289,6 +301,7 @@
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);if(mobile())beginWizard(d.question);else edit(d);return;}
+      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);if(mobile())beginWizard(d.question,d);else edit(d);}return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
       if(b.dataset.wizardMarket){collectWizard();wizardDraft.market=b.dataset.wizardMarket;renderWizard();return;}
       if(b.dataset.wizardTime){collectWizard();wizardDraft.time=b.dataset.wizardTime;renderWizard();return;}

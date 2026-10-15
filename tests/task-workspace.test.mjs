@@ -50,3 +50,14 @@ test('mobile clarification confirms market, monthly date and time before creatin
  assert.equal(h.saves.length,1);assert.equal(h.saves[0].cadence,'monthly');assert.equal(h.saves[0].monthDay,5);assert.equal(h.saves[0].time,'18:30');assert.equal(h.saves[0].market,'HK');assert.equal(h.saves[0].assetType,'etf');
  assert.equal(h.saves[0].enabled,true);assert.match(d.querySelector('#taskThread').textContent,/首次执行/);assert.match(d.querySelector('#taskMessage').textContent,/已创建并启用/);h.dom.window.close();
 });
+
+test('scenario cards prefill distinct schedules and preserve the mobile task draft',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#navTasks').click();const cards=[...d.querySelectorAll('[data-recommendation]')];assert.equal(cards.length,6);
+ for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){
+  d.querySelector(`[data-recommendation="${id}"]`).click();const f=d.querySelector('#dayForm');assert.equal(f.elements.stage.value,stage);assert.equal(f.elements.assetType.value,type);assert.equal(f.elements.time.value,time);assert.equal(f.elements.timeMode.value,'fixed');assert.ok(f.elements.question.value.length>80);d.querySelector('#dayClose').click();
+ }
+ assert.equal(h.saves.length,0);h.dom.window.close();
+ const m=setup({mobile:true,tasks:[]});await tick();const md=m.w.document;
+ md.querySelector('#navTasks').click();md.querySelector('[data-recommendation="sectors"]').click();md.querySelector('#wizardNext').click();md.querySelector('#wizardNext').click();assert.equal(md.querySelector('#wizardTime').value,'14:00');assert.equal(m.saves.length,0);m.dom.window.close();
+});

@@ -4080,3 +4080,19 @@ p {
  .shell.tasks-view .taskSidebarCreate>span { font-size:22px;line-height:1; }
  .taskSidebarSection { margin-top:16px;margin-bottom:8px; }
 }
+
+/* Scenario recommendations and a dimensional clock, matching the task welcome view. */
+.taskLandingMark img { display:block;width:100%;height:100%; }
+.taskTemplateIcon { font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+@media(min-width:761px) {
+ .taskLanding { padding:48px 40px; }
+ .taskLandingMark { width:56px;height:56px;margin-bottom:14px; }
+ .taskLandingHeader h1 { font-size:20px;line-height:1.5;font-weight:400; }
+ .taskLanding .taskLead { font-size:14px;line-height:1.7;margin-top:4px;margin-bottom:44px; }
+ .taskLanding .taskRecommendations { max-width:780px; }
+ #taskRecommendations { gap:20px; }
+ .taskRecommendation { min-height:112px;padding:22px 20px;gap:16px;border-radius:24px;border-color:color-mix(in srgb,var(--ink) 20%,transparent); }
+ .taskRecommendation strong { font-size:15px;line-height:1.5;font-weight:400; }
+ .taskRecommendation small { font-size:13px;line-height:1.7;font-weight:400;margin-top:5px; }
+ .taskTemplateIcon { width:26px;font-size:23px; }
+}
