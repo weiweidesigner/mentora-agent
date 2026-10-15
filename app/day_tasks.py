@@ -96,7 +96,7 @@ class TaskInput(BaseModel):
     assetType: Literal['stocks', 'etf', 'index', 'sector', 'watchlist'] = 'stocks'
     symbols: str = Field(default='', max_length=500)
     question: str = Field(min_length=1, max_length=6000)
-    cadence: Literal['daily', 'trading', 'once', 'weekly', 'monthly'] = 'trading'
+    cadence: Literal['daily', 'weekdays', 'trading', 'once', 'weekly', 'monthly', 'custom'] = 'trading'
     date: str = ''
     endDate: str = ''
     weekdays: list[int] = Field(default_factory=lambda: [0], min_length=1, max_length=7)
@@ -104,7 +104,7 @@ class TaskInput(BaseModel):
     time: str = '09:00'
     timeMode: Literal['fixed', 'open', 'close'] = 'fixed'
     offset: int = Field(default=-30, ge=-180, le=180)
-    timezone: Literal['market', 'Asia/Shanghai'] = 'market'
+    timezone: str = Field(default='market', max_length=80)
     enabled: bool = True
     newChat: bool = True
     browser: bool = False
@@ -121,6 +121,11 @@ class TaskInput(BaseModel):
         self.title, self.question = self.title.strip(), self.question.strip()
         if not self.title or not self.question:
             raise ValueError('任务名称和问句不能为空')
+        if self.timezone != 'market':
+            try:
+                ZoneInfo(self.timezone)
+            except (KeyError, ValueError):
+                raise ValueError('请选择有效的时区')
         if not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', self.time):
             raise ValueError('时间格式应为 HH:MM')
         if self.assetType == 'watchlist' and not self.symbols.strip():
@@ -161,7 +166,9 @@ def next_occurrence(config, after):
     for day in days:
         if config.get('endDate') and day > dt.date.fromisoformat(config['endDate']):
             return None
-        if config['cadence'] == 'weekly' and day.weekday() not in config.get('weekdays', [0]):
+        if config['cadence'] == 'weekdays' and day.weekday() > 4:
+            continue
+        if config['cadence'] in ('weekly', 'custom') and day.weekday() not in config.get('weekdays', [0]):
             continue
         if config['cadence'] == 'monthly' and day.day != config.get('monthDay', 1):
             continue

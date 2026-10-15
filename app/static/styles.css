@@ -4205,3 +4205,79 @@ p {
 .homeBackdropMask { background:linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.4) 40%,rgba(255,255,255,.8) 72%,var(--bg) 100%); }
 :root[data-theme="dark"] .homeBackdropMask { background:linear-gradient(180deg,rgba(14,19,26,.24) 0%,rgba(14,19,26,.4) 40%,rgba(14,19,26,.8) 72%,var(--bg) 100%); }
 @media(max-width:760px) { .shell>.homeBackdrop { height:85dvh;min-height:480px; } }
+
+/* Focused task editor: quiet text fields, grouped schedule and themed popovers. */
+.taskSettingsDialog { width:min(680px,calc(100% - 40px));border-radius:24px; }
+.taskSettingsDialog .dayDialogHeader { padding:24px 24px 22px; }
+.taskSettingsDialog .dayDialogHeader h2 { font-size:19px;font-weight:600; }
+.taskSettingsDialog .dayDialogBody { padding:0 24px 12px; }
+.taskSettingsDialog .dayForm .editorTitle,.taskSettingsDialog .dayForm .editorQuestion { display:block;width:100%;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:transparent;font-size:14px;line-height:1.75;color:var(--ink); }
+.taskSettingsDialog .editorTitle { margin:0 0 16px; }
+.taskSettingsDialog .editorQuestion { min-height:136px;max-height:260px;resize:vertical; }
+.editorSchedule { background:color-mix(in srgb,var(--ink) 5%,var(--bg));border-radius:18px;margin:18px 0; }
+.taskSettingsDialog .taskSettingRow { min-height:54px;padding:10px 2px;font-size:14px; }
+.editorControl { position:relative;min-width:0;max-width:72%; }
+.dayForm .editorNative { position:absolute!important;width:1px!important;height:1px!important;padding:0!important;clip-path:inset(50%);overflow:hidden;opacity:0;pointer-events:none; }
+.editorSelect { display:flex;align-items:center;justify-content:flex-end;gap:12px;max-width:100%;border:0;background:transparent;color:var(--muted);padding:7px 0 7px 10px;font:inherit;font-size:14px;cursor:pointer; }
+.editorSelect>span { white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.editorSelect svg,.taskAdvanced summary svg { flex:none;width:16px;height:16px;fill:currentColor;stroke:none; }
+.editorSelect:hover { color:var(--ink); }
+.editorSelect:disabled { cursor:default; }
+.taskSettingsDialog .dayFormActions { border-top:0;padding:18px 24px 24px; }
+.taskSettingsDialog .dayFormActions .dayButton { font-size:14px;padding:10px 22px; }
+.taskSettingsDialog #dayNextPreview { display:none; }
+.taskSettingsDialog .taskAdvanced { margin:22px 0; }
+.taskSettingsDialog .taskAdvanced summary { display:flex;align-items:center;gap:10px;list-style:none;font-size:14px; }
+.taskAdvanced summary::-webkit-details-marker { display:none; }
+.taskAdvanced[open] summary svg { transform:rotate(180deg); }
+.editorAdvancedGroup { margin-top:16px;border:1px solid var(--line);border-radius:16px;padding:0 16px; }
+.editorNotifications { margin:20px 0 0; }
+.editorNotifications h3 { font-size:13px;font-weight:500;color:var(--muted);margin:0 0 12px; }
+.editorChannel { border:1px solid var(--line);border-radius:16px;padding:0 16px;margin-top:12px; }
+.editorChannelFields { padding:0 0 16px; }
+.taskSettingsDialog .editorChannelFields input { border-radius:10px;font-size:13px; }
+.editorChannelFields a { display:inline-block;margin-top:10px;font-size:12px;color:var(--muted);text-decoration:underline;text-underline-offset:3px; }
+.editorChannelFields a:hover { color:var(--ink); }
+.editorCustomDays { align-items:flex-start!important; }
+#editorWeekdays { display:flex;flex-wrap:wrap;gap:4px; }
+#editorWeekdays button { border:0;border-radius:50%;width:30px;height:30px;background:transparent;color:var(--muted);font:inherit;font-size:12px;cursor:pointer; }
+#editorWeekdays button[aria-pressed=true] { color:var(--bg);background:var(--ink); }
+.editorPopover { position:fixed;inset:auto;margin:0;box-sizing:border-box;width:280px;max-height:420px;overflow-y:auto;padding:10px;border:1px solid var(--line);border-radius:20px;background:color-mix(in srgb,var(--panel) 94%,transparent);color:var(--ink);box-shadow:0 12px 48px #0003;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);z-index:1000;scrollbar-width:thin; }
+.editorPopover[hidden] { display:none; }
+.editorMenuTitle { margin:6px 10px 10px;font-size:13px;color:var(--muted); }
+.editorOption { display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:9px 12px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:14px;text-align:left;cursor:pointer; }
+.editorOption>span:first-child { flex:1; }
+.editorOption small { flex:none;color:var(--muted);font-size:13px; }
+.editorOption:hover,.editorOption:focus-visible { background:var(--soft);outline:none; }
+.editorOption.is-selected { background:var(--soft-2); }
+.editorCheck { flex:none;width:14px;font-size:17px; }
+.editorTimeList { max-height:304px;overflow-y:auto;scrollbar-width:thin; }
+.editorCustomTime { display:flex;align-items:center;justify-content:space-between;padding:14px 12px 4px;border-top:1px solid var(--line);margin-top:8px;font-size:12px;color:var(--muted); }
+.editorCustomTime input { width:110px;padding:6px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);font:inherit; }
+.editorCalendarHeader { display:flex;align-items:center;justify-content:space-between;padding:6px 4px 14px; }
+.editorCalendarHeader strong { font-size:14px;font-weight:550; }
+.editorCalendarHeader button { width:32px;height:32px;border:0;background:none;border-radius:50%;font-size:25px;color:var(--muted);cursor:pointer; }
+.editorCalendarGrid { display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 4px 8px; }
+.editorCalendarGrid>span { text-align:center;padding:8px 0;font-size:12px;color:var(--muted); }
+.editorCalendarGrid button { border:0;aspect-ratio:1;min-width:0;border-radius:50%;background:none;color:var(--ink);font:inherit;font-size:13px;cursor:pointer; }
+.editorCalendarGrid button:hover,.editorCalendarHeader button:hover { background:var(--soft-2); }
+.editorCalendarGrid button.is-today { box-shadow:inset 0 0 0 1px var(--line); }
+.editorCalendarGrid button.is-selected { background:var(--ink);color:var(--bg); }
+.editorZoneSearch { display:flex;align-items:center;gap:10px;padding:8px 10px 14px;color:var(--muted); }
+.editorZoneSearch>span { font-size:22px; }
+.editorZoneSearch input { width:100%;padding:4px 0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;outline:none; }
+.editorNoResult { padding:16px 12px;font-size:13px;color:var(--muted); }
+@media(max-width:760px) {
+ .taskSettingsDialog { inset:auto 0 0;width:100%;border-radius:22px 22px 0 0; }
+ .taskSettingsDialog .dayDialogHeader { padding:20px; }
+ .taskSettingsDialog .dayDialogBody { padding:0 20px 12px; }
+ .taskSettingsDialog .dayForm .editorTitle,.taskSettingsDialog .dayForm .editorQuestion,.taskSettingsDialog .editorChannelFields input { font-size:16px; }
+ .taskSettingsDialog .taskSettingRow { font-size:13px; }
+ .editorSelect { font-size:13px;gap:8px; }
+ .editorPopover { border-radius:18px; }
+ .editorControl { max-width:70%; }
+}
+.editorPopover { background:var(--panel);backdrop-filter:none;-webkit-backdrop-filter:none; }
+.taskSettingsDialog .editorTitle:focus-visible,.taskSettingsDialog .editorQuestion:focus-visible { outline-offset:-1px; }
+.editorPopover { background:var(--soft); }
+.editorZoneSearch input:focus-visible { outline:none; }

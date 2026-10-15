@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/png" href="/static/assets/veya-logo.png?v=20261013" />
     <link rel="apple-touch-icon" href="/static/assets/veya-logo.png?v=20261013" />
-    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-scrolling-hero-video" />
+    <link rel="stylesheet" href="/static/styles.css?v=interface-20261015-task-editor" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-embedded-layout" />
   </head>
   <body>
@@ -198,43 +198,27 @@
         <header class="dayDialogHeader"><h2 id="dayDialogTitle">设置定时任务</h2><button id="dayClose" class="dayIconButton" type="button" aria-label="关闭任务设置">×</button></header>
         <form id="dayForm" class="dayForm">
           <div class="dayDialogBody">
-            <label>任务名称<input name="title" maxlength="80" required placeholder="给任务起个名字" /></label>
-            <label>任务内容<textarea name="question" rows="5" maxlength="6000" required placeholder="说明你希望 Veya 定时完成的分析…"></textarea></label>
-            <div class="taskScheduleGroup">
+            <input name="title" class="editorTitle" aria-label="任务名称" maxlength="80" required placeholder="任务名称" />
+            <textarea name="question" class="editorQuestion" aria-label="任务内容" rows="5" maxlength="6000" required placeholder="说明你希望 Veya 定时完成的事…"></textarea>
+            <div class="taskScheduleGroup editorSchedule">
               <label class="taskSettingRow">重复执行任务<input name="repeat" class="taskSwitch" type="checkbox" checked /></label>
-              <label class="taskSettingRow" id="dayCadenceLabel"><span>重复</span><select name="cadence"><option value="trading">交易日</option><option value="daily">每天</option><option value="weekly">每周</option><option value="monthly">每月</option><option value="once">指定日期一次</option></select></label>
-              <label class="taskSettingRow" id="dayWeekLabel" hidden><span>执行星期</span><select name="weekday"><option value="0">星期一</option><option value="1">星期二</option><option value="2">星期三</option><option value="3">星期四</option><option value="4">星期五</option><option value="5">星期六</option><option value="6">星期日</option></select></label>
-              <label class="taskSettingRow" id="dayMonthLabel" hidden><span>每月日期</span><input name="monthDay" type="number" min="1" max="31" value="1" /></label>
-              <label class="taskSettingRow" id="dayDateLabel" hidden><span>执行日期</span><input name="date" type="date" /></label>
-              <label class="taskSettingRow" id="dayTimeLabel"><span>时间</span><input name="time" type="time" value="09:00" required /></label>
-              <label class="taskSettingRow" id="dayOffsetLabel" hidden><span>偏移分钟（负数为提前）</span><input name="offset" type="number" min="-180" max="180" value="-30" /></label>
-              <label class="taskSettingRow" id="dayEndModeLabel"><span>结束重复</span><select name="endMode"><option value="never">永不</option><option value="date">指定日期</option></select></label>
-              <label class="taskSettingRow" id="dayEndLabel" hidden><span>结束日期</span><input name="endDate" type="date" /></label>
-            </div>
-            <details id="dayAdvanced" class="taskAdvanced"><summary>高级</summary>
-              <div class="taskScheduleGroup">
-                <label class="taskSettingRow" id="dayTimezoneLabel"><span>时区</span><select name="timezone"><option value="market">所选市场当地时间</option><option value="Asia/Shanghai">中国标准时间</option></select></label>
-                <label class="taskSettingRow"><span>市场</span><select name="market"><option value="CN">🇨🇳 A股</option><option value="HK">🇭🇰 港股</option><option value="US">🇺🇸 美股</option></select></label>
-                <label class="taskSettingRow"><span>所属阶段</span><select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option></select></label>
-                <label class="taskSettingRow"><span>时间方式</span><select name="timeMode"><option value="fixed">固定时间</option><option value="open">相对开盘</option><option value="close">相对收盘</option></select></label>
-                <label class="taskSettingRow"><span>标的类型</span><select name="assetType"><option value="stocks">股票</option><option value="etf">ETF</option><option value="index">指数</option><option value="sector">行业板块</option><option value="watchlist">自选列表</option></select></label>
-              </div>
-              <label class="taskSettingRow taskNewChatRow"><span>每次运行时开启新对话</span><input name="newChat" class="taskSwitch" type="checkbox" checked /></label>
-              <label class="taskSymbolsLabel">关注标的<input name="symbols" maxlength="500" placeholder="如 AAPL, NVDA；留空分析全市场" /></label>
-              <p class="dayHelp">问句支持 {{date}}、{{market}}、{{symbols}}。自选列表需要填写具体标的。</p>
-              <label class="taskSettingRow taskEnabledRow"><span>开启任务</span><input name="enabled" class="taskSwitch" type="checkbox" checked /></label>
-            <fieldset class="dayNotifications"><legend>完成后通知我</legend>
-              <label class="dayCheck"><input name="browser" type="checkbox" /> 浏览器通知</label>
-              <button id="dayEnablePush" class="dayTextButton" type="button">开启当前浏览器通知</button><p id="dayPushState" class="dayHelp"></p>
-              <label class="dayCheck"><input name="serverchan" type="checkbox" /> 个人微信 · Server酱 Turbo</label>
-              <div id="dayServerchanFields" hidden><label>SendKey<input name="serverchanKey" type="password" autocomplete="new-password" placeholder="SCT 开头的 SendKey" /></label><p class="dayHelp">用个人微信扫码登录 <a href="https://sct.ftqq.com/sendkey/" target="_blank" rel="noopener noreferrer">Server酱</a> 获取密钥，并在该服务完成微信接收渠道绑定。推送额度以服务商规则为准。</p></div>
-              <label class="dayCheck"><input name="feishu" type="checkbox" /> 飞书群机器人</label>
-              <div id="dayFeishuFields" hidden><label>飞书 Webhook<input name="feishuUrl" type="password" autocomplete="new-password" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/…" /></label><label>签名密钥（可选）<input name="feishuSecret" type="password" autocomplete="new-password" placeholder="已保存的配置无需重复填写" /></label></div>
-              <label class="dayCheck"><input name="wecom" type="checkbox" /> 企业微信群机器人</label>
-              <div id="dayWecomFields" hidden><label>企业微信 Webhook<input name="wecomUrl" type="password" autocomplete="new-password" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=…" /></label></div>
-              <p class="dayHelp">机器人收到摘要和带访问凭证的结果链接，收到链接的人可查看该任务最新结果，请勿公开转发。个人微信使用第三方推送服务，消息摘要和结果链接会经过该服务。浏览器通知需要授权和推送网络可用。</p>
-            </fieldset>
+<div class="taskSettingRow" id="dayCadenceLabel"><span>重复</span><div class="editorControl"><select name="cadence" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="重复频率"><option value="daily">每天</option><option value="weekdays">工作日</option><option value="weekly">每周</option><option value="monthly">每月</option><option value="custom">自定义</option><option value="trading">交易日</option></select><button type="button" class="editorSelect" data-editor-field="cadence" aria-haspopup="dialog" aria-expanded="false" aria-label="重复频率"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayWeekLabel" hidden><span>执行星期</span><div class="editorControl"><select name="weekday" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行星期"><option value="0">星期一</option><option value="1">星期二</option><option value="2">星期三</option><option value="3">星期四</option><option value="4">星期五</option><option value="5">星期六</option><option value="6">星期日</option></select><button type="button" class="editorSelect" data-editor-field="weekday" aria-haspopup="dialog" aria-expanded="false" aria-label="执行星期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div>              <div id="dayCustomLabel" class="taskSettingRow editorCustomDays" hidden><span>重复日期</span><div id="editorWeekdays" aria-label="自定义重复日期"><button type="button" data-editor-weekday="0" aria-pressed="false">一</button><button type="button" data-editor-weekday="1" aria-pressed="false">二</button><button type="button" data-editor-weekday="2" aria-pressed="false">三</button><button type="button" data-editor-weekday="3" aria-pressed="false">四</button><button type="button" data-editor-weekday="4" aria-pressed="false">五</button><button type="button" data-editor-weekday="5" aria-pressed="false">六</button><button type="button" data-editor-weekday="6" aria-pressed="false">日</button></div></div><div class="taskSettingRow" id="dayMonthLabel" hidden><span>每月日期</span><input name="monthDay" type="number" min="1" max="31" value="1" aria-label="每月日期" /></div><div class="taskSettingRow" id="dayDateLabel" hidden><span>执行日期</span><div class="editorControl"><input name="date" type="date" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行日期" /><button type="button" class="editorSelect" data-editor-field="date" aria-haspopup="dialog" aria-expanded="false" aria-label="执行日期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayTimeLabel"><span>时间</span><div class="editorControl"><input name="time" type="time" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="执行时间" /><button type="button" class="editorSelect" data-editor-field="time" aria-haspopup="dialog" aria-expanded="false" aria-label="执行时间"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayOffsetLabel" hidden><span>偏移分钟</span><input name="offset" type="number" min="-180" max="180" value="-30" /></div><div class="taskSettingRow" id="dayEndModeLabel"><span>结束重复</span><div class="editorControl"><select name="endMode" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="结束重复"><option value="never">永不</option><option value="date">指定日期</option></select><button type="button" class="editorSelect" data-editor-field="endMode" aria-haspopup="dialog" aria-expanded="false" aria-label="结束重复"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div><div class="taskSettingRow" id="dayEndLabel" hidden><span>日期</span><div class="editorControl"><input name="endDate" type="date" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="结束日期" /><button type="button" class="editorSelect" data-editor-field="endDate" aria-haspopup="dialog" aria-expanded="false" aria-label="结束日期"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div>            </div>
+            <details id="dayAdvanced" class="taskAdvanced"><summary>高级<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></summary>
+              <div class="editorAdvancedGroup"><div class="taskSettingRow" id="dayTimezoneLabel"><span>时区</span><div class="editorControl"><select name="timezone" class="editorNative" tabindex="-1" aria-hidden="true" aria-label="时区"><option value="market">所选市场当地时间</option><option value="Asia/Shanghai">中国标准时间</option></select><button type="button" class="editorSelect" data-editor-field="timezone" aria-haspopup="dialog" aria-expanded="false" aria-label="时区"><span></span><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 672c-6.4 0-19.2 0-25.6-6.4l-256-256c-12.8-12.8-12.8-32 0-44.8s32-12.8 44.8 0L512 595.2l230.4-230.4c12.8-12.8 32-12.8 44.8 0s12.8 32 0 44.8l-256 256c0 6.4-12.8 6.4-19.2 6.4z"/></svg></button></div></div>              </div>
             </details>
+            <section class="editorNotifications" aria-label="推送渠道"><h3>推送渠道</h3>
+              <div class="editorChannel"><label class="taskSettingRow"><span>微信</span><input name="serverchan" class="taskSwitch" type="checkbox" /></label><div id="dayServerchanFields" class="editorChannelFields" hidden><input name="serverchanKey" type="password" autocomplete="new-password" aria-label="SendKey" placeholder="输入 SCT 开头的 SendKey" /><a href="https://sct.ftqq.com/docs/getting-started/sendkey/" target="_blank" rel="noopener noreferrer">获取 SendKey ↗</a></div></div>
+              <div class="editorChannel"><label class="taskSettingRow"><span>飞书</span><input name="feishu" class="taskSwitch" type="checkbox" /></label><div id="dayFeishuFields" class="editorChannelFields" hidden><input name="feishuUrl" type="password" autocomplete="new-password" aria-label="飞书 Webhook" placeholder="输入飞书机器人 Webhook" /><a href="https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot" target="_blank" rel="noopener noreferrer">飞书绑定方式 ↗</a></div></div>
+            </section>
+            <div hidden aria-hidden="true">
+              <select name="market"><option value="CN">A股</option><option value="HK">港股</option><option value="US">美股</option></select>
+              <select name="stage"><option value="pre">盘前机会</option><option value="live">盘中监控</option><option value="post">收盘回顾</option></select>
+              <select name="assetType"><option value="stocks">股票</option><option value="etf">ETF</option><option value="index">指数</option><option value="sector">行业板块</option><option value="watchlist">自选列表</option></select>
+              <select name="timeMode"><option value="fixed">固定时间</option><option value="open">相对开盘</option><option value="close">相对收盘</option></select>
+              <input name="symbols" /><input name="enabled" type="checkbox" checked /><input name="newChat" type="checkbox" checked /><input name="browser" type="checkbox" />
+              <input name="wecom" type="checkbox" /><div id="dayWecomFields"><input name="wecomUrl" /></div><input name="feishuSecret" />
+              <button id="dayEnablePush" type="button">浏览器通知</button><p id="dayPushState"></p>
+            </div>
             <p id="dayNextPreview" class="dayHelp"></p>
             <p id="dayDialogMessage" class="dayMessage" role="status" aria-live="polite"></p>
           </div>
@@ -265,6 +249,7 @@
     <script src="/static/app.js?v=interface-20261015-solid-navigation"></script>
     <script src="/static/home-background.js?v=scrolling-hero-20261014-card-short-titles"></script>
     <script src="/static/cases.js?v=20261015-task-workspace"></script>
-    <script src="/static/day-tasks.js?v=20261015-solid-navigation"></script>
+    <script src="/static/task-editor.js?v=20261015-task-editor"></script>
+    <script src="/static/day-tasks.js?v=20261015-task-editor"></script>
   </body>
 </html>

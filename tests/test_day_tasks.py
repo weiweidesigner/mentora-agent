@@ -266,3 +266,11 @@ def test_context_reuse_is_opt_in_and_uses_only_own_previous_success(service):
     assert captured[0]==[]
     assert captured[1][0]['text']=='resolved question'
     assert captured[1][1]['text']=='previous evidence'
+
+
+def test_weekday_custom_and_additional_timezone_schedule():
+    assert next_occurrence(config(cadence='weekdays',timezone='Asia/Tokyo',time='09:00'),moment('2026-10-16T01:00:00Z')).startswith('2026-10-19T00:00:00')
+    assert next_occurrence(config(cadence='custom',weekdays=[0,2],timezone='Asia/Tokyo',time='09:00'),moment('2026-10-14T01:00:00Z')).startswith('2026-10-19T00:00:00')
+    TaskInput(**config(timezone='America/Los_Angeles'))
+    with pytest.raises(ValueError):
+        TaskInput(**config(timezone='Not/A_Timezone'))

@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
+const editorSource=readFileSync(new URL('../app/static/task-editor.js',import.meta.url),'utf8');
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
@@ -21,7 +22,7 @@ function setup({mobile=false,tasks=[{...base,id:'live'}],url='https://example.co
   else data={};
   return {ok:true,json:async()=>data};
  };
- w.eval(source);return {dom,w,requests,saves};
+ w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
 }
 
 test('My Day shows only generated results for the current market phase and links to that task',async()=>{
@@ -79,4 +80,24 @@ test('attachment plus previews, removes and sends images with the follow-up',asy
  input.dispatchEvent(new h.w.Event('change'));await tick();assert.equal(d.querySelectorAll('#taskAttachmentPreview img').length,1);
  d.querySelector('[data-remove-task-image]').click();assert.equal(d.querySelectorAll('#taskAttachmentPreview img').length,0);
  input.dispatchEvent(new h.w.Event('change'));await tick();d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(payload.images[0].name,'chart.png');assert.match(payload.images[0].dataUrl,/^data:image\/png;base64,/);assert.equal(d.querySelectorAll('#taskFollowups img').length,1);h.dom.window.close();
+});
+
+test('task editor hides tokens, preserves dynamic templates and saves custom days and time zone',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm');
+ assert.doesNotMatch(f.elements.question.value,/\{\{/);assert.match(f.elements.question.value,/A股/);
+ d.querySelector('[data-editor-field="cadence"]').click();d.querySelector('[data-editor-value="custom"]').click();assert.equal(d.querySelector('#dayCustomLabel').hidden,false);d.querySelector('[data-editor-weekday="2"]').click();
+ d.querySelector('[data-editor-field="timezone"]').click();d.querySelector('#editorZoneSearch').value='美国东部';d.querySelector('#editorZoneSearch').dispatchEvent(new h.w.Event('input',{bubbles:true}));assert.equal(d.querySelectorAll('#editorZoneList .editorOption').length,1);d.querySelector('[data-editor-value="America/New_York"]').click();
+ d.querySelector('[data-editor-field="time"]').click();d.querySelector('[data-editor-value="09:15"]').click();
+ assert.equal(d.querySelector('#dayServerchanFields').hidden,true);f.elements.serverchan.checked=true;f.elements.serverchan.dispatchEvent(new h.w.Event('change',{bubbles:true}));assert.equal(d.querySelector('#dayServerchanFields').hidden,false);f.elements.serverchan.checked=false;
+ f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.saves.length,1);assert.equal(h.saves[0].cadence,'custom');assert.deepEqual(h.saves[0].weekdays,[0,2]);assert.equal(h.saves[0].timezone,'America/New_York');assert.equal(h.saves[0].time,'09:15');assert.match(h.saves[0].question,/\{\{market\}\}/);h.dom.window.close();
+});
+
+test('calendar supports end date selection and turning repeat off schedules one date',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#navTasks').click();d.querySelector('[data-recommendation="morning"]').click();const f=d.querySelector('#dayForm');
+ d.querySelector('[data-editor-field="endMode"]').click();d.querySelector('[data-editor-value="date"]').click();assert.equal(d.querySelector('#dayEndLabel').hidden,false);
+ d.querySelector('[data-editor-field="endDate"]').click();d.querySelector('[data-editor-month="1"]').click();const date=d.querySelector('[data-editor-date]');const expected=date.dataset.editorDate;date.click();assert.equal(f.elements.endDate.value,expected);
+ f.elements.repeat.checked=false;f.elements.repeat.dispatchEvent(new h.w.Event('change',{bubbles:true}));assert.equal(d.querySelector('#dayDateLabel').hidden,false);assert.equal(d.querySelector('#dayCadenceLabel').hidden,true);
+ f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.saves[0].cadence,'once');assert.ok(h.saves[0].date);assert.equal(h.saves[0].endDate,'');h.dom.window.close();
 });

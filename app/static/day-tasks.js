@@ -7,7 +7,7 @@
   const assets = {stocks:'股票',etf:'ETF',index:'指数',sector:'行业板块',watchlist:'自选列表'};
   const names = {CN:'A股',HK:'港股',US:'美股'}, flags = {CN:'🇨🇳',HK:'🇭🇰',US:'🇺🇸'};
   const zones = {CN:'Asia/Shanghai',HK:'Asia/Hong_Kong',US:'America/New_York'};
-  const cadences = {trading:'交易日',daily:'每天',weekly:'每周',monthly:'每月',once:'指定日期一次'};
+  const cadences = {trading:'交易日',daily:'每天',weekdays:'工作日',weekly:'每周',monthly:'每月',custom:'自定义',once:'指定日期一次'};
   const recommendations = [
     {id:'morning',icon:'🌅',title:'隔夜市场与今日大事',stage:'pre',type:'index',time:'09:00',description:'开盘前汇总隔夜欧美市场、宏观日历和重要催化，列出今日观察清单。',question:'在交易日开盘前，整理{{market}}隔夜市场简报：对比欧美主要指数与重要宏观事件，梳理今日经济数据、政策与行业催化，列出需要观察的指标和风险。关注{{symbols}}，未指定时覆盖主要指数。注明来源与数据时间，区分事实与推测。'},
     {id:'announcements',icon:'🗓️',title:'自选股公告与财报提醒',stage:'pre',type:'watchlist',time:'09:00',description:'每天开盘前检查自选股公告、财报日期与重大新闻，标出值得关注的变化。',question:'在每个交易日开盘前，检查{{market}}自选股{{symbols}}自上一交易日收盘以来的公告、财报披露、业绩预告与重大新闻，并列出未来七天已确认的财报日期。逐一注明事件时间、来源、潜在影响与待核实事项；没有新变化时简要说明，不编造事件。'},
@@ -68,6 +68,7 @@
   }
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
+  let originalQuestionTemplate = '', originalVisibleQuestion = '';
   let wizardDraft = null, wizardStep = 0, saving = false;
   const initial = new URLSearchParams(location.search);
   let initialTask = initial.get('task') || initial.get('dayResult');
@@ -96,8 +97,9 @@
     return '活动';
   }
   function schedule(task) {
-    const repeat = task.cadence==='weekly' ? '每周'+'一二三四五六日'[(task.weekdays || [0])[0]] : task.cadence==='monthly' ? `每月 ${task.monthDay || 1} 日` : cadences[task.cadence];
-    const timing = task.timeMode==='fixed' ? `${task.time}（${zoneFor(task)==='America/New_York'?'美东时间':'北京时间'}）` : `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'} ${Math.abs(task.offset)} 分钟`;
+    const repeat = task.cadence==='custom' ? '每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、') : task.cadence==='weekly' ? '每周'+'一二三四五六日'[(task.weekdays || [0])[0]] : task.cadence==='monthly' ? `每月 ${task.monthDay || 1} 日` : cadences[task.cadence];
+    const zone=zoneFor(task),zoneName=zone==='America/New_York'?'美东时间':['Asia/Shanghai','Asia/Hong_Kong'].includes(zone)?'北京时间':zone;
+    const timing = task.timeMode==='fixed' ? `${task.time}（${zoneName}）` : `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'} ${Math.abs(task.offset)} 分钟`;
     return `${task.cadence==='once'?task.date:repeat} · ${timing}`;
   }
   function template(stage = 'pre', type = 'stocks', selectedMarket = market) {
@@ -254,21 +256,29 @@
     }
     if(event?.target===el('repeat'))el('cadence').value=el('repeat').checked?'daily':'once';
     if(event?.target===el('cadence'))el('repeat').checked=el('cadence').value!=='once';
-    if(event?.target===el('cadence') && el('cadence').value==='daily')el('timeMode').value='fixed';
+    if(event?.target===el('cadence'))el('timeMode').value='fixed';
     if(event?.target===el('timeMode') && el('timeMode').value!=='fixed' && el('cadence').value==='daily')el('cadence').value='trading';
     const cadence=el('cadence').value, relative=el('timeMode').value!=='fixed';
-    $('dayDateLabel').hidden=cadence!=='once';el('date').required=cadence==='once';
+    $('dayCadenceLabel').hidden=!el('repeat').checked;
+    $('dayDateLabel').hidden=el('repeat').checked;el('date').required=!el('repeat').checked;
+    $('dayCustomLabel').hidden=cadence!=='custom';
     $('dayWeekLabel').hidden=cadence!=='weekly';$('dayMonthLabel').hidden=cadence!=='monthly';
-    $('dayTimeLabel').hidden=relative;$('dayOffsetLabel').hidden=!relative;
+    $('dayTimeLabel').hidden=false;$('dayOffsetLabel').hidden=true;
     $('dayEndModeLabel').hidden=cadence==='once';$('dayEndLabel').hidden=cadence==='once'||el('endMode').value!=='date';
     el('endDate').required=!$('dayEndLabel').hidden;
     for(const [channel,id] of [['serverchan','dayServerchanFields'],['feishu','dayFeishuFields'],['wecom','dayWecomFields']])$(id).hidden=!el(channel).checked;
     $('dayNextPreview').textContent=relative?'跟随市场实际开收盘时间，自动处理夏令时与提前收盘。':`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
+    window.VeyaTaskEditor?.sync();
   }
   function edit(task, readOnly=false) {
     editing=task.id || null;suggestedQuestion=task.question;suggestedTitle=task.title;
     form.reset();form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);
     for(const [name,value] of Object.entries(task)){const field=el(name);if(!field)continue;if(field.type==='checkbox')field.checked=!!value;else field.value=value??'';}
+    originalQuestionTemplate=task.question;
+    originalVisibleQuestion=String(task.question).replace(/\{\{market\}\}/g,names[task.market]||'所选市场').replace(/\{\{symbols\}\}/g,task.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');
+    el('question').value=originalVisibleQuestion;
+    if(task.timeMode!=='fixed'&&task.nextAt)el('time').value=new Intl.DateTimeFormat('en-GB',{timeZone:zoneFor(task),hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(task.nextAt));
+    el('timeMode').value='fixed';el('date').value=task.date||today();el('wecom').checked=false;
     el('repeat').checked=task.cadence!=='once';el('weekday').value=(task.weekdays||[0])[0];el('monthDay').value=task.monthDay||1;
     el('endMode').value=task.endDate?'date':'never';
     for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=task[name+'Configured']?'已保存（留空沿用）':name==='serverchanKey'?'SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'填写官方机器人 Webhook 地址';}
@@ -278,14 +288,19 @@
     $('dayEnablePush').hidden=readOnly;
     updateFields();
     if(readOnly)form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);
+    window.VeyaTaskEditor?.reset(task,readOnly);
     if(!dialog.open)dialog.showModal();
+    dialog.querySelector('.dayDialogBody').scrollTop=0;
     message(readOnly?'这是分享的运行结果。请在创建任务的浏览器中编辑任务。':'','dayDialogMessage');
-    if(!readOnly)requestAnimationFrame(()=>el('title').focus());
+    if(!readOnly)requestAnimationFrame(()=>el('title').focus({preventScroll:true}));
   }
   function payload() {
     const data=Object.fromEntries(new FormData(form));
     for(const name of ['enabled','newChat','browser','serverchan','feishu','wecom'])data[name]=el(name).checked;
-    data.offset=Number(data.offset);data.monthDay=Number(data.monthDay)||1;data.weekdays=[Number(data.weekday)||0];
+    data.offset=Number(data.offset);data.monthDay=Number(data.monthDay)||1;data.weekdays=data.cadence==='custom'?(window.VeyaTaskEditor?.weekdays()||[0]):[Number(data.weekday)||0];
+    if(!data.weekdays.length)throw new Error('请至少选择一个重复日期');
+    if(data.question===originalVisibleQuestion)data.question=originalQuestionTemplate;
+    if(data.assetType==='watchlist'&&!data.symbols.trim())data.assetType='stocks';
     if(data.endMode==='never')data.endDate='';if(!el('repeat').checked)data.cadence='once';if(data.cadence==='once')data.endDate='';
     if(data.timeMode!=='fixed')data.timezone='market';
     return data;
