@@ -9,7 +9,7 @@
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, Number(v) || lo));
   const mobile = () => window.innerWidth <= 760;
   let boards = [], activeId = '', catalog = [], category = '全部', componentId = '', internal = false, nameAction = 'rename';
-  const jobs = new Map();
+  const jobs = new Map(), libraryInputs = {};
   const current = () => boards.find(b => b.id === activeId);
   function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text; }
   function safeUrl(value) {
@@ -116,6 +116,8 @@
     $('widgetLibraryList').innerHTML=items.length?items.map(c=>`<button type="button" data-component="${esc(c.id)}" aria-pressed="${componentId===c.id}"><strong>${esc(c.title)}<span class="widgetProvider">${c.provider==='TradingView'?'TradingView':'业务图表'}</span></strong><small>${esc(c.description)}</small></button>`).join(''):'<p>没有找到匹配的图表</p>';
     $('widgetAddForm').querySelector('button').disabled=!componentId;
     const selected=catalog.find(c=>c.id===componentId),market=selected?.inputMode==='market',group=selected?.inputMode==='group';
+    const input=$('widgetSymbol'),mode=selected?.inputMode||'symbol';
+    if(input.dataset.mode&&input.dataset.mode!==mode){libraryInputs[input.dataset.mode]=input.value;input.value=libraryInputs[mode]||'';}input.dataset.mode=mode;
     $('widgetSymbolLabel').textContent=market?'市场或范围（可选）':group?'关注标的（可多个）':'关注标的';
     $('widgetSymbol').required=!market;
     $('widgetSymbol').placeholder=market?`留空使用：${selected.defaultScope}`:selected?.provider==='TradingView'?(group?'例如 NASDAQ:AAPL、NASDAQ:MSFT、NASDAQ:NVDA':'例如 NASDAQ:AAPL、HKEX:700'):'例如 AAPL、NVDA 或 MSFT';

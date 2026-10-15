@@ -61,5 +61,7 @@ test('TradingView quote-list preserves multiple symbols and category changes sel
  d.querySelector('[data-category="行情观察"]').click();assert.ok(d.querySelector('#widgetLibraryList [aria-pressed="true"]'));
  d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';assert.equal(d.querySelector('#widgetSymbol').required,true);
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
- const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/--widget market-data/);assert.match(body.question,/NASDAQ:AAPL,NASDAQ:NVDA/);assert.match(body.question,/symbolsGroups/);dom.window.close();
+ const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/--widget market-data/);assert.match(body.question,/NASDAQ:AAPL,NASDAQ:NVDA/);assert.match(body.question,/symbolsGroups/);
+ d.querySelector('#widgetLibraryOpen').click();await tick();d.querySelector('[data-category="宏观分析"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
+ d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'NASDAQ:AAPL,NASDAQ:NVDA');dom.window.close();
 });
