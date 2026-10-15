@@ -268,4 +268,8 @@ html[data-widget-canvas] #mount,html[data-widget-canvas] .tradingview-widget-con
     # Configure the hosted chart before its own bootstrap parses tv-config.
     # Keep this canvas-only: a chart opened separately retains its normal controls.
     wheel = '''<script data-widget-tv-wheel>(function(){if(new URLSearchParams(location.search).get('canvas')!=='1')return;const node=document.getElementById('tv-config');try{const spec=JSON.parse(node.textContent);if(spec.widget!=='advanced-chart')return;const blocked=['mouse_wheel_scale','mouse_wheel_scroll'];spec.config.disabled_features=[...new Set([...(spec.config.disabled_features||[]),...blocked])];spec.config.enabled_features=(spec.config.enabled_features||[]).filter(key=>!blocked.includes(key));node.textContent=JSON.stringify(spec);}catch{}})();</script>'''
-    return re.sub(r'(<script\b[^>]*id=[\"\']tv-config[\"\'][^>]*>.*?</script>)', lambda match: match.group(1)+wheel, artifact, count=1, flags=re.S)
+    artifact = re.sub(r'(<script\b[^>]*id=[\"\']tv-config[\"\'][^>]*>.*?</script>)', lambda match: match.group(1)+wheel, artifact, count=1, flags=re.S)
+    # The overview widget defaults to blue-black; use the neutral surface of
+    # adjacent hosted quote widgets, including after host theme switches.
+    neutral = "if(new URLSearchParams(location.search).get('canvas')==='1'&&spec.widget==='symbol-overview')cfg.backgroundColor=theme==='dark'?'#202020':'#ffffff';\n"
+    return artifact.replace("const wrapper=document.createElement('div');", neutral+"const wrapper=document.createElement('div');", 1)
