@@ -26,3 +26,12 @@ test('public progress replaces the waiting label as text and leaves the answer u
   assert.notEqual(f.article.dataset.currentThinking,'过期事件');
  }finally{f.dom.window.close();}
 });
+
+test('first-person model progress keeps its natural wording in tool updates',()=>{
+ const f=setup();
+ try{
+  f.w.normalizeLang=value=>value;f.w.stripStagePrefix=value=>value;
+  f.w.eval(source.slice(source.indexOf('function compactReasoningTitle('),source.indexOf('function toolCommandText(')));
+  assert.equal(f.w.compactReasoningTitle('我先核对组件设置，再加载苹果日线。','zh-Hans'),'我先核对组件设置，再加载苹果日线');
+ }finally{f.dom.window.close();}
+});

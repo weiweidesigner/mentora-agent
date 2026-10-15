@@ -1497,6 +1497,7 @@ function compactReasoningTitle(value, lang) {
   if (!text) return "";
   text = text.split(/[。！？!?\n]/, 1)[0].trim();
   if (lang === "zh-Hans" || lang === "zh-Hant") {
+    if (/^我/.test(text)) return text.length > 64 ? `${text.slice(0, 63).trim()}…` : text;
     text = text
       .replace(/^(?:这一步|這一步|本步|当前步骤|當前步驟)\s*(?:需要|将|將|会|會|先要|先)?\s*/, "")
       .replace(/^(?:首先|先|需要|将|將|会|會)\s*/, "");
