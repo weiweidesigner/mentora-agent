@@ -115,7 +115,7 @@
  .shell.widgets-view .sidebarRail{display:flex}
 }
 .widgetWorkspace{position:relative}
-.widgetWorkspace .widgetTopbar{height:54px;min-height:54px;padding:0 16px;gap:4px;align-items:stretch}
+.widgetWorkspace .widgetTopbar{height:40px;min-height:40px;padding:0 16px;gap:4px;align-items:stretch}
 .widgetWorkspace .widgetBoardTabs{flex:1 1 auto;gap:0!important;overflow-x:auto;scrollbar-width:none}
 .widgetTab{display:flex;align-items:center;position:relative;flex:none;max-width:230px;border-right:1px solid var(--line);border-bottom:2px solid transparent;min-width:120px;cursor:grab}
 .widgetTab.is-active{background:var(--soft-2);border-bottom-color:var(--accent)}
@@ -180,7 +180,7 @@
 @media(max-width:760px){
  .shell.widgets-view .sidebarContent{display:none!important}
  .widgetWorkspace{padding-top:52px}
- .widgetWorkspace .widgetTopbar{height:48px;min-height:48px;padding:0 8px}
+ .widgetWorkspace .widgetTopbar{height:40px;min-height:40px;padding:0 8px}
  .widgetTab{min-width:92px;max-width:150px}
  .widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{padding:0 8px!important;font-size:12px!important}
  .widgetWorkspace .widgetTopActions{gap:4px}
@@ -201,3 +201,8 @@
 .widgetConfig #widgetConfigError{order:4}
 .widgetConfig .widgetConfigActions{order:5}
 .widgetLibraryDrawer{max-width:100vw}
+
+/* Compact browser-style tab strip. */
+.widgetWorkspace .widgetTopActions #widgetSidebarLibrary,.widgetWorkspace .widgetTopActions #widgetManageOpen{padding:5px 10px}
+.widgetWorkspace #widgetNew{font-size:20px}
+.widgetWorkspace .widgetBoardTabs .widgetTabClose{height:24px;width:24px;min-width:24px;max-width:24px}
