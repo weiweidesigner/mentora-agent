@@ -120,7 +120,7 @@
   }
   function cardNode(card) {
     const el=document.createElement('article');el.className='widgetCard';el.dataset.card=card.id;el.dataset.signature=JSON.stringify([card.status,card.url,card.error,card.loadingText]);
-    el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="选中后可通过底部输入框编辑"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
+    el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
     if (card.url && card.status==='ready') {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
       frame.addEventListener('load',()=>{window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
