@@ -120,9 +120,9 @@
 .widgetTab{display:flex;align-items:center;position:relative;flex:none;max-width:230px;border-right:1px solid var(--line);border-bottom:2px solid transparent;min-width:120px;cursor:grab}
 .widgetTab.is-active{background:var(--soft-2);border-bottom-color:var(--accent)}
 .widgetTab.is-dragging{opacity:.4}
-.widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{border:0!important;background:transparent!important;border-radius:0!important;min-width:0;max-width:198px;padding:0 12px!important;height:100%;font-size:13px!important;flex:1;color:var(--muted)}
+.widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{border:0!important;background:transparent!important;border-radius:0!important;min-width:0;max-width:none;padding:0 32px!important;height:100%;font-size:13px!important;flex:1;text-align:center;color:var(--muted)}
 .widgetWorkspace .widgetBoardTabs .widgetTab.is-active>[role=tab]{color:var(--ink);font-weight:550}
-.widgetWorkspace .widgetBoardTabs .widgetTabClose{padding:0!important;width:28px;min-width:28px;max-width:28px;height:28px;border:0!important;border-radius:5px!important;font-size:18px!important;visibility:hidden;background:transparent}
+.widgetWorkspace .widgetBoardTabs .widgetTabClose{position:absolute;right:4px;top:50%;transform:translateY(-50%);padding:0!important;width:28px;min-width:28px;max-width:28px;height:28px;border:0!important;border-radius:5px!important;font-size:18px!important;visibility:hidden;background:transparent}
 .widgetWorkspace .widgetBoardTabs .is-active .widgetTabClose,.widgetWorkspace .widgetBoardTabs .widgetTab:hover .widgetTabClose,.widgetTab:focus-within .widgetTabClose{visibility:visible}
 .widgetWorkspace #widgetNew{margin:0 4px;padding:4px 8px}
 .widgetWorkspace .widgetTopActions{margin:0 0 0 auto;align-self:stretch;align-items:center;gap:8px}
@@ -182,7 +182,7 @@
  .widgetWorkspace{padding-top:52px}
  .widgetWorkspace .widgetTopbar{height:40px;min-height:40px;padding:0 8px}
  .widgetTab{min-width:92px;max-width:150px}
- .widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{padding:0 8px!important;font-size:12px!important}
+ .widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{padding:0 28px!important;font-size:12px!important}
  .widgetWorkspace .widgetTopActions{gap:4px}
  .widgetWorkspace .widgetTopActions #widgetSidebarLibrary,.widgetWorkspace .widgetTopActions #widgetManageOpen{font-size:11px;padding:7px 6px}
  .widgetWorkspace #widgetNew{padding:4px;margin:0;font-size:20px}
