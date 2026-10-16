@@ -11,6 +11,7 @@
   let boards = [], activeId = '', catalog = [], category = '全部', componentId = '', internal = false, nameAction = 'rename';
   const jobs = new Map(), libraryInputs = {}, commandControllers=new Map(), undoByBoard=new Map(), symbolSwitches=new Set();
   let selectedCardId="", openIds=[], editingCardId='', draggingTab='';
+  let defaultsVersion=0,defaultsLoading=false,initialEmptyId='';
   const trashIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M966.128 181.12H840.96c-0.168 0-0.32-0.096-0.488-0.096-0.16 0-0.312 0.096-0.48 0.096H184.064c-0.176 0-0.32-0.096-0.48-0.096-0.16 0-0.304 0.096-0.48 0.096H57.872a32.6 32.6 0 1 0 0 65.208h93.104v651.928c0 69.32 56.392 125.744 125.712 125.744h470.688c69.32 0 125.712-56.424 125.712-125.744V246.328h93.04a32.6 32.6 0 1 0 0-65.208z m-158.256 717.136c0 33.376-27.136 60.528-60.504 60.528H276.688c-33.352 0-60.496-27.16-60.496-60.528V246.328h591.68v651.928z"/><path d="M346.488 814.744a32.608 32.608 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24a32.6 32.6 0 0 0 32.608 32.616zM512 814.744a32.6 32.6 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24A32.6 32.6 0 0 0 512 814.744zM677.544 814.744a32.584 32.584 0 0 0 32.6-32.608V422.888c0-18.008-14.576-32.6-32.6-32.6s-32.608 14.592-32.608 32.6v359.24a32.592 32.592 0 0 0 32.608 32.616zM318.848 157.6a32.608 32.608 0 0 0 32.608-32.6c0-23.808 64.048-59.792 160.576-59.792 96.512 0 160.544 35.984 160.544 59.792a32.6 32.6 0 0 0 32.608 32.6 32.592 32.592 0 0 0 32.6-32.6C737.792 53.736 640.736 0 512.032 0 383.312 0 286.24 53.736 286.24 125a32.608 32.608 0 0 0 32.608 32.6z"/></svg>`;
   const configIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M114.11 276.65h474.9c13.49 54.81 63.05 95.59 121.96 95.59s108.47-40.78 121.96-95.59h76.86c16.57 0 30-13.43 30-30s-13.43-30-30-30h-76.86c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-474.9c-16.57 0-30 13.43-30 30s13.43 30 30 30z m596.85-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59zM114.11 542h97.06c13.49 54.81 63.04 95.59 121.96 95.59S441.6 596.81 455.09 542h454.8c16.57 0 30-13.43 30-30s-13.43-30-30-30h-454.8c-13.49-54.81-63.04-95.59-121.96-95.59S224.66 427.19 211.17 482h-97.06c-16.57 0-30 13.43-30 30s13.43 30 30 30z m219.02-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59z m576.75 300.94H737.33c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-379.3c-16.57 0-30 13.43-30 30s13.43 30 30 30h379.31c13.49 54.81 63.04 95.59 121.96 95.59s108.47-40.78 121.96-95.59h172.55c16.57 0 30-13.43 30-30s-13.43-30-30-30z m-294.51 95.59c-36.17 0-65.59-29.42-65.59-65.59s29.42-65.59 65.59-65.59 65.59 29.42 65.59 65.59-29.42 65.59-65.59 65.59z"/></svg>`;
   const current = () => boards.find(b => b.id === activeId);
@@ -29,19 +30,39 @@
   function load() {
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
+      defaultsVersion=Number(data.defaultsVersion)||0;
       boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&!isOldSymbolNotice(m)).slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),Math.max(40,minRows(c))),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;openIds=Array.isArray(data.openIds)?[...new Set(data.openIds)].filter(id=>boards.some(b=>b.id===id)):boards.map(b=>b.id);
       if((Array.isArray(data.boards)?data.boards:[]).some(b=>Array.isArray(b?.chat)&&b.chat.some(isOldSymbolNotice)))localStorage.setItem(KEY,JSON.stringify({...data,boards}));
     } catch { boards = []; }
-    if (!boards.length) {const board={id:uid(),title:'我的 Widget',cards:[],messages:[]};boards.push(board);openIds=[board.id];}
+    if (!boards.length) {const board={id:uid(),title:'我的 Widget',cards:[],messages:[]};boards.push(board);openIds=[board.id];initialEmptyId=board.id;}
     for(const board of boards)for(const card of board.cards)compactTicker(board,card);
     if(!openIds.includes(activeId))activeId=openIds[0]||'';
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify({version:2,activeId,openIds,boards}));  }
+    try { localStorage.setItem(KEY, JSON.stringify({version:2,defaultsVersion,activeId,openIds,boards}));  }
     catch { notice('浏览器存储空间不足，当前更改尚未保存。'); }
   }
   function overlaps(a,b) { return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+  async function ensureDefaultBoards(){
+    if(defaultsVersion>=1||defaultsLoading)return;
+    defaultsLoading=true;
+    try{
+      const response=await fetch('/api/widgets/default-boards'),data=await response.json();
+      if(!response.ok||data.version!==1||!Array.isArray(data.boards)||data.boards.length!==3)return;
+      if(data.boards.some(b=>!b.id||!Array.isArray(b.cards)||!b.cards.length||b.cards.some(c=>!safeUrl(c.url))))return;
+      const placeholder=boards.find(b=>b.id===initialEmptyId),replaceEmpty=placeholder&&placeholder.title==='我的 Widget'&&!placeholder.cards.length&&!placeholder.messages.length;
+      if(boards.length-(replaceEmpty?1:0)+data.boards.filter(b=>!boards.some(old=>old.id===b.id)).length>40)return;
+      const selectDefault=replaceEmpty&&activeId===initialEmptyId;
+      if(replaceEmpty){boards=boards.filter(b=>b!==placeholder);openIds=openIds.filter(id=>id!==placeholder.id);}
+      for(const board of data.boards){if(boards.some(b=>b.id===board.id))continue;boards.push(board);openIds.push(board.id);}
+      defaultsVersion=1;
+      if(selectDefault)activeId=data.boards[0].id;
+      save();
+      if(!workspace.hidden){route(false);render();}
+    }catch{/* A failed load leaves existing boards usable and can retry on the next visit. */}
+    finally{defaultsLoading=false;}
+  }
   function settle(board, anchor) {
     const placed = [];
     for (const card of [anchor,...board.cards.filter(c=>c!==anchor)].filter(Boolean)) {
@@ -177,7 +198,7 @@
     for(const id of ['navHome','navTasks','railHome','railTasks']){$(id)?.classList.remove('is-selected','is-active');$(id)?.removeAttribute('aria-current');}
     for(const id of ['navWidgets','railWidgets']){$(id)?.classList.add(id==='navWidgets'?'is-selected':'is-active');$(id)?.setAttribute('aria-current','page');}
     if(typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
-    route(push);render();
+    route(push);render();void ensureDefaultBoards();
   }
   function leave() {workspace.hidden=true;$('widgetSidebar').hidden=true;shell.classList.remove('widgets-view');for(const id of ['navWidgets','railWidgets']){$(id)?.classList.remove('is-selected','is-active');$(id)?.removeAttribute('aria-current');}}
   async function ensureCatalog(){if(!catalog.length){const response=await fetch('/static/widget-catalog.json');if(!response.ok)throw Error('金融图表库暂不可用。');catalog=await response.json();}}

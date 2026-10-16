@@ -150,6 +150,34 @@ def find_symbols(query: str = Query(min_length=1, max_length=80), market: Litera
         raise HTTPException(status_code=503, detail=str(error)) from error
 
 
+@router.get('/api/widgets/default-boards')
+def default_boards():
+    """Editable starter boards inspired by the official asset-class solutions."""
+    definitions=[
+        ('stocks','股票','NASDAQ:AAPL',['symbol-info','advanced-chart','company-profile','fundamental-data','technical-analysis','top-stories']),
+        ('crypto','加密货币','BITSTAMP:BTCUSD',['symbol-info','advanced-chart','company-profile','technical-analysis','top-stories','crypto-heatmap','crypto-mkt-screener']),
+        ('forex','外汇','OANDA:EURUSD',['symbol-info','advanced-chart','company-profile','technical-analysis','top-stories','economic-calendar','forex-cross-rates']),
+    ]
+    boards=[]
+    for key,title,symbol,widgets in definitions:
+        cards=[];y=0
+        for index,widget in enumerate(widgets):
+            full=index<2 or index>=5
+            w=12 if full else 6
+            h=12 if widget=='symbol-info' else 26 if widget=='advanced-chart' else 24
+            symbols=[] if widget in MARKETS|CURRENCY_WIDGETS else [symbol]
+            result=build_widget(TradingViewInput(widget=widget,symbols=symbols))
+            # Paired supporting details share a row; primary charts span the canvas.
+            x=6 if index==3 else 0
+            cards.append({'id':key+'-'+widget,'component':'tv-'+widget,'title':result['title'],
+                          'url':result['url'],'status':'ready','x':x,'y':y,'w':w,'h':h,
+                          'parameters':{'symbols':symbols,'market':'default',**({'interval':result['config']['interval']} if result['config'].get('interval') else {})}})
+            if index!=2:y+=h+1
+        boards.append({'id':'starter-'+key,'title':title,'focusSymbol':symbol,'cards':cards,'messages':[],
+                       'sourceUrl':f'https://www.tradingview.com/widget-docs/solutions/{key}-dark/'})
+    return {'version':1,'boards':boards}
+
+
 @router.post('/api/widgets/presets/{component_id}')
 def add_preset(component_id: str):
     """Add a ready-to-use component without asking for parameters or calling a model."""

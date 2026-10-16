@@ -24,7 +24,7 @@ test('catalogue refers only to existing native business components',()=>{assert.
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,true);assert.ok(d.querySelector('#widgetWorkspace .widgetTopbar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的 Widget');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
- assert.equal(calls[0].url,'/api/widgets/plan');const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/原生脚本取真实数据/);
+ assert.ok(calls.some(c=>c.url==='/api/widgets/plan'));const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/原生脚本取真实数据/);
  assert.equal(d.querySelectorAll('.widgetCard iframe').length,2);assert.match(d.querySelector('.widgetCard iframe').src,/share-artifact\/real-kline.html/);
  const resize=d.querySelector('.widgetResize');resize.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
  const data=JSON.parse(w.localStorage.getItem('mentora-widget-boards-v1')),cards=data.boards[0].cards;assert.equal(cards[0].w,7);
