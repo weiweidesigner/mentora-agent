@@ -4595,3 +4595,6 @@ html { -webkit-tap-highlight-color:transparent; }
 .caseCardBrandIcon .brandLogoDark{display:none}
 html[data-theme="dark"] .caseCardBrandIcon .brandLogoLight{display:none}
 html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
+
+/* The midday sun is fully above the horizon; keep all rotating rays visible. */
+.daySceneArt[data-scene="live"] g[clip-path] { clip-path:none; }
