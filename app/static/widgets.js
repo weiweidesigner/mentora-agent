@@ -314,7 +314,7 @@
     $('widgetScope').textContent=card?`已选：${card.title} ×`:'';
     $('widgetScope').hidden=!card;
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
-    $('widgetPrompt').placeholder=card?'想怎样调整这张卡片？':'输入你要创建的看板需求';
+    $('widgetPrompt').placeholder=card?'输入你要调整这张卡片的需求':board?.cards.length?'输入你要调整看板的需求':'输入你要创建的看板需求';
     const pending=commandControllers.has(activeId)||jobs.has(activeId);
     $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=pending;
     $('widgetConfirm').hidden=!undoByBoard.has(activeId);$('widgetConfirm').disabled=pending;
