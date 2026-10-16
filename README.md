@@ -1,8 +1,8 @@
-# Veya Agent
+# Mentora Agent
 
 **See Beyond the Data**
 
-Veya 是基于 DeepSeek Harness 的研究与可视化智能体，包含推理执行、工具活动展示、SSE 事件适配、报告展示、会话与分享、前端交互和样式。保留 Codex、本地 Ollama 与 AutoGen Studio 适配。组件、取数和视觉能力通过独立仓库的锁文件引用，不在宿主复制实现。
+Mentora 是基于 DeepSeek Harness 的研究与可视化智能体，包含推理执行、工具活动展示、SSE 事件适配、报告展示、会话与分享、前端交互和样式。保留 Codex、本地 Ollama 与 AutoGen Studio 适配。组件、取数和视觉能力通过独立仓库的锁文件引用，不在宿主复制实现。
 
 旧启动命令 `uvicorn app.main:app` 也会接入同一个 Harness 展示网关；推荐入口仍为 `app.presentation:app`，不会因使用旧命令而转到 AutoGen Studio。
 
