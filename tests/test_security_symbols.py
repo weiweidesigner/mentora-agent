@@ -69,3 +69,17 @@ def test_listing_status_prefix_keeps_original_name_and_maps_issuer_alias(monkeyp
     monkeypatch.setattr(symbols,'search_symbols',lambda *args:[item,ROWS[-1]])
     assert symbols.resolve_symbol('宇树科技','auto')=='SSE:688836'
     assert 'aliases' not in symbols.candidate('NASDAQ','CAVA','CAVA Group','us','TradingView')
+
+
+def test_verified_identity_fills_provider_gap_and_respects_market(monkeypatch):
+    symbols._search.cache_clear()
+    def unavailable(*args):raise OSError('provider unavailable')
+    monkeypatch.setattr(symbols,'eastmoney_candidates',unavailable)
+    monkeypatch.setattr(symbols,'tradingview_candidates',unavailable)
+    try:
+        assert symbols.resolve_symbol('宇树科技','auto')=='SSE:688836'
+        assert symbols.search_symbols('宇树','cn')[0]['code']=='688836'
+        assert symbols.verified_candidates('宇树','us')==[]
+        with pytest.raises(ValueError,match='暂时不可用'):
+            symbols.search_symbols('未知名称','auto')
+    finally:symbols._search.cache_clear()

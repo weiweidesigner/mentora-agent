@@ -5,6 +5,7 @@ import json
 import re
 import time
 from functools import lru_cache
+from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -73,6 +74,21 @@ def rank(query, item):
     return 2
 
 
+def verified_candidates(query, market):
+    """Small, source-backed identity supplement for gaps in upstream search."""
+    records=json.loads(Path(__file__).with_name('security_identities.json').read_text())
+    results=[]
+    for record in records:
+        if market!='auto' and record['market']!=market:continue
+        names=[record['name'],record['code'],*record.get('aliases',[])]
+        if not any(query.casefold() in name.casefold() for name in names):continue
+        item=candidate(record['exchange'],record['code'],record['name'],record['market'],record['source'])
+        if item:
+            item['aliases']=record.get('aliases',[])
+            results.append(item)
+    return results
+
+
 @lru_cache(maxsize=256)
 def _search(query, market, bucket):
     results=[];available=False
@@ -86,8 +102,10 @@ def _search(query, market, bucket):
             results=tradingview_candidates(query,market);available=True
         except (OSError, ValueError, TypeError, KeyError):
             pass
-    if not available:raise ValueError('标的搜索暂时不可用，请稍后重试。')
+    verified=verified_candidates(query,market)
+    if not available and not verified:raise ValueError('标的搜索暂时不可用，请稍后重试。')
     unique={item['symbol']:item for item in results}
+    for item in verified:unique.setdefault(item['symbol'],item)
     return sorted(unique.values(),key=lambda item:rank(query,item))[:10]
 
 

@@ -1,0 +1,12 @@
+[
+  {
+    "exchange": "SSE",
+    "code": "688836",
+    "name": "宇树科技",
+    "market": "cn",
+    "aliases": ["宇树科技股份有限公司"],
+    "source": "CNINFO",
+    "sourceUrl": "https://static.cninfo.com.cn/finalpage/2026-08-18/1225478669.PDF",
+    "verifiedAt": "2026-10-16"
+  }
+]
