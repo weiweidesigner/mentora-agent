@@ -11,8 +11,8 @@ function setup(fail=false,workflow={}){
  w.eval(script);return{dom,w,calls};
 }
 test('SOP task cards link directly to their exact scheduled task, with controls outside the link',async()=>{
- const s=setup(false,{tasks:[{id:'event-task',title:'事件催化找股',_portfolioKind:'events',enabled:false},{id:'quant-task',title:'量化回测找股',_portfolioKind:'quant',enabled:false}]});await tick();s.w.document.querySelector('[data-pf-view="decisions"]').click();
- for(const [kind,id] of [['events','event-task'],['quant','quant-task']]){
+ const s=setup(false,{tasks:[{id:'event-task',title:'事件催化找股',_portfolioKind:'events',enabled:false},{id:'quant-task',title:'量化回测找股',_portfolioKind:'quant',enabled:false},{id:'analysis-task',title:'机会分析与 JEV 决策',_portfolioKind:'analysis',enabled:false},{id:'risk-task',title:'持仓风险监控与 JEV 决策',_portfolioKind:'risk',enabled:false}]});await tick();s.w.document.querySelector('[data-pf-view="decisions"]').click();
+ for(const [kind,id] of [['events','event-task'],['quant','quant-task'],['analysis','analysis-task'],['risk','risk-task']]){
   const node=s.w.document.querySelector(`[data-sop-node="${kind}"]`),link=node.querySelector('a.pfSopNodeMain');
   assert.ok(link);assert.equal(new URL(link.href).searchParams.get('task'),id);assert.equal(new URL(link.href).searchParams.get('tab'),'tasks');
   assert.equal(link.querySelector('button'),null);assert.equal(link.hasAttribute('data-pf-sop-open'),false);
