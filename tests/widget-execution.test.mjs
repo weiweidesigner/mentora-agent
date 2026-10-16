@@ -38,3 +38,19 @@ test('quote table height grows with actual symbol rows and grouped headings',()=
   assert.equal(doc.documentElement.dataset.tvSized,'true');frame.tradingViewSurfaceCleanup();dom.window.close();
  }
 });
+test('new board opens an empty canvas immediately and gets a generated title from its request',async()=>{
+ let requested;
+ const s=setup([],options=>{requested=JSON.parse(options.body);return {reply:'已创建',actions:[{type:'rename_board',title:'科技股趋势对比看板'}]};});
+ s.d.querySelector('#widgetNameDialog').showModal=()=>{throw Error('new board must not open naming dialog');};
+ s.d.querySelector('#widgetNew').click();
+ let saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));
+ const id=saved.activeId;
+ assert.equal(saved.boards.find(b=>b.id===id).title,'自定义');
+ assert.equal(saved.boards.find(b=>b.id===id).cards.length,0);
+ assert.equal(s.d.activeElement.id,'widgetPrompt');
+ submit(s);await tick();await tick();
+ assert.equal(requested.board.title,'自定义');
+ saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));
+ assert.equal(saved.boards.find(b=>b.id===id).title,'科技股趋势对比看板');
+ assert.equal(saved.boards.find(b=>b.id==='b').title,'原看板');s.dom.window.close();
+});

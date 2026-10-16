@@ -124,6 +124,7 @@ def model_plan(context: dict) -> dict:
 update: {"type":"update","cardId":"已有id","layout":{"x":0,"y":0,"w":6,"h":18},"parameters":{"symbols":["NASDAQ:AAPL"],"market":"default","interval":"D"},"title":"可选新标题"}，只写需要更改的字段；componentId 可选，用于替换组件。
 add: {"type":"add","componentId":"catalogue中的id","parameters":{"symbols":[...]},"layout":{可选位置尺寸}}。
 remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_board","title":"48字以内"}。
+当 board.title 为「自定义」且 cards 为空，用户正在首次创建看板：根据本次需求概括一个简洁、具体的中文看板标题（建议8到18字，体现市场、标的或分析目的），在添加组件时必须同时输出 rename_board；不要使用「自定义」「我的看板」等占位标题，也不要把整句需求照抄为标题。仅询问澄清且没有 add 时保持原名称。用户已命名的看板保留原名，除非用户明确要求更名。
 布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，普通图表h=10..40，滚动行情条tv-ticker-tape默认h=6、最低6。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
 TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
@@ -196,6 +197,9 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
         if action.type=='remove':
             existing.pop(action.cardId)
         actions.append(clean)
+    if payload.board.title == '自定义' and not cards and any(a['type'] == 'add' for a in actions):
+        if not any(a['type'] == 'rename_board' and a.get('title', '').strip() not in {'', '自定义', '我的看板'} for a in actions):
+            raise ValueError('首次创建看板时，请根据用户需求生成具体标题，并添加 rename_board 动作。')
     if len(cards)+sum(a['type']=='add' for a in actions)-sum(a['type']=='remove' for a in actions)>60:
         raise ValueError('看板最多支持60张卡片。')
     return {'reply':plan.reply,'actions':actions}

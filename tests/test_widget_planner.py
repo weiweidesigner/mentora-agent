@@ -117,3 +117,23 @@ def test_broker_addition_without_parameters_gets_default():
     payload=planner.PlanningInput(message='加个经纪商评分',board={'id':'b','title':'看板','cards':[]})
     result=planner.validate_plan({'reply':'已添加经纪商评分。','actions':[{'type':'add','componentId':'tv-broker-rating'}]},payload,[])
     assert result['actions'][0]['parameters']['symbols']==['easymarkets']
+
+
+def test_first_custom_board_retries_missing_generated_title(monkeypatch):
+    calls=[]
+    def model(context):
+        calls.append(dict(context))
+        actions=[{'type':'add','componentId':'tv-advanced-chart','parameters':{'symbols':['NASDAQ:AAPL']}}]
+        if len(calls)>1:actions.insert(0,{'type':'rename_board','title':'苹果趋势观察看板'})
+        return {'reply':'创建苹果看板','actions':actions}
+    monkeypatch.setattr(planner,'model_plan',model)
+    p=planner.PlanningInput(message='帮我跟踪苹果的价格趋势',board={'id':'new','title':'自定义','cards':[]})
+    result=planner.plan_widgets(p)
+    assert len(calls)==2
+    assert 'validationError' in calls[1]
+    assert result['actions'][0]['title']=='苹果趋势观察看板'
+
+
+def test_custom_board_keeps_placeholder_when_clarification_is_needed():
+    p=planner.PlanningInput(message='帮我创建一个',board={'id':'new','title':'自定义','cards':[]})
+    assert planner.validate_plan({'reply':'想关注哪个市场？','actions':[]},p,[])['actions']==[]

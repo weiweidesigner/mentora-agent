@@ -377,6 +377,13 @@
   $('widgetUndo').onclick=()=>{if(commandControllers.has(activeId))return;const previous=undoByBoard.get(activeId),board=current();if(!previous||!board)return;const chat=board.chat;Object.assign(board,JSON.parse(JSON.stringify(previous)));board.chat=[...(chat||[]),{role:'assistant',content:'已撤销上一次调整。'}].slice(-40);undoByBoard.delete(activeId);selectedCardId='';save();render();notice('已撤销上一次调整。');};
   function editName(action) {
     if(action==='new'&&boards.length>=40){notice('最多保存 40 个看板，请先整理已有看板。');return;}
+    if(action==='new'){
+      const board={id:uid(),title:'自定义',cards:[],messages:[]};
+      boards.push(board);openIds.push(board.id);activeId=board.id;selectedCardId='';
+      save();route();render();notice('');
+      if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
+      $('widgetPrompt').focus({preventScroll:true});return;
+    }
     nameAction=action;$('widgetNameHeading').textContent=action==='new'?'新建 Widget':'重命名 Widget';$('widgetNameInput').value=action==='new'?'':current()?.title||'';$('widgetNameDialog').showModal();$('widgetNameInput').focus();
   }
   $('widgetNameDialog').addEventListener('close',()=>{
