@@ -54,3 +54,23 @@ test('new board opens an empty canvas immediately and gets a generated title fro
  assert.equal(saved.boards.find(b=>b.id===id).title,'科技股趋势对比看板');
  assert.equal(saved.boards.find(b=>b.id==='b').title,'原看板');s.dom.window.close();
 });
+test('successful card edits clear selection and report the concrete change',async()=>{
+ const card={id:'one',title:'苹果技术分析',component:'tv-technical-analysis',status:'ready',url:'/generated/one.html',parameters:{symbols:['NASDAQ:AAPL']},x:0,y:0,w:6,h:18};
+ const s=setup([card]);s.d.querySelector('[data-card="one"] .widgetCardHeader').click();
+ assert.equal(s.d.querySelector('#widgetScope').hidden,false);
+ s.d.querySelector('#widgetPrompt').value='卡片矮一点';s.d.querySelector('#widgetForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));
+ assert.equal(s.d.querySelector('#widgetScope').hidden,true);
+ assert.equal(s.d.querySelector('.widgetCard.is-selected'),null);
+ assert.equal(s.d.querySelector('#widgetPrompt').placeholder,'输入你要调整看板的需求');
+ assert.match(s.d.querySelector('#widgetStatus').textContent,/苹果技术分析.*高度缩小约 72 像素/);
+ s.d.querySelector('#widgetUndo').click();assert.equal(s.board().cards[0].h,18);s.dom.window.close();
+ const api=setup([card],{reply:'已调整布局。',actions:[{type:'update',cardId:'one',layout:{w:12}}]});
+ api.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(api);await tick();await tick();
+ assert.equal(api.d.querySelector('#widgetScope').hidden,true);
+ assert.match(api.d.querySelector('#widgetStatus').textContent,/苹果技术分析.*整行宽度/);api.dom.window.close();
+});
+test('clarification keeps the selected scope and shows the model question',async()=>{
+ const s=setup([{id:'one',title:'苹果技术分析',component:'tv-technical-analysis',status:'ready',url:'/generated/one.html',x:0,y:0,w:6,h:18}],{reply:'想改为哪个周期？',actions:[]});
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s);await tick();await tick();
+ assert.equal(s.d.querySelector('#widgetScope').hidden,false);assert.equal(s.d.querySelector('#widgetStatus').textContent,'想改为哪个周期？');s.dom.window.close();
+});

@@ -320,6 +320,127 @@
       jobs.delete(board.id);if(!commandControllers.has(board.id))progressByBoard.delete(board.id);save();if(activeId===board.id){render();if(pending.status==='error')notice(pending.error);}
     }
   }
+  let selectionCatalogLoading = false, recommendationOffset = 0, recommendationKey = '';
+  document.querySelectorAll('#widgetAdjustments').forEach(node => node.remove());
+  const adjustments = document.createElement('aside');
+  adjustments.id = 'widgetAdjustments'; adjustments.className = 'widgetAdjustments'; adjustments.hidden = true;
+  adjustments.setAttribute('aria-label', '试试这样调整');
+  $('widgetForm').after(adjustments);
+  function suggestedAdjustments(card, component) {
+    const boardPrompts = ['帮我美化一下','排得紧凑些','换成两列排版','重点图放大些','换成单列排版'];
+    if (!card) return boardPrompts.map(text => ({text, scope:'board'}));
+    const prompts = [], mode = component?.inputMode;
+    const symbol = (card.parameters?.symbols || [])[0] || '';
+    if (mode === 'symbol') {
+      const target = /(?:BTC|ETH|USDT|USDC)/i.test(symbol) ? '比特币' : /(?:EURUSD|USDJPY|GBPUSD|FX:|OANDA:)/i.test(symbol) ? '美元兑日元' : /HKEX:/i.test(symbol) ? '阿里巴巴' : /MSFT/i.test(symbol) ? '苹果' : '微软';
+      prompts.push(`换成${target}看看`);
+    }
+    if (['advanced-chart','technical-analysis'].includes(component?.widget)) prompts.push('改成周线看看','看一小时走势');
+    if (mode === 'group') prompts.push('对比苹果和微软','再加上英伟达');
+    if (mode === 'currencies') prompts.push('只看美元和欧元','再加上日元');
+    if (mode === 'broker') prompts.push('标题改成经纪商评价');
+    if (mode === 'market' && component?.scopeOptions?.length > 1) {
+      const next = component.scopeOptions.find(([value]) => value !== (card.parameters?.market || 'default'));
+      if (next) prompts.push(`看看${next[1]}`);
+    }
+    prompts.push('卡片放宽些','卡片矮一点','往前放一位');
+    return [...prompts.map(text => ({text, scope:'card'})), ...boardPrompts.map(text => ({text, scope:'board'}))];
+  }
+  function renderAdjustments(card, pending) {
+    const board = current();
+    adjustments.hidden = !board?.cards.length;
+    workspace.classList.toggle('has-widget-selection', !!card);
+    if (adjustments.hidden) { adjustments.replaceChildren(); return; }
+    const key = `${activeId}:${card?.id || 'board'}`;
+    if (key !== recommendationKey) { recommendationKey = key; recommendationOffset = 0; }
+    const component = catalog.find(c => c.id === card?.component);
+    const pool = suggestedAdjustments(card, component);
+    const selected = Array.from({length:3}, (_,i) => pool[(recommendationOffset+i)%pool.length]);
+    adjustments.innerHTML = `<div class="widgetAdjustmentPrompts">${selected.map(({text,scope}) => `<button type="button" data-adjustment-prompt="${esc(text)}" data-adjustment-scope="${scope}" ${pending ? 'disabled' : ''}><span>${esc(text)}</span><span aria-hidden="true">↗</span></button>`).join('')}</div>`;
+    if (card && !component && !selectionCatalogLoading && !catalog.length) {
+      selectionCatalogLoading = true;
+      ensureCatalog().then(() => { if (selectedCardId === card.id) updateSelection(); }).catch(() => {}).finally(() => { selectionCatalogLoading = false; });
+    }
+  }
+  window.setInterval(() => {
+    if (workspace.hidden || adjustments.hidden || adjustments.matches(':hover') || adjustments.contains(document.activeElement) || jobs.has(activeId) || commandControllers.has(activeId)) return;
+    recommendationOffset += 3;
+    renderAdjustments(current()?.cards.find(c => c.id === selectedCardId), false);
+  }, 9000);
+  function packCards(board, ordered) {
+    let x = 0, y = 0, rowHeight = 0;
+    for (const card of ordered) {
+      if (x + card.w > 12) { y += rowHeight + 1; x = 0; rowHeight = 0; }
+      card.x = x; card.y = y; x += card.w;
+      rowHeight = Math.max(rowHeight, card.contentHeight ? Math.ceil(card.contentHeight / ROW) : card.h);
+    }
+    board.cards = ordered;
+  }
+  adjustments.addEventListener('click', event => {
+    const button = event.target.closest('[data-adjustment-prompt]');
+    if (!button || button.disabled) return;
+    const text = button.dataset.adjustmentPrompt;
+    if (button.dataset.adjustmentScope === 'board') { selectedCardId = ''; updateSelection(); }
+    $('widgetPrompt').value = text; updateComposer(); $('widgetPrompt').focus({preventScroll:true});
+  });
+  function applyLayoutRequest(message) {
+    const board = current();
+    if (!board?.cards.length) return false;
+    const text = message.trim().replace(/[。！!？?，,\s]/g, '');
+    const beautify = /^(?:帮我|请)?(?:美化|优化|整理)(?:一下)?(?:这个|我的|整个)?(?:页面|看板)?(?:布局)?(?:一下)?$/.test(text) || text === '重点图放大些';
+    const compact = ['排得紧凑些','排得紧凑一些','紧凑一点','布局紧凑一点'].includes(text);
+    const columns = /^(?:换成|改成|排成)(?:两列|双列|单列|一列)(?:排版|布局)?$/.test(text);
+    const actions = {'卡片放宽些':'wide','卡片矮一点':'shorter','卡片高一点':'taller','往前放一位':'previous','往后放一位':'next','卡片占满一行':'full'};
+    const action = actions[text], card = board.cards.find(c => c.id === selectedCardId);
+    if (!beautify && !compact && !columns && !(action && card)) return false;
+    if (jobs.has(activeId) || commandControllers.has(activeId)) return true;
+    undoByBoard.set(board.id, JSON.parse(JSON.stringify(board)));
+    const ordered = [...board.cards].sort((a,b) => a.y-b.y || a.x-b.x);
+    if (beautify) {
+      const hero = ordered.find(c => ['tv-advanced-chart','tv-intraday'].includes(c.component));
+      if (hero) { ordered.splice(ordered.indexOf(hero),1); ordered.unshift(hero); }
+      ordered.forEach(c => { c.w = c===hero || ['tv-ticker-tape','tv-symbol-info','tv-market-data'].includes(c.component) ? 12 : 6; });
+    } else if (columns) ordered.forEach(c => { c.w = /两列|双列/.test(text) ? 6 : 12; });
+    else if (action === 'previous' || action === 'next') {
+      const i = ordered.indexOf(card), j = Math.max(0, Math.min(ordered.length-1, i+(action==='previous'?-1:1)));
+      [ordered[i],ordered[j]] = [ordered[j],ordered[i]];
+    } else if (action === 'wide' || action === 'full') card.w = action === 'full' ? 12 : Math.min(12,card.w+3);
+    else if (action) {
+      const height = card.contentHeight || card.h*ROW;
+      card.manualHeight = true; delete card.contentHeight;
+      card.h = clamp(Math.round(height/ROW)+(action==='taller'?3:-3),minRows(card),40);
+    }
+    packCards(board,ordered);
+    const feedback=modificationFeedback(undoByBoard.get(board.id),board)||'当前布局已符合要求，无需重复调整。';
+    selectedCardId='';save();render();
+    notice(feedback);
+    return true;
+  }
+  function modificationFeedback(before, board) {
+    const changes=[],oldCards=before.cards||[],oldById=new Map(oldCards.map(c=>[c.id,c]));
+    const width=w=>w===12?'整行宽度':w===6?'半行宽度':`约占一行的 ${Math.round(w/12*100)}%`;
+    const period=value=>({'D':'日线','1D':'日线','W':'周线','1W':'周线','M':'月线','1M':'月线','60':'1小时','1h':'1小时'}[value]||value);
+    for(const card of board.cards){
+      const old=oldById.get(card.id),label=`「${card.title}」`;
+      if(!old){changes.push(`新增${label}`);continue;}
+      const details=[];
+      if(old.title!==card.title)details.push(`标题由「${old.title}」改为${label}`);
+      if(old.w!==card.w)details.push(`宽度改为${width(card.w)}`);
+      const oldHeight=old.contentHeight||old.h*ROW,newHeight=card.contentHeight||card.h*ROW;
+      if(oldHeight!==newHeight)details.push(`高度${newHeight<oldHeight?'缩小':'增大'}约 ${Math.abs(Math.round(newHeight-oldHeight))} 像素`);
+      const prev=old.parameters||{},next=card.parameters||{};
+      if(JSON.stringify(prev.symbols||[])!==JSON.stringify(next.symbols||[]))details.push(`标的改为 ${(next.symbols||[]).join('、')}`);
+      if(prev.interval!==next.interval&&next.interval)details.push(`周期切换为${period(next.interval)}`);
+      if(prev.market!==next.market&&next.market)details.push(`切换市场为${next.market}`);
+      if(old.component!==card.component)details.push('替换了图表类型');
+      if(oldCards.findIndex(c=>c.id===card.id)!==board.cards.findIndex(c=>c.id===card.id))details.push(`移至第 ${board.cards.indexOf(card)+1} 位`);
+      if(!details.length&&(old.x!==card.x||old.y!==card.y))details.push('已重新对齐位置并收紧间距');
+      if(details.length)changes.push(`${label}：${details.join('，')}`);
+    }
+    for(const old of oldCards)if(!board.cards.some(c=>c.id===old.id))changes.push(`移除「${old.title}」`);
+    if(before.title!==board.title)changes.unshift(`看板命名为「${board.title}」`);
+    return changes.length?`已完成调整：${changes.slice(0,4).join('；')}${changes.length>4?`；另有 ${changes.length-4} 项调整`:''}。`:'';
+  }
   function updateSelection(){
     const board=current(),card=board?.cards.find(c=>c.id===selectedCardId);if(!card)selectedCardId='';
     $('widgetScope').textContent=card?`已选：${card.title} ×`:'';
@@ -327,6 +448,7 @@
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
     $('widgetPrompt').placeholder=card?'输入你要调整这张卡片的需求':board?.cards.length?'输入你要调整看板的需求':'输入你要创建的看板需求';
     const pending=commandControllers.has(activeId)||jobs.has(activeId);
+    renderAdjustments(card, pending);
     $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=pending;
     $('widgetConfirm').hidden=!undoByBoard.has(activeId);$('widgetConfirm').disabled=pending;
     for(const node of canvas.children)node.classList.toggle('is-selected',node.dataset.card===selectedCardId);
@@ -368,7 +490,10 @@
         }
         if(target){if(action.layout)Object.assign(target,action.layout);if(action.title){target.title=action.title;target.customTitle=true;}}
       }
-      settle(board,null);save();reply=plan.reply||'看板已调整。';
+      settle(board,null);
+      reply=modificationFeedback(snapshot,board)||plan.reply||'当前看板无需调整。';
+      if(actions.length&&activeId===board.id)selectedCardId='';
+      save();
     }catch(error){reply=error.name==='AbortError'?'调整已停止。':error.message;}
     finally{progressByBoard.delete(board.id);commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(boards.includes(board)){board.chat=[...(board.chat||[]),{role:'assistant',content:reply||'调整已停止。'}].slice(-40);}save();if(activeId===board.id){render();notice(reply);}}
   }
@@ -434,7 +559,7 @@
       if(!boards.includes(board)||!board.cards.includes(card))return;Object.assign(card,{title,customTitle:true,symbolInput:raw});save();render();$('widgetConfig').close();
     }catch(error){$('widgetConfigError').textContent=error.message;}finally{resolvingSymbol=false;submit.disabled=false;}
   };
-  $('widgetForm').onsubmit=event=>{event.preventDefault();const text=$('widgetPrompt').value.trim();if(!text||jobs.has(activeId)||commandControllers.has(activeId))return;$('widgetPrompt').value='';updateComposer();runCommand(text);};
+  $('widgetForm').onsubmit=event=>{event.preventDefault();const text=$('widgetPrompt').value.trim();if(!text||jobs.has(activeId)||commandControllers.has(activeId))return;$('widgetPrompt').value='';updateComposer();if(!applyLayoutRequest(text))runCommand(text);};
   function updateComposer(){const input=$('widgetPrompt'),box=input.closest('.widgetComposerBox');if(typeof resizeComposerInput==='function')resizeComposerInput(input,box);else{input.style.height='38px';const height=Math.max(38,Math.min(120,input.scrollHeight));input.style.height=height+'px';input.style.overflowY=input.scrollHeight>height?'auto':'hidden';box.classList.toggle('is-multiline',input.value.includes('\n')||height>40);}$('widgetGenerate').classList.toggle('is-ready',!!input.value.trim());}
   $('widgetPrompt').oninput=updateComposer;
   $('widgetPrompt').onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();$('widgetForm').requestSubmit();}};
