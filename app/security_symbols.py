@@ -24,8 +24,14 @@ def candidate(exchange, code, name, market, source):
     symbol = exchange+':'+code
     if not SYMBOL_PATTERN.fullmatch(symbol):
         return None
-    return {'symbol': symbol, 'code': code, 'name': re.sub('<[^>]+>', '', name),
-            'market': market, 'exchange': exchange, 'source': source}
+    clean_name=re.sub('<[^>]+>', '', name)
+    result={'symbol':symbol,'code':code,'name':clean_name,'market':market,'exchange':exchange,'source':source}
+    if market=='cn':
+        # Exchange prefixes identify listing/risk status, not a different issuer.
+        alias=re.sub(r'^(?:\*?ST|XD|XR|DR|[NC])(?=[\u4e00-\u9fff])','',clean_name)
+        if alias!=clean_name:result['aliases']=[alias]
+    return result
+
 
 
 def eastmoney_candidates(query):
@@ -63,7 +69,7 @@ def tradingview_candidates(query, market):
 def rank(query, item):
     query=query.strip().casefold()
     if query==item['symbol'].casefold() or query==item['code'].casefold() or (query.isdigit() and item['code'].isdigit() and int(query)==int(item['code'])):return 0
-    if query==item['name'].casefold():return 1
+    if query in [name.casefold() for name in [item['name'],*item.get('aliases',[])]]:return 1
     return 2
 
 

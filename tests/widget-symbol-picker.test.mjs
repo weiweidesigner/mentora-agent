@@ -19,3 +19,12 @@ test('multi-symbol names, scope switching, and query failures never guess a list
  h.w.fetch=async()=>({ok:true,json:async()=>({results:[]})});p.input.value='未知名称';await assert.rejects(()=>p.resolve(),/未找到/);
  h.w.fetch=async()=>{throw Error('查询不可用')};await p.suggest();assert.match(p.status.textContent,/查询不可用/);assert.equal(p.list.hidden,true);h.dom.window.close();
 });
+test('automatic keyword matching resolves an exchange-prefixed issuer name',async()=>{
+ const h=setup(),p=h.picker;h.w.fetch=async url=>{h.calls.push(url);return{ok:true,json:async()=>({results:[{symbol:'SSE:688836',code:'688836',name:'C宇树科技',aliases:['宇树科技'],market:'cn'},{symbol:'SSE:688523',code:'688523',name:'航天环宇科技',market:'cn'}]})}};
+ p.configure(true,false);assert.equal(p.select.value,'auto');p.input.value='宇树科技';
+ assert.equal(await p.resolve(),'SSE:688836');assert.match(h.calls[0],/market=auto/);h.dom.window.close();
+});
+test('US-only native components allow name search without a redundant market selector',async()=>{
+ const h=setup(),p=h.picker;h.w.fetch=async()=>({ok:true,json:async()=>({results:[{symbol:'NASDAQ:AAPL',code:'AAPL',name:'苹果',market:'us'}]})});
+ p.configure(true,false,['us']);assert.equal(p.select.value,'us');assert.equal(p.marketField.hidden,true);p.input.value='苹果';assert.equal(await p.resolve(),'NASDAQ:AAPL');h.dom.window.close();
+});

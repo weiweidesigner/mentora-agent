@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const names={us:'美股',hk:'港股',cn:'A 股',auto:'自动识别'};
+  const names={auto:'自动识别',us:'美股',hk:'港股',cn:'A 股'};
   const parts=value=>value.split(/[,，、;；]+/).map(s=>s.trim()).filter(Boolean);
   const displayCode=item=>item.market==='hk'?item.code.padStart(5,'0'):item.code;
   class WidgetSymbolPicker {
@@ -19,13 +19,14 @@
       this.select.addEventListener('change',()=>{this.cancel();this.chosen.clear();this.status.textContent='';this.placeholder();if(input.value.trim())void this.suggest();});
       form.closest('dialog')?.addEventListener('close',()=>this.cancel());
     }
-    configure(enabled,group){
-      this.enabled=enabled;this.group=group;this.marketField.hidden=!enabled;this.form.classList.toggle('has-symbol-market',enabled);this.cancel();this.status.textContent='';
+    configure(enabled,group,markets=Object.keys(names)){
+      const previous=this.select.value;this.select.innerHTML=markets.map(value=>`<option value="${value}">${names[value]}</option>`).join('');this.select.value=markets.includes(previous)?previous:markets[0];this.chosen.clear();
+      this.enabled=enabled;this.group=group;this.marketField.hidden=!enabled||markets.length===1;this.form.classList.toggle('has-symbol-market',enabled);this.cancel();this.status.textContent='';
       if(enabled){this.input.setAttribute('role','combobox');this.input.setAttribute('aria-autocomplete','list');this.input.setAttribute('aria-controls',this.list.id);this.input.autocomplete='off';this.placeholder();}
       else{for(const attr of ['role','aria-autocomplete','aria-controls','aria-expanded','aria-activedescendant'])this.input.removeAttribute(attr);}
     }
     placeholder(){
-      const sample={us:'苹果、AAPL 或微软',hk:'腾讯、00700 或阿里巴巴',cn:'贵州茅台、600519 或宁德时代',auto:'股票名称或代码'}[this.select.value];
+      const sample={us:'苹果、AAPL 或微软',hk:'腾讯、00700 或阿里巴巴',cn:'贵州茅台、600519 或宁德时代',auto:'宇树、腾讯、宁德 或 AAPL'}[this.select.value];
       this.input.placeholder='例如 '+sample;this.status.textContent=this.group?'支持多个标的，用逗号分隔。':'';
     }
     cancel(){clearTimeout(this.timer);this.controller?.abort();this.controller=null;this.version++;this.list.hidden=true;this.input.setAttribute('aria-expanded','false');this.input.removeAttribute('aria-activedescendant');this.matches=[];this.active=-1;}
@@ -37,7 +38,7 @@
       this.cancel();const queryParts=parts(this.input.value),index=queryParts.length-1,query=queryParts[index];
       if(!query||/[,，、;；]\s*$/.test(this.input.value))return;
       const version=this.version,controller=new AbortController();this.controller=controller;this.status.textContent='正在查找…';
-      try{const matches=await this.search(query,controller.signal);if(version!==this.version||!this.enabled)return;this.show(matches,index);this.status.textContent=matches.length?'选择匹配的股票，或继续输入名称 / 代码。':'未找到匹配标的，请检查证券市场或换一个名称 / 代码。';}
+      try{const matches=await this.search(query,controller.signal);if(version!==this.version||!this.enabled)return;this.show(matches,index);this.status.textContent=matches.length?'选择对应股票，保存时会自动关联代码。':'未找到匹配的上市标的，请换市场或关键词。';}
       catch(error){if(!controller.signal.aborted&&version===this.version)this.status.textContent=error.message;}
       finally{if(this.controller===controller)this.controller=null;}
     }
@@ -60,7 +61,7 @@
         if(this.chosen.has(value)){resolved.push(this.chosen.get(value));continue;}
         this.status.textContent='正在识别 '+value+'…';const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);let matches;
         try{matches=await this.search(value,controller.signal);}finally{clearTimeout(timeout);}
-        const exact=matches.filter(item=>item.name.toLowerCase()===value.toLowerCase()||item.code.toLowerCase()===value.toLowerCase()||(/^\d+$/.test(value)&&/^\d+$/.test(item.code)&&Number(value)===Number(item.code)));
+        const exact=matches.filter(item=>[item.name,...(item.aliases||[])].some(name=>name.toLowerCase()===value.toLowerCase())||item.code.toLowerCase()===value.toLowerCase()||(/^\d+$/.test(value)&&/^\d+$/.test(item.code)&&Number(value)===Number(item.code)));
         const match=exact.length===1?exact[0]:matches.length===1?matches[0]:null;
         if(!match){this.show(matches,i);throw Error(matches.length?'有多个匹配标的，请从列表中选择。':'未找到股票，请检查证券市场、名称或代码。');}
         resolved.push(match.symbol);

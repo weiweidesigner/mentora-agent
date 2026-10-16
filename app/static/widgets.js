@@ -199,7 +199,7 @@
     if(directMarket){const options=selected.scopeOptions||[['default',selected.defaultScope||'默认市场']];$('widgetMarket').innerHTML=options.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');const noParameters=options.length===1;$('widgetParameterField').hidden=noParameters;$('widgetAddForm').classList.toggle('no-parameters',noParameters);}
     $('widgetSymbol').required=!market&&mode!=='currencies'&&!selected?.allowEmptySymbols;
     $('widgetSymbol').placeholder=market?`留空使用：${selected.defaultScope}`:selected?.provider==='TradingView'?(group?'例如 NASDAQ:AAPL、NASDAQ:MSFT、NASDAQ:NVDA':'例如 NASDAQ:AAPL、HKEX:700'):'例如 AAPL、NVDA 或 MSFT';
-    symbolPicker?.configure(selected?.provider==='TradingView'&&['symbol','group'].includes(mode),group);
+    symbolPicker?.configure(['symbol','group'].includes(mode),group,selected?.provider==='TradingView'?['auto','us','hk','cn']:['us']);
     if(mode==='currencies')$('widgetSymbol').placeholder='例如 USD、EUR、JPY；留空使用主要货币';
     if(mode==='broker'&&!input.value.trim())input.value=selected?.defaultSymbols?.[0]||'easymarkets';
     if(selected?.allowEmptySymbols)$('widgetSymbol').placeholder=mode==='broker'?'默认使用 easyMarkets，可直接添加':'留空查看全球市场，或输入自选标的名称 / 代码';
@@ -209,7 +209,7 @@
     try{await ensureCatalog();}catch(error){notice(error.message);return;}
     const component=catalog.find(c=>c.id===card.component);if(!component){notice('该图表暂不支持直接配置，可以选中后在底部输入调整。');return;}
     editingCardId=card.id;componentId=component.id;selectedCardId=card.id;updateSelection();
-    renderConfig();$('widgetCardName').value=card.title;$('widgetSymbol').value=(card.parameters?.symbols||[]).join('、');
+    renderConfig();if(symbolPicker?.enabled&&component.provider==='TradingView'){symbolPicker.select.value='auto';symbolPicker.placeholder();}$('widgetCardName').value=card.title;$('widgetSymbol').value=card.symbolInput||(card.parameters?.symbols||[]).join('、');
     if(component.inputMode==='market')$('widgetMarket').value=card.parameters?.market||'default';
     const intervals=component.widget==='advanced-chart'?[['D','日线'],['W','周线'],['M','月线'],['60','1 小时']]:component.widget==='technical-analysis'?[['1D','日线'],['1W','周线'],['1M','月线'],['1h','1 小时']]:[];
     $('widgetIntervalField').hidden=!intervals.length;$('widgetInterval').innerHTML=intervals.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
@@ -238,7 +238,7 @@
     const symbols=isMarket?[]:options.symbols||message.split(/[,，、;；\s]+/).map(s=>s.trim()).filter(Boolean);
     if(component.inputMode==='broker'&&(!symbols.length||(retryId&&symbols.some(s=>!/^[a-z0-9][a-z0-9-]{1,49}$/i.test(s))))){symbols.splice(0,symbols.length,...(component.defaultSymbols||['easymarkets']));}
     let card=retryId&&board.cards.find(c=>c.id===retryId);
-    if(card)Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market,symbolMarket});
+    if(card){delete card.symbolInput;Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market,symbolMarket});}
     else {card={id:uid(),title:component.title,w:component.width||6,h:component.height||18,status:'loading',loadingText:'正在加载 TradingView…',url:'',request:message,component:component.id,market,symbolMarket};place(board,card);board.cards.push(card);}
     delete card.contentHeight;
     card.request=message;card.component=component.id;card.parameters={symbols,market,...(options.interval?{interval:options.interval}:{})};
@@ -379,7 +379,9 @@
     if(jobs.has(activeId)||commandControllers.has(activeId)){$('widgetConfigError').textContent='请等待当前调整完成。';return;}
     resolvingSymbol=true;const submit=$('widgetAddForm').querySelector('button[type=submit]');submit.disabled=true;
     try{
-      const text=symbolPicker?.enabled&&raw?await symbolPicker.resolve():raw;
+      const resolved=symbolPicker?.enabled&&raw?await symbolPicker.resolve():raw;
+      if(raw!==$('widgetSymbol').value.trim()||editingCardId!==card.id||!$('widgetConfig').open)return;
+      const text=component.provider==='TradingView'?resolved:resolved.split(/[,，、;；]+/).map(symbol=>symbol.trim().split(':').at(-1)).join('、');
       const market=component.inputMode==='market'?$('widgetMarket').value:'default',symbols=component.inputMode==='market'?[]:text.split(/[,，、;；\s]+/).filter(Boolean);
       const parameters={symbols,market,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{})};
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
@@ -390,9 +392,9 @@
           const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({widget:component.widget,preset:component.preset||null,...parameters,symbolMarket:symbolPicker?.enabled?symbolPicker.select.value:'auto',theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN'})});
           const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'保存失败，请重试。');const url=safeUrl(result.url);if(!url)throw Error('图表地址不可用。');if(!boards.includes(board)||!board.cards.includes(card))return;
           Object.assign(card,{url,parameters,market,request:text,status:'ready'});delete card.contentHeight;
-        }else{ $('widgetConfig').close();await generate(text,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true});save();if(activeId===board.id)render();return; }
+        }else{ $('widgetConfig').close();await generate(text,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true,symbolInput:raw});save();if(activeId===board.id)render();return; }
       }
-      if(!boards.includes(board)||!board.cards.includes(card))return;Object.assign(card,{title,customTitle:true});save();render();$('widgetConfig').close();
+      if(!boards.includes(board)||!board.cards.includes(card))return;Object.assign(card,{title,customTitle:true,symbolInput:raw});save();render();$('widgetConfig').close();
     }catch(error){$('widgetConfigError').textContent=error.message;}finally{resolvingSymbol=false;submit.disabled=false;}
   };
   $('widgetForm').onsubmit=event=>{event.preventDefault();const text=$('widgetPrompt').value.trim();if(!text||jobs.has(activeId)||commandControllers.has(activeId))return;$('widgetPrompt').value='';updateComposer();runCommand(text);};

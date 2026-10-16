@@ -59,3 +59,13 @@ def test_widget_endpoint_resolves_names_and_supports_multiple_listings(candidate
  app=FastAPI();app.include_router(lib.router);client=TestClient(app)
  assert client.get('/api/widgets/symbols',params={'query':'腾讯','market':'hk'}).json()['results'][0]['symbol']=='HKEX:700'
  assert client.get('/api/widgets/symbols',params={'query':'苹果','market':'invalid'}).status_code==422
+
+
+def test_listing_status_prefix_keeps_original_name_and_maps_issuer_alias(monkeypatch):
+    item=symbols.candidate('SSE','688836','C宇树科技','cn','TradingView')
+    assert item['name']=='C宇树科技'
+    assert item['aliases']==['宇树科技']
+    assert symbols.rank('宇树科技',item)==1
+    monkeypatch.setattr(symbols,'search_symbols',lambda *args:[item,ROWS[-1]])
+    assert symbols.resolve_symbol('宇树科技','auto')=='SSE:688836'
+    assert 'aliases' not in symbols.candidate('NASDAQ','CAVA','CAVA Group','us','TradingView')
