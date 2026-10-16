@@ -254,7 +254,13 @@ def upgrade_widget_tradingview(artifact: str) -> str:
     Only canvas=1 activates this styling. Provider iframe branding is untouched.
     Applies to historical generated HTML as well as new direct embeds.
     """
-    if 'id="tv-config"' not in artifact or 'data-widget-tv-chrome' in artifact:
+    if 'id="tv-config"' not in artifact:
+        return artifact
+    # Host-added footer text is redundant with attribution inside the official iframe.
+    if 'data-tv-host-footer' not in artifact:
+        footer = '<style data-tv-host-footer>main>footer,.tradingview-widget-copyright{display:none!important}.tradingview-widget-container__widget,.tradingview-widget-container>iframe{height:100%!important}</style>'
+        artifact = re.sub(r'</head\s*>', lambda _: footer+'</head>', artifact, count=1, flags=re.I)
+    if 'data-widget-tv-chrome' in artifact:
         return artifact
     chrome = '''<script data-widget-tv-chrome>if(new URLSearchParams(location.search).get('canvas')==='1')document.documentElement.dataset.widgetCanvas='true';</script>
 <style data-widget-tv-chrome>

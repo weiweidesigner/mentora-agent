@@ -100,3 +100,13 @@ def test_switching_to_intraday_drops_previous_candle_interval():
     assert result['actions'][0]['componentId']=='tv-intraday'
     assert result['actions'][0]['parameters']['symbols']==['NASDAQ:AAPL']
     assert 'interval' not in result['actions'][0]['parameters']
+
+
+def test_host_footer_is_hidden_for_standalone_and_old_canvas_documents():
+    document='<html><head></head><body><main><footer>host note</footer></main><script id="tv-config">{}</script><iframe src="https://www.tradingview-widget.com"></iframe></body></html>'
+    upgraded=upgrade_widget_tradingview(document)
+    assert '<style data-tv-host-footer>main>footer,.tradingview-widget-copyright{display:none!important}' in upgraded
+    assert 'https://www.tradingview-widget.com' in upgraded
+    assert upgrade_widget_tradingview(upgraded)==upgraded
+    legacy=upgraded.replace(upgraded[upgraded.index('<style data-tv-host-footer>'):upgraded.index('</style>',upgraded.index('<style data-tv-host-footer>'))+8],'')
+    assert 'data-tv-host-footer' in upgrade_widget_tradingview(legacy)
