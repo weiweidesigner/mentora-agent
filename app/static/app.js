@@ -671,7 +671,7 @@ function installReportTooltipPortal(frame) {
     if (source.nodeType !== 1 || !["DIV","SPAN","B","STRONG","SMALL","BR","UL","LI","P"].includes(source.tagName)) return document.createDocumentFragment();
     const clone = document.createElement(source.tagName.toLowerCase());
     const style = win.getComputedStyle(source);
-    for (const property of ["display","grid-template-columns","gap","align-items","justify-content","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","line-height","white-space","text-align","flex-shrink"]) clone.style.setProperty(property, style.getPropertyValue(property));
+    for (const property of ["display","box-sizing","flex-direction","flex-wrap","flex-grow","flex-shrink","flex-basis","grid-template-columns","grid-auto-flow","gap","row-gap","column-gap","align-items","justify-content","min-width","max-width","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","line-height","white-space","text-align","overflow","text-overflow"]) clone.style.setProperty(property, style.getPropertyValue(property));
     if (source.matches(".tip-dot,.tooltip-dot,.swatch")) {
       clone.style.width = style.width;
       clone.style.height = style.height;
@@ -715,7 +715,10 @@ function installReportTooltipPortal(frame) {
       const anchor = gesture?.direction==="horizontal" ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
       const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (gesture?.direction==="horizontal" ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));
       portal.style.left = left + "px";
-      portal.style.top = Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, chart.top + box.top)) + "px";
+      const minTop = Math.max(8, chart.top + 8);
+      const maxTop = Math.min(window.innerHeight - 8, chart.bottom - 8) - portal.offsetHeight;
+      const preferredTop = chart.top + box.top;
+      portal.style.top = (maxTop >= minTop ? Math.max(minTop, Math.min(maxTop, preferredTop)) : Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, preferredTop))) + "px";
       portal.style.setProperty("--report-tooltip-arrow-x", Math.max(12, Math.min(portal.offsetWidth - 12, anchor - left)) + "px");
       // Keep native layout measurements, but only the outer portal paints the tooltip.
       if (tip.style.visibility !== "hidden" || tip.style.getPropertyPriority("visibility") !== "important") tip.style.setProperty("visibility", "hidden", "important");
