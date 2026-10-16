@@ -160,6 +160,18 @@
     "height": 22
   },
   {
+    "id": "tv-intraday",
+    "widget": "symbol-overview",
+    "preset": "intraday",
+    "provider": "TradingView",
+    "title": "日内分时图",
+    "category": "行情观察",
+    "description": "按分钟查看最近交易日的日内走势，支持标的联动。",
+    "inputMode": "symbol",
+    "width": 6,
+    "height": 18
+  },
+  {
     "id": "tv-symbol-overview",
     "widget": "symbol-overview",
     "provider": "TradingView",

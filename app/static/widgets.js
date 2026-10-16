@@ -66,10 +66,12 @@
   function hydrateTradingView(card,spec,node){
     if(!spec.widget||!spec.config)return;const cfg=spec.config;let symbols;
     if(spec.widget==='market-data')symbols=(cfg.symbolsGroups||[]).flatMap(g=>(g.symbols||[]).map(s=>s.name));
+    else if(spec.preset==='intraday')symbols=(cfg.symbols||[]).map(s=>s[s.length-1].split('|')[0]);
     else if(typeof cfg.symbol==='string')symbols=[cfg.symbol];
     if(!symbols?.length)return;
     const parameters={...card.parameters,symbols,...(cfg.interval?{interval:cfg.interval}:{})};
-    if(card.component!=='tv-'+spec.widget||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component='tv-'+spec.widget;card.parameters=parameters;save();}
+    const component=spec.preset==='intraday'?'tv-intraday':'tv-'+spec.widget;
+    if(card.component!==component||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component=component;card.parameters=parameters;save();}
     symbolLinks(card,node);
   }
   async function linkSymbol(source,symbol){
@@ -206,7 +208,7 @@
     save();if(activeId===board.id)render();
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000),onAbort=()=>controller.abort();options.signal?.addEventListener('abort',onAbort,{once:true});
     try {
-      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,symbols,market,interval:options.interval||null,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
+      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,preset:component.preset||null,symbols,market,interval:options.interval||null,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
       const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'组件添加失败，请重试。');
       const url=safeUrl(result.url);if(!url)throw Error('组件没有返回可用的地址。');
       if(!boards.includes(board)||!board.cards.includes(card))return;

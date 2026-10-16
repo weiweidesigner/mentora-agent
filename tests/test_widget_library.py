@@ -58,3 +58,21 @@ def test_http_endpoint_returns_artifact_without_chat_framework(monkeypatch, tmp_
     assert result.json()['mode'] == 'direct'
     assert result.json()['config']['market'] == 'america'
     assert client.post('/api/widgets/tradingview',json={'widget':'unknown'}).status_code == 422
+
+
+def test_intraday_preset_is_one_day_one_minute_and_preserves_identity(tmp_path):
+    payload=lib.TradingViewInput(widget='symbol-overview',preset='intraday',symbols=['NASDAQ:AAPL'])
+    result=lib.build_widget(payload,tmp_path)
+    assert result['title']=='日内分时图 · NASDAQ:AAPL'
+    assert result['config']['symbols']==[['NASDAQ:AAPL|1']]
+    assert result['config']['dateRanges']==['1d|1']
+    assert result['config']['chartType']=='area'
+    assert result['config']['colorTheme']=='dark'
+    document=(tmp_path/Path(result['url']).name).read_text()
+    spec=json.loads(document.split('<script id="tv-config" type="application/json">')[1].split('</script>')[0])
+    assert spec['preset']=='intraday'
+    assert spec['script'].endswith('embed-widget-symbol-overview.js')
+    with pytest.raises(ValueError):
+        lib.build_widget(lib.TradingViewInput(widget='symbol-overview',preset='intraday',symbols=['NASDAQ:AAPL','NASDAQ:MSFT']),tmp_path)
+    with pytest.raises(ValueError):
+        lib.build_widget(lib.TradingViewInput(widget='advanced-chart',preset='intraday',symbols=['NASDAQ:AAPL']),tmp_path)

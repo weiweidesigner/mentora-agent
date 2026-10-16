@@ -92,3 +92,11 @@ def test_compact_ticker_height_is_supported_without_shrinking_normal_charts():
     result['actions'][0]['componentId']='tv-advanced-chart'
     with pytest.raises(ValueError,match='高度过小'):
         planner.validate_plan(result,payload,[])
+
+
+def test_switching_to_intraday_drops_previous_candle_interval():
+    p=payload('one');cards=[planner.enrich_card(c) for c in p.board.cards]
+    result=planner.validate_plan({'reply':'改为日内分时','actions':[{'type':'update','cardId':'one','componentId':'tv-intraday'}]},p,cards)
+    assert result['actions'][0]['componentId']=='tv-intraday'
+    assert result['actions'][0]['parameters']['symbols']==['NASDAQ:AAPL']
+    assert 'interval' not in result['actions'][0]['parameters']

@@ -20,7 +20,7 @@ function setup({storage,reply,plan,blocked=false}={}) {
  w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
-test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(catalog.filter(c=>c.provider==='TradingView').length,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
+test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(new Set(catalog.filter(c=>c.provider==='TradingView').map(c=>c.widget)).size,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,false);assert.ok(d.querySelector('#widgetWorkspace .widgetTopbar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的看板');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
@@ -181,4 +181,10 @@ test('symbol switching leaves chat unchanged and migrates only exact legacy assi
  const s=setup({storage:data});const before=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.equal(before.length,2);assert.equal(before[0].role,'user');assert.equal(before[0].content,notice);
  s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();assert.equal(s.d.querySelector('#widgetChatLog .is-pending'),null);await tick();await tick();
  const after=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.deepEqual(after,before);assert.doesNotMatch(s.d.querySelector('#widgetChatLog').textContent,/已切换到 TLT/);s.dom.window.close();
+});
+
+test('intraday is a single-symbol library preset and remains intraday during symbol linking',async()=>{
+ const data=linkedBoard();data.boards[0].cards[0].component='tv-intraday';data.boards[0].cards[0].parameters={symbols:['NASDAQ:AAPL']};const s=setup({storage:data});
+ s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'symbol-overview');assert.equal(body.preset,'intraday');assert.deepEqual(body.symbols,['NYSE:CRCL']);
+ s.d.querySelector('#widgetSidebarLibrary').click();await tick();s.d.querySelector('[data-component="tv-intraday"]').click();s.d.querySelector('#widgetSymbol').value='NASDAQ:HOOD';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();assert.equal(JSON.parse(s.calls.filter(c=>c.url==='/api/widgets/tradingview').at(-1).options.body).preset,'intraday');s.dom.window.close();
 });

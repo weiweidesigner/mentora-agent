@@ -23,6 +23,7 @@ class TradingViewInput(BaseModel):
     widget: str = Field(min_length=1, max_length=60)
     symbols: list[str] = Field(default_factory=list, max_length=30)
     market: str = Field(default='default', max_length=30)
+    preset: Literal['intraday'] | None = None
     symbolMarket: Literal['auto', 'us', 'hk', 'cn'] = 'auto'
     theme: Literal['dark', 'light'] = 'dark'
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
@@ -49,8 +50,10 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     tool = renderer()
     if payload.widget not in tool.CATALOG:
         raise ValueError('不支持的 TradingView 组件')
+    if payload.preset and payload.widget != 'symbol-overview':
+        raise ValueError('日内分时预设仅支持走势概览组件。')
     values = list(dict.fromkeys(s.strip() for s in payload.symbols if s.strip()))
-    if payload.widget not in MARKETS and payload.widget not in GROUPS and len(values) != 1:
+    if (payload.preset or (payload.widget not in MARKETS and payload.widget not in GROUPS)) and len(values) != 1:
         raise ValueError('该组件需要且只支持一个标的。')
     symbols = values if payload.widget in MARKETS else list(dict.fromkeys(resolve_symbol(s, payload.symbolMarket) for s in values))
     config = {}
@@ -65,6 +68,8 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
             config['market'] = 'america' if payload.market == 'default' else payload.market
         elif payload.widget == 'economic-calendar' and payload.market != 'default':
             config['countryFilter'] = payload.market
+    elif payload.preset == 'intraday':
+        config.update(symbols=[[symbols[0]+'|1']], dateRanges=['1d|1'], chartType='area')
     elif payload.widget in GROUPS:
         if not symbols:
             raise ValueError('请至少填写一个标的代码。')
@@ -84,14 +89,14 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     built = tool.build_config(payload.widget, symbol=symbol, interval=payload.interval, theme=payload.theme,
                              language=payload.language, config=config)
     catalogue = json.loads((ROOT/'app/static/widget-catalog.json').read_text())
-    item = next((c for c in catalogue if c.get('widget') == payload.widget), None)
+    item = next((c for c in catalogue if c.get('widget') == payload.widget and c.get('preset') == payload.preset), None)
     if item is None:
         raise ValueError('该组件已从看板库移除。')
     labels = {'america':'美股','china':'中国 A 股','hongkong':'港股','japan':'日本','uk':'英国','germany':'德国','us':'美国','cn':'中国','eu':'欧元区','gb':'英国','jp':'日本'}
     suffix = ', '.join(symbols) if symbols else labels.get(payload.market, item.get('defaultScope', ''))
     title = item['title'] + (' · '+suffix if suffix else '')
     height = 160 if payload.widget in {'ticker-tape', 'single-ticker', 'tickers'} else 560
-    document = tool.render(payload.widget, built, title, height, payload.language)
+    document = tool.render(payload.widget, built, title, height, payload.language, preset=payload.preset)
     # The content hash makes repeated additions reusable and updates on renderer changes.
     digest = hashlib.sha256(document.encode()).hexdigest()[:24]
     output_dir.mkdir(parents=True, exist_ok=True)
