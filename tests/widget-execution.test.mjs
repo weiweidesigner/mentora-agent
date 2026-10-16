@@ -24,16 +24,9 @@ test('execution exposes animated progress and completion can be confirmed or und
  s.d.querySelector('#widgetConfirm').click();assert.equal(s.d.querySelector('#widgetConfirm').hidden,true);assert.equal(s.d.querySelector('#widgetUndo').hidden,true);assert.equal(s.d.querySelector('#widgetStatus').hidden,true);assert.equal(s.board().title,'新看板');s.dom.window.close();
  const undo=setup();submit(undo);await tick();undo.d.querySelector('#widgetUndo').click();assert.equal(undo.board().title,'原看板');undo.dom.window.close();
 });
-test('all restores the original individual symbols and survives reload',async()=>{
- const chart=(id,symbol)=>({id,title:id,component:'tv-advanced-chart',status:'ready',url:'/generated/'+id+'.html',parameters:{symbols:[symbol]},request:symbol,x:0,y:id==='a'?20:40,w:6,h:18});
- const list={id:'list',title:'列表',component:'tv-market-data',status:'ready',url:'/generated/list.html',parameters:{symbols:['NASDAQ:AAPL','NASDAQ:MSFT','NASDAQ:NVDA']},x:0,y:0,w:12,h:18};
- const s=setup([list,chart('a','NASDAQ:AAPL'),chart('b','NASDAQ:MSFT')]);
- assert.equal(s.d.querySelector('[data-link-all]').getAttribute('aria-pressed'),'true');
- s.d.querySelector('[data-link-symbol="NASDAQ:NVDA"]').click();await tick();await tick();
- assert.deepEqual(s.board().cards.slice(1).map(c=>c.parameters.symbols[0]),['NASDAQ:NVDA','NASDAQ:NVDA']);
- const stored=s.board();s.dom.window.close();const reload=setup(stored.cards);reload.d.querySelector('[data-link-all]').click();await tick();
- assert.deepEqual(reload.board().cards.slice(1).map(c=>c.parameters.symbols[0]),['NASDAQ:AAPL','NASDAQ:MSFT']);
- assert.equal(reload.board().cards[1].url,'/generated/a.html');reload.dom.window.close();
+test('quote lists do not render symbol tabs or change other components',()=>{
+ const list={id:'list',title:'列表',component:'tv-market-data',status:'ready',url:'/generated/list.html',parameters:{symbols:['NASDAQ:AAPL','NASDAQ:MSFT']},x:0,y:0,w:12,h:18};
+ const s=setup([list]);assert.equal(s.d.querySelector('[data-link-symbol], [data-link-all], .widgetSymbolLinks'),null);assert(s.d.querySelector('[data-card="list"] iframe'));s.dom.window.close();
 });
 test('quote table height grows with actual symbol rows and grouped headings',()=>{
  const runtime=readFileSync(new URL('../app/static/tradingview-surface.js',import.meta.url),'utf8');

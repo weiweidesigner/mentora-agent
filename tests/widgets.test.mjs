@@ -97,43 +97,6 @@ test('old ticker strips become compact, pull following cards up, and remain resi
 });
 
 function linkedBoard(){const data=twoCards();data.boards[0].cards.push({id:'list',title:'CRCL / TLT / HOOD',component:'tv-market-data',url:'/generated/list.html',status:'ready',x:0,y:40,w:12,h:18,parameters:{symbols:['NYSE:CRCL','NASDAQ:TLT','NASDAQ:HOOD']}});data.boards[0].cards[0].parameters.interval='W';return data;}
-test('quote-list symbol selection updates single-symbol TradingView cards and preserves the list, market, layout, interval and undo',async()=>{
- const s=setup({storage:linkedBoard()});const source=s.d.querySelector('[data-card="list"] iframe'),market=s.d.querySelector('[data-card="two"] iframe');
- s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();
- const direct=s.calls.filter(c=>c.url==='/api/widgets/tradingview');assert.equal(direct.length,1);const body=JSON.parse(direct[0].options.body);assert.deepEqual(body.symbols,['NYSE:CRCL']);assert.equal(body.interval,'W');
- assert.equal(s.calls.some(c=>c.url==='/api/widgets/plan'||c.url==='/api/chat/stream'),false);assert.equal(s.d.querySelector('[data-card="list"] iframe'),source);assert.equal(s.d.querySelector('[data-card="two"] iframe'),market);
- let data=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(data.boards[0].focusSymbol,'NYSE:CRCL');assert.equal(data.boards[0].cards[0].w,6);assert.equal(data.boards[0].cards[0].parameters.interval,'W');assert.equal(s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').getAttribute('aria-pressed'),'true');
- s.d.querySelector('#widgetUndo').click();data=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(data.boards[0].cards[0].parameters.symbols[0],'NASDAQ:AAPL');assert.notEqual(data.boards[0].focusSymbol,'NYSE:CRCL');s.dom.window.close();
-});
-test('list-only boards create one detail chart and reuse it for subsequent selections',async()=>{
- const data=linkedBoard();data.boards[0].cards=data.boards[0].cards.filter(c=>c.id==='list');const s=setup({storage:data});
- s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();
- assert.equal(s.d.querySelectorAll('.widgetCard').length,2);s.d.querySelector('[data-link-symbol="NASDAQ:HOOD"]').click();await tick();await tick();
- const payloads=s.calls.filter(c=>c.url==='/api/widgets/tradingview').map(c=>JSON.parse(c.options.body));assert.deepEqual(payloads.map(p=>p.symbols),[['NYSE:CRCL'],['NASDAQ:HOOD']]);assert.equal(s.d.querySelectorAll('.widgetCard').length,2);s.dom.window.close();
-});
-test('legacy list metadata can be recovered from its own saved TradingView document',()=>{
- const data=linkedBoard();delete data.boards[0].cards[2].parameters;const s=setup({storage:data});const frame=s.d.querySelector('[data-card="list"] iframe'),config=frame.contentDocument.createElement('script');config.id='tv-config';config.type='application/json';config.textContent=JSON.stringify({widget:'market-data',config:{symbolsGroups:[{symbols:[{name:'NYSE:CRCL'}]}]}});frame.contentDocument.open();frame.contentDocument.write('<!doctype html><html><head></head><body></body></html>');frame.contentDocument.close();frame.contentDocument.body.append(config);frame.dispatchEvent(new s.w.Event('load'));assert.ok(s.d.querySelector('[data-link-symbol="NYSE:CRCL"]'));s.dom.window.close();
-});
-
-
-test('symbol switching leaves chat unchanged and migrates only exact legacy assistant notices',async()=>{
- const data=linkedBoard(),notice='已切换到 CRCL，更新了 5 个单标的组件。';data.boards[0].chat=[{role:'user',content:notice},{role:'assistant',content:'你可以继续调整图表。'},{role:'assistant',content:notice},{role:'assistant',content:'已切换到 TLT，更新了 5 个单标的组件。'}];
- const s=setup({storage:data});const before=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.equal(before.length,2);assert.equal(before[0].role,'user');assert.equal(before[0].content,notice);
- s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();assert.equal(s.d.querySelector('#widgetChatLog .is-pending'),null);await tick();await tick();
- const after=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].chat;assert.deepEqual(after,before);assert.doesNotMatch(s.d.querySelector('#widgetChatLog').textContent,/已切换到 TLT/);s.dom.window.close();
-});
-
-test('intraday is a single-symbol library preset and remains intraday during symbol linking',async()=>{
- const data=linkedBoard();data.boards[0].cards[0].component='tv-intraday';data.boards[0].cards[0].parameters={symbols:['NASDAQ:AAPL']};const s=setup({storage:data});
- s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'symbol-overview');assert.equal(body.preset,'intraday');assert.deepEqual(body.symbols,['NYSE:CRCL']);
- s.dom.window.close();
-});
-
-
-
-
-
-
 test('intrinsic TradingView cards use measured pixels and move neighbours when content grows',async()=>{
  const storage={activeId:'board',boards:[{id:'board',title:'尺寸检查',cards:[
   {id:'quote',title:'报价',w:6,h:18,x:0,y:0,status:'ready',component:'tv-single-ticker',url:'/generated/quote.html'},
