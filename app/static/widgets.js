@@ -26,6 +26,14 @@
     for(const other of [...board.cards].sort((a,b)=>a.y-b.y)){if(other===card||other.y<card.y+previous)continue;const candidate={...other,y:other.y-delta};if(!board.cards.some(c=>c!==other&&overlaps(c,candidate)))other.y=candidate.y;}
     return true;
   }
+  function pullFollowing(board,card,previousHeight){
+    const delta=(previousHeight-card.contentHeight)/ROW;if(delta<=0)return;
+    for(const other of [...board.cards].sort((a,b)=>a.y-b.y)){
+      if(other===card||other.y<card.y+previousHeight/ROW)continue;
+      const candidate={...other,y:other.y-delta};
+      if(!board.cards.some(c=>c!==other&&overlaps(c,candidate)))other.y=candidate.y;
+    }
+  }
   const isOldSymbolNotice=m=>m?.role==='assistant'&&!m.scope&&/^已切换到 [A-Z0-9_.!/^+\-]+，更新了 \d+ 个单标的组件。(?:部分组件未能加载，可重新生成。)?$/.test(m.content||'');
   function load() {
     try {
@@ -37,6 +45,13 @@
     } catch { boards = []; }
     if (!boards.length) {const board={id:uid(),title:'我的 Widget',cards:[],messages:[]};boards.push(board);openIds=[board.id];initialEmptyId=board.id;}
     for(const board of boards)for(const card of board.cards)compactTicker(board,card);
+    // Repair the original starter layout after an earlier intrinsic measurement
+    // was saved without pulling the following rows up. Leave moved cards alone.
+    for(const board of boards){
+      const quote=board.cards.find(c=>c.id===board.id.replace('starter-','')+'-symbol-info');
+      const chart=board.cards.find(c=>c.id===board.id.replace('starter-','')+'-advanced-chart');
+      if(board.id.startsWith('starter-')&&quote?.contentHeight&&quote.x===0&&quote.y===0&&quote.w===12&&chart?.x===0&&chart.y===13)pullFollowing(board,quote,12*ROW);
+    }
     if(!openIds.includes(activeId))activeId=openIds[0]||'';
   }
   function save() {
@@ -149,7 +164,8 @@
         height+=el.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40;
         const board=boards.find(b=>b.cards.includes(card));if(!board||!el.isConnected)return;
         if(Math.abs((card.contentHeight||0)-height)<=1)return;
-        card.contentHeight=height;card.h=Math.ceil(height/ROW);settle(board,card);save();
+        const previousHeight=card.contentHeight||card.h*ROW;
+        card.contentHeight=height;card.h=Math.ceil(height/ROW);pullFollowing(board,card,previousHeight);settle(board,card);save();
         if(board.id===activeId)applyLayout();
       });try{const spec=JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}');hydrateTradingView(card,spec,el);if(spec.widget==='ticker-tape'){card.component='tv-ticker-tape';const board=boards.find(b=>b.cards.includes(card));if(board&&compactTicker(board,card)){save();if(board.id===activeId)applyLayout();}}}catch{}if(card.customTitle)return;try {const doc=frame.contentDocument;let title=(doc?.querySelector('h1,h2,.chart-title,.module-title')?.textContent||doc?.title||'').trim();if(doc?.querySelector('#tv-config'))title=title.replace(/\s*[·|\-]\s*TradingView\s*$/i,'');if(title&&title.length<160&&title!==card.title){card.title=title;el.querySelector('.widgetCardTitle').textContent=title;frame.title=title;save();}}catch { /* Cross-origin subframes keep their supplied title. */ }});el.append(frame);
     } else {
