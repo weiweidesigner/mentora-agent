@@ -127,3 +127,24 @@ def test_broker_defaults_fill_missing_or_legacy_scope(widget,tmp_path):
     for symbols in [[],['全球'],['经纪商评分']]:
         result=lib.build_widget(lib.TradingViewInput(widget=widget,symbols=symbols),tmp_path)
         assert result['config']['broker']=='easymarkets'
+
+
+def test_all_library_presets_add_ready_artifacts_without_parameters(monkeypatch,tmp_path):
+    build=lib.build_widget
+    monkeypatch.setattr(lib,'build_widget',lambda payload:build(payload,tmp_path))
+    monkeypatch.setattr(lib,'GENERATED',tmp_path)
+    catalog=json.loads((lib.ROOT/'app/static/widget-catalog.json').read_text())
+    for item in catalog:
+        result=lib.add_preset(item['id'])
+        artifact=tmp_path/Path(result['url']).name
+        assert artifact.is_file() and artifact.stat().st_size>500,item['id']
+        assert result['title'] and 'symbols' in result['parameters']
+        if item.get('provider')!='TradingView':
+            assert result['mode']=='preset'
+            assert result['cachedDate']
+        elif item.get('preset')=='intraday':
+            assert result['parameters']['symbols']==['NASDAQ:AAPL']
+        elif item.get('preset')=='forex':
+            assert result['config']['market']=='forex'
+    with pytest.raises(Exception) as error:lib.add_preset('unknown')
+    assert error.value.status_code==404

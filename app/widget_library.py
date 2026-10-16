@@ -148,3 +148,38 @@ def find_symbols(query: str = Query(min_length=1, max_length=80), market: Litera
         return {'results': search_symbols(query, market)}
     except ValueError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@router.post('/api/widgets/presets/{component_id}')
+def add_preset(component_id: str):
+    """Add a ready-to-use component without asking for parameters or calling a model."""
+    catalog=json.loads((ROOT/'app/static/widget-catalog.json').read_text())
+    item=next((row for row in catalog if row['id']==component_id),None)
+    if not item:
+        raise HTTPException(status_code=404,detail='图表已从图表库移除。')
+    if item.get('provider')=='TradingView':
+        directory=json.loads((ROOT/'app/static/tradingview-directory.json').read_text())
+        meta=next(row for row in directory['widgets'] if row['widget']==item['widget'])
+        symbols=meta['symbols']
+        if item.get('preset')=='intraday':symbols=['NASDAQ:AAPL']
+        if item.get('preset') in {'forex','crypto-pairs'}:symbols=[]
+        result=build_widget(TradingViewInput(widget=item['widget'],symbols=symbols,preset=item.get('preset')))
+        result['parameters']={'symbols':symbols,'market':'default',**({'interval':result['config']['interval']} if result['config'].get('interval') else {})}
+        return result
+    manifest=json.loads((ROOT/'app/static/cases/inspiration/manifest.json').read_text())
+    case=next((row for row in manifest['cases'] if row['id']=='business-'+component_id),None)
+    if not case:
+        raise HTTPException(status_code=404,detail='该图表的预制内容暂不可用。')
+    cached=json.loads((ROOT/'app'/case['conversationUrl'].lstrip('/')).read_text())
+    artifact=cached['answer']['reportArtifacts'][0]
+    from urllib.parse import urlparse
+    source=(ROOT/'app'/urlparse(artifact['url']).path.lstrip('/')).resolve()
+    if not source.is_relative_to(ROOT/'app/static/cases') or not source.is_file():
+        raise HTTPException(status_code=404,detail='预制图表暂不可用。')
+    content=source.read_bytes()
+    target=GENERATED/('widget-preset-'+hashlib.sha256(content).hexdigest()[:24]+'.html')
+    GENERATED.mkdir(parents=True,exist_ok=True)
+    if not target.exists():target.write_bytes(content)
+    symbol=case['title'].split(' · ')[0].strip()
+    return {'title':case['title'],'url':'/generated/'+target.name,'mode':'preset','cachedDate':case['cachedDate'],
+            'parameters':{'symbols':[symbol],'market':'default'}}

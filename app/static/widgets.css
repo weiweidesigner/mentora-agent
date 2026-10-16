@@ -101,3 +101,103 @@
 .widgetSymbolLinks button{flex:none;padding:4px 10px;border-radius:6px;font-size:12px;color:var(--muted)}
 .widgetSymbolLinks button[aria-pressed=true]{background:var(--soft-2);border-color:var(--ink);color:var(--ink)}
 .widgetSymbolLinks button:disabled{opacity:.5;cursor:wait}
+
+/* TradingView already renders its own card; retain only overlay editing controls. */
+.widgetCard.is-tradingview{border:0;border-radius:0;background:transparent;box-shadow:none}
+.widgetCard.is-tradingview iframe{width:100%;margin:0}
+.widgetCard.is-tradingview .widgetCardHeader{position:absolute;inset:0 0 auto;z-index:3;height:32px;border:0;border-radius:6px;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .15s}
+.widgetCard.is-tradingview:hover .widgetCardHeader,.widgetCard.is-tradingview:focus-within .widgetCardHeader,.widgetCard.is-tradingview.is-selected .widgetCardHeader{opacity:1;pointer-events:auto}
+
+/* Canvas-first Widget workspace. */
+@media(min-width:761px){
+ .shell.widgets-view,.shell.widgets-view.sidebar-collapsed{grid-template-columns:56px minmax(0,1fr) 0}
+ .shell.widgets-view .sidebarContent{display:none!important}
+ .shell.widgets-view .sidebarRail{display:flex}
+}
+.widgetWorkspace{position:relative}
+.widgetWorkspace .widgetTopbar{height:54px;min-height:54px;padding:0 16px;gap:4px;align-items:stretch}
+.widgetWorkspace .widgetBoardTabs{flex:1 1 auto;gap:0!important;overflow-x:auto;scrollbar-width:none}
+.widgetTab{display:flex;align-items:center;position:relative;flex:none;max-width:230px;border-right:1px solid var(--line);border-bottom:2px solid transparent;min-width:120px;cursor:grab}
+.widgetTab.is-active{background:var(--soft-2);border-bottom-color:var(--accent)}
+.widgetTab.is-dragging{opacity:.4}
+.widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{border:0!important;background:transparent!important;border-radius:0!important;min-width:0;max-width:198px;padding:0 12px!important;height:100%;font-size:13px!important;flex:1;color:var(--muted)}
+.widgetWorkspace .widgetBoardTabs .widgetTab.is-active>[role=tab]{color:var(--ink);font-weight:550}
+.widgetWorkspace .widgetBoardTabs .widgetTabClose{padding:0!important;width:28px;min-width:28px;max-width:28px;height:28px;border:0!important;border-radius:5px!important;font-size:18px!important;visibility:hidden;background:transparent}
+.widgetWorkspace .widgetBoardTabs .is-active .widgetTabClose,.widgetWorkspace .widgetBoardTabs .widgetTab:hover .widgetTabClose,.widgetTab:focus-within .widgetTabClose{visibility:visible}
+.widgetWorkspace #widgetNew{margin:0 4px;padding:4px 8px}
+.widgetWorkspace .widgetTopActions{margin:0 0 0 auto;align-self:stretch;align-items:center;gap:8px}
+.widgetWorkspace .widgetTopActions #widgetSidebarLibrary,.widgetWorkspace .widgetTopActions #widgetManageOpen{display:inline-flex;align-items:center;white-space:nowrap;font-size:13px;padding:8px 12px;margin:0;border:1px solid var(--line);border-radius:7px}
+.widgetWorkspace .widgetScroll{padding:20px 24px 160px}
+.widgetWorkspace>.widgetComposerArea{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(740px,calc(100% - 48px));z-index:8;padding:0;background:transparent;pointer-events:none}
+.widgetComposerArea>*{pointer-events:auto}
+.widgetWorkspace .widgetComposerBox{box-shadow:0 8px 40px #0003;background:var(--soft);border:1px solid color-mix(in srgb,var(--ink) 18%,var(--line));border-radius:28px;padding:10px 12px 10px 20px}
+.widgetWorkspace .widgetCommandScope{padding:0 4px 8px}
+.widgetWorkspace #widgetScope{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:5px 10px;max-width:calc(100% - 50px)}
+.widgetWorkspace .widgetStatus{font-size:12px;line-height:1.6;max-height:96px;overflow:auto;padding:8px 12px;margin:0 0 8px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.widgetWorkspace .widgetCard.is-tradingview{border:1px solid var(--line);border-radius:8px;background:var(--bg);box-shadow:0 3px 18px #0000000a}
+.widgetWorkspace .widgetCard.is-tradingview .widgetCardHeader{position:relative;inset:auto;opacity:1;pointer-events:auto;height:40px;flex:none;border-bottom:1px solid var(--line);border-radius:0;background:transparent;z-index:3}
+.widgetCardActions button{display:grid;place-items:center;width:28px;height:28px;padding:6px!important}
+.widgetCardActions svg,.widgetManagerRow svg{display:block;width:16px;height:16px;fill:currentColor}
+.widgetCardActions button:hover{color:var(--ink)}
+.widgetCardActions [data-remove]:hover{color:var(--danger)}
+.widgetLibraryDrawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(500px,100vw);height:100dvh;max-height:100dvh;border-radius:0;padding:0;border:0;border-left:1px solid var(--line);overflow:hidden;box-sizing:border-box}
+.widgetLibraryDrawer[open]{display:flex;flex-direction:column}
+.widgetLibraryDrawer::backdrop{backdrop-filter:none;background:#0003}
+.widgetLibraryDrawer>header{padding:22px 24px;margin:0;flex:none;border-bottom:1px solid var(--line)}
+.widgetLibraryBody{display:flex;flex:1;min-height:0}
+.widgetLibraryDrawer .widgetCategories{flex:0 0 120px;display:flex;flex-direction:column;align-items:stretch;overflow:auto;padding:12px 8px;gap:4px;border-right:1px solid var(--line)}
+.widgetLibraryDrawer .widgetCategories button{white-space:normal;text-align:left;border:0;font-size:12px;padding:9px 8px}
+.widgetLibraryDrawer .widgetLibraryList{display:flex;flex:1;min-width:0;max-height:none;overflow:auto;flex-direction:column;padding:16px;gap:12px}
+.widgetLibraryCard{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:16px;flex:none;min-width:0}
+.widgetLibraryCard>div{flex:1;min-width:0}
+.widgetLibraryCard strong{display:block;font-size:14px;font-weight:550;line-height:1.5}
+.widgetLibraryCard small{display:block;font-size:12px;line-height:1.6;color:var(--muted);margin-top:6px}
+.widgetLibraryDrawer .widgetLibraryCard>button{flex:none;width:28px;height:28px;min-height:28px;padding:0;display:grid;place-items:center;text-align:center;border-radius:50%;font-size:22px;color:var(--ink)}
+.widgetLibraryDrawer #widgetLibraryStatus{margin:0;padding:12px 24px;font-size:12px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);flex:none;min-height:44px}
+.widgetConfig{width:min(520px,calc(100vw - 32px));max-height:90dvh;overflow:auto;padding:24px}
+.widgetConfig>header,.widgetManager>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.widgetConfig>header h2,.widgetManager>header h2{margin:0}
+.widgetConfig>header button,.widgetManager>header button{border:0;background:transparent;color:var(--muted);font-size:24px;padding:0 4px}
+.widgetConfig .widgetAddForm,.widgetConfig .widgetAddForm.has-symbol-market{display:flex;flex-direction:column;align-items:stretch;gap:16px;margin:0}
+.widgetConfig .widgetAddForm label{display:block;width:100%}
+.widgetConfig .widgetAddForm input,.widgetConfig .widgetAddForm select{margin-top:8px}
+.widgetConfig .widgetConfigActions{display:flex;justify-content:flex-end;gap:10px;margin:0}
+.widgetConfig .widgetConfigActions button{height:auto;min-height:38px;margin:0;flex:none}
+.widgetConfig #widgetConfigCancel{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.widgetConfig #widgetConfigError{font-size:12px;color:var(--danger);line-height:1.6;margin:0}
+.widgetConfig #widgetConfigError:empty{display:none}
+.widgetConfig .widgetSymbolChoices{bottom:calc(100% - 20px)}
+.widgetManager{width:min(560px,calc(100vw - 32px));max-height:85dvh;overflow:auto;padding:24px}
+.widgetManagerRow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.widgetManagerRow button{border:0;background:transparent;color:var(--ink);cursor:pointer;font:inherit;text-align:left;padding:8px}
+.widgetManagerRow button:first-child{flex:1;min-width:0}
+.widgetManagerRow strong{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.widgetManagerRow small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.widgetManagerRow button:last-child{color:var(--muted)}
+.widgetManagerRow button:last-child:hover{color:var(--danger)}
+#widgetManagerNew{width:100%;margin-top:20px;color:var(--ink);border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:10px;cursor:pointer}
+.widgetConfig [hidden],.widgetWorkspace [hidden]{display:none!important}
+@media(max-width:760px){
+ .shell.widgets-view .sidebarContent{display:none!important}
+ .widgetWorkspace{padding-top:52px}
+ .widgetWorkspace .widgetTopbar{height:48px;min-height:48px;padding:0 8px}
+ .widgetTab{min-width:92px;max-width:150px}
+ .widgetWorkspace .widgetBoardTabs .widgetTab>[role=tab]{padding:0 8px!important;font-size:12px!important}
+ .widgetWorkspace .widgetTopActions{gap:4px}
+ .widgetWorkspace .widgetTopActions #widgetSidebarLibrary,.widgetWorkspace .widgetTopActions #widgetManageOpen{font-size:11px;padding:7px 6px}
+ .widgetWorkspace #widgetNew{padding:4px;margin:0;font-size:20px}
+ .widgetWorkspace .widgetScroll{padding:12px 12px 150px}
+ .widgetWorkspace>.widgetComposerArea{width:calc(100% - 24px);bottom:max(12px,env(safe-area-inset-bottom))}
+ .widgetLibraryDrawer .widgetCategories{flex-basis:100px}
+ .widgetLibraryDrawer .widgetLibraryList{padding:12px;gap:10px}
+ .widgetLibraryCard{padding:12px;gap:8px}
+ .widgetLibraryDrawer>header{padding:18px 20px}
+}
+.widgetWorkspace .widgetBoardTabs{flex:0 1 auto}
+.widgetWorkspace #widgetGenerate,.widgetWorkspace #widgetStop{display:grid;place-items:center;border-radius:50%;padding:0}
+.widgetConfig .widgetSymbolMarketField{order:1}
+.widgetConfig #widgetParameterField{order:2}
+.widgetConfig #widgetIntervalField{order:3}
+.widgetConfig #widgetConfigError{order:4}
+.widgetConfig .widgetConfigActions{order:5}
+.widgetLibraryDrawer{max-width:100vw}
