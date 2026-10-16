@@ -4598,3 +4598,6 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 
 /* The midday sun is fully above the horizon; keep all rotating rays visible. */
 .daySceneArt[data-scene="live"] g[clip-path] { clip-path:none; }
+
+/* Keep task-title chevrons close to their text. */
+.taskWorkspace .thinkingTrigger { gap:3px; }
