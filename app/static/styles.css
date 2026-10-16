@@ -4608,3 +4608,12 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 .inspirationWidgetGroupHeader h4 { margin:0 0 6px; font-size:16px; line-height:1.5; font-weight:600; }
 .inspirationWidgetGroupHeader p { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
 @media(max-width:640px) { .inspirationWidgetGroup + .inspirationWidgetGroup { margin-top:28px; } }
+
+/* Generated answers can start with a Markdown rule; it adds no content. */
+.finalAnswer :is(.reportInterpretation,.streamingAnswer) > hr:first-child {
+  display:none;
+}
+.finalAnswer :is(.reportInterpretation,.streamingAnswer) > hr:first-child + :is(h1,h2,h3,h4,h5,h6) {
+  margin-top:0;
+}
+.taskThread .thinkingTrigger { margin-bottom:8px; vertical-align:top; }
