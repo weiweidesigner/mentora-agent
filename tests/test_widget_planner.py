@@ -110,3 +110,10 @@ def test_host_footer_is_hidden_for_standalone_and_old_canvas_documents():
     assert upgrade_widget_tradingview(upgraded)==upgraded
     legacy=upgraded.replace(upgraded[upgraded.index('<style data-tv-host-footer>'):upgraded.index('</style>',upgraded.index('<style data-tv-host-footer>'))+8],'')
     assert 'data-tv-host-footer' in upgrade_widget_tradingview(legacy)
+
+
+def test_broker_addition_without_parameters_gets_default():
+    from app import widget_planner as planner
+    payload=planner.PlanningInput(message='加个经纪商评分',board={'id':'b','title':'看板','cards':[]})
+    result=planner.validate_plan({'reply':'已添加经纪商评分。','actions':[{'type':'add','componentId':'tv-broker-rating'}]},payload,[])
+    assert result['actions'][0]['parameters']['symbols']==['easymarkets']

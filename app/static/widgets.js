@@ -196,14 +196,15 @@
     $('widgetSymbol').placeholder=market?`留空使用：${selected.defaultScope}`:selected?.provider==='TradingView'?(group?'例如 NASDAQ:AAPL、NASDAQ:MSFT、NASDAQ:NVDA':'例如 NASDAQ:AAPL、HKEX:700'):'例如 AAPL、NVDA 或 MSFT';
     symbolPicker?.configure(selected?.provider==='TradingView'&&['symbol','group'].includes(mode),group);
     if(mode==='currencies')$('widgetSymbol').placeholder='例如 USD、EUR、JPY；留空使用主要货币';
-    if(mode==='broker')$('widgetSymbol').placeholder='TradingView 经纪商标识，例如 easymarkets';
-    if(selected?.allowEmptySymbols)$('widgetSymbol').placeholder='留空查看全球市场，或输入自选标的名称 / 代码';
+    if(mode==='broker'&&!input.value.trim())input.value=selected?.defaultSymbols?.[0]||'easymarkets';
+    if(selected?.allowEmptySymbols)$('widgetSymbol').placeholder=mode==='broker'?'默认使用 easyMarkets，可直接添加':'留空查看全球市场，或输入自选标的名称 / 代码';
   }
   async function addTradingView(message, component, retryId, market='default',options={},board=current()) {if(!board)return;
     if(board.cards.length>=60&&!retryId){notice('当前看板最多放置 60 张图表，请新建看板继续。');return;}
     const widget=component.widget||component.id.slice(3),isMarket=['screener','crypto-mkt-screener','stock-heatmap','crypto-heatmap','market-overview','economic-calendar','top-stories','stock-market','etf-heatmap','market-summary','world-market-summary','economic-map'].includes(widget);
     const symbolMarket=options.signal?'auto':retryId?(board.cards.find(c=>c.id===retryId)?.symbolMarket||'auto'):(symbolPicker?.enabled?symbolPicker.select.value:'auto');
     const symbols=isMarket?[]:options.symbols||message.split(/[,，、;；\s]+/).map(s=>s.trim()).filter(Boolean);
+    if(component.inputMode==='broker'&&(!symbols.length||(retryId&&symbols.some(s=>!/^[a-z0-9][a-z0-9-]{1,49}$/i.test(s))))){symbols.splice(0,symbols.length,...(component.defaultSymbols||['easymarkets']));}
     let card=retryId&&board.cards.find(c=>c.id===retryId);
     if(card)Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market,symbolMarket});
     else {card={id:uid(),title:component.title,w:component.width||6,h:component.height||18,status:'loading',loadingText:'正在加载 TradingView…',url:'',request:message,component:component.id,market,symbolMarket};place(board,card);board.cards.push(card);}

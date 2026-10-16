@@ -738,11 +738,15 @@
     "category": "经纪商",
     "description": "展示指定经纪商在 TradingView 上的用户评分。",
     "inputMode": "broker",
-    "defaultScope": "全球",
+    "defaultScope": "easymarkets",
     "width": 6,
     "height": 12,
     "officialName": "Broker Rating",
-    "widgetGroup": "brokers"
+    "widgetGroup": "brokers",
+    "defaultSymbols": [
+      "easymarkets"
+    ],
+    "allowEmptySymbols": true
   },
   {
     "id": "tv-broker-reviews",
@@ -752,11 +756,15 @@
     "category": "经纪商",
     "description": "展示指定经纪商在 TradingView 上的用户评论。",
     "inputMode": "broker",
-    "defaultScope": "全球",
+    "defaultScope": "easymarkets",
     "width": 6,
     "height": 20,
     "officialName": "Broker Reviews",
-    "widgetGroup": "brokers"
+    "widgetGroup": "brokers",
+    "defaultSymbols": [
+      "easymarkets"
+    ],
+    "allowEmptySymbols": true
   },
   {
     "id": "tv-forex-screener",

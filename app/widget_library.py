@@ -85,6 +85,9 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
             raise ValueError('请输入 2 到 10 个支持的货币代码，例如 USD、EUR、JPY。')
         if currencies: config['currencies']=currencies
     elif payload.widget in BROKER_WIDGETS:
+        if not values or values in [['全球'],['default'],['经纪商评分'],['经纪商评论']]:
+            values=[tool.CATALOG[payload.widget]['defaults']['broker']]
+        symbols=values
         import re
         if len(values)!=1 or not re.fullmatch(r'[a-z0-9][a-z0-9-]{1,49}',values[0].lower()):
             raise ValueError('请输入 TradingView 经纪商标识，例如 easymarkets。')

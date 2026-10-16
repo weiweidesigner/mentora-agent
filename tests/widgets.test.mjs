@@ -221,3 +221,7 @@ test('forex and crypto screener entries preserve presets with no redundant marke
   assert.equal(body.preset,preset);assert.deepEqual(body.symbols,[]);dom.window.close();
  }
 });
+test('broker cards prefill a working default and allow direct addition without manual parameters',async()=>{
+ const s=setup();s.d.querySelector('#widgetSidebarLibrary').click();await tick();s.d.querySelector('[data-component="tv-broker-rating"]').click();assert.equal(s.d.querySelector('#widgetSymbol').value,'easymarkets');assert.equal(s.d.querySelector('#widgetSymbol').required,false);
+ s.d.querySelector('#widgetSymbol').value='';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.deepEqual(body.symbols,['easymarkets']);assert.equal(s.calls.some(c=>c.url==='/api/widgets/plan'||c.url==='/api/chat/stream'),false);s.dom.window.close();
+});

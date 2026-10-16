@@ -121,3 +121,9 @@ def test_global_overviews_include_asset_groups(tmp_path):
     assert len(overview['config']['tabs'])==4
     assert len(data['config']['symbolsGroups'])==4
     assert all(group['symbols'] for group in data['config']['symbolsGroups'])
+
+@pytest.mark.parametrize('widget',['broker-rating','broker-reviews'])
+def test_broker_defaults_fill_missing_or_legacy_scope(widget,tmp_path):
+    for symbols in [[],['全球'],['经纪商评分']]:
+        result=lib.build_widget(lib.TradingViewInput(widget=widget,symbols=symbols),tmp_path)
+        assert result['config']['broker']=='easymarkets'
