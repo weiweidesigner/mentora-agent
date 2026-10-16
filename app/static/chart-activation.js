@@ -23,7 +23,7 @@
     button.addEventListener('click',event=>{
       event.preventDefault();event.stopPropagation();
       if(active&&active!==frame)lock(active);
-      active=frame;button.hidden=true;card.classList.add('is-chart-active');frame.focus();
+      active=frame;button.hidden=true;card.classList.add('is-chart-active');frame.focus({preventScroll:true});
     });
     const leave=()=>lock(frame);card.addEventListener('pointerleave',leave);
     guards.set(frame,{card,button,leave});card.append(button);
