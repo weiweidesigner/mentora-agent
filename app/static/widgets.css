@@ -219,11 +219,11 @@
 .widgetWorkspace .widgetWelcome h2{font-size:25px;letter-spacing:-.5px;margin:0 0 10px;color:var(--ink);font-weight:550}
 .widgetWorkspace .widgetWelcome p{font-size:15px;line-height:1.7;color:var(--muted);margin:0 0 30px}
 .widgetWorkspace .widgetEmpty .widgetSuggestions{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;margin:0}
-.widgetWorkspace .widgetEmpty .widgetSuggestions button{display:block;max-width:100%;border:0;border-radius:0;background:transparent;padding:4px 8px;color:var(--muted);font:inherit;font-size:14px;line-height:1.8;text-align:center;cursor:pointer;animation:widgetPromptFloat 7s ease-in-out infinite;transition:color .2s}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button{display:block;max-width:100%;border:0;border-radius:0;background:transparent;padding:4px 8px;color:var(--muted);font:inherit;font-size:18px;line-height:1.8;text-align:center;cursor:pointer;animation:widgetPromptFloat 8s ease-in-out infinite;transition:color .2s}
 .widgetWorkspace .widgetEmpty .widgetSuggestions button:nth-child(2){animation-delay:-1.8s}.widgetWorkspace .widgetEmpty .widgetSuggestions button:nth-child(3){animation-delay:-3.6s}.widgetWorkspace .widgetEmpty .widgetSuggestions button:nth-child(4){animation-delay:-5.4s}
-.widgetWorkspace .widgetEmpty .widgetSuggestions button:hover{color:var(--ink);background:transparent;animation-play-state:paused}
-.widgetWorkspace .widgetEmpty .widgetSuggestions button:focus-visible{outline:2px solid var(--accent);outline-offset:5px;animation-play-state:paused}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button:hover{color:var(--ink);background:transparent;opacity:1!important;animation-play-state:paused}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button:focus-visible{outline:2px solid var(--accent);outline-offset:5px;opacity:1!important;animation-play-state:paused}
 @keyframes widgetWelcomeFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-@keyframes widgetPromptFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-@media(max-width:760px){.widgetWorkspace .widgetEmpty:not([hidden]){padding:24px 16px 120px}.widgetWelcomeLogo{width:60px;height:60px;margin-bottom:18px}.widgetWorkspace .widgetWelcome h2{font-size:22px}.widgetWorkspace .widgetWelcome p{font-size:14px;margin-bottom:22px}.widgetWorkspace .widgetEmpty .widgetSuggestions{gap:12px}.widgetWorkspace .widgetEmpty .widgetSuggestions button{font-size:13px;padding:3px 0}}
-@media(prefers-reduced-motion:reduce){.widgetWelcomeLogo,.widgetWorkspace .widgetEmpty .widgetSuggestions button{animation:none}}
+@keyframes widgetPromptFloat{0%,100%{transform:translateY(0);opacity:.42}50%{transform:translateY(-3px);opacity:1}}
+@media(max-width:760px){.widgetWorkspace .widgetEmpty:not([hidden]){padding:24px 16px 120px}.widgetWelcomeLogo{width:60px;height:60px;margin-bottom:18px}.widgetWorkspace .widgetWelcome h2{font-size:22px}.widgetWorkspace .widgetWelcome p{font-size:14px;margin-bottom:22px}.widgetWorkspace .widgetEmpty .widgetSuggestions{gap:12px}.widgetWorkspace .widgetEmpty .widgetSuggestions button{font-size:15px;padding:3px 0}}
+@media(prefers-reduced-motion:reduce){.widgetWelcomeLogo,.widgetWorkspace .widgetEmpty .widgetSuggestions button{animation:none;opacity:1}}
