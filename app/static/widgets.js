@@ -344,7 +344,7 @@
     $('widgetScope').textContent=card?`已选：${card.title} ×`:'';
     $('widgetScope').hidden=!card;
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
-    $('widgetPrompt').placeholder=card?'想怎样调整这张卡片？':'描述你想要的图表，或选中卡片进行调整…';
+    $('widgetPrompt').placeholder=card?'想怎样调整这张卡片？':'输入你要创建的看板需求';
     $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=commandControllers.has(activeId);
     for(const node of canvas.children)node.classList.toggle('is-selected',node.dataset.card===selectedCardId);
   }
