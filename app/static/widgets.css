@@ -227,3 +227,14 @@
 @keyframes widgetPromptFloat{0%,100%{transform:translateY(0);opacity:.42}50%{transform:translateY(-3px);opacity:1}}
 @media(max-width:760px){.widgetWorkspace .widgetEmpty:not([hidden]){padding:24px 16px 120px}.widgetWelcomeLogo{width:60px;height:60px;margin-bottom:18px}.widgetWorkspace .widgetWelcome h2{font-size:22px}.widgetWorkspace .widgetWelcome p{font-size:14px;margin-bottom:22px}.widgetWorkspace .widgetEmpty .widgetSuggestions{gap:12px}.widgetWorkspace .widgetEmpty .widgetSuggestions button{font-size:15px;padding:3px 0}}
 @media(prefers-reduced-motion:reduce){.widgetWelcomeLogo,.widgetWorkspace .widgetEmpty .widgetSuggestions button{animation:none;opacity:1}}
+
+/* Execution feedback and explicit acceptance of canvas edits. */
+.widgetExecutionRing{width:23px;height:23px;border:2px solid color-mix(in srgb,currentColor 22%,transparent);border-top-color:currentColor;border-right-color:currentColor;border-radius:50%;animation:widgetExecuting 1s linear infinite}
+.widgetExecutionStop{position:absolute;width:7px;height:7px;background:currentColor;border-radius:2px}
+.widgetWorkspace #widgetStop{position:relative}
+@keyframes widgetExecuting{to{transform:rotate(360deg)}}
+.widgetWorkspace .widgetStatus.is-thinking{position:relative;border:0;background:linear-gradient(100deg,var(--muted) 20%,var(--ink) 45%,var(--muted) 70%);background-size:220% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:widgetThinkingFlow 2.4s ease-in-out infinite;padding:8px 0;margin-bottom:8px}
+@keyframes widgetThinkingFlow{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.widgetCommandScope .widgetConfirmButton{display:grid;place-items:center;flex:none;width:32px;height:32px;border:1px solid var(--line);border-radius:50%;background:var(--ink);color:var(--bg);padding:0;cursor:pointer}
+.widgetConfirmButton svg{width:17px;height:17px}.widgetConfirmButton:disabled{opacity:.4;cursor:default}.widgetConfirmButton:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.widgetExecutionRing,.widgetWorkspace .widgetStatus.is-thinking{animation:none}.widgetWorkspace .widgetStatus.is-thinking{color:var(--muted);background:none}}

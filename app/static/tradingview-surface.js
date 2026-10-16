@@ -27,8 +27,15 @@ html[data-tv-intrinsic] main,html[data-tv-intrinsic] .stage,html[data-tv-intrins
 html[data-tv-intrinsic] .stage{min-height:var(--tv-loading-height,0px)!important}
 html[data-tv-intrinsic] #mount ${spec.format === 'web-component' ? spec.tag : '.tradingview-widget-container__widget'}{height:auto!important;min-height:0!important}
 `;
-    const intrinsic = naturalWidgets.has(spec.widget);
-    if (intrinsic) doc.documentElement.dataset.tvIntrinsic = 'true';
+    const contentSized=spec.widget==='market-data';
+    const intrinsic = naturalWidgets.has(spec.widget)||contentSized;
+    if (naturalWidgets.has(spec.widget)) doc.documentElement.dataset.tvIntrinsic = 'true';
+    if(contentSized){
+      doc.documentElement.dataset.tvSized='true';
+      style.textContent+=`html[data-tv-sized],html[data-tv-sized] body,html[data-tv-sized] main{height:auto!important;min-height:0!important;overflow:hidden}
+html[data-tv-sized] .stage{height:var(--tv-content-height)!important;min-height:0!important;flex:none!important}
+html[data-tv-sized] #mount,html[data-tv-sized] .tradingview-widget-container,html[data-tv-sized] .tradingview-widget-container__widget{height:100%!important}`;
+    }
     const observed = new WeakSet();
     let scheduled = false, lastHeight = 0;
     const measure = () => {
@@ -36,6 +43,7 @@ html[data-tv-intrinsic] #mount ${spec.format === 'web-component' ? spec.tag : '.
       if (!frame.isConnected) return;
       const native = spec.format === 'web-component' ? mount.querySelector(spec.tag) : mount.querySelector('iframe');
       if (native && resizeObserver && !observed.has(native)) { observed.add(native); resizeObserver.observe(native); }
+      if(contentSized){const groups=spec.config?.symbolsGroups||[],rows=groups.reduce((sum,g)=>sum+(g.symbols?.length||0),0);stage.style.setProperty('--tv-content-height',(54+(groups.length>1?groups.length*32:0)+rows*36+32)+'px');}
       const nativeHeight = native?.getBoundingClientRect().height || 0;
       // Never collapse the loading/error/retry UI while a remote script is pending.
       const pending = !doc.querySelector('#state')?.hidden;

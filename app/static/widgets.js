@@ -15,7 +15,9 @@
   const trashIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M966.128 181.12H840.96c-0.168 0-0.32-0.096-0.488-0.096-0.16 0-0.312 0.096-0.48 0.096H184.064c-0.176 0-0.32-0.096-0.48-0.096-0.16 0-0.304 0.096-0.48 0.096H57.872a32.6 32.6 0 1 0 0 65.208h93.104v651.928c0 69.32 56.392 125.744 125.712 125.744h470.688c69.32 0 125.712-56.424 125.712-125.744V246.328h93.04a32.6 32.6 0 1 0 0-65.208z m-158.256 717.136c0 33.376-27.136 60.528-60.504 60.528H276.688c-33.352 0-60.496-27.16-60.496-60.528V246.328h591.68v651.928z"/><path d="M346.488 814.744a32.608 32.608 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24a32.6 32.6 0 0 0 32.608 32.616zM512 814.744a32.6 32.6 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24A32.6 32.6 0 0 0 512 814.744zM677.544 814.744a32.584 32.584 0 0 0 32.6-32.608V422.888c0-18.008-14.576-32.6-32.6-32.6s-32.608 14.592-32.608 32.6v359.24a32.592 32.592 0 0 0 32.608 32.616zM318.848 157.6a32.608 32.608 0 0 0 32.608-32.6c0-23.808 64.048-59.792 160.576-59.792 96.512 0 160.544 35.984 160.544 59.792a32.6 32.6 0 0 0 32.608 32.6 32.592 32.592 0 0 0 32.6-32.6C737.792 53.736 640.736 0 512.032 0 383.312 0 286.24 53.736 286.24 125a32.608 32.608 0 0 0 32.608 32.6z"/></svg>`;
   const configIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M114.11 276.65h474.9c13.49 54.81 63.05 95.59 121.96 95.59s108.47-40.78 121.96-95.59h76.86c16.57 0 30-13.43 30-30s-13.43-30-30-30h-76.86c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-474.9c-16.57 0-30 13.43-30 30s13.43 30 30 30z m596.85-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59zM114.11 542h97.06c13.49 54.81 63.04 95.59 121.96 95.59S441.6 596.81 455.09 542h454.8c16.57 0 30-13.43 30-30s-13.43-30-30-30h-454.8c-13.49-54.81-63.04-95.59-121.96-95.59S224.66 427.19 211.17 482h-97.06c-16.57 0-30 13.43-30 30s13.43 30 30 30z m219.02-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59z m576.75 300.94H737.33c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-379.3c-16.57 0-30 13.43-30 30s13.43 30 30 30h379.31c13.49 54.81 63.04 95.59 121.96 95.59s108.47-40.78 121.96-95.59h172.55c16.57 0 30-13.43 30-30s-13.43-30-30-30z m-294.51 95.59c-36.17 0-65.59-29.42-65.59-65.59s29.42-65.59 65.59-65.59 65.59 29.42 65.59 65.59-29.42 65.59-65.59 65.59z"/></svg>`;
   const current = () => boards.find(b => b.id === activeId);
-  function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text; }
+  const progressByBoard=new Map();
+  function setProgress(board,text){progressByBoard.set(board.id,text);if(activeId===board.id)notice(text);}
+  function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text;status.classList.toggle("is-thinking",progressByBoard.has(activeId)); }
   function safeUrl(value) {
     try { const u = new URL(value, location.href); return u.origin === location.origin && /\/(generated|share-artifact)\/[^/]+\.html$/.test(u.pathname) ? u.pathname + u.search : ''; } catch { return ''; }
   }
@@ -104,7 +106,7 @@
     let links=node.querySelector('.widgetSymbolLinks');if(!links){links=document.createElement('nav');links.className='widgetSymbolLinks';links.setAttribute('aria-label','选择标的联动看板');node.insertBefore(links,node.children[1]||null);}
     const busy=commandControllers.has(activeId)||jobs.has(activeId),selected=current()?.focusSymbol||'';
     const signature=JSON.stringify([symbols,selected,busy]);if(links.dataset.signature===signature)return;links.dataset.signature=signature;
-    links.innerHTML=symbols.map(symbol=>`<button type="button" data-link-symbol="${esc(symbol)}" aria-label="联动到 ${esc(symbol.split(':')[1])}" aria-pressed="${selected===symbol}" ${busy?'disabled':''}>${esc(symbol.split(':')[1])}</button>`).join('');
+    links.innerHTML=`<button type="button" data-link-all aria-label="展示全部标的" aria-pressed="${!selected}" ${busy?'disabled':''}>全部</button>`+symbols.map(symbol=>`<button type="button" data-link-symbol="${esc(symbol)}" aria-label="联动到 ${esc(symbol.split(':')[1])}" aria-pressed="${selected===symbol}" ${busy?'disabled':''}>${esc(symbol.split(':')[1])}</button>`).join('');
   }
   function hydrateTradingView(card,spec,node){
     if(!spec.widget||!spec.config)return;const cfg=spec.config;let symbols;
@@ -116,6 +118,21 @@
     const component=spec.preset==='intraday'?'tv-intraday':'tv-'+spec.widget;
     if(card.component!==component||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component=component;card.parameters=parameters;save();}
     symbolLinks(card,node);
+  }
+  async function showAllSymbols(source){
+    const board=current();if(!board||source.component!=='tv-market-data'||commandControllers.has(board.id)||jobs.has(board.id))return;
+    undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));board.focusSymbol='';
+    const controller=new AbortController();commandControllers.set(board.id,controller);let errorText='';
+    try{
+      board.cards=board.cards.filter(c=>!c.linkCreated);
+      for(const card of board.cards){
+        if(card.linkedOriginal){const original=card.linkedOriginal;if(safeUrl(original.url))Object.assign(card,original);delete card.linkedOriginal;continue;}
+        const original=String(card.request||'').trim();
+        if(card===source||!linkedSymbolPattern.test(original)||card.parameters?.symbols?.[0]===original)continue;
+        await ensureCatalog();const component=catalog.find(c=>c.id===card.component&&c.provider==='TradingView'&&c.inputMode==='symbol');
+        if(component)await addTradingView(original,component,card.id,'default',{...card.parameters,symbols:[original],signal:controller.signal},board);
+      }
+    }catch(error){errorText=error.message;}finally{commandControllers.delete(board.id);save();if(activeId===board.id){render();if(errorText)notice(errorText);}}
   }
   async function linkSymbol(source,symbol){
     const board=current();if(!board||!linkedSymbolPattern.test(symbol)||!(source.parameters?.symbols||[]).includes(symbol)||source.component!=='tv-market-data')return;
@@ -131,7 +148,9 @@
         if(controller.signal.aborted||!boards.includes(board)||!board.cards.includes(source))break;
         if(card&&!board.cards.includes(card))continue;
         const component=catalog.find(c=>c.id===(card?.component||'tv-advanced-chart'));if(!component)continue;
+        if(card&&!card.linkedOriginal){card.linkedOriginal=JSON.parse(JSON.stringify({url:card.url,title:card.title,parameters:card.parameters,component:card.component,customTitle:!!card.customTitle,request:card.request}));}
         const result=await addTradingView(symbol,card?component:{...component,width:6},card?.id,'default',{...card?.parameters,symbols:[symbol],signal:controller.signal},board);
+        if(!card&&result)result.linkCreated=true;
         if(result?.status!=='ready')failed++;
       }
       if(!controller.signal.aborted&&failed)feedback='部分组件未能加载，可在对应卡片重新生成。';
@@ -164,9 +183,9 @@
     el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
     if (card.url && card.status==='ready') {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      frame.addEventListener('load',()=>{window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
+      frame.addEventListener('load',()=>{try{hydrateTradingView(card,JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}'),el);}catch{}window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
         if(!intrinsic)return;
-        height+=el.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40;
+        height+=(el.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40)+(el.querySelector('.widgetSymbolLinks')?.getBoundingClientRect().height||0);
         const board=boards.find(b=>b.cards.includes(card));if(!board||!el.isConnected)return;
         if(Math.abs((card.contentHeight||0)-height)<=1)return;
         const previousHeight=card.contentHeight||card.h*ROW;
@@ -205,7 +224,7 @@
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
     for(const card of board.cards){const node=canvas.querySelector(`[data-card="${CSS.escape(card.id)}"]`);if(node)symbolLinks(card,node);}
     updateSelection();
-    applyLayout();notice('');
+    applyLayout();notice(progressByBoard.get(activeId)||'');
   }
   function route(push=true) {
     const url=new URL(location.href);['task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));url.searchParams.set('tab','widgets');url.searchParams.set('board',activeId);history[push?'pushState':'replaceState'](null,'',url);
@@ -321,6 +340,7 @@
         if(event==='error')failure=data.detail||'图表生成失败，请重试。';
         if(event==='status'||event==='progress') {
           const status=String(data.text||data.detail||data.message||data.title||'正在处理金融数据…').slice(0,180);
+          setProgress(board,status);
           if(activeId===board.id){const p=canvas.querySelector(`[data-card="${CSS.escape(pendingId)}"] .widgetCardBody p`);if(p)p.textContent=status;}
         }
       });
@@ -336,7 +356,7 @@
     } catch(error) {
       if(boards.includes(board)&&board.cards.includes(pending)){pending.status='error';pending.error=error.name==='AbortError'?'生成已停止，可以重新生成。':error.message;}
     } finally {
-      jobs.delete(board.id);save();if(activeId===board.id){render();if(pending.status==='error')notice(pending.error);}
+      jobs.delete(board.id);if(!commandControllers.has(board.id))progressByBoard.delete(board.id);save();if(activeId===board.id){render();if(pending.status==='error')notice(pending.error);}
     }
   }
   function updateSelection(){
@@ -345,7 +365,9 @@
     $('widgetScope').hidden=!card;
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
     $('widgetPrompt').placeholder=card?'想怎样调整这张卡片？':'输入你要创建的看板需求';
-    $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=commandControllers.has(activeId);
+    const pending=commandControllers.has(activeId)||jobs.has(activeId);
+    $('widgetUndo').hidden=!undoByBoard.has(activeId);$('widgetUndo').disabled=pending;
+    $('widgetConfirm').hidden=!undoByBoard.has(activeId);$('widgetConfirm').disabled=pending;
     for(const node of canvas.children)node.classList.toggle('is-selected',node.dataset.card===selectedCardId);
   }
   async function runCommand(message){
@@ -355,7 +377,7 @@
     const snapshot=JSON.parse(JSON.stringify(board)),selection=selectedCardId;
     const history=(board.chat||[]).slice(-12).map(({role,content})=>({role,content}));
     board.chat=[...(board.chat||[]),{role:'user',content:message,scope:selection?board.cards.find(c=>c.id===selection)?.title:'整个看板'}].slice(-40);save();
-    render();notice('');
+    render();setProgress(board,'正在理解你的看板需求，梳理分析结构…');
     let reply='';
     try{
       const response=await fetch('/api/widgets/plan',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({message,history,selectedCardId:selection,board:{id:board.id,title:board.title,cards:board.cards.map(c=>({id:c.id,title:c.title,component:c.component||'',url:c.url||'',request:c.request||'',x:c.x,y:c.y,w:c.w,h:c.h,parameters:c.parameters||{}}))}})});
@@ -363,7 +385,11 @@
       if(!boards.includes(board))return;
       if(plan.actions?.length)undoByBoard.set(board.id,snapshot);
       if(!catalog.length){const result=await fetch('/static/widget-catalog.json');if(!result.ok)throw Error('图表库无法加载，请重试。');catalog=await result.json();}
-      for(const action of plan.actions||[]){
+      const actions=plan.actions||[];let actionIndex=0;
+      for(const action of actions){
+        actionIndex++;
+        const label=action.title||catalog.find(c=>c.id===action.componentId)?.title||({'rename_board':'看板标题','remove':'移除组件','update':'调整组件'}[action.type])||'布局';
+        setProgress(board,`正在执行 ${actionIndex}/${actions.length}：${label}`);
         if(controller.signal.aborted)throw new DOMException('stopped','AbortError');
         const card=board.cards.find(c=>c.id===action.cardId);
         if(action.type==='rename_board'){board.title=action.title;continue;}
@@ -383,8 +409,9 @@
       }
       settle(board,null);save();reply=plan.reply||'看板已调整。';
     }catch(error){reply=error.name==='AbortError'?'调整已停止。':error.message;}
-    finally{commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(boards.includes(board)){board.chat=[...(board.chat||[]),{role:'assistant',content:reply||'调整已停止。'}].slice(-40);}save();if(activeId===board.id){render();notice(reply);}}
+    finally{progressByBoard.delete(board.id);commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(boards.includes(board)){board.chat=[...(board.chat||[]),{role:'assistant',content:reply||'调整已停止。'}].slice(-40);}save();if(activeId===board.id){render();notice(reply);}}
   }
+  $('widgetConfirm').onclick=()=>{if(commandControllers.has(activeId)||jobs.has(activeId))return;undoByBoard.delete(activeId);selectedCardId='';updateSelection();notice('');save();};
   $('widgetScope').onclick=()=>{selectedCardId='';updateSelection();};
   $('widgetUndo').onclick=()=>{if(commandControllers.has(activeId))return;const previous=undoByBoard.get(activeId),board=current();if(!previous||!board)return;const chat=board.chat;Object.assign(board,JSON.parse(JSON.stringify(previous)));board.chat=[...(chat||[]),{role:'assistant',content:'已撤销上一次调整。'}].slice(-40);undoByBoard.delete(activeId);selectedCardId='';save();render();notice('已撤销上一次调整。');};
   function editName(action) {
@@ -447,6 +474,7 @@
   workspace.addEventListener('click',event=>{const b=event.target.closest('[data-widget-prompt]');if(b){try{ensureBoard();}catch(error){notice(error.message);return;}selectedCardId='';updateSelection();$('widgetPrompt').value=b.dataset.widgetPrompt;updateComposer();$('widgetPrompt').focus({preventScroll:true});}});
   canvas.addEventListener('click',event=>{
     const el=event.target.closest('[data-card]');if(!el){selectedCardId='';updateSelection();return;}const board=current(),card=board.cards.find(c=>c.id===el.dataset.card);if(!card)return;
+    if(event.target.closest('[data-link-all]')){showAllSymbols(card);return;}
     const linked=event.target.closest('[data-link-symbol]');if(linked){linkSymbol(card,linked.dataset.linkSymbol);return;}
     if(!event.target.closest('button')){selectedCardId=card.id;updateSelection();}
     if(event.target.closest('[data-config]')){configureCard(card);return;}
