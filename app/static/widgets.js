@@ -27,8 +27,10 @@
     return true;
   }
   function pullFollowing(board,card,previousHeight){
-    const delta=(previousHeight-card.contentHeight)/ROW;if(delta<=0)return;
-    for(const other of [...board.cards].sort((a,b)=>a.y-b.y)){
+    const delta=(previousHeight-card.contentHeight)/ROW;if(!delta)return;
+    // Move lower rows first on growth so their old positions don't block a
+    // whole stack from following the measured edge at the existing gap.
+    for(const other of [...board.cards].sort((a,b)=>delta>0?a.y-b.y:b.y-a.y)){
       if(other===card||other.y<card.y+previousHeight/ROW)continue;
       const candidate={...other,y:other.y-delta};
       if(!board.cards.some(c=>c!==other&&overlaps(c,candidate)))other.y=candidate.y;
@@ -50,7 +52,10 @@
     for(const board of boards){
       const quote=board.cards.find(c=>c.id===board.id.replace('starter-','')+'-symbol-info');
       const chart=board.cards.find(c=>c.id===board.id.replace('starter-','')+'-advanced-chart');
-      if(board.id.startsWith('starter-')&&quote?.contentHeight&&quote.x===0&&quote.y===0&&quote.w===12&&chart?.x===0&&chart.y===13)pullFollowing(board,quote,12*ROW);
+      if(board.id.startsWith('starter-')&&quote?.contentHeight&&quote.x===0&&quote.y===0&&quote.w===12&&chart?.x===0){
+        const gap=chart.y*ROW-quote.contentHeight;
+        if(gap>ROW&&gap<=4*ROW){const delta=(gap-ROW)/ROW,start=chart.y;for(const card of board.cards)if(card!==quote&&card.y>=start)card.y-=delta;}
+      }
     }
     if(!openIds.includes(activeId))activeId=openIds[0]||'';
   }

@@ -31,12 +31,12 @@ test('measured cards pull subsequent rows up, preserve other columns, and still 
  const s=await setup({defaultsVersion:1,activeId:'mine',boards:[{id:'mine',title:'布局',cards:[card('quote',0,0),card('side',6,0,30),card('next',0,19),card('blocked',6,31)]}]});
  let measure;s.w.installTradingViewSurface=(frame,callback)=>{measure=callback;};
  s.w.document.querySelector('[data-card="quote"] iframe').dispatchEvent(new s.w.Event('load'));measure(69,true);
- let cards=s.data().boards[0].cards;assert.equal(cards.find(c=>c.id==='next').y*24-109,24);assert.equal(cards.find(c=>c.id==='side').y,0);assert.equal(cards.find(c=>c.id==='blocked').y,31);
- measure(620,true);cards=s.data().boards[0].cards;assert.ok(cards.find(c=>c.id==='next').y>=cards[0].h);s.dom.window.close();
+ let cards=s.data().boards[0].cards;assert.ok(Math.abs(cards.find(c=>c.id==='next').y*24-109-24)<0.001);assert.equal(cards.find(c=>c.id==='side').y,0);assert.equal(cards.find(c=>c.id==='blocked').y,31);
+ measure(620,true);cards=s.data().boards[0].cards;assert.ok(Math.abs(cards.find(c=>c.id==='next').y*24-660-24)<0.001);measure(69,true);cards=s.data().boards[0].cards;assert.ok(Math.abs(cards.find(c=>c.id==='next').y*24-109-24)<0.001);s.dom.window.close();
 });
 test('saved starter boards repair the old gap without resetting a manually moved chart',async()=>{
- for(const y of [13,20]){
+ for(const y of [11,13,20]){
   const s=await setup({defaultsVersion:1,activeId:'starter-stocks',boards:[{id:'starter-stocks',title:'股票',cards:[{id:'stocks-symbol-info',x:0,y:0,w:12,h:10,contentHeight:223,url:'/generated/info.html',status:'ready'},{id:'stocks-advanced-chart',x:0,y,w:12,h:26,url:'/generated/chart.html',status:'ready'}]}]});
-  const top=Number.parseFloat(s.w.document.querySelector('[data-card="stocks-advanced-chart"]').style.top);assert.equal(top,y===13?247:20*24);s.dom.window.close();
+  const top=Number.parseFloat(s.w.document.querySelector('[data-card="stocks-advanced-chart"]').style.top);assert.equal(top,y<20?247:20*24);s.dom.window.close();
  }
 });
