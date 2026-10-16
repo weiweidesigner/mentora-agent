@@ -4617,3 +4617,8 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
   margin-top:0;
 }
 .taskThread .thinkingTrigger { margin-bottom:8px; vertical-align:top; }
+.taskThread .message.user + .message.assistant { margin-top:12px; }
+@media(min-width:761px) {
+  .taskThread .userMessageWrap { position:relative;gap:0; }
+  .taskThread .userActions { position:absolute;right:0;top:100%;margin-top:4px;z-index:1; }
+}
