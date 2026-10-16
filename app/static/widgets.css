@@ -208,6 +208,14 @@
 .widgetWorkspace .widgetBoardTabs .widgetTabClose{height:24px;width:24px;min-width:24px;max-width:24px}
 
 /* Add charts from the library; edit parameters on each card. */
-.widgetWorkspace>.widgetComposerArea{display:none!important}
-.widgetWorkspace .widgetScroll{padding-bottom:32px}
-@media(max-width:760px){.widgetWorkspace .widgetScroll{padding-bottom:24px}}
+.widgetWorkspace>.widgetComposerArea{display:block}
+.widgetWorkspace .widgetScroll{padding-bottom:160px}
+@media(max-width:760px){.widgetWorkspace .widgetScroll{padding-bottom:160px}}
+
+/* Ready-to-edit board creation prompts above the canvas composer. */
+.widgetWorkspace .widgetEmpty:not([hidden]){display:flex!important;justify-content:flex-end;padding:24px 24px 150px}
+.widgetWorkspace .widgetEmpty .widgetSuggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:min(640px,100%);margin:0}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--muted);font-size:13px;text-align:left;cursor:pointer}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button:hover{background:var(--soft-2);color:var(--ink)}
+.widgetWorkspace .widgetEmpty .widgetSuggestions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:760px){.widgetWorkspace .widgetEmpty:not([hidden]){padding:16px 16px 148px}.widgetWorkspace .widgetEmpty .widgetSuggestions{grid-template-columns:1fr;gap:8px}.widgetWorkspace .widgetEmpty .widgetSuggestions button{padding:11px 14px}}

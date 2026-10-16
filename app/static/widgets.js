@@ -410,7 +410,7 @@
   $('widgetTabs').addEventListener('drop',event=>{event.preventDefault();const target=event.target.closest('[data-tab-id]');if(target)reorderTab(draggingTab,target.dataset.tabId);draggingTab='';});
   $('widgetTabs').addEventListener('dragend',()=>{draggingTab='';$('widgetTabs').querySelectorAll('.is-dragging').forEach(node=>node.classList.remove('is-dragging'));});
   $('widgetTabs').addEventListener('keydown',event=>{if(event.key==='F2'){event.preventDefault();editName('rename');return;}if(!['ArrowLeft','ArrowRight'].includes(event.key))return;event.preventDefault();const i=openIds.indexOf(activeId),next=openIds[(i+(event.key==='ArrowRight'?1:openIds.length-1))%openIds.length];if(event.altKey)reorderTab(activeId,next);else activateBoard(next);$('widgetTabs').querySelector('[aria-selected=true]')?.focus();});
-  $('widgetSidebarLibrary').onclick=library;$('widgetLibraryOpen').onclick=library;$('widgetEmptyAdd').onclick=library;$('widgetLibraryClose').onclick=()=>$('widgetLibrary').close();
+  $('widgetSidebarLibrary').onclick=library;$('widgetLibraryOpen').onclick=library;$('widgetLibraryClose').onclick=()=>$('widgetLibrary').close();
   $('widgetCategories').onclick=event=>{const b=event.target.closest('[data-category]');if(b){category=b.dataset.category;renderLibrary();}};
   $('widgetLibraryList').onclick=event=>{const button=event.target.closest('[data-add-preset]');if(button){const component=catalog.find(c=>c.id===button.dataset.addPreset);if(component)addPreset(component,button);}};
   $('widgetConfigClose').onclick=$('widgetConfigCancel').onclick=()=>$('widgetConfig').close();
@@ -444,7 +444,7 @@
   $('widgetPrompt').oninput=updateComposer;
   $('widgetPrompt').onkeydown=event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();$('widgetForm').requestSubmit();}};
   $('widgetStop').onclick=()=>{commandControllers.get(activeId)?.abort();jobs.get(activeId)?.abort();};
-  workspace.addEventListener('click',event=>{const b=event.target.closest('[data-widget-prompt]');if(b){$('widgetPrompt').value=b.dataset.widgetPrompt;updateComposer();$('widgetPrompt').focus();}});
+  workspace.addEventListener('click',event=>{const b=event.target.closest('[data-widget-prompt]');if(b){try{ensureBoard();}catch(error){notice(error.message);return;}selectedCardId='';updateSelection();$('widgetPrompt').value=b.dataset.widgetPrompt;updateComposer();$('widgetPrompt').focus({preventScroll:true});}});
   canvas.addEventListener('click',event=>{
     const el=event.target.closest('[data-card]');if(!el){selectedCardId='';updateSelection();return;}const board=current(),card=board.cards.find(c=>c.id===el.dataset.card);if(!card)return;
     const linked=event.target.closest('[data-link-symbol]');if(linked){linkSymbol(card,linked.dataset.linkSymbol);return;}
