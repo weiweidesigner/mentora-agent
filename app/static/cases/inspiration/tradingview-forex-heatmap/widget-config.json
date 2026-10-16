@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "forex-heatmap",
+  "symbol": null,
+  "config": {
+    "currencies": [
+      "USD",
+      "EUR",
+      "JPY",
+      "GBP",
+      "CHF",
+      "AUD"
+    ],
+    "colorTheme": "dark",
+    "isTransparent": false,
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget/forex-heat-map/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-forex-heatmap/widget.html"
+}

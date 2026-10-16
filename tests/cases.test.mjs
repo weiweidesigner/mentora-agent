@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import vm from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -157,17 +158,17 @@ test('inspiration categories switch by click and keyboard and replay without inf
 test('all inspiration cards have portable, non-empty caches and complete component coverage', () => {
   const root=new URL('../app/static/cases/inspiration/',import.meta.url);
   const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
-  assert.equal(catalog.cases.length,77);
-  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,77);
-  const counts={reports:3,charts:51,analysis:17,videos:3,art:3};
+  assert.equal(catalog.cases.length,89);
+  assert.equal(new Set(catalog.cases.map(row=>row.id)).size,89);
+  const counts={reports:3,charts:63,analysis:17,videos:3,art:3};
   for(const [category,count] of Object.entries(counts))assert.equal(catalog.cases.filter(row=>row.category===category).length,count);
   for(const row of catalog.cases){
     const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.cachedAt.slice(0,10),row.cachedDate);
     assert.ok(cached.answer.interpretation.trim());
-    assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
-    assert.ok(cached.activity.elapsedMs>1000);
+    assert.equal(cached.provenance.generation,row.tool==='TradingViewChart'?'executed-official-widget-cli':'actual-veya-chat-stream');
+    assert.ok(cached.activity.elapsedMs>(row.tool==='TradingViewChart'?0:1000));
     assert.equal(cached.activity.elapsedMs,cached.activity.stages.reduce((total,stage)=>total+stage.endedAt-stage.startedAt,0));
     assert.ok(cached.activity.steps.length>0);
     for(const artifact of cached.answer.reportArtifacts){
@@ -217,22 +218,28 @@ test('gallery summaries and replay questions are readable product copy',()=>{
   }
 });
 
-test('financial gallery tracks every TradingView widget and excludes explicitly retired empty results',()=>{
+test('financial gallery covers official groups and every executed widget with verifiable provenance',()=>{
  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
  const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
  const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));
  const rows=catalog.cases.filter(row=>row.tool==='TradingViewChart');
- assert.equal(rows.length,18);
+ assert.equal(rows.length,Object.keys(widgets).length);
  assert.deepEqual(rows.map(row=>row.widget).sort(),Object.keys(widgets).sort());
- assert.equal(new Set(rows.map(row=>row.conversationUrl)).size,18);
+ assert.equal(new Set(rows.map(row=>row.conversationUrl)).size,Object.keys(widgets).length);
  assert.doesNotMatch(catalog.categories.find(c=>c.id==='charts').subtitle,/\d+\s*个/);
  for(const row of rows){
   assert.equal(row.category,'charts');
   const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
   assert.equal(cached.provenance.widget,row.widget);
-  assert.equal(row.generation,'actual-veya-chat-stream');
-  assert.equal(cached.provenance.generation,'actual-veya-chat-stream');
-  assert.ok(cached.provenance.sessionId);
+  assert.equal(row.generation,'executed-official-widget-cli');
+  assert.equal(cached.provenance.generation,'executed-official-widget-cli');
+  assert.equal(cached.provenance.exitCode,0);
+  assert.equal(cached.provenance.sample,false);
+  assert.ok(catalog.tradingViewGroups.some(group=>group.id===row.widgetGroup));
+  assert.equal(row.preview,row.officialDescription);
+  const payload=JSON.parse(readFileSync(new URL('../app'+cached.provenance.configUrl,import.meta.url),'utf8'));
+  assert.equal(payload.widget,row.widget);
+  assert.match(payload.dataStatus,/no numeric market data extracted/);
   assert.match(cached.provenance.sourceAnswerSha256,/^[0-9a-f]{64}$/);
   const entries=cached.answer.reportArtifacts.map(artifact=>{
    const document=readFileSync(new URL('../app'+artifact.url,import.meta.url),'utf8');
@@ -244,6 +251,7 @@ test('financial gallery tracks every TradingView widget and excludes explicitly 
   if(retired){assert.equal(entry,undefined);assert.ok(retired.reason);assert.equal(cached.answer.reportArtifacts.some(a=>a.url.endsWith('/'+retired.artifact)),false);assert.equal(cached.answer.interpretation.includes(retired.artifact),false);continue;}
   assert.ok(entry,`missing actual widget result: ${row.widget}`);
   const {document,config}=entry;
+  assert.equal(createHash("sha256").update(document).digest("hex"),cached.provenance.artifactSha256);
   assert.equal(config.widget,row.widget);
   assert.equal(config.config.locale,'zh_CN');
   assert.equal(config.script,widgets[row.widget].script);
@@ -276,4 +284,19 @@ test('closing a case restores the previous home scroll; new chat still starts at
   h.startNewChat();await tick();
   assert.equal(h.conversation.scrollTop,0,'explicit new chat resets to top');
   h.w.close();
+});
+
+
+test('financial gallery renders official TradingView groups with native research separate',async()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
+ const h=setup('https://example.com/','组件案例',catalog);await tick();
+ const groups=h.w.document.querySelectorAll('.inspirationWidgetGroup');
+ assert.equal(groups.length,catalog.tradingViewGroups.length+1);
+ for(const group of catalog.tradingViewGroups){
+  const section=h.w.document.querySelector(`#widget-group-${group.id}`).closest('section');
+  const expected=catalog.cases.filter(row=>row.tool==='TradingViewChart'&&row.widgetGroup===group.id);
+  assert.equal(section.querySelectorAll('[data-case]').length,expected.length);
+  assert.match(section.textContent,new RegExp(group.title));
+ }
+ h.w.close();
 });

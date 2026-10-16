@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "top-stories",
+  "symbol": null,
+  "config": {
+    "feedMode": "all_symbols",
+    "isTransparent": false,
+    "displayMode": "regular",
+    "width": "100%",
+    "height": "100%",
+    "colorTheme": "dark",
+    "locale": "zh_CN"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/news/top-stories/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-top-stories/widget.html"
+}

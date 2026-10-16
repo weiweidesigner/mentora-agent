@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "screener",
+  "symbol": null,
+  "config": {
+    "width": "100%",
+    "height": "100%",
+    "defaultColumn": "overview",
+    "defaultScreen": "general",
+    "market": "america",
+    "showToolbar": true,
+    "colorTheme": "dark",
+    "locale": "zh_CN"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/screeners/screener/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-screener/widget.html"
+}

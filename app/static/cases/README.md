@@ -13,3 +13,10 @@
 宿主通过 `?theme=light|dark` 传递主题；图表配置中的 `themeMode`/`theme`
 应读取 `document.documentElement.dataset.theme`，以同步 Canvas 和 SVG 配色。
 已有 StreamViz 双主题组件继续由 StreamViz 宿主同步主题。
+
+
+## TradingView 官方案例
+
+`inspiration/manifest.json` 的 `tradingViewGroups` 与 `app/static/tradingview-directory.json` 保存官网分类、组件说明和具体案例配置。运行 `.venv/bin/python scripts/update_tradingview_cases.py` 会逐个执行官方 `trading_view_chart.py`，重新生成 30 个案例、配置 JSON 和校验哈希，并同步 Widget 图表库的分类与说明。
+
+这些案例的来源为 `executed-official-widget-cli`，记录实际 CLI 耗时和返回码，不模拟模型对话或投资结论。HTML 使用官方脚本与真实标的 / 市场配置；数值由 TradingView 在浏览器中加载，不把旧截图数值写进 HTML。配置缓存日期与行情日期不同，打开后仍可能显示更新或延迟的数据。保留官方组件署名。

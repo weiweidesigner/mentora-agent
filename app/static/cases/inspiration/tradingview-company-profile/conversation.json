@@ -1,324 +1,69 @@
 {
-  "question": "英伟达主要做什么业务？用 TradingView 的公司简介展示一下，让我先了解公司背景。",
-  "cachedAt": "2026-10-15T20:15:45.439267+08:00",
+  "question": "用 TradingView 查看英伟达公司业务与所属行业。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
   "answer": {
-    "question": "英伟达主要做什么业务？用 TradingView 的公司简介展示一下，让我先了解公司背景。",
+    "question": "用 TradingView 查看英伟达公司业务与所属行业。",
     "code": "",
     "selectedSkill": {
-      "key": "trading-view-chart,business-chart-recall,internal-search",
-      "label": "trading-view-chart + business-chart-recall + internal-search",
-      "script": "trading-view-chart + business-chart-recall + internal-search",
-      "reason": "由 DeepSeek Harness 选择并执行 Mentora 项目 Skill。"
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
     },
-    "htmlUrl": "/static/cases/inspiration/tradingview-company-profile/deepseek-nvda-tv-company-profile.html",
-    "reportUrl": "/static/cases/inspiration/tradingview-company-profile/deepseek-nvda-tv-company-profile.html",
+    "htmlUrl": "/static/cases/inspiration/tradingview-company-profile/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-company-profile/widget.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/tradingview-company-profile/deepseek-nvda-tv-company-profile.html",
-        "url": "/static/cases/inspiration/tradingview-company-profile/deepseek-nvda-tv-company-profile.html"
-      },
-      {
-        "path": "case:inspiration/tradingview-company-profile/deepseek-nvda-revenue-sources.html",
-        "url": "/static/cases/inspiration/tradingview-company-profile/deepseek-nvda-revenue-sources.html"
+        "path": "case:inspiration/tradingview-company-profile/widget.html",
+        "url": "/static/cases/inspiration/tradingview-company-profile/widget.html",
+        "title": "公司简介 · 英伟达公司业务与所属行业"
       }
     ],
-    "payloadUrl": null,
-    "interpretation": "核对完成：TradingView 使用官方 `symbol-profile` 组件，收入拆分数据内部自洽（89,023 + 7,198 = 96,221 百万美元）。\n\n## 核心结论\n\n英伟达（NASDAQ:NVDA）本质是一家**加速计算平台公司**：以 GPU 与 Tegra 芯片为核心硬件，把硬件、系统软件、可编程算法与库打包成平台对外销售。从最新披露的财季口径看，它的收入几乎全部来自 **Data Center（数据中心，92.52%）**，其余为 Edge Computing（边缘计算，7.48%）——也就是说，市场今天把它当\"AI 算力供应商\"，而不是\"显卡公司\"。\n\n下面用 TradingView 官方公司简介组件展示它的公司档案：\n\n[[AIME_CHART:case:inspiration/tradingview-company-profile/deepseek-nvda-tv-company-profile.html]]\n\n这是 TradingView 托管的实时组件，内容由 TradingView 侧渲染，我不从中提取数值；需要浏览器能访问 TradingView 才能看到内容。\n\n## 业务结构：钱主要从哪里来\n\n[[AIME_CHART:case:inspiration/tradingview-company-profile/deepseek-nvda-revenue-sources.html]]\n\n这版拆分只给出两条业务线，最重要的信息是**集中度而非多样性**：Data Center 890.23 亿美元，是 Edge Computing（71.98 亿美元）的约 12 倍，两者合计 962.21 亿美元，与来源披露的总收入一致。这意味着英伟达的业绩弹性基本等于\"AI 数据中心资本开支\"的弹性，公司叙事里的其他方向目前都不构成第二增长曲线级别。\n\n需要注意口径边界：该来源在**这一期只披露了两条业务线**，没有单列游戏、专业可视化、汽车等传统分部，因此不能据此推断这些业务的规模或占比；若你需要它们的历史分部数据，我可以换用公司财报口径重取一次。\n\n## 公司背景速览\n\n| 项目 | 内容 |\n|---|---|\n| 公司全称 | Nvidia Corporation |\n| 行业 | 半导体（Semiconductor） |\n| 主营业务（来源字段） | 提供加速计算与图形解决方案 |\n| 上市日期 / 交易所 | 1999-01-22 / NASDAQ |\n| 全职员工 | 约 42,000 人 |\n| 财年结束日 | 01-31 |\n| 公司简介要点 | 1993 年 4 月创立于加州、1998 年在特拉华州重组；两大业务为 GPU 与 Tegra 处理器，基于同一底层架构；采用平台战略，把硬件、系统软件、可编程算法、库、系统与服务整合输出 |\n| 官方口号 | 人工智能计算领域的全球领导者 |\n\n背景变量方面，端内新闻显示管理层近期公开主张与中国 AI 企业就安全议题合作，被解读为争取重回约 500 亿美元规模的中国 AI 芯片市场——这属于数据中心业务的地缘准入变量，是新闻观点而非公司披露口径。\n\n## 风险与数据说明\n\n- **数据时间**：收入拆分为数据源标注的 Q2 '27（期末 2026-07-26），单位百万美元，属该来源的分部口径，与公司新闻稿口径可能存在差异。\n- **降级说明**：外部网页检索因运行环境缺少 `MOONSHOT_API_KEY` 失败，已改用 AInvest 端内新闻作背景补充，端内新闻仅提供叙事与催化剂，不能替代分部财务数据。\n- **展示限制**：TradingView 组件是官方托管的显示层，不提供可提取的报价或财务数值，行情可能延迟或因交易所限制缺失；它不构成我取到数据的证据。\n- 员工数、行业、上市日期等静态字段取自 AInvest 公司资料页，未做第三方交叉核验。\n\n**缓存说明**：以上为真实对话生成时的答案与分析。图内行情、新闻或日历内容仍由 TradingView 加载，可能更新或延迟，与缓存分析的时点可能不同。",
-    "status": [
-      "DeepSeek Harness 已完成处理"
-    ],
-    "agentRunId": "deepseek-real-tradingview-company-profile-1792066383993",
-    "studioSessionId": null,
-    "engineSessionId": "real-tradingview-company-profile-1792066383993",
-    "reasoningFramework": "deepseek",
-    "inferenceModel": "deepseek-v4-flash",
+    "interpretation": "### 公司简介 · Company Profile\n\n介绍公司业务，并列出所属板块与行业等关键信息。\n\n本例展示**英伟达公司业务与所属行业**。\n\n[[AIME_CHART:case:inspiration/tradingview-company-profile/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
     "sources": [
       {
-        "siteName": "tradingview.com",
+        "siteName": "TradingView",
         "url": "https://www.tradingview.com/widget-docs/",
-        "title": "tradingview.com",
-        "summary": "",
-        "iconUrl": ""
-      },
-      {
-        "siteName": "ainvest.com",
-        "url": "https://www.ainvest.com/stocks/NASDAQ-NVDA/",
-        "title": "ainvest.com",
-        "summary": "",
-        "iconUrl": ""
+        "title": "Company Profile"
       }
     ],
     "videos": [],
     "actionLinks": [],
-    "lang": "zh-CN",
-    "visualRoute": {
-      "applied": false,
-      "fallback": "agent-selection",
-      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 451 {\"title\":\"Typesafe is not available in your region.\",\"status\":451}",
-      "candidateCount": 46
-    }
+    "lang": "zh-CN"
   },
   "activity": {
-    "label": "执行记录",
+    "label": "组件生成记录",
+    "elapsedMs": 39,
+    "startedAt": 1792119379690,
+    "endedAt": 1792119379729,
+    "durationSource": "measured-cli",
     "steps": [
       {
-        "title": "我先加载 TradingView 图表 Skill，确认公司简介组件的调用契约",
-        "detail": "调用：skill\n结果：<skill_content name=\"trading-view-chart\">\n<skill_resources>\nBase directory for this skill: .agents/skills/trading-view-chart\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nRead `../../../app/skills/trading-view-chart/SKILL.md` completely before use. Canonical scripts and schemas live in `app/skills/trading-view-chart/`.\n</skill_instructions>\n</skill_content>",
+        "title": "生成官方 Company Profile",
+        "detail": "调用：TradingViewChart\n组件：company-profile\n已生成并核对官方加载配置。",
         "state": "done",
-        "tool": "skill",
-        "elapsedMs": 3226,
-        "durationMs": 13
-      },
-      {
-        "title": "List available skill directories",
-        "detail": "调用：bash\n结果：advisor-text-generation\na-share-data\nbusiness-chart-recall\nchart-markup\ncode-interpreter\nexternal-search\nflux-image\ngeneric-chart\ninternal-search\nstreamviz\ntrading-view-chart\nvideo-search\nvision-chart-analyst\nyahoo-data\n---\nadvisor-text-generation\na-share-data\nbusiness-chart-recall\nchart-markup\ncode-interpreter\nexternal-search\nflux-image\ngeneric-chart\ninternal-search\nstreamviz\ntrading-view-chart\nvideo-search\nvision-chart-analyst\nyahoo-data",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 3702,
-        "durationMs": 1
-      },
-      {
-        "title": "Read canonical TradingView skill spec",
-        "detail": "调用：bash\n结果：---\nname: trading-view-chart\ndescription: Embed official TradingView charts, tickers, heatmaps, screeners, symbol details, news and economic calendars as interactive HTML, particularly when the user requests TradingView or a hosted live market widget. Does not extract numerical market data.\n---\n\n# TradingViewChart\n\nRead `schemas/trading_view_chart.schema.json` before composing a call. Run `scripts/trading_view_chart.py --list-widgets` or inspect `widgets.json` for component defaults and allowed config keys.\n\nUse this tool when the user requests TradingView, interactive hosted market views, heatmaps, screeners or an economic calendar. Prefer the existing native chart/data tools for numerical analysis, historical calculations, annotations, or comparisons requiring extracted evidence. A widget is not evidence that market data has been fetched by the agent. Do not infer prices or technical signals from the configuration or claim unavailable symbols are supported.\n\n```bash\npython app/skills\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 4556,
-        "durationMs": 18
-      },
-      {
-        "title": "List TradingView skill files",
-        "detail": "调用：bash\n结果：(no output)",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 4576,
-        "durationMs": 19
-      },
-      {
-        "title": "Inspect skill directory contents",
-        "detail": "调用：bash\n结果：total 32\ndrwxrwxr-x 4 ubuntu ubuntu 4096 Oct 15 19:26 .\ndrwxrwxr-x 3 ubuntu ubuntu 4096 Oct 15 19:26 ..\ndrwxrwxr-x 2 ubuntu ubuntu 4096 Oct 15 19:26 schemas\ndrwxrwxr-x 2 ubuntu ubuntu 4096 Oct 15 19:26 scripts\n-rw-rw-r-- 1 ubuntu ubuntu 2281 Oct 15 19:26 SKILL.md\n-rw-rw-r-- 1 ubuntu ubuntu 8220 Oct 15 19:26 widgets.json\n===\napp/skills/trading-view-chart/schemas:\ntotal 12\ndrwxrwxr-x 2 ubuntu ubuntu 4096 Oct 15 19:26 .\ndrwxrwxr-x 4 ubuntu ubuntu 4096 Oct 15 19:26 ..\n-rw-rw-r-- 1 ubuntu ubuntu 1998 Oct 15 19:26 trading_view_chart.schema.json\n\napp/skills/trading-view-chart/scripts:\ntotal 20\ndrwxrwxr-x 2 ubuntu ubuntu  4096 Oct 15 19:26 .\ndrwxrwxr-x 4 ubuntu ubuntu  4096 Oct 15 19:26 ..\n-rw-rw-r-- 1 ubuntu ubuntu 10149 Oct 15 19:26 trading_view_chart.py",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 9017,
-        "durationMs": 1
-      },
-      {
-        "title": "Read TradingView widget schema",
-        "detail": "调用：bash\n结果：{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"title\": \"TradingViewChart\",\n  \"purpose\": \"Embed official TradingView widgets with TradingView-hosted market data. Interactive display only; does not return OHLCV or fundamental numeric data.\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"widget\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"advanced-chart\",\n        \"symbol-overview\",\n        \"stock-heatmap\",\n        \"crypto-heatmap\",\n        \"screener\",\n        \"crypto-mkt-screener\",\n        \"symbol-info\",\n        \"fundamental-data\",\n        \"top-stories\",\n        \"economic-calendar\",\n        \"mini-chart\",\n        \"market-overview\",\n        \"market-data\",\n        \"ticker-tape\",\n        \"single-ticker\",\n        \"tickers\",\n        \"technical-analysis\",\n        \"company-profile\"\n      ],\n      \"default\": \"advanced-chart\"\n    },\n    \"symbol\": {\n      \"type\": \"string\",\n      \"description\": \"TradingView exchange-qualified symbol, e.g. NASDAQ:AAPL, HKEX:700, SSE:600519, BIN\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 9508,
-        "durationMs": 4
-      },
-      {
-        "title": "Inspect company-profile widget defaults",
-        "detail": "调用：bash\n结果：{\n  \"script\": \"https://s3.tradingview.com/external-embedding/embed-widget-symbol-profile.js\",\n  \"docs\": \"https://www.tradingview.com/widget-docs/\",\n  \"defaults\": {\n    \"symbol\": \"NASDAQ:AAPL\",\n    \"colorTheme\": \"light\"\n  }\n}\n--- top keys: ['advanced-chart', 'symbol-overview', 'stock-heatmap', 'crypto-heatmap', 'screener', 'crypto-mkt-screener', 'symbol-info', 'fundamental-data', 'top-stories', 'economic-calendar', 'mini-chart', 'market-overview', 'market-data', 'ticker-tape', 'single-ticker', 'tickers', 'technical-analysis', 'company-profile']",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 11526,
-        "durationMs": 1
-      },
-      {
-        "title": "List TradingView widgets via CLI",
-        "detail": "调用：bash\n结果：{\n  \"advanced-chart\": {\n    \"script\": \"https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js\",\n    \"docs\": \"https://www.tradingview.com/widget-docs/widgets/charts/advanced-chart/\",\n    \"defaults\": {\n      \"allow_symbol_change\": true,\n      \"calendar\": false,\n      \"details\": false,\n      \"hide_side_toolbar\": true,\n      \"hide_top_toolbar\": false,\n      \"hide_legend\": false,\n      \"hide_volume\": false,\n      \"hotlist\": false,\n      \"interval\": \"D\",\n      \"locale\": \"en\",\n      \"save_image\": true,\n      \"style\": \"1\",\n      \"symbol\": \"NASDAQ:AAPL\",\n      \"theme\": \"light\",\n      \"timezone\": \"Etc/UTC\",\n      \"backgroundColor\": \"#ffffff\",\n      \"gridColor\": \"rgba(46, 46, 46, 0.06)\",\n      \"watchlist\": [],\n      \"withdateranges\": false,\n      \"compareSymbols\": [],\n      \"studies\": [],\n      \"autosize\": true\n    }\n  },\n  \"symbol-overview\": {\n    \"script\": \"https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js\",\n    \"docs\": \"https://www.tradingview.\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 11990,
-        "durationMs": 1
-      },
-      {
-        "title": "我先确认组件配置，并查看是否有可佐证“业务构成”的财务数据模块",
-        "detail": "调用：bash\n结果：{\"turn\": 1, \"step\": 5, \"message\": {\"source\": {\"kind\": \"tool\", \"callId\": \"call_00_UJcbCX9GX6grlipVofYT5760\"}, \"content\": [{\"type\": \"tool-result\", \"toolCallId\": \"call_00_UJcbCX9GX6grlipVofYT5760\", \"content\": [{\"type\": \"text\", \"text\": \"---\\nname: business-chart-recall\\ndescription: business-chart-recall 是按资产与组件能力召回的金融业务图表 Skill。K线支持股票、ETF、数字币和数据源可识别的期权合约；公司财报、估值、评级、分红、所有权等组件仍只用于其契约支持的美国上市公司证券。\\nmarket_scope: component_scoped_multi_asset\\n---\\n\\n# 金融业务图表\\n\\n## 资产与组件范围（硬约束）\\n\\n- `kline.py` 是跨资产行情组件，支持普通股票、ETF、数字币交易对，以及 AInvest 或 Yahoo 能识别的明确期权合约代码。数字币可使用 AInvest，并回退到 Binance、Bybit、Coinbase、Kraken 或 Yahoo；ETF 和期权可在 AInvest 失败后回退到 Yahoo。\\n- 对“行情、K线、价格走势、涨跌、成交量、支撑压力、买卖点、技术面”等问题，只要标的是上述可识别资产，应优先召回 `kline.py`，不能因为它不是普通美股就降级成通用折线图。\\n- 期权必须有可解析的具体合约标识；只有标的资产、到期日、认购/认沽方向或行权价存在实质歧义时才要求用户补充。不得用标的股票 K 线冒充期权合约 K 线。\\n- ETF 的行情与技术面使用 `kline.py`；只有组件 schema 明确覆盖的字段才允许追加 `key_stats.py`、资金流或其他业务组件，不能默认把 ETF 当作经营公司生成财报、盈利预测或公司估值组件。\\n- 数字币默认只使用 `kline.py` 及其 OHLCV、均线、成交量和技术指标。数字币没有公司财报、股息、分析师评级或内部人交易语义，禁止召回这些\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 14537,
-        "durationMs": 21
-      },
-      {
-        "title": "skill",
-        "detail": "调用：skill\n结果：<skill_content name=\"external-search\">\n<skill_resources>\nBase directory for this skill: .agents/skills/external-search\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\n# Veya skill bridge\n\nBefore acting, read `../../../app/skills/external-search/SKILL.md` completely and follow it as the canonical instruction file. Resolve scripts and resources relative to `app/skills/external-search/`.\n</skill_instructions>\n</skill_content>",
-        "state": "done",
-        "tool": "skill",
-        "elapsedMs": 14548,
-        "durationMs": 11
-      },
-      {
-        "title": "Read about_company schema",
-        "detail": "调用：bash\n结果：{\n  \"type\": \"about-company\",\n  \"name\": \"About Company\",\n  \"visualChannelMappings\": [\n    {\n      \"semantic\": \"股票代码\",\n      \"field\": \"code\",\n      \"visualChannel\": \"dataSource.symbol\",\n      \"required\": true\n    },\n    {\n      \"semantic\": \"公司名称\",\n      \"field\": \"companyName\",\n      \"visualChannel\": \"heading.title\"\n    },\n    {\n      \"semantic\": \"公司一句话简介\",\n      \"field\": \"tagline\",\n      \"visualChannel\": \"heading.subtitle\"\n    },\n    {\n      \"semantic\": \"公司资料字段\",\n      \"field\": \"fields[].label|value\",\n      \"visualChannel\": \"infoGrid\"\n    },\n    {\n      \"semantic\": \"公司介绍\",\n      \"field\": \"introduction\",\n      \"visualChannel\": \"introduction\"\n    }\n  ],\n  \"dataContract\": [\n    {\n      \"field\": \"code\",\n      \"type\": \"string\",\n      \"required\": true\n    },\n    {\n      \"field\": \"market\",\n      \"type\": \"string\",\n      \"required\": true\n    },\n    {\n      \"field\": \"companyName\",\n      \"type\": \"string\"\n    },\n    {\n      \"field\": \"tagline\",\n      \"type\": \"string\"\n    },\n    {\n      \"field\": \"fiel\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 18361,
-        "durationMs": 1
-      },
-      {
-        "title": "Read revenue_sources schema",
-        "detail": "调用：bash\n结果：{\n  \"type\": \"revenue-sources\",\n  \"name\": \"Revenue Breakdown by Source / Business\",\n  \"visualChannelMappings\": [\n    {\n      \"semantic\": \"Stock ticker\",\n      \"field\": \"code\",\n      \"visualChannel\": \"dataSource.symbol\",\n      \"required\": true\n    },\n    {\n      \"semantic\": \"Business source\",\n      \"field\": \"items[].label\",\n      \"visualChannel\": \"pie.legend.label\"\n    },\n    {\n      \"semantic\": \"Revenue\",\n      \"field\": \"items[].value\",\n      \"visualChannel\": \"pie.arc.angle\"\n    },\n    {\n      \"semantic\": \"Reporting period\",\n      \"field\": \"year\",\n      \"visualChannel\": \"badge.topRight\"\n    }\n  ],\n  \"dataContract\": [\n    {\n      \"field\": \"code\",\n      \"type\": \"string\",\n      \"required\": true\n    },\n    {\n      \"field\": \"items[].label\",\n      \"type\": \"string\"\n    },\n    {\n      \"field\": \"items[].value\",\n      \"type\": \"number\",\n      \"unit\": \"millions USD\"\n    },\n    {\n      \"field\": \"year\",\n      \"type\": \"string\"\n    }\n  ],\n  \"builtInDataSources\": [\n    {\n      \"id\": \"ainvest-usa-sankey-\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 18912,
-        "durationMs": 1
-      },
-      {
-        "title": "Check CLI options for both scripts",
-        "detail": "调用：bash\n结果：usage: revenue_sources.py [-h] [--code CODE] [--output OUTPUT]\n                          [--payload-output PAYLOAD_OUTPUT] [--height HEIGHT]\n                          [--market MARKET] [--type {quarterly,annual}]\n                          [--schema] [--theme {light,dark}]\n                          [--language LANGUAGE] [--title TITLE]\n\nRender the business component \"Revenue Breakdown by Source / Business\".\n\noptions:\n  -h, --help            show this help message and exit\n  --code CODE           Ticker code, for example GOOG.\n  --output OUTPUT       Output HTML path.\n  --payload-output PAYLOAD_OUTPUT\n                        Optional output path for generated component payload.\n  --height HEIGHT       Component height. Default: 360.\n  --market MARKET       AInvest market id. Default auto tries NASDAQ/NYSE.\n  --type {quarterly,annual}\n                        AInvest revenue breakdown period type.\n  --schema              Print component schema.\n  --theme {light,dark}  Initial theme; suppor\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 20416,
-        "durationMs": 1
-      },
-      {
-        "title": "Check TradingView CLI and outputs dir",
-        "detail": "调用：bash\n结果：usage: trading_view_chart.py [-h]\n                             [--widget {advanced-chart,company-profile,crypto-heatmap,crypto-mkt-screener,economic-calendar,fundamental-data,market-data,market-overview,mini-chart,screener,single-ticker,stock-heatmap,symbol-info,symbol-overview,technical-analysis,ticker-tape,tickers,top-stories}]\n                             [--symbol SYMBOL] [--theme {dark,light}]\n                             [--language LANGUAGE] [--interval INTERVAL]\n                             [--title TITLE] [--height HEIGHT]\n                             [--config-json CONFIG_JSON] [--output OUTPUT]\n                             [--payload-output PAYLOAD_OUTPUT] [--schema]\n                             [--list-widgets]\n\nTradingViewChart: render official hosted widgets, without fabricating market\ndata.\n\noptions:\n  -h, --help            show this help message and exit\n  --widget {advanced-chart,company-profile,crypto-heatmap,crypto-mkt-screener,economic-calendar,fundamental-data,mark\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 20888,
-        "durationMs": 1
-      },
-      {
-        "title": "已确认组件契约",
-        "detail": "调用：bash\n结果：{\"ok\": true, \"tool\": \"TradingViewChart\", \"type\": \"tradingview-widget\", \"widget\": \"company-profile\", \"symbol\": \"NASDAQ:NVDA\", \"config\": {\"symbol\": \"NASDAQ:NVDA\", \"colorTheme\": \"light\", \"locale\": \"zh_CN\", \"width\": \"100%\", \"height\": \"100%\"}, \"source\": \"TradingView\", \"sourceUrl\": \"https://www.tradingview.com/widget-docs/\", \"dataStatus\": \"browser-hosted-widget; no numeric market data extracted\", \"output\": \"deepseek-nvda-tv-company-profile.html\"}",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 22367,
-        "durationMs": 46
-      },
-      {
-        "title": "Render NVDA revenue by business segment",
-        "detail": "调用：bash\n结果：{\"ok\": true, \"code\": \"NVDA\", \"output\": \"deepseek-nvda-revenue-sources.html\"}",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 27267,
-        "durationMs": 4401
-      },
-      {
-        "title": "Render NVDA company profile component",
-        "detail": "调用：bash\n结果：{\n  \"ok\": true,\n  \"output\": \"outputs/generated/deepseek-nvda-about-company.html\",\n  \"payloadOutput\": \"outputs/generated/deepseek-nvda-about-company.json\"\n}",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 30340,
-        "durationMs": 2619
-      },
-      {
-        "title": "三个组件均生成成功",
-        "detail": "调用：bash\n结果：-rw------- 1 ubuntu ubuntu  8275 Oct 15 20:13 outputs/generated/deepseek-nvda-about-company.html\n-rw------- 1 ubuntu ubuntu  2718 Oct 15 20:13 outputs/generated/deepseek-nvda-about-company.json\n-rw------- 1 ubuntu ubuntu  5013 Oct 15 20:04 outputs/generated/deepseek-nvda-quote-card.html\n-rw------- 1 ubuntu ubuntu 16600 Oct 15 20:13 outputs/generated/deepseek-nvda-revenue-sources.html\n-rw------- 1 ubuntu ubuntu  1740 Oct 15 20:13 outputs/generated/deepseek-nvda-revenue-sources.json\n-rw------- 1 ubuntu ubuntu 36933 Oct 15 20:11 outputs/generated/deepseek-nvda-snapshot-streamviz.html\n-rw------- 1 ubuntu ubuntu  5436 Oct 15 20:11 outputs/generated/deepseek-nvda-tradingview-chart.html\n-rw------- 1 ubuntu ubuntu  1050 Oct 15 20:11 outputs/generated/deepseek-nvda-tradingview-chart.json\n-rw------- 1 ubuntu ubuntu  5052 Oct 15 20:11 outputs/generated/deepseek-nvda-tradingview-info.html\n-rw------- 1 ubuntu ubuntu  5043 Oct 15 20:13 outputs/generated/deepseek-nvda-tv-company-profile.html\n-rw-----\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 32319,
-        "durationMs": 33
-      },
-      {
-        "title": "Inspect about company payload",
-        "detail": "调用：bash\n结果：{\n \"type\": \"about-company\",\n \"name\": \"公司资料\",\n \"title\": \"英伟达公司资料\",\n \"code\": \"NVDA\",\n \"market\": \"185\",\n \"exchange\": \"NASDAQ\",\n \"companyName\": \"Nvidia Corporation\",\n \"tagline\": \"The world leader in Artificial Intelligence Computing\",\n \"fields\": [\n  {\n   \"key\": \"industry\",\n   \"label\": \"行业\",\n   \"value\": \"Semiconductor\"\n  },\n  {\n   \"key\": \"establishedDate\",\n   \"label\": \"成立日期\",\n   \"value\": \"--\"\n  },\n  {\n   \"key\": \"listingDate\",\n   \"label\": \"上市日期\",\n   \"value\": \"01/22/1999\"\n  },\n  {\n   \"key\": \"exchange\",\n   \"label\": \"交易所\",\n   \"value\": \"NASDAQ Stock Exchange\"\n  },\n  {\n   \"key\": \"employees\",\n   \"label\": \"全职员工\",\n   \"value\": \"42,000\"\n  },\n  {\n   \"key\": \"fiscalYearEnds\",\n   \"label\": \"财年结束日\",\n   \"value\": \"01-31\"\n  },\n  {\n   \"key\": \"website\",\n   \"label\": \"网站\",\n   \"value\": \"www.nvidia.com;investor.nvidia.com\",\n   \"href\": \"www.nvidia.com;investor.nvidia.com\"\n  },\n  {\n   \"key\": \"securityType\",\n   \"label\": \"证券类型\",\n   \"value\": \"Common stock\"\n  }\n ],\n \"wideFields\": [\n  {\n   \"key\": \"officeAddress\",\n   \"label\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 32772,
-        "durationMs": 0
-      },
-      {
-        "title": "收入结构与公司资料已取到",
-        "detail": "调用：bash\n结果：---\nname: external-search\ndescription: Kimi-grounded web answer skill for non-AInvest information. The search script returns Kimi's final answer after its Formula tool loop; citations are supporting metadata, not reconstructed search-engine output. URL reading remains a separate capability.\n---\n\n# External Search\n\nUse this skill when a request needs external web evidence or content from specific URLs.\n\n## Scripts\n\n- `external_info_search.py`: uses the existing Moonshot Formula tools/fibers loop, and writes Kimi's final `message.content` as the primary `answer` observation.\n- `url_content_reader.py`: reads user-provided URLs; it does not discover new pages.\n\n## Routing Notes\n\nUse `external_info_search.py` for web discovery, current facts, event dates, news, announcements, and non-AInvest sources. Downstream reasoning must consume payload `answer` first. `articles` only contains citations/references extracted from Kimi's final response when available.\n\nDo not call legacy search engines, \n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 44398,
-        "durationMs": 25
-      },
-      {
-        "title": "Check external search CLI options",
-        "detail": "调用：bash\n结果：usage: external_info_search.py [-h] [--query QUERY] [--site SITE]\n                               [--source {auto,moonshot,kimi}] [--limit LIMIT]\n                               [--max-details MAX_DETAILS]\n                               [--freshness-context FRESHNESS_CONTEXT]\n                               [--timeout TIMEOUT] [--format {json}] --output\n                               OUTPUT [--payload-output PAYLOAD_OUTPUT]\n\nReturn Kimi's final answer from builtin web search.\n\noptions:\n  -h, --help            show this help message and exit\n  --query QUERY, --topic QUERY, --keyword QUERY\n  --site SITE           Restrict search to a site/domain. Can repeat.\n  --source {auto,moonshot,kimi}\n  --limit LIMIT\n  --max-details MAX_DETAILS\n                        Deprecated compatibility option; Kimi composes the\n                        final answer directly.\n  --freshness-context FRESHNESS_CONTEXT\n                        JSON context with current market time and desired\n                        re\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 45804,
-        "durationMs": 1
-      },
-      {
-        "title": "Search NVIDIA business segments overview",
-        "detail": "调用：bash\n结果：[凭据相关输出已隐藏]",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 47499,
-        "durationMs": 0
-      },
-      {
-        "title": "外部检索缺少 API Key，我改用端内新闻源作为替代证据",
-        "detail": "调用：bash\n结果：---\nname: internal-search\ndescription: AInvest internal text search skill for US equities and US-listed securities only. It finds AInvest news/articles and extracts titles, summaries, body text, publication time, and URLs. Do not use it for A-share, Hong Kong, Japanese, UK, European, or other non-US-market news; use external-search instead.\nmarket_scope: us_equities_only\n---\n\n# Internal Search\n\nUse `scripts/ainvest_news_search.py` to search AInvest text articles and news.\n\n## Script\n\n- `ainvest_news_search.py`: searches AInvest news/articles and writes structured observations.\n\n## Routing Notes\n\nUse this skill for AInvest text news, article summaries, market catalysts, regulatory updates, company news, and AInvest in-app textual context.\n\nWhen JEV selects a US business-plus-internal evidence strategy, keep the matching business chart as the structured primary evidence and use this skill to explain recent catalysts, disclosures, market reaction, or narrative changes. Do not replace nati\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 49316,
-        "durationMs": 17
-      },
-      {
-        "title": "Check internal news search CLI",
-        "detail": "调用：bash\n结果：usage: ainvest_news_search.py [-h] [--topic TOPIC] [--keyword KEYWORD]\n                              [--keyword-mode {any,all}] [--query QUERY]\n                              [--no-topic-filter] [--semantic]\n                              [--semantic-threshold SEMANTIC_THRESHOLD]\n                              [--max-details MAX_DETAILS]\n                              [--start-date START_DATE] [--end-date END_DATE]\n                              [--limit LIMIT]\n                              [--source {all,symbol,category,topic,podcast,homepage,ddg,bing,sitemap}]\n                              [--category CATEGORY]\n                              [--category-pages CATEGORY_PAGES]\n                              [--category-page-size CATEGORY_PAGE_SIZE]\n                              [--topic-label TOPIC_LABEL]\n                              [--topic-pages TOPIC_PAGES]\n                              [--topic-articles-only]\n                              [--symbol-url SYMBOL_URL] [--symbol SYMBOL]\n    \n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 50879,
-        "durationMs": 1
-      },
-      {
-        "title": "Search AInvest news for NVDA",
-        "detail": "调用：bash\n结果：[warn] duckduckgo variant failed: : fetch failed: https://duckduckgo.com/html/?q=site%3Aainvest.com%2Fnews: <urlopen error [Errno 101] Network is unreachable>\nsaved 10 article(s) to outputs/generated/deepseek-nvda-news.json",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 144731,
-        "durationMs": 91050
-      },
-      {
-        "title": "Summarize NVDA news results",
-        "detail": "调用：bash\n结果：<class 'list'> 10\n- None | Nvidia's 'work with China on safety' line is really a $50 billion comeback bid\n    Nvidia CEO Jensen Huang urged collaboration with Chinese AI firms on safety, framing it as a strategic bid to regain access to China's $50B AI chip market.\n- None | The \"tokenized stocks\" inside Surf's SurfBoard are a retention program, not equity access\n    Surf, a venture-backed AI platform, launched SurfBoard NFTs on Robinhood Chain, linking them to tokenized stocks of major tech firms.\n- None | TSMC Earnings Beat Expectations, but Margin Pressure and AI Selloff Put Critical $400 Support in Focus\n    TSMC beats earnings but faces margin pressure and AI selloff, testing critical $400 support amid investor skepticism on infrastructure spending sustainability.\n- None | JEPQ \"Added\" SpaceX and Applied Materials - This Daily Report Isn't a Bet\n    JPMorgan's JEPQ fund added SpaceX and AMAT via Nasdaq-100 index inclusion, not active stock-picking.\n- None | Howard Financial Slashes\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 146555,
-        "durationMs": 0
-      },
-      {
-        "title": "Verify generated HTML files",
-        "detail": "调用：bash\n结果：--- deepseek-nvda-tv-company-profile.html\n5043 outputs/generated/deepseek-nvda-tv-company-profile.html\nembed-widget-symbol-profile.js\n3\n--- deepseek-nvda-revenue-sources.html\n16600 outputs/generated/deepseek-nvda-revenue-sources.html\n2",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 151462,
-        "durationMs": 0
-      },
-      {
-        "title": "Check revenue HTML content",
-        "detail": "调用：bash\n结果：<title>pie</title>\n      1 7.48%\n      1 92.52%\n      1 Data Center\n      1 Edge Computing\n      2 Q2 '27",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 152020,
-        "durationMs": 0
+        "elapsedMs": 39
       }
     ],
-    "startedAt": 1792066383993,
-    "endedAt": 1792066545439,
-    "elapsedMs": 161446,
-    "durationSource": "measured-chat-stream",
     "stages": [
       {
-        "name": "Mentora 实际对话生成",
-        "startedAt": 1792066383993,
-        "endedAt": 1792066545439,
-        "elapsedMs": 161446
+        "name": "官方组件生成",
+        "startedAt": 1792119379690,
+        "endedAt": 1792119379729,
+        "elapsedMs": 39
       }
-    ],
-    "detailSource": "cached-tool-results"
+    ]
   },
   "provenance": {
-    "generation": "actual-veya-chat-stream",
-    "sessionId": "real-tradingview-company-profile-1792066383993",
+    "generation": "executed-official-widget-cli",
     "renderer": "trading_view_chart.py",
-    "widget": "company-profile",
     "sample": false,
-    "tool": "TradingViewChart",
-    "model": "deepseek-v4-flash",
-    "sourceAnswerSha256": "7952ca974abb040bd40b6abe0b95f51ca60401fe9d612fc77353a1c62fb61d96",
-    "sourceArtifacts": [
-      {
-        "name": "deepseek-nvda-tv-company-profile.html",
-        "sha256": "6f35edbf9770b1939b1838c67f4c23114e54729fee2adf696504bda294d55b48"
-      },
-      {
-        "name": "deepseek-nvda-revenue-sources.html",
-        "sha256": "fc09821c523944d68e11a7c00909f1c54cf851df19eda9451f3ebc4c42884244"
-      }
-    ],
-    "cacheScope": "actual-conversation-and-generated-artifacts"
+    "widget": "company-profile",
+    "configUrl": "/static/cases/inspiration/tradingview-company-profile/widget-config.json",
+    "artifactSha256": "6698475f141d8185810d9a28032cf6b3d432c6cd1d95179c9709019613285be2",
+    "sourceAnswerSha256": "2ae80c48567a171e35b5b51f2857aa5a98998f0f08b71c42e109c23ce23ce7f3",
+    "officialDocs": "https://www.tradingview.com/widget-docs/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
   }
 }

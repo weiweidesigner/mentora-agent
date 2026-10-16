@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "forex-table",
+  "symbol": null,
+  "config": {
+    "currencies": [
+      "USD",
+      "EUR",
+      "JPY",
+      "GBP",
+      "CHF",
+      "AUD"
+    ],
+    "displayedValue": "rate",
+    "heatmap": false,
+    "theme": "dark",
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/heatmaps/forex-table/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-forex-table/widget.html"
+}

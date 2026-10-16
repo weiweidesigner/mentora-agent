@@ -534,7 +534,17 @@
         panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
         panel.innerHTML = catalog.categories.filter(category => active === "all" || category.id === active).map(category => {
           const rows = catalog.cases.filter(row => row.category === category.id);
-          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3></header><p class="inspirationCategorySubtitle">${escapeHtml(category.subtitle)}</p><div class="inspirationGrid">${rows.map((row, index) => cardHtml(row, index).replaceAll("<h2>", "<h4>").replaceAll("</h2>", "</h4>")).join("")}</div></section>`;
+          const cards = (items, level = 4) => `<div class="inspirationGrid">${items.map((row, index) => cardHtml(row, index).replaceAll("<h2>", `<h${level}>`).replaceAll("</h2>", `</h${level}>`)).join("")}</div>`;
+          let content = cards(rows);
+          if (category.id === "charts" && catalog.tradingViewGroups?.length) {
+            const groups = [...catalog.tradingViewGroups, {id:"native",title:"公司财务与研究",description:"使用原生业务图表查看财报、估值与资金。"}];
+            content = groups.map(group => {
+              const items = rows.filter(row => group.id === "native" ? row.tool !== "TradingViewChart" : row.tool === "TradingViewChart" && row.widgetGroup === group.id);
+              if (!items.length) return "";
+              return `<section class="inspirationWidgetGroup" aria-labelledby="widget-group-${group.id}"><header class="inspirationWidgetGroupHeader"><h4 id="widget-group-${group.id}">${escapeHtml(group.id === "native" ? group.title : "TradingView · " + group.title)}</h4><p>${escapeHtml(group.description)}</p></header>${cards(items,5)}</section>`;
+            }).join("");
+          }
+          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3></header><p class="inspirationCategorySubtitle">${escapeHtml(category.subtitle)}</p>${content}</section>`;
         }).join("");
       };
       tabs.addEventListener("click", event => {

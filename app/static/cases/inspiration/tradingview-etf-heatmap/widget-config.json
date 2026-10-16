@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "etf-heatmap",
+  "symbol": null,
+  "config": {
+    "dataSource": "AllUSEtf",
+    "blockSize": "volume",
+    "blockColor": "change",
+    "grouping": "asset_class",
+    "colorTheme": "dark",
+    "hasTopBar": true,
+    "isDataSetEnabled": true,
+    "isZoomEnabled": true,
+    "hasSymbolTooltip": true,
+    "isMonoSize": false,
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/heatmaps/etf-heatmap/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-etf-heatmap/widget.html"
+}

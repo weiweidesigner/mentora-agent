@@ -1,0 +1,69 @@
+{
+  "question": "用 TradingView 查看easyMarkets 用户评分。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
+  "answer": {
+    "question": "用 TradingView 查看easyMarkets 用户评分。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-broker-rating/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-broker-rating/widget.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-broker-rating/widget.html",
+        "url": "/static/cases/inspiration/tradingview-broker-rating/widget.html",
+        "title": "经纪商评分 · easyMarkets 用户评分"
+      }
+    ],
+    "interpretation": "### 经纪商评分 · Broker Rating\n\n展示指定经纪商在 TradingView 上的用户评分。\n\n本例展示**easyMarkets 用户评分**。\n\n[[AIME_CHART:case:inspiration/tradingview-broker-rating/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/brokers/rating/",
+        "title": "Broker Rating"
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "组件生成记录",
+    "elapsedMs": 40,
+    "startedAt": 1792119379815,
+    "endedAt": 1792119379855,
+    "durationSource": "measured-cli",
+    "steps": [
+      {
+        "title": "生成官方 Broker Rating",
+        "detail": "调用：TradingViewChart\n组件：broker-rating\n已生成并核对官方加载配置。",
+        "state": "done",
+        "elapsedMs": 40
+      }
+    ],
+    "stages": [
+      {
+        "name": "官方组件生成",
+        "startedAt": 1792119379815,
+        "endedAt": 1792119379855,
+        "elapsedMs": 40
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "executed-official-widget-cli",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "widget": "broker-rating",
+    "configUrl": "/static/cases/inspiration/tradingview-broker-rating/widget-config.json",
+    "artifactSha256": "51642a1da80c7b677fbd799f22b671b5edf47d65eedaa94b33cce4da9faf55d1",
+    "sourceAnswerSha256": "9dd6df6f0f5c82c94d4a475c4e7a1907f601c3af43784e532337d9bd05102853",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/brokers/rating/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
+  }
+}

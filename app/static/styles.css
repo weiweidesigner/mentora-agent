@@ -3633,7 +3633,7 @@ p {
 .inspirationGrid .caseCardIcon { width:22px; height:22px; flex-shrink:0; }
 .inspirationGrid .caseCardIcon svg { width:14px; height:14px; }
 .inspirationGrid .caseCardTag { font-size:12px; }
-.inspirationGrid .caseCard h4 { margin:0 0 5px; font-size:16px; line-height:1.35; font-weight:650; }
+.inspirationGrid .caseCard :is(h4,h5) { margin:0 0 5px; font-size:16px; line-height:1.35; font-weight:650; }
 .inspirationGrid .caseCard p { font-size:13px; line-height:1.5; }
 @media(max-width:1000px) { .inspirationGrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:760px) {
@@ -3647,7 +3647,7 @@ p {
   .inspirationTabs button { flex:none; white-space:nowrap; padding:8px 12px; font-size:13px; }
   .inspirationGrid { gap:12px; }
   .inspirationGrid .caseCard { padding:12px; }
-  .inspirationGrid .caseCard h4 { font-size:15px; }
+  .inspirationGrid .caseCard :is(h4,h5) { font-size:15px; }
   .inspirationGrid .caseCard p { font-size:12px; }
 }
 @media(max-width:480px) { .inspirationGrid { grid-template-columns:minmax(0,1fr); } }
@@ -3697,13 +3697,13 @@ p {
  .inspirationGrid .caseCardTop{gap:6px;margin-bottom:5px}
  .inspirationGrid .caseCardIcon{width:20px;height:20px}
  .inspirationGrid .caseCardTag{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .inspirationGrid .caseCard h4{margin-bottom:5px;font-size:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .inspirationGrid .caseCard :is(h4,h5){margin-bottom:5px;font-size:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
  .inspirationGrid .caseCard p{font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 }
 
 .caseCardTitleMobile{display:none}
 @media(max-width:760px){
- .inspirationGrid .caseCard h4{display:block;white-space:nowrap;text-overflow:ellipsis;-webkit-line-clamp:unset}
+ .inspirationGrid .caseCard :is(h4,h5){display:block;white-space:nowrap;text-overflow:ellipsis;-webkit-line-clamp:unset}
  .inspirationGrid .caseCardTitleFull{display:none}
  .inspirationGrid .caseCardTitleMobile{display:inline}
 }
@@ -4601,3 +4601,10 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 
 /* Keep task-title chevrons close to their text. */
 .taskWorkspace .thinkingTrigger { gap:3px; }
+
+.inspirationWidgetGroup { margin-top:28px; }
+.inspirationWidgetGroup + .inspirationWidgetGroup { margin-top:36px; }
+.inspirationWidgetGroupHeader { margin-bottom:16px; }
+.inspirationWidgetGroupHeader h4 { margin:0 0 6px; font-size:16px; line-height:1.5; font-weight:600; }
+.inspirationWidgetGroupHeader p { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+@media(max-width:640px) { .inspirationWidgetGroup + .inspirationWidgetGroup { margin-top:28px; } }

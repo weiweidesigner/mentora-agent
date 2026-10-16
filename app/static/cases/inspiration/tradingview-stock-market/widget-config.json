@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "stock-market",
+  "symbol": null,
+  "config": {
+    "colorTheme": "dark",
+    "dateRange": "12M",
+    "exchange": "US",
+    "showChart": true,
+    "showSymbolLogo": true,
+    "showFloatingTooltip": false,
+    "isTransparent": false,
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/watchlists/stock-market/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-stock-market/widget.html"
+}

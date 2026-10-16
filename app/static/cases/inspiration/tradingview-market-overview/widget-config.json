@@ -1,0 +1,89 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "market-overview",
+  "symbol": null,
+  "config": {
+    "colorTheme": "dark",
+    "dateRange": "12M",
+    "showChart": true,
+    "tabs": [
+      {
+        "title": "Indices",
+        "symbols": [
+          {
+            "s": "FOREXCOM:SPXUSD",
+            "d": "S&P 500"
+          },
+          {
+            "s": "FOREXCOM:NSXUSD",
+            "d": "Nasdaq 100"
+          },
+          {
+            "s": "FOREXCOM:DJI",
+            "d": "Dow 30"
+          }
+        ]
+      },
+      {
+        "title": "Futures",
+        "symbols": [
+          {
+            "s": "CME_MINI:ES1!",
+            "d": "S&P 500"
+          },
+          {
+            "s": "NYMEX:CL1!",
+            "d": "Crude oil"
+          },
+          {
+            "s": "COMEX:GC1!",
+            "d": "Gold"
+          }
+        ]
+      },
+      {
+        "title": "Bonds",
+        "symbols": [
+          {
+            "s": "CBOT:ZB1!",
+            "d": "US Treasury Bond"
+          },
+          {
+            "s": "CBOT:ZN1!",
+            "d": "US 10Y Treasury"
+          },
+          {
+            "s": "EUREX:FGBL1!",
+            "d": "Euro Bund"
+          }
+        ]
+      },
+      {
+        "title": "Forex",
+        "symbols": [
+          {
+            "s": "FX:EURUSD",
+            "d": "EUR/USD"
+          },
+          {
+            "s": "FX:GBPUSD",
+            "d": "GBP/USD"
+          },
+          {
+            "s": "FX:USDJPY",
+            "d": "USD/JPY"
+          }
+        ]
+      }
+    ],
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-market-overview/widget.html"
+}

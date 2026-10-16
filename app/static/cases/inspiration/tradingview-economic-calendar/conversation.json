@@ -1,181 +1,69 @@
 {
-  "question": "用 TradingView 展示美国、欧洲和中国的经济日历，我想知道近期有哪些数据发布，方便自己按重要程度查看。",
-  "cachedAt": "2026-10-15T20:17:10.580259+08:00",
+  "question": "用 TradingView 查看美国重要经济数据日程。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
   "answer": {
-    "question": "用 TradingView 展示美国、欧洲和中国的经济日历，我想知道近期有哪些数据发布，方便自己按重要程度查看。",
+    "question": "用 TradingView 查看美国重要经济数据日程。",
     "code": "",
     "selectedSkill": {
       "key": "trading-view-chart",
-      "label": "trading-view-chart",
-      "script": "trading-view-chart",
-      "reason": "由 DeepSeek Harness 选择并执行 Mentora 项目 Skill。"
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
     },
-    "htmlUrl": "/static/cases/inspiration/tradingview-economic-calendar/deepseek-econ-calendar-us.html",
-    "reportUrl": "/static/cases/inspiration/tradingview-economic-calendar/deepseek-econ-calendar-us.html",
+    "htmlUrl": "/static/cases/inspiration/tradingview-economic-calendar/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-economic-calendar/widget.html",
     "reportArtifacts": [
       {
-        "path": "case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-us.html",
-        "url": "/static/cases/inspiration/tradingview-economic-calendar/deepseek-econ-calendar-us.html"
-      },
-      {
-        "path": "case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-eu.html",
-        "url": "/static/cases/inspiration/tradingview-economic-calendar/deepseek-econ-calendar-eu.html"
-      },
-      {
-        "path": "case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-cn.html",
-        "url": "/static/cases/inspiration/tradingview-economic-calendar/deepseek-econ-calendar-cn.html"
+        "path": "case:inspiration/tradingview-economic-calendar/widget.html",
+        "url": "/static/cases/inspiration/tradingview-economic-calendar/widget.html",
+        "title": "经济日历 · 美国重要经济数据日程"
       }
     ],
-    "payloadUrl": null,
-    "interpretation": "已生成三张 TradingView 官方经济日历组件（美国、欧洲、中国），并按您的要求保留了「全部重要程度」等级，您可以在组件内切换高/中/低影响筛选。\n\n## 核心结论\n\n三张日历分别锁定美国、欧洲（欧元区＋英国、瑞士、北欧及中东欧主要经济体）、中国（含香港），均已生成、可交互。组件内每条事件自带重要性标记（高/中/低影响），默认显示全部等级，您点选重要程度即可按自己的关注度过滤。\n\n## 图表与解读\n\n**1）美国经济日历** — 覆盖美联储议息、非农就业、CPI/PCE、初请失业金、ISM、零售销售等美国数据发布，是判断美元、美债与美股波动窗口的第一入口。\n\n[[AIME_CHART:case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-us.html]]\n\n**2）欧洲经济日历** — 同时纳入欧元区（eu）与德国、法国、意大利、西班牙、英国、瑞士、北欧及中东欧等主要经济体，便于对照欧央行与英央行的政策节奏。\n\n[[AIME_CHART:case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-eu.html]]\n\n**3）中国经济日历** — 覆盖中国内地（cn）与香港（hk），包括 CPI/PPI、社会消费品零售、工业增加值、进出口、LPR/MLF 等发布，对 A 股与港股交易窗口最直接。\n\n[[AIME_CHART:case:inspiration/tradingview-economic-calendar/deepseek-econ-calendar-cn.html]]\n\n## 使用方式\n\n- 在组件顶部选择重要程度（高/中/低）即可只看关键发布；切换时间范围可查看未来一周或更远。\n- 事件的时间按您本地时区显示，跨市场对比时建议三张图保持同一时区设置。\n\n## 限制与数据口径\n\n- 数据由 TradingView 提供，部分市场数据可能延迟；组件需要浏览器可访问 TradingView 才能加载，若显示「加载较慢」可点击重试。\n- 本环境无外网访问，我无法预先抓取日历中的具体事件条目，因此上文未列出任何具体数据发布日期与预期值——请以组件内实时渲染的结果为准，不要将其视作已核验的数值证据。\n- 组件为 TradingView 托管的交互式展示，配置中不含任何被提取的行情或日历数值，仅用于查看与筛选。\n\n**缓存说明**：以上为真实对话生成时的答案与分析。图内行情、新闻或日历内容仍由 TradingView 加载，可能更新或延迟，与缓存分析的时点可能不同。",
-    "status": [
-      "DeepSeek Harness 已完成处理"
+    "interpretation": "### 经济日历 · Economic Calendar\n\n跟踪即将公布的经济数据、公告和事件，按重要性等条件筛选。\n\n本例展示**美国重要经济数据日程**。\n\n[[AIME_CHART:case:inspiration/tradingview-economic-calendar/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/calendars/economic-calendar/",
+        "title": "Economic Calendar"
+      }
     ],
-    "agentRunId": "deepseek-real-tradingview-economic-calendar-1792066545697",
-    "studioSessionId": null,
-    "engineSessionId": "real-tradingview-economic-calendar-1792066545697",
-    "reasoningFramework": "deepseek",
-    "inferenceModel": "deepseek-v4-flash",
-    "sources": [],
     "videos": [],
     "actionLinks": [],
-    "lang": "zh-CN",
-    "visualRoute": {
-      "applied": false,
-      "fallback": "agent-selection",
-      "error": "JEV 可视化路由请求失败：POST https://api.typesafe.ai/v1/systemone: 451 {\"title\":\"Typesafe is not available in your region.\",\"status\":451}",
-      "candidateCount": 46
-    }
+    "lang": "zh-CN"
   },
   "activity": {
-    "label": "执行记录",
+    "label": "组件生成记录",
+    "elapsedMs": 42,
+    "startedAt": 1792119379771,
+    "endedAt": 1792119379813,
+    "durationSource": "measured-cli",
     "steps": [
       {
-        "title": "我先加载 TradingView 图表 Skill 并查看项目结构，确认经济日历组件的使用规范",
-        "detail": "调用：skill\n结果：<skill_content name=\"trading-view-chart\">\n<skill_resources>\nBase directory for this skill: .agents/skills/trading-view-chart\nResolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.\n</skill_resources>\n\n<skill_instructions>\nRead `../../../app/skills/trading-view-chart/SKILL.md` completely before use. Canonical scripts and schemas live in `app/skills/trading-view-chart/`.\n</skill_instructions>\n</skill_content>",
+        "title": "生成官方 Economic Calendar",
+        "detail": "调用：TradingViewChart\n组件：economic-calendar\n已生成并核对官方加载配置。",
         "state": "done",
-        "tool": "skill",
-        "elapsedMs": 3190,
-        "durationMs": 18
-      },
-      {
-        "title": "List project and skill directories",
-        "detail": "调用：bash\n结果：AGENTS.md\napp\nbusiness-charts.lock.json\nchart-markup.lock.json\ncn-trading-data.lock.json\ndata-code-interpreter.lock.json\ndata-vis-charts.lock.json\ndeploy\ndocs\nflux-image.lock.json\nfrontend\njev_vis_router.lock.json\nkimi-search.lock.json\nollama\noutputs\npackage.json\npackage-lock.json\nREADME.md\nrequirements-dev.txt\nrequirements.txt\nscripts\ntests\ntrading-view-chart.lock.json\nurl-content-reader.lock.json\nus-market-news.lock.json\nus-market-vedio.lock.json\nvision-chart-analyst.lock.json\nvite.streamviz.config.js\nyahoo-market-data.lock.json\n---\nadvisor-text-generation\na-share-data\nbusiness-chart-recall\nchart-markup\ncode-interpreter\nexternal-search\nflux-image\ngeneric-chart\ninternal-search\nstreamviz\ntrading-view-chart\nvideo-search\nvision-chart-analyst\nyahoo-data\n---\nadvisor-text-generation\na-share-data\nbusiness-chart-recall\nchart-markup\ncode-interpreter\nexternal-search\nflux-image\ngeneric-chart\ninternal-search\nstreamviz\ntrading-view-chart\nvideo-search\nvision-chart-analyst\nyahoo-data",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 5440,
-        "durationMs": 0
-      },
-      {
-        "title": "Read TradingView skill spec",
-        "detail": "调用：bash\n结果：total 32\ndrwxrwxr-x 4 ubuntu ubuntu 4096 Oct 15 19:26 .\ndrwxrwxr-x 3 ubuntu ubuntu 4096 Oct 15 19:26 ..\ndrwxrwxr-x 2 ubuntu ubuntu 4096 Oct 15 19:26 schemas\ndrwxrwxr-x 2 ubuntu ubuntu 4096 Oct 15 19:26 scripts\n-rw-rw-r-- 1 ubuntu ubuntu 2281 Oct 15 19:26 SKILL.md\n-rw-rw-r-- 1 ubuntu ubuntu 8220 Oct 15 19:26 widgets.json\n=== SKILL.md ===\n---\nname: trading-view-chart\ndescription: Embed official TradingView charts, tickers, heatmaps, screeners, symbol details, news and economic calendars as interactive HTML, particularly when the user requests TradingView or a hosted live market widget. Does not extract numerical market data.\n---\n\n# TradingViewChart\n\nRead `schemas/trading_view_chart.schema.json` before composing a call. Run `scripts/trading_view_chart.py --list-widgets` or inspect `widgets.json` for component defaults and allowed config keys.\n\nUse this tool when the user requests TradingView, interactive hosted market views, heatmaps, screeners or an economic calendar. Prefer the existing\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 5964,
-        "durationMs": 1
-      },
-      {
-        "title": "Read schema and widget catalog",
-        "detail": "调用：bash\n结果：{\"turn\": 1, \"step\": 3, \"message\": {\"source\": {\"kind\": \"tool\", \"callId\": \"call_00_udiTK4uKyT3M3frha04F4010\"}, \"content\": [{\"type\": \"tool-result\", \"toolCallId\": \"call_00_udiTK4uKyT3M3frha04F4010\", \"content\": [{\"type\": \"text\", \"text\": \"{\\n  \\\"$schema\\\": \\\"https://json-schema.org/draft/2020-12/schema\\\",\\n  \\\"title\\\": \\\"TradingViewChart\\\",\\n  \\\"purpose\\\": \\\"Embed official TradingView widgets with TradingView-hosted market data. Interactive display only; does not return OHLCV or fundamental numeric data.\\\",\\n  \\\"type\\\": \\\"object\\\",\\n  \\\"properties\\\": {\\n    \\\"widget\\\": {\\n      \\\"type\\\": \\\"string\\\",\\n      \\\"enum\\\": [\\n        \\\"advanced-chart\\\",\\n        \\\"symbol-overview\\\",\\n        \\\"stock-heatmap\\\",\\n        \\\"crypto-heatmap\\\",\\n        \\\"screener\\\",\\n        \\\"crypto-mkt-screener\\\",\\n        \\\"symbol-info\\\",\\n        \\\"fundamental-data\\\",\\n        \\\"top-stories\\\",\\n        \\\"economic-calendar\\\",\\n        \\\"mini-chart\\\",\\n        \\\"market-overview\\\",\\n        \\\"market-data\\\",\\n        \\\"\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 7155,
-        "durationMs": 2
-      },
-      {
-        "title": "Inspect TradingView script header",
-        "detail": "调用：bash\n结果：{\"turn\": 1, \"step\": 4, \"message\": {\"source\": {\"kind\": \"tool\", \"callId\": \"call_00_Wj0zeo9zXA1QLXr2O3oV7914\"}, \"content\": [{\"type\": \"tool-result\", \"toolCallId\": \"call_00_Wj0zeo9zXA1QLXr2O3oV7914\", \"content\": [{\"type\": \"text\", \"text\": \"trading_view_chart.py\\n=== script ===\\n128 scripts/trading_view_chart.py\\n#!/usr/bin/env python3\\n\\\"\\\"\\\"TradingViewChart: render official hosted widgets, without fabricating market data.\\\"\\\"\\\"\\nfrom __future__ import annotations\\nimport argparse\\nimport copy\\nimport html\\nimport json\\nfrom pathlib import Path\\n\\nSKILL = Path(__file__).resolve().parents[1]\\nCATALOG = json.loads((SKILL / 'widgets.json').read_text())\\nLOCALES = {'zh-CN':'zh_CN', 'zh-Hant':'zh_TW', 'zh-TW':'zh_TW', 'en':'en'}\\n\\n\\ndef build_config(widget='advanced-chart', symbol=None, theme='dark', language='en', interval=None, config=None):\\n    if widget not in CATALOG:\\n        raise ValueError('Unknown widget: ' + widget)\\n    if theme not in {'light', 'dark'}:\\n        raise ValueError('th\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 7674,
-        "durationMs": 0
-      },
-      {
-        "title": "Prepare output dir and check network",
-        "detail": "调用：bash\n结果：total 3304\ndrwx------ 16 ubuntu ubuntu   4096 Oct 15 20:13 .\ndrwxrwxr-x 15 ubuntu ubuntu   4096 Oct 15 19:50 ..\ndrwx------  4 ubuntu ubuntu   4096 Oct 14 22:22 brief\ndrwx------  3 ubuntu ubuntu   4096 Oct 13 19:22 case-amd-ratings\ndrwx------  6 ubuntu ubuntu   4096 Oct 13 19:27 case-ashare-dashboard\ndrwx------  9 ubuntu ubuntu  20480 Oct 15 20:15 data\ndrwx------  2 ubuntu ubuntu   4096 Oct 15 20:15 day-tasks\ndrwx------  3 ubuntu ubuntu   4096 Oct 14 12:52 deepseek-2026-sse\n-rw-------  1 ubuntu ubuntu  48392 Oct 15 19:51 deepseek-aapl-close-6mo.json\n-rw-------  1 ubuntu ubuntu    305 Oct 15 19:52 deepseek-aapl-trend-run.json\n-rw-------  1 ubuntu ubuntu  56419 Oct 15 19:52 deepseek-aapl-trend-stats.json\n-rw-------  1 ubuntu ubuntu   2586 Oct 15 19:52 deepseek-aapl-trend-transform.py\n-rw-------  1 ubuntu ubuntu  49488 Oct 15 19:51 deepseek-aapl-volume-6mo.json\n-rw-------  1 ubuntu ubuntu    305 Oct 15 19:52 deepseek-aapl-volume-run.json\n-rw-------  1 ubuntu ubuntu  55082 Oct 15 19:52 deep\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 22252,
-        "durationMs": 11545
-      },
-      {
-        "title": "网络抓取在此环境不可用，但我先验证日历组件能否在本机渲染，同时生成三大区域的日历",
-        "detail": "调用：bash\n结果：{\"ok\": true, \"tool\": \"TradingViewChart\", \"type\": \"tradingview-widget\", \"widget\": \"economic-calendar\", \"symbol\": null, \"config\": {\"colorTheme\": \"light\", \"isTransparent\": true, \"width\": \"100%\", \"height\": \"100%\", \"locale\": \"zh_CN\", \"importanceFilter\": \"-1,0,1\", \"countryFilter\": \"us\"}, \"source\": \"TradingView\", \"sourceUrl\": \"https://www.tradingview.com/widget-docs/widgets/calendars/economic-calendar/\", \"dataStatus\": \"browser-hosted-widget; no numeric market data extracted\", \"output\": \"deepseek-econ-calendar-us.html\"}\nexit=0\n-rw------- 1 ubuntu ubuntu 5062 Oct 15 20:16 outputs/generated/deepseek-econ-calendar-us.html\n-rw------- 1 ubuntu ubuntu  613 Oct 15 20:16 outputs/generated/deepseek-econ-calendar-us.json",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 25785,
-        "durationMs": 56
-      },
-      {
-        "title": "Generate Europe and China calendars, check browser tools",
-        "detail": "调用：bash\n结果：{\"ok\": true, \"tool\": \"TradingViewChart\", \"type\": \"tradingview-widget\", \"widget\": \"economic-calendar\", \"symbol\": null, \"config\": {\"colorTheme\": \"light\", \"isTransparent\": true, \"width\": \"100%\", \"height\": \"100%\", \"locale\": \"zh_CN\", \"importanceFilter\": \"-1,0,1\", \"countryFilter\": \"eu,de,fr,it,es,nl,gb,ch,se,no,pl,be,at,ie,pt,dk,fi,gr,cz,hu,ro\"}, \"source\": \"TradingView\", \"sourceUrl\": \"https://www.tradingview.com/widget-docs/widgets/calendars/economic-calendar/\", \"dataStatus\": \"browser-hosted-widget; no numeric market data extracted\", \"output\": \"deepseek-econ-calendar-eu.html\"}\nexit=0\n{\"ok\": true, \"tool\": \"TradingViewChart\", \"type\": \"tradingview-widget\", \"widget\": \"economic-calendar\", \"symbol\": null, \"config\": {\"colorTheme\": \"light\", \"isTransparent\": true, \"width\": \"100%\", \"height\": \"100%\", \"locale\": \"zh_CN\", \"importanceFilter\": \"-1,0,1\", \"countryFilter\": \"cn,hk\"}, \"source\": \"TradingView\", \"sourceUrl\": \"https://www.tradingview.com/widget-docs/widgets/calendars/economic-calendar/\", \"dataStatus\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 29116,
-        "durationMs": 2
-      },
-      {
-        "title": "Render calendars headlessly and capture state",
-        "detail": "调用：bash\n结果：[stderr]\nTraceback (most recent call last):\n  File \"outputs/deepseek-tv-verify.py\", line 29, in <module>\n    asyncio.run(main())\n  File \"/usr/lib/python3.12/asyncio/runners.py\", line 194, in run\n    return runner.run(main)\n           ^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/asyncio/runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/asyncio/base_events.py\", line 687, in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n  File \"outputs/deepseek-tv-verify.py\", line 13, in main\n    await pg.goto(pathlib.Path(f).resolve().as_uri(), wait_until='load')\n  File \".venv/lib/python3.12/site-packages/playwright/async_api/_generated.py\", line 9869, in goto\n    await self._impl_obj.goto(\n  File \".venv/lib/python3.12/site-packages/playwright/_impl/_page.py\", line 560, in goto\n    return await self._main_frame.goto(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^\n…（完整输出保留在原始运行记录中）",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 61632,
-        "durationMs": 30321
-      },
-      {
-        "title": "Re-run headless verification with relaxed load wait",
-        "detail": "调用：bash\n结果：[\n {\n  \"theme\": \"light\",\n  \"title\": \"美国经济日历 · TradingView\",\n  \"height\": 702,\n  \"hasIframe\": false,\n  \"stateVisible\": true,\n  \"stateText\": \"正在加载 TradingView…\",\n  \"file\": \"outputs/generated/deepseek-econ-calendar-us.html\",\n  \"errors\": []\n },\n {\n  \"theme\": \"light\",\n  \"title\": \"欧洲经济日历 · TradingView\",\n  \"height\": 702,\n  \"hasIframe\": false,\n  \"stateVisible\": true,\n  \"stateText\": \"正在加载 TradingView…\",\n  \"file\": \"outputs/generated/deepseek-econ-calendar-eu.html\",\n  \"errors\": []\n },\n {\n  \"theme\": \"light\",\n  \"title\": \"中国经济日历 · TradingView\",\n  \"height\": 702,\n  \"hasIframe\": false,\n  \"stateVisible\": true,\n  \"stateText\": \"正在加载 TradingView…\",\n  \"file\": \"outputs/generated/deepseek-econ-calendar-cn.html\",\n  \"errors\": []\n }\n]",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 76131,
-        "durationMs": 12581
-      },
-      {
-        "title": "Verify payloads and HTML integrity",
-        "detail": "调用：bash\n结果：outputs/generated/deepseek-econ-calendar-cn.json | cn,hk | zh_CN | browser-hosted-widget; no numeric market data extracted\noutputs/generated/deepseek-econ-calendar-eu.json | eu,de,fr,it,es,nl,gb,ch,se,no,pl,be,at,ie,pt,dk,fi,gr,cz,hu, | zh_CN | browser-hosted-widget; no numeric market data extracted\noutputs/generated/deepseek-econ-calendar-us.json | us | zh_CN | browser-hosted-widget; no numeric market data extracted\n--- html sizes/nonempty ---\noutputs/generated/deepseek-econ-calendar-cn.html 5065 bytes\noutputs/generated/deepseek-econ-calendar-eu.html 5122 bytes\noutputs/generated/deepseek-econ-calendar-us.html 5062 bytes\n3",
-        "state": "done",
-        "tool": "bash",
-        "elapsedMs": 79926,
-        "durationMs": 1
+        "elapsedMs": 42
       }
     ],
-    "startedAt": 1792066545697,
-    "endedAt": 1792066630580,
-    "elapsedMs": 84883,
-    "durationSource": "measured-chat-stream",
     "stages": [
       {
-        "name": "Mentora 实际对话生成",
-        "startedAt": 1792066545697,
-        "endedAt": 1792066630580,
-        "elapsedMs": 84883
+        "name": "官方组件生成",
+        "startedAt": 1792119379771,
+        "endedAt": 1792119379813,
+        "elapsedMs": 42
       }
-    ],
-    "detailSource": "cached-tool-results"
+    ]
   },
   "provenance": {
-    "generation": "actual-veya-chat-stream",
-    "sessionId": "real-tradingview-economic-calendar-1792066545697",
+    "generation": "executed-official-widget-cli",
     "renderer": "trading_view_chart.py",
-    "widget": "economic-calendar",
     "sample": false,
-    "tool": "TradingViewChart",
-    "model": "deepseek-v4-flash",
-    "sourceAnswerSha256": "42c4045b621a0c5c4221abc6334c6b21f28d74981ba8b144c5c3491ce6013e56",
-    "sourceArtifacts": [
-      {
-        "name": "deepseek-econ-calendar-us.html",
-        "sha256": "1470fa5e0938d8659c6e392b3532feeb29b2a9361ce062a0dc2c996c6e2ce7f3"
-      },
-      {
-        "name": "deepseek-econ-calendar-eu.html",
-        "sha256": "4f7be82952d7a7cf1c5c5e2e12c43386c130da17ec5174bfe038beeb462502ca"
-      },
-      {
-        "name": "deepseek-econ-calendar-cn.html",
-        "sha256": "0b43d0902f3947941d594ab6ae42b7d775cfc8cab74f446a3b4669bb52d16552"
-      }
-    ],
-    "cacheScope": "actual-conversation-and-generated-artifacts"
+    "widget": "economic-calendar",
+    "configUrl": "/static/cases/inspiration/tradingview-economic-calendar/widget-config.json",
+    "artifactSha256": "5f1edd2daa0c21eb0732e923d047cb8641db8c385aa4d6d490c2de3150c3c7bd",
+    "sourceAnswerSha256": "5963332952bab4ab24da345d6bf48afcbf32d21e746ab75c6329b426da0f5894",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/calendars/economic-calendar/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
   }
 }

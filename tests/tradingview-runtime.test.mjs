@@ -27,14 +27,13 @@ test('cached advanced chart uses valid watchlist and ignores repeated host theme
 });
 
 test('every cached TradingView type sends the host theme and keeps transparent frames on its surface',async()=>{
-  const {readdirSync}=await import('node:fs');
-  const root=new URL('../app/static/cases/inspiration/',import.meta.url);
+  const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
   const widgets=new Set();
   let count=0;
-  for(const name of readdirSync(root,{recursive:true})) {
-    if(!name.endsWith('.html'))continue;
-    const source=readFileSync(new URL(name,root),'utf8');
-    if(!source.includes('id="tv-config"'))continue;
+  for(const row of catalog.cases.filter(row=>row.tool==='TradingViewChart')) {
+    const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
+    const source=readFileSync(new URL('../app'+cached.answer.reportArtifacts[0].url,import.meta.url),'utf8');
+    const name=row.id;
     for(const theme of ['dark','light']) {
       const dom=new JSDOM(source,{
         url:`https://example.com/chart.html?theme=${theme}`,runScripts:'dangerously',
@@ -46,6 +45,7 @@ test('every cached TradingView type sends the host theme and keeps transparent f
       widgets.add(spec.widget);
       const cfg=JSON.parse(d.querySelector('#mount script').textContent);
       assert.equal(cfg.colorTheme||cfg.theme,theme,name);
+      if(spec.format==='web-component'){assert.equal(d.querySelector(spec.tag).getAttribute('theme'),theme);dom.window.close();continue;}
       const iframe=d.createElement('iframe');d.querySelector('#mount').append(iframe);
       assert.equal(dom.window.getComputedStyle(iframe).colorScheme,'normal',name+' must not inherit dark color-scheme');
       d.documentElement.dataset.theme=theme==='dark'?'light':'dark';
@@ -56,5 +56,5 @@ test('every cached TradingView type sends the host theme and keeps transparent f
     }
     count++;
   }
-  assert.equal(widgets.size,18);assert.equal(count,27);
+  assert.equal(widgets.size,30);assert.equal(count,30);
 });

@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "market-data",
+  "symbol": null,
+  "config": {
+    "colorTheme": "dark",
+    "symbolsGroups": [
+      {
+        "name": "关注标的",
+        "symbols": [
+          {
+            "name": "NASDAQ:AAPL"
+          },
+          {
+            "name": "NASDAQ:MSFT"
+          },
+          {
+            "name": "NASDAQ:NVDA"
+          }
+        ]
+      }
+    ],
+    "locale": "zh_CN",
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-market-data/widget.html"
+}

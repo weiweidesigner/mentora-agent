@@ -1,0 +1,69 @@
+{
+  "question": "用 TradingView 查看easyMarkets 用户评论。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
+  "answer": {
+    "question": "用 TradingView 查看easyMarkets 用户评论。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-broker-reviews/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-broker-reviews/widget.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-broker-reviews/widget.html",
+        "url": "/static/cases/inspiration/tradingview-broker-reviews/widget.html",
+        "title": "经纪商评论 · easyMarkets 用户评论"
+      }
+    ],
+    "interpretation": "### 经纪商评论 · Broker Reviews\n\n展示指定经纪商在 TradingView 上的用户评论。\n\n本例展示**easyMarkets 用户评论**。\n\n[[AIME_CHART:case:inspiration/tradingview-broker-reviews/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/brokers/reviews/",
+        "title": "Broker Reviews"
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "组件生成记录",
+    "elapsedMs": 41,
+    "startedAt": 1792119379858,
+    "endedAt": 1792119379899,
+    "durationSource": "measured-cli",
+    "steps": [
+      {
+        "title": "生成官方 Broker Reviews",
+        "detail": "调用：TradingViewChart\n组件：broker-reviews\n已生成并核对官方加载配置。",
+        "state": "done",
+        "elapsedMs": 41
+      }
+    ],
+    "stages": [
+      {
+        "name": "官方组件生成",
+        "startedAt": 1792119379858,
+        "endedAt": 1792119379899,
+        "elapsedMs": 41
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "executed-official-widget-cli",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "widget": "broker-reviews",
+    "configUrl": "/static/cases/inspiration/tradingview-broker-reviews/widget-config.json",
+    "artifactSha256": "bcf8ee27677939f9ba1df79c774396ad096f06588e0c2f3ce5497d36ca2e23d7",
+    "sourceAnswerSha256": "d643a15e64551c766b6a74240943ef36e9c47525299f8bfec61a62c85632e78b",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/brokers/reviews/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
+  }
+}

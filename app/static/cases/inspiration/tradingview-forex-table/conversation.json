@@ -1,0 +1,69 @@
+{
+  "question": "用 TradingView 查看主要货币汇率矩阵。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
+  "answer": {
+    "question": "用 TradingView 查看主要货币汇率矩阵。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-forex-table/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-forex-table/widget.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-forex-table/widget.html",
+        "url": "/static/cases/inspiration/tradingview-forex-table/widget.html",
+        "title": "外汇行情表 · 主要货币汇率矩阵"
+      }
+    ],
+    "interpretation": "### 外汇行情表 · Forex Table\n\n以矩阵比较主要货币之间的汇率或日内涨跌。\n\n本例展示**主要货币汇率矩阵**。\n\n[[AIME_CHART:case:inspiration/tradingview-forex-table/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/heatmaps/forex-table/",
+        "title": "Forex Table"
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "组件生成记录",
+    "elapsedMs": 39,
+    "startedAt": 1792119379442,
+    "endedAt": 1792119379481,
+    "durationSource": "measured-cli",
+    "steps": [
+      {
+        "title": "生成官方 Forex Table",
+        "detail": "调用：TradingViewChart\n组件：forex-table\n已生成并核对官方加载配置。",
+        "state": "done",
+        "elapsedMs": 39
+      }
+    ],
+    "stages": [
+      {
+        "name": "官方组件生成",
+        "startedAt": 1792119379442,
+        "endedAt": 1792119379481,
+        "elapsedMs": 39
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "executed-official-widget-cli",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "widget": "forex-table",
+    "configUrl": "/static/cases/inspiration/tradingview-forex-table/widget-config.json",
+    "artifactSha256": "20e9f02dd00172852da1aa6af34be968e1fd531d0350ee2a8f3d3722f8903165",
+    "sourceAnswerSha256": "8360758308e37a643d6732b4a1b364d1131fdd5928f4be9742087a3efd12bb65",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/heatmaps/forex-table/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
+  }
+}

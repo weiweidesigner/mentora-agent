@@ -60,11 +60,11 @@ test('manual TradingView screener adds directly without any chat or model reques
 });
 test('manual TradingView quote-list preserves multiple symbols and uses direct endpoint',async()=>{
  const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
- d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';
+ d.querySelector('[data-category="自选列表"]').click();d.querySelector('[data-component="tv-market-data"]').click();d.querySelector('#widgetSymbol').value='NASDAQ:AAPL,NASDAQ:NVDA';
  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  assert.equal(calls.some(c=>c.url==='/api/chat/stream'),false);const body=JSON.parse(calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'market-data');assert.deepEqual(body.symbols,['NASDAQ:AAPL','NASDAQ:NVDA']);
- d.querySelector('#widgetSidebarLibrary').click();await tick();d.querySelector('[data-category="宏观分析"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
- d.querySelector('[data-category="行情观察"]').click();d.querySelector('[data-component="tv-market-data"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'NASDAQ:AAPL,NASDAQ:NVDA');dom.window.close();
+ d.querySelector('#widgetSidebarLibrary').click();await tick();d.querySelector('[data-category="经济事件"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'');
+ d.querySelector('[data-category="自选列表"]').click();d.querySelector('[data-component="tv-market-data"]').click();assert.equal(d.querySelector('#widgetSymbol').value,'NASDAQ:AAPL,NASDAQ:NVDA');dom.window.close();
 });
 
 function twoCards(){return {activeId:'board',boards:[{id:'board',title:'观察看板',messages:[],cards:[{id:'one',title:'苹果行情',component:'tv-advanced-chart',url:'/generated/one.html',status:'ready',x:0,y:0,w:6,h:18,parameters:{symbols:['NASDAQ:AAPL'],interval:'D'}},{id:'two',title:'筛选器',component:'tv-screener',url:'/generated/two.html',status:'ready',x:6,y:0,w:6,h:18,parameters:{market:'default'}}]}]};}

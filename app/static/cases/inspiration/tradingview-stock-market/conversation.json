@@ -1,0 +1,69 @@
+{
+  "question": "用 TradingView 查看美股活跃股与涨跌榜。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
+  "answer": {
+    "question": "用 TradingView 查看美股活跃股与涨跌榜。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-stock-market/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-stock-market/widget.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-stock-market/widget.html",
+        "url": "/static/cases/inspiration/tradingview-stock-market/widget.html",
+        "title": "股票市场 · 美股活跃股与涨跌榜"
+      }
+    ],
+    "interpretation": "### 股票市场 · Stock Market\n\n查看当日活跃股、涨幅榜和跌幅榜，随市场变化更新。\n\n本例展示**美股活跃股与涨跌榜**。\n\n[[AIME_CHART:case:inspiration/tradingview-stock-market/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/watchlists/stock-market/",
+        "title": "Stock Market"
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "组件生成记录",
+    "elapsedMs": 40,
+    "startedAt": 1792119378884,
+    "endedAt": 1792119378924,
+    "durationSource": "measured-cli",
+    "steps": [
+      {
+        "title": "生成官方 Stock Market",
+        "detail": "调用：TradingViewChart\n组件：stock-market\n已生成并核对官方加载配置。",
+        "state": "done",
+        "elapsedMs": 40
+      }
+    ],
+    "stages": [
+      {
+        "name": "官方组件生成",
+        "startedAt": 1792119378884,
+        "endedAt": 1792119378924,
+        "elapsedMs": 40
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "executed-official-widget-cli",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "widget": "stock-market",
+    "configUrl": "/static/cases/inspiration/tradingview-stock-market/widget-config.json",
+    "artifactSha256": "707d4eae76d5c9a9c7ae1688d92be72ded737c69acdc24abf35c0ea0205c30a2",
+    "sourceAnswerSha256": "6e7f0fd59849c0688d2191be19055fb5b72a635747719044969d778ae9d32c61",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/watchlists/stock-market/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
+  }
+}

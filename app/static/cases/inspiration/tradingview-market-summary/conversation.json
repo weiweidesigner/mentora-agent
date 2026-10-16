@@ -1,0 +1,69 @@
+{
+  "question": "用 TradingView 查看美股市场动态摘要。",
+  "cachedAt": "2026-10-16T10:56:18.650630+08:00",
+  "answer": {
+    "question": "用 TradingView 查看美股市场动态摘要。",
+    "code": "",
+    "selectedSkill": {
+      "key": "trading-view-chart",
+      "label": "TradingViewChart",
+      "script": "trading_view_chart.py"
+    },
+    "htmlUrl": "/static/cases/inspiration/tradingview-market-summary/widget.html",
+    "reportUrl": "/static/cases/inspiration/tradingview-market-summary/widget.html",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/tradingview-market-summary/widget.html",
+        "url": "/static/cases/inspiration/tradingview-market-summary/widget.html",
+        "title": "市场摘要 · 美股市场动态摘要"
+      }
+    ],
+    "interpretation": "### 市场摘要 · Market Summary\n\n用行情卡片和走势图浏览市场活跃股及涨跌榜。\n\n本例展示**美股市场动态摘要**。\n\n[[AIME_CHART:case:inspiration/tradingview-market-summary/widget.html]]\n\n图内数据由 TradingView 在浏览器中加载和更新；不同交易所可能存在延迟或可用性限制。案例保存的是组件配置，报价、新闻、日历和指标以打开后的组件显示为准。",
+    "sources": [
+      {
+        "siteName": "TradingView",
+        "url": "https://www.tradingview.com/widget-docs/widgets/watchlists/market-summary/",
+        "title": "Market Summary"
+      }
+    ],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN"
+  },
+  "activity": {
+    "label": "组件生成记录",
+    "elapsedMs": 39,
+    "startedAt": 1792119378967,
+    "endedAt": 1792119379006,
+    "durationSource": "measured-cli",
+    "steps": [
+      {
+        "title": "生成官方 Market Summary",
+        "detail": "调用：TradingViewChart\n组件：market-summary\n已生成并核对官方加载配置。",
+        "state": "done",
+        "elapsedMs": 39
+      }
+    ],
+    "stages": [
+      {
+        "name": "官方组件生成",
+        "startedAt": 1792119378967,
+        "endedAt": 1792119379006,
+        "elapsedMs": 39
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "executed-official-widget-cli",
+    "renderer": "trading_view_chart.py",
+    "sample": false,
+    "widget": "market-summary",
+    "configUrl": "/static/cases/inspiration/tradingview-market-summary/widget-config.json",
+    "artifactSha256": "2f4656369b1343aca85ad96cfdc2f3cffaa80db63a171deae5003bd4d9484cef",
+    "sourceAnswerSha256": "1102005406fca81fd899124c20089a34b52d3cee015cdcca8420b90a36944bf9",
+    "officialDocs": "https://www.tradingview.com/widget-docs/widgets/watchlists/market-summary/",
+    "marketData": "TradingView-hosted; browser-loaded; no numeric values synthesized",
+    "executedAt": "2026-10-16T10:56:18.650630+08:00",
+    "exitCode": 0
+  }
+}

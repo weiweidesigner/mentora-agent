@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "tool": "TradingViewChart",
+  "type": "tradingview-widget",
+  "widget": "stock-heatmap",
+  "symbol": null,
+  "config": {
+    "exchanges": [],
+    "dataSource": "SPX500",
+    "grouping": "sector",
+    "blockSize": "market_cap_basic",
+    "blockColor": "change",
+    "locale": "zh_CN",
+    "symbolUrl": "",
+    "colorTheme": "dark",
+    "hasTopBar": false,
+    "isDataSetEnabled": false,
+    "isZoomEnabled": true,
+    "hasSymbolTooltip": true,
+    "isMonoSize": false,
+    "width": "100%",
+    "height": "100%"
+  },
+  "source": "TradingView",
+  "sourceUrl": "https://www.tradingview.com/widget-docs/widgets/heatmaps/stock-heatmap/",
+  "dataStatus": "browser-hosted-widget; no numeric market data extracted",
+  "output": "/static/cases/inspiration/tradingview-stock-heatmap/widget.html"
+}

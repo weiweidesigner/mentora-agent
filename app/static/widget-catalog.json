@@ -3,9 +3,9 @@
     "id": "tv-screener",
     "widget": "screener",
     "provider": "TradingView",
-    "title": "股票筛选器",
-    "category": "选股",
-    "description": "按估值、表现等条件筛选股票，发现研究对象。",
+    "title": "筛选器",
+    "category": "热力图与筛选器",
+    "description": "通过基本面和技术指标筛选、排序与比较标的。",
     "inputMode": "market",
     "defaultScope": "美股",
     "width": 12,
@@ -43,79 +43,93 @@
         "crypto",
         "加密货币对"
       ]
-    ]
+    ],
+    "officialName": "Screener",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-crypto-mkt-screener",
     "widget": "crypto-mkt-screener",
     "provider": "TradingView",
-    "title": "数字货币筛选器",
-    "category": "选股",
-    "description": "筛选数字货币，比较市值、表现与成交情况。",
+    "title": "加密货币市场",
+    "category": "热力图与筛选器",
+    "description": "展示加密资产，并按市值等指标进行排序与比较。",
     "inputMode": "market",
     "defaultScope": "数字货币市场",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "officialName": "Cryptocurrency Market",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-stock-heatmap",
     "widget": "stock-heatmap",
     "provider": "TradingView",
-    "title": "股票市场热力图",
-    "category": "选股",
-    "description": "按板块浏览市场涨跌，寻找强弱分化。",
+    "title": "股票热力图",
+    "category": "热力图与筛选器",
+    "description": "从市场全景出发，按板块、国家或市值观察股票。",
     "inputMode": "market",
     "defaultScope": "标普 500",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Stock Heatmap",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-crypto-heatmap",
     "widget": "crypto-heatmap",
     "provider": "TradingView",
-    "title": "数字货币热力图",
-    "category": "选股",
-    "description": "从市场热力图观察数字货币的相对表现。",
+    "title": "加密货币热力图",
+    "category": "热力图与筛选器",
+    "description": "从币种、市值和近期表现等角度浏览加密货币市场。",
     "inputMode": "market",
     "defaultScope": "数字货币市场",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Crypto Coins Heatmap",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-technical-analysis",
     "widget": "technical-analysis",
     "provider": "TradingView",
-    "title": "技术分析仪表盘",
-    "category": "个股诊断",
-    "description": "查看均线、震荡指标及综合技术信号。",
+    "title": "技术分析",
+    "category": "标的详情",
+    "description": "以清晰评级展示均线、震荡指标与综合技术信号。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Technical Analysis",
+    "widgetGroup": "symbol-details"
   },
   {
     "id": "tv-symbol-info",
     "widget": "symbol-info",
     "provider": "TradingView",
-    "title": "标的概况",
-    "category": "个股诊断",
-    "description": "查看指定标的的行情概况与基本资料。",
+    "title": "标的信息",
+    "category": "标的详情",
+    "description": "在一处查看标的关键资料、报价与公司财务摘要。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Symbol Info",
+    "widgetGroup": "symbol-details"
   },
   {
     "id": "tv-company-profile",
     "widget": "company-profile",
     "provider": "TradingView",
-    "title": "公司介绍",
-    "category": "个股诊断",
-    "description": "了解公司业务、行业及基础资料。",
+    "title": "公司简介",
+    "category": "标的详情",
+    "description": "介绍公司业务，并列出所属板块与行业等关键信息。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Company Profile",
+    "widgetGroup": "symbol-details"
   },
   {
     "id": "key_stats",
@@ -185,13 +199,15 @@
     "id": "tv-advanced-chart",
     "widget": "advanced-chart",
     "provider": "TradingView",
-    "title": "交互行情图",
-    "category": "行情观察",
-    "description": "切换周期、标的与技术指标，观察价格走势。",
+    "title": "高级图表",
+    "category": "图表",
+    "description": "查看价格走势，切换周期、技术指标与绘图工具。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "officialName": "Advanced Chart",
+    "widgetGroup": "charts"
   },
   {
     "id": "tv-intraday",
@@ -199,96 +215,112 @@
     "preset": "intraday",
     "provider": "TradingView",
     "title": "日内分时图",
-    "category": "行情观察",
+    "category": "图表",
     "description": "按分钟查看最近交易日的日内走势，支持标的联动。",
     "inputMode": "symbol",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Symbol Overview",
+    "widgetGroup": "charts"
   },
   {
     "id": "tv-symbol-overview",
     "widget": "symbol-overview",
     "provider": "TradingView",
-    "title": "多标的走势概览",
-    "category": "行情观察",
-    "description": "把关注的多个标的放在一个走势概览中。",
+    "title": "标的概览",
+    "category": "图表",
+    "description": "将最新报价与简洁走势图放在一起，适合桌面和移动页面。",
     "inputMode": "group",
     "defaultScope": "",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Symbol Overview",
+    "widgetGroup": "charts"
   },
   {
     "id": "tv-mini-chart",
     "widget": "mini-chart",
     "provider": "TradingView",
-    "title": "迷你走势图",
-    "category": "行情观察",
-    "description": "用紧凑图表观察一个标的的价格变化。",
+    "title": "迷你图表",
+    "category": "图表",
+    "description": "以紧凑视图展示价格、涨跌幅和简化走势图。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Mini Chart",
+    "widgetGroup": "charts"
   },
   {
     "id": "tv-market-data",
     "widget": "market-data",
     "provider": "TradingView",
-    "title": "标的行情列表",
-    "category": "行情观察",
-    "description": "按分组展示指数、期货、债券、汇率或自选标的行情。",
+    "title": "行情数据",
+    "category": "自选列表",
+    "description": "集中查看所选标的的价格变化及开盘、最高、最低等行情。",
     "inputMode": "group",
     "defaultScope": "",
     "width": 6,
     "height": 18,
-    "allowEmptySymbols": true
+    "allowEmptySymbols": true,
+    "officialName": "Market Data",
+    "widgetGroup": "watchlists"
   },
   {
     "id": "tv-ticker-tape",
     "widget": "ticker-tape",
     "provider": "TradingView",
-    "title": "滚动行情条",
-    "category": "行情观察",
-    "description": "以横向行情条关注多个标的的报价变化。",
+    "title": "行情滚动条",
+    "category": "行情报价",
+    "description": "以交易所风格的横向滚动条展示多个标的报价。",
     "inputMode": "group",
     "defaultScope": "",
     "width": 12,
-    "height": 6
+    "height": 6,
+    "officialName": "Ticker Tape",
+    "widgetGroup": "tickers"
   },
   {
     "id": "tv-single-ticker",
     "widget": "single-ticker",
     "provider": "TradingView",
-    "title": "单标的报价卡",
-    "category": "行情观察",
-    "description": "用报价卡关注一个标的的行情。",
+    "title": "单标的行情",
+    "category": "行情报价",
+    "description": "用简洁报价卡展示一个标的的价格与涨跌幅。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 10
+    "height": 10,
+    "officialName": "Single Ticker",
+    "widgetGroup": "tickers"
   },
   {
     "id": "tv-tickers",
     "widget": "tickers",
     "provider": "TradingView",
-    "title": "多标的报价卡",
-    "category": "行情观察",
-    "description": "同时查看多个标的的紧凑报价卡。",
+    "title": "行情报价",
+    "category": "行情报价",
+    "description": "横向排列多个标的的最新价格与每日涨跌。",
     "inputMode": "group",
     "defaultScope": "",
     "width": 6,
-    "height": 10
+    "height": 10,
+    "officialName": "Ticker",
+    "widgetGroup": "tickers"
   },
   {
     "id": "tv-fundamental-data",
     "widget": "fundamental-data",
     "provider": "TradingView",
-    "title": "财务数据概览",
-    "category": "财务分析",
-    "description": "查看 TradingView 提供的公司财务数据。",
+    "title": "基本面数据",
+    "category": "标的详情",
+    "description": "超越股价，深入查看公司的经营与财务状况。",
     "inputMode": "symbol",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Fundamental Data",
+    "widgetGroup": "symbol-details"
   },
   {
     "id": "income_statement",
@@ -446,21 +478,23 @@
     "id": "tv-market-overview",
     "widget": "market-overview",
     "provider": "TradingView",
-    "title": "全球市场概览",
-    "category": "宏观分析",
-    "description": "按分组观察主要指数、商品、债券或汇率。",
+    "title": "市场概览",
+    "category": "自选列表",
+    "description": "从宏观视角浏览市场，分组查看指数、期货、债券和外汇。",
     "inputMode": "market",
     "defaultScope": "全球主要市场",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Market Overview",
+    "widgetGroup": "watchlists"
   },
   {
     "id": "tv-economic-calendar",
     "widget": "economic-calendar",
     "provider": "TradingView",
     "title": "经济日历",
-    "category": "宏观分析",
-    "description": "关注重要经济数据的发布日程与结果。",
+    "category": "经济事件",
+    "description": "跟踪即将公布的经济数据、公告和事件，按重要性等条件筛选。",
     "inputMode": "market",
     "defaultScope": "全球重要经济数据",
     "width": 6,
@@ -490,27 +524,31 @@
         "jp",
         "日本"
       ]
-    ]
+    ],
+    "officialName": "Economic Calendar",
+    "widgetGroup": "economic-events"
   },
   {
     "id": "tv-top-stories",
     "widget": "top-stories",
     "provider": "TradingView",
-    "title": "市场新闻",
-    "category": "宏观分析",
-    "description": "查看市场新闻动态，可指定关注市场或标的。",
+    "title": "头条新闻",
+    "category": "市场新闻",
+    "description": "以简短新闻条目追踪股票和加密货币市场的重要动态。",
     "inputMode": "market",
     "defaultScope": "全球市场新闻",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Top Stories",
+    "widgetGroup": "market-news"
   },
   {
     "id": "tv-stock-market",
     "widget": "stock-market",
     "provider": "TradingView",
-    "title": "股票涨跌榜",
-    "category": "行情观察",
-    "description": "查看活跃股、涨幅榜和跌幅榜。",
+    "title": "股票市场",
+    "category": "自选列表",
+    "description": "查看当日活跃股、涨幅榜和跌幅榜，随市场变化更新。",
     "inputMode": "market",
     "defaultScope": "美国",
     "width": 6,
@@ -540,87 +578,101 @@
         "LSE",
         "伦敦证券交易所"
       ]
-    ]
+    ],
+    "officialName": "Stock Market",
+    "widgetGroup": "watchlists"
   },
   {
     "id": "tv-forex-cross-rates",
     "widget": "forex-cross-rates",
     "provider": "TradingView",
-    "title": "交叉汇率",
-    "category": "宏观分析",
-    "description": "比较主要货币之间的交叉汇率。",
+    "title": "外汇交叉汇率",
+    "category": "热力图与筛选器",
+    "description": "比较所选货币与其他主要货币之间的汇率报价。",
     "inputMode": "currencies",
     "defaultScope": "全球",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Forex Cross Rates",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-forex-heatmap",
     "widget": "forex-heatmap",
     "provider": "TradingView",
     "title": "外汇热力图",
-    "category": "宏观分析",
-    "description": "用热力图观察货币之间的日内强弱。",
+    "category": "热力图与筛选器",
+    "description": "用热力图比较主要货币的相对强弱与市场变化。",
     "inputMode": "currencies",
     "defaultScope": "全球",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Forex Heatmap",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-forex-table",
     "widget": "forex-table",
     "provider": "TradingView",
-    "title": "外汇行情矩阵",
-    "category": "宏观分析",
-    "description": "新版外汇表格，比较主要货币的汇率。",
+    "title": "外汇行情表",
+    "category": "热力图与筛选器",
+    "description": "以矩阵比较主要货币之间的汇率或日内涨跌。",
     "inputMode": "currencies",
     "defaultScope": "全球",
     "width": 12,
-    "height": 18
+    "height": 18,
+    "officialName": "Forex Table",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-etf-heatmap",
     "widget": "etf-heatmap",
     "provider": "TradingView",
     "title": "ETF 热力图",
-    "category": "选股",
-    "description": "按资产类别观察 ETF 的成交量和涨跌。",
+    "category": "热力图与筛选器",
+    "description": "浏览 ETF 全景，按资产规模、表现、成交量等维度筛选。",
     "inputMode": "market",
     "defaultScope": "美国 ETF",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "officialName": "ETF Heatmap",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-seasonal-chart",
     "widget": "seasonal-chart",
     "provider": "TradingView",
-    "title": "季节性走势图",
-    "category": "资金与回报",
-    "description": "对比同一标的在不同年份的季节性走势。",
+    "title": "季节性图表",
+    "category": "图表",
+    "description": "按年份叠加走势，观察同一标的的季节性变化。",
     "inputMode": "symbol",
     "defaultScope": "全球",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "officialName": "Seasonal Chart",
+    "widgetGroup": "charts"
   },
   {
     "id": "tv-ticker-tag",
     "widget": "ticker-tag",
     "provider": "TradingView",
-    "title": "紧凑行情标签",
-    "category": "行情观察",
-    "description": "用紧凑标签显示单个标的及涨跌。",
+    "title": "行情标签",
+    "category": "行情报价",
+    "description": "以行内标签呈现单个标的及其涨跌变化。",
     "inputMode": "symbol",
     "defaultScope": "全球",
     "width": 3,
-    "height": 10
+    "height": 10,
+    "officialName": "Ticker Tag",
+    "widgetGroup": "tickers"
   },
   {
     "id": "tv-market-summary",
     "widget": "market-summary",
     "provider": "TradingView",
-    "title": "市场动态摘要",
-    "category": "行情观察",
-    "description": "浏览市场活跃标的与价格走势。",
+    "title": "市场摘要",
+    "category": "自选列表",
+    "description": "用行情卡片和走势图浏览市场活跃股及涨跌榜。",
     "inputMode": "market",
     "defaultScope": "美国",
     "width": 12,
@@ -646,55 +698,65 @@
         "LSE",
         "伦敦证券交易所"
       ]
-    ]
+    ],
+    "officialName": "Market Summary",
+    "widgetGroup": "watchlists"
   },
   {
     "id": "tv-world-market-summary",
     "widget": "world-market-summary",
     "provider": "TradingView",
-    "title": "全球市场地图",
-    "category": "宏观分析",
-    "description": "通过地图与列表观察全球股市表现。",
+    "title": "全球市场摘要",
+    "category": "自选列表",
+    "description": "通过地图和列表浏览全球股票指数的市场表现。",
     "inputMode": "market",
     "defaultScope": "全球",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "officialName": "World Market Summary",
+    "widgetGroup": "watchlists"
   },
   {
     "id": "tv-economic-map",
     "widget": "economic-map",
     "provider": "TradingView",
-    "title": "全球经济地图",
-    "category": "宏观分析",
-    "description": "按国家和地区探索 GDP 等经济指标。",
+    "title": "经济地图",
+    "category": "经济数据",
+    "description": "通过国家和地区地图探索 GDP 等宏观经济指标。",
     "inputMode": "market",
     "defaultScope": "全球",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "officialName": "Economic Map",
+    "widgetGroup": "economics"
   },
   {
     "id": "tv-broker-rating",
     "widget": "broker-rating",
     "provider": "TradingView",
     "title": "经纪商评分",
-    "category": "交易服务",
-    "description": "查看 TradingView 上指定经纪商的用户评分。",
+    "category": "经纪商",
+    "description": "展示指定经纪商在 TradingView 上的用户评分。",
     "inputMode": "broker",
     "defaultScope": "全球",
     "width": 6,
-    "height": 12
+    "height": 12,
+    "officialName": "Broker Rating",
+    "widgetGroup": "brokers"
   },
   {
     "id": "tv-broker-reviews",
     "widget": "broker-reviews",
     "provider": "TradingView",
     "title": "经纪商评论",
-    "category": "交易服务",
-    "description": "查看 TradingView 上指定经纪商的用户评论。",
+    "category": "经纪商",
+    "description": "展示指定经纪商在 TradingView 上的用户评论。",
     "inputMode": "broker",
     "defaultScope": "全球",
     "width": 6,
-    "height": 20
+    "height": 20,
+    "officialName": "Broker Reviews",
+    "widgetGroup": "brokers"
   },
   {
     "id": "tv-forex-screener",
@@ -702,7 +764,7 @@
     "preset": "forex",
     "provider": "TradingView",
     "title": "外汇筛选器",
-    "category": "选股",
+    "category": "热力图与筛选器",
     "description": "按技术指标筛选和比较外汇货币对。",
     "inputMode": "market",
     "defaultScope": "外汇筛选器",
@@ -713,7 +775,9 @@
         "default",
         "外汇筛选器"
       ]
-    ]
+    ],
+    "officialName": "Screener",
+    "widgetGroup": "heatmaps-screeners"
   },
   {
     "id": "tv-crypto-pairs-screener",
@@ -721,7 +785,7 @@
     "preset": "crypto-pairs",
     "provider": "TradingView",
     "title": "加密货币对筛选器",
-    "category": "选股",
+    "category": "热力图与筛选器",
     "description": "按技术指标与表现筛选加密货币交易对。",
     "inputMode": "market",
     "defaultScope": "加密货币对筛选器",
@@ -732,6 +796,8 @@
         "default",
         "加密货币对筛选器"
       ]
-    ]
+    ],
+    "officialName": "Screener",
+    "widgetGroup": "heatmaps-screeners"
   }
 ]
