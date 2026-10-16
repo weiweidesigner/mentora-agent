@@ -256,6 +256,21 @@ def upgrade_widget_tradingview(artifact: str) -> str:
     """
     if 'id="tv-config"' not in artifact:
         return artifact
+    # The classic profile embeds its text in a fixed scrolling viewport. The
+    # official Web Component exposes its own content height to the host instead.
+    def profile_component(match):
+        try:
+            spec = json.loads(match.group(2))
+        except (ValueError, TypeError):
+            return match.group(0)
+        if spec.get('widget') != 'company-profile' or spec.get('format') == 'web-component':
+            return match.group(0)
+        config = spec.get('config') or {}
+        spec.update(format='web-component', tag='tv-company-profile', module=True,
+                    script='https://widgets.tradingview-widget.com/w/en/tv-company-profile.js')
+        spec['config'] = {key: config[key] for key in ('symbol', 'colorTheme', 'locale') if key in config}
+        return match.group(1)+json.dumps(spec, ensure_ascii=False).replace('<', '\\u003c')+match.group(3)
+    artifact = re.sub(r'(<script\b[^>]*id=[\"\']tv-config[\"\'][^>]*>)(.*?)(</script>)', profile_component, artifact, count=1, flags=re.S)
     # Host-added footer text is redundant with attribution inside the official iframe.
     if 'data-tv-host-footer' not in artifact:
         footer = '<style data-tv-host-footer>main>footer,.tradingview-widget-copyright{display:none!important}.tradingview-widget-container__widget,.tradingview-widget-container>iframe{height:100%!important}</style>'

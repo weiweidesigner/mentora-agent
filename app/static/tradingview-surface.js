@@ -1,6 +1,6 @@
 // Keep the provider's own card and intrinsic dimensions, without host chrome.
 (() => {
-  const naturalWidgets = new Set(['single-ticker','tickers','ticker-tape','symbol-info','ticker-tag','market-summary','world-market-summary','forex-table','broker-rating','broker-reviews']);
+  const naturalWidgets = new Set(['single-ticker','tickers','ticker-tape','symbol-info','ticker-tag','market-summary','world-market-summary','forex-table','broker-rating','broker-reviews','company-profile']);
   window.installTradingViewSurface = (frame, onHeight) => {
     frame.tradingViewSurfaceCleanup?.();
     const doc = frame.contentDocument, win = frame.contentWindow;
