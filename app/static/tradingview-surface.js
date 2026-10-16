@@ -43,6 +43,30 @@ html[data-tv-sized] #mount,html[data-tv-sized] .tradingview-widget-container,htm
       if (!frame.isConnected) return;
       const native = spec.format === 'web-component' ? mount.querySelector(spec.tag) : mount.querySelector('iframe');
       if (native && resizeObserver && !observed.has(native)) { observed.add(native); resizeObserver.observe(native); }
+      // Hosted Advanced Chart reads feature switches from the query string,
+      // whereas its regular symbol/theme configuration lives in the URL hash.
+      if (spec.widget === 'advanced-chart' && native?.src) {
+        try {
+          const url = new URL(native.src);
+          const blocked = ['mouse_wheel_scroll', 'vert_touch_drag_scroll'];
+          const zoom = ['mouse_wheel_scale', 'pinch_scale', 'axis_pressed_mouse_move_scale'];
+          const list = value => { try { const parsed = JSON.parse(value || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } };
+          const normalize = (disabled, enabled) => ({
+            disabled_features: [...new Set([...disabled.filter(key => !zoom.includes(key) && key !== 'handle_scale'), ...blocked])],
+            enabled_features: [...new Set([...enabled.filter(key => !blocked.includes(key)), ...zoom])]
+          });
+          const query = normalize(list(url.searchParams.get('disabled_features')), list(url.searchParams.get('enabled_features')));
+          url.searchParams.set('disabled_features', JSON.stringify(query.disabled_features));
+          url.searchParams.set('enabled_features', JSON.stringify(query.enabled_features));
+          // Previously generated artifacts may still carry the old wheel-zoom ban.
+          if (url.hash) {
+            const cfg = JSON.parse(decodeURIComponent(url.hash.slice(1)));
+            Object.assign(cfg, normalize(Array.isArray(cfg.disabled_features) ? cfg.disabled_features : [], Array.isArray(cfg.enabled_features) ? cfg.enabled_features : []));
+            url.hash = encodeURIComponent(JSON.stringify(cfg));
+          }
+          if (url.href !== native.src) native.src = url.href;
+        } catch { /* The provider may still be constructing its iframe URL. */ }
+      }
       if(contentSized){const groups=spec.config?.symbolsGroups||[],rows=groups.reduce((sum,g)=>sum+(g.symbols?.length||0),0);stage.style.setProperty('--tv-content-height',(54+(groups.length>1?groups.length*32:0)+rows*36+32)+'px');}
       const nativeHeight = native?.getBoundingClientRect().height || 0;
       // Never collapse the loading/error/retry UI while a remote script is pending.
