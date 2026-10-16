@@ -9,7 +9,7 @@ from app import widget_library as lib
 
 def test_all_official_widgets_render_directly_without_model(tmp_path):
     for widget in lib.renderer().CATALOG:
-        symbols = [] if widget in lib.MARKETS else ['NASDAQ:AAPL', 'NASDAQ:MSFT'] if widget in lib.GROUPS else ['NASDAQ:AAPL']
+        symbols = ['USD','EUR','JPY'] if widget in lib.CURRENCY_WIDGETS else ['easymarkets'] if widget in lib.BROKER_WIDGETS else [] if widget in lib.MARKETS else ['NASDAQ:AAPL', 'NASDAQ:MSFT'] if widget in lib.GROUPS else ['NASDAQ:AAPL']
         result = lib.build_widget(lib.TradingViewInput(widget=widget, symbols=symbols), tmp_path)
         assert result['mode'] == 'direct'
         document = (tmp_path/Path(result['url']).name).read_text()
@@ -76,3 +76,48 @@ def test_intraday_preset_is_one_day_one_minute_and_preserves_identity(tmp_path):
         lib.build_widget(lib.TradingViewInput(widget='symbol-overview',preset='intraday',symbols=['NASDAQ:AAPL','NASDAQ:MSFT']),tmp_path)
     with pytest.raises(ValueError):
         lib.build_widget(lib.TradingViewInput(widget='advanced-chart',preset='intraday',symbols=['NASDAQ:AAPL']),tmp_path)
+
+
+def test_official_directory_is_covered_in_renderer_and_library():
+    skill = lib.ROOT/'app/skills/trading-view-chart'
+    coverage = json.loads((skill/'widget-coverage.json').read_text())
+    documented = {item['widget'] for item in coverage['widgets']}
+    catalog = json.loads((lib.ROOT/'app/static/widget-catalog.json').read_text())
+    assert len(documented) == 30
+    assert documented == set(lib.renderer().CATALOG)
+    assert documented == {item['widget'] for item in catalog if item.get('provider')=='TradingView'}
+    assert len([item for item in catalog if item.get('provider')=='TradingView']) == 33
+
+
+def test_currency_and_broker_inputs_do_not_resolve_as_stocks(monkeypatch, tmp_path):
+    def unexpected_lookup(*args):
+        raise AssertionError('Currency and broker inputs must not query stock search')
+    monkeypatch.setattr(lib, 'resolve_symbol', unexpected_lookup)
+    for widget in lib.CURRENCY_WIDGETS:
+        result = lib.build_widget(lib.TradingViewInput(widget=widget,symbols=['usd','eur','USD','jpy']),tmp_path)
+        assert result['config']['currencies'] == ['USD','EUR','JPY']
+        default = lib.build_widget(lib.TradingViewInput(widget=widget),tmp_path)
+        assert len(default['config']['currencies']) >= 2
+        with pytest.raises(ValueError):
+            lib.build_widget(lib.TradingViewInput(widget=widget,symbols=['AAPL','USD']),tmp_path)
+    for widget in lib.BROKER_WIDGETS:
+        result=lib.build_widget(lib.TradingViewInput(widget=widget,symbols=['EasyMarkets']),tmp_path)
+        assert result['config']['broker']=='easymarkets'
+        with pytest.raises(ValueError):
+            lib.build_widget(lib.TradingViewInput(widget=widget,symbols=['<script>']),tmp_path)
+
+
+@pytest.mark.parametrize('preset,market',[('forex','forex'),('crypto-pairs','crypto')])
+def test_screener_presets_use_their_actual_market(preset, market, tmp_path):
+    result=lib.build_widget(lib.TradingViewInput(widget='screener',preset=preset),tmp_path)
+    assert result['config']['market']==market
+    source=(tmp_path/Path(result['url']).name).read_text()
+    assert json.loads(source.split('<script id="tv-config" type="application/json">')[1].split('</script>')[0])['preset']==preset
+
+
+def test_global_overviews_include_asset_groups(tmp_path):
+    overview=lib.build_widget(lib.TradingViewInput(widget='market-overview'),tmp_path)
+    data=lib.build_widget(lib.TradingViewInput(widget='market-data'),tmp_path)
+    assert len(overview['config']['tabs'])==4
+    assert len(data['config']['symbolsGroups'])==4
+    assert all(group['symbols'] for group in data['config']['symbolsGroups'])

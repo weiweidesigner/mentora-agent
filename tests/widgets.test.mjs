@@ -91,7 +91,7 @@ test('library has no search or hosting notice and no field for parameter-free co
 });
 
 test('single-scope widgets hide the field and submit default after switching from another market',async()=>{
- for(const component of catalog.filter(c=>c.provider==='TradingView'&&c.inputMode==='market'&&!['screener','economic-calendar'].includes(c.widget))){
+ for(const component of catalog.filter(c=>c.provider==='TradingView'&&c.inputMode==='market'&&(!c.scopeOptions||c.scopeOptions.length===1))){
   const s=setup();s.d.querySelector('#widgetSidebarLibrary').click();await tick();
   s.d.querySelector('[data-component="tv-screener"]').click();s.d.querySelector('#widgetMarket').value='china';
   s.d.querySelector(`[data-component="${component.id}"]`).click();
@@ -187,4 +187,37 @@ test('intraday is a single-symbol library preset and remains intraday during sym
  const data=linkedBoard();data.boards[0].cards[0].component='tv-intraday';data.boards[0].cards[0].parameters={symbols:['NASDAQ:AAPL']};const s=setup({storage:data});
  s.d.querySelector('[data-link-symbol="NYSE:CRCL"]').click();await tick();await tick();const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);assert.equal(body.widget,'symbol-overview');assert.equal(body.preset,'intraday');assert.deepEqual(body.symbols,['NYSE:CRCL']);
  s.d.querySelector('#widgetSidebarLibrary').click();await tick();s.d.querySelector('[data-component="tv-intraday"]').click();s.d.querySelector('#widgetSymbol').value='NASDAQ:HOOD';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();assert.equal(JSON.parse(s.calls.filter(c=>c.url==='/api/widgets/tradingview').at(-1).options.body).preset,'intraday');s.dom.window.close();
+});
+
+test('currency, broker and default global lists submit without stock lookup',async()=>{
+ for(const [id,category,input,expected] of [
+  ['tv-forex-cross-rates','外汇市场','',[]],
+  ['tv-forex-table','外汇市场','USD、EUR、JPY',['USD','EUR','JPY']],
+  ['tv-broker-rating','交易服务','easymarkets',['easymarkets']],
+  ['tv-market-data','行情观察','',[]],
+ ]){
+  const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
+  const component=catalog.find(c=>c.id===id);
+  d.querySelector(`[data-category="${component.category}"]`).click();
+  d.querySelector(`[data-component="${id}"]`).click();
+  d.querySelector('#widgetSymbol').value=input;
+  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  const request=calls.find(c=>c.url==='/api/widgets/tradingview');assert.ok(request,id);
+  assert.deepEqual(JSON.parse(request.options.body).symbols,expected,id);
+  assert.equal(calls.some(c=>c.url.startsWith('/api/widgets/symbols')),false,id);
+  dom.window.close();
+ }
+});
+
+test('forex and crypto screener entries preserve presets with no redundant market input',async()=>{
+ for(const preset of ['forex','crypto-pairs']){
+  const {dom,w,d,calls}=setup();d.querySelector('#widgetSidebarLibrary').click();await tick();
+  const component=catalog.find(c=>c.preset===preset);
+  d.querySelector(`[data-category="${component.category}"]`).click();
+  d.querySelector(`[data-component="${component.id}"]`).click();
+  assert.equal(d.querySelector('#widgetParameterField').hidden,true);
+  d.querySelector('#widgetAddForm').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
+  const body=JSON.parse(calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
+  assert.equal(body.preset,preset);assert.deepEqual(body.symbols,[]);dom.window.close();
+ }
 });

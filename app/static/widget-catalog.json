@@ -9,7 +9,41 @@
     "inputMode": "market",
     "defaultScope": "美股",
     "width": 12,
-    "height": 22
+    "height": 22,
+    "scopeOptions": [
+      [
+        "default",
+        "美股"
+      ],
+      [
+        "china",
+        "中国 A 股"
+      ],
+      [
+        "hongkong",
+        "港股"
+      ],
+      [
+        "japan",
+        "日本"
+      ],
+      [
+        "uk",
+        "英国"
+      ],
+      [
+        "germany",
+        "德国"
+      ],
+      [
+        "forex",
+        "外汇"
+      ],
+      [
+        "crypto",
+        "加密货币对"
+      ]
+    ]
   },
   {
     "id": "tv-crypto-mkt-screener",
@@ -201,11 +235,12 @@
     "provider": "TradingView",
     "title": "标的行情列表",
     "category": "行情观察",
-    "description": "按分组展示多个标的的报价与涨跌。",
+    "description": "按分组展示指数、期货、债券、汇率或自选标的行情。",
     "inputMode": "group",
     "defaultScope": "",
     "width": 6,
-    "height": 18
+    "height": 18,
+    "allowEmptySymbols": true
   },
   {
     "id": "tv-ticker-tape",
@@ -429,7 +464,33 @@
     "inputMode": "market",
     "defaultScope": "全球重要经济数据",
     "width": 6,
-    "height": 22
+    "height": 22,
+    "scopeOptions": [
+      [
+        "default",
+        "全球"
+      ],
+      [
+        "us",
+        "美国"
+      ],
+      [
+        "cn",
+        "中国"
+      ],
+      [
+        "eu",
+        "欧元区"
+      ],
+      [
+        "gb",
+        "英国"
+      ],
+      [
+        "jp",
+        "日本"
+      ]
+    ]
   },
   {
     "id": "tv-top-stories",
@@ -442,5 +503,235 @@
     "defaultScope": "全球市场新闻",
     "width": 6,
     "height": 18
+  },
+  {
+    "id": "tv-stock-market",
+    "widget": "stock-market",
+    "provider": "TradingView",
+    "title": "股票涨跌榜",
+    "category": "行情观察",
+    "description": "查看活跃股、涨幅榜和跌幅榜。",
+    "inputMode": "market",
+    "defaultScope": "美国",
+    "width": 6,
+    "height": 22,
+    "scopeOptions": [
+      [
+        "default",
+        "美国"
+      ],
+      [
+        "SSE",
+        "上海证券交易所"
+      ],
+      [
+        "SZSE",
+        "深圳证券交易所"
+      ],
+      [
+        "HKEX",
+        "香港交易所"
+      ],
+      [
+        "TSE",
+        "东京证券交易所"
+      ],
+      [
+        "LSE",
+        "伦敦证券交易所"
+      ]
+    ]
+  },
+  {
+    "id": "tv-forex-cross-rates",
+    "widget": "forex-cross-rates",
+    "provider": "TradingView",
+    "title": "交叉汇率",
+    "category": "宏观分析",
+    "description": "比较主要货币之间的交叉汇率。",
+    "inputMode": "currencies",
+    "defaultScope": "全球",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-forex-heatmap",
+    "widget": "forex-heatmap",
+    "provider": "TradingView",
+    "title": "外汇热力图",
+    "category": "宏观分析",
+    "description": "用热力图观察货币之间的日内强弱。",
+    "inputMode": "currencies",
+    "defaultScope": "全球",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-forex-table",
+    "widget": "forex-table",
+    "provider": "TradingView",
+    "title": "外汇行情矩阵",
+    "category": "宏观分析",
+    "description": "新版外汇表格，比较主要货币的汇率。",
+    "inputMode": "currencies",
+    "defaultScope": "全球",
+    "width": 12,
+    "height": 18
+  },
+  {
+    "id": "tv-etf-heatmap",
+    "widget": "etf-heatmap",
+    "provider": "TradingView",
+    "title": "ETF 热力图",
+    "category": "选股",
+    "description": "按资产类别观察 ETF 的成交量和涨跌。",
+    "inputMode": "market",
+    "defaultScope": "美国 ETF",
+    "width": 12,
+    "height": 22
+  },
+  {
+    "id": "tv-seasonal-chart",
+    "widget": "seasonal-chart",
+    "provider": "TradingView",
+    "title": "季节性走势图",
+    "category": "资金与回报",
+    "description": "对比同一标的在不同年份的季节性走势。",
+    "inputMode": "symbol",
+    "defaultScope": "全球",
+    "width": 6,
+    "height": 18
+  },
+  {
+    "id": "tv-ticker-tag",
+    "widget": "ticker-tag",
+    "provider": "TradingView",
+    "title": "紧凑行情标签",
+    "category": "行情观察",
+    "description": "用紧凑标签显示单个标的及涨跌。",
+    "inputMode": "symbol",
+    "defaultScope": "全球",
+    "width": 3,
+    "height": 10
+  },
+  {
+    "id": "tv-market-summary",
+    "widget": "market-summary",
+    "provider": "TradingView",
+    "title": "市场动态摘要",
+    "category": "行情观察",
+    "description": "浏览市场活跃标的与价格走势。",
+    "inputMode": "market",
+    "defaultScope": "美国",
+    "width": 12,
+    "height": 20,
+    "scopeOptions": [
+      [
+        "default",
+        "美国"
+      ],
+      [
+        "SSE",
+        "上海证券交易所"
+      ],
+      [
+        "SZSE",
+        "深圳证券交易所"
+      ],
+      [
+        "HKEX",
+        "香港交易所"
+      ],
+      [
+        "LSE",
+        "伦敦证券交易所"
+      ]
+    ]
+  },
+  {
+    "id": "tv-world-market-summary",
+    "widget": "world-market-summary",
+    "provider": "TradingView",
+    "title": "全球市场地图",
+    "category": "宏观分析",
+    "description": "通过地图与列表观察全球股市表现。",
+    "inputMode": "market",
+    "defaultScope": "全球",
+    "width": 12,
+    "height": 22
+  },
+  {
+    "id": "tv-economic-map",
+    "widget": "economic-map",
+    "provider": "TradingView",
+    "title": "全球经济地图",
+    "category": "宏观分析",
+    "description": "按国家和地区探索 GDP 等经济指标。",
+    "inputMode": "market",
+    "defaultScope": "全球",
+    "width": 12,
+    "height": 22
+  },
+  {
+    "id": "tv-broker-rating",
+    "widget": "broker-rating",
+    "provider": "TradingView",
+    "title": "经纪商评分",
+    "category": "交易服务",
+    "description": "查看 TradingView 上指定经纪商的用户评分。",
+    "inputMode": "broker",
+    "defaultScope": "全球",
+    "width": 6,
+    "height": 12
+  },
+  {
+    "id": "tv-broker-reviews",
+    "widget": "broker-reviews",
+    "provider": "TradingView",
+    "title": "经纪商评论",
+    "category": "交易服务",
+    "description": "查看 TradingView 上指定经纪商的用户评论。",
+    "inputMode": "broker",
+    "defaultScope": "全球",
+    "width": 6,
+    "height": 20
+  },
+  {
+    "id": "tv-forex-screener",
+    "widget": "screener",
+    "preset": "forex",
+    "provider": "TradingView",
+    "title": "外汇筛选器",
+    "category": "选股",
+    "description": "按技术指标筛选和比较外汇货币对。",
+    "inputMode": "market",
+    "defaultScope": "外汇筛选器",
+    "width": 12,
+    "height": 22,
+    "scopeOptions": [
+      [
+        "default",
+        "外汇筛选器"
+      ]
+    ]
+  },
+  {
+    "id": "tv-crypto-pairs-screener",
+    "widget": "screener",
+    "preset": "crypto-pairs",
+    "provider": "TradingView",
+    "title": "加密货币对筛选器",
+    "category": "选股",
+    "description": "按技术指标与表现筛选加密货币交易对。",
+    "inputMode": "market",
+    "defaultScope": "加密货币对筛选器",
+    "width": 12,
+    "height": 22,
+    "scopeOptions": [
+      [
+        "default",
+        "加密货币对筛选器"
+      ]
+    ]
   }
 ]

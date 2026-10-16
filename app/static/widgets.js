@@ -187,18 +187,21 @@
     const selected=catalog.find(c=>c.id===componentId),market=selected?.inputMode==='market',group=selected?.inputMode==='group';
     const input=$('widgetSymbol'),mode=selected?.inputMode||'symbol';
     if(input.dataset.mode&&input.dataset.mode!==mode){libraryInputs[input.dataset.mode]=input.value;input.value=libraryInputs[mode]||'';}input.dataset.mode=mode;
-    $('widgetSymbolLabel').textContent=market?(selected?.widget==='economic-calendar'?'地区':'市场'):group?'关注标的（可多个）':'关注标的';
+    $('widgetSymbolLabel').textContent=mode==='currencies'?'货币':mode==='broker'?'经纪商':market?(selected?.widget==='economic-calendar'?'地区':'市场'):group?'关注标的（可多个）':'关注标的';
     const directMarket=market&&selected?.provider==='TradingView';
     $('widgetSymbol').hidden=directMarket;$('widgetMarket').hidden=!directMarket;
     $('widgetParameterField').hidden=false;$('widgetAddForm').classList.remove('no-parameters');
-    if(directMarket){const options=selected.widget==='screener'?[['default','美股'],['china','中国 A 股'],['hongkong','港股'],['japan','日本'],['uk','英国'],['germany','德国']]:selected.widget==='economic-calendar'?[['default','全球'],['us','美国'],['cn','中国'],['eu','欧元区'],['gb','英国'],['jp','日本']]:[['default',selected.defaultScope||'默认市场']];$('widgetMarket').innerHTML=options.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');const noParameters=options.length===1;$('widgetParameterField').hidden=noParameters;$('widgetAddForm').classList.toggle('no-parameters',noParameters);}
-    $('widgetSymbol').required=!market;
+    if(directMarket){const options=selected.scopeOptions||[['default',selected.defaultScope||'默认市场']];$('widgetMarket').innerHTML=options.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');const noParameters=options.length===1;$('widgetParameterField').hidden=noParameters;$('widgetAddForm').classList.toggle('no-parameters',noParameters);}
+    $('widgetSymbol').required=!market&&mode!=='currencies'&&!selected?.allowEmptySymbols;
     $('widgetSymbol').placeholder=market?`留空使用：${selected.defaultScope}`:selected?.provider==='TradingView'?(group?'例如 NASDAQ:AAPL、NASDAQ:MSFT、NASDAQ:NVDA':'例如 NASDAQ:AAPL、HKEX:700'):'例如 AAPL、NVDA 或 MSFT';
-    symbolPicker?.configure(selected?.provider==='TradingView'&&!market,group);
+    symbolPicker?.configure(selected?.provider==='TradingView'&&['symbol','group'].includes(mode),group);
+    if(mode==='currencies')$('widgetSymbol').placeholder='例如 USD、EUR、JPY；留空使用主要货币';
+    if(mode==='broker')$('widgetSymbol').placeholder='TradingView 经纪商标识，例如 easymarkets';
+    if(selected?.allowEmptySymbols)$('widgetSymbol').placeholder='留空查看全球市场，或输入自选标的名称 / 代码';
   }
   async function addTradingView(message, component, retryId, market='default',options={},board=current()) {if(!board)return;
     if(board.cards.length>=60&&!retryId){notice('当前看板最多放置 60 张图表，请新建看板继续。');return;}
-    const widget=component.widget||component.id.slice(3),isMarket=['screener','crypto-mkt-screener','stock-heatmap','crypto-heatmap','market-overview','economic-calendar','top-stories'].includes(widget);
+    const widget=component.widget||component.id.slice(3),isMarket=['screener','crypto-mkt-screener','stock-heatmap','crypto-heatmap','market-overview','economic-calendar','top-stories','stock-market','etf-heatmap','market-summary','world-market-summary','economic-map'].includes(widget);
     const symbolMarket=options.signal?'auto':retryId?(board.cards.find(c=>c.id===retryId)?.symbolMarket||'auto'):(symbolPicker?.enabled?symbolPicker.select.value:'auto');
     const symbols=isMarket?[]:options.symbols||message.split(/[,，、;；\s]+/).map(s=>s.trim()).filter(Boolean);
     let card=retryId&&board.cards.find(c=>c.id===retryId);
@@ -233,7 +236,7 @@
     save();if(activeId===board.id)render();
     let final=null, failure='';
     const request=component?`请为标的 ${message} 生成一个独立的「${component.title}」金融业务图表，使用 business-chart-recall 的 ${component.id}.py。`:`请根据我的需求，为金融看板选择并生成 2 到 6 张各自独立的金融业务图表：${message}`;
-    const question=`${request}\n这是 Widget 画布请求。看板库已移除股价与 K 线（kline.py）、多股分时（multi_intraday.py），不得调用或加入这两个组件，也不要用自定义价格走势图替代它们。现在支持 trading-view-chart 技能的 18 种官方托管组件：价格走势、行情列表、筛选器、热力图、技术分析、财务概览、新闻、经济日历等，可根据业务需求选用；行情展示优先选择 TradingView。原生业务图表继续用于财务、估值、评级等分析。用户明确要求被移除的原生组件时说明已移除，可选择 TradingView。请遵守项目技能路由，调用现有业务组件的原生脚本取真实数据；先阅读各组件 schema，保留原生交互、主题、语言和数据来源。原生公司财报、估值与评级只用于契约支持的美股公司，其他资产只选匹配组件。每个图表单独输出 standalone HTML 到 outputs/generated，并各用 AIME_CHART 标记返回，方便画布分别拖拽。不要合并为一份报告、不要创建 dashboard 外壳、不要用示例或编造数据填充。手动指定图表时只生成指定的一张。数据不可用时明确说明，不使用无关标的代替。标题自然具体，不预写未经证实的结论。当前看板已有：${board.cards.filter(c=>c.status==='ready').map(c=>c.title).join('；')||'暂无'}。`;
+    const question=`${request}\n这是 Widget 画布请求。看板库已移除股价与 K 线（kline.py）、多股分时（multi_intraday.py），不得调用或加入这两个组件，也不要用自定义价格走势图替代它们。现在支持 trading-view-chart 技能的 官方托管组件与预设：价格走势、行情列表、筛选器、热力图、技术分析、财务概览、新闻、经济日历等，可根据业务需求选用；行情展示优先选择 TradingView。原生业务图表继续用于财务、估值、评级等分析。用户明确要求被移除的原生组件时说明已移除，可选择 TradingView。请遵守项目技能路由，调用现有业务组件的原生脚本取真实数据；先阅读各组件 schema，保留原生交互、主题、语言和数据来源。原生公司财报、估值与评级只用于契约支持的美股公司，其他资产只选匹配组件。每个图表单独输出 standalone HTML 到 outputs/generated，并各用 AIME_CHART 标记返回，方便画布分别拖拽。不要合并为一份报告、不要创建 dashboard 外壳、不要用示例或编造数据填充。手动指定图表时只生成指定的一张。数据不可用时明确说明，不使用无关标的代替。标题自然具体，不预写未经证实的结论。当前看板已有：${board.cards.filter(c=>c.status==='ready').map(c=>c.title).join('；')||'暂无'}。`;
     try {
       const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question,sessionId:`widget-${board.id}-${pendingId}`,history:board.messages.slice(0,-1),images:[],reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='light'?'light':'dark'})});
       if(!response.ok)throw Error(`生成请求失败（${response.status}）`);
@@ -330,13 +333,13 @@
   $('widgetAddForm').onsubmit=async event=>{
     event.preventDefault();if(resolvingSymbol)return;
     const raw=$('widgetSymbol').value.trim(),component=catalog.find(c=>c.id===componentId);
-    if(!component||(!raw&&component.inputMode!=='market'))return;
+    if(!component||(!raw&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols))return;
     if(jobs.has(activeId)&&component.provider!=='TradingView'){notice('请等待当前图表完成后再添加。');return;}
     const submit=$('widgetAddForm').querySelector('button[type=submit]');resolvingSymbol=true;submit.disabled=true;
     try{
-      const symbol=symbolPicker?.enabled?await symbolPicker.resolve():raw;
+      const symbol=symbolPicker?.enabled&&raw?await symbolPicker.resolve():raw;
       if(!$('widgetLibrary').open||component.id!==componentId||raw!==$('widgetSymbol').value.trim())return;
-      $('widgetLibrary').close();generate(symbol||component.defaultScope,component,null,component.inputMode==='market'&&component.provider==='TradingView'?$('widgetMarket').value:'default');
+      $('widgetLibrary').close();generate(component.provider==='TradingView'?symbol:(symbol||component.defaultScope),component,null,component.inputMode==='market'&&component.provider==='TradingView'?$('widgetMarket').value:'default');
     }catch(error){if(symbolPicker)symbolPicker.status.textContent=error.name==='AbortError'?'查询较慢，请稍后重试。':error.message;}
     finally{resolvingSymbol=false;submit.disabled=false;}
   };

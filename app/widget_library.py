@@ -23,7 +23,7 @@ class TradingViewInput(BaseModel):
     widget: str = Field(min_length=1, max_length=60)
     symbols: list[str] = Field(default_factory=list, max_length=30)
     market: str = Field(default='default', max_length=30)
-    preset: Literal['intraday'] | None = None
+    preset: Literal['intraday','forex','crypto-pairs'] | None = None
     symbolMarket: Literal['auto', 'us', 'hk', 'cn'] = 'auto'
     theme: Literal['dark', 'light'] = 'dark'
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
@@ -41,44 +41,65 @@ def renderer():
 
 GROUPS = {'symbol-overview', 'market-data', 'ticker-tape', 'tickers'}
 MARKETS = {'screener', 'crypto-mkt-screener', 'stock-heatmap', 'crypto-heatmap',
-           'market-overview', 'economic-calendar', 'top-stories'}
+           'market-overview', 'economic-calendar', 'top-stories','stock-market','etf-heatmap','market-summary','world-market-summary','economic-map'}
 REGIONS = {'default', 'us', 'cn', 'eu', 'gb', 'jp'}
-STOCK_MARKETS = {'default', 'america', 'china', 'hongkong', 'japan', 'uk', 'germany'}
+STOCK_MARKETS = {'default', 'america', 'china', 'hongkong', 'japan', 'uk', 'germany','forex','crypto'}
+CURRENCY_WIDGETS = {'forex-cross-rates','forex-heatmap','forex-table'}
+BROKER_WIDGETS = {'broker-rating','broker-reviews'}
+
+def allowed_markets(widget):
+    if widget == 'screener': return STOCK_MARKETS
+    if widget == 'economic-calendar': return REGIONS
+    if widget in {'stock-market','market-summary'}: return {'default','US','SSE','SZSE','HKEX','TSE','LSE'}
+    return {'default'}
 
 
 def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dict:
     tool = renderer()
     if payload.widget not in tool.CATALOG:
         raise ValueError('不支持的 TradingView 组件')
-    if payload.preset and payload.widget != 'symbol-overview':
-        raise ValueError('日内分时预设仅支持走势概览组件。')
+    if payload.preset and ((payload.preset=='intraday' and payload.widget!='symbol-overview') or (payload.preset in {'forex','crypto-pairs'} and payload.widget!='screener')):
+        raise ValueError('该组件不支持指定的预设。')
     values = list(dict.fromkeys(s.strip() for s in payload.symbols if s.strip()))
-    if (payload.preset or (payload.widget not in MARKETS and payload.widget not in GROUPS)) and len(values) != 1:
+    if (payload.preset=='intraday' or (payload.widget not in MARKETS|GROUPS|CURRENCY_WIDGETS|BROKER_WIDGETS)) and len(values) != 1:
         raise ValueError('该组件需要且只支持一个标的。')
-    symbols = values if payload.widget in MARKETS else list(dict.fromkeys(resolve_symbol(s, payload.symbolMarket) for s in values))
+    symbols = values if payload.widget in MARKETS|CURRENCY_WIDGETS|BROKER_WIDGETS else list(dict.fromkeys(resolve_symbol(s, payload.symbolMarket) for s in values))
     config = {}
     symbol = None
     if payload.widget in MARKETS:
         if symbols:
             raise ValueError('该组件按市场展示，无需填写股票代码。')
-        allowed = STOCK_MARKETS if payload.widget == 'screener' else REGIONS if payload.widget == 'economic-calendar' else {'default'}
+        allowed = allowed_markets(payload.widget)
         if payload.market not in allowed:
             raise ValueError('请选择列表中支持的市场范围。')
         if payload.widget == 'screener':
-            config['market'] = 'america' if payload.market == 'default' else payload.market
+            config['market'] = {'forex':'forex','crypto-pairs':'crypto'}.get(payload.preset,'america') if payload.market=='default' else payload.market
+        elif payload.widget in {'stock-market','market-summary'}:
+            config['exchange'] = 'US' if payload.market=='default' else payload.market
         elif payload.widget == 'economic-calendar' and payload.market != 'default':
             config['countryFilter'] = payload.market
+    elif payload.widget in CURRENCY_WIDGETS:
+        currencies=list(dict.fromkeys(v.upper() for v in values))
+        supported={'USD','EUR','GBP','JPY','CHF','AUD','CAD','NZD','CNY','CNH','HKD','SGD','SEK','NOK','DKK','ZAR','MXN','TRY','RUB','PLN','HUF','CZK','INR','KRW','BRL'}
+        if currencies and (len(currencies)<2 or len(currencies)>10 or any(v not in supported for v in currencies)):
+            raise ValueError('请输入 2 到 10 个支持的货币代码，例如 USD、EUR、JPY。')
+        if currencies: config['currencies']=currencies
+    elif payload.widget in BROKER_WIDGETS:
+        import re
+        if len(values)!=1 or not re.fullmatch(r'[a-z0-9][a-z0-9-]{1,49}',values[0].lower()):
+            raise ValueError('请输入 TradingView 经纪商标识，例如 easymarkets。')
+        config['broker']=values[0].lower()
     elif payload.preset == 'intraday':
         config.update(symbols=[[symbols[0]+'|1']], dateRanges=['1d|1'], chartType='area')
     elif payload.widget in GROUPS:
-        if not symbols:
+        if not symbols and payload.widget!='market-data':
             raise ValueError('请至少填写一个标的代码。')
         if payload.widget == 'symbol-overview':
             config['symbols'] = [[s+'|1D'] for s in symbols]
-        elif payload.widget == 'market-data':
+        elif payload.widget == 'market-data' and symbols:
             config['symbolsGroups'] = [{'name': '关注标的' if payload.language.startswith('zh') else 'Watchlist',
                                         'symbols': [{'name': s} for s in symbols]}]
-        else:
+        elif payload.widget!='market-data':
             config['symbols'] = [{'proName': s} for s in symbols]
     else:
         if len(symbols) != 1:

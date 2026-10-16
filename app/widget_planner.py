@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException
 from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.widget_library import ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS
+from app.widget_library import ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS, CURRENCY_WIDGETS, BROKER_WIDGETS, allowed_markets
 
 router = APIRouter()
 
@@ -97,7 +97,7 @@ def enrich_card(card: Card) -> dict:
             if match:
                 try:
                     spec = json.loads(match.group(1)); cfg = spec['config']; widget = spec['widget']
-                    data['component'] = 'tv-intraday' if spec.get('preset')=='intraday' else 'tv-'+widget
+                    data['component'] = {'intraday':'tv-intraday','forex':'tv-forex-screener','crypto-pairs':'tv-crypto-pairs-screener'}.get(spec.get('preset'),'tv-'+widget)
                     symbols = [cfg['symbol']] if cfg.get('symbol') else []
                     if widget == 'symbol-overview':
                         symbols = [entry[-1].split('|')[0] for entry in cfg.get('symbols', [])]
@@ -126,7 +126,7 @@ add: {"type":"add","componentId":"catalogue中的id","parameters":{"symbols":[..
 remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_board","title":"48字以内"}。
 布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，普通图表h=10..40，滚动行情条tv-ticker-tape默认h=6、最低6。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
-TradingView使用tv-开头的组件id，行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
+TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug（如easymarkets），不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
     response = client.chat.completions.create(model=os.getenv('AICHART_TASK_PLANNER_MODEL') or os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-v4-flash'), messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], response_format={'type':'json_object'}, max_tokens=6500)
     return json.loads(response.choices[0].message.content or '{}')
@@ -164,10 +164,10 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                 widget = meta.get('widget')
                 if widget in MARKETS:
                     merged['symbols'] = []
-                    allowed = STOCK_MARKETS if widget=='screener' else REGIONS if widget=='economic-calendar' else {'default'}
+                    allowed = allowed_markets(widget)
                     if merged.get('market','default') not in allowed:
                         raise ValueError('组件不支持指定的市场。')
-                elif not merged.get('symbols'):
+                elif not merged.get('symbols') and not meta.get('allowEmptySymbols') and widget not in CURRENCY_WIDGETS:
                     raise ValueError('该组件需要明确的标的代码。')
                 if meta.get('inputMode') == 'symbol' and len(merged.get('symbols',[]))!=1:
                     raise ValueError('该组件只能配置一个标的。')
