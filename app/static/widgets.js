@@ -417,7 +417,7 @@
     return true;
   }
   function modificationFeedback(before, board) {
-    const changes=[],oldCards=before.cards||[],oldById=new Map(oldCards.map(c=>[c.id,c]));
+    const changes=[],moved=[],oldCards=before.cards||[],oldById=new Map(oldCards.map(c=>[c.id,c]));
     const width=w=>w===12?'整行宽度':w===6?'半行宽度':`约占一行的 ${Math.round(w/12*100)}%`;
     const period=value=>({'D':'日线','1D':'日线','W':'周线','1W':'周线','M':'月线','1M':'月线','60':'1小时','1h':'1小时'}[value]||value);
     for(const card of board.cards){
@@ -434,11 +434,12 @@
       if(prev.market!==next.market&&next.market)details.push(`切换市场为${next.market}`);
       if(old.component!==card.component)details.push('替换了图表类型');
       if(oldCards.findIndex(c=>c.id===card.id)!==board.cards.findIndex(c=>c.id===card.id))details.push(`移至第 ${board.cards.indexOf(card)+1} 位`);
-      if(!details.length&&(old.x!==card.x||old.y!==card.y))details.push('已重新对齐位置并收紧间距');
+      if(!details.length&&(old.x!==card.x||old.y!==card.y))moved.push(label);
       if(details.length)changes.push(`${label}：${details.join('，')}`);
     }
     for(const old of oldCards)if(!board.cards.some(c=>c.id===old.id))changes.push(`移除「${old.title}」`);
     if(before.title!==board.title)changes.unshift(`看板命名为「${board.title}」`);
+    if(!changes.length&&moved.length)changes.push(`重新对齐 ${moved.length} 张卡片的位置并收紧间距`);
     return changes.length?`已完成调整：${changes.slice(0,4).join('；')}${changes.length>4?`；另有 ${changes.length-4} 项调整`:''}。`:'';
   }
   function updateSelection(){
