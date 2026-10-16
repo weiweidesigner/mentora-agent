@@ -116,8 +116,19 @@
     url.searchParams.set('canvas','1');
     return url.pathname+url.search;
   }
+  function normalizeVerticalGaps(board){
+    const placed=[];let changed=false;
+    for(const card of [...board.cards].sort((a,b)=>a.y-b.y||a.x-b.x)){
+      const above=placed.filter(p=>p.x<card.x+card.w&&p.x+p.w>card.x);
+      const top=Math.max(0,...above.map(p=>p.y*ROW+(p.contentHeight||p.h*ROW)+24));
+      if(Math.abs(card.y*ROW-top)>.1){card.y=top/ROW;changed=true;}
+      placed.push(card);
+    }
+    if(changed)save();
+  }
   function applyLayout() {
     const board=current();if(!board)return;
+    if(!canvas.classList.contains('is-interacting'))normalizeVerticalGaps(board);
     const width=canvas.clientWidth, unit=(width+GAP)/12;
     let height=0;
     const sorted=[...board.cards].sort((a,b)=>a.y-b.y||a.x-b.x);
@@ -125,7 +136,7 @@
       const node=canvas.querySelector(`[data-card="${CSS.escape(card.id)}"]`);if(!node)continue;
       const h=card.contentHeight||card.h*ROW;
       Object.assign(node.style,{left:mobile()?'0px':`${card.x*unit}px`,top:`${mobile()?height:card.y*ROW}px`,width:mobile()?'100%':`${card.w*unit-GAP}px`,height:`${h}px`});
-      height=mobile()?height+h+GAP:Math.max(height,card.y*ROW+h+GAP);
+      height=mobile()?height+h+24:Math.max(height,card.y*ROW+h+24);
     }
     canvas.style.height=board.cards.length?`${height}px`:'';
   }
