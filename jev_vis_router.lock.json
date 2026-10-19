@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/jev_vis_router.git",
-  "revision": "6e51c3945af71ca9e704486a9d3f20a024cb3cf5",
+  "revision": "48be45d1f3c29623ffe4ad47bab7775e270f6469",
   "checkout": ".dependencies/jev_vis_router",
   "links": {
     "app/jev_visualization_router.py": "app/jev_visualization_router.py",
