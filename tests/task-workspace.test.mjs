@@ -141,6 +141,19 @@ test('ordinary history still restores through the same saved answer renderer',as
  w.restoreSession('saved');await tick();assert.match(w.messages.textContent,/历史问句/);assert.match(w.messages.textContent,/原始历史答案/);assert.match(w.messages.querySelector('.thinkingSummaryText').textContent,/42s/);assert.equal(w.messages.querySelector('.message.assistant').dataset.elapsedUnrecorded,'false');assert.equal(w.messages.querySelector('.deferredActions').hidden,false);h.dom.window.close();
 });
 
+test('ordinary history restores every saved user and assistant turn',async()=>{
+ const h=setup({tasks:[]});await tick();const w=h.w,d=w.document;
+ w.loadSessions=()=>[{id:'saved',question:'现在美债还有机会吗',messages:[
+  {role:'user',text:'现在美债还有机会吗'},{role:'assistant',interpretation:'上文催化剂分析',sources:[]},
+  {role:'user',text:'推荐四只ETF'},{role:'assistant',interpretation:'BIL、SHY、IEI、IEF',sources:[]},
+  {role:'user',text:'按这个配置买入'},{role:'assistant',interpretation:'最终JEV决策',sources:[]},
+ ]}];
+ w.recoverLegacySessionArtifacts=()=>false;w.DEFAULT_INFERENCE_MODEL='model';w.DEFAULT_REASONING_FRAMEWORK='deepseek';w.messages=d.querySelector('#messages');w.conversation=d.querySelector('.conversation');
+ w.addUserMessage=text=>{const article=d.createElement('article');article.className='message user';article.textContent=text;w.messages.append(article);};w.appendMessage=article=>w.messages.append(article);w.copyFor=()=> '已思考';w.formatDuration=()=> '1s';w.closeActivityDrawer=()=>{};w.renderHistory=()=>{};
+ w.eval(appSource.slice(appSource.indexOf('function appendRestoredAssistantTurn('),appSource.indexOf('async function restoreSharedSessionFromUrl()')));
+ w.restoreSession('saved');await tick();assert.equal(w.messages.querySelectorAll('.message.user').length,3);assert.equal(w.messages.querySelectorAll('.message.assistant').length,3);assert.match(w.messages.textContent,/上文催化剂分析/);assert.match(w.messages.textContent,/最终JEV决策/);h.dom.window.close();
+});
+
 test('sidebar summarizes upcoming, monitoring, monthly, paused and completed task states',async()=>{
  const h=setup({tasks:[{...base,id:'daily',time:'08:00',nextAt:'2026-10-16T00:00:00Z'},{...base,id:'monitor',activeRun:'running',lastRun:{status:'running'}},{...base,id:'monthly',cadence:'monthly',monthDay:1,nextAt:'2026-11-01T00:00:00Z'},{...base,id:'paused',enabled:false},{...base,id:'done',cadence:'once',enabled:false,nextAt:null,lastRun:{status:'success',finished:'2026-05-15T02:00:00Z'}}]});await tick();const d=h.w.document;
  const row=id=>d.querySelector(`#taskSidebarList [data-task-open="${id}"]`),subtitle=id=>row(id).querySelector('small').textContent;

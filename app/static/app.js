@@ -3596,12 +3596,18 @@ async function recordAssistantResult(data) {
   currentSession.messages.push({
     role: "assistant",
     reportUrl: data.reportUrl,
+    agent: data.agent || assistantArticle?.dataset.agent || "",
     reportArtifacts: currentSession.reportArtifacts,
     code: data.code,
     label: data.selectedSkill?.label || "",
     interpretation: data.interpretation || "",
+    sources: currentSession.sources,
     videos: currentSession.videos,
     actionLinks: currentSession.actionLinks,
+    agentEvents: currentSession.agentEvents,
+    agentRunId: currentSession.agentRunId,
+    thinkingStepsHtml: currentSession.thinkingStepsHtml,
+    thinkingElapsed: currentSession.thinkingElapsed,
     reasoningFramework: currentSession.reasoningFramework,
   });
   currentSession.title = await summarizeSessionTitle(currentSession.question, currentSession.interpretation);
@@ -3751,6 +3757,58 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
   });
 }
 
+function appendRestoredAssistantTurn(session, turn, isLatest = false) {
+  const fallback = isLatest ? session : {};
+  const value = (key, defaultValue) => turn?.[key] !== undefined ? turn[key] : (fallback?.[key] ?? defaultValue);
+  const interpretation = String(value("interpretation", "") || "");
+  const reportUrl = value("reportUrl", "");
+  const reportArtifacts = Array.isArray(value("reportArtifacts", [])) ? value("reportArtifacts", []) : [];
+  const actionLinks = Array.isArray(value("actionLinks", [])) ? value("actionLinks", []) : [];
+  const error = String(value("error", "") || "");
+  const question = String(session.question || session.title || "");
+  if (!reportUrl && !interpretation && !reportArtifacts.some((item) => item?.url) && !actionLinks.length) {
+    if (!error) return;
+    const article = createAssistantMessage(question);
+    article.dataset.startedAt = String(Date.now() - Number(value("thinkingElapsed", 0) || 0));
+    article.agentEvents = Array.isArray(value("agentEvents", [])) ? value("agentEvents", []) : [];
+    article.dataset.agentRunId = String(value("agentRunId", "") || "");
+    const savedSteps = article.querySelector(".thinkingSteps");
+    if (savedSteps) {
+      savedSteps.innerHTML = String(value("thinkingStepsHtml", "") || "");
+      refreshSavedToolStepTitles(savedSteps, detectLanguage(question));
+    }
+    showError(article, error, { skipSessionRecord: true });
+    return;
+  }
+  const lang = detectLanguage(question);
+  const article = document.createElement("article");
+  article.className = "message assistant";
+  article.dataset.startedAt = String(session.updatedAt || Date.now());
+  article.dataset.thinkingState = "done";
+  article.dataset.lang = lang;
+  article.activityEnded = true;
+  article.activitySources = mergeSourcesByUrl(
+    Array.isArray(value("sources", [])) ? value("sources", []) : [],
+    sourcesFromInsightMarkdown(interpretation),
+  );
+  article.videos = Array.isArray(value("videos", [])) ? value("videos", []) : [];
+  article.agentEvents = Array.isArray(value("agentEvents", [])) ? value("agentEvents", []) : [];
+  article.dataset.agentRunId = String(value("agentRunId", "") || "");
+  article.activitySourceCount = article.activitySources.length;
+  article.actionLinks = actionLinks;
+  article.activityStepKeys = new Set();
+  article.shareSession = session;
+  appendMessage(article, true);
+  renderSavedAssistantAnswer(article, {
+    agent: value("agent", ""), reportUrl, reportArtifacts, interpretation,
+    sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks,
+  }, {
+    thinkingLabel: `${copyFor(lang, "thoughtFor")} ${formatDuration(Number(value("thinkingElapsed", 0) || 0))}`,
+    thinkingStepsHtml: String(value("thinkingStepsHtml", "") || ""),
+    thinkingElapsed: Number(value("thinkingElapsed", 0) || 0),
+  });
+}
+
 function restoreSession(sessionId) {
   window.dispatchEvent(new Event("veya:chat-navigate"));
   const session = loadSessions().find((item) => item.id === sessionId);
@@ -3768,51 +3826,21 @@ function restoreSession(sessionId) {
   }
   messages.innerHTML = "";
   conversation.classList.remove("is-empty");
-  const userMessage = Array.isArray(session.messages) ? session.messages.find((item) => item.role === "user") : null;
-  addUserMessage(session.question || userMessage?.text || session.title || "", {
-    forceScroll: true,
-    images: Array.isArray(userMessage?.images) ? userMessage.images : [],
-  });
-  if (session.reportUrl || session.interpretation
-    || (Array.isArray(session.reportArtifacts) && session.reportArtifacts.some((item) => item?.url))
-    || (Array.isArray(session.actionLinks) && session.actionLinks.length)) {
-    const lang = detectLanguage(session.question || session.title || "");
-    const article = document.createElement("article");
-    article.className = "message assistant";
-    article.dataset.startedAt = String(session.updatedAt || Date.now());
-    article.dataset.thinkingState = "done";
-    article.dataset.lang = lang;
-    article.activityEnded = true;
-    article.activitySources = mergeSourcesByUrl(
-      Array.isArray(session.sources) ? session.sources : [],
-      sourcesFromInsightMarkdown(session.interpretation || ""),
-    );
-    session.sources = article.activitySources;
-    article.videos = Array.isArray(session.videos) ? session.videos : [];
-    article.agentEvents = Array.isArray(session.agentEvents) ? session.agentEvents : [];
-    article.dataset.agentRunId = session.agentRunId || "";
-    article.activitySourceCount = article.activitySources.length;
-    article.actionLinks = Array.isArray(session.actionLinks) ? session.actionLinks : [];
-    article.activityStepKeys = new Set();
-    article.shareSession = session;
-    appendMessage(article, true);
-    renderSavedAssistantAnswer(article, { reportUrl: session.reportUrl, reportArtifacts: session.reportArtifacts || [], interpretation: session.interpretation || "", sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks }, {
-      thinkingLabel: `${copyFor(lang, "thoughtFor")} ${formatDuration(session.thinkingElapsed || 0)}`,
-      thinkingStepsHtml: session.thinkingStepsHtml || "",
-      thinkingElapsed: session.thinkingElapsed,
+  const savedTurns = Array.isArray(session.messages) ? session.messages : [];
+  const assistantIndexes = savedTurns.map((item, index) => item?.role === "assistant" ? index : -1).filter((index) => index >= 0);
+  if (savedTurns.some((item) => item?.role === "user") && assistantIndexes.length) {
+    const latestAssistant = assistantIndexes.at(-1);
+    savedTurns.forEach((item, index) => {
+      if (item?.role === "user") addUserMessage(item.text || "", { forceScroll: true, images: Array.isArray(item.images) ? item.images : [] });
+      else if (item?.role === "assistant") appendRestoredAssistantTurn(session, item, index === latestAssistant);
     });
-  } else if (session.error) {
-    const article = createAssistantMessage(session.question || session.title || "");
-    article.dataset.startedAt = String(Date.now() - Number(session.thinkingElapsed || 0));
-    article.agentEvents = Array.isArray(session.agentEvents) ? session.agentEvents : [];
-    article.dataset.agentRunId = session.agentRunId || "";
-    const savedSteps = article.querySelector(".thinkingSteps");
-    if (savedSteps) {
-      savedSteps.innerHTML = session.thinkingStepsHtml || "";
-      refreshSavedToolStepTitles(savedSteps, lang);
-      session.thinkingStepsHtml = savedSteps.innerHTML;
-    }
-    showError(article, session.error, { skipSessionRecord: true });
+  } else {
+    const userMessage = savedTurns.find((item) => item?.role === "user");
+    addUserMessage(session.question || userMessage?.text || session.title || "", {
+      forceScroll: true,
+      images: Array.isArray(userMessage?.images) ? userMessage.images : [],
+    });
+    appendRestoredAssistantTurn(session, session, true);
   }
   closeActivityDrawer();
   if (recoveredArtifacts) saveCurrentSession();
