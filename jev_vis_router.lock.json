@@ -1,9 +1,10 @@
 {
   "repository": "https://github.com/weiweidesigner/jev_vis_router.git",
-  "revision": "c19dc6be3761b65c70214bb9147da0dfd9fde81d",
+  "revision": "6e51c3945af71ca9e704486a9d3f20a024cb3cf5",
   "checkout": ".dependencies/jev_vis_router",
   "links": {
     "app/jev_visualization_router.py": "app/jev_visualization_router.py",
-    "app/jev_kline_annotations.py": "app/jev_kline_annotations.py"
+    "app/jev_kline_annotations.py": "app/jev_kline_annotations.py",
+    "app/laya_client.py": "app/laya_client.py"
   }
 }

@@ -303,7 +303,7 @@ def test_visualization_scope_preserves_data_tools_and_filters_renderers() -> Non
         "revenue_sources.py",
     ]
     assert metadata["selectedScripts"] == ["income_statement.py", "revenue_sources.py"]
-    assert main.jev_visual_semantics_prompt(metadata).startswith("JEV 可视化语义计划")
+    assert main.jev_visual_semantics_prompt(metadata).startswith("Laya 可视化语义计划")
     assert "主图 income_statement.py" in main.jev_visual_semantics_prompt(metadata)
     assert "辅助图 revenue_sources.py" in main.jev_visual_semantics_prompt(metadata)
     assert "标记策略" in main.jev_visual_semantics_prompt(metadata)

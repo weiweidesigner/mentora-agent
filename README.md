@@ -104,7 +104,7 @@ python3 scripts/sync_data_code_interpreter.py --check
 
 更新应先提交上游，修改锁文件后运行对应安装脚本的 `--update`。Yahoo 输出结构化 JSON；数据计算保留普通计算与下游图表 payload 两种模式。图表 Schema 仍由通用或业务图表仓库提供，数据计算通过宿主逻辑路径或工作目录读取，也支持 `CODE_INTERPRETER_SCHEMA_DIRS` / `AICHART_SKILLS_DIR` 显式配置。模型凭据留在宿主环境中。
 
-## JEV visualization router dependency
+## Local Laya visualization router dependency
 
 可视化路由使用公开仓库 `weiweidesigner/jev_vis_router`，由 `jev_vis_router.lock.json` 固定提交。`app/jev_visualization_router.py` 只保留指向依赖检出的相对链接，原有 Python 导入路径保持一致。主图、辅助图、置信度、语义、证据与标记策略的实现均从上游读取。未接入应用的模型路由模块已删除；工具活动路由仍由宿主维护。
 
@@ -196,13 +196,16 @@ AICHART_OLLAMA_URL=http://127.0.0.1:11434
 AICHART_OLLAMA_MODEL=haervwe/GLM-4.6V-Flash-9B:latest
 AICHART_OLLAMA_API_KEY=ollama
 AICHART_OLLAMA_TIMEOUT_SECONDS=600
+LAYA_DECISION_URL=http://127.0.0.1:8791/predict
+LAYA_VISUAL_MODEL=convaiinnovations/laya-multilingual
+LAYA_VISUAL_TIMEOUT_SECONDS=90
 TYPESAFE_API_KEY=
 TYPESAFE_MODEL=jev-latest
 TYPESAFE_TIMEOUT_SECONDS=20
 TYPESAFE_ACTIVITY_ROUTING_ENABLED=true
 TYPESAFE_ACTIVITY_TIMEOUT_SECONDS=3
-TYPESAFE_VISUAL_PRIMARY_MIN_CONFIDENCE=0.35
-TYPESAFE_VISUAL_SUPPORTING_MIN_CONFIDENCE=0.55
+LAYA_VISUAL_PRIMARY_MIN_CONFIDENCE=0.35
+LAYA_VISUAL_SUPPORTING_MIN_CONFIDENCE=0.55
 ```
 
 首次配置 Codex 本地 GLM 路径时，创建共享同一组模型权重、但将上下文限制为 16K 的隐藏 Ollama 派生配置：

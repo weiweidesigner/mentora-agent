@@ -150,12 +150,12 @@ class LocalAgentFrameworks:
         if visualization_route and visualization_route.get("applied"):
             selected = visualization_route.get("selectedScripts") or []
             message = (
-                f"JEV 已规划 {len(selected)} 个互补可视化视角"
-                if selected else "JEV 判断本次回答不应强制生成图表"
+                f"Laya 已规划 {len(selected)} 个互补可视化视角"
+                if selected else "Laya 判断本次回答不应强制生成图表"
             )
             yield "agent_event", {
-                "engine": "TypeSafe JEV",
-                "agent": "JEV Visual Semantics Router",
+                "engine": "Local Laya",
+                "agent": "Laya Visual Semantics Router",
                 "phase": "visual-route",
                 "status": "completed",
                 "runId": session_key,
@@ -342,7 +342,7 @@ class LocalAgentFrameworks:
     def _visualization_route_metadata(decision: JevVisualizationDecision) -> dict[str, Any]:
         return {
             "applied": True,
-            "provider": "typesafe",
+            "provider": "local-laya",
             "providerModel": decision.provider_model,
             "primary": decision.primary_script,
             "supporting": decision.supporting_script,
@@ -367,7 +367,7 @@ class LocalAgentFrameworks:
     def _visualization_guidance(decision: JevVisualizationDecision) -> str:
         if not decision.primary_script:
             return (
-                "JEV 可视化语义计划：本次请求不应为了形式强制生成图表。"
+                "Laya 可视化语义计划：本次请求不应为了形式强制生成图表。"
                 "若后续取得的新证据表明图表确有必要，仍须按真实数据和 Skill schema 决定。"
             )
         lens = JevVisualizationRouter.SEMANTIC_LENSES.get(
@@ -383,7 +383,7 @@ class LocalAgentFrameworks:
             decision.mark_strategy, JevVisualizationRouter.MARK_STRATEGIES["no-mark"]
         )
         lines = [
-            "JEV 可视化语义计划（这是组件与叙事约束，不是数据证据）：",
+            "Laya 可视化语义计划（这是组件与叙事约束，不是数据证据）：",
             f"- 主图：{decision.primary_script}；回答维度：{decision.primary_purpose or '用户问题的核心判断'}。",
         ]
         if any(Path(script).name == "multi_intraday.py" for script in decision.selected_scripts):
@@ -408,8 +408,8 @@ class LocalAgentFrameworks:
         ])
         if "kline.py" in decision.selected_scripts and decision.mark_strategy != "no-mark":
             lines.extend([
-                "- K线标记统一交给 JEV：先使用 business-chart-recall/kline.py 已取到的真实 OHLCV payload，再运行 python app/jev_kline_annotations.py --payload <行情payload> --question <原问句> --output <含标记payload>。",
-                "- 使用 JEV 输出 payload 调用原生 kline.py 渲染；不得手写猜测价位、在正文模型中生成坐标，或用通用 mark 替换原生 annotations。JEV 负责证据校验、选点、周期绑定和配色；原生组件负责避碰、绘制和触摸交互。",
+                "- K线标记统一交给本地 Laya：先使用 business-chart-recall/kline.py 已取到的真实 OHLCV payload，再运行 python app/jev_kline_annotations.py --payload <行情payload> --question <原问句> --output <含标记payload>。",
+                "- 使用 Laya 输出 payload 调用原生 kline.py 渲染；不得手写猜测价位、在正文模型中生成坐标，或用通用 mark 替换原生 annotations。Laya 负责证据校验、选点、周期绑定和配色；原生组件负责避碰、绘制和触摸交互。",
             ])
         if decision.mark_strategy == "signed-direction":
             lines.extend([

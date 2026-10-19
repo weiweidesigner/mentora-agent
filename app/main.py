@@ -1759,7 +1759,7 @@ def infer_model_kline_annotations(question: str, runs: list[ModuleRun], *, propo
         )
         return tuple(_legacy_kline_mark({**mark, "source": "jev-kline-plan", "markStrategy": plan.mark_strategy, "markConfidence": plan.confidence}) for mark in plan.annotations)
     except JevVisualizationRouterError as exc:
-        print(f"JEV K-line annotation planning unavailable: {exc}", file=sys.stderr)
+        print(f"Local Laya K-line annotation planning unavailable: {exc}", file=sys.stderr)
         return ()
 
 
@@ -2739,7 +2739,7 @@ def scope_visualization_modules_with_jev(
     try:
         decision = active_router.route(question=question, candidates=visual_candidates)
     except JevVisualizationRouterError as exc:
-        print(f"JEV visualization routing fell back to model selection: {exc}", file=sys.stderr)
+        print(f"Local Laya visualization routing fell back to model selection: {exc}", file=sys.stderr)
         return module_registry, {
             "applied": False,
             "fallback": "model",
@@ -2824,7 +2824,7 @@ def jev_visual_semantics_prompt(metadata: dict[str, Any] | None) -> str:
     primary = str(metadata.get("primary") or "")
     if not primary:
         return (
-            "JEV 可视化语义计划：本次请求不应为了形式强制生成图表；只有后续真实证据明确需要时才规划图表。"
+            "Laya 可视化语义计划：本次请求不应为了形式强制生成图表；只有后续真实证据明确需要时才规划图表。"
         )
     lens_key = str(metadata.get("semanticLens") or "evidence-led")
     lens = JevVisualizationRouter.SEMANTIC_LENSES.get(
@@ -2849,7 +2849,7 @@ def jev_visual_semantics_prompt(metadata: dict[str, Any] | None) -> str:
         count = max(1, min(4, count))
         mobile_layout = f"- 多分时图移动端采用换行网格，CLI 必须传 --mobile-columns {count}，每行 {count} 张；不要使用股票 tab 或横向分页。"
     lines = [
-        "JEV 可视化语义计划（组件与叙事约束，不是数据证据）：",
+        "Laya 可视化语义计划（组件与叙事约束，不是数据证据）：",
         *([mobile_layout] if mobile_layout else []),
         f"主图 {primary} 回答：{metadata.get('primaryPurpose') or '用户问题的核心判断'}。",
     ]
@@ -3580,7 +3580,7 @@ def infer_relevant_skill_names(
         f"用户问题：{question}\n"
         f"chart_intent：{json.dumps(chart_intent, ensure_ascii=False, separators=(',', ':'))}\n"
         f"Yahoo证券身份候选：{json.dumps(security_identity_context, ensure_ascii=False, separators=(',', ':'))}\n"
-        f"JEV 可视化与证据编排：{routing_guidance or '未提供，按 Skill 契约自主选择。'}\n"
+        f"Laya 可视化与证据编排：{routing_guidance or '未提供，按 Skill 契约自主选择。'}\n"
         f"Skill 元数据：{read_skill_name_description_catalog()}"
     )
     parsed: dict[str, Any] | None = None
