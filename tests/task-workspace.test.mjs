@@ -7,6 +7,7 @@ const editorSource=readFileSync(new URL('../app/static/task-editor.js',import.me
 const appSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const savedAnswerSource=appSource.slice(appSource.indexOf('async function renderSavedAssistantAnswer('),appSource.indexOf('function restoreSession(sessionId)'));
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
+const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
 function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
@@ -58,6 +59,10 @@ test('opening and switching task conversations starts at the latest message',asy
  assert.equal(detail.scrollTop,2400);
  detail.scrollTop=0;const selector=h.w.document.querySelector('#taskRunSelect');selector.value='run-old';selector.dispatchEvent(new h.w.Event('change'));await tick();
  assert.equal(detail.scrollTop,2400);h.dom.window.close();
+});
+
+test('task follow-up input does not show a nested focus outline',()=>{
+ assert.match(styles,/#taskChatInput:focus-visible\s*\{\s*outline:\s*none;\s*\}/);
 });
 
 test('new task opens the existing panel and task landing has no composer',async()=>{

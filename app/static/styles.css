@@ -4132,6 +4132,7 @@ p {
 .taskChatForm.composer { width:min(calc(100% - 48px),832px);margin:0 auto;padding:12px 0 max(16px,env(safe-area-inset-bottom));background:transparent; }
 .taskChatComposer.composerBox { grid-template-columns:minmax(0,1fr) 40px;gap:8px;padding:8px 9px 8px 20px;border-radius:999px;border-color:rgba(17,24,39,.11);box-shadow:0 10px 28px rgba(17,24,39,.07); }
 .taskChatComposer textarea { height:40px;background:transparent;overflow-y:hidden;scrollbar-width:none; }
+#taskChatInput:focus-visible { outline:none; }
 .taskChatComposer textarea::-webkit-scrollbar { display:none;width:0; }
 .taskChatComposer button { width:40px;height:40px; }
 .taskChatComposer.is-multiline { grid-template-rows:auto 40px;border-radius:20px;padding:12px; }
