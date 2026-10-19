@@ -53,6 +53,13 @@ test('history selection loads the saved run without triggering analysis',async()
  assert.equal(h.requests.some(r=>r.method==='POST'||r.path.includes('/chat')),false);h.dom.window.close();
 });
 
+test('opening and switching task conversations starts at the latest message',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'}),detail=h.w.document.querySelector('#taskDetail');Object.defineProperty(detail,'scrollHeight',{get:()=>2400});await tick();
+ assert.equal(detail.scrollTop,2400);
+ detail.scrollTop=0;const selector=h.w.document.querySelector('#taskRunSelect');selector.value='run-old';selector.dispatchEvent(new h.w.Event('change'));await tick();
+ assert.equal(detail.scrollTop,2400);h.dom.window.close();
+});
+
 test('new task opens the existing panel and task landing has no composer',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelector('#taskPromptForm'),null);d.querySelector('#taskSidebarNew').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#taskWizard').hidden,true);assert.equal(h.requests.some(r=>r.path.endsWith('/plan')),false);h.dom.window.close();
 });

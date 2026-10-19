@@ -57,6 +57,12 @@
     await renderTaskAnswer(article,structuredClone(turn.answer||{interpretation:turn.text}),chatHistory.filter(t=>t.role==='user').at(-1)?.text||'');
     return article;
   }
+  function scrollTaskConversationToLatest(version) {
+    const detail=$('taskDetail');
+    if(!detail||detail.hidden||version!==viewVersion)return;
+    const move=()=>{if(!detail.hidden&&version===viewVersion)detail.scrollTop=detail.scrollHeight;};
+    move();requestAnimationFrame(()=>requestAnimationFrame(move));
+  }
   async function loadFollowups(data, task, version) {
     const initialText=String(data.answer?.interpretation||'');
     chatHistory=[{role:'user',text:data.question||task.question},{role:'assistant',text:initialText||`任务已设置：${task.title}，${schedule(task)}。`}];
@@ -310,11 +316,11 @@
     container.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));
     container.replaceChildren();
     renderTaskUser(task.systemPreset?task.question:(data.question||task.question),[],container,task);
-    if(['queued','running'].includes(data.status)){void streamRun(data,task,version,container);return;}
+    if(['queued','running'].includes(data.status)){void streamRun(data,task,version,container);scrollTaskConversationToLatest(version);return;}
     const article=document.createElement('article');article.className='message assistant';container.append(article);
     if(data.answer){await renderTaskAnswer(article,structuredClone(data.answer),data.question||task.question);if(version===viewVersion)markSeen(task,data.runId||selectedRun);}
     else {const text=document.createElement('p');text.className='taskResultEmpty';text.textContent=data.error||(data.status==='running'?'正在云端执行，完成后会自动显示结果。':data.status==='queued'?'任务正在排队。':data.status==='success'?'这条旧记录未保留完整内容。新运行会保留近期对话结果。':'本次执行没有生成结果。');article.append(text);}
-    if(version===viewVersion)await loadFollowups(data,task,version);
+    if(version===viewVersion){await loadFollowups(data,task,version);scrollTaskConversationToLatest(version);}
   }
   function renderWaitingTask(task){
     const waiting=document.createElement('section');waiting.className='taskWaitingState';waiting.setAttribute('role','status');
