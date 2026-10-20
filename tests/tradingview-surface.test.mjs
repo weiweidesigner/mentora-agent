@@ -5,8 +5,8 @@ import {JSDOM} from 'jsdom';
 const runtime=readFileSync(new URL('../app/static/tradingview-surface.js',import.meta.url),'utf8');
 const activation=readFileSync(new URL('../app/static/chart-activation.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,40));
-function setup(widget='single-ticker',format){
- const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
+function setup(widget='single-ticker',format,report=false){
+ const dom=new JSDOM(report?'<div class="reportFrameShell"><iframe></iframe></div>':'<iframe></iframe>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
  doc.head.innerHTML='<style data-tv-host-footer>.tradingview-widget-container>iframe{height:100%!important}</style>';
  doc.body.innerHTML=`<main><header>Extra title</header><div class="stage"><div id="mount"><div class="tradingview-widget-container">${format?'<tv-broker-rating style="height:100%"></tv-broker-rating>':'<iframe style="height:69px"></iframe>'}</div></div><div id="state" hidden>Loading</div></div><footer>Extra footer</footer></main><script id="tv-config" type="application/json">${JSON.stringify({widget,format,tag:format?'tv-broker-rating':undefined})}</script>`;
  let height=69;
@@ -49,8 +49,7 @@ test('interactive charts preserve a sized viewport and non-TradingView charts ar
 });
 
 test('installing a conversation TradingView surface also installs its activation gate',()=>{
- const h=setup('advanced-chart'),shell=h.w.document.createElement('div');shell.className='reportFrameShell';
- h.frame.before(shell);shell.append(h.frame);h.w.eval(activation);
+ const h=setup('advanced-chart',undefined,true),shell=h.frame.parentElement;h.w.eval(activation);
  h.w.installTradingViewSurface(h.frame);
  const gate=shell.querySelector('.widgetChartActivation');assert(gate);assert.equal(gate.hidden,false);
  gate.click();assert.equal(gate.hidden,true);
