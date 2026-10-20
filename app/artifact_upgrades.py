@@ -52,7 +52,7 @@ def _constant(document: str, name: str):
 
 def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
     """Re-render legacy multi-intraday srcdocs with exactly their saved OHLCV rows."""
-    if 'class="multi-intraday"' not in artifact or 'data-mobile-columns=' in artifact:
+    if 'class="multi-intraday"' not in artifact or 'data-intraday-layout="2"' in artifact:
         return artifact
     parser = _IntradayDocument()
     parser.feed(artifact)
@@ -80,11 +80,12 @@ def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
                           "data": rows, "source": (config.get("sources") or {}).get("1m", "saved"),
                           "reliableVolume": "VOL" in indicators})
         columns = re.search(r"--columns\s*:\s*([1-4])", artifact)
+        mobile_columns = re.search(r'data-mobile-columns=["\x27]([1-4])["\x27]', artifact)
         payload = {"type": "multi-intraday", "title": "".join(parser.title), "cards": cards,
                    "props": {"symbols": list(dict.fromkeys(card["symbol"] for card in cards)),
                              "timezone": zone, "theme": theme, "language": parser.language,
                              "columns": int(columns.group(1)) if columns else min(3, len(cards)),
-                             "mobileColumns": min(2, len(cards)), "subIndicators": indicators}}
+                             "mobileColumns": int(mobile_columns.group(1)) if mobile_columns else min(2, len(cards)), "subIndicators": indicators}}
         config = native._validate_payload(payload)
         return native.render_document(config["title"], native.build_cards(config), config)
     except (ValueError, KeyError, TypeError, IndexError):

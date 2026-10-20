@@ -2829,6 +2829,11 @@ p {
   object-fit: cover;
 }
 
+:root[data-theme="dark"] .userImageThumb {
+  background: #181818;
+  border-color: #303030;
+}
+
 .sendArrow {
   position: relative;
   display: block;

@@ -39,6 +39,23 @@ def test_upgrade_uses_saved_data_and_preserves_all_four_stocks(monkeypatch):
     assert upgrade_legacy_intraday('<p>Unrelated report</p>', 'dark') == '<p>Unrelated report</p>'
 
 
+def test_already_mobile_aware_reports_receive_non_overlapping_grid_without_refetch(monkeypatch):
+    native = _native_multi_intraday()
+    monkeypatch.setattr(native.KLINE, 'fetch_rows', lambda *a, **k: (_ for _ in ()).throw(AssertionError('must not refetch')))
+    old = legacy_document().replace('class="multi-intraday"', 'class="multi-intraday" data-mobile-columns="4" style="--columns:4"')
+    upgraded = upgrade_legacy_intraday(old, 'dark')
+    assert 'data-intraday-layout="2"' in upgraded
+    assert 'data-mobile-columns="4"' in upgraded
+    assert 'grid-auto-columns:minmax(340px,' in upgraded
+    before, after = _IntradayDocument(), _IntradayDocument()
+    before.feed(old);after.feed(upgraded)
+    assert len(after.frames) == len(before.frames) == 4
+    for original, current in zip(before.frames, after.frames):
+        for a, b in zip(_constant(original, 'dataByPeriod')['1m'], _constant(current, 'dataByPeriod')['1m']):
+            assert all(a[field] == b[field] for field in ('time','open','high','low','close','volume'))
+    assert upgrade_legacy_intraday(upgraded, 'dark') == upgraded
+
+
 def test_share_route_upgrades_old_layout_without_overwriting_file(tmp_path, monkeypatch):
     original = legacy_document()
     path = tmp_path/'old-intraday.html'
