@@ -922,17 +922,16 @@ with sync_playwright() as p:
 
 
 # Daily research uses exactly the same skill-based execution path as chat.
-from app.day_tasks import DayTasks, create_router as create_day_router, MARKETS, STAGES
+from app.day_tasks import DayTasks, create_router as create_day_router, MARKETS
 
 
 def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     import datetime as dt
     from zoneinfo import ZoneInfo
     local_time = dt.datetime.now(ZoneInfo(MARKETS[config['market']]['zone']))
+    # Scheduling metadata controls when to run, not what to research. Only
+    # expand placeholders explicitly present in the user's research question.
     context = (
-        f"当前市场：{MARKETS[config['market']]['name']}；市场当地时间：{local_time.isoformat()}；"
-        f"任务阶段：{STAGES[config['stage']]}；标的类型：{config['assetType']}；"
-        f"用户指定标的：{config['symbols'] or '未指定，请分析该市场整体，不要假设用户持仓或自选股'}。\n"
         "这是自动研究任务，只进行信息查询与分析；不得交易、修改账户、设置提醒或向外部渠道发送消息。"
         "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。\n\n"
     )
