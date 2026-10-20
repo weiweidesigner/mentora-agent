@@ -71,6 +71,7 @@ let activeShareSession = null;
 let pendingImages = [];
 
 const SESSION_STORAGE_KEY = "aime-chart-sessions-v1";
+let serverSessionReady = null;
 const THEME_STORAGE_KEY = "aime-chart-theme-v1";
 const SUPPORTED_FRAMEWORKS = new Set(["deepseek", "codex"]);
 const DEFAULT_REASONING_FRAMEWORK = SUPPORTED_FRAMEWORKS.has(window.AIME_CHAT_CONFIG?.reasoningFramework)
@@ -173,6 +174,11 @@ syncResponsiveShell();
 mobileShellQuery.addEventListener?.("change", syncResponsiveShell);
 
 renderHistory();
+serverSessionReady = syncServerSessions();
+window.addEventListener("focus", () => { void syncServerSessions(); });
+setInterval(() => {
+  if (loadSessions().some((session) => session.activeRunId || ["queued", "running"].includes(session.status))) void syncServerSessions();
+}, 5000);
 restoreSharedSessionFromUrl();
 
 sidebarToggle?.addEventListener("click", () => {
@@ -256,6 +262,12 @@ async function submitQuestion(question, options = {}) {
     currentSession.messages = [];
   }
   currentSession.messages.push({ role: "user", text: question, images: imageSessionPayload(images) });
+  const submittedSession = currentSession;
+  submittedSession.status = "queued";
+  submittedSession.requestId = `request-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  submittedSession.title = submittedSession.title === "新建对话" ? question.slice(0, 28) : submittedSession.title;
+  submittedSession.updatedAt = Date.now();
+  saveCurrentSession();
   const userArticle = options.userArticle || addUserMessage(question, { forceScroll: true, images });
   if (options.userArticle) {
     renderUserMessage(userArticle, question);
@@ -266,43 +278,96 @@ async function submitQuestion(question, options = {}) {
   button.disabled = true;
 
   const assistant = createAssistantMessage(question);
+  showAgentIdentity(assistant, options.agent);
   activeController = new AbortController();
+  const controller = activeController;
 
   try {
-    const response = await fetch("/api/chat/stream", {
+    await serverSessionReady;
+    const response = await fetch("/api/chat/runs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         question,
+        requestId: submittedSession.requestId,
         images: images.map(imageRequestPayload),
-        sessionId: currentSession.id,
-        studioSessionId: currentSession.studioSessionId || null,
-        engineSessionId: currentSession.frameworkSessionIds?.[`${framework}:${model}`] || "",
+        agent: options.agent || '',
+        sessionId: submittedSession.id,
+        studioSessionId: submittedSession.studioSessionId || null,
+        engineSessionId: submittedSession.frameworkSessionIds?.[`${framework}:${model}`] || "",
         reasoningFramework: framework,
         inferenceModel: model,
         resolvedInferenceModel: "",
-        history: currentSession.messages.slice(0, -1).slice(-8),
-        sessionTitle: currentSession.title === "新建对话" ? question : currentSession.title,
+        history: submittedSession.messages.slice(0, -1).slice(-8),
+        sessionTitle: submittedSession.title === "新建对话" ? question : submittedSession.title,
         themeMode: currentThemeMode(),
       }),
-      signal: activeController.signal,
     });
-    if (!response.ok || !response.body) {
+    if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || "请求失败");
     }
-    await readEventStream(response.body, (eventName, data) => {
-      handleStreamEvent(assistant, eventName, data);
-    });
+    const run = await response.json();
+    submittedSession.activeRunId = run.runId;
+    submittedSession.status = "running";
+    persistChatSession(submittedSession);
+    if (currentSession?.id === submittedSession.id && !controller.signal.aborted) await followChatRun(submittedSession, assistant, controller);
   } catch (error) {
-    if (error.name !== "AbortError") {
-      showError(assistant, error.message);
+    if (error.name !== "AbortError" && currentSession?.id === submittedSession.id) {
+      if (submittedSession.activeRunId) appendStep(assistant, "后台执行中", "连接已断开，任务继续执行；返回此会话可恢复进度。", "loading", "background-run");
+      else showError(assistant, error.message);
     }
   } finally {
-    activeController = null;
-    button.disabled = false;
-    updateComposerState();
-    input.focus();
+    if (activeController === controller) {
+      activeController = null;
+      button.disabled = false;
+      updateComposerState();
+      input.focus();
+    }
+  }
+}
+
+async function followChatRun(session, article, controller) {
+  const response = await fetch(`/api/chat/runs/${encodeURIComponent(session.activeRunId)}/events`, { signal: controller.signal });
+  if (!response.ok || !response.body) throw new Error("暂时无法连接后台任务");
+  await readEventStream(response.body, (eventName, data) => {
+    if (currentSession?.id === session.id && !controller.signal.aborted) handleStreamEvent(article, eventName, data);
+  });
+}
+
+function persistChatSession(session) {
+  const sessions = loadSessions().filter((item) => item.id !== session.id);
+  sessions.unshift(session);
+  storeSessions(sessions.slice(0, 20));
+  renderHistory();
+}
+
+async function syncServerSessions() {
+  try {
+    const response = await fetch("/api/chat/sessions", { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json();
+    const sessions = new Map(loadSessions().map((session) => [session.id, session]));
+    for (const remote of data.sessions || []) {
+      const local = sessions.get(remote.id);
+      if (!local || Number(remote.updatedAt) >= Number(local.updatedAt) || (local.activeRunId && !remote.activeRunId)) sessions.set(remote.id, { ...local, ...remote });
+    }
+    storeSessions(Array.from(sessions.values()).sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt)).slice(0, 20));
+    renderHistory();
+    const restored = currentSession && sessions.get(currentSession.id);
+    if (!activeController && restored && (currentSession.activeRunId || (currentSession.requestId && currentSession.requestId === restored.requestId && currentSession.status !== restored.status))) restoreSession(currentSession.id);
+  } catch { /* Browser history remains available while offline. */ }
+}
+
+async function resumeChatRun(session, article) {
+  const controller = new AbortController();
+  activeController = controller;
+  button.disabled = true;
+  try { await followChatRun(session, article, controller); }
+  catch (error) {
+    if (error.name !== "AbortError" && currentSession?.id === session.id) appendStep(article, "后台执行中", "正在等待连接恢复，任务继续执行。", "loading", "background-run");
+  } finally {
+    if (activeController === controller) { activeController = null; button.disabled = false; updateComposerState(); }
   }
 }
 
@@ -415,7 +480,26 @@ function createAssistantMessage(question, options = {}) {
   return article;
 }
 
+function showAgentIdentity(article, agent) {
+  if (agent !== 'mentora-deal') {
+    if (agent === 'mentora') { article.querySelector('.assistantAgentIdentity')?.remove(); article.dataset.agent = agent; }
+    return;
+  }
+  article.dataset.agent = agent;
+  let identity = article.querySelector('.assistantAgentIdentity');
+  if (!identity) {
+    identity = document.createElement('div');
+    identity.className = 'assistantAgentIdentity';
+    const avatar = document.createElement('img');
+    const base = new URL(document.querySelector('.brandMark')?.src || '/static/assets/mentora-logo.svg', location.href);
+    avatar.src = base.href; avatar.alt = ''; avatar.width = 24; avatar.height = 24;
+    const name = document.createElement('span'); name.textContent = 'Mentora Deal';
+    identity.append(avatar, name); article.prepend(identity);
+  }
+}
+
 function handleStreamEvent(article, eventName, data) {
+  showAgentIdentity(article, data?.agent);
   const lang = setArticleLanguage(article, data?.lang || article.dataset.lang || "en");
   if (eventName === "status") {
     if (!shouldRenderStatusEvent(data)) return;
@@ -436,8 +520,14 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "progress") {
-    const text = String(data?.text || "").replace(/\s+/g, " ").trim();
+    const text = String(data?.text || data?.detail || data?.message || "").replace(/\s+/g, " ").trim();
     if (!text || article.activityEnded) return;
+    if (article.taskContext && (data?.detail || data?.stage)) {
+      const title = String(data?.title || text).trim();
+      if (data?.kind === "analysis") article.dataset.hasAnalysisSummary = "true";
+      appendStep(article, data?.kind === "tool" ? `工具 · ${title}` : title, title === text ? "" : text, "loading", `task-progress:${data?.stage || data?.key || text}`);
+      return;
+    }
     article.dataset.currentThinking = text;
     updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
     return;
@@ -715,10 +805,11 @@ function installReportTooltipPortal(frame) {
       const anchor = gesture?.direction==="horizontal" ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
       const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (gesture?.direction==="horizontal" ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));
       portal.style.left = left + "px";
-      const minTop = Math.max(8, chart.top + 8);
-      const maxTop = Math.min(window.innerHeight - 8, chart.bottom - 8) - portal.offsetHeight;
-      const preferredTop = chart.top + box.top;
-      portal.style.top = (maxTop >= minTop ? Math.max(minTop, Math.min(maxTop, preferredTop)) : Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, preferredTop))) + "px";
+      const scaleY = chart.height / (frame.clientHeight || chart.height);
+      // Preserve the native bottom/arrow anchor, as in rating charts. The portal
+      // may extend above its iframe; only the outer page viewport constrains it.
+      const preferredTop = chart.top + box.bottom * scaleY - portal.offsetHeight;
+      portal.style.top = Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, preferredTop)) + "px";
       portal.style.setProperty("--report-tooltip-arrow-x", Math.max(12, Math.min(portal.offsetWidth - 12, anchor - left)) + "px");
       // Keep native layout measurements, but only the outer portal paints the tooltip.
       if (tip.style.visibility !== "hidden" || tip.style.getPropertyPriority("visibility") !== "important") tip.style.setProperty("visibility", "hidden", "important");
@@ -818,6 +909,7 @@ function createArtifactFallbackFrame(item, index, options = {}) {
     doc?.addEventListener("wheel", (event) => {
       if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
     }, { capture: true, passive: true });
+    window.installTradingViewSurface?.(frame);
     resizeReportDocumentFrame(frame);
     installReportTooltipPortal(frame);
     setTimeout(() => requestAnimationFrame(() => {
@@ -1051,7 +1143,12 @@ function upsertStreamVisualization(article, data = {}) {
 
 window.addEventListener("aime:streamviz-followup", (event) => {
   const prompt = String(event.detail?.prompt || "").trim();
-  if (prompt && !button.disabled) void submitQuestion(prompt);
+  if (prompt && !button.disabled) {
+    const images = pendingImages.slice();
+    clearPendingImages();
+    updateComposerState();
+    void submitQuestion(prompt, { images, agent:event.detail?.agent || '' });
+  }
 });
 
 function addMessage(role, html, options = {}) {
@@ -1339,7 +1436,7 @@ function appendStep(article, text, detail = "", state = "loading", stepKey = "")
   item.className = state === "error" ? "is-error" : "is-loading";
   item.innerHTML = `
     <div class="activityStepTitle">${escapeHtml(text)}</div>
-    ${detail ? `<div class="activityStepDetail">${escapeHtml(detail)}</div>` : ""}
+    ${detail && String(detail).trim() !== String(text).trim() ? `<div class="activityStepDetail">${escapeHtml(detail)}</div>` : ""}
   `;
   list.appendChild(item);
   if (state !== "error" && !isFirstStep) {
@@ -1407,6 +1504,14 @@ function appendNewsSearchStep(article, data) {
 }
 
 function appendToolStep(article, data) {
+  if (article.activityEnded) return;
+  if (data?.skillId) {
+    data = {...data,
+      params: [JSON.stringify(data.input || {}, null, 2)],
+      observation: data.phase === "failed" ? JSON.stringify(data.error || {}, null, 2)
+        : data.phase === "completed" ? JSON.stringify(data.output ?? null, null, 2) : "",
+    };
+  }
   const lang = normalizeLang(article.dataset.lang || data?.lang || "en");
   const tool = String(data?.tool || data?.script || "Tool").trim();
   const script = String(data?.script || "").trim();
@@ -1415,7 +1520,7 @@ function appendToolStep(article, data) {
   const shellCommand = Array.isArray(data?.shellCommand) ? data.shellCommand.map((item) => String(item)) : [];
   const output = String(data?.observation || "").trim();
   const preObservation = String(data?.preObservation || "").trim();
-  const observation = [preObservation, output].filter(Boolean).join("\n");
+  const observation = publicToolObservation([preObservation, output].filter(Boolean).join("\n"));
   const phase = String(data?.phase || "").trim().toLowerCase();
   const callId = String(data?.callId || "").trim();
   if (script === "multimodal_vision" && mergeVisionToolStep(article, { script, code, params, shellCommand, lang })) {
@@ -1423,7 +1528,9 @@ function appendToolStep(article, data) {
   }
   const dynamicTitle = toolActivityTitle(data, script, tool, code, params, shellCommand, lang);
   const stepDescription = toolStepDescription(script, tool, code, params, lang);
-  const detail = stepDescription && stepDescription !== dynamicTitle ? stepDescription : "";
+  const savedDetail = String(data?.displayDetail || "").trim();
+  const rawDetail = savedDetail || (stepDescription && stepDescription !== dynamicTitle ? stepDescription : "");
+  const detail = /^(?:bash|shell|exec_command|command_execution|\S+\.(?:py|sh))(?:\s*·.*)?$/i.test(rawDetail) ? "" : rawDetail;
   const shellBlock = shellCommand.length
     ? toolBlockHtml("Shell", formatShellCommand(shellCommand))
     : "";
@@ -1432,20 +1539,13 @@ function appendToolStep(article, data) {
     : [];
   if (shellBlock) {
     fullDetailParts.unshift(shellBlock);
-  } else if (script !== "code_interpreter.py") {
-    fullDetailParts.push(`
-      <div class="toolStepBlock">
-        <div class="toolStepBlockLabel">${escapeHtml(skillInputLabel(lang))}</div>
-        <pre><code>${escapeHtml(formatSkillInput(script, code, params, lang))}</code></pre>
-      </div>
-    `);
   }
   if (observation) {
     fullDetailParts.push(
       `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
     );
   }
-  if (phase === "completed" && callId) {
+  if (["completed", "failed"].includes(phase) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
       .find((item) => item.dataset.toolCallId === callId);
     if (existingItem) {
@@ -1471,8 +1571,8 @@ function appendToolStep(article, data) {
           `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
         );
       }
-      existingItem.classList.remove("is-loading");
-      existingItem.classList.add("is-done");
+      existingItem.classList.remove("is-loading", "is-done", "is-error");
+      existingItem.classList.add(phase === "failed" ? "is-error" : "is-done");
       article.dataset.currentThinking = compactReasoningTitle(data?.nextThought || data?.thoughtSummary, lang) || dynamicTitle;
       updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
       syncActivityDrawer(article);
@@ -1483,12 +1583,63 @@ function appendToolStep(article, data) {
     titleHtml: `<span>${escapeHtml(dynamicTitle)}</span>`,
     detailHtml: detail ? `<div class="toolStepDetail"><p class="toolStepThought">${escapeHtml(detail)}</p></div>` : "",
     drawerDetailHtml: fullDetailParts.length ? `<div class="toolStepDetail">${fullDetailParts.join("")}</div>` : "",
-    state: "loading",
+    state: phase === "failed" ? "error" : "loading",
     stepKey: `tool-step:${callId || data?.index || ""}:${phase || "step"}:${script}:${code}:${params.join("|")}`,
     currentThinking: dynamicTitle,
     className: "is-tool-step",
   });
   if (item && callId) item.dataset.toolCallId = callId;
+  if (item && data?.skillId) item.dataset.skillCallId = callId;
+  if (item && phase === "completed") { item.classList.remove("is-loading"); item.classList.add("is-done"); }
+
+}
+
+function publicToolObservation(value) {
+  const text = String(value || "").trim();
+  const hasKeyCheck = /\b[A-Z][A-Z0-9_]*_API_KEY\s+(?:set|configured|present)\b|key present above\s*\(count\)/i.test(text);
+  if (!hasKeyCheck) return text;
+  const cleaned = text
+    .replace(/^\s*\d+\s*\n\s*key present above\s*\(count\)\s*$/gim, "")
+    .split("\n")
+    .filter(line => !/^\s*(?:[A-Z][A-Z0-9_]*_API_KEY\s+(?:set|configured|present)\b.*|key present above\s*\(count\)|=+\s*\w+\s+key configured\?\s*=+|[A-Z][A-Z0-9_]*_MODEL\s*:\s*(?:None|null)|len\s+\d+|model\s+(?:None|null))\s*$/i.test(line))
+    .join("\n").trim();
+  return /^\d+$/.test(cleaned) ? "" : cleaned;
+}
+
+function cachedToolStepData(step, index = 0) {
+  const detail = String(step?.detail || "").trim();
+  const callMatch = detail.match(/^调用[：:]\s*([^\n]+)$/m);
+  const paramsMatch = detail.match(/^参数[：:]\s*([^\n]*)$/m);
+  const resultMarker = detail.match(/^结果[：:]\s*/m);
+  const durationMatch = detail.match(/\n耗时[：:]\s*[^\n]*\s*$/);
+  const tool = String(step?.tool || callMatch?.[1] || "Tool").trim();
+  let observation = "";
+  if (resultMarker?.index != null) {
+    const resultStart = resultMarker.index + resultMarker[0].length;
+    const resultEnd = durationMatch?.index != null && durationMatch.index > resultStart ? durationMatch.index : detail.length;
+    observation = detail.slice(resultStart, resultEnd).trim();
+  }
+  const displayInput = String(step?.input || step?.params || paramsMatch?.[1] || "").trim()
+    || (normalizeLang(step?.lang || "zh-CN") === "zh-Hans" ? "无额外 CLI 参数" : "No extra CLI arguments");
+  return {
+    tool,
+    script: tool,
+    phase: step?.state === "error" ? "failed" : "completed",
+    callId: String(step?.callId || `cached-tool-${index}`),
+    thoughtSummary: step?.title || "",
+    displayDetail: tool,
+    displayInput,
+    observation: observation || detail,
+  };
+}
+
+function appendCachedActivityStep(article, step, index = 0) {
+  const detail = String(step?.detail || "");
+  if (step?.tool || /^调用[：:]/m.test(detail)) {
+    appendToolStep(article, cachedToolStepData(step, index));
+    return;
+  }
+  appendStep(article, step?.title || "继续分析", detail || "此案例未保存该步骤的执行明细", step?.state || "done", `case-step-${index}`);
 }
 
 function compactReasoningTitle(value, lang) {
@@ -1538,6 +1689,11 @@ function toolCommandText(params, shellCommand) {
 
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
   lang = normalizeLang(lang);
+  if (data?.skillId) {
+    const titles = {account:"读取模拟账户",candidates:"读取候选池",scan:"读取市场扫描结果",quote:"获取最新行情",history:"获取历史行情",save_candidate:"更新候选池",search:"搜索相关事实",plan:"生成模拟下单计划",execute:"执行模拟成交"};
+    const label = data.skillId === "portfolio-backtest" ? "执行策略回测" : data.skillId === "portfolio-jev" ? "评估机会与持仓风险" : titles[data.operation] || data.tool || "调用工具";
+    return data.phase === "failed" ? `${label} · 失败` : label;
+  }
   const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
   const reasoningTitle = compactReasoningTitle(reasoning, lang);
   if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
@@ -1591,9 +1747,19 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
 function refreshSavedToolStepTitles(root, lang) {
   root?.querySelectorAll?.("li.is-tool-step").forEach((item) => {
     const detail = item.querySelector(":scope > .activityStepDetail");
-    if (detail && /^(?:[^·\n]+\s*·\s*)?(?:DSH|CODEX)$/i.test(detail.textContent.trim())) {
+    if (detail && /^(?:(?:[^·\n]+\s*·\s*)?(?:DSH|CODEX)|(?:bash|shell|exec_command|command_execution|\S+\.(?:py|sh))(?:\s*·.*)?)$/i.test(detail.textContent.trim())) {
       detail.remove();
     }
+    item.querySelectorAll(".toolStepBlock").forEach((block) => {
+      if (/^SKILL\s*(?:输入|輸入|input)/i.test(block.querySelector(".toolStepBlockLabel")?.textContent.trim() || "")) block.remove();
+    });
+    item.querySelectorAll(".toolStepOutputBlock").forEach((block) => {
+      const code = block.querySelector("pre code");
+      if (!code) return;
+      const cleaned = publicToolObservation(code.textContent);
+      if (!cleaned) block.remove();
+      else if (cleaned !== code.textContent) code.textContent = cleaned;
+    });
     const title = item.querySelector(".activityStepTitle");
     if (!title || !/^(?:执行工具：|執行工具：|Running tool:\s*)bash$/i.test(title.textContent.trim())) return;
     const input = item.querySelector(".activityDrawerOnly pre code")?.textContent || "";
@@ -2828,6 +2994,7 @@ function showError(article, message, options = {}) {
 
 function completeThinking(article) {
   article.querySelectorAll(".thinkingSteps li").forEach((item) => {
+    if (item.dataset.skillCallId && item.classList.contains("is-error")) return;
     item.classList.remove("is-loading", "is-error");
     item.classList.add("is-done");
   });
@@ -2864,11 +3031,11 @@ function toggleActivityDrawer(article) {
 
 function openActivityDrawer(article) {
   activeActivityArticle = article;
-  activityAutoFollow = !article.classList.contains("cachedCaseAnswer");
+  activityAutoFollow = !article.classList.contains("cachedCaseAnswer") && article.dataset.historicalTaskRun !== "true";
   shell?.classList.add("activity-open");
   activityDrawer?.classList.add("is-open");
   activityDrawer?.setAttribute("aria-hidden", "false");
-  if (article.classList.contains("cachedCaseAnswer") && activityBody) activityBody.scrollTop = 0;
+  if ((article.classList.contains("cachedCaseAnswer") || article.dataset.historicalTaskRun === "true") && activityBody) activityBody.scrollTop = 0;
   syncActivityDrawer(article);
 }
 
@@ -2881,7 +3048,7 @@ function closeActivityDrawer() {
 
 function syncActivityDrawer(article) {
   if (!activityDrawer || !activityBody || activeActivityArticle !== article) return;
-  const shouldStick = !article.classList.contains("cachedCaseAnswer") && (activityAutoFollow || isActivityNearBottom());
+  const shouldStick = !article.classList.contains("cachedCaseAnswer") && article.dataset.historicalTaskRun !== "true" && (activityAutoFollow || isActivityNearBottom());
   const previousScrollTop = activityBody.scrollTop;
   const startedAt = Number(article.dataset.startedAt || Date.now());
   const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
@@ -2897,7 +3064,7 @@ function syncActivityDrawer(article) {
   const sources = buildActivitySources(article, lang);
   activityBody.innerHTML = `
     <section class="activitySection">
-      <div class="activitySectionTitle">${escapeHtml(article.classList.contains("cachedCaseAnswer") ? "执行记录" : copyFor(lang, "thinkingSection"))}</div>
+      <div class="activitySectionTitle">${escapeHtml(copyFor(lang, "thinkingSection"))}</div>
     </section>
     <ol class="activityTimeline">${steps}${terminal}</ol>
     ${sources}
@@ -3379,6 +3546,7 @@ function copyFor(lang, key) {
 
 function statusEventKey(data) {
   if (data && typeof data === "object" && data.key) return data.key;
+  if (data?.status === "start") return "start";
   const message = typeof data === "string" ? data : String(data?.message || "");
   if (message.includes("已接收问题") || message.includes("已接收問題")) return "received";
   if (message.includes("读取") || message.includes("讀取") || message.includes("SKILL.md")) return "metadata";
@@ -3400,6 +3568,7 @@ function stripStagePrefix(message) {
 }
 
 function statusTitle(data, lang) {
+  if (data?.title) return String(data.title);
   lang = normalizeLang(lang);
   const key = statusEventKey(data);
   if (key === "start") return lang === "zh-Hans" ? "开始分析" : "Start analysis";
@@ -3418,10 +3587,11 @@ function statusTitle(data, lang) {
   if (key === "action") return "Action";
   if (key === "plan") return COPY[lang]?.planTitle || "Thought";
   if (key === "observe") return lang === "zh-Hans" ? "调整行动计划" : "Adjust action plan";
-  return copyFor(lang, "fallbackDetail");
+  return stripStagePrefix(typeof data === "string" ? data : data?.message || data?.detail || copyFor(lang, "fallbackDetail"));
 }
 
 function statusDetail(data, lang) {
+  if (data?.detail) return String(data.detail);
   lang = normalizeLang(lang);
   const key = statusEventKey(data);
   if (key === "start") return lang === "zh-Hans" ? "开始读取用户输入，准备进入分析流程。" : "Reading the user request and preparing the analysis flow.";
@@ -3440,7 +3610,7 @@ function statusDetail(data, lang) {
   if (key === "action") return stripStagePrefix(data?.message || "Calling a SKILL CLI tool.");
   if (key === "plan") return stripStagePrefix(data?.message || COPY[lang]?.planDetail || copyFor(lang, "fallbackDetail"));
   if (key === "observe") return stripStagePrefix(data?.message || COPY[lang]?.observeDetail || copyFor(lang, "fallbackDetail"));
-  return copyFor(lang, "fallbackDetail");
+  return stripStagePrefix(typeof data === "string" ? data : data?.message || copyFor(lang, "fallbackDetail"));
 }
 
 function routeTitle(data, lang) {
@@ -3567,57 +3737,66 @@ function ensureCurrentSession(question) {
 
 async function recordAssistantResult(data) {
   if (!currentSession) return;
+  const resultSession = currentSession;
+  if (data.chatRunId && resultSession.messages.some((item) => item.role === 'assistant' && item.chatRunId === data.chatRunId)) return;
+  resultSession.status = 'completed';
+  resultSession.activeRunId = '';
+  resultSession.lastRunId = data.chatRunId || '';
   const assistantArticle = Array.from(messages.querySelectorAll(".message.assistant")).at(-1);
-  currentSession.updatedAt = Date.now();
-  currentSession.themeMode = currentSession.themeMode || currentThemeMode();
-  currentSession.error = "";
-  currentSession.reportUrl = data.reportUrl;
-  currentSession.reportArtifacts = Array.isArray(data.reportArtifacts) ? data.reportArtifacts : [];
-  currentSession.code = data.code;
-  currentSession.interpretation = data.interpretation || "";
-  currentSession.sources = Array.isArray(data.sources) ? data.sources : [];
-  currentSession.videos = Array.isArray(data.videos) ? data.videos : [];
-  currentSession.actionLinks = Array.isArray(data.actionLinks) ? data.actionLinks : [];
-  currentSession.agentRunId = data.agentRunId || assistantArticle?.dataset?.agentRunId || "";
-  currentSession.reasoningFramework = data.reasoningFramework || DEFAULT_REASONING_FRAMEWORK;
-  currentSession.inferenceModel = data.inferenceModel || DEFAULT_INFERENCE_MODEL;
-  currentSession.resolvedInferenceModel = data.resolvedInferenceModel || currentSession.resolvedInferenceModel || "";
-  currentSession.engineSessionId = String(data.engineSessionId || currentSession.engineSessionId || "");
-  currentSession.frameworkSessionIds = currentSession.frameworkSessionIds || {};
+  resultSession.updatedAt = Date.now();
+  resultSession.themeMode = resultSession.themeMode || currentThemeMode();
+  resultSession.error = "";
+  resultSession.reportUrl = data.reportUrl;
+  resultSession.reportArtifacts = Array.isArray(data.reportArtifacts) ? data.reportArtifacts : [];
+  resultSession.code = data.code;
+  resultSession.interpretation = data.interpretation || "";
+  resultSession.sources = Array.isArray(data.sources) ? data.sources : [];
+  resultSession.videos = Array.isArray(data.videos) ? data.videos : [];
+  resultSession.actionLinks = Array.isArray(data.actionLinks) ? data.actionLinks : [];
+  resultSession.agentRunId = data.agentRunId || assistantArticle?.dataset?.agentRunId || "";
+  resultSession.reasoningFramework = data.reasoningFramework || DEFAULT_REASONING_FRAMEWORK;
+  resultSession.inferenceModel = data.inferenceModel || DEFAULT_INFERENCE_MODEL;
+  resultSession.resolvedInferenceModel = data.resolvedInferenceModel || resultSession.resolvedInferenceModel || "";
+  resultSession.engineSessionId = String(data.engineSessionId || resultSession.engineSessionId || "");
+  resultSession.frameworkSessionIds = resultSession.frameworkSessionIds || {};
   if (data.engineSessionId) {
-    const engineKey = `${currentSession.reasoningFramework}:${currentSession.inferenceModel}`;
-    currentSession.frameworkSessionIds[engineKey] = String(data.engineSessionId);
+    const engineKey = `${resultSession.reasoningFramework}:${resultSession.inferenceModel}`;
+    resultSession.frameworkSessionIds[engineKey] = String(data.engineSessionId);
   }
-  currentSession.studioSessionId = Number(data.studioSessionId || currentSession.studioSessionId) || null;
-  currentSession.agentEvents = Array.isArray(assistantArticle?.agentEvents) ? assistantArticle.agentEvents : [];
-  currentSession.thinkingStepsHtml = assistantArticle?.querySelector(".thinkingSteps")?.innerHTML || "";
-  currentSession.thinkingStartedAt = Number(assistantArticle?.dataset?.startedAt || Date.now());
-  currentSession.thinkingElapsed = Math.max(0, Date.now() - currentSession.thinkingStartedAt);
-  currentSession.messages.push({
+  resultSession.studioSessionId = Number(data.studioSessionId || resultSession.studioSessionId) || null;
+  resultSession.agentEvents = Array.isArray(assistantArticle?.agentEvents) ? assistantArticle.agentEvents : [];
+  resultSession.thinkingStepsHtml = assistantArticle?.querySelector(".thinkingSteps")?.innerHTML || "";
+  resultSession.thinkingStartedAt = Number(assistantArticle?.dataset?.startedAt || Date.now());
+  resultSession.thinkingElapsed = Math.max(0, Date.now() - resultSession.thinkingStartedAt);
+  resultSession.messages.push({
     role: "assistant",
+    chatRunId: data.chatRunId || "",
     reportUrl: data.reportUrl,
-    agent: data.agent || assistantArticle?.dataset.agent || "",
-    reportArtifacts: currentSession.reportArtifacts,
+    agent: data.agent || assistantArticle?.dataset.agent || '',
+    reportArtifacts: resultSession.reportArtifacts,
     code: data.code,
     label: data.selectedSkill?.label || "",
     interpretation: data.interpretation || "",
-    sources: currentSession.sources,
-    videos: currentSession.videos,
-    actionLinks: currentSession.actionLinks,
-    agentEvents: currentSession.agentEvents,
-    agentRunId: currentSession.agentRunId,
-    thinkingStepsHtml: currentSession.thinkingStepsHtml,
-    thinkingElapsed: currentSession.thinkingElapsed,
-    reasoningFramework: currentSession.reasoningFramework,
+    sources: resultSession.sources,
+    videos: resultSession.videos,
+    actionLinks: resultSession.actionLinks,
+    agentEvents: resultSession.agentEvents,
+    agentRunId: resultSession.agentRunId,
+    thinkingStepsHtml: resultSession.thinkingStepsHtml,
+    thinkingElapsed: resultSession.thinkingElapsed,
+    reasoningFramework: resultSession.reasoningFramework,
   });
-  currentSession.title = await summarizeSessionTitle(currentSession.question, currentSession.interpretation);
+  if (!resultSession.customTitle) resultSession.title = await summarizeSessionTitle(resultSession.question, resultSession.interpretation);
 
-  if (assistantArticle) assistantArticle.shareSession = currentSession;
-  saveCurrentSession();
+  resultSession.agent = data.agent || assistantArticle?.dataset.agent || '';
+  if (assistantArticle) assistantArticle.shareSession = resultSession;
+  persistChatSession(resultSession);
 }
 
 function recordAssistantError(article, message) {
   if (!currentSession) return;
+  currentSession.status = "failed";
+  currentSession.activeRunId = "";
   currentSession.updatedAt = Date.now();
   currentSession.error = String(message || "生成失败");
   currentSession.reportUrl = currentSession.reportUrl || "";
@@ -3680,7 +3859,7 @@ function isRestorableSession(session) {
   const hasRestorableResult = Boolean(session.reportUrl || session.interpretation || session.error)
     || (Array.isArray(session.reportArtifacts) && session.reportArtifacts.some((item) => item?.url))
     || (Array.isArray(session.messages) && session.messages.some((item) => item?.role === "assistant" && (item.reportUrl || item.error)));
-  return hasUserQuestion && hasRestorableResult;
+  return hasUserQuestion && (hasRestorableResult || Boolean(session.activeRunId) || ["queued", "running"].includes(session.status));
 }
 
 function saveCurrentSession() {
@@ -3750,6 +3929,7 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
       </div>
     </div>`;
   refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
+  if(typeof showAgentIdentity==='function')showAgentIdentity(article, data.agent || (data.selectedSkill?.key==='mentora-deal'?'mentora-deal':''));
   article.querySelector(".thinkingTrigger").addEventListener("click", options.onThinkingClick || (() => toggleActivityDrawer(article)));
   await renderMixedReportFlow(article, {...data, sources:article.activitySources}, article.querySelector(".mixedReport"), () => {
     article.querySelector(".deferredActions").hidden = false;
@@ -3811,6 +3991,10 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
 
 function restoreSession(sessionId) {
   window.dispatchEvent(new Event("veya:chat-navigate"));
+  if (activeController) activeController.abort();
+  activeController = null;
+  button.disabled = false;
+  updateComposerState();
   const session = loadSessions().find((item) => item.id === sessionId);
   if (!session) return;
   const recoveredArtifacts = recoverLegacySessionArtifacts(session);
@@ -3828,7 +4012,7 @@ function restoreSession(sessionId) {
   conversation.classList.remove("is-empty");
   const savedTurns = Array.isArray(session.messages) ? session.messages : [];
   const assistantIndexes = savedTurns.map((item, index) => item?.role === "assistant" ? index : -1).filter((index) => index >= 0);
-  if (savedTurns.some((item) => item?.role === "user") && assistantIndexes.length) {
+  if (savedTurns.some((item) => item?.role === "user")) {
     const latestAssistant = assistantIndexes.at(-1);
     savedTurns.forEach((item, index) => {
       if (item?.role === "user") addUserMessage(item.text || "", { forceScroll: true, images: Array.isArray(item.images) ? item.images : [] });
@@ -3843,6 +4027,11 @@ function restoreSession(sessionId) {
     appendRestoredAssistantTurn(session, session, true);
   }
   closeActivityDrawer();
+  if (session.activeRunId && ["queued", "running"].includes(session.status)) {
+    const pendingQuestion = savedTurns.filter((item) => item?.role === "user").at(-1)?.text || session.question;
+    const article = createAssistantMessage(pendingQuestion);
+    void resumeChatRun(session, article);
+  }
   if (recoveredArtifacts) saveCurrentSession();
   renderHistory();
 }
@@ -4242,9 +4431,11 @@ function renameSession(sessionId, title) {
   const target = sessions.find((item) => item.id === sessionId);
   if (!target) return;
   target.title = title.slice(0, 40);
+  target.customTitle = true;
   target.updatedAt = Date.now();
   storeSessions(sessions);
   if (currentSession?.id === sessionId) currentSession = target;
+  void fetch(`/api/chat/sessions/${encodeURIComponent(sessionId)}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:target.title})}).catch(() => {});
 
   renderHistory();
 }
@@ -4263,11 +4454,16 @@ function closeDeleteDialog() {
   if (deleteDialog) deleteDialog.hidden = true;
 }
 
-function confirmDeleteSession() {
+async function confirmDeleteSession() {
   if (!pendingDeleteSessionId) return;
-  const target = loadSessions().find((item) => item.id === pendingDeleteSessionId);
-  const deletingCurrent = currentSession?.id === pendingDeleteSessionId;
-  const sessions = loadSessions().filter((item) => item.id !== pendingDeleteSessionId);
+  const removingId = pendingDeleteSessionId;
+  try {
+    const response = await fetch(`/api/chat/sessions/${encodeURIComponent(removingId)}`, {method:"DELETE"});
+    if (!response.ok && response.status !== 404) throw new Error("删除失败");
+  } catch { deleteMessage.textContent = "暂时无法同步删除，请稍后重试。"; return; }
+  const target = loadSessions().find((item) => item.id === removingId);
+  const deletingCurrent = currentSession?.id === removingId;
+  const sessions = loadSessions().filter((item) => item.id !== removingId);
 
   storeSessions(sessions);
   closeDeleteDialog();
@@ -4494,6 +4690,10 @@ window.addEventListener("message", (event) => {
   const frame = Array.from(document.querySelectorAll(".reportDocumentFrame"))
     .find((item) => item.contentWindow === event.source);
   if (!frame) return;
+  if (frame.contentDocument?.querySelector('[data-tv-surface]')) {
+    resizeReportDocumentFrame(frame);
+    return;
+  }
   const height = Number(data.height);
   if (!Number.isFinite(height) || height <= 80) return;
   frame.style.minHeight = "0";

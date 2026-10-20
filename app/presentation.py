@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import html
+import hashlib
+import secrets
 import os
 import re
 import subprocess
@@ -23,6 +25,7 @@ from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_groupe
 from app.local_glm_adapter import router as local_glm_router
 from app.widget_library import router as widget_library_router
 from app.widget_planner import router as widget_planner_router
+from app.cost_monitor import create_router as create_cost_router
 from app.artifact_upgrades import upgrade_widget_tradingview
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
@@ -43,6 +46,21 @@ app = FastAPI(title="Mentora presentation gateway")
 app.include_router(local_glm_router)
 app.include_router(widget_library_router)
 app.include_router(widget_planner_router)
+app.include_router(create_cost_router())
+
+
+# Deal assets are pinned repository links outside STATIC_DIR. Serve only these
+# explicit files without enabling arbitrary symlink traversal for all static assets.
+@app.get('/static/portfolio.js', include_in_schema=False)
+def portfolio_script():
+    return FileResponse(STATIC_DIR / 'portfolio.js', media_type='application/javascript')
+
+
+@app.get('/static/portfolio.css', include_in_schema=False)
+def portfolio_styles():
+    return FileResponse(STATIC_DIR / 'portfolio.css', media_type='text/css')
+
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
@@ -77,6 +95,7 @@ def default_reasoning_framework() -> Literal["deepseek", "codex"]:
 
 class ChatRequest(BaseModel):
     question: str = ""
+    agent: Literal['','mentora','mentora-deal'] = ''
     images: list[UploadedImage] = Field(default_factory=list)
     sessionId: str = ""
     studioSessionId: int | None = None
@@ -93,6 +112,50 @@ class ChatRequest(BaseModel):
 class SessionTitleRequest(BaseModel):
     question: str
     interpretation: str = ""
+
+
+from app.chat_sessions import ChatSessions,create_router as create_chat_session_router,identity as chat_identity
+from app.chat_market_chart import requested_market_chart
+
+CHAT_SESSIONS=ChatSessions(ROOT/'outputs/chat-sessions')
+
+
+def durable_chat_events(payload,user):
+    portfolio=globals().get('PORTFOLIO')
+    research_only=bool(portfolio and portfolio.workflow.research_only_request(payload.question))
+    deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or portfolio.workflow.handles_question(payload.question,payload.history)))
+    events=portfolio.workflow.stream_idea(user,payload.question,payload.history) if deal else framework_events(payload)
+    if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
+    charts={}
+    for event,data in events:
+        if event=='module':
+            url=str(data.get('htmlUrl') or data.get('url') or '')
+            if url.startswith(('/generated/','/share-artifact/')):charts[url]=dict(url=url,label=data.get('label') or data.get('title') or '')
+        if event=='tool_step' and isinstance(data.get('output'),dict):
+            artifact=data['output'].get('chartArtifact')
+            if artifact and artifact.get('url'):charts[artifact['url']]=artifact
+        if event=='final':
+            data=dict(data)
+            if research_only:data['agent']='mentora'
+            for artifact in data.get('reportArtifacts') or []:
+                if artifact.get('url'):charts[artifact['url']]=artifact
+            if not charts:
+                try:
+                    artifact=requested_market_chart(payload,ROOT)
+                    if artifact:
+                        charts[artifact['url']]=artifact
+                        data['interpretation']=str(data.get('interpretation') or '')+'\n\n图表由 TradingView 提供交互展示，品种可用性与延迟取决于数据源；图表展示不代表本轮分析已取得对应周期的 OHLCV 数据。'
+                except Exception:
+                    import logging
+                    logging.getLogger(__name__).exception('Requested market chart unavailable')
+                    data['interpretation']=str(data.get('interpretation') or '')+'\n\n本轮请求的交互图表未能生成，请稍后重试。'
+            if charts:
+                data['reportArtifacts']=list(charts.values())
+                data['reportUrl']=data.get('reportUrl') or next(iter(charts))
+        yield event,data
+
+
+app.include_router(create_chat_session_router(CHAT_SESSIONS,ChatRequest,durable_chat_events))
 
 
 class ShareSessionRequest(BaseModel):
@@ -420,34 +483,14 @@ def chat(payload: ChatRequest) -> ChatResponse:
 
 
 @app.post("/api/chat/stream")
-def chat_stream(payload: ChatRequest) -> StreamingResponse:
-    if not normalized_question(payload):
-        raise HTTPException(status_code=400, detail="问题不能为空")
-
-    def stream() -> Iterator[str]:
-        try:
-            for event_name, data in framework_events(payload):
-                # Batch HTML is completed tool evidence. Do not cut it into
-                # artificial visualization deltas before the model's prose.
-                # Genuine model-native widget deltas keep their own protocol.
-                yield sse_event(event_name, data)
-        except (StudioAgentError, ReasoningFrameworkError) as exc:
-            yield sse_event("error", {"detail": str(exc), "status_code": 502, "lang": "zh-CN"})
-        except Exception as exc:  # keep transport failures visible in the existing UI
-            yield sse_event(
-                "error",
-                {
-                    "detail": f"{FRAMEWORKS[payload.reasoningFramework]} 调用失败：{exc}",
-                    "status_code": 500,
-                    "lang": "zh-CN",
-                },
-            )
-
-    return StreamingResponse(
-        stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no", "Connection": "keep-alive"},
-    )
+def chat_stream(payload: ChatRequest, request: Request) -> StreamingResponse:
+    if not normalized_question(payload):raise HTTPException(status_code=400, detail="问题不能为空")
+    cookie_response=Response()
+    owner=chat_identity(request,cookie_response)
+    run=CHAT_SESSIONS.start(owner,payload,durable_chat_events)
+    response=StreamingResponse(CHAT_SESSIONS.events(owner,run['runId']),media_type='text/event-stream',headers={'Cache-Control':'no-cache','X-Accel-Buffering':'no'})
+    response.headers['set-cookie']=cookie_response.headers['set-cookie']
+    return response
 
 
 @app.post("/api/session-title")
@@ -909,3 +952,18 @@ def start_day_tasks() -> None:
 @app.on_event('shutdown')
 def stop_day_tasks() -> None:
     DAY_TASKS.stop()
+
+
+# Paper portfolio reuses the task owner's isolation and the existing data skills.
+from app.portfolio import Portfolio, create_router as create_portfolio_router
+PORTFOLIO = Portfolio(Path(os.getenv('VEYA_PORTFOLIO_DATA_DIR', str(ROOT / 'outputs' / 'portfolio'))), DAY_TASKS)
+app.include_router(create_portfolio_router(PORTFOLIO))
+
+@app.on_event('startup')
+def start_portfolio():
+    if os.getenv('VEYA_PORTFOLIO_SCHEDULER', '1') != '0':
+        PORTFOLIO.start()
+
+@app.on_event('shutdown')
+def stop_portfolio():
+    PORTFOLIO.stop()
