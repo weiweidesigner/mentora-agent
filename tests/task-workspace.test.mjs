@@ -76,6 +76,16 @@ test('new task can select the execution agent and saves it',async()=>{
  d.querySelector('#dayForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.saves[0].agent,'mentora-deal');h.dom.window.close();
 });
 
+test('task badges and details prefer the saved agent over legacy metadata',async()=>{
+ const h=setup({tasks:[{...base,id:'deal',agent:'mentora-deal',_agent:'mentora'},{...base,id:'research',agent:'mentora',_agent:'mentora-deal'}]});await tick();
+ const d=h.w.document;d.querySelector('#navTasks').click();
+ assert.equal(d.querySelector('#taskSidebarList [data-task-open="deal"] .taskAgentBadge').textContent,'Mentora Deal');
+ assert.equal(d.querySelector('#taskSidebarList [data-task-open="research"] .taskAgentBadge').textContent,'Mentora');
+ d.querySelector('#taskSidebarList [data-task-open="deal"]').click();await tick();
+ assert.match(d.querySelector('#taskCardStatus').textContent,/^Mentora Deal · /);
+ h.dom.window.close();
+});
+
 test('recommendations pass scenario parameters to the model without exposing a settings shortcut',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
  for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){d.querySelector(`[data-recommendation="${id}"]`).click();await tick();const draft=h.requests.filter(r=>r.path.endsWith('/plan')).at(-1).body.draft;assert.equal(draft.stage,stage);assert.equal(draft.assetType,type);assert.equal(draft.time,time);assert.equal(d.querySelector('#wizardAdvanced'),null);d.querySelector('#wizardClose').click();}

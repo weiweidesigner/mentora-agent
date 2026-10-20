@@ -3846,6 +3846,7 @@ p {
 .taskListItem:hover,.taskListItem.is-selected { background:var(--soft); }
 .taskListItem>span:nth-child(2) { flex:1;min-width:0; }
 .taskListItem strong { display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.taskAgentBadge { margin-left:10px;color:var(--muted);font-size:11px;font-style:normal;font-weight:400; }
 .taskListItem small { display:block;margin-top:7px;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .taskListIcon { font-size:20px;color:var(--muted);flex:none; }
 .taskListArrow { flex:none;color:var(--muted); }
