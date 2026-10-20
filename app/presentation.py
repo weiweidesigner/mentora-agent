@@ -191,6 +191,23 @@ class ChatResponse(BaseModel):
     lang: str = "zh-CN"
 
 
+def normalize_chat_result(data: dict[str, Any]) -> dict[str, Any]:
+    """Adapt text/Deal finals without requiring a synthetic chart or symbol.
+
+    Preserve provider metadata and validate the same required answer fields as
+    ordinary chat. Rendering-only fields may be empty for text-only research.
+    """
+    result = dict(data)
+    artifacts = result.get('reportArtifacts') or []
+    url = result.get('reportUrl') or result.get('htmlUrl') or next(
+        (item['url'] for item in artifacts if isinstance(item, dict) and item.get('url')), '')
+    result.setdefault('code', '')
+    result.setdefault('htmlUrl', url)
+    result.setdefault('reportUrl', url)
+    result.setdefault('status', [])
+    return {**result, **ChatResponse(**result).model_dump()}
+
+
 def normalized_question(payload: ChatRequest) -> str:
     question = payload.question.strip()
     if question:
@@ -470,7 +487,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
                 final = data
         if final is None:
             raise ReasoningFrameworkError(f"{FRAMEWORKS[payload.reasoningFramework]} 未返回最终结果")
-        return ChatResponse(**final)
+        return ChatResponse(**normalize_chat_result(final))
     except (StudioAgentError, ReasoningFrameworkError) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -925,7 +942,7 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     for event_name,data in durable_chat_events(payload,config['_owner']):
         if event_name=='error':raise RuntimeError('Scheduled research stream failed')
         if event_name=='final':
-            answer=ChatResponse(**data).model_dump();answer['question']=question;data=answer
+            answer=normalize_chat_result(data);answer['question']=question;data=answer
         if callable(config.get('_emit_event')):config['_emit_event'](event_name,data)
     if answer is None:raise RuntimeError('Scheduled research returned no final answer')
     return answer
