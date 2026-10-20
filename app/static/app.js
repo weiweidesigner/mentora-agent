@@ -3883,6 +3883,7 @@ function renderHistory() {
       <div class="historyItem ${currentSession?.id === session.id ? "is-selected" : ""}" data-session-id="${escapeHtml(session.id)}">
         <button class="historyOpen" type="button" data-session-id="${escapeHtml(session.id)}">
           <span class="historyName">${escapeHtml(session.title || session.question || "未命名对话")}</span>
+          ${["queued", "running"].includes(session.status) ? `<span class="historyRunIndicator" role="img" aria-label="${session.status === "queued" ? "排队中" : "执行中"}" title="${session.status === "queued" ? "排队中" : "执行中"}"></span>` : ""}
         </button>
         <button class="historyMore" type="button" aria-label="更多操作" data-session-id="${escapeHtml(session.id)}">
           <svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M170.666667 512m-85.333334 0a85.333333 85.333333 0 1 0 170.666667 0 85.333333 85.333333 0 1 0-170.666667 0Z"></path><path d="M512 512m-85.333333 0a85.333333 85.333333 0 1 0 170.666666 0 85.333333 85.333333 0 1 0-170.666666 0Z"></path><path d="M853.333333 512m-85.333333 0a85.333333 85.333333 0 1 0 170.666667 0 85.333333 85.333333 0 1 0-170.666667 0Z"></path></svg>

@@ -12,6 +12,20 @@ function implementation(name){
   return source.slice(start,next<0?undefined:start+found[0].length+next);
 }
 
+test('sidebar execution indicators follow session status, including background completion',()=>{
+  const sessions=['queued','running','completed','failed','interrupted'].map(status=>({id:status,title:'Research',status,activeRunId:'possibly-stale'}));
+  const historyList={innerHTML:'',querySelectorAll:()=>[]};
+  const context=vm.createContext({historyList,currentSession:null,loadSessions:()=>sessions,storeSessions:()=>{},escapeHtml:value=>value});
+  vm.runInContext(implementation('renderHistory'),context);
+  vm.runInContext('renderHistory()',context);
+  assert.equal((historyList.innerHTML.match(/class="historyRunIndicator"/g)||[]).length,2);
+  assert.match(historyList.innerHTML,/aria-label="排队中"/);
+  assert.match(historyList.innerHTML,/aria-label="执行中"/);
+  sessions[0].status='completed';sessions[1].status='failed';
+  vm.runInContext('renderHistory()',context);
+  assert.doesNotMatch(historyList.innerHTML,/historyRunIndicator/);
+});
+
 test('a pending user turn is immediately restorable without an answer',()=>{
   const context=vm.createContext({});vm.runInContext(implementation('isRestorableSession'),context);
   assert.equal(vm.runInContext(`isRestorableSession({id:'new',question:'new question',status:'queued',messages:[{role:'user',text:'new question'}]})`,context),true);

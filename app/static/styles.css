@@ -433,6 +433,27 @@ textarea {
   white-space: nowrap;
 }
 
+.historyRunIndicator {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: history-run-spin 0.85s linear infinite;
+}
+
+@keyframes history-run-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .historyRunIndicator { animation: none; }
+}
+
 .historyName.is-editing {
   -webkit-user-select: text;
   user-select: text;
