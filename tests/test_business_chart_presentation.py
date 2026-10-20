@@ -14,7 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'app/skills/business-chart-recall/scripts'
-NAMES = [p.stem for p in sorted(SCRIPTS.glob('*.py')) if p.stem not in {'kline', 'multi_intraday'}]
+NAMES = [p.stem for p in sorted(SCRIPTS.glob('*.py')) if p.stem not in {'kline', 'multi_intraday', 'multi_kline'}]
 
 
 @lru_cache(None)

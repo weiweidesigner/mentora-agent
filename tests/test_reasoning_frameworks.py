@@ -52,7 +52,7 @@ def test_generated_html_is_found_inside_nested_harness_result(tmp_path: Path) ->
     }]
 
 
-def test_deepseek_attaches_generated_html_when_final_marker_is_missing(
+def test_deepseek_does_not_attach_tool_html_when_final_marker_is_missing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     generated = tmp_path / "outputs" / "generated"
@@ -101,14 +101,11 @@ def test_deepseek_attaches_generated_html_when_final_marker_is_missing(
     module = next(data for name, data in events if name == "module")
     final = next(data for name, data in events if name == "final")
     assert module["htmlUrl"] == "/generated/deepseek-auto-chart.html"
-    assert final["reportArtifacts"] == [{
-        "path": str(artifact),
-        "url": "/generated/deepseek-auto-chart.html",
-    }]
-    assert final["interpretation"] == f"图表已经生成完成。\n\n[[AIME_CHART:{artifact}]]"
+    assert final["reportArtifacts"] == []
+    assert final["interpretation"] == "图表已经生成完成。"
 
 
-def test_deepseek_attaches_newest_run_html_without_structured_tool_output(
+def test_deepseek_does_not_select_newest_html_without_a_narrative_reference(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     generated = tmp_path / "outputs" / "generated"
@@ -153,11 +150,8 @@ def test_deepseek_attaches_newest_run_html_without_structured_tool_output(
     events = list(client.stream("deepseek", "生成 StreamViz 报告", [], session_key="snapshot-artifact"))
 
     final = next(data for name, data in events if name == "final")
-    assert final["reportArtifacts"] == [{
-        "path": str(final_artifact),
-        "url": "/generated/deepseek-final-report.html",
-    }]
-    assert final["interpretation"] == f"报告已经生成。\n\n[[AIME_CHART:{final_artifact}]]"
+    assert final["reportArtifacts"] == []
+    assert final["interpretation"] == "报告已经生成。"
 
 
 def test_codex_run_timeout_defaults_to_twenty_minutes(monkeypatch: pytest.MonkeyPatch) -> None:

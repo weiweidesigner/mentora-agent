@@ -2830,10 +2830,10 @@ def jev_visual_semantics_prompt(metadata: dict[str, Any] | None) -> str:
     )
     supporting = str(metadata.get("supporting") or "")
     mobile_layout = ""
-    if any(Path(str(script)).name == "multi_intraday.py" for script in metadata.get("selectedScripts", [])):
+    if any(Path(str(script)).name in {"multi_intraday.py", "multi_kline.py"} for script in metadata.get("selectedScripts", [])):
         count = int(metadata.get("mobileColumns") or 2)
         count = max(1, min(4, count))
-        mobile_layout = f"- 多分时图移动端采用换行网格，CLI 必须传 --mobile-columns {count}，每行 {count} 张；不要使用股票 tab 或横向分页。"
+        mobile_layout = f"- 多图比较移动端采用换行网格，CLI 必须传 --mobile-columns {count}，每行 {count} 张；不要使用股票 tab 或横向分页。"
     lines = [
         "Laya 可视化语义计划（组件与叙事约束，不是数据证据）：",
         *([mobile_layout] if mobile_layout else []),

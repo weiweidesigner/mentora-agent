@@ -386,8 +386,8 @@ class LocalAgentFrameworks:
             "Laya 可视化语义计划（这是组件与叙事约束，不是数据证据）：",
             f"- 主图：{decision.primary_script}；回答维度：{decision.primary_purpose or '用户问题的核心判断'}。",
         ]
-        if any(Path(script).name == "multi_intraday.py" for script in decision.selected_scripts):
-            lines.append(f"- 多分时图移动端采用每行 {decision.mobile_columns} 张卡片的换行网格，CLI 必须传 --mobile-columns {decision.mobile_columns}；不要改成股票 tab 或横向分页。")
+        if any(Path(script).name in {"multi_intraday.py", "multi_kline.py"} for script in decision.selected_scripts):
+            lines.append(f"- 多图比较移动端采用每行 {decision.mobile_columns} 张卡片的换行网格，CLI 必须传 --mobile-columns {decision.mobile_columns}；不要改成股票 tab 或横向分页。")
         if decision.supporting_script:
             lines.append(
                 f"- 辅助图：{decision.supporting_script}；补充维度："
@@ -404,6 +404,7 @@ class LocalAgentFrameworks:
             "- 先读取对应 Skill、schema 与 CLI；只有取得真实且口径匹配的数据后才生成图表，不得伪造数据。",
             "- 正文先给结论，再用具体数据解释图中的变化、差异、构成、风险或拐点；每张图只支撑一个明确判断。",
             "- 每个 [[AIME_CHART:...]] 必须紧邻其对应解读段落，不能把所有图堆在答案末尾；辅助图不得重复主图信息。",
+            "- 中间分析产物不等于最终展示图。只引用实际支撑最终判断的图表；未在正文引用的图表不会自动展示，不得为填充页面而追加。",
             "- 最终形成图文一体的回答：图表提供可视证据，文字说明洞察、因果边界、时间口径和风险。",
         ])
         if "kline.py" in decision.selected_scripts and decision.mark_strategy != "no-mark":
@@ -1592,7 +1593,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "engine": FRAMEWORKS["deepseek"], "agent": "Root Agent", "phase": "run", "status": "started",
             "runId": session_key, "message": f"DeepSeek Harness 使用 {selected_model} 开始处理", "lang": "zh-CN",
         }
-        html_baseline = self._generated_html_snapshot()
         notifications: queue.Queue[Any] = queue.Queue()
         result_box: list[Any] = []
         error_box: list[BaseException] = []
@@ -1611,7 +1611,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         worker.start()
         tool_index = 0
         runtime_sources: list[dict[str, str]] = []
-        runtime_html_paths: list[Path] = []
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
         pending_public_text = ""
         latest_progress_summary = ""
@@ -1692,10 +1691,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 }
                 if event_type == "tool/result":
                     for module in self._html_modules_from_tool_output(observation):
-                        html_url = str(module.get("htmlUrl") or "")
-                        path = (self.generated_dir / Path(html_url).name).resolve()
-                        if path not in runtime_html_paths:
-                            runtime_html_paths.append(path)
                         yield "module", module
             elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
                 data = event.get("data") if isinstance(event.get("data"), dict) else {}
@@ -1751,21 +1746,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     break
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
-        if not re.search(r"\[\[AIME_CHART:[^\]\n]+\.html\]\]", answer):
-            fallback_path = runtime_html_paths[-1] if runtime_html_paths else None
-            if fallback_path is None:
-                current_html = self._generated_html_snapshot()
-                changed_html = [
-                    path for path, signature in current_html.items()
-                    if html_baseline.get(path) != signature
-                ]
-                if changed_html:
-                    fallback_path = max(
-                        changed_html,
-                        key=lambda path: current_html[path][0],
-                    )
-            if fallback_path is not None:
-                answer = f"{answer.rstrip()}\n\n[[AIME_CHART:{fallback_path}]]"
+        # The final answer owns chart selection and placement. Intermediate
+        # tool HTML and filesystem recency must never manufacture a marker.
         if pending_public_text:
             yield "answer_text", {"text": pending_public_text, "replace": True}
         actual_session_id = str(getattr(result, "session_id", "") or requested_session_id)

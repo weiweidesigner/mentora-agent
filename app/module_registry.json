@@ -150,6 +150,13 @@
     "source": "business-charts-repository"
   },
   {
+    "name": "multi_kline",
+    "script": "multi_kline.py",
+    "label": "多K线图",
+    "description": "原生多K线卡片比较：多标的同周期、单标的多周期，复用 kline.py 的真实取数、蜡烛、均线、成交量和技术指标。通过 --symbols、--periods、--columns、--mobile-columns、--sub-indicators、--theme、--language、--title 配置；先读取 schema，不得以分时折线替代。",
+    "source": "business-charts-repository"
+  },
+  {
     "name": "multi_intraday",
     "script": "multi_intraday.py",
     "label": "美股多股分时卡片组",

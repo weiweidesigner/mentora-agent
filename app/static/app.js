@@ -2732,6 +2732,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
   const reportArtifacts = Array.isArray(data.reportArtifacts)
     ? data.reportArtifacts.filter((item) => item && item.url)
     : [];
+  if (!reportArtifacts.length && data.reportUrl) reportArtifacts.push({ url: data.reportUrl });
   const sources = Array.isArray(data.sources) ? data.sources.filter((item) => item?.url) : [];
   const videos = Array.isArray(data.videos) ? data.videos.filter((item) => item && (item.videoUrl || item.url)) : [];
   const sourcePrepared = stripSourceInventoryFromInsight(sanitizeUserFacingInsight(data.interpretation || ""), sources);
@@ -2791,15 +2792,10 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       "",
     );
     reportArtifacts.forEach((item, index) => {
-      const rawPath = String(item.path || "").trim();
-      if (!rawPath) return;
       const marker = `\n\n@@AIME_CHART_${index}@@\n\n`;
-      const escapedPath = rawPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      tokenized = tokenized
-        .replace(new RegExp(`^.*${escapedPath}.*$`, "gm"), marker)
-        .split(`[[AIME_CHART:${rawPath}]]`).join(marker)
-        .split(`\`${rawPath}\``).join(marker)
-        .split(rawPath).join(marker);
+      for (const reference of new Set([item.path, item.url].filter(Boolean))) {
+        tokenized = tokenized.split(`[[AIME_CHART:${reference}]]`).join(marker);
+      }
     });
     const rendered = new Set();
     const nodes = [];
@@ -2825,9 +2821,8 @@ async function renderMixedReportFlow(article, data, container, onDone) {
         nodes.push(text);
       }
     });
-    reportArtifacts.forEach((item, index) => {
-      if (!rendered.has(index)) nodes.push(makeFrame(item, index));
-    });
+    // Tool artifacts are evidence inventory, not a display instruction.
+    // Only charts referenced by the final narrative are mounted.
     if (videos.length && !videoPrepared.hadMarker) {
       const lane = makeVideoLane();
       if (lane) nodes.push(lane);
@@ -2842,36 +2837,8 @@ async function renderMixedReportFlow(article, data, container, onDone) {
     onDone?.();
     return;
   }
-  const firstArtifact = reportArtifacts[0] || { url: data.reportUrl };
-  const frame = makeFrame(firstArtifact, 0);
-  if (interpretation) {
-    const parts = splitInsightAroundChart(interpretation);
-    const nodes = [];
-    if (parts.before) {
-      const lead = document.createElement("div");
-      lead.className = "streamingAnswer reportInterpretation reportInterpretationLead";
-      lead.innerHTML = formatInsight(parts.before);
-      nodes.push(lead);
-    }
-    nodes.push(frame);
-    if (parts.after) {
-      const detail = document.createElement("div");
-      detail.className = "streamingAnswer reportInterpretation reportInterpretationDetail";
-      detail.innerHTML = formatInsight(parts.after);
-      nodes.push(detail);
-    }
-    replaceNodes(nodes);
-  } else {
-    const nodes = [frame];
-    const lane = makeVideoLane();
-    if (lane) nodes.push(lane);
-    replaceNodes(nodes);
-  }
-  if (frame.tagName === "IFRAME") {
-    resizeReportDocumentFrame(frame);
-    window.setTimeout(() => resizeReportDocumentFrame(frame), 300);
-    window.setTimeout(() => resizeReportDocumentFrame(frame), 1000);
-  }
+  // No narrative placement means no automatic first/latest-chart fallback.
+  replaceNodes([]);
   attachInlineAnswerSources(container, sources);
   onDone?.();
 }

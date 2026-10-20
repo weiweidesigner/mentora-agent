@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from pathlib import Path
 
 import pytest
 
@@ -286,7 +287,7 @@ def test_visualization_scope_preserves_data_tools_and_filters_renderers() -> Non
             )
 
     modules = [
-        {"script": "yahoo_data.py", "label": "Yahoo", "description": "data"},
+        {"script": "external_info_search.py", "label": "External Search", "description": "data"},
         {"script": "line_chart.py", "label": "Line", "description": "trend"},
         {"script": "income_statement.py", "label": "Income", "description": "profit"},
         {"script": "revenue_sources.py", "label": "Sources", "description": "mix"},
@@ -298,7 +299,7 @@ def test_visualization_scope_preserves_data_tools_and_filters_renderers() -> Non
     )
 
     assert [item["script"] for item in scoped] == [
-        "yahoo_data.py",
+        "external_info_search.py",
         "income_statement.py",
         "revenue_sources.py",
     ]
@@ -336,3 +337,18 @@ def test_intraday_grid_density_reaches_both_agent_planners():
     metadata = LocalAgentFrameworks._visualization_route_metadata(decision)
     assert metadata["mobileColumns"] == 4
     assert "--mobile-columns 4" in main.jev_visual_semantics_prompt(metadata)
+
+
+def test_multi_kline_is_discoverable_and_keeps_reasoning_driven_placement():
+    from app.reasoning_frameworks import LocalAgentFrameworks
+    root = Path(__file__).resolve().parents[1]
+    client = LocalAgentFrameworks(project_root=root, generated_dir=root / 'outputs/generated')
+    candidates = client._visualization_candidates()
+    candidate = next(c for c in candidates if c['script'] == 'multi_kline.py')
+    assert candidate['family'] == 'business-chart'
+    assert JevVisualizationRouter._explicit_requested_script('多K线图对比', candidates) == 'multi_kline.py'
+    decision = JevVisualizationDecision(selected_scripts=('multi_kline.py',), primary_script='multi_kline.py', supporting_script=None, primary_confidence=.9, supporting_confidence=0, provider_model='test', candidate_count=1, mobile_columns=1)
+    guidance = client._visualization_guidance(decision)
+    assert '--mobile-columns 1' in guidance
+    assert '未在正文引用的图表不会自动展示' in guidance
+    assert '--mobile-columns 1' in main.jev_visual_semantics_prompt(client._visualization_route_metadata(decision))
