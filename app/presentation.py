@@ -25,7 +25,11 @@ from app.artifact_upgrades import upgrade_legacy_intraday, upgrade_legacy_groupe
 from app.local_glm_adapter import router as local_glm_router
 from app.widget_library import router as widget_library_router
 from app.widget_planner import router as widget_planner_router
-from app.cost_monitor import create_router as create_cost_router
+try:
+    from app.cost_monitor import create_router as create_cost_router
+except ModuleNotFoundError as exc:
+    if exc.name != 'app.cost_monitor':raise
+    create_cost_router=None
 from app.artifact_upgrades import upgrade_widget_tradingview
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
@@ -46,7 +50,7 @@ app = FastAPI(title="Mentora presentation gateway")
 app.include_router(local_glm_router)
 app.include_router(widget_library_router)
 app.include_router(widget_planner_router)
-app.include_router(create_cost_router())
+if create_cost_router:app.include_router(create_cost_router())
 
 
 # Deal assets are pinned repository links outside STATIC_DIR. Serve only these
@@ -954,16 +958,17 @@ def stop_day_tasks() -> None:
     DAY_TASKS.stop()
 
 
-# Paper portfolio reuses the task owner's isolation and the existing data skills.
-from app.portfolio import Portfolio, create_router as create_portfolio_router
-PORTFOLIO = Portfolio(Path(os.getenv('VEYA_PORTFOLIO_DATA_DIR', str(ROOT / 'outputs' / 'portfolio'))), DAY_TASKS)
-app.include_router(create_portfolio_router(PORTFOLIO))
+# The private Deal overlay is optional in a generic Mentora checkout.
+if (ROOT/'app/portfolio.py').is_file():
+    from app.portfolio import Portfolio, create_router as create_portfolio_router
+    PORTFOLIO = Portfolio(Path(os.getenv('VEYA_PORTFOLIO_DATA_DIR', str(ROOT / 'outputs' / 'portfolio'))), DAY_TASKS)
+    app.include_router(create_portfolio_router(PORTFOLIO))
 
-@app.on_event('startup')
-def start_portfolio():
-    if os.getenv('VEYA_PORTFOLIO_SCHEDULER', '1') != '0':
-        PORTFOLIO.start()
+    @app.on_event('startup')
+    def start_portfolio():
+        if os.getenv('VEYA_PORTFOLIO_SCHEDULER', '1') != '0':
+            PORTFOLIO.start()
 
-@app.on_event('shutdown')
-def stop_portfolio():
-    PORTFOLIO.stop()
+    @app.on_event('shutdown')
+    def stop_portfolio():
+        PORTFOLIO.stop()
