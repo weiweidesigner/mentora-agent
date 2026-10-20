@@ -119,7 +119,6 @@ class SessionTitleRequest(BaseModel):
 
 
 from app.chat_sessions import ChatSessions,create_router as create_chat_session_router,identity as chat_identity
-from app.chat_market_chart import requested_market_chart
 
 CHAT_SESSIONS=ChatSessions(ROOT/'outputs/chat-sessions')
 
@@ -143,16 +142,6 @@ def durable_chat_events(payload,user):
             if research_only:data['agent']='mentora'
             for artifact in data.get('reportArtifacts') or []:
                 if artifact.get('url'):charts[artifact['url']]=artifact
-            if not charts:
-                try:
-                    artifact=requested_market_chart(payload,ROOT)
-                    if artifact:
-                        charts[artifact['url']]=artifact
-                        data['interpretation']=str(data.get('interpretation') or '')+'\n\n图表由 TradingView 提供交互展示，品种可用性与延迟取决于数据源；图表展示不代表本轮分析已取得对应周期的 OHLCV 数据。'
-                except Exception:
-                    import logging
-                    logging.getLogger(__name__).exception('Requested market chart unavailable')
-                    data['interpretation']=str(data.get('interpretation') or '')+'\n\n本轮请求的交互图表未能生成，请稍后重试。'
             if charts:
                 data['reportArtifacts']=list(charts.values())
                 data['reportUrl']=data.get('reportUrl') or next(iter(charts))
