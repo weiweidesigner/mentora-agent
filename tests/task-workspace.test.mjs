@@ -7,6 +7,7 @@ const editorSource=readFileSync(new URL('../app/static/task-editor.js',import.me
 const appSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const savedAnswerSource=appSource.slice(appSource.indexOf('async function renderSavedAssistantAnswer('),appSource.indexOf('function restoreSession(sessionId)'));
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
+const userMessageSource=appSource.slice(appSource.indexOf('function renderUserMessage('),appSource.indexOf('async function addImageFiles('));
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',agent:'mentora',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
@@ -32,7 +33,8 @@ function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live
   return {ok:true,json:async()=>data};
  };
  w.mergeSourcesByUrl=(sources)=>sources;w.sourcesFromInsightMarkdown=()=>[];w.detectLanguage=()=>"zh-CN";w.escapeHtml=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;');w.buildCapabilityBar=()=>'';w.buildResultActions=()=>'<button class=shareResultButton>分享</button>';w.refreshSavedToolStepTitles=()=>{};w.attachResultActionHandlers=()=>{};w.toggleActivityDrawer=article=>article.dataset.activityOpened='true';
- w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
+ w.COPY_MESSAGE_ICON='copy';w.CHECK_ICON='check';w.EDIT_MESSAGE_ICON='edit';w.autoResizeUserEdit=()=>{};w.handleMessageEnter=(event,_input,send)=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();send();}};
+ w.eval(userMessageSource);w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};
 }
 
 async function openScenarioEditor(d,id){d.querySelector('#taskSidebarNew').click();}
@@ -102,6 +104,34 @@ test('follow-up uses the selected cached answer and restores replies without rer
  const stored=JSON.parse(h.w.localStorage.getItem('veya-task-chat:live:run-new'));assert.equal(stored.length,2);
  assert.ok(h.requests.some(r=>r.method==='PUT'&&r.path.endsWith('/runs/run-new/conversation')));
  d.querySelector('#taskBack').click();d.querySelector('#taskSidebarList [data-task-open]').click();await tick();assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);h.dom.window.close();
+});
+
+test('follow-up edit preserves cancellation and resends only preceding context without editing the task',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document,original=h.w.fetch,calls=[];
+ h.w.fetch=async(path,options)=>{if(path==='/api/chat/stream'){calls.push(JSON.parse(options.body));return {ok:true,body:{}};}return original(path,options);};
+ h.w.readEventStream=async(_body,callback)=>callback('final',{interpretation:'回答'+calls.length});
+ for(const text of ['原追问','后续追问']){d.querySelector('#taskChatInput').value=text;d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();}
+ let first=d.querySelector('#taskFollowups .message.user');assert.ok(first.querySelector('.editUserMessage'));first.querySelector('.editUserMessage').click();
+ assert.equal(first.querySelector('.userEditInput').value,'原追问');first.querySelector('.userEditInput').value='取消的修改';first.querySelector('.userEditCancel').click();
+ assert.equal(first.querySelector('.userBubble').textContent,'原追问');assert.equal(calls.length,2);assert.ok(first.querySelector('.editUserMessage'));
+ first.querySelector('.editUserMessage').click();first.querySelector('.userEditInput').value='修改后的追问';first.querySelector('.userEditSend').click();await tick();
+ assert.equal(calls[2].question,'修改后的追问');assert.equal(calls[2].history.length,2);assert.equal(calls[2].history[1].text,'最新缓存内容');
+ assert.doesNotMatch(d.querySelector('#taskFollowups').textContent,/原追问|后续追问|回答1|回答2/);assert.match(d.querySelector('#taskFollowups').textContent,/修改后的追问.*回答3/s);
+ const saved=JSON.parse(h.w.localStorage.getItem('veya-task-chat:live:run-new'));assert.equal(saved.length,2);assert.equal(saved[0].text,'修改后的追问');
+ assert.equal(d.querySelector('#dayDialog').open,false);assert.equal(h.requests.some(r=>r.method==='PUT'&&r.path.endsWith('/tasks/live')),false);
+ d.querySelector('#taskBack').click();d.querySelector('#taskSidebarList [data-task-open]').click();await tick();assert.ok(d.querySelector('#taskFollowups .editUserMessage'));h.dom.window.close();
+});
+
+test('failed follow-up edit retains original history and attached images',async()=>{
+ const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();const d=h.w.document,original=h.w.fetch,calls=[];let fail=false;
+ h.w.fetch=async(path,options)=>{if(path==='/api/chat/stream'){calls.push(JSON.parse(options.body));if(fail)throw new Error('测试请求失败');return {ok:true,body:{}};}return original(path,options);};
+ h.w.readEventStream=async(_body,callback)=>callback('final',{interpretation:'原回答'});
+ const input=d.querySelector('#taskImageInput');Object.defineProperty(input,'files',{value:[new h.w.File(['image'],'chart.png',{type:'image/png'})]});input.dispatchEvent(new h.w.Event('change'));await tick();
+ d.querySelector('#taskChatInput').value='原图片问题';d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
+ const before=h.w.localStorage.getItem('veya-task-chat:live:run-new');const user=d.querySelector('#taskFollowups .message.user');user.querySelector('.editUserMessage').click();user.querySelector('.userEditCancel').click();assert.ok(user.querySelector('img'));
+ user.querySelector('.editUserMessage').click();user.querySelector('.userEditInput').value='修改图片问题';fail=true;user.querySelector('.userEditSend').click();await tick();
+ assert.equal(calls[1].images[0].name,'chart.png');assert.equal(h.w.localStorage.getItem('veya-task-chat:live:run-new'),before);assert.match(d.querySelector('#taskFollowups').textContent,/原回答/);
+ assert.equal(user.querySelector('.userEditInput').disabled,false);assert.match(d.querySelector('#taskChatError').textContent,/测试请求失败/);user.querySelector('.userEditCancel').click();assert.equal(user.querySelector('.userBubble').textContent,'原图片问题');h.dom.window.close();
 });
 
 test('attachment plus previews, removes and sends images with the follow-up',async()=>{

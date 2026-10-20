@@ -1258,7 +1258,7 @@ function userMessageClipboardHtml(text, images) {
   return `<!doctype html><html><body>${imageHtml}${textHtml}</body></html>`;
 }
 
-function beginEditUserMessage(article) {
+function beginEditUserMessage(article, options = {}) {
   if (article.classList.contains("is-editing")) return;
   const original = article.dataset.rawText || "";
   article.classList.add("is-editing");
@@ -1276,13 +1276,19 @@ function beginEditUserMessage(article) {
   textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   autoResizeUserEdit(textarea);
   textarea.addEventListener("input", () => autoResizeUserEdit(textarea));
-  article.querySelector(".userEditCancel")?.addEventListener("click", () => renderUserMessage(article, original));
-  article.querySelector(".userEditSend")?.addEventListener("click", () => submitEditedUserMessage(article));
+  const restore = () => renderUserMessage(article, original, options.images || [], options.renderOptions || {});
+  const submit = () => {
+    if (!options.onSubmit) return submitEditedUserMessage(article);
+    const text = textarea.value.trim();
+    if (text && !textarea.disabled) return options.onSubmit(text);
+  };
+  article.querySelector(".userEditCancel")?.addEventListener("click", restore);
+  article.querySelector(".userEditSend")?.addEventListener("click", submit);
   textarea.addEventListener("keydown", (event) => {
-    handleMessageEnter(event, textarea, () => submitEditedUserMessage(article));
+    handleMessageEnter(event, textarea, submit);
     if (event.key === "Escape") {
       event.preventDefault();
-      renderUserMessage(article, original);
+      restore();
     }
   });
 }

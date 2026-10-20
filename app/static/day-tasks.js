@@ -39,9 +39,15 @@
   async function addTaskImages(files){try{for(const file of Array.from(files||[])){if(taskImages.length>=6)break;if(!file.type.startsWith('image/'))continue;if(file.size>8*1024*1024)throw new Error('单张图片不能超过 8 MB');const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('图片读取失败'));reader.readAsDataURL(file);});taskImages.push({name:file.name,mimeType:file.type,dataUrl});}renderTaskImages();}catch(error){$('taskChatError').textContent=error.message;}}
   function stopFollowup() {chatController?.abort();chatController=null;}
   function resetFollowup() {stopFollowup();stopRun();chatHistory=[];chatKey='';taskImages=[];renderTaskImages();$('taskFollowups').replaceChildren();$('taskChatError').textContent='';$('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;}
-  function renderTaskUser(text, images, target, task=null) {
+  function renderTaskUser(text, images, target, task=null, turn=null) {
     const article=document.createElement('article');target.append(article);
-    if(typeof renderUserMessage==='function')renderUserMessage(article,text,images||[],{allowEdit:!!task&&editable(task),onEdit:()=>edit(task)});
+    const options={allowEdit:task?editable(task):!!turn&&!(sharedEntry?.task.id===selectedId&&!editable(selected())),onEdit:()=>{
+      if(task)return edit(task);
+      if(chatController){$('taskChatError').textContent='请等待当前追问完成后再编辑。';return;}
+      if(!chatHistory.includes(turn))return;
+      beginEditUserMessage(article,{images:images||[],renderOptions:options,onSubmit:text=>sendFollowup({preventDefault(){}},{turn,article,text,images:images||[]})});
+    }};
+    if(typeof renderUserMessage==='function')renderUserMessage(article,text,images||[],options);
     else {article.className='message user';const bubble=document.createElement('div');bubble.className='bubble userBubble';bubble.textContent=text;for(const image of images||[]){const img=document.createElement('img');img.src=image.dataUrl;img.alt=image.name||'附图';bubble.append(img);}article.append(bubble);}
     return article;
   }
@@ -52,7 +58,7 @@
     else {const bubble=document.createElement('div');bubble.className='bubble assistantBubble';const report=document.createElement('div');report.className='mixedReport';bubble.append(report);article.append(bubble);if(typeof renderMixedReportFlow==='function')await renderMixedReportFlow(article,answer,report,()=>{});else report.textContent=answer.interpretation||'';}
   }
   async function renderFollowup(turn, target=$('taskFollowups')) {
-    if(turn.role==='user')return renderTaskUser(turn.text,turn.images,target);
+    if(turn.role==='user')return renderTaskUser(turn.text,turn.images,target,null,turn);
     const article=document.createElement('article');article.className='message assistant taskChatAnswer';target.append(article);
     await renderTaskAnswer(article,structuredClone(turn.answer||{interpretation:turn.text}),chatHistory.filter(t=>t.role==='user').at(-1)?.text||'');
     return article;
@@ -79,11 +85,14 @@
     try{await api('tasks/'+selectedId+'/runs/'+selectedRun+'/conversation','PUT',{messages:turns});}
     catch{$('taskChatError').textContent='对话已保存在当前浏览器，但暂时未同步到历史记录。';}
   }
-  async function sendFollowup(event) {
-    event.preventDefault();const text=$('taskChatInput').value.trim()||(taskImages.length?'请结合图片继续分析':'');if(!text||chatController||!selectedId||!chatKey)return;
-    const images=taskImages.slice();taskImages=[];renderTaskImages();
-    const controller=new AbortController(),version=viewVersion,key=chatKey,prior=chatHistory.slice(-10).map(({role,text,images})=>({role,text,...(images?.length?{images}:{})}));chatController=controller;
-    $('taskChatInput').value='';updateChatComposer();$('taskChatSend').disabled=true;$('taskChatError').textContent='';
+  async function sendFollowup(event, revision=null) {
+    event.preventDefault();const text=revision?revision.text:$('taskChatInput').value.trim()||(taskImages.length?'请结合图片继续分析':'');if(!text||chatController||!selectedId||!chatKey)return;
+    const index=revision?chatHistory.indexOf(revision.turn):-1;if(revision&&index<2)return;
+    const baseHistory=revision?chatHistory.slice(0,index):chatHistory.slice();
+    const images=revision?revision.images.slice():taskImages.slice();if(!revision){taskImages=[];renderTaskImages();$('taskChatInput').value='';}
+    revision?.article.querySelectorAll('textarea,button').forEach(node=>node.disabled=true);
+    const controller=new AbortController(),version=viewVersion,key=chatKey,prior=baseHistory.slice(-10).map(({role,text,images})=>({role,text,...(images?.length?{images}:{})}));chatController=controller;
+    updateChatComposer();$('taskChatSend').disabled=true;$('taskChatError').textContent='';
     const user={role:'user',text,...(images.length?{images}:{})},userNode=await renderFollowup(user);const waiting=document.createElement('p');waiting.className='taskResultEmpty';waiting.textContent='正在分析…';$('taskFollowups').append(waiting);waiting.scrollIntoView?.({block:'nearest'});
     const liveArticle=typeof createAssistantMessage==='function'?createAssistantMessage(text,{target:$('taskFollowups'),taskContext:{id:`task-followup-${selectedId}-${Date.now()}`,title:selected()?.title||'定时任务',question:text}}):null;if(liveArticle)waiting.remove();
     let answer=null,streamError='';
@@ -93,10 +102,12 @@
       await readEventStream(response.body,(event,data)=>{if(controller.signal.aborted||version!==viewVersion)return;if(liveArticle)handleStreamEvent(liveArticle,event,data);if(event==='final')answer=data;if(event==='error')streamError=data.detail||data.message||'分析失败';});
       if(controller.signal.aborted||version!==viewVersion)return;
       if(!answer)throw new Error(streamError||'本次没有返回结果，请重试');
-      waiting.remove();const turn={role:'assistant',text:answer.interpretation||'',answer};chatHistory.push(user,turn);if(liveArticle)finishRunThinking(liveArticle,selected());else await renderFollowup(turn);
+      waiting.remove();const turn={role:'assistant',text:answer.interpretation||'',answer};
+      if(revision){let node=revision.article;while(node&&node!==userNode){const next=node.nextElementSibling;node.querySelectorAll('.streamvizArtifactHost').forEach(host=>window.AimeStreamViz?.unmount?.(host));node.remove();node=next;}chatHistory=baseHistory;}
+      chatHistory.push(user,turn);if(liveArticle)finishRunThinking(liveArticle,selected());else await renderFollowup(turn);
       await persistFollowups(key);
-    } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();liveArticle?.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}
-    finally{if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
+    } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();liveArticle?.remove();userNode.remove();$('taskChatError').textContent=error.message;if(!revision){$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}}
+    finally{revision?.article.querySelectorAll('textarea,button').forEach(node=>node.disabled=false);if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
