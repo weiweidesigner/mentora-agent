@@ -86,7 +86,6 @@ SKILL_SCRIPT_DIRS = (
     SKILLS_DIR / "trading-view-chart" / "scripts",
     SKILLS_DIR / "generic-chart" / "scripts",
     SKILLS_DIR / "business-chart-recall" / "scripts",
-    SKILLS_DIR / "yahoo-data" / "scripts",
     SKILLS_DIR / "code-interpreter" / "scripts",
     SKILLS_DIR / "external-search" / "scripts",
     SKILLS_DIR / "internal-search" / "scripts",
@@ -2044,7 +2043,7 @@ AGENT_ONLY_TOOLS = {
     SEARCH_TOOL,
     ADVISOR_TEXT_GENERATION_TOOL,
 }
-STRUCTURED_DATA_SKILLS_LABEL = "app/skills/business-chart-recall + app/skills/generic-chart + app/skills/yahoo-data + app/skills/code-interpreter"
+STRUCTURED_DATA_SKILLS_LABEL = "app/skills/business-chart-recall + app/skills/generic-chart + app/skills/code-interpreter"
 SEARCH_SKILLS_LABEL = "app/skills/internal-search + app/skills/external-search + app/skills/video-search"
 ADVISOR_TEXT_GENERATION_SKILL_LABEL = "app/skills/advisor-text-generation/SKILL.md"
 CORE_FINANCIAL_SCRIPTS = (
@@ -2478,22 +2477,9 @@ BUSINESS_CHART_SCRIPT_FILES = frozenset(
 )
 NON_DISPLAY_RUN_SCRIPTS = {"code_interpreter.py", "yahoo_data.py"}
 YAHOO_LISTING_REGION_ROUTING_RULES = (
-    "Yahoo 股票代码规划必须基于用户问题先理解证券身份和市场意图，再生成 symbol：识别公司/证券、上市国家或地区、"
-    "交易所及用户期望的市场/币种；公司注册地不等于上市地，也不能把无法确认的裸简称默认当成美股代码。"
-    "若公司多地上市，用户指定市场时使用该市场；未指定时由模型结合问题上下文判断主要上市地，跨公司比较时判断"
-    "是否需要同市场或同币种的可比代码，并在 reason 中说明选择依据。若公司名、裸 ticker 与上市地存在歧义，"
-    "模型应先规划可靠的证券身份查询步骤，取得候选代码、交易所和币种后再调用 Yahoo；不得使用针对某只股票的"
-    "内置映射或示例代替身份解析。Yahoo 代码后缀应依据已确认交易所按工具规范生成，而不是依据公司名称猜测。"
-    "对 yahoo_data.py，解析后的精确 Yahoo symbol 必须写入 step.code；cli_args 中不得再写"
-    "--symbol、--symbols 或 --code，也不得让 step.code 保留错误裸代码、只在 cli_args 中偷偷放正确代码。"
-    "完成 symbol 解析后，再把用户语义映射到 yahoo_data.py 明确支持的 metric；"
-    "timeline/走势应映射为 close、adj_close、return_pct 或 cumulative_return，valuation 不能原样作为 metric；"
-    "是否直接使用数据源已提供的派生字段，或先获取原始字段再调用 code_interpreter.py，必须由模型根据用户是在"
-    "查询现成指标、要求可审计计算，还是要求进一步筛选/聚合/重组来决定；不得按某个指标名称强制改写模型计划。"
-    "只能选择工具实际支持的 market_cap 等指标。每个 yahoo_data.py step 只能有一个 --metric；若同时需要市值和"
-    "价格走势，必须拆成两个 Yahoo step，不能重复传 --metric。工具不支持 PE/PB 等字段时不得编造数值或生成假图表。"
-    "yahoo_data.py 是纯结构化取数工具，只输出 JSON payload，不生成或展示 HTML 图表。用户未明确要求图表时，"
-    "Yahoo 取数后直接进入文字回答；用户明确要求图表时，必须再规划一个与目标 schema 匹配的独立图表组件。"
+    "Yahoo 取数工具已移除，禁止选择 yahoo-data、yahoo_data.py、yfinance 或 Yahoo 接口。"
+    "使用现有非 Yahoo 数据源，无法覆盖时明确说明限制；不得用临时代码恢复已移除的工具。"
+    "证券代码必须基于真实身份、上市地区、交易所和币种解析；不得仅凭裸 ticker 默认美股或替换标的。"
 )
 GENERIC_CHART_PAYLOAD_SCRIPTS = {
     "bar_line.py",
@@ -3249,6 +3235,7 @@ def non_us_replacement_skill_names(question: str) -> list[str]:
 
 
 def enforce_skill_market_scope(question: str, skills: list[str]) -> list[str]:
+    skills = [skill for skill in skills if skill != "yahoo-data"]
     if not is_explicit_non_us_equity_question(question):
         return enforce_data_query_search_scope(question, skills)
     if is_multi_asset_business_kline_question(question):
@@ -3379,43 +3366,8 @@ def normalize_skill_selection_plan(value: Any, selected_skills: list[str]) -> li
 
 @lru_cache(maxsize=256)
 def yahoo_security_search_candidates(query: str) -> tuple[dict[str, str], ...]:
-    """Return live Yahoo security candidates without choosing one in code."""
-    clean_query = str(query or "").strip()
-    if not clean_query:
-        return ()
-    try:
-        response = requests.get(
-            "https://query2.finance.yahoo.com/v1/finance/search",
-            params={
-                "q": clean_query,
-                "quotesCount": 8,
-                "newsCount": 0,
-                "enableFuzzyQuery": "true",
-            },
-            headers={"User-Agent": "Mozilla/5.0 analysis-page-planner/1.0"},
-            timeout=4,
-        )
-        response.raise_for_status()
-        payload = response.json()
-    except Exception:
-        return ()
-    candidates: list[dict[str, str]] = []
-    for item in payload.get("quotes", []) if isinstance(payload, dict) else []:
-        if not isinstance(item, dict):
-            continue
-        symbol = str(item.get("symbol") or "").strip().upper()
-        if not symbol:
-            continue
-        candidates.append(
-            {
-                "symbol": symbol,
-                "name": str(item.get("longname") or item.get("shortname") or "").strip(),
-                "exchange": str(item.get("exchange") or "").strip(),
-                "exchangeDisplay": str(item.get("exchDisp") or "").strip(),
-                "quoteType": str(item.get("quoteType") or item.get("typeDisp") or "").strip(),
-            }
-        )
-    return tuple(candidates[:8])
+    """Compatibility for saved plans; the removed provider is never queried."""
+    return ()
 
 
 def yahoo_security_identity_context(question: str) -> dict[str, Any]:

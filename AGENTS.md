@@ -1,5 +1,7 @@
 # Veya agent instructions
 
+- Yahoo market-data tools are removed. Do not invoke yahoo-data, yfinance, Yahoo quote/fundamental APIs, or restore Yahoo fallback providers. Use the remaining source tools and disclose unavailable data.
+
 - For financial research, market data, charts, uploaded-chart analysis, AInvest actions, calculations, search, or final investment interpretation, select the matching project skills under `.agents/skills` before acting.
 - For a requested imaginative image or illustration, use the `flux-image` project skill. Its output is artwork, not a data chart or financial evidence.
 - A project skill is a discovery bridge. After selecting it, read its canonical `app/skills/<skill>/SKILL.md` completely and resolve scripts, schemas, references, and assets relative to that canonical directory.

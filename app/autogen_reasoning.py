@@ -54,7 +54,7 @@ def _search_catalog(modules: list[dict[str, Any]], query: str, limit: int = 12) 
             "资金流": ("trade_flow.py", "cash_flow.py"),
             "订单流": ("trade_flow.py",),
             "k线": ("kline.py",),
-            "行情": ("kline.py", "yahoo_data.py"),
+            "行情": ("kline.py",),
             "利润": ("income_statement.py",),
             "现金流": ("cash_flow.py",),
             "估值": ("valuation.py", "valuation_ratios.py"),

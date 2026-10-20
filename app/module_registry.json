@@ -87,7 +87,7 @@
     "name": "aime_dynamic_line",
     "script": "dynamic_line.py",
     "label": "Aime Dynamic Line",
-    "description": "通用 dynamic_line 动态折线图组件，使用 app/skills/generic-chart/scripts/dynamic_line.py 调用 Aime 动态折线 renderer，并由 dynamic_line.py 自己完成样式后处理；Yahoo 仅作为数据源。适合多系列时间序列、事件窗口收益率对齐、累计收益率动态变化等可播放/动态折线场景。样式版本 dynamic-line-20260719s：支持亮色/暗夜主题、移动端更紧凑高度、dynamic_line iframe 加载完成前不显示白色占位、播放器与绘图区安全间距、报告层高度覆盖修正、PC 端比例保持、禁用 tooltip、移除音频资源和音频按钮、进一步收窄移动端右侧留白和播放器上方间距、5 根网格线、标题下方左对齐图例、最新值展示在图例中、图上不展示最新值文字标签、图例与图形留有间距、绘图区居中时间水印、Y 轴两位小数、实心最新点和 CSS 居中播放三角。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output；只有当用户明确要求 dark/暗夜/深色模式时才添加 --theme dark，默认不要添加 --theme，也不要添加 --theme light。"
+    "description": "通用 dynamic_line 动态折线图组件，使用 app/skills/generic-chart/scripts/dynamic_line.py 调用 Aime 动态折线 renderer，并由 dynamic_line.py 自己完成样式后处理；数据由上游非 Yahoo 工具提供。适合多系列时间序列、事件窗口收益率对齐、累计收益率动态变化等可播放/动态折线场景。样式版本 dynamic-line-20260719s：支持亮色/暗夜主题、移动端更紧凑高度、dynamic_line iframe 加载完成前不显示白色占位、播放器与绘图区安全间距、报告层高度覆盖修正、PC 端比例保持、禁用 tooltip、移除音频资源和音频按钮、进一步收窄移动端右侧留白和播放器上方间距、5 根网格线、标题下方左对齐图例、最新值展示在图例中、图上不展示最新值文字标签、图例与图形留有间距、绘图区居中时间水印、Y 轴两位小数、实心最新点和 CSS 居中播放三角。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output；只有当用户明确要求 dark/暗夜/深色模式时才添加 --theme dark，默认不要添加 --theme，也不要添加 --theme light。"
   },
   {
     "name": "aime_dynamic_bar",
@@ -124,12 +124,6 @@
     "script": "journey.py",
     "label": "Aime Journey",
     "description": "通用 Aime journey 旅程图组件，适合用户旅程、业务阶段、体验路径、流程阶段情绪或状态变化展示。cli_args 可使用 --payload、--data-json、--data、--title、--payload-output。"
-  },
-  {
-    "name": "yahoo_data",
-    "script": "yahoo_data.py",
-    "label": "Yahoo Data Tool",
-    "description": "Yahoo 支持范围内的通用结构化数据源，不限美股，也不绑定具体图表。适用于获取全球 Yahoo 支持标的的行情与派生序列、受支持财务时间序列、宏观指标及事件窗口数据，并输出可供计算、表格或图表模块复用的 rows/chartPayload。支持 metric：close、adj_close、volume、return_pct、cumulative_return、market_cap、open、high、low、financial_position、net_income、total_revenue、operating_income、gross_profit；financial_position（兼容 financials、balance_sheet）一次返回总资产、总负债、股东权益、现金及短期投资和总债务，默认应使用 annual。用户询问 latest/current 财务指标且未指定季度/年度时不要传 --period-type；若季度和年度历史序列均为空，工具会对支持字段使用 Yahoo 最新财务快照/TTM 值并在 payload 标记 fallback。显式季度/年度字段缺失时返回正常的不可用状态，不得把 TTM 冒充单季数据，不得展示替代口径卡片，也不得重复重试相同请求。宏观指标通过 --macro-indicators 获取。通用不等于任意网页数据：新闻、公告独有字段、历史员工人数等不受支持内容应交给搜索或公司披露，未知 metric 必须明确失败，不能退化为 close。它不是 generic_chart 渲染器；--chart-type 只支持 line、bar、dynamic_line。若用户指定 grouped-line、grouped-bar、bar-line、表格或自定义计算，应先用 yahoo_data.py 取结构化原始数据，再交给 code_interpreter.py 和对应通用组件。对于股票、ETF、数字币或可识别期权合约的行情/K线/技术面，应优先使用跨资产业务 kline.py；对于不适合业务K线的全球标的结构化序列，若 Yahoo 支持对应 symbol，可使用 yahoo_data.py。用户明确指定 Yahoo 时，Yahoo 是排他数据源，只可保留无外部取数的转换和渲染步骤，不得追加 AInvest、新闻或外部搜索。cli_args 可使用 --metric、--macro-indicators、--range、--start-date、--end-date、--period-type、--range-length、--language、--interval、--chart-type、--title、--symbols、--event-windows-json、--window-days、--style-json。"
   },
   {
     "name": "code_interpreter",

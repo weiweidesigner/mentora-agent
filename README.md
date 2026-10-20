@@ -50,7 +50,6 @@ HTML 修复和流式参数归一化由仓库导出的 `normalizeStreamVisualizat
 # 首次安装需要拥有该私有仓库读取权限的 GitHub 凭据
 python3 scripts/sync_business_charts.py
 python3 scripts/sync_data_vis_charts.py
-python3 scripts/sync_yahoo_market_data.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
 python3 scripts/sync_chart_markup.py
@@ -66,7 +65,7 @@ python3 -m pip install -r requirements.txt
 python3 scripts/sync_business_charts.py --check
 ```
 
-仓库检出位于被 Git 忽略的 `.dependencies/us-trading-charts`，`app/skills/business-chart-recall` 为指向该检出的相对链接。A 股入口由私有 `cn-trading-data` 仓库管理；Yahoo 通用取数由独立公开仓库管理，不包含在业务图表仓库中。业务组件自身的取数逻辑仍保留在各组件脚本里。组件 Schema、样式资产和元数据全部从仓库读取；宿主模块目录只保留引用。运行图表时无需连接 GitHub，也不依赖桌面上另一个开发仓库。
+仓库检出位于被 Git 忽略的 `.dependencies/us-trading-charts`，`app/skills/business-chart-recall` 为指向该检出的相对链接。A 股入口由私有 `cn-trading-data` 仓库管理；Yahoo 通用取数已移除。业务组件自身的取数逻辑仍保留在各组件脚本里。组件 Schema、样式资产和元数据全部从仓库读取；宿主模块目录只保留引用。运行图表时无需连接 GitHub，也不依赖桌面上另一个开发仓库。
 
 不要直接修改依赖缓存或通过链接修改组件。业务图表更新应在私有仓库提交，更新锁文件后执行 `python3 scripts/sync_business_charts.py --update`，再重启服务使用；不会自动跟随 `main` 分支。部署机器也需要私有仓库的读取权限，凭据不写进 URL、配置文件或锁文件。
 
@@ -76,7 +75,6 @@ python3 scripts/sync_business_charts.py --check
 
 ```bash
 python3 scripts/sync_data_vis_charts.py
-python3 scripts/sync_yahoo_market_data.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
 python3 scripts/sync_chart_markup.py
@@ -89,20 +87,18 @@ python3 scripts/sync_data_vis_charts.py --check
 
 ## Data skill dependencies
 
-Yahoo 取数与数据计算使用两个公开仓库：`weiweidesigner/yahoo-market-data` 和 `weiweidesigner/data-code-interpreter`。分别由 `yahoo-market-data.lock.json` 与 `data-code-interpreter.lock.json` 固定版本，`app/skills/yahoo-data` 与 `app/skills/code-interpreter` 只保留相对仓库链接。
+数据计算使用 `weiweidesigner/data-code-interpreter`，由 `data-code-interpreter.lock.json` 固定版本。Yahoo 取数工具、技能入口和自动安装锁文件已移除；不要恢复 Yahoo 数据源或组件回退。
 
 ```bash
-python3 scripts/sync_yahoo_market_data.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
 python3 scripts/sync_chart_markup.py
 python3 scripts/sync_vision_chart_analyst.py
 python3 scripts/sync_flux_image.py
-python3 scripts/sync_yahoo_market_data.py --check
 python3 scripts/sync_data_code_interpreter.py --check
 ```
 
-更新应先提交上游，修改锁文件后运行对应安装脚本的 `--update`。Yahoo 输出结构化 JSON；数据计算保留普通计算与下游图表 payload 两种模式。图表 Schema 仍由通用或业务图表仓库提供，数据计算通过宿主逻辑路径或工作目录读取，也支持 `CODE_INTERPRETER_SCHEMA_DIRS` / `AICHART_SKILLS_DIR` 显式配置。模型凭据留在宿主环境中。
+更新应先提交上游，修改锁文件后运行对应安装脚本的 `--update`。数据计算保留普通计算与下游图表 payload 两种模式。图表 Schema 仍由通用或业务图表仓库提供，数据计算通过宿主逻辑路径或工作目录读取，也支持 `CODE_INTERPRETER_SCHEMA_DIRS` / `AICHART_SKILLS_DIR` 显式配置。模型凭据留在宿主环境中。
 
 ## Local Laya visualization router dependency
 
@@ -156,7 +152,6 @@ Codex 会按官方项目 Skill 机制自动扫描 `.agents/skills`。每个桥�
 ```bash
 python3 scripts/sync_business_charts.py
 python3 scripts/sync_data_vis_charts.py
-python3 scripts/sync_yahoo_market_data.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
 python3 scripts/sync_chart_markup.py
@@ -227,7 +222,6 @@ A 股 API 使用私有仓库 `weiweidesigner/cn-trading-data`，由 `cn-trading-
 ```bash
 python3 scripts/sync_business_charts.py
 python3 scripts/sync_data_vis_charts.py
-python3 scripts/sync_yahoo_market_data.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
 python3 scripts/sync_chart_markup.py
