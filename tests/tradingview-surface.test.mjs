@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const runtime=readFileSync(new URL('../app/static/tradingview-surface.js',import.meta.url),'utf8');
+const activation=readFileSync(new URL('../app/static/chart-activation.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,40));
 function setup(widget='single-ticker',format){
  const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
@@ -45,4 +46,14 @@ test('interactive charts preserve a sized viewport and non-TradingView charts ar
  h.frame.tradingViewSurfaceCleanup();h.doc.querySelector('#tv-config').remove();
  assert.equal(h.w.installTradingViewSurface(h.frame),false);
  h.dom.window.close();
+});
+
+test('installing a conversation TradingView surface also installs its activation gate',()=>{
+ const h=setup('advanced-chart'),shell=h.w.document.createElement('div');shell.className='reportFrameShell';
+ h.frame.before(shell);shell.append(h.frame);h.w.eval(activation);
+ h.w.installTradingViewSurface(h.frame);
+ const gate=shell.querySelector('.widgetChartActivation');assert(gate);assert.equal(gate.hidden,false);
+ gate.click();assert.equal(gate.hidden,true);
+ h.w.installTradingViewSurface(h.frame);assert.equal(gate.hidden,false);
+ h.frame.tradingViewSurfaceCleanup();h.dom.window.close();
 });

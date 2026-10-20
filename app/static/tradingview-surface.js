@@ -10,6 +10,7 @@
     try { spec = JSON.parse(config.textContent); } catch { return false; }
     const main = doc.querySelector('main'), stage = doc.querySelector('.stage'), mount = doc.querySelector('#mount');
     if (!main || !stage || !mount) return false;
+    window.installChartActivation?.(frame, spec.widget);
     doc.documentElement.dataset.tradingviewSurface = 'true';
     frame.closest('.widgetCard')?.classList.add('is-tradingview');
     // This historical rule overrode the native iframe's explicit pixel height.

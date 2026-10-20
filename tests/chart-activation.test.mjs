@@ -20,3 +20,13 @@ test('only one chart activates at a time and ordinary data widgets remain intera
  s.w.installChartActivation(b,'advanced-chart');const buttons=[...s.d.querySelectorAll('.widgetChartActivation')];buttons[0].click();buttons[1].click();assert.equal(buttons[0].hidden,false);assert.equal(buttons[1].hidden,true);
  s.w.installChartActivation(b,'advanced-chart');assert.equal(s.d.querySelectorAll('.widgetChartActivation').length,2);s.dom.window.close();
 });
+
+test('conversation charts use the same click gate, relock on reload and support Escape',()=>{
+ const s=setup(),[frame]=s.frames,card=frame.closest('article');card.className='reportFrameShell';
+ s.w.installChartActivation(frame,'advanced-chart');const button=card.querySelector('.widgetChartActivation');
+ assert.equal(button.style.top,'0px');assert.equal(button.hidden,false);
+ button.click();assert.equal(button.hidden,true);
+ s.w.installChartActivation(frame,'advanced-chart');assert.equal(button.hidden,false);assert.equal(card.querySelectorAll('.widgetChartActivation').length,1);
+ button.click();s.d.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(button.hidden,false);
+ s.dom.window.close();
+});

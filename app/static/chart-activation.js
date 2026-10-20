@@ -14,11 +14,11 @@
   window.installChartActivation=(frame,widget)=>{
     if(widget!=='advanced-chart')return;
     try{frame.contentDocument?.querySelector('[data-tv-scroll-guard]')?.remove();}catch{}
-    if(guards.has(frame))return;
-    const card=frame.closest('.widgetCard');if(!card)return;
+    if(guards.has(frame)){lock(frame);return;}
+    const card=frame.closest('.widgetCard, .reportFrameShell');if(!card)return;
     const button=document.createElement('button');button.type='button';button.className='widgetChartActivation';
     button.setAttribute('aria-label','点击激活图表缩放交互');
-    button.style.top=(card.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40)+'px';
+    button.style.top=(card.classList.contains('widgetCard')?(card.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40):0)+'px';
     button.innerHTML='<span>点击图表以缩放</span>';
     button.addEventListener('click',event=>{
       event.preventDefault();event.stopPropagation();
