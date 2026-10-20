@@ -9,7 +9,7 @@ const savedAnswerSource=appSource.slice(appSource.indexOf('async function render
 const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
-const base={title:'我的盘中分析',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
+const base={title:'我的盘中分析',agent:'mentora',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
 function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
  const dom=new JSDOM(html,{url,runScripts:'outside-only'}),w=dom.window,requests=[],saves=[];
  w.matchMedia=()=>({matches:mobile});w.setInterval=()=>0;w.structuredClone=structuredClone;w.requestAnimationFrame=f=>f();
@@ -49,7 +49,7 @@ test('My Day shows only generated results for the current market phase and links
 
 test('history selection loads the saved run without triggering analysis',async()=>{
  const h=setup({url:'https://example.com/veya/?tab=tasks&task=live'});await tick();
- const selector=h.w.document.querySelector('#taskRunSelect');assert.equal(selector.options.length,2);selector.value='run-old';selector.dispatchEvent(new h.w.Event('change'));await tick();
+ const d=h.w.document,selector=d.querySelector('#taskRunSelect');assert.equal(d.querySelector('#taskHistoryControl').hidden,false);assert.match(d.querySelector('#taskConversationDate').textContent,/2026/);assert.equal(selector.getAttribute('aria-label'),'查看历史对话');assert.equal(selector.options.length,2);selector.value='run-old';selector.dispatchEvent(new h.w.Event('change'));await tick();
  assert.match(h.w.document.querySelector('#taskThread').textContent,/上一次缓存内容/);
  assert.equal(h.requests.some(r=>r.method==='POST'||r.path.includes('/chat')),false);h.dom.window.close();
 });
@@ -69,6 +69,13 @@ test('new task opens the existing panel and task landing has no composer',async(
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelector('#taskPromptForm'),null);d.querySelector('#taskSidebarNew').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#taskWizard').hidden,true);assert.equal(h.requests.some(r=>r.path.endsWith('/plan')),false);h.dom.window.close();
 });
 
+test('new task can select the execution agent and saves it',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#taskSidebarNew').click();
+ const select=d.querySelector('#dayForm [name=agent]');assert.deepEqual([...select.options].map(o=>[o.value,o.textContent]),[['mentora','Mentora'],['mentora-deal','Mentora Deal']]);
+ d.querySelector('[data-editor-field="agent"]').click();d.querySelector('[data-editor-value="mentora-deal"]').click();
+ d.querySelector('#dayForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.saves[0].agent,'mentora-deal');h.dom.window.close();
+});
+
 test('recommendations pass scenario parameters to the model without exposing a settings shortcut',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
  for(const [id,stage,type,time] of [['morning','pre','index','09:00'],['announcements','pre','watchlist','09:00'],['intraday','live','index','10:30'],['sectors','live','etf','14:00'],['closing','post','index','15:30'],['watchlist','post','watchlist','15:30']]){d.querySelector(`[data-recommendation="${id}"]`).click();await tick();const draft=h.requests.filter(r=>r.path.endsWith('/plan')).at(-1).body.draft;assert.equal(draft.stage,stage);assert.equal(draft.assetType,type);assert.equal(draft.time,time);assert.equal(d.querySelector('#wizardAdvanced'),null);d.querySelector('#wizardClose').click();}
@@ -81,7 +88,9 @@ test('follow-up uses the selected cached answer and restores replies without rer
  h.w.readEventStream=async(_body,callback)=>callback('final',{interpretation:'这是基于缓存结果的追问回答'});
  assert.equal(d.querySelector('#taskChatForm').hidden,false);d.querySelector('#taskChatInput').value='进一步解释量能';d.querySelector('#taskChatForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
  assert.equal(payload.question,'进一步解释量能');assert.equal(payload.history[1].text,'最新缓存内容');assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);
+ assert.equal(payload.agent,'mentora');
  const stored=JSON.parse(h.w.localStorage.getItem('veya-task-chat:live:run-new'));assert.equal(stored.length,2);
+ assert.ok(h.requests.some(r=>r.method==='PUT'&&r.path.endsWith('/runs/run-new/conversation')));
  d.querySelector('#taskBack').click();d.querySelector('#taskSidebarList [data-task-open]').click();await tick();assert.match(d.querySelector('#taskFollowups').textContent,/追问回答/);h.dom.window.close();
 });
 

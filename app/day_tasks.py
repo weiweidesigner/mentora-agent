@@ -94,6 +94,7 @@ def market_state(market, now=None):
 
 class TaskInput(BaseModel):
     title: str = Field(min_length=1, max_length=80)
+    agent: Literal['mentora', 'mentora-deal'] = 'mentora'
     market: Literal['CN', 'HK', 'US'] = 'CN'
     stage: Literal['pre', 'live', 'post', 'rest'] = 'pre'
     assetType: Literal['stocks', 'etf', 'index', 'sector', 'watchlist'] = 'stocks'
@@ -266,6 +267,10 @@ class DayTasks:
             CREATE TABLE IF NOT EXISTS task_confirmations (
                 task_id TEXT PRIMARY KEY, config_key TEXT NOT NULL, answer TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS run_conversations (
+                run_id TEXT NOT NULL, owner TEXT NOT NULL, messages TEXT NOT NULL, updated TEXT NOT NULL,
+                PRIMARY KEY(run_id,owner)
+            );
             CREATE TABLE IF NOT EXISTS deliveries (
                 id TEXT PRIMARY KEY, run_id TEXT NOT NULL, owner TEXT NOT NULL,
                 channel TEXT NOT NULL, target TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
@@ -293,6 +298,7 @@ class DayTasks:
 
     def unpack(self, value):
         config = json.loads(value)
+        config.setdefault('agent', 'mentora')
         config.setdefault('serverchan', False)
         config.setdefault('newChat', True)
         config.setdefault('endDate', '')
@@ -471,6 +477,7 @@ class DayTasks:
         try:
             self.record_event(run['id'],'status',{'status':'start','message':'正在运行任务','detail':'研究任务已开始，正在读取任务内容与可用技能。','lang':'zh-CN'})
             run_config = dict(config)
+            run_config['_owner'] = run['owner']
             run_config['_emit_event']=lambda name,data:self.record_event(run['id'],name,data)
             if not config.get('newChat', True):
                 with self.db() as db:
@@ -568,6 +575,7 @@ class DayTasks:
             db.execute("DELETE FROM runs WHERE id IN (SELECT id FROM (SELECT id,row_number() OVER(PARTITION BY task_id ORDER BY created DESC) AS n FROM runs) WHERE n>20) AND id NOT IN (SELECT run_id FROM deliveries) AND id NOT IN (SELECT success_run FROM tasks WHERE success_run IS NOT NULL) AND status NOT IN ('running','queued')")
 
             db.execute('DELETE FROM run_events WHERE run_id NOT IN (SELECT id FROM runs)')
+            db.execute('DELETE FROM run_conversations WHERE run_id NOT IN (SELECT id FROM runs)')
 
     def start(self):
         if self.lock_file:
@@ -754,7 +762,36 @@ def create_router(service):
                 raise HTTPException(404, '运行记录不存在')
             answer = json.loads(row['answer']) if row['answer'] else None
             snapshot = service.unpack(row['config'])
-            return {'taskId': task_id, 'runId': row['id'], 'status': row['status'], 'question': task_result_question(task['owner'],service.unpack(task['config']),snapshot,answer), 'answer': answer, 'cachedDate': row['finished'] or row['created'], 'error': row['error']}
+            saved = db.execute('SELECT messages FROM run_conversations WHERE run_id=? AND owner=?', (run_id, user)).fetchone()
+            conversation = json.loads(saved['messages']) if saved else []
+            return {'taskId': task_id, 'runId': row['id'], 'status': row['status'], 'question': task_result_question(task['owner'],service.unpack(task['config']),snapshot,answer), 'answer': answer, 'cachedDate': row['finished'] or row['created'], 'error': row['error'], 'conversation': conversation}
+
+    @router.put('/tasks/{task_id}/runs/{run_id}/conversation')
+    def save_run_conversation(task_id: str, run_id: str, payload: dict, request: Request, response: Response):
+        user = writer(request, response)
+        messages = payload.get('messages')
+        if not isinstance(messages, list) or len(messages) > 40:
+            raise HTTPException(422, '历史对话格式无效')
+        cleaned = []
+        for item in messages:
+            if not isinstance(item, dict) or item.get('role') not in ('user', 'assistant') or not isinstance(item.get('text'), str):
+                raise HTTPException(422, '历史对话格式无效')
+            text = item['text'].strip()
+            if not text or len(text) > 120000:
+                raise HTTPException(422, '单条历史对话过长或为空')
+            turn = {'role': item['role'], 'text': text}
+            if item['role'] == 'assistant' and isinstance(item.get('answer'), dict):
+                turn['answer'] = item['answer']
+            cleaned.append(turn)
+        encoded = json.dumps(cleaned, ensure_ascii=False)
+        if len(encoded.encode()) > 1024 * 1024:
+            raise HTTPException(413, '历史对话内容过大')
+        with service.db() as db:
+            task = service.readable(db, user, task_id)
+            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, task['owner'])).fetchone():
+                raise HTTPException(404, '运行记录不存在')
+            db.execute('INSERT OR REPLACE INTO run_conversations(run_id,owner,messages,updated) VALUES(?,?,?,?)', (run_id, user, encoded, stamp(now_utc())))
+        return {'ok': True, 'count': len(cleaned)}
 
     @router.get('/tasks/{task_id}/result')
     def result(task_id: str, request: Request, response: Response):

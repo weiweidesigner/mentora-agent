@@ -126,7 +126,7 @@ CHAT_SESSIONS=ChatSessions(ROOT/'outputs/chat-sessions')
 def durable_chat_events(payload,user):
     portfolio=globals().get('PORTFOLIO')
     research_only=bool(portfolio and portfolio.workflow.research_only_request(payload.question))
-    deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or portfolio.workflow.handles_question(payload.question,payload.history)))
+    deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or (not payload.agent and portfolio.workflow.handles_question(payload.question,payload.history))))
     events=portfolio.workflow.stream_idea(user,payload.question,payload.history) if deal else framework_events(payload)
     if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
     charts={}
@@ -920,9 +920,9 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
         "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
-    payload=ChatRequest(question=context+question,sessionId='day-'+run_id,reasoningFramework='deepseek',themeMode='dark',history=config.get('_history',[]))
+    payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',themeMode='dark',history=config.get('_history',[]))
     answer=None
-    for event_name,data in framework_events(payload):
+    for event_name,data in durable_chat_events(payload,config['_owner']):
         if event_name=='error':raise RuntimeError('Scheduled research stream failed')
         if event_name=='final':
             answer=ChatResponse(**data).model_dump();answer['question']=question;data=answer

@@ -111,6 +111,21 @@ def test_invalid_configuration_rejected(client, changes):
     assert response.status_code in (400,422)
 
 
+def test_task_agent_defaults_validates_and_reaches_execution(service):
+    assert TaskInput(**config()).agent == 'mentora'
+    with pytest.raises(ValueError):
+        TaskInput(**config(agent='unknown-agent'))
+    captured=[]
+    service.runner=lambda values,run_id:(captured.append(values) or {'interpretation':'agent routed'})
+    task=service.save('alice',TaskInput(**config(agent='mentora-deal',enabled=False)))
+    with service.db() as db:
+        service.enqueue(db,service.owned(db,'alice',task['id']))
+    service.execute(service.claim())
+    assert captured[0]['agent']=='mentora-deal'
+    assert captured[0]['_owner']=='alice'
+    assert service.list('alice')[0]['agent']=='mentora-deal'
+
+
 def test_concurrent_claim_only_one_worker_executes(service):
     t = service.save('alice', TaskInput(**config(enabled=False)))
     with service.db() as db:
@@ -250,6 +265,24 @@ def test_run_history_is_owned_and_keeps_recent_conversations(client,service):
     other=TestClient(client.app)
     assert other.get('/api/day/tasks/'+task['id']+'/runs').status_code==404
     assert other.get('/api/day/tasks/'+task['id']+'/runs/'+runs[0]['id']).status_code==404
+
+
+def test_run_conversation_is_saved_on_server_and_owner_isolated(client, service):
+    task=create(client,enabled=False).json()
+    service.runner=lambda c,r:{'question':'分析A股','interpretation':'初始报告'}
+    client.post('/api/day/tasks/'+task['id']+'/run',headers={'X-Veya-Day':'1'})
+    service.execute(service.claim())
+    run_id=client.get('/api/day/tasks/'+task['id']+'/runs').json()['runs'][0]['id']
+    messages=[
+        {'role':'user','text':'进一步解释量能'},
+        {'role':'assistant','text':'量能尚未确认','answer':{'interpretation':'量能尚未确认'}},
+    ]
+    saved=client.put('/api/day/tasks/'+task['id']+'/runs/'+run_id+'/conversation',json={'messages':messages},headers={'X-Veya-Day':'1'})
+    assert saved.status_code==200 and saved.json()['count']==2
+    result=client.get('/api/day/tasks/'+task['id']+'/runs/'+run_id).json()
+    assert result['conversation']==messages
+    other=TestClient(client.app)
+    assert other.get('/api/day/tasks/'+task['id']+'/runs/'+run_id).status_code==404
 
 
 def test_context_reuse_is_opt_in_and_uses_only_own_previous_success(service):

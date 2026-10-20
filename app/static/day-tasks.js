@@ -67,9 +67,17 @@
     const initialText=String(data.answer?.interpretation||'');
     chatHistory=[{role:'user',text:data.question||task.question},{role:'assistant',text:initialText||`任务已设置：${task.title}，${schedule(task)}。`}];
     chatKey=`veya-task-chat:${task.id}:${selectedRun||data.runId||task.resultVersion||'setup'}`;
-    let turns=[];try{turns=JSON.parse(localStorage.getItem(chatKey)||'[]');if(!Array.isArray(turns))turns=[];}catch{}
-    for(const turn of turns.slice(-20)){if(version!==viewVersion)return;if(!['user','assistant'].includes(turn.role)||typeof turn.text!=='string')continue;chatHistory.push(turn);await renderFollowup(turn);}
+    let turns=Array.isArray(data.conversation)?data.conversation:[];
+    if(!turns.length){try{turns=JSON.parse(localStorage.getItem(chatKey)||'[]');if(!Array.isArray(turns))turns=[];}catch{turns=[];}}
+    for(const turn of turns.slice(-40)){if(version!==viewVersion)return;if(!['user','assistant'].includes(turn.role)||typeof turn.text!=='string')continue;chatHistory.push(turn);await renderFollowup(turn);}
     $('taskChatSend').disabled=false;
+  }
+  async function persistFollowups(key) {
+    const turns=chatHistory.slice(chatHistory[1]?.role==='assistant'?2:0).slice(-40);
+    try{localStorage.setItem(key,JSON.stringify(turns));}catch{}
+    if(!selectedId||!selectedRun)return;
+    try{await api('tasks/'+selectedId+'/runs/'+selectedRun+'/conversation','PUT',{messages:turns});}
+    catch{$('taskChatError').textContent='对话已保存在当前浏览器，但暂时未同步到历史记录。';}
   }
   async function sendFollowup(event) {
     event.preventDefault();const text=$('taskChatInput').value.trim()||(taskImages.length?'请结合图片继续分析':'');if(!text||chatController||!selectedId||!chatKey)return;
@@ -80,13 +88,13 @@
     const liveArticle=typeof createAssistantMessage==='function'?createAssistantMessage(text,{target:$('taskFollowups'),taskContext:{id:`task-followup-${selectedId}-${Date.now()}`,title:selected()?.title||'定时任务',question:text}}):null;if(liveArticle)waiting.remove();
     let answer=null,streamError='';
     try {
-      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question:text,images,history:prior,sessionTitle:selected()?.title||'定时任务追问',reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='dark'?'dark':'light'})});
+      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question:text,agent:selected()?.agent||'mentora',images,history:prior,sessionTitle:selected()?.title||'定时任务追问',reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='dark'?'dark':'light'})});
       if(!response.ok||!response.body){const error=await response.json().catch(()=>({}));throw new Error(error.detail||'请求失败，请重试');}
       await readEventStream(response.body,(event,data)=>{if(controller.signal.aborted||version!==viewVersion)return;if(liveArticle)handleStreamEvent(liveArticle,event,data);if(event==='final')answer=data;if(event==='error')streamError=data.detail||data.message||'分析失败';});
       if(controller.signal.aborted||version!==viewVersion)return;
       if(!answer)throw new Error(streamError||'本次没有返回结果，请重试');
       waiting.remove();const turn={role:'assistant',text:answer.interpretation||'',answer};chatHistory.push(user,turn);if(liveArticle)finishRunThinking(liveArticle,selected());else await renderFollowup(turn);
-      try{localStorage.setItem(key,JSON.stringify(chatHistory.slice(chatHistory[1]?.role==='assistant'?2:0).slice(-20)));}catch{$('taskChatError').textContent='当前浏览器无法保存追问记录，刷新后可能丢失。';}
+      await persistFollowups(key);
     } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();liveArticle?.remove();userNode.remove();$('taskChatError').textContent=error.message;$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}
     finally{if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
@@ -137,7 +145,7 @@
       live:`检查{{market}}中{{symbols}}的${asset}盘中表现，汇总价格、成交量与板块异动，分析可能原因与需要继续观察的信号。注明行情时间和延迟，不具备实时数据时明确说明。`,
       post:`复盘{{market}}中{{symbols}}的${asset}今日表现，说明涨跌驱动、市场强弱和重要事件，并列出下一交易日的关注清单。区分已确认事实与推测，注明数据时间。`
     };
-    return {title:`${names[selectedMarket]}${type==='stocks'?'':assets[type]} · ${stages[stage]}`,market:selectedMarket,stage,assetType:type,symbols:'',question:questions[stage],cadence:'trading',date:'',endDate:'',weekdays:[0],monthDay:1,timeMode:stage==='live'?'fixed':stage==='pre'?'open':'close',offset:stage==='post'?15:-30,time:selectedMarket==='US'?'09:00':'08:30',timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false};
+    return {title:`${names[selectedMarket]}${type==='stocks'?'':assets[type]} · ${stages[stage]}`,agent:'mentora',market:selectedMarket,stage,assetType:type,symbols:'',question:questions[stage],cadence:'trading',date:'',endDate:'',weekdays:[0],monthDay:1,timeMode:stage==='live'?'fixed':stage==='pre'?'open':'close',offset:stage==='post'?15:-30,time:selectedMarket==='US'?'09:00':'08:30',timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false};
   }
   const sceneCopy={pre:{title:'新的一天，从容开场',label:'盘前',emoji:'🌅'},live:{title:'行情起伏，陪你看清',label:'盘中',emoji:'☀️'},post:{title:'收盘了，慢慢复盘',label:'盘后',emoji:'🌇'},rest:{title:'市场休息，也歇一歇',label:'休市',emoji:'🧳'}};
   function homeScene(){const info=markets.find(m=>m.market==='CN');if(!info||info.calendarError)return null;if(info.closed||info.stage==='rest')return 'rest';if(info.openAt&&info.closeAt){const now=Date.now()+serverDelta;return now<new Date(info.openAt).getTime()?'pre':now<new Date(info.closeAt).getTime()?'live':'post';}return info.stage;}
@@ -254,12 +262,14 @@
   function showLanding(updateUrl=true) {
     resetFollowup();$('taskChatForm').hidden=true;
     enterWorkspace();selectedId='';selectedRun='';resultVersion='';viewVersion++;
+    $('taskConversationNav').hidden=true;
     $('taskLanding').hidden=false;$('taskDetail').hidden=true;$('taskWizard').hidden=true;$('taskBack').hidden=true;$('taskTopActions').hidden=true;
     $('taskPageTitle').textContent='定时任务';message('','taskMessage');renderLists();
     if(updateUrl)writeUrl();
   }
   function prepareDetail(task, canEdit) {
     enterWorkspace();$('taskLanding').hidden=true;$('taskWizard').hidden=true;$('taskDetail').hidden=false;
+    $('taskConversationNav').hidden=false;$('taskConversationDate').textContent='';$('taskHistoryControl').hidden=true;
     $('taskBack').hidden=false;$('taskTopActions').hidden=false;$('taskPageTitle').textContent=task.title;
     $('taskInfoCard').hidden=true;
     $('taskRunNow').hidden=$('taskToggle').hidden=!canEdit;
@@ -310,6 +320,8 @@
   async function paintRun(data, task, version) {
     if(version!==viewVersion)return;
     workspace.dataset.taskView='result';
+    $('taskConversationDate').textContent=dateText(data.cachedDate,zoneFor(task));
+    $('taskConversationDate').dateTime=data.cachedDate||'';
     $('taskInfoCard').hidden=true;
     $('taskChatForm').hidden=['queued','running'].includes(data.status)||!data.answer;
     const container=$('taskThread');
@@ -326,7 +338,7 @@
     const waiting=document.createElement('section');waiting.className='taskWaitingState';waiting.setAttribute('role','status');
     waiting.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h2>等待执行</h2><p>任务开启时间</p><time></time>';
     const time=waiting.querySelector('time');time.textContent=task.nextAt?dateText(task.nextAt,zoneFor(task)):'暂无执行安排';if(task.nextAt)time.dateTime=task.nextAt;
-    workspace.dataset.taskView='waiting';$('taskThread').replaceChildren(waiting);$('taskRunState').textContent='';$('taskChatForm').hidden=true;return;
+    workspace.dataset.taskView='waiting';$('taskThread').replaceChildren(waiting);$('taskRunState').textContent='';$('taskConversationDate').textContent='';$('taskHistoryControl').hidden=true;$('taskChatForm').hidden=true;return;
   }
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {
     const task=[...tasks,...sceneTasks].find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
@@ -338,12 +350,12 @@
     $('taskThread').innerHTML='<p class="taskResultEmpty" role="status">正在读取任务运行记录…</p>';
     if(updateUrl)writeUrl(id,false,shared,runId);
     if(!editable(task) && sharedEntry?.task.id===task.id) {
-      $('taskRunSelect').hidden=true;$('taskRunState').textContent='分享的运行结果 · 可查看任务设置';
+      $('taskHistoryControl').hidden=true;$('taskRunState').textContent='分享的运行结果 · 可查看任务设置';
       await paintRun(sharedEntry,task,version);return;
     }
     const response=await api('tasks/'+id+'/runs');if(version!==viewVersion)return;
     const runs=response.runs;
-    $('taskRunSelect').hidden=!runs.length;
+    $('taskHistoryControl').hidden=!runs.length;
     $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
     if(!runs.length) {
       if(task.systemPreset || (task.enabled && task.nextAt)){
@@ -486,12 +498,12 @@
     if(d.ready)await saveDraft();
   }
   async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),activity:d.activity||[]};
-    const data={};for(const key of ['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'])if(d[key]!==undefined)data[key]=d[key];data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
+    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
     d.activity.push({title:'保存任务',detail:schedule(d)});$('taskClarification').hidden=true;renderWizardTranscript(true);
     try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);await loadTaskConfirmation(task,viewVersion);}message('','taskMessage');}
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}
   }
-  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
+  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.agent,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
   function renderCreatedTask(task){workspace.dataset.taskView='result';const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
     renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
     if(record?.answers?.length)renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);
@@ -562,7 +574,7 @@
       switch(b.id){
         case'dayCustomizeTasks':case'navTasks':case'railTasks':showLanding();if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
         case'navHome':case'railHome':if(typeof startNewChat==='function')startNewChat(false,false);if(!mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(false);break;
-        case'taskBack':case'wizardClose':showLanding();break;
+        case'taskBack':case'taskConversationBack':case'wizardClose':showLanding();break;
         case'taskSidebarNew':case'taskOpenCreate':newTask();break;
         case'taskSearchToggle':{const field=$('taskSearchField');field.hidden=!field.hidden;b.setAttribute('aria-expanded',String(!field.hidden));if(!field.hidden)$('taskSearch').focus();else{$('taskSearch').value='';renderLists();}break;}
         case'taskSidebarExpand':sidebarExpanded=!sidebarExpanded;renderLists();break;

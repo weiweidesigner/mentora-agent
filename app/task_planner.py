@@ -82,7 +82,7 @@ def plan_task(payload: PlanningInput) -> dict:
 
 
 def task_confirmation(task: dict) -> str:
-    safe={k:v for k,v in task.items() if k in DRAFT_FIELDS+('enabled','nextAt')}
+    safe={k:v for k,v in task.items() if k in DRAFT_FIELDS+('agent','enabled','nextAt')}
     result=model_plan({'mode':'confirmation','task':safe})
     answer=result.get('answer') if isinstance(result,dict) else None
     if not isinstance(answer,str) or not answer.strip() or len(answer)>4000:
