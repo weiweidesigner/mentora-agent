@@ -932,8 +932,17 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     # Scheduling metadata controls when to run, not what to research. Only
     # expand placeholders explicitly present in the user's research question.
     context = (
+        "这是 Mentora Deal 定时任务。按任务正文明确约定执行：要求下单时，完成研究、候选筛选、模型决策和账户校验后，"
+        "通过 portfolio-order 提交符合条件的模拟订单；如果任务明确仅研究或不下单，必须保持只读。"
+        "不得绕过行情时效、置信度、现金、仓位、可卖数量、交易时段及市场规则；卖出仅限实际持仓。"
+        "只依据真实订单和账本回执报告成交，未成交说明具体原因。不得修改全局交易设置、设置提醒或向外部渠道发送消息。"
+        if config.get('agent') == 'mentora-deal' else
         "这是自动研究任务，只进行信息查询与分析；不得交易、修改账户、设置提醒或向外部渠道发送消息。"
-        "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。\n\n"
+    )
+    context += (
+        "按项目技能获取数据，注明数据截至时间，缺少实时数据时明确说明，不得编造行情。历史对话仅供对照，每次都应重新核验最新数据。"
+        "正文遵循现有渲染规范：使用标准 Markdown，先给出结论，再用二、三级标题分节，候选逐项分段，"
+        "用列表或表格呈现可比较信息，关键结论适度加粗；引用写成[来源名称](https://...)，不堆砌裸链接或长篇无分节文字。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
     payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',themeMode='dark',history=config.get('_history',[]))

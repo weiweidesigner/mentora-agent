@@ -41,3 +41,18 @@ def test_explicit_question_placeholders_remain_supported(monkeypatch):
     }, 'placeholder-test')
     assert '{{' not in seen[0]
     assert result['question'].endswith('的美股 AAPL')
+
+
+def test_deal_schedule_honors_explicit_order_intent_and_requires_markdown(monkeypatch):
+    seen=[]
+    def stream(payload,owner):
+        seen.append(payload)
+        yield 'final', {'question':payload.question,'interpretation':'## 结果\n\n未成交。','selectedSkill':{}}
+    monkeypatch.setattr(presentation,'durable_chat_events',stream)
+    for agent in ('mentora-deal','mentora'):
+        presentation.run_daily_research({'agent':agent,'market':'CN','symbols':'','_owner':'fixture','question':'筛选并下单'},'orders-'+agent)
+    assert '通过 portfolio-order 提交符合条件的模拟订单' in seen[0].question
+    assert '任务明确仅研究或不下单' in seen[0].question
+    assert '只进行信息查询与分析；不得交易' not in seen[0].question
+    assert '只进行信息查询与分析；不得交易' in seen[1].question
+    assert all('标准 Markdown' in item.question for item in seen)
