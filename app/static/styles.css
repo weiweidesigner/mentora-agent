@@ -5049,3 +5049,41 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
  .shell.file-preview-open :is(.conversation,#taskWorkspace){min-width:0}
 }
 @media(max-width:1023px){.generatedFilePreview{position:fixed;inset:0;width:100%;height:100dvh;z-index:150}.filePreviewHeader{height:56px;padding:8px 12px}.filePreviewBody{padding:16px 16px 0}}
+
+/* Live reasoning stays in the conversation; completed activity opens on demand. */
+.thinkingTrigger.is-thinking .thinkingChevron{display:inline-block}
+.thinkingTrigger[aria-expanded="true"] .thinkingChevron{transform:rotate(45deg)}
+.thinkingTrigger.is-thinking .thinkingSummaryText{background:none;color:inherit;animation:none}
+.assistantBubble>.thinkingSteps{list-style:none;margin:0 0 20px;padding:14px 0 0;border:0;border-top:1px solid var(--line);background:transparent!important;display:grid;gap:18px;min-width:0}
+.assistantBubble>.thinkingSteps[hidden]{display:none}
+.thinkingSteps>li{list-style:none;min-width:0;margin:0;padding:0}
+.thinkingSteps .activityStepTitle,.activityThoughtSummary{color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.75;overflow-wrap:anywhere}
+.activityThoughtSummary{margin:0 0 10px;white-space:pre-wrap}
+.activityTool{min-width:0}
+.activityAction{display:flex;align-items:center;gap:8px;width:fit-content;max-width:100%;min-height:32px;padding:2px 0;list-style:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1.6}
+.activityAction::-webkit-details-marker{display:none}
+.activityActionIcon{display:flex;align-items:center;flex:0 0 18px;width:18px;height:18px}
+.activityActionIcon svg{width:100%;height:100%}
+.activityActionText{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activityActionChevron{flex:0 0 6px;width:6px;height:6px;margin-left:3px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);opacity:0;transition:opacity .15s,transform .15s}
+.activityAction:hover .activityActionChevron,.activityAction:focus-visible .activityActionChevron,.activityTool[open]>.activityAction .activityActionChevron{opacity:1}
+.activityTool[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
+.activityAction:focus-visible,.thinkingTrigger:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+.activityTool>.toolStepDetail{margin-top:8px;gap:8px}
+.toolStepInput:empty{display:none}
+.activityToolState{text-align:right;color:var(--muted);font-size:12px;padding:0 4px}
+.is-error .activityToolState{color:var(--danger)}
+.activityTool .toolStepBlock{max-height:320px;overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:14px 16px}
+.activityTool .toolStepBlock pre{overflow-wrap:anywhere;white-space:pre-wrap}
+.activityTool .toolStepBlock code{font-size:12px;line-height:1.6}
+.thinkingSteps .is-loading>.activityTool>.activityAction .activityActionText,.activityTimeline .is-loading>.activityTool>.activityAction .activityActionText{animation:activityTextFade 1.8s ease-in-out infinite}
+.is-loading>.activityTool>.activityAction .activityActionIcon{animation:activityTextFade 1.8s ease-in-out infinite}
+.is-error>.activityTool>.activityAction{color:var(--danger)}
+.activityTimeline .activityThoughtSummary{font-size:14px;line-height:1.7}
+.activityTimeline>li:has(>.activityTool){padding-bottom:20px}
+.activityBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:125}
+.activityBackdrop[hidden]{display:none}
+@keyframes activityTextFade{0%,100%{opacity:.5}50%{opacity:1}}
+@media(hover:none){.activityActionChevron{opacity:.7}}
+@media(max-width:1023px){.activityDrawer{max-height:calc(100dvh - 24px);padding-bottom:env(safe-area-inset-bottom)}.activityAction{min-height:40px}.assistantBubble>.thinkingSteps{gap:14px}}
+@media(prefers-reduced-motion:reduce){.thinkingSteps .is-loading>.activityTool>.activityAction .activityActionText,.activityTimeline .is-loading>.activityTool>.activityAction .activityActionText,.is-loading>.activityTool>.activityAction .activityActionIcon{animation:none}.thinkingTrigger.is-thinking .thinkingSummaryText{animation:none}}

@@ -197,6 +197,12 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Tab" && activityDrawer?.getAttribute("aria-modal") === "true") {
+    const controls = Array.from(activityDrawer.querySelectorAll('button, a[href], summary, [tabindex="0"]')).filter((node) => node.getClientRects().length);
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }
   if (event.key !== "Escape" || !reasoningStrengthControl?.classList.contains("is-open")) return;
   setReasoningStrengthPopover(false);
   reasoningStrengthButton?.focus({ preventScroll: true });
@@ -294,7 +300,16 @@ function syncResponsiveShell() {
 }
 
 syncResponsiveShell();
-mobileShellQuery.addEventListener?.("change", syncResponsiveShell);
+mobileShellQuery.addEventListener?.("change", () => {
+  syncResponsiveShell();
+  if (!activeActivityArticle || !activityDrawer?.classList.contains("is-open")) return;
+  if (isMobileLayout()) openActivityDrawer(activeActivityArticle);
+  else {
+    activityDrawer.removeAttribute("aria-modal");
+    activityDrawer.removeAttribute("role");
+    document.querySelector(".activityBackdrop")?.setAttribute("hidden", "");
+  }
+});
 
 renderHistory();
 serverSessionReady = syncServerSessions();
@@ -542,6 +557,17 @@ async function stopActiveRun() {
 }
 
 activityClose?.addEventListener("click", closeActivityDrawer);
+activityBody?.addEventListener("toggle", (event) => {
+  const detail = event.target;
+  if (!detail.matches?.("details.activityTool") || !activeActivityArticle) return;
+  const copy = activeActivityArticle.querySelectorAll(".thinkingSteps details.activityTool")[Number(detail.dataset.activityDetailIndex)];
+  if (copy) copy.open = detail.open;
+}, true);
+setInterval(() => {
+  document.querySelectorAll('.message.assistant[data-thinking-state="active"]').forEach((article) => {
+    if (!article.activityEnded && article.isConnected) updateThinkingSummary(article, "", { live: true });
+  });
+}, 1000);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
@@ -640,10 +666,9 @@ function createAssistantMessage(question, options = {}) {
         <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thinking"))}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
       </button>
-      <ol class="thinkingSteps" hidden>
+      <ol class="thinkingSteps">
         <li class="is-loading is-initial-status">
           <div class="activityStepTitle">${escapeHtml(initialActivityTitle(lang))}</div>
-          <div class="activityStepDetail">${escapeHtml(initialActivityDetail(lang))}</div>
         </li>
       </ol>
       <div class="routeChips" hidden></div>
@@ -652,6 +677,7 @@ function createAssistantMessage(question, options = {}) {
   `;
   article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
   article.activityStepKeys.add("initial-status");
+  updateThinkingSummary(article, "", { live: true });
   article.taskContext = options.taskContext || null;
   if (options.target) options.target.append(article);
   else appendMessage(article, true);
@@ -660,7 +686,7 @@ function createAssistantMessage(question, options = {}) {
 
 function initialActivityTitle(lang) {
   const language = normalizeLang(lang);
-  return language === "zh-Hans" ? "正在启动 Agent" : language === "zh-Hant" ? "正在啟動 Agent" : "Starting the agent";
+  return language === "zh-Hans" ? "正在连接Agent" : language === "zh-Hant" ? "正在連接Agent" : "Connecting to agent";
 }
 
 function initialActivityDetail(lang) {
@@ -730,8 +756,8 @@ function handleStreamEvent(article, eventName, data) {
       appendStep(article, data?.kind === "tool" ? `工具 · ${title}` : title, title === text ? "" : text, "loading", `task-progress:${data?.stage || data?.key || text}`);
       return;
     }
-    article.dataset.currentThinking = text;
-    updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
+    appendStep(article, text, "", "loading", `model-progress:${text}`);
+    article.querySelector(".thinkingSteps > li:last-child")?.classList.add("is-model-summary");
     return;
   }
   if (eventName === "answer_text") {
@@ -1676,12 +1702,12 @@ function appendStep(article, text, detail = "", state = "loading", stepKey = "")
   article.activityStepKeys.add(normalizedKey);
   const isFirstStep = list.children.length === 0;
   const shouldStick = isNearBottom();
-  list.querySelectorAll("li.is-loading").forEach((item) => {
+  list.querySelectorAll("li.is-loading:not(.is-tool-step)").forEach((item) => {
     item.classList.remove("is-loading");
     item.classList.add("is-done");
   });
   const item = document.createElement("li");
-  item.className = state === "error" ? "is-error" : "is-loading";
+  item.className = state === "error" ? "is-error" : state === "done" ? "is-done" : "is-loading";
   item.innerHTML = `
     <div class="activityStepTitle">${escapeHtml(text)}</div>
     ${detail && String(detail).trim() !== String(text).trim() ? `<div class="activityStepDetail">${escapeHtml(detail)}</div>` : ""}
@@ -1704,12 +1730,12 @@ function appendRichStep(article, { titleHtml, detailHtml = "", drawerDetailHtml 
   article.activityStepKeys.add(normalizedKey);
   const isFirstStep = list.children.length === 0;
   const shouldStick = isNearBottom();
-  list.querySelectorAll("li.is-loading").forEach((item) => {
+  list.querySelectorAll("li.is-loading:not(.is-tool-step)").forEach((item) => {
     item.classList.remove("is-loading");
     item.classList.add("is-done");
   });
   const item = document.createElement("li");
-  item.className = `${state === "error" ? "is-error" : "is-loading"} ${className}`.trim();
+  item.className = `${state === "error" ? "is-error" : state === "done" ? "is-done" : "is-loading"} ${className}`.trim();
   item.innerHTML = `
     <div class="activityStepTitle">${titleHtml}</div>
     ${detailHtml ? `<div class="activityStepDetail">${detailHtml}</div>` : ""}
@@ -1793,35 +1819,38 @@ function appendToolStep(article, data) {
       `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
     );
   }
+  const thought = String(data?.thoughtSummary || data?.thought || "").trim();
+  let actionArgument = shellCommand.length ? shellCommand.map(shellQuote).join(" ") : "";
+  if (!actionArgument && params[0]) {
+    try {
+      const input = JSON.parse(params[0]);
+      const argument = input.command || input.cmd || input.file_path || input.path || input.url || input.query || input.pattern;
+      actionArgument = Array.isArray(argument) ? argument.join(" ") : typeof argument === "string" ? argument : "";
+    } catch { /* Non-JSON inputs remain in the expandable tool detail. */ }
+  }
+  const action = String(data?.action || `${tool}${actionArgument ? ` · ${actionArgument.replace(/\s+/g, " ").slice(0, 180)}` : ""}`).trim();
+  const renderTool = (item) => {
+    const wasOpen = item.querySelector("details")?.open || false;
+    const previousThought = item.querySelector(".activityThoughtSummary")?.textContent || "";
+    const previousInput = item.querySelector(".toolStepInput")?.innerHTML || "";
+    const previousAction = item.querySelector(".activityActionText")?.textContent || "";
+    const actionText = !data?.action && !actionArgument && previousAction ? previousAction : action;
+    const toolState = ["completed", "failed"].includes(phase)
+      ? `<div class="activityToolState">${phase === "failed" ? "×" : "✓"} ${escapeHtml(lang === "zh-Hans" || lang === "zh-Hant" ? (phase === "failed" ? "执行失败" : "执行完成") : (phase === "failed" ? "Failed" : "Completed"))}</div>` : "";
+    item.dataset.toolName = tool;
+    item.innerHTML = `${thought || previousThought ? `<p class="activityThoughtSummary">${escapeHtml(thought || previousThought)}</p>` : ""}
+      <details class="activityTool"${wasOpen ? " open" : ""}>
+        <summary class="activityAction"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(script || tool)}</span><span class="activityActionText">${escapeHtml(actionText)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>
+        <div class="toolStepDetail"><div class="toolStepInput">${shellBlock || previousInput || (params.length ? toolBlockHtml(tool, params.join("\n")) : "")}</div>${fullDetailParts.filter((part) => part !== shellBlock).join("")}${toolState}</div>
+      </details>`;
+    item.classList.remove("is-loading", "is-done", "is-error");
+    item.classList.add(phase === "failed" ? "is-error" : phase === "completed" ? "is-done" : "is-loading");
+  };
   if (["completed", "failed"].includes(phase) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
       .find((item) => item.dataset.toolCallId === callId);
     if (existingItem) {
-      const titleElement = existingItem.querySelector(".activityStepTitle");
-      if (titleElement) titleElement.textContent = dynamicTitle;
-      const detailElement = existingItem.querySelector(":scope > .activityStepDetail");
-      if (detailElement && detail) detailElement.textContent = detail;
-      if (observation) {
-        let drawer = existingItem.querySelector(":scope > .activityDrawerOnly");
-        if (!drawer) {
-          drawer = document.createElement("div");
-          drawer.className = "activityDrawerOnly";
-          existingItem.appendChild(drawer);
-        }
-        let drawerDetail = drawer.querySelector(":scope > .toolStepDetail");
-        if (!drawerDetail) {
-          drawerDetail = document.createElement("div");
-          drawerDetail.className = "toolStepDetail";
-          drawer.appendChild(drawerDetail);
-        }
-        const existingOutput = existingItem.querySelector(".toolStepOutputBlock");
-        if (existingOutput) existingOutput.innerHTML = toolBlockHtml(skillOutputLabel(lang), observation);
-        else drawerDetail.insertAdjacentHTML(
-          "beforeend", `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
-        );
-      }
-      existingItem.classList.remove("is-loading", "is-done", "is-error");
-      existingItem.classList.add(phase === "failed" ? "is-error" : "is-done");
+      renderTool(existingItem);
       article.dataset.currentThinking = compactReasoningTitle(data?.nextThought || data?.thoughtSummary, lang) || dynamicTitle;
       updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
       syncActivityDrawer(article);
@@ -1839,8 +1868,26 @@ function appendToolStep(article, data) {
   });
   if (item && callId) item.dataset.toolCallId = callId;
   if (item && data?.skillId) item.dataset.skillCallId = callId;
-  if (item && phase === "completed") { item.classList.remove("is-loading"); item.classList.add("is-done"); }
+  if (item) {
+    const previous = item.previousElementSibling;
+    if (thought && previous?.classList.contains("is-model-summary") && previous.textContent.trim() === thought) previous.remove();
+    renderTool(item); syncActivityDrawer(article);
+  }
 
+}
+
+function activityActionIcon(tool) {
+  const name = String(tool).toLowerCase();
+  const path = /bash|shell|exec|command|python/.test(name)
+    ? '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 8 4 4-4 4m6 0h4"/>'
+    : /write|edit|patch/.test(name)
+    ? '<path d="m16 3 5 5L9 20l-6 1 1-6L16 3ZM14 5l5 5"/>'
+    : /read|file/.test(name)
+    ? '<path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/>'
+    : /search|web|fetch|browse/.test(name)
+    ? '<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/>'
+    : '<path d="m8 5-6 7 6 7m8-14 6 7-6 7m-3-16-2 18"/>';
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
 }
 
 function publicToolObservation(value, lang = "zh-Hans") {
@@ -1955,17 +2002,17 @@ function refreshSavedToolStepTitles(root, lang) {
       else if (cleaned !== code.textContent) code.textContent = cleaned;
     });
     const title = item.querySelector(".activityStepTitle");
-    if (!title || !/^(?:执行工具：|執行工具：|Running tool:\s*)bash$/i.test(title.textContent.trim())) return;
-    const input = item.querySelector(".activityDrawerOnly pre code")?.textContent || "";
-    title.textContent = toolActivityTitle(
-      { tool: "bash", script: "bash" },
-      "bash",
-      "bash",
-      "",
-      input ? [input] : [],
-      [],
-      lang,
-    );
+    if (!title || item.querySelector(".activityTool")) return;
+    const tool = item.dataset.toolName || "Tool";
+    title.className = "activityThoughtSummary";
+    const details = document.createElement("details");
+    details.className = "activityTool";
+    details.innerHTML = `<summary class="activityAction"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(tool)}</span><span class="activityActionText">${escapeHtml(tool)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>`;
+    item.querySelectorAll(":scope > .activityStepDetail, :scope > .activityDrawerOnly").forEach((node) => {
+      node.classList.remove("activityDrawerOnly");
+      details.append(node);
+    });
+    item.append(details);
   });
 }
 
@@ -3349,9 +3396,9 @@ function showError(article, message, options = {}) {
     item.classList.remove("is-loading");
     item.classList.add("is-error");
   });
-  updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "stoppedAfter"));
   article.dataset.thinkingState = "error";
   article.activityEnded = true;
+  updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "stoppedAfter"));
   target.innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
   if (!options.skipSessionRecord) recordAssistantError(article, message);
   syncActivityDrawer(article);
@@ -3375,7 +3422,7 @@ function showStopped(article, message="已停止本轮任务", options={}) {
 
 function completeThinking(article) {
   article.querySelectorAll(".thinkingSteps li").forEach((item) => {
-    if (item.dataset.skillCallId && item.classList.contains("is-error")) return;
+    if (item.classList.contains("is-error")) return;
     item.classList.remove("is-loading", "is-error");
     item.classList.add("is-done");
   });
@@ -3386,16 +3433,28 @@ function updateThinkingSummary(article, prefix, options = {}) {
   if (!target) return;
   const startedAt = Number(article.dataset.startedAt || Date.now());
   const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
-  target.textContent = article.classList.contains("cachedCaseAnswer") && !article.dataset.cachedElapsedMs
-    ? "缓存回放 · 原始耗时未记录"
-    : article.dataset.cachedActivityCount
-    ? `已思考${article.dataset.cachedElapsedMs ? " " + formatDuration(Number(article.dataset.cachedElapsedMs)) : ""}`
-    : options.live ? article.dataset.currentThinking || prefix : `${prefix} ${formatDuration(elapsed)}`;
+  const lang = normalizeLang(article.dataset.lang || "en");
+  const chinese = lang === "zh-Hans" || lang === "zh-Hant";
+  const minutes = Math.floor(elapsed / 60000);
+  const seconds = Math.floor(elapsed / 1000) % 60;
+  const duration = chinese ? `${minutes ? `${minutes}分钟 ` : ""}${seconds}秒` : formatDuration(elapsed);
+  target.textContent = article.dataset.elapsedUnrecorded === "true" ? (chinese ? "查看执行记录" : "View activity")
+    : `${chinese ? "用时" : "Elapsed"} ${duration}`;
+  const list = article.querySelector(".thinkingSteps");
+  if (list) {
+    list.hidden = !options.live || article.dataset.thinkingCollapsed === "true";
+    if (!options.live) {
+      list.querySelectorAll("details[open]").forEach((detail) => { detail.open = false; });
+      delete article.dataset.thinkingCollapsed;
+    }
+  }
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
     trigger.classList.toggle("is-thinking", Boolean(options.live));
     trigger.classList.toggle("is-complete", !options.live && article.dataset.thinkingState !== "error");
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
+    trigger.setAttribute("aria-expanded", String(Boolean(options.live && list && !list.hidden)));
+    trigger.setAttribute("aria-controls", list?.id || (list ? (list.id = `thinking-${crypto.randomUUID()}`) : "activityDrawer"));
   }
   if (activeActivityArticle === article && activityElapsed) {
     activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
@@ -3403,6 +3462,11 @@ function updateThinkingSummary(article, prefix, options = {}) {
 }
 
 function toggleActivityDrawer(article) {
+  if (!article.activityEnded && article.dataset.thinkingState === "active") {
+    article.dataset.thinkingCollapsed = article.dataset.thinkingCollapsed === "true" ? "false" : "true";
+    updateThinkingSummary(article, "", { live: true });
+    return;
+  }
   if (activeActivityArticle === article && activityDrawer?.classList.contains("is-open")) {
     closeActivityDrawer();
     return;
@@ -3417,14 +3481,35 @@ function openActivityDrawer(article) {
   shell?.classList.add("activity-open");
   activityDrawer?.classList.add("is-open");
   activityDrawer?.setAttribute("aria-hidden", "false");
+  article.querySelector(".thinkingTrigger")?.setAttribute("aria-expanded", "true");
+  article.querySelector(".thinkingTrigger")?.setAttribute("aria-controls", "activityDrawer");
+  if (isMobileLayout()) {
+    activityDrawer?.setAttribute("role", "dialog");
+    activityDrawer?.setAttribute("aria-modal", "true");
+    activityDrawer?.setAttribute("aria-label", "执行记录");
+    let backdrop = document.querySelector(".activityBackdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.className = "activityBackdrop";
+      backdrop.addEventListener("click", closeActivityDrawer);
+      document.body.append(backdrop);
+    }
+    backdrop.hidden = false;
+    activityClose?.focus();
+  }
   if ((article.classList.contains("cachedCaseAnswer") || article.dataset.historicalTaskRun === "true") && activityBody) activityBody.scrollTop = 0;
   syncActivityDrawer(article);
 }
 
 function closeActivityDrawer() {
+  const previousArticle = activeActivityArticle;
   shell?.classList.remove("activity-open");
   activityDrawer?.classList.remove("is-open");
   activityDrawer?.setAttribute("aria-hidden", "true");
+  activityDrawer?.removeAttribute("aria-modal");
+  document.querySelector(".activityBackdrop")?.setAttribute("hidden", "");
+  previousArticle?.querySelector(".thinkingTrigger")?.setAttribute("aria-expanded", "false");
+  if (activityDrawer?.contains(document.activeElement)) previousArticle?.querySelector(".thinkingTrigger")?.focus();
   activeActivityArticle = null;
 }
 
@@ -3439,7 +3524,7 @@ function syncActivityDrawer(article) {
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
   activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
-  const steps = Array.from(article.querySelectorAll(".thinkingSteps li"))
+  const steps = Array.from(article.querySelectorAll(".thinkingSteps > li"))
     .map((item) => `<li class="${item.className}">${item.innerHTML}</li>`)
     .join("");
   const terminal = buildActivityTerminal(article, lang, elapsed, state);
@@ -3451,6 +3536,7 @@ function syncActivityDrawer(article) {
     <ol class="activityTimeline">${steps}${terminal}</ol>
     ${sources}
   `;
+  activityBody.querySelectorAll("details.activityTool").forEach((detail, index) => { detail.dataset.activityDetailIndex = String(index); });
   if (shouldStick) {
     scrollActivityToLatest(true);
   } else {
@@ -4413,6 +4499,7 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
       </div>
     </div>`;
   refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
+  if (!options.onThinkingClick && typeof updateThinkingSummary === "function") updateThinkingSummary(article, "");
   void restoreSavedActivity(article, {...(data.activity || {}), runId:data.chatRunId || options.chatRunId || '', elapsedMs:options.thinkingElapsed});
   if(typeof showAgentIdentity==='function')showAgentIdentity(article, data.agent || (data.selectedSkill?.key==='mentora-deal'?'mentora-deal':''));
   article.querySelector(".thinkingTrigger").addEventListener("click", options.onThinkingClick || (() => toggleActivityDrawer(article)));

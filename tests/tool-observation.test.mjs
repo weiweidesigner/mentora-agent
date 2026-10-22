@@ -37,7 +37,7 @@ test('a running tool has no result card and completion replaces a stale card on 
   const article=w.document.querySelector('article'),base={tool:'bash',script:'bash',callId:'same-call'};
   w.appendToolStep(article,{...base,phase:'started',observation:'transport metadata'});
   assert.equal(article.querySelector('.toolStepOutputBlock'),null);
-  article.querySelector('.activityDrawerOnly').innerHTML='<div class="toolStepDetail"><div class="toolStepOutputBlock">stale call envelope</div></div>';
+  article.querySelector('details .toolStepDetail').insertAdjacentHTML('beforeend','<div class="toolStepOutputBlock">stale call envelope</div>');
   w.appendToolStep(article,{...base,phase:'completed',observation:'Actual <result>'});
   assert.equal(article.querySelectorAll('li').length,1);
   assert.equal(article.querySelectorAll('.toolStepOutputBlock').length,1);
