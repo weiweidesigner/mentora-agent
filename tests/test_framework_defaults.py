@@ -51,7 +51,7 @@ def test_health_exposes_installed_harness_versions(monkeypatch):
         'deepseekHarnessSdk': '0.2.1rc2',
         'deepseekHarnessRuntime': '0.2.1rc2',
         'mentoraDeal': '9934bcfda0eadfa4a7d98d9f78626eccc9341a8b',
-        'dataVisCharts': '72433dd4c616b7db561de7e00348f55791091863',
+        'dataVisCharts': 'eaede5913a3932cb374f09c1e214c8d7555f2d16',
     }
 
 
@@ -66,7 +66,7 @@ def test_health_tolerates_missing_harness_distribution(monkeypatch):
         'deepseekHarnessSdk': None,
         'deepseekHarnessRuntime': None,
         'mentoraDeal': None,
-        'dataVisCharts': '72433dd4c616b7db561de7e00348f55791091863',
+        'dataVisCharts': 'eaede5913a3932cb374f09c1e214c8d7555f2d16',
     }
 
 
