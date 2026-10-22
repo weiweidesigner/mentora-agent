@@ -68,8 +68,8 @@ test('task follow-up input does not show a nested focus outline',()=>{
 });
 
 test('task conversation date stays centered and visually secondary',()=>{
- assert.match(styles,/\.taskConversationDate\s*\{[^}]*position:absolute;[^}]*left:50%;[^}]*top:50%;[^}]*transform:translate\(-50%,-50%\);[^}]*font-size:11px;[^}]*opacity:\.62;/);
- assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.taskConversationDate\s*\{\s*font-size:10px;opacity:\.58;\s*\}/);
+ assert.match(styles,/\.taskConversationDate\s*\{[^}]*position:absolute;[^}]*left:50%;[^}]*top:50%;[^}]*transform:translate\(-50%,-50%\);[^}]*font-size:10px;[^}]*opacity:\.48;[^}]*text-align:center;/);
+ assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.taskConversationDate\s*\{\s*font-size:9px;opacity:\.44;\s*\}/);
 });
 
 test('new task opens the existing panel and task landing has no composer',async()=>{
