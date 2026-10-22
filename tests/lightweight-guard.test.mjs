@@ -49,6 +49,15 @@ test('successful delivery stages run once per turn and reset on the next turn', 
   assert.equal(bodies,4);
 });
 
+test('reading a capability contract does not consume its execution stage', async t => {
+  const {guard}=setup(t);let bodies=0;
+  const contract=shell('python3 app/skill_runner.py contract --script code_interpreter.py');
+  const execute=shell('python3 app/skill_runner.py execute --script code_interpreter.py -- --payload input.json --transform-file transform.py --output receipt.html --payload-output result.json');
+  assert.equal((await guard.execute(contract,async()=>{bodies++;return ok('contract');})).content[0].text,'contract');
+  assert.equal((await guard.execute(execute,async()=>{bodies++;return ok('computed');})).content[0].text,'computed');
+  assert.equal(bodies,2);
+});
+
 test('elapsed time and many tool calls never force a workflow phase or stop research', async t => {
   const {root}=setup(t);let time=0,bodies=0;const guard=new LightweightGuard(root,()=>time);
   for(let i=0;i<24;i++){

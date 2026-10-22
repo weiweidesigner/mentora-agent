@@ -15,6 +15,11 @@ test('native result envelopes expose returned text while ordinary JSON output st
  const result=JSON.stringify({ok:true,count:5});assert.equal(observation(result),result);
  assert.equal(observation('Usage: tool --input file'),'Usage: tool --input file');
 });
+test('empty file probes are hidden and failed file handoffs become user-facing text',()=>{
+ assert.equal(observation('No files found'),'');
+ const failure=JSON.stringify({failed:true,summary:'Error: cannot read "/srv/outputs/missing.json": not found',handoff:'internal'});
+ assert.equal(observation(failure),'所需中间文件未生成，已停止读取并切换可用结果。');
+});
 test('a running tool has no result card and completion replaces a stale card on the same row',()=>{
  const dom=new JSDOM('<article><ol class="thinkingSteps"></ol></article>',{runScripts:'outside-only'}),w=dom.window;
  try{

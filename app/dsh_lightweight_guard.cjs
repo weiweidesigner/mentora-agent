@@ -195,6 +195,9 @@ function retryFamily(exec) {
 function boundedStage(exec) {
   const command = String(exec.arguments?.command || '');
   const description = String(exec.arguments?.description || '');
+  // Capability discovery is read-only metadata. It must never consume the
+  // single execution allowance for the corresponding delivery stage.
+  if (/\bskill_runner\.py\s+contract\b/i.test(command)) return '';
   if (/render_streamviz\.py|(?:write|render|build|generate).{0,40}\.html/i.test(`${command} ${description}`)) return 'html-render';
   if (/inspect_html\.py|playwright|screenshot|(?:validate|inspect|check|核对|检查|验证).{0,30}(?:html|layout|布局)/i.test(`${command} ${description}`)) return 'html-validation';
   if (/(?:code_interpreter|transform\.py)|(?:summari[sz]e|aggregate|consolidat|汇总|聚合).{0,30}(?:data|result|数据|结果)/i.test(`${command} ${description}`)) return 'summary-calculation';

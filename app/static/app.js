@@ -1769,7 +1769,7 @@ function appendToolStep(article, data) {
   const output = String(data?.observation || "").trim();
   const preObservation = String(data?.preObservation || "").trim();
   const phase = String(data?.phase || "").trim().toLowerCase();
-  const observation = phase === "started" ? "" : publicToolObservation([preObservation, output].filter(Boolean).join("\n"));
+  const observation = phase === "started" ? "" : publicToolObservation([preObservation, output].filter(Boolean).join("\n"), lang);
   const callId = String(data?.callId || "").trim();
   if (script === "multimodal_vision" && mergeVisionToolStep(article, { script, code, params, shellCommand, lang })) {
     return;
@@ -1843,17 +1843,27 @@ function appendToolStep(article, data) {
 
 }
 
-function publicToolObservation(value) {
+function publicToolObservation(value, lang = "zh-Hans") {
   let text = String(value || "").trim();
-  try {
-    const envelope = JSON.parse(text);
-    if (envelope && typeof envelope === "object") {
+  for (let depth = 0; depth < 2; depth += 1) {
+    try {
+      const envelope = JSON.parse(text);
+      if (!envelope || typeof envelope !== "object") break;
       if (envelope.callId && envelope.name && "arguments" in envelope) return "";
+      if (envelope.failed === true) {
+        const missing = /cannot read|not found|no such file/i.test(String(envelope.summary || ""));
+        if (lang === "zh-Hans" || lang === "zh-CN") return missing ? "所需中间文件未生成，已停止读取并切换可用结果。" : "工具执行失败，已记录错误并停止重复尝试。";
+        if (lang === "zh-Hant") return missing ? "所需中間檔案未產生，已停止讀取並切換可用結果。" : "工具執行失敗，已記錄錯誤並停止重複嘗試。";
+        return missing ? "The required intermediate file was not created; reading stopped and an available result will be used." : "The tool failed; the error was recorded and duplicate attempts were stopped.";
+      }
       if (envelope.message?.role === "tool" || envelope.message?.source?.kind === "tool") {
         text = (envelope.message.content || []).filter(block => block.type === "text").map(block => block.text || "").join("\n").trim();
+        continue;
       }
-    }
-  } catch { /* Plain tool text is already the observation. */ }
+      break;
+    } catch { break; /* Plain tool text is already the observation. */ }
+  }
+  if (/^No files found\.?$/i.test(text)) return "";
   const hasKeyCheck = /\b[A-Z][A-Z0-9_]*_API_KEY\s+(?:set|configured|present)\b|key present above\s*\(count\)/i.test(text);
   if (!hasKeyCheck) return text;
   const cleaned = text
