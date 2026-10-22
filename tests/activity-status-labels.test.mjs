@@ -19,3 +19,12 @@ test('actual commands override model prose when distinguishing local compute fro
   assert.match(source,/requests\\\.\(\?:get\|post\|request\)/);
   assert.doesNotMatch(source,/\(\?:curl\|wget\|http\)/);
 });
+
+test('DeepSeek connection steps use concise titles without descriptions',()=>{
+  assert.match(source,/data\?\.phase === "deepseek-connect"\) return "agent-connect"/);
+  assert.match(source,/正在连接Agent/);
+  assert.match(source,/if \(key === "agent-connect"\) return ""/);
+  assert.match(source,/const isModelConnection = phase === "run" && status === "started" && \/DeepSeek Harness\/i\.test\(engine\)/);
+  assert.match(source,/isModelConnection \? \(isChinese \? "连接模型"/);
+  assert.match(source,/detailHtml: isModelConnection \? ""/);
+});

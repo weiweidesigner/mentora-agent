@@ -2064,6 +2064,7 @@ function appendAgentChatEvent(article, data) {
   const status = String(data?.status || "");
   const agent = String(data?.agent || "aime_chart_agent");
   const message = String(data?.message || "AutoGen AgentChat");
+  const engine = String(data?.engine || "AutoGen AgentChat");
   const trace = Array.isArray(data?.trace) ? data.trace.map((item) => String(item)) : [];
   const contracts = Array.isArray(data?.contracts) ? data.contracts.map((item) => String(item)) : [];
   const isChinese = lang === "zh-Hans" || lang === "zh-Hant";
@@ -2079,6 +2080,7 @@ function appendAgentChatEvent(article, data) {
       : status === "fallback"
         ? (isChinese ? "已回退" : "fallback")
         : status;
+  const isModelConnection = phase === "run" && status === "started" && /DeepSeek Harness/i.test(engine);
   const blocks = [];
   if (trace.length) {
     blocks.push(toolBlockHtml(isChinese ? "AgentChat 工具轨迹" : "AgentChat tool trace", trace.join("\n")));
@@ -2087,7 +2089,7 @@ function appendAgentChatEvent(article, data) {
     blocks.push(toolBlockHtml(isChinese ? "已读取组件契约" : "Component contracts read", contracts.join("\n")));
   }
   const eventRecord = {
-    engine: String(data?.engine || "AutoGen AgentChat"),
+    engine,
     agent,
     phase,
     status,
@@ -2100,12 +2102,12 @@ function appendAgentChatEvent(article, data) {
   article.agentEvents.push(eventRecord);
   article.dataset.agentRunId = eventRecord.runId || article.dataset.agentRunId || "";
   appendRichStep(article, {
-    titleHtml: `<span>${escapeHtml(`AutoGen AgentChat · ${phaseLabel} · ${agent}`)}</span>`,
-    detailHtml: `<div class="toolStepDetail"><p class="toolStepThought">${escapeHtml(message)}</p></div>`,
+    titleHtml: `<span>${escapeHtml(isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : `AutoGen AgentChat · ${phaseLabel} · ${agent}`)}</span>`,
+    detailHtml: isModelConnection ? "" : `<div class="toolStepDetail"><p class="toolStepThought">${escapeHtml(message)}</p></div>`,
     drawerDetailHtml: blocks.length ? `<div class="toolStepDetail">${blocks.join("")}</div>` : "",
     state: status === "failed" ? "error" : "loading",
     stepKey: `agentchat:${phase}:${status}:${agent}`,
-    currentThinking: `${phaseLabel} ${statusLabel}`.trim(),
+    currentThinking: isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : `${phaseLabel} ${statusLabel}`.trim(),
     className: "is-agentchat-step",
   });
 }
@@ -4033,6 +4035,7 @@ function copyFor(lang, key) {
 
 function statusEventKey(data) {
   if (data && typeof data === "object" && data.key) return data.key;
+  if (data?.phase === "deepseek-connect") return "agent-connect";
   if (data?.status === "start") return "start";
   const message = typeof data === "string" ? data : String(data?.message || "");
   if (message.includes("已接收问题") || message.includes("已接收問題")) return "received";
@@ -4058,6 +4061,7 @@ function statusTitle(data, lang) {
   if (data?.title) return String(data.title);
   lang = normalizeLang(lang);
   const key = statusEventKey(data);
+  if (key === "agent-connect") return lang === "zh-Hans" ? "正在连接Agent" : lang === "zh-Hant" ? "正在連接Agent" : "Connecting to Agent";
   if (key === "start") return lang === "zh-Hans" ? "开始分析" : "Start analysis";
   if (key === "received") return copyFor(lang, "receivedTitle");
   if (key === "metadata") return lang === "zh-Hans" ? "加载技能 SKILL 目录" : copyFor(lang, "metadataTitle");
@@ -4081,6 +4085,7 @@ function statusDetail(data, lang) {
   if (data?.detail) return String(data.detail);
   lang = normalizeLang(lang);
   const key = statusEventKey(data);
+  if (key === "agent-connect") return "";
   if (key === "start") return lang === "zh-Hans" ? "开始读取用户输入，准备进入分析流程。" : "Reading the user request and preparing the analysis flow.";
   if (key === "received") return copyFor(lang, "receivedDetail");
   if (key === "metadata") return lang === "zh-Hans" ? "正在读取可用 SKILL 目录和能力描述。" : copyFor(lang, "metadataDetail");
