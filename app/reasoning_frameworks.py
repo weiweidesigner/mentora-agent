@@ -1041,6 +1041,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 
     @staticmethod
     def _codex_tool_event(item: dict[str, Any], index: int) -> dict[str, Any]:
+        """Forward public model metadata; never synthesize summaries from commands."""
         item_type = str(item.get("type") or "agent_step")
         command = item.get("command")
         if isinstance(command, list):

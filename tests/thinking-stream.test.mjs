@@ -93,3 +93,31 @@ test('older saved tool traces retain their summary and use collapsed tool detail
   assert.equal(a.querySelectorAll('details').length, 1);
   dom.window.close();
 });
+
+test('legacy screenshot labels and engine descriptions are removed, not promoted to model summaries', () => {
+  const dom = fixture(), w = dom.window, a = w.article, list = a.querySelector('.thinkingSteps');
+  list.innerHTML = `<li class="is-agentchat-step"><div class="activityStepTitle">AutoGen AgentChat · Agent 运行 · Root Agent</div><div class="activityStepDetail">DeepSeek Harness 使用 deepseek-flash 开始处理</div></li>
+    <li class="is-tool-step"><p class="activityThoughtSummary">正在执行本地计算</p><details class="activityTool"><summary><span class="activityActionText">Tool</span></summary><div class="toolStepBlock"><span class="toolStepBlockLabel">Shell</span><pre>python3 analysis.py</pre></div></details></li>
+    <li class="is-tool-step"><div class="activityStepTitle">正在处理数据与准备分析</div><div class="activityDrawerOnly">已有结果</div></li>
+    <li class="is-tool-step"><div class="activityStepTitle">正在执行write</div><div class="activityDrawerOnly">真实写入结果</div></li>
+    <li class="is-tool-step"><div class="activityStepTitle">正在检查项目与运行环境</div></li>`;
+  w.refreshSavedToolStepTitles(list, 'zh-Hans');
+  assert.doesNotMatch(list.textContent, /正在执行本地计算|正在处理数据与准备分析|正在执行write|正在检查项目与运行环境|DeepSeek Harness|AutoGen AgentChat|Tool/);
+  assert.equal(list.dataset.legacyActivity, 'true');
+  assert.match(list.textContent, /shell/);
+  assert.match(list.textContent, /write/);
+  assert.match(list.textContent, /已有结果|真实写入结果/);
+  assert.equal(list.querySelectorAll('.activityThoughtSummary').length, 0);
+  dom.window.close();
+});
+
+test('live canned summaries are omitted while model wording stays unchanged', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {...started, thoughtSummary:'正在执行本地计算'});
+  assert.equal(a.querySelector('.activityThoughtSummary'), null);
+  assert.match(a.querySelector('.activityActionText').textContent, /bash · python3 analysis.py/);
+  const text = '先计算样本缺失比例。再解释它对结论的影响。';
+  w.appendToolStep(a, {...started, callId:'genuine', thoughtSummary:text});
+  assert.equal(a.querySelector('.activityThoughtSummary').textContent, text);
+  dom.window.close();
+});

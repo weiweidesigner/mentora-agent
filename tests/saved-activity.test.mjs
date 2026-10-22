@@ -42,3 +42,12 @@ test('missing and unavailable activity is explicitly identified, never fabricate
  assert.match(f.article.textContent,/执行明细未保存/);
  assert.equal(f.article.querySelectorAll('.is-loading').length,0);f.dom.window.close();
 });
+test('legacy HTML is replaced from recorded tool events when the original run is available',async()=>{
+ const f=fixture([{event:'tool_step',data:{callId:'native-shell',tool:'bash',phase:'completed',observation:'真实结果'}}]);
+ const list=f.article.querySelector('ol');list.innerHTML='<li>旧模板</li>';list.dataset.legacyActivity='true';
+ await f.w.restoreSavedActivity(f.article,{runId:'legacy-run'});
+ assert.equal(f.requests.length,1);
+ assert.doesNotMatch(list.textContent,/旧模板/);
+ assert.match(list.textContent,/native-shell.*真实结果/);
+ assert.equal(list.hidden,true);f.dom.window.close();
+});

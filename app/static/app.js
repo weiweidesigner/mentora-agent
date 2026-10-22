@@ -748,7 +748,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "progress") {
-    const text = String(data?.text || data?.detail || data?.message || "").replace(/\s+/g, " ").trim();
+    const text = modelActivitySummary(data?.thoughtSummary || data?.text || data?.detail || data?.message);
     if (!text || article.activityEnded) return;
     if (article.taskContext && (data?.detail || data?.stage)) {
       const title = String(data?.title || text).trim();
@@ -1819,7 +1819,7 @@ function appendToolStep(article, data) {
       `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
     );
   }
-  const thought = String(data?.thoughtSummary || data?.thought || "").trim();
+  const thought = modelActivitySummary(data?.thoughtSummary);
   let actionArgument = shellCommand.length ? shellCommand.map(shellQuote).join(" ") : "";
   if (!actionArgument && params[0]) {
     try {
@@ -1831,7 +1831,7 @@ function appendToolStep(article, data) {
   const action = String(data?.action || `${tool}${actionArgument ? ` · ${actionArgument.replace(/\s+/g, " ").slice(0, 180)}` : ""}`).trim();
   const renderTool = (item) => {
     const wasOpen = item.querySelector("details")?.open || false;
-    const previousThought = item.querySelector(".activityThoughtSummary")?.textContent || "";
+    const previousThought = modelActivitySummary(item.querySelector(".activityThoughtSummary")?.textContent);
     const previousInput = item.querySelector(".toolStepInput")?.innerHTML || "";
     const previousAction = item.querySelector(".activityActionText")?.textContent || "";
     const actionText = !data?.action && !actionArgument && previousAction ? previousAction : action;
@@ -1978,14 +1978,33 @@ function compactReasoningTitle(value, lang) {
   return text;
 }
 
+function modelActivitySummary(value) {
+  const text = typeof value === "string" ? value.trim() : "";
+  // Recognize old generated labels for migration only. Never generate a summary.
+  const legacy = /^(?:正在(?:执行本地计算|執行本地計算|处理数据与准备分析|處理資料與準備分析|检查项目与运行环境|檢查專案與執行環境|读取相关 Skill 规范|讀取相關 Skill 規範|核对图表数据契约|核對圖表資料契約|定位所需文件与能力|定位所需檔案與能力|获取外部数据与证据|取得外部資料與證據|整理并计算数据|整理並計算資料|检索相关事实与市场信息|檢索相關事實與市場資訊|推进当前分析步骤|推進目前分析步驟|汇总分析结果|生成报告|生成 HTML 报告|读取所需技能|等待网络响应|读取后台任务结果|处理数据与准备分析)|Preparing data and analysis|Checking the project and runtime environment|Reading the relevant Skill instructions|Checking the chart data contract|Locating the required files and capabilities|Retrieving external data and evidence|Organizing and calculating the data|Searching for relevant facts and market context|Advancing the current analysis step)[。.!！]?$/i;
+  if (legacy.test(text) || /^(?:正在执行|正在執行|执行工具[:：]|執行工具[:：]|Running(?: tool:)?\s+)\s*(?:bash|shell|exec_command|command_execution|write|read|edit|glob|grep|python|\S+\.(?:py|sh))[。.!！]?$/i.test(text)) return "";
+  if (/^(?:DeepSeek Harness\s+使用|AutoGen AgentChat\s*[·:])/i.test(text)) return "";
+  return text;
+}
+
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
-  const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
-  const reasoningTitle = compactReasoningTitle(reasoning, lang);
-  if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
+  const reasoningTitle = modelActivitySummary(data?.thoughtSummary);
+  if (reasoningTitle) return reasoningTitle;
   return String(data?.tool || script || fallback || "Tool").trim();
 }
 
 function refreshSavedToolStepTitles(root, lang) {
+  root?.querySelectorAll?.(".activityStepTitle, .activityThoughtSummary, .toolStepThought, .activityStepDetail").forEach((node) => {
+    if (node.textContent.trim() && !modelActivitySummary(node.textContent)) {
+      root.dataset.legacyActivity = "true";
+      const toolName = node.textContent.trim().match(/^(?:正在执行|正在執行|执行工具[:：]|Running(?: tool:)?\s+)\s*(bash|shell|exec_command|command_execution|write|read|edit|glob|grep)\s*$/i)?.[1];
+      if (toolName && node.closest("li")) node.closest("li").dataset.toolName = toolName;
+      node.remove();
+    }
+  });
+  root?.querySelectorAll?.(".is-agentchat-step").forEach((item) => {
+    if (!item.querySelector(".activityStepTitle, .activityThoughtSummary")) item.remove();
+  });
   root?.querySelectorAll?.("li.is-tool-step").forEach((item) => {
     const detail = item.querySelector(":scope > .activityStepDetail");
     if (detail && /^(?:(?:[^·\n]+\s*·\s*)?(?:DSH|CODEX)|(?:bash|shell|exec_command|command_execution|\S+\.(?:py|sh))(?:\s*·.*)?)$/i.test(detail.textContent.trim())) {
@@ -2002,9 +2021,14 @@ function refreshSavedToolStepTitles(root, lang) {
       else if (cleaned !== code.textContent) code.textContent = cleaned;
     });
     const title = item.querySelector(".activityStepTitle");
-    if (!title || item.querySelector(".activityTool")) return;
-    const tool = item.dataset.toolName || "Tool";
-    title.className = "activityThoughtSummary";
+    const shellInput = Array.from(item.querySelectorAll(".toolStepBlockLabel")).some((node) => node.textContent.trim() === "Shell");
+    const tool = item.dataset.toolName || (shellInput ? "shell" : "工具详情");
+    if (item.querySelector(".activityTool")) {
+      const action = item.querySelector(".activityActionText");
+      if (action?.textContent.trim() === "Tool") action.textContent = tool;
+      return;
+    }
+    if (title) title.className = "activityThoughtSummary";
     const details = document.createElement("details");
     details.className = "activityTool";
     details.innerHTML = `<summary class="activityAction"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(tool)}</span><span class="activityActionText">${escapeHtml(tool)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>`;
@@ -2059,9 +2083,11 @@ function appendAgentChatEvent(article, data) {
   if (!Array.isArray(article.agentEvents)) article.agentEvents = [];
   article.agentEvents.push(eventRecord);
   article.dataset.agentRunId = eventRecord.runId || article.dataset.agentRunId || "";
+  const summary = modelActivitySummary(data?.thoughtSummary);
+  if (!isModelConnection && !summary) return;
   appendRichStep(article, {
-    titleHtml: `<span>${escapeHtml(isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : `AutoGen AgentChat · ${phaseLabel} · ${agent}`)}</span>`,
-    detailHtml: isModelConnection ? "" : `<div class="toolStepDetail"><p class="toolStepThought">${escapeHtml(message)}</p></div>`,
+    titleHtml: `<span>${escapeHtml(isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : summary)}</span>`,
+    detailHtml: "",
     drawerDetailHtml: blocks.length ? `<div class="toolStepDetail">${blocks.join("")}</div>` : "",
     state: status === "failed" ? "error" : "loading",
     stepKey: `agentchat:${phase}:${status}:${agent}`,
@@ -4419,7 +4445,8 @@ function renderHistory() {
 // Replay only recorded public activity. Never replay final/module events or run tools again.
 async function restoreSavedActivity(article, activity = {}) {
   const list = article.querySelector('.thinkingSteps');
-  if (!list || list.children.length || article.activityRestorePending) return;
+  const recoverLegacy = list?.dataset.legacyActivity === 'true' && activity.runId && article.dataset.activityRestored !== 'true';
+  if (!list || (list.children.length && !recoverLegacy) || article.activityRestorePending) return;
   const summary = article.querySelector('.thinkingSummaryText');
   const savedLabel = summary?.textContent;
   article.activityRestorePending = true;
@@ -4431,6 +4458,10 @@ async function restoreSavedActivity(article, activity = {}) {
       if (!response.ok) throw new Error('activity unavailable');
       const saved = await response.json();
       events = Array.isArray(saved.events) ? saved.events : [];
+    }
+    if (recoverLegacy && events.length) {
+      list.replaceChildren();
+      article.activityStepKeys = new Set();
     }
     article.activityEnded = false;
     for (const [index, step] of steps.entries()) {
@@ -4448,7 +4479,8 @@ async function restoreSavedActivity(article, activity = {}) {
         const lang = article.dataset.lang || 'zh-CN';
         appendStep(article, statusTitle(data, lang), statusDetail(data, lang), 'done', `saved-status:${index}`);
       } else if (record.event === 'progress') {
-        const text = String(data.text || data.detail || data.message || '').trim();
+        const rawText = data.thoughtSummary || data.text || data.detail || data.message || '';
+        const text = typeof modelActivitySummary === 'function' ? modelActivitySummary(rawText) : String(rawText).trim();
         if (text) appendStep(article, String(data.title || text), data.title ? text : '', 'done', `saved-progress:${index}`);
       }
     }
@@ -4462,6 +4494,8 @@ async function restoreSavedActivity(article, activity = {}) {
     list.querySelectorAll('li.is-loading').forEach(item => {item.classList.remove('is-loading');item.classList.add('is-done');});
     article.activityRestorePending = false;
     article.activityEnded = true;
+    if (typeof refreshSavedToolStepTitles === 'function') refreshSavedToolStepTitles(list, article.dataset.lang || 'zh-CN');
+    list.hidden = true;
     if (summary && savedLabel !== undefined) summary.textContent = savedLabel;
     const trigger = article.querySelector('.thinkingTrigger');
     trigger?.classList.remove('is-thinking');

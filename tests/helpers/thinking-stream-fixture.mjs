@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 
 const source = readFileSync(new URL('../../app/static/app.js', import.meta.url), 'utf8');
 const names = ['appendStep', 'appendRichStep', 'appendToolStep', 'activityActionIcon',
-  'publicToolObservation', 'compactReasoningTitle', 'toolActivityTitle', 'refreshSavedToolStepTitles', 'toolBlockHtml',
+  'publicToolObservation', 'compactReasoningTitle', 'modelActivitySummary', 'toolActivityTitle', 'refreshSavedToolStepTitles', 'toolBlockHtml',
   'formatShellCommand', 'shellQuote', 'skillOutputLabel', 'showError', 'showStopped', 'completeThinking',
   'updateThinkingSummary', 'toggleActivityDrawer', 'openActivityDrawer', 'closeActivityDrawer',
   'syncActivityDrawer', 'formatDuration', 'escapeHtml'];

@@ -27,6 +27,7 @@ test('a running tool has no result card and completion replaces a stale card on 
   w.escapeHtml=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;');
   w.toolBlockHtml=(label,value)=>`<pre>${w.escapeHtml(value)}</pre>`;
   w.skillOutputLabel=()=> 'Tool result';w.compactReasoningTitle=value=>value||'';
+  w.modelActivitySummary=value=>value||'';
   w.updateThinkingSummary=()=>{};w.copyFor=()=>'';w.syncActivityDrawer=()=>{};
   w.appendRichStep=(article,options)=>{
    const li=w.document.createElement('li');li.className='is-tool-step is-loading';
