@@ -421,9 +421,15 @@ class DayTasks:
                     resultVersion=success['id'] if success else None, summary=summary[:180],
                     notifications=[dict(n) for n in notice])
 
+    @staticmethod
+    def preset_run_id(owner, source_id):
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, 'day-preset-rerun:' + owner + ':' + source_id))
+
     def list(self, owner):
         with self.db() as db:
-            return [self.public(db, r) for r in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY created', (owner,))]
+            from app.day_presets import SCENE_OWNER
+            scoped = {self.preset_run_id(owner, r['id']) for r in db.execute('SELECT id FROM tasks WHERE owner=?', (SCENE_OWNER,))}
+            return [self.public(db, r) for r in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY created', (owner,)) if r['id'] not in scoped]
 
     def seed_scene_presets(self):
         from app.day_presets import SCENE_OWNER,preset_payloads
@@ -446,7 +452,24 @@ class DayTasks:
     def scene_tasks(self, owner=None):
         from app.day_presets import SCENE_OWNER
         with self.db() as db:
-            return [self.public(db,row) for row in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY id',(SCENE_OWNER,)) if not owner or not db.execute('SELECT 1 FROM preset_dismissals WHERE owner=? AND task_id=?',(owner,row['id'])).fetchone()]
+            results=[]
+            for row in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY id',(SCENE_OWNER,)).fetchall():
+                if owner and db.execute('SELECT 1 FROM preset_dismissals WHERE owner=? AND task_id=?',(owner,row['id'])).fetchone():
+                    continue
+                item=self.public(db,row)
+                scoped=db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0',(self.preset_run_id(owner,row['id']),owner)).fetchone() if owner else None
+                scoped_config=self.unpack(scoped['config']) if scoped else {}
+                if scoped and scoped_config.get('_presetOverride'):
+                    personal=self.public(db,scoped)
+                    personal.update(id=row['id'],sourcePresetId=row['id'],personalOverride=True,systemPreset=False,emoji=item['emoji'])
+                    item=personal
+                overlay=self.public(db,scoped) if scoped and scoped['last_run'] and not scoped_config.get('_presetOverride') else None
+                if overlay and (overlay['activeRun'] or (overlay['lastRun'] or {}).get('created','') >= (item['lastRun'] or {}).get('created','')):
+                    for key in ('activeRun','lastRun','successAt','resultVersion','summary','notifications','resultHeadline','resultDescription','resultDate','resultMarket','resultScene'):
+                        if key in ('activeRun','lastRun','notifications') or overlay.get('resultVersion'):
+                            item[key]=overlay.get(key)
+                results.append(item)
+            return results
 
     def dismiss_preset(self, owner, task_id):
         """Remove a shared preset only from this browser owner's workspace."""
@@ -466,29 +489,42 @@ class DayTasks:
             db.execute('INSERT OR IGNORE INTO preset_dismissals(owner,task_id) VALUES(?,?)',(owner,task_id))
         return True
 
-    def readable(self,db,owner,task_id):
+    def readable(self,db,owner,task_id,run_id=None):
         from app.day_presets import SCENE_OWNER
         row=db.execute('SELECT * FROM tasks WHERE id=? AND deleted=0 AND owner IN (?,?)',(task_id,owner,SCENE_OWNER)).fetchone()
         if not row:raise HTTPException(404,'任务不存在')
         if row['owner']==SCENE_OWNER and db.execute('SELECT 1 FROM preset_dismissals WHERE owner=? AND task_id=?',(owner,task_id)).fetchone():
             raise HTTPException(404,'任务不存在')
+        if row['owner']==SCENE_OWNER:
+            scoped=db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0',(self.preset_run_id(owner,task_id),owner)).fetchone()
+            if scoped and (not run_id or db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?',(run_id,scoped['id'],owner)).fetchone()):
+                return scoped
         return row
 
-    def save(self, owner, payload, task_id=None):
+    def save(self, owner, payload, task_id=None, *, allow_create_id=False, internal=None):
         config = payload.model_dump()
+        if internal:
+            config.update(internal)
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
+            old = None
             if task_id:
-                old = self.owned(db, owner, task_id)
-                previous = self.unpack(old['config'])
-                for name in SECRET_FIELDS:
-                    config[name] = config.get(name, '') or previous.get(name, '')
-            else:
+                old = db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0',(task_id,owner)).fetchone()
+                if not old and not allow_create_id:
+                    raise HTTPException(404, '任务不存在')
+                if old:
+                    previous = self.unpack(old['config'])
+                    for name in ('_portfolioKind','_agent','_presetOverride','_sourcePresetId'):
+                        if previous.get(name) is not None:
+                            config[name]=previous[name]
+                    for name in SECRET_FIELDS:
+                        config[name] = config.get(name, '') or previous.get(name, '')
+            if not task_id or not old:
                 if db.execute('SELECT count(*) FROM tasks WHERE owner=? AND deleted=0', (owner,)).fetchone()[0] >= 20:
                     raise HTTPException(400, '最多创建 20 个任务')
                 if db.execute('SELECT count(*) FROM tasks WHERE deleted=0').fetchone()[0] >= 500:
                     raise HTTPException(429, '任务容量已满，请稍后重试')
-                task_id = str(uuid.uuid4())
+                task_id = task_id or str(uuid.uuid4())
             if (config['feishu'] and not config['feishuUrl']) or (config['wecom'] and not config['wecomUrl']):
                 raise HTTPException(400, '请先填写所选机器人的 Webhook 地址')
             try:
@@ -507,7 +543,7 @@ class DayTasks:
                 config['serverchanKey'] = ''
             if not config['wecom']:
                 config['wecomUrl'] = ''
-            if task_id and 'old' in locals():
+            if old:
                 db.execute('UPDATE tasks SET config=?,next_at=? WHERE id=?', (self.pack(config), next_at, task_id))
             else:
                 db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?)', (task_id, owner, self.pack(config), next_at, stamp(now_utc())))
@@ -824,14 +860,43 @@ def create_router(service):
 
     @router.put('/tasks/{task_id}')
     def edit(task_id: str, payload: TaskInput, request: Request, response: Response):
-        return service.save(writer(request, response), payload, task_id)
+        user=writer(request,response)
+        from app.day_presets import SCENE_OWNER
+        with service.db() as db:
+            source=db.execute('SELECT owner FROM tasks WHERE id=? AND deleted=0',(task_id,)).fetchone()
+        if source and source['owner']==SCENE_OWNER:
+            result=service.save(user,payload,service.preset_run_id(user,task_id),allow_create_id=True,
+                                internal={'_presetOverride':True,'_sourcePresetId':task_id})
+            result.update(id=task_id,sourcePresetId=task_id,personalOverride=True,systemPreset=False)
+            return result
+        return service.save(user,payload,task_id)
 
     @router.post('/tasks/{task_id}/run')
     def run(task_id: str, request: Request, response: Response):
         user = writer(request, response)
+        requested_id = task_id
         with service.db() as db:
             db.execute('BEGIN IMMEDIATE')
-            return {'runId': service.enqueue(db, service.owned(db, user, task_id))}
+            row = service.readable(db, user, task_id)
+            if row['owner'] != user:
+                source_id = task_id
+                task_id = service.preset_run_id(user, source_id)
+                private = db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0', (task_id,user)).fetchone()
+                if not private:
+                    if db.execute('SELECT count(*) FROM tasks WHERE owner=? AND deleted=0',(user,)).fetchone()[0] >= 20:
+                        raise HTTPException(400, '最多创建 20 个任务')
+                    if db.execute('SELECT count(*) FROM tasks WHERE deleted=0').fetchone()[0] >= 500:
+                        raise HTTPException(429, '任务容量已满，请稍后重试')
+                    config = service.unpack(row['config'])
+                    config.update(enabled=False,cadence='once',browser=False,serverchan=False,feishu=False,wecom=False)
+                    for name in SECRET_FIELDS:
+                        config[name] = ''
+                    db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET config=excluded.config,next_at=NULL,deleted=0',
+                               (task_id,user,service.pack(config),None,stamp(now_utc())))
+                    db.execute('INSERT OR IGNORE INTO result_links(task_id,token) VALUES(?,?)',(task_id,secrets.token_urlsafe(32)))
+                    private = service.owned(db,user,task_id)
+                row = private
+            return {'taskId': requested_id, 'runId': service.enqueue(db, row)}
 
     @router.delete('/tasks/{task_id}')
     def remove(task_id: str, request: Request, response: Response):
@@ -852,15 +917,16 @@ def create_router(service):
         user = owner(request, response)
         with service.db() as db:
             task = service.readable(db, user, task_id)
-            rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE task_id=? AND owner=? AND (id IN (SELECT id FROM runs WHERE task_id=? AND owner=? ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task_id, task['owner'], task_id, task['owner'], task['success_run'])).fetchall()
+            from app.day_presets import SCENE_OWNER
+            rows = db.execute('SELECT id,status,created,finished,error,answer IS NOT NULL AS available FROM runs WHERE ((task_id=? AND owner=?) OR (task_id=? AND owner=?)) AND (id IN (SELECT id FROM runs WHERE (task_id=? AND owner=?) OR (task_id=? AND owner=?) ORDER BY created DESC LIMIT 20) OR id=?) ORDER BY created DESC', (task['id'],task['owner'],task_id,SCENE_OWNER,task['id'],task['owner'],task_id,SCENE_OWNER,task['success_run'])).fetchall()
             return {'runs': [dict(row) for row in rows]}
 
     @router.get('/tasks/{task_id}/runs/{run_id}/events')
     def run_events(task_id: str,run_id: str,request: Request,response: Response,after: int=0):
         user=owner(request,response)
         with service.db() as db:
-            task=service.readable(db,user,task_id)
-            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?',(run_id,task_id,task['owner'])).fetchone():raise HTTPException(404,'运行记录不存在')
+            task=service.readable(db,user,task_id,run_id)
+            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?',(run_id,task['id'],task['owner'])).fetchone():raise HTTPException(404,'运行记录不存在')
         def stream():
             cursor=max(0,after)
             while True:
@@ -886,8 +952,8 @@ def create_router(service):
     def run_result(task_id: str, run_id: str, request: Request, response: Response):
         user = owner(request, response)
         with service.db() as db:
-            task = service.readable(db, user, task_id)
-            row = db.execute('SELECT * FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, task['owner'])).fetchone()
+            task = service.readable(db, user, task_id, run_id)
+            row = db.execute('SELECT * FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task['id'], task['owner'])).fetchone()
             if not row:
                 raise HTTPException(404, '运行记录不存在')
             answer = json.loads(row['answer']) if row['answer'] else None
@@ -917,8 +983,8 @@ def create_router(service):
         if len(encoded.encode()) > 1024 * 1024:
             raise HTTPException(413, '历史对话内容过大')
         with service.db() as db:
-            task = service.readable(db, user, task_id)
-            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task_id, task['owner'])).fetchone():
+            task = service.readable(db, user, task_id, run_id)
+            if not db.execute('SELECT 1 FROM runs WHERE id=? AND task_id=? AND owner=?', (run_id, task['id'], task['owner'])).fetchone():
                 raise HTTPException(404, '运行记录不存在')
             db.execute('INSERT OR REPLACE INTO run_conversations(run_id,owner,messages,updated) VALUES(?,?,?,?)', (run_id, user, encoded, stamp(now_utc())))
         return {'ok': True, 'count': len(cleaned)}

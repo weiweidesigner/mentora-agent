@@ -128,7 +128,7 @@
   const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(Date.now()+serverDelta));
   const zoneFor = task => task.timezone === 'market' ? zones[task.market] : (task.timezone || 'Asia/Shanghai');
   const selected = () => [...tasks,...sceneTasks].find(t => t.id === selectedId) || (sharedEntry?.task.id === selectedId ? sharedEntry.task : null);
-  const editable = task => Boolean(task && tasks.some(t => t.id === task.id));
+  const editable = task => Boolean(task && task!==sharedEntry?.task && (tasks.some(t => t.id === task.id)||task.systemPreset||task.personalOverride));
   const canDeleteTask=task=>Boolean(task&&task!==sharedEntry?.task&&(editable(task)||task.systemPreset));
   function message(text, target) { const node=$(target || (dialog.open ? 'dayDialogMessage' : workspace.hidden ? 'dayMessage' : 'taskMessage'));node.textContent=text;node.classList.toggle('is-success',/^定时任务已创建|^任务已保存/.test(text)); }
   async function api(path, method = 'GET', data) {
@@ -685,7 +685,7 @@
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
-    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
+    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});

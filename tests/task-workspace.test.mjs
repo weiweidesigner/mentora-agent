@@ -403,6 +403,8 @@ test('repeat controls belong only to absolute-time scheduling',async()=>{
 
 test('public preset offers personal delete and cancel keeps it intact',async()=>{
  const h=setup({tasks:[],sceneTasks:[{...base,id:'public-preset',systemPreset:true}]});await tick();const d=h.w.document;
+ d.querySelector('[data-task-more="public-preset"]').click();assert.match(d.querySelector('[data-task-action="edit"]').textContent,/编辑/);assert.ok(d.querySelector('[data-task-action="toggle"]'));assert.ok(d.querySelector('[data-task-action="run"]'));
+ d.querySelector('[data-task-action="edit"]').click();assert.equal(d.querySelector('#dayForm').elements.title.value,base.title);d.querySelector('#dayClose').click();
  d.querySelector('[data-task-more="public-preset"]').click();const action=d.querySelector('[data-task-action="delete"]');assert.ok(action);action.click();
  assert.match(d.querySelector('#taskDeleteDialog').textContent,/仅影响当前浏览器/);
  d.querySelector('#taskDeleteCancel').click();assert.equal(h.requests.some(r=>r.method==='DELETE'),false);

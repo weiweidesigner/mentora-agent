@@ -1,9 +1,10 @@
 import datetime as dt
+import hashlib
 from collections import Counter
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from app.day_tasks import DayTasks, create_router, market_state, next_occurrence, task_scene, result_preview
+from app.day_tasks import COOKIE, DayTasks, create_router, market_state, next_occurrence, task_scene, result_preview
 from app.day_presets import SCENE_OWNER, preset_payloads
 
 UTC=dt.timezone.utc
@@ -35,7 +36,7 @@ def test_scene_uses_execution_time_and_type_not_a_mismatched_label():
     assert task_scene({**cfg,'timeMode':'close','offset':15})=='post'
 
 
-def test_public_preset_reports_are_readable_but_mutations_stay_owner_only(tmp_path):
+def test_public_preset_reports_are_readable_and_manual_runs_stay_owner_scoped(tmp_path):
     service=DayTasks(tmp_path,lambda *_:{'interpretation':'## 收盘温和上涨\n\n上涨家数更多，成交额有所回升。','reportArtifacts':[]})
     service.seed_scene_presets()
     task=service.scene_tasks()[0]
@@ -51,10 +52,18 @@ def test_public_preset_reports_are_readable_but_mutations_stay_owner_only(tmp_pa
     assert len(runs)==1
     assert client.get(f"/api/day/tasks/{task['id']}/runs/{runs[0]['id']}").status_code==200
     headers={'X-Veya-Day':'1'}
-    for method,path in [('post','run'),('post','confirmation'),('delete','')]:
-        url=f"/api/day/tasks/{task['id']}"+('/'+path if path else '')
-        assert getattr(client,method)(url,headers=headers).status_code==404
-    assert client.put(f"/api/day/tasks/{task['id']}",json={**task,'enabled':False},headers=headers).status_code==404
+    manual=client.post(f"/api/day/tasks/{task['id']}/run",headers=headers)
+    assert manual.status_code==200 and manual.json()['taskId']==task['id']
+    user=hashlib.sha256(client.cookies.get(COOKIE).encode()).hexdigest()
+    with service.db() as db:
+        scoped=service.owned(db,user,service.preset_run_id(user,task['id']))
+        assert scoped['owner']==user and scoped['id']!=task['id']
+    edited=client.put(f"/api/day/tasks/{task['id']}",json={**task,'title':'我的早盘任务','enabled':False},headers=headers)
+    assert edited.status_code==200
+    assert edited.json()['id']==task['id'] and edited.json()['personalOverride'] is True
+    assert next(t for t in client.get('/api/day/tasks').json()['sceneTasks'] if t['id']==task['id'])['title']=='我的早盘任务'
+    other=TestClient(app)
+    assert next(t for t in other.get('/api/day/tasks').json()['sceneTasks'] if t['id']==task['id'])['title']==task['title']
 
 
 def test_preview_comes_from_execution_text_not_task_instructions():
