@@ -726,6 +726,8 @@ textarea {
 
 /* File deliverables are distinct from the report's preview and share actions. */
 .generatedFileList{display:flex;flex-direction:column;gap:10px;margin:8px 0 8px;min-width:0}
+.finalAnswer.has-generated-files>.mixedReport>.reportFrameShell:last-child{margin-bottom:4px}
+.finalAnswer.has-generated-files>.generatedFileList{margin-top:4px}
 .generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:min(100%,420px);max-width:100%;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--ink);min-width:0;transition:background .14s ease,border-color .14s ease}
 .generatedFileCard:hover,.generatedFileCard:focus-within{background:var(--soft);border-color:var(--line)}
 .generatedFileIcon{width:20px;height:20px;flex:none;pointer-events:none}

@@ -3044,9 +3044,11 @@ function filePreviewControlIcon(kind){
 function renderFileDeliverables(article,data){
   const answer=article.querySelector('.finalAnswer');
   if(!answer)return;
+  answer.classList.remove('has-generated-files');
   answer.querySelector('.generatedFileList')?.remove();
   const files=fileDeliverables(data);
   if(!files.length)return;
+  answer.classList.add('has-generated-files');
   const list=document.createElement('section');list.className='generatedFileList';list.setAttribute('aria-label','生成的文件');
   list.innerHTML=files.map(file=>`<div class="generatedFileCard"><svg class="generatedFileIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg><button class="generatedFileOpen" type="button" aria-haspopup="dialog" aria-label="预览 ${escapeHtml(file.name)}"><span class="generatedFileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span><span class="generatedFileType">${escapeHtml(file.type)}</span></button><a class="generatedFileDownload" href="${escapeHtml(file.download)}" download="${escapeHtml(file.name)}" aria-label="下载文件 ${escapeHtml(file.name)}" title="下载文件">${filePreviewControlIcon('download')}</a></div>`).join('');
   list.querySelectorAll('.generatedFileOpen').forEach((button,index)=>{
@@ -5206,6 +5208,18 @@ function resizeReportDocumentFrame(frame) {
     const intrinsicContainer = doc.querySelector?.('.multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
     if (intrinsicContainer) {
       const rect = intrinsicContainer.getBoundingClientRect();
+      const report = frame.closest('.mixedReport');
+      const compactFileDelivery = frame.closest('.finalAnswer.has-generated-files')
+        && frame.parentElement === report?.lastElementChild;
+      const terminal = intrinsicContainer.matches('main')
+        ? intrinsicContainer.lastElementChild?.lastElementChild
+        : null;
+      if (compactFileDelivery && terminal) {
+        const terminalRect = terminal.getBoundingClientRect();
+        if (terminalRect.height > 0 && rect.bottom - terminalRect.bottom > 8) {
+          return Math.ceil(terminalRect.bottom + 8);
+        }
+      }
       if (rect.height > 0) return Math.ceil(rect.height);
     }
     return Math.ceil(Math.max(
