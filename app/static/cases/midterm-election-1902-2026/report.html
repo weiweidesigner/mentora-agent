@@ -1,0 +1,737 @@
+<!doctype html><html lang="zh-CN" data-theme="light"><head><meta charset="utf-8"><title>中期选举与美股：低点、选举后行情与结果（1902–2026）</title><meta name="description" content="1902–2026年31次美国中期选举的道指季节性与选举结果统计研究"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:transparent}*{box-sizing:border-box}</style><style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
+/* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
+:is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
+/* Semantic contract; legacy card/metric classes are aliases, outer names do not matter. */
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout]))){display:grid!important;gap:var(--sv-card-gap)!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout])))>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric]){padding:var(--sv-card-padding)!important;margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card]){display:flex!important;flex-direction:column!important;gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card])>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.metrics,[data-sv-layout="metrics"]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="stack"]{grid-template-columns:minmax(0,1fr)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Embedded reports use the host column in both palettes, without a second centered canvas. */
+:is([data-aime-streamviz-root],[data-visualize-root])>:is(div,main,section,article):not(:is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric])){width:100%!important;max-width:none!important;margin-inline:0!important}
+/* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
+:is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.sv-chips){flex-wrap:wrap}
+:is([data-aime-streamviz-root],[data-visualize-root]) .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important}
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metric{overflow-wrap:anywhere}
+  :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-grid,.cols){grid-template-columns:minmax(0,1fr)!important}
+  .svx .bd{min-width:0!important}
+  .svx .bdr3,.svx .scale-r{grid-template-columns:88px minmax(0,1fr) 64px!important}
+  .svx .bdrow{padding:10px 8px;column-gap:8px}
+  .svx .bfrow{grid-template-columns:80px minmax(0,1fr) minmax(0,1fr);height:52px}
+  .svx :is(.bleft,.brgt){position:relative;padding-bottom:18px}
+  .svx .bval{position:absolute;bottom:0;min-width:0;font-size:11px}
+  .svx .bleft .bval{right:4px}
+  .svx .brgt .bval{left:4px}
+  .svx .bdaxis{padding-top:16px;height:42px}
+  .svx .bdval{position:absolute;top:0;right:0;font-size:11px}
+}
+.sv-responsive-line{width:100%;min-width:0;color:var(--sv-text-secondary);font-size:12px}
+.sv-line-note{margin:0 0 12px 48px;line-height:1.5}
+.sv-line-body{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(220px,24vw,320px);box-sizing:border-box;padding-top:8px}
+.sv-line-y-axis,.sv-line-plot{position:relative;min-width:0;min-height:0}
+.sv-line-y-axis span{position:absolute;right:8px;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-plot svg{display:block;width:100%;height:100%;max-width:none}
+.sv-line-dot{position:absolute;left:100%;right:auto;width:7px;height:7px;box-sizing:border-box;border-radius:50%;transform:translate(-50%,-50%)}
+.sv-line-x-axis{position:relative;height:18px;margin:8px 0 0 48px}
+.sv-line-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.sv-line-x-axis span:last-child{transform:translateX(-100%)}
+.sv-line-values{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:13px;line-height:1.5}
+.sv-line-values span{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-values i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+/* Generated palettes are aliases, never a separate fixed light/dark theme. */
+[data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+[data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
+[data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.card,.panel,.sv-metric,.sv-node,.sv-rank){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.stat,.metric,.chart,.table-wrap,.sv-table-wrap){background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.cap,.bles,.note,.sub,.lg,.sv-summary,.sv-narrative p,.sv-node span,.sv-metric p,.sv-metric small,.sv-note,.sv-kicker,.stat span){color:var(--sv-text-secondary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(table,.sv-node b,.sv-rank b,.sv-event b){color:var(--sv-text-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(th,.sv-event time,.sv-rank small,.sv-event p){color:var(--sv-text-secondary)!important;background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+.stv .up{color:var(--sv-price-up)!important}.stv .dn{color:var(--sv-price-down)!important}.stv .nt{color:var(--sv-warning)!important}
+:is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-status-success)!important;background:var(--sv-bg-success)!important}
+:is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-warning)!important;background:var(--sv-bg-warning)!important}
+:is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-status-danger)!important;background:var(--sv-bg-danger)!important}
+:is(.sv-chip--neutral,.sv-badge,.chip){color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] :is([style*="color:#8fa2bd"],[style*="color:#c3cfe0"],[style*="color:#b9c6dc"],[style*="color:#c7d2e8"]){color:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] svg :is(text[fill="#e8eefb"],text[fill="#c3cfe0"],g[fill="#c3cfe0"],g[fill="#e8eefb"]){fill:var(--sv-text-primary)!important}
+[data-aime-streamviz-root] svg :is(text[fill="#8fa2bd"],g[fill="#8fa2bd"]){fill:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
+:root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
+:root:not([data-theme="dark"]) *{box-sizing:border-box}
+:root:not([data-theme="dark"]) html,:root:not([data-theme="dark"]) body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
+:root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
+:root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
+:root:not([data-theme="dark"]) .sv-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:12px}
+:root:not([data-theme="dark"]) .sv-badge-success{color:#09836f;background:#eaf8f2;border-color:#b7e6d5}
+:root:not([data-theme="dark"]) .sv-badge-warning{color:#a56417;background:#fff6df;border-color:#f0d28f}
+:root:not([data-theme="dark"]) .sv-badge-danger{color:#c34650;background:#fff0f1;border-color:#ffc3c8}
+:root:not([data-theme="dark"]) .svv{--bg:transparent!important;--card:#fff!important;--card2:#f6f7f9!important;--line:#dfe4eb!important;--text:#171b22!important;--muted:#667085!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root:not([data-theme="dark"]) .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#475467!important}
+:root:not([data-theme="dark"]) .svv .chip{color:#475467!important;background:#f6f7f9!important;border-color:#d0d5dd!important}
+:root:not([data-theme="dark"]) .svv .chip.success{color:#08745f!important;background:#e9f8f2!important;border-color:#9bdac7!important}
+:root:not([data-theme="dark"]) .svv .chip.warning{color:#925f0b!important;background:#fff5db!important;border-color:#ebc86f!important}
+:root:not([data-theme="dark"]) .svv .chip.danger{color:#b42335!important;background:#fff0f1!important;border-color:#f4aeb7!important}
+:root:not([data-theme="dark"]) .svv :is(.chart,.table-wrap){background:transparent!important}
+:root:not([data-theme="dark"]) .svv :is(.panel,.rank-html){background:#f6f7f9!important}
+:root:not([data-theme="dark"]) .svv table{color:#344054!important}
+:root:not([data-theme="dark"]) .svv thead th{color:#667085!important}
+:root:not([data-theme="dark"]) .svv tbody td{border-color:#dfe4eb!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#e8eefb"]{fill:#344054!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#93a4bd"]{fill:#667085!important}
+:root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
+:root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
+
+:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
+:root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
+:root[data-theme="dark"] .svv .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .svv .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .svv .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .svv .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .svv :is(.chart,.table-wrap){background:transparent!important}
+:root[data-theme="dark"] .svv :is(.panel,.rank-html){background:#181e28!important}
+:root[data-theme="dark"] .svv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .svv thead th{color:#aab6c7!important}
+:root[data-theme="dark"] .svv tbody td{border-color:#334052!important}
+:root[data-theme="dark"] .svv svg text[fill="#e8eefb"]{fill:#dbe3ee!important}
+:root[data-theme="dark"] .svv svg text[fill="#93a4bd"]{fill:#aab6c7!important}
+:root[data-theme="dark"] .svv svg :is(line,path)[stroke="#233247"]{stroke:#334052!important}
+:root[data-theme="dark"] .svv svg line[stroke="#93a4bd"]{stroke:#7d8ca3!important}
+:root[data-theme="dark"] .sv-report{color:#f1f5f9!important;background:transparent!important}
+:root[data-theme="dark"] .sv-report :is(.sv-kicker,.sv-lead,.dsub,.dlabel,.dlabel-flat,.dhead-c,.bval,.tval,.mv-meta,.keyline){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report :is(.card,.metric){background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report :is(.metric span,.metric em,.bname em,.tname em,.mv-id em){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .sv-report .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-report .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-report .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .sv-report .counts li{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .counts b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv-report :is(.btrack,.ttrack){background:#202733!important}
+:root[data-theme="dark"] .sv-report .mv{border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note{color:#aab6c7!important;background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note b{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv{--ink:#f1f5f9!important;--sub:#aab6c7!important;--line:#334052!important;--card:#181e28!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-sum,:root[data-theme="dark"] .sv .two p,:root[data-theme="dark"] .sv ol.steps{color:#c1cad7!important}
+:root[data-theme="dark"] .sv ol.steps b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-metric,:root[data-theme="dark"] .sv .pp-tabs>div,:root[data-theme="dark"] .sv .sv-narr>div,:root[data-theme="dark"] .sv .sv-note,:root[data-theme="dark"] .sv svg.payoff,:root[data-theme="dark"] .sv-card,:root[data-theme="dark"] .sv-metric{background:#181e28!important;border-color:#334052!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv thead th{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv tbody td{border-color:#2b3544!important}
+:root[data-theme="dark"] .sv tbody tr.hl{background:#1f3b46!important}
+:root[data-theme="dark"] .sv svg .ax,:root[data-theme="dark"] .sv svg .lk,:root[data-theme="dark"] .sv svg .lg{fill:#b9c5d5!important}
+:root[data-theme="dark"] .sv svg rect[fill="#eef2f7"],:root[data-theme="dark"] .sv svg rect[fill="#f8fafc"]{fill:#202733!important}
+:root[data-theme="dark"] .sv-badge-success,:root[data-theme="dark"] .sv .sv-chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-badge-warning,:root[data-theme="dark"] .sv .sv-chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-badge-danger,:root[data-theme="dark"] .sv .sv-chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+
+/* Report tables sit on the same card surface as ranked lists. Override the
+   widget runtime's independent neutral table palette inside report roots. */
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(table,.table-wrap,.sv-table-wrap){background:transparent!important;border-color:var(--sv-border-subtle)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+
+/* Financial direction is market-specific; success/danger remain status colors. */
+:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+[data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
+[data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+
+/* Report sections stay open; compact metrics have their own outlined cards. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-text-danger,var(--sv-status-danger))!important;background:var(--sv-bg-danger)!important;border-color:var(--sv-border-danger,var(--sv-border-subtle))!important}
+
+/* Standalone reports and sandboxed reports share the semantic runtime palette. */
+:root:not([data-theme="dark"]){--sv-text-success:var(--sv-jade-11,#208368);--sv-text-warning:var(--sv-amber-11,#915930);--sv-text-danger:var(--sv-red-11,#ce2c31);--sv-border-success:var(--sv-jade-7,#92ceac);--sv-border-warning:var(--sv-amber-7,#e8c36a);--sv-border-danger:var(--sv-red-7,#f3aeaf);--sv-bg-success:var(--sv-jade-3,#e6f4ea);--sv-bg-warning:var(--sv-amber-3,#fff3d0);--sv-bg-danger:var(--sv-red-3,#feebec)}
+:root[data-theme="dark"]{--sv-text-success:var(--sv-jade-11,#7ce2bd);--sv-text-warning:var(--sv-amber-11,#facf72);--sv-text-danger:var(--sv-red-11,#ff9592);--sv-border-success:var(--sv-jade-7,#1b5745);--sv-border-warning:var(--sv-amber-7,#6a4f0b);--sv-border-danger:var(--sv-red-7,#7e2e33);--sv-bg-success:var(--sv-jade-3,#132d21);--sv-bg-warning:var(--sv-amber-3,#35290f);--sv-bg-danger:var(--sv-red-3,#3b1219)}
+/* Timeline copy stays on the page; only status badges get a tinted surface. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
+/* Timeline events without dates do not reserve an empty tinted date column. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event:is(:has(>time:empty),:not(:has(>time))){grid-template-columns:minmax(0,1fr)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event>time:empty{display:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline :is(time,p){background:transparent!important;border:0!important;color:var(--sv-text-secondary)!important}
+
+/* Template reports share the compact metric rhythm; legacy margins must not stack. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metrics{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important;padding:12px 0!important;align-items:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric{display:grid!important;gap:var(--sv-component-gap)!important;align-content:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric>:is(p,strong,small){margin:0!important;line-height:1.5;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric strong{font-size:clamp(22px,2.5vw,27px);line-height:1.3}
+/* Place the dot's centre on the centre of the 1px connector, independent of radius. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{--sv-timeline-inset:20px;padding-left:var(--sv-timeline-inset)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event::before{left:calc(-1 * var(--sv-timeline-inset) - .5px)!important;transform:translateX(-50%);background:var(--sv-chart-series-1)!important}
+
+/* Compact metric cards tile across the available width and wrap as a group. */
+:root :is([data-aime-streamviz-root],[data-visualize-root]) :is([data-sv-metric],.metrics>.insight){box-sizing:border-box;min-width:0!important;padding:var(--sv-card-padding)!important;margin:0!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;background:transparent!important;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){align-items:stretch!important}
+@media(max-width:640px){
+  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))!important;gap:12px!important}
+  :root :is([data-aime-streamviz-root],[data-visualize-root]) :is(.stat-value,.sv-metric strong){font-size:22px!important}
+}
+
+/* Mobile summary metrics form compact swipeable cards, not a vertical feed. */
+@media(max-width:760px){
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"]){
+  display:grid!important;grid-auto-flow:column!important;grid-template-columns:none!important;
+  grid-auto-columns:clamp(196px,68vw,260px)!important;grid-template-rows:auto!important;
+  gap:10px!important;align-items:stretch!important;max-width:100%;min-width:0;
+  overflow-x:auto!important;overflow-y:hidden;scroll-snap-type:x mandatory;
+  scroll-padding-inline:1px;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;
+  padding:2px 1px 8px!important;scrollbar-width:thin;scrollbar-color:var(--sv-border-subtle) transparent;
+ }
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template)){
+  display:flex!important;flex-direction:column;justify-content:flex-start;gap:6px!important;
+  width:auto!important;min-width:0!important;min-height:0!important;height:auto!important;
+  padding:10px!important;margin:0!important;box-sizing:border-box;scroll-snap-align:start;
+ }
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>:is(p,strong,small,em){margin:0!important;overflow-wrap:anywhere}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>p{font-size:13px;line-height:1.4}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>strong{font-size:24px!important;line-height:1.2!important;white-space:nowrap}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>:is(small,em){font-size:12px;line-height:1.45}
+}
+
+/* Table headers stay on one line; each wide table owns its horizontal scroll. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.table-wrap,.sv-table-wrap,.pv-table-wrap){overflow-x:auto!important;max-width:100%;min-width:0}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) th{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap table{table-layout:auto!important;min-width:640px;width:100%}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap :is(th,td):nth-last-child(-n+2){white-space:nowrap!important;min-width:92px}
+
+/* Touch feedback is handled by the host; avoid native tap overlay blocks. */
+html{-webkit-tap-highlight-color:transparent}
+
+/* Additional categorical series stay distinct from the first three in both themes. */
+:root:not([data-theme="dark"]){--sv-chart-series-4:#d97706;--sv-chart-series-5:#8e4ec6;--sv-chart-series-6:#0090ff;--sv-chart-series-7:#ab4aba;--sv-chart-series-8:#46a758}
+:root[data-theme="dark"]{--sv-chart-series-4:#f6ad55;--sv-chart-series-5:#d19dff;--sv-chart-series-6:#70b8ff;--sv-chart-series-7:#e796f3;--sv-chart-series-8:#7ce2bd}
+</style><script data-sv-chart-geometry>/* Keep SVG geometry responsive while labels and endpoint markers retain pixel dimensions. */
+(() => {
+  const repair = () => document.querySelectorAll('.chartbox svg[viewBox][preserveAspectRatio="none"]:not([data-sv-geometry])').forEach(svg => {
+    if (!svg.matches('.line,.hist,.xlab')) return;
+    const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);
+    if(original.length!==4||!original.every(Number.isFinite))return;
+    svg.dataset.svGeometry='true';
+    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';
+    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';
+    const wrap=document.createElement('div');wrap.className='sv-geometry';
+    Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});
+    svg.before(wrap);wrap.append(svg);
+    svg.closest('.chartbox').style.overflowX='auto';
+    const labels=[...svg.querySelectorAll(':scope > text')].map(text=>{
+      const label=document.createElement('span');label.textContent=text.textContent;
+      const anchor=text.getAttribute('text-anchor')||'start';
+      Object.assign(label.style,{position:'absolute',fontSize:parseFloat(text.getAttribute('font-size')||'12')+'px',lineHeight:'1',whiteSpace:'nowrap',pointerEvents:'none',color:text.getAttribute('fill')||'var(--sv-text-secondary)',transform:`translate(${anchor==='middle'?'-50%':anchor==='end'?'-100%':'0'},-80%)`});
+      wrap.append(label);text.remove();return {label,x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))};
+    });
+    const dots=[...svg.querySelectorAll(':scope > circle')].map(circle=>{
+      const dot=document.createElement('span');Object.assign(dot.style,{position:'absolute',width:'7px',height:'7px',borderRadius:'50%',background:circle.getAttribute('fill'),transform:'translate(-50%,-50%)',pointerEvents:'none'});
+      wrap.append(dot);circle.remove();return {label:dot,x:Number(circle.getAttribute('cx')),y:Number(circle.getAttribute('cy'))};
+    });
+    let minY=original[1];
+    for(const line of svg.querySelectorAll('polyline[points]'))for(const point of line.getAttribute('points').trim().split(/\s+/)){const y=Number(point.split(',')[1]);if(Number.isFinite(y))minY=Math.min(minY,y);}
+    // The saved report's x labels are siblings rather than children of .xl.
+    const external=svg.matches('.line')?svg.closest('.chartbox').nextElementSibling:null;
+    const xlabels=external?.matches('.xl')?[...external.querySelectorAll('span')].map(label=>({label,x:parseFloat(label.style.left)/100*original[2]})):[];
+    const layout=()=>{
+      const rect=svg.getBoundingClientRect();if(!rect.width||!rect.height)return;
+      const dx=5*original[2]/rect.width,dy=svg.matches('.xlab')?0:8*original[3]/rect.height;
+      const box=[original[0]-dx,minY-dy,original[2]+2*dx,original[1]+original[3]-minY+2*dy];
+      svg.setAttribute('viewBox',box.join(' '));
+      for(const {label,x,y} of [...labels,...dots]){label.style.left=(x-box[0])/box[2]*100+'%';label.style.top=(y-box[1])/box[3]*100+'%';}
+      for(const {label,x} of xlabels)label.style.left=(x-box[0])/box[2]*100+'%';
+    };
+    layout();if(typeof ResizeObserver==='function')new ResizeObserver(layout).observe(wrap);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();
+})();
+</script></head><body><main data-aime-streamviz-root="true"><style>
+.report{width:100%;padding:6px 0 44px;color:var(--sv-text-primary);font-size:15px;line-height:1.72;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.report *{box-sizing:border-box}
+.read{max-width:980px;margin:0 auto;padding:0 2px}
+.report p{margin:0 0 14px}
+.report h1,.report h2,.report h3,.report h4{margin:0;color:var(--sv-text-primary);letter-spacing:-.01em}
+.hero{padding:16px 0 20px;border-bottom:1px solid var(--sv-border-subtle)}
+.kicker{margin:0 0 10px;font-size:11px;line-height:1.4;letter-spacing:.16em;font-weight:700;color:var(--sv-chart-series-1)}
+.hero h1{font-size:clamp(28px,4.6vw,42px);line-height:1.22;max-width:860px}
+.dek{margin:14px 0 12px;max-width:820px;font-size:16px;line-height:1.7;color:var(--sv-text-secondary)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;line-height:1.5;color:var(--sv-text-secondary)}
+.meta span{position:relative}
+.meta span+span:before{content:"";position:absolute;left:-9px;top:5px;width:3px;height:3px;border-radius:50%;background:var(--sv-text-secondary);opacity:.45}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 6px}
+.kpi{border:1px solid var(--sv-border-subtle);border-radius:10px;padding:12px 13px 11px;background:var(--sv-surface-primary);min-width:0}
+.kpi b{display:block;font-size:clamp(22px,3vw,28px);line-height:1.12;font-weight:700;letter-spacing:-.02em}
+.kpi p{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--sv-text-secondary)}
+.kpi p strong{color:var(--sv-text-primary);font-weight:600}
+.takeaways{margin:26px 0 6px;padding:17px 20px 15px;border-left:3px solid var(--sv-chart-series-1);background:var(--sv-surface-secondary);border-radius:0 10px 10px 0}
+.takeaways h2{font-size:17px;margin:0 0 10px}
+.takeaways ol{margin:0;padding-left:20px;display:grid;gap:9px}
+.takeaways li{font-size:13.8px;line-height:1.68;color:var(--sv-text-secondary);padding-left:2px}
+.takeaways li b{color:var(--sv-text-primary);font-weight:650}
+section{margin:40px 0 0}
+.sec-no{margin:0 0 7px;font-size:10.5px;line-height:1.4;letter-spacing:.17em;font-weight:700;color:var(--sv-chart-series-1)}
+section>h2{font-size:clamp(21px,3vw,28px);line-height:1.36;margin:0 0 10px;max-width:900px}
+.lead{font-size:15.5px;line-height:1.75;color:var(--sv-text-secondary)}
+.report strong{font-weight:650;color:var(--sv-text-primary)}
+figure{margin:18px 0 16px;padding:14px 14px 11px;border:1px solid var(--sv-border-subtle);border-radius:12px;background:var(--sv-surface-primary);min-width:0}
+.chart-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+.chart-head h3{font-size:15.5px;line-height:1.4}
+.chart-head p{margin:0;font-size:11.5px;line-height:1.5;color:var(--sv-text-secondary)}
+figcaption{font-size:11.5px;line-height:1.6;color:var(--sv-text-secondary);margin:8px 0 0}
+.callout{margin:14px 0;padding:12px 14px;border:1px solid var(--sv-border-subtle);border-radius:9px;background:var(--sv-surface-secondary);font-size:13px;line-height:1.68;color:var(--sv-text-secondary)}
+.callout b{color:var(--sv-text-primary)}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin-top:9px;font-size:11px;line-height:1.5;color:var(--sv-text-secondary)}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;flex:none}
+.legend i.band{height:9px;background:var(--sv-chart-series-1);opacity:.14;border-radius:2px}
+.legend .muted{color:var(--sv-text-secondary);opacity:.85;white-space:normal}
+.tbl-wrap{overflow-x:auto;margin:14px 0;border:1px solid var(--sv-border-subtle);border-radius:10px;background:var(--sv-surface-primary)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5;min-width:620px}
+th,td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--sv-border-subtle)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--sv-surface-secondary);color:var(--sv-text-secondary);font-weight:600;font-size:11.5px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--sv-surface-secondary)}
+td.pos{color:var(--sv-price-up)}
+td.neg{color:var(--sv-price-down)}
+td.muted{color:var(--sv-text-secondary);font-size:11.5px}
+tr.hl td{background:var(--sv-surface-secondary)}
+.appendix{min-width:960px;font-size:12px}
+.appendix th,.appendix td{padding:7px 9px}
+.snap{max-width:520px}
+.snap table{min-width:0}
+.snap th{text-align:left;font-weight:500;color:var(--sv-text-secondary);width:42%;background:transparent}
+.snap td{text-align:right;font-weight:650}
+.tests td:last-child,.tests th:last-child{text-align:left;white-space:normal;padding-right:10px}
+@media(max-width:390px){.snap th,.snap td{white-space:normal}.snap th{width:38%}}
+.split{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(0,.78fr);gap:22px;align-items:start}
+.method{margin-top:30px;padding-top:22px;border-top:1px solid var(--sv-border-subtle)}
+.method h2{font-size:22px;margin:0 0 12px}
+.method h3{font-size:14px;margin:18px 0 6px}
+.method p,.method li{font-size:12.8px;line-height:1.7;color:var(--sv-text-secondary)}
+.method ul{margin:0;padding-left:18px;display:grid;gap:5px}
+.footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--sv-border-subtle);font-size:11.5px;line-height:1.6;color:var(--sv-text-secondary)}
+/* low month chart */
+.low-chart{display:grid;grid-template-columns:38px minmax(0,1fr);grid-template-rows:150px 112px 38px;column-gap:6px;margin-top:2px}
+.lc-y{position:relative;min-width:0}
+.lc-y span{position:absolute;right:0;transform:translateY(-50%);font-size:10px;line-height:1;color:var(--sv-text-secondary);white-space:nowrap}
+.lc-y-top{grid-area:1/1}.lc-plot-top{grid-area:1/2}.lc-y-bot{grid-area:2/1}.lc-plot-bot{grid-area:2/2}
+.lc-plot{position:relative;min-width:0}
+.lc-grid{position:absolute;left:0;right:0;height:1px;background:var(--sv-border-subtle);opacity:.8}
+.lc-cols{position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,minmax(0,1fr))}
+.lc-col{position:relative;min-width:0}
+.lc-bar{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(26px,58%);background:var(--sv-chart-series-1);border-radius:3px 3px 0 0;opacity:.9}
+.lc-val{position:absolute;left:50%;transform:translateX(-50%);font-size:10px;line-height:1;font-weight:700;color:var(--sv-text-primary)}
+.lc-dot{position:absolute;left:50%;width:8px;height:8px;border-radius:50%;background:var(--sv-price-down);transform:translate(-50%,50%);box-shadow:0 0 0 1px var(--sv-surface-primary)}
+.lc-dotlab{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;line-height:1;color:var(--sv-text-secondary);background:var(--sv-surface-primary);padding:1px 2px;white-space:nowrap;font-weight:600}
+.lc-ref{position:absolute;left:0;right:0;border-top:1px dashed var(--sv-text-secondary);opacity:.55}
+.lc-ref span{position:absolute;right:0;top:-16px;font-size:9.5px;line-height:1;color:var(--sv-text-secondary);background:var(--sv-surface-primary);padding-left:4px}
+.lc-x{grid-area:3/1/4/3;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));padding-top:6px}
+.lc-xlab{text-align:center;min-width:0}
+.lc-xlab b{display:block;font-size:10.5px;line-height:1.25;font-weight:600;color:var(--sv-text-primary)}
+.lc-xlab em{display:block;font-style:normal;font-size:9px;line-height:1.3;color:var(--sv-text-secondary)}
+@media(max-width:760px){.lc-xlab em{font-size:8.5px}.lc-dotlab{font-size:8px}}
+/* path chart */
+.path-chart{margin-top:2px;min-width:0}
+.pc-wrap{display:grid;grid-template-columns:34px minmax(0,1fr);grid-template-rows:292px 34px;column-gap:6px}
+.pc-y{grid-area:1/1;position:relative}
+.pc-y span{position:absolute;right:0;transform:translateY(-50%);font-size:10px;line-height:1;color:var(--sv-text-secondary)}
+.pc-plot{grid-area:1/2;position:relative;min-width:0}
+.pc-grid{position:absolute;left:0;right:0;height:1px;background:var(--sv-border-subtle);opacity:.8}
+.pc-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.pc-x{grid-area:2/2;position:relative;height:34px}
+.pc-ticks{position:absolute;left:0;right:0;top:0;height:5px}
+.pc-ticks span{position:absolute;top:0;width:1px;height:4px;background:var(--sv-border-subtle)}
+.pc-x span{position:absolute;top:8px;transform:translateX(-50%);font-size:10px;line-height:1.2;white-space:nowrap;color:var(--sv-text-secondary)}
+.pc-x span:first-child{transform:none}
+.pc-x span:last-child{transform:translateX(-100%)}
+.pc-election{position:absolute;top:0;bottom:0;border-left:1px dashed var(--sv-text-secondary);opacity:.55;pointer-events:none}
+.pc-election span{position:absolute;top:0;left:3px;font-size:9.5px;line-height:1.2;white-space:nowrap;color:var(--sv-text-secondary);background:var(--sv-surface-primary);padding:0 2px}
+.pc-dot{position:absolute;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px var(--sv-surface-primary)}
+.pc-tag{position:absolute;font-size:9.5px;line-height:1.25;white-space:nowrap;color:var(--sv-text-secondary);background:var(--sv-surface-primary);padding:1px 2px}
+.pc-tag.low{transform:translate(-50%,10px)}
+.pc-tag.end{transform:translate(-100%,-145%);color:var(--sv-text-primary);font-weight:650}
+.pc-tag.y26{transform:translate(6px,-50%);color:var(--sv-chart-series-3);font-weight:650}
+.pc-tag.elect{transform:translate(5px,-50%);color:var(--sv-text-primary);font-weight:650}
+.lc-unit{position:absolute;left:0;font-size:8.5px;line-height:1;color:var(--sv-text-secondary);opacity:.9}
+/* range chart */
+.range-chart{margin-top:4px;min-width:0}
+.rc-axis{display:grid;grid-template-columns:74px minmax(0,1fr);column-gap:8px;height:18px}
+.rc-axis-track{position:relative}
+.rc-axis-track span{position:absolute;top:0;transform:translateX(-50%);font-size:9.5px;line-height:1;color:var(--sv-text-secondary)}
+.rc-axis-track span:first-child{transform:none}
+.rc-axis-track span:last-child{transform:translateX(-100%)}
+.rc-row{display:grid;grid-template-columns:74px minmax(0,1fr);column-gap:8px;height:54px;border-top:1px solid var(--sv-border-subtle)}
+.rc-lab{display:flex;flex-direction:column;justify-content:center;gap:2px}
+.rc-lab b{font-size:12px;line-height:1.2}
+.rc-lab small{font-size:9.5px;line-height:1.2;color:var(--sv-text-secondary);font-variant-numeric:tabular-nums}
+.rc-track{position:relative;height:54px;min-width:0}
+.rc-zero{position:absolute;top:6px;bottom:6px;width:1px;background:var(--sv-text-secondary);opacity:.35}
+.rc-ci{position:absolute;height:2px;border-radius:2px;opacity:.32;top:13px}
+.rc-ci+.rc-ci{top:31px}
+.rc-dot{position:absolute;width:9px;height:9px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px var(--sv-surface-primary)}
+/* scatter */
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.sc{min-width:0;border:1px solid var(--sv-border-subtle);border-radius:10px;padding:10px 10px 8px;background:var(--sv-surface-primary)}
+.sc-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sc-head h4{font-size:12.5px;line-height:1.3}
+.sc-head span{font-size:10px;line-height:1.3;color:var(--sv-text-secondary);white-space:nowrap}
+.sc-wrap{display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:200px 22px;column-gap:4px;margin-top:6px}
+.sc-y{position:relative}
+.sc-y span{position:absolute;right:0;transform:translateY(-50%);font-size:9px;line-height:1;color:var(--sv-text-secondary);white-space:nowrap}
+.sc-plot{position:relative;min-width:0}
+.sc-gridline{position:absolute;left:0;right:0;height:1px;background:var(--sv-border-subtle);opacity:.8}
+.sc-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.sc-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--sv-chart-series-1);opacity:.55;transform:translate(-50%,50%);box-shadow:0 0 0 1px var(--sv-surface-primary)}
+.sc-dot.hl{width:8px;height:8px;background:var(--sv-chart-series-3);opacity:1}
+.sc-lab{position:absolute;font-size:9px;line-height:1;color:var(--sv-text-secondary);white-space:nowrap}
+.sc-x{grid-column:2;position:relative;height:22px}
+.sc-x span{position:absolute;top:4px;transform:translateX(-50%);font-size:9px;line-height:1;color:var(--sv-text-secondary)}
+.sc-x span:first-child{transform:none}
+.sc-x span:last-child{transform:translateX(-100%)}
+.sc-foot{margin:6px 0 0;font-size:9.5px;line-height:1.4;color:var(--sv-text-secondary)}
+.sc-axis-title{margin:7px 0 0;text-align:center;font-size:10.5px;color:var(--sv-text-secondary)}
+@media(max-width:760px){
+  .report{font-size:14.5px;padding-bottom:28px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .takeaways{padding:14px 15px}
+  .takeaways li{font-size:13px}
+  section{margin-top:32px}
+  figure{padding:11px 9px 9px}
+  .chart-head{gap:4px}
+  .chart-head h3{font-size:14px}
+  .chart-head p{font-size:10.5px}
+  .low-chart{grid-template-columns:32px minmax(0,1fr);grid-template-rows:130px 100px 36px;column-gap:4px}
+  .lc-xlab b{font-size:9.5px}
+  .lc-xlab em{font-size:8px}
+  .lc-val{font-size:9px}
+  .pc-wrap{grid-template-columns:28px minmax(0,1fr);grid-template-rows:238px 32px;column-gap:3px}
+  .pc-y span{font-size:9px}
+  .pc-x span{font-size:9px}
+  .pc-mod{display:none}
+  .pc-tag{font-size:8.5px}
+  .rc-axis,.rc-row{grid-template-columns:64px minmax(0,1fr);column-gap:5px}
+  .rc-lab b{font-size:11px}
+  .rc-lab small{font-size:9px}
+  .sc-grid{grid-template-columns:1fr}
+  .sc-wrap{grid-template-rows:180px 22px}
+  .split{grid-template-columns:1fr;gap:8px}
+  table{font-size:12px}
+  .tbl-wrap:not(.snap) table:not(.appendix){min-width:0;font-size:11px}
+  .tbl-wrap:not(.snap) table:not(.appendix) th,
+  .tbl-wrap:not(.snap) table:not(.appendix) td{padding:7px 4px;white-space:normal;line-height:1.35}
+  .tbl-wrap:not(.snap) table:not(.appendix) thead th{font-size:10px}
+  .tbl-wrap:not(.snap) table:not(.appendix) th:first-child,
+  .tbl-wrap:not(.snap) table:not(.appendix) td:first-child{width:31%}
+  .tests td:last-child,.tests th:last-child{width:30%}
+  .tests td:first-child,.tests th:first-child{width:28%}
+  .appendix{min-width:920px}
+  .snap{max-width:none}
+}
+@media(max-width:390px){
+  .tbl-wrap:not(.snap) table:not(.appendix){font-size:10px}
+  .tbl-wrap:not(.snap) table:not(.appendix) th,
+  .tbl-wrap:not(.snap) table:not(.appendix) td{padding:6px 3px}
+  .tbl-wrap:not(.snap) table:not(.appendix) th:first-child,
+  .tbl-wrap:not(.snap) table:not(.appendix) td:first-child{width:29%}
+}
+
+@media(max-width:390px){
+  .kpis{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:10px}
+  .kpi b{font-size:21px}
+  .kpi p{font-size:11px}
+  .lc-xlab b{font-size:9px}
+  .lc-xlab em{font-size:7.5px}
+}
+</style>
+<div class="report" data-financial-market="US"><div class="read">
+<header class="hero">
+  <p class="kicker">美国中期选举研究 · 1902–2026</p>
+  <h1>低点很少在九月，结果也定不了方向</h1>
+  <p class="dek">把 1902 年以来的 31 次中期选举放回道指日线上：选举前的低点没有固定月份，选举后的上涨是慢热而不是跳涨；众议院控制权是否易手，对随后一年的方向没有稳健的显著解释力；短期有事件反应，但不足以构成一年期信号。</p>
+  <div class="meta"><span>道琼斯工业平均指数 · 日收盘</span><span>1900-01-02 至 2026-10-20</span><span>31 次已完成中期选举（1902–2022）</span><span>下一次：2026-11-03</span></div>
+</header>
+<div class="kpis">
+  <div class="kpi"><b>7 / 31</b><p><strong>低点落在 9–10 月</strong><br>占 22.6%，低于“金九银十”叙事的直觉</p></div>
+  <div class="kpi"><b>−25.2%</b><p><strong>9–10 月低点的中位回撤</strong><br>同期 1 月低点中位仅 −3.4%</p></div>
+  <div class="kpi"><b>+11.5%</b><p><strong>选举后 12 个月平均涨幅</strong><br>上涨概率 80.6%，区间 −28.2% 至 +71.4%</p></div>
+  <div class="kpi"><b>p=0.36</b><p><strong>失去 vs 保住众院的 12 个月差异</strong><br>−6.9pp，95% 区间 −20.4% 至 +5.7%</p></div>
+</div>
+<section class="takeaways">
+  <h2>先看结论</h2>
+  <ol>
+    <li><b>低点月份很散。</b>1 月 7 次、10 月 6 次、7 月 5 次；9–10 月合计 7 次。但 9–10 月的低点全部是深跌，1 月的 7 次则全部是浅低点——所谓“十月见底”，是深跌记忆，不是高频规律。</li>
+    <li><b>选举后不是发令枪。</b>+1 个月仅 +0.24%，+3 个月 +3.4%，+6 个月 +8.3%，+12 个月 +11.5%。12 个月相对非中期年份只高 4.9pp（p=0.189）；6 个月窗口 +4.4pp（p=0.058），剔除 1930 年代后 p=0.020，但对样本选择敏感、多重检验后约 0.23，只能算弱线索。</li>
+    <li><b>结果不是稳健的一年期信号。</b>失去众议院后 12 个月 +6.8%，保住 +13.7%，差 −6.9pp（p=0.358）；统一/分裂政府差 +2.6pp（p=0.723）。短期有信号：席位摆幅与 +1 个月 ρ=0.52（p=0.003）、与 +3 个月 ρ=0.36（p=0.049）；12 个月的连续关系方向一致，但随极端年份剔除在 p=0.03–0.11 之间摆动，不稳健。</li>
+    <li><b>2026 年低点在 3 月。</b>3 月 27 日 45,166.64，截至 10 月 20 日年内 +9.2%，10 月路径高于 31 年同期均值约 8.2%。历史基准偏多，但分布从 −28% 到 +71%，结果不是方向盘。</li>
+  </ol>
+</section>
+
+<section id="low">
+  <p class="sec-no">01 · 低点月份</p>
+  <h2>“九月十月见底”只发生在 22.6% 的年份，而且一旦发生就很深</h2>
+  <p class="lead">把每次中期选举年 1 月 1 日至投票日之间的最低日收盘挑出来，31 次里只有 7 次落在 9–10 月。1 月同样有 7 次，10 月 6 次，7 月 5 次；9 月只有 2022 年一次。</p>
+  <figure>
+    <div class="chart-head"><h3>图 1 · 低点月份分布，以及各月低点的回撤深度</h3><p>1902–2022 · 31 次中期选举</p></div>
+    
+<div class="low-chart" role="img" aria-label="1902至2022年31次中期选举前最低收盘的月份分布与回撤深度">
+  <div class="lc-y lc-y-top"><span style="top:0%">8</span><span style="top:50%">4</span><span style="top:100%">0</span></div>
+  <div class="lc-plot lc-plot-top">
+    <div class="lc-grid" style="top:0%"></div><div class="lc-grid" style="top:50%"></div><div class="lc-grid" style="top:100%"></div>
+    <div class="lc-cols"><div class="lc-col"><span class="lc-val" style="bottom:calc(87.500% + 4px)">7</span><div class="lc-bar" style="height:87.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(37.500% + 4px)">3</span><div class="lc-bar" style="height:37.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(37.500% + 4px)">3</span><div class="lc-bar" style="height:37.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(25.000% + 4px)">2</span><div class="lc-bar" style="height:25.000%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(12.500% + 4px)">1</span><div class="lc-bar" style="height:12.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(12.500% + 4px)">1</span><div class="lc-bar" style="height:12.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(62.500% + 4px)">5</span><div class="lc-bar" style="height:62.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(25.000% + 4px)">2</span><div class="lc-bar" style="height:25.000%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(12.500% + 4px)">1</span><div class="lc-bar" style="height:12.500%"></div></div><div class="lc-col"><span class="lc-val" style="bottom:calc(75.000% + 4px)">6</span><div class="lc-bar" style="height:75.000%"></div></div></div>
+  </div>
+  <div class="lc-y lc-y-bot"><span style="top:0%">0%</span><span style="top:50%">−15%</span><span style="top:100%">−30%</span></div>
+  <div class="lc-plot lc-plot-bot">
+    <div class="lc-grid" style="top:0%"></div><div class="lc-grid" style="top:50%"></div><div class="lc-grid" style="top:100%"></div>
+    <div class="lc-ref" style="bottom:44.3%"><span>整体中位 −16.7%</span></div>
+    <div class="lc-cols"><div class="lc-col"><span class="lc-dot" style="bottom:88.633%" title="1月：7次，中位回撤−3.4%"></span><span class="lc-dotlab below" style="bottom:calc(88.633% - 17px)">−3.4%</span></div><div class="lc-col"><span class="lc-dot" style="bottom:76.633%" title="2月：3次，中位回撤−7.0%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:44.333%" title="3月：3次，中位回撤−16.7%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:52.783%" title="4月：2次，中位回撤−14.2%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:26.000%" title="5月：1次，中位回撤−22.2%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:12.667%" title="6月：1次，中位回撤−26.2%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:42.333%" title="7月：5次，中位回撤−17.3%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:47.950%" title="8月：2次，中位回撤−15.6%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:26.867%" title="9月：1次，中位回撤−21.9%"></span></div><div class="lc-col"><span class="lc-dot" style="bottom:5.500%" title="10月：6次，中位回撤−28.4%"></span><span class="lc-dotlab above" style="bottom:calc(5.500% + 8px)">−28.4%</span></div></div>
+  </div>
+  <div class="lc-x"><div class="lc-xlab"><b>1月</b><em>7次</em></div><div class="lc-xlab"><b>2月</b><em>3次</em></div><div class="lc-xlab"><b>3月</b><em>3次</em></div><div class="lc-xlab"><b>4月</b><em>2次</em></div><div class="lc-xlab"><b>5月</b><em>1次</em></div><div class="lc-xlab"><b>6月</b><em>1次</em></div><div class="lc-xlab"><b>7月</b><em>5次</em></div><div class="lc-xlab"><b>8月</b><em>2次</em></div><div class="lc-xlab"><b>9月</b><em>1次</em></div><div class="lc-xlab"><b>10月</b><em>6次</em></div></div>
+</div>
+
+    <figcaption>上：各月出现“选举年最低收盘”的次数；下：该月低点相对选举年年初至低点前最高收盘的中位回撤。虚线为 31 次整体的中位回撤 −16.7%。低点按日收盘计。</figcaption>
+  </figure>
+  <p>月份分布本身接近随机：若低点均匀散落在 10 个月份，每月应约 3.1 次；实际最高的 1 月也只有 7 次。χ²=13.84，蒙特卡洛 p=0.135，不能据此认为月份有固定规律，也不能反过来断言“完全没有季节性”——31 个样本对月份效应的检验功效很低。</p>
+  <p>真正的差异在<b>深度</b>。1 月的 7 次低点，距选举年年初高点的中位回撤只有 −3.4%，更像是上一年走势的延续或年初惯性，而不是选举年新出现的抛售；9–10 月的 7 次低点，中位回撤 −25.2%，1930、1946、1966、1974、1990、2002、2022 全部在其中，没有一次浅于 −20%。所谓“十月见底”，之所以令人印象深刻，是因为它一旦出现就是深跌，而不是因为它常见。</p>
+  <p>对择时的含义很直接：如果只根据“9–10 月”等待低点，过去 31 年有 24 年会等空；但如果 9–10 月真的出现深跌，它更可能是全年最重要的风险释放窗口。两者并不矛盾——低点月份不是日历规律，而是当年冲击发生的时间。</p>
+  <div class="callout"><b>口径提醒：</b>低点按日收盘计，回撤相对选举年年初至低点前的最高收盘。1 月低点的“浅”是统计事实，不代表那一年没有风险：风险可能已在上一年释放，例如 1902 和 1918 年的 1 月低点，相对过去 12 个月高点的回撤分别为 −20.1% 和 −25.9%。</div>
+</section>
+
+<section id="after">
+  <p class="sec-no">02 · 选举后行情</p>
+  <h2>上涨是逐步累积的，投票日当天并不发令</h2>
+  <p class="lead">从投票日前最后一个收盘算起，道指在随后 1 个月平均只涨 +0.24%，上涨概率 58.1%；3 个月 +3.4%，6 个月 +8.3%，12 个月 +11.5%（80.6%）。收益主要集中在第 3 到第 6 个月，随后继续累积，而不是在投票日后的几周一次性兑现。</p>
+  <figure>
+    <div class="chart-head"><h3>图 2 · 选举年年初至次年年底：平均路径与 2026 年实际</h3><p>31 次中期选举 · 月末收盘 · 前一年 12 月=100</p></div>
+    
+<div class="path-chart" role="img" aria-label="31次中期选举的月末收盘平均路径、中位数路径、四分位区间与2026年实际路径">
+  <div class="pc-wrap">
+    <div class="pc-y"><span style="top:90.909%">90</span><span style="top:72.727%">100</span><span style="top:54.545%">110</span><span style="top:36.364%">120</span><span style="top:18.182%">130</span><span style="top:0.000%">140</span></div>
+    <div class="pc-plot">
+      <div class="pc-grid" style="top:90.909%"></div><div class="pc-grid" style="top:72.727%"></div><div class="pc-grid" style="top:54.545%"></div><div class="pc-grid" style="top:36.364%"></div><div class="pc-grid" style="top:18.182%"></div><div class="pc-grid" style="top:0.000%"></div>
+      <svg class="pc-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <polygon points="0.000,64.764 4.348,65.473 8.696,65.555 13.043,62.155 17.391,62.573 21.739,62.527 26.087,63.500 30.435,61.791 34.783,57.295 39.130,49.732 43.478,47.341 47.826,43.282 52.174,39.900 56.522,40.964 60.870,34.064 65.217,29.791 69.565,25.555 73.913,30.445 78.261,22.536 82.609,15.400 86.957,15.673 91.304,17.218 95.652,12.982 100.000,8.327 100.000,68.518 95.652,74.664 91.304,76.418 86.957,82.818 82.609,78.427 78.261,79.227 73.913,80.573 69.565,80.745 65.217,77.555 60.870,86.173 56.522,84.673 52.174,82.618 47.826,85.245 43.478,84.500 39.130,92.632 34.783,92.445 30.435,81.723 26.087,88.745 21.739,86.345 17.391,86.173 13.043,81.418 8.696,79.891 4.348,77.445 0.000,77.264" fill="var(--sv-chart-series-1)" opacity="0.14"></polygon>
+        <polyline points="0.000,71.683 4.348,71.715 8.696,72.074 13.043,71.643 17.391,71.799 21.739,74.079 26.087,72.485 30.435,71.941 34.783,74.380 39.130,71.060 43.478,67.956 47.826,66.598 52.174,62.340 56.522,59.160 60.870,58.246 65.217,52.303 69.565,52.610 73.913,50.169 78.261,47.743 82.609,46.670 86.957,47.497 91.304,48.478 95.652,48.110 100.000,42.888" fill="none" stroke="var(--sv-chart-series-1)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity="1.0" vector-effect="non-scaling-stroke"/>
+        <polyline points="0.000,71.636 4.348,71.200 8.696,71.309 13.043,72.673 17.391,72.527 21.739,76.018 26.087,72.073 30.435,72.064 34.783,69.682 39.130,69.164 43.478,70.027 47.826,68.836 52.174,69.473 56.522,63.927 60.870,62.109 65.217,58.873 69.565,53.164 73.913,58.018 78.261,54.782 82.609,52.055 86.957,55.327 91.304,51.873 95.652,47.382 100.000,41.527" fill="none" stroke="var(--sv-chart-series-2)" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity="0.85" vector-effect="non-scaling-stroke"/>
+        <polyline points="0.000,69.582 4.348,69.273 8.696,79.236 13.043,66.709 17.391,61.491 21.739,56.636 26.087,56.000 30.435,53.345 34.783,61.982 39.130,55.964" fill="none" stroke="var(--sv-chart-series-3)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity="1.0" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="pc-election" style="left:41.304%"><span>11/3 投票</span></div>
+      <span class="pc-dot" style="left:34.783%;top:74.380%;background:var(--sv-chart-series-1)"></span>
+      <span class="pc-tag low" style="left:34.783%;top:74.380%">均值低点 99.1（9月）</span>
+      <span class="pc-tag elect" style="left:43.478%;top:67.956%">102.6</span>
+      <span class="pc-tag end" style="left:100%;top:42.888%">116.4</span>
+      <span class="pc-tag y26" style="left:39.130%;top:55.964%">2026/10&nbsp; 109.2</span>
+    </div>
+    <div class="pc-x"><div class="pc-ticks"><span style="left:0.000%"></span><span style="left:4.348%"></span><span style="left:8.696%"></span><span style="left:13.043%"></span><span style="left:17.391%"></span><span style="left:21.739%"></span><span style="left:26.087%"></span><span style="left:30.435%"></span><span style="left:34.783%"></span><span style="left:39.130%"></span><span style="left:43.478%"></span><span style="left:47.826%"></span><span style="left:52.174%"></span><span style="left:56.522%"></span><span style="left:60.870%"></span><span style="left:65.217%"></span><span style="left:69.565%"></span><span style="left:73.913%"></span><span style="left:78.261%"></span><span style="left:82.609%"></span><span style="left:86.957%"></span><span style="left:91.304%"></span><span style="left:95.652%"></span><span style="left:100.000%"></span></div><span class="" style="left:0.000%">1月</span><span class="pc-mod" style="left:13.043%">4月</span><span class="" style="left:26.087%">7月</span><span class="" style="left:39.130%">10月</span><span class="pc-mod" style="left:60.870%">+4月</span><span class="" style="left:78.261%">+8月</span><span class="" style="left:100.000%">+12月</span></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:var(--sv-chart-series-1)"></i>均值（31次）</span>
+    <span><i style="background:var(--sv-chart-series-2)"></i>中位数</span>
+    <span><i class="band"></i>25–75分位</span>
+    <span><i style="background:var(--sv-chart-series-3)"></i>2026年（至10月）</span>
+  </div>
+</div>
+
+    <figcaption>粗线为 31 次均值，细线为中位数，浅色带为 25–75 分位；红线为 2026 年 1–10 月实际路径。横轴从选举年 1 月到次年 12 月，选举月为 11 月。个别月份缺失（1914 年一战休市）按可用样本平均。</figcaption>
+  </figure>
+  <p>把 31 条路径以选举前一年 12 月=100 对齐，均值路径在 9 月见低（99.1），选举月回到 102.6，次年 12 月 116.4；中位数路径的低点在 6 月（98.2），次年 12 月 117.2。平均曲线从 100 到 99.1 只下探约 0.9%，远小于单年 −16.7% 的中位回撤——它描述的是“多数年份夏末有浅回调”，不是“每年 9 月都有深跌”。</p>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>选举后窗口</th><th>中期选举年样本均值</th><th>中位数</th><th>上涨概率</th><th>非中期年份均值</th><th>差额</th><th>p值</th></tr></thead>
+    <tbody><tr><td>+1个月（21个交易日）</td><td>+0.24%</td><td>+1.1%</td><td>58.1%</td><td>+0.8%</td><td class="neg">−0.5pp</td><td>0.603</td></tr><tr><td>+3个月（63个交易日）</td><td>+3.4%</td><td>+2.9%</td><td>67.7%</td><td>+2.4%</td><td class="pos">+1.0pp</td><td>0.543</td></tr><tr><td>+6个月（126个交易日）</td><td>+8.3%</td><td>+9.6%</td><td>77.4%</td><td>+3.9%</td><td class="pos">+4.4pp</td><td>0.058<sup>†</sup></td></tr><tr><td>+12个月（252个交易日）</td><td>+11.5%</td><td>+9.1%</td><td>80.6%</td><td>+6.6%</td><td class="pos">+4.9pp</td><td>0.189</td></tr></tbody>
+  </table></div>
+  <p>与普通年份对照，12 个月窗口（11 月–次年 10 月）非中期年份均值 +6.6%，中期年份 +11.5%，差 +4.9pp，p=0.189，95% 区间 [−2.5, +12.5]。6 个月窗口的差 +4.4pp，名义 p=0.058，刚好在 5% 边界之外；剔除 1930 年代后 +5.7pp（p=0.020），说明它不是大萧条样本造成的，但四个期限的 BH 校正后约 0.23。更稳妥的读法是：<b>中期选举后的半年有偏强迹象，但不足以构成稳定的年度择时信号。</b></p>
+  <p>均值和中位数的差距也值得注意：12 个月均值 +11.5%，中位数只有 +9.1%，且区间从 −28.2% 到 +71.4%。1914 年的 +71.4% 是极端值——纽交所因一战休市，收益从 12 月 12 日复市首日算起，与战争重估和休市后的补涨有关，不应读作“选举效应”。</p>
+  <div class="callout"><b>读表：</b>† 6 个月差额名义 p=0.058；剔除 1930 年代 p=0.020；四期限 BH 校正后约 0.23。12 个月窗口在相邻年份之间存在重叠，p 值应视为近似。2026 年选举尚未举行，不进入统计。</div>
+</section>
+
+<section id="result">
+  <p class="sec-no">03 · 结果是否显著</p>
+  <h2>分组检验：谁赢众议院，对随后一年的方向没有显著解释力</h2>
+  <p class="lead">31 次中，总统所属党失去众议院控制权 10 次，保住 21 次。失去后 12 个月平均 +6.8%，保住 +13.7%，差 −6.9pp；置换检验 p=0.358，95% 区间 [−20.4, +5.7]。四个期限的置信区间都明显重叠。</p>
+  <figure>
+    <div class="chart-head"><h3>图 3 · 按众议院控制权结果分组的选举后收益</h3><p>点为组均值，横线为 95% bootstrap 区间</p></div>
+    
+<div class="range-chart" role="img" aria-label="按众议院控制权结果分组的中期选举后1、3、6、12个月收益均值与95%置信区间">
+  <div class="rc-axis"><div class="rc-axis-lab"></div><div class="rc-axis-track"><span style="left:0.000%">−10%</span><span style="left:28.571%">0%</span><span style="left:57.143%">10%</span><span style="left:85.714%">20%</span></div></div>
+  
+    <div class="rc-row">
+      <div class="rc-lab"><b>+1个月</b><small>p=0.252</small></div>
+      <div class="rc-track">
+        <span class="rc-zero" style="left:28.571%"></span>
+        <span class="rc-ci" style="left:18.209%;width:15.458%;background:var(--sv-chart-series-3)"></span>
+        <span class="rc-ci" style="left:25.264%;width:10.783%;background:var(--sv-chart-series-2)"></span>
+        <span class="rc-dot" style="left:25.303%;top:13px;background:var(--sv-chart-series-3)" title="失去众议院：−1.1%"></span>
+        <span class="rc-dot" style="left:31.119%;top:31px;background:var(--sv-chart-series-2)" title="保住众议院：+0.9%"></span>
+      </div>
+    </div>
+    <div class="rc-row">
+      <div class="rc-lab"><b>+3个月</b><small>p=0.205</small></div>
+      <div class="rc-track">
+        <span class="rc-zero" style="left:28.571%"></span>
+        <span class="rc-ci" style="left:19.643%;width:24.689%;background:var(--sv-chart-series-3)"></span>
+        <span class="rc-ci" style="left:33.422%;width:15.846%;background:var(--sv-chart-series-2)"></span>
+        <span class="rc-dot" style="left:31.603%;top:13px;background:var(--sv-chart-series-3)" title="失去众议院：+1.1%"></span>
+        <span class="rc-dot" style="left:41.465%;top:31px;background:var(--sv-chart-series-2)" title="保住众议院：+4.5%"></span>
+      </div>
+    </div>
+    <div class="rc-row">
+      <div class="rc-lab"><b>+6个月</b><small>p=0.273</small></div>
+      <div class="rc-track">
+        <span class="rc-zero" style="left:28.571%"></span>
+        <span class="rc-ci" style="left:27.547%;width:31.034%;background:var(--sv-chart-series-3)"></span>
+        <span class="rc-ci" style="left:42.144%;width:28.125%;background:var(--sv-chart-series-2)"></span>
+        <span class="rc-dot" style="left:43.020%;top:13px;background:var(--sv-chart-series-3)" title="失去众议院：+5.1%"></span>
+        <span class="rc-dot" style="left:56.781%;top:31px;background:var(--sv-chart-series-2)" title="保住众议院：+9.9%"></span>
+      </div>
+    </div>
+    <div class="rc-row">
+      <div class="rc-lab"><b>+12个月</b><small>p=0.358</small></div>
+      <div class="rc-track">
+        <span class="rc-zero" style="left:28.571%"></span>
+        <span class="rc-ci" style="left:17.419%;width:59.285%;background:var(--sv-chart-series-3)"></span>
+        <span class="rc-ci" style="left:44.494%;width:47.999%;background:var(--sv-chart-series-2)"></span>
+        <span class="rc-dot" style="left:48.002%;top:13px;background:var(--sv-chart-series-3)" title="失去众议院：+6.8%"></span>
+        <span class="rc-dot" style="left:67.853%;top:31px;background:var(--sv-chart-series-2)" title="保住众议院：+13.7%"></span>
+      </div>
+    </div>
+  <div class="legend">
+    <span><i style="background:var(--sv-chart-series-3)"></i>失去众议院（10次）</span>
+    <span><i style="background:var(--sv-chart-series-2)"></i>保住众议院（21次）</span>
+    <span class="muted">点为均值，横线为95% bootstrap 区间</span>
+  </div>
+</div>
+
+    <figcaption>失去众议院 10 次，保住 21 次。p 值为组间均值差异的置换检验（20,000 次重抽样）。四个期限的组间差异均未达到 5% 显著。</figcaption>
+  </figure>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>检验</th><th>统计量</th><th>p值</th><th>读法</th></tr></thead>
+    <tbody>
+      <tr><td>失去 vs 保住众议院，+12 个月（n=10 / 21）</td><td>−6.9pp</td><td>0.358</td><td>不显著</td></tr>
+      <tr><td>统一 vs 分裂政府，+12 个月（n=13 / 18）</td><td>+2.6pp</td><td>0.723</td><td>不显著</td></tr>
+      <tr><td>席位摆幅 vs +12 个月（Spearman）</td><td>ρ=0.30</td><td>0.104</td><td>不显著</td></tr>
+      <tr><td>席位摆幅 vs +1 个月（Spearman）</td><td>ρ=0.52</td><td>0.003</td><td>显著，仅短期</td></tr>
+      <tr><td>选前 YTD vs +12 个月（Spearman）</td><td>ρ=0.06</td><td>0.738</td><td>无关系</td></tr>
+    </tbody>
+  </table></div>
+  <p>统一政府 vs 分裂政府也没有更好：选举后统一政府（总统党控制众院）13 次，12 个月均值 +13.0%；分裂政府 18 次，+10.4%；差 +2.6pp，p=0.723。把结果从“谁控制”换成“赢多少”，席位摆幅与 12 个月收益的 Spearman ρ=0.30（p=0.104），剔除 1930、1974 两个危机年份后仍是 ρ=0.30（p=0.108）。<b>分组结果一致：在这 31 次样本里，谁赢众议院解释不了随后一年的方向。</b></p>
+  <figure>
+    <div class="chart-head"><h3>图 4 · 席位摆幅与选举后 1 个月、12 个月收益</h3><p>每个点=一次中期选举 · 虚线为 OLS 拟合</p></div>
+    
+<div class="sc-grid" role="img" aria-label="总统党众议院席位摆幅与选举后1个月、12个月收益的散点图">
+  
+    <div class="sc">
+      <div class="sc-head"><h4>选举后 1 个月</h4><span>ρ=0.52 · p=0.003</span></div>
+      <div class="sc-wrap">
+        <div class="sc-y"><span style="top:100.000%">−15%</span><span style="top:60.000%">−5%</span><span style="top:20.000%">+5%</span></div>
+        <div class="sc-plot">
+          <div class="sc-gridline" style="top:100.000%"></div><div class="sc-gridline" style="top:60.000%"></div><div class="sc-gridline" style="top:20.000%"></div>
+          <svg class="sc-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0.000,59.320 100.000,20.120" fill="none" stroke="var(--sv-text-secondary)" stroke-width="1.4" stroke-dasharray="4 3" opacity=".7" vector-effect="non-scaling-stroke"/></svg>
+          <span class="sc-dot" style="left:70.400%;bottom:38.642%" title="1902：席位摆幅−2.4pp，收益−5.3%"></span><span class="sc-dot" style="left:48.040%;bottom:62.368%" title="1906：席位摆幅−8.0pp，收益+0.6%"></span><span class="sc-dot" style="left:20.440%;bottom:36.989%" title="1910：席位摆幅−14.9pp，收益−5.8%"></span><span class="sc-dot" style="left:23.920%;bottom:74.134%" title="1914：席位摆幅−14.0pp，收益+3.5%"></span><span class="sc-dot" style="left:59.760%;bottom:38.493%" title="1918：席位摆幅−5.1pp，收益−5.4%"></span><span class="sc-dot" style="left:9.200%;bottom:49.680%" title="1922：席位摆幅−17.7pp，收益−2.6%"></span><span class="sc-dot" style="left:71.720%;bottom:75.733%" title="1926：席位摆幅−2.1pp，收益+3.9%"></span><span class="sc-dot" style="left:32.200%;bottom:55.685%" title="1930：席位摆幅−11.9pp，收益−1.1%"></span><span class="sc-dot" style="left:88.280%;bottom:84.401%" title="1934：席位摆幅+2.1pp，收益+6.1%"></span><span class="sc-dot" style="left:13.800%;bottom:40.789%" title="1938：席位摆幅−16.6pp，收益−4.8%"></span><span class="sc-dot" style="left:38.640%;bottom:59.372%" title="1942：席位摆幅−10.3pp，收益−0.2%"></span><span class="sc-dot" style="left:28.520%;bottom:44.174%" title="1946：席位摆幅−12.9pp，收益−4.0%"></span><span class="sc-dot" style="left:54.240%;bottom:59.658%" title="1950：席位摆幅−6.4pp，收益−0.1%"></span><span class="sc-dot" style="left:63.440%;bottom:95.789%" title="1954：席位摆幅−4.1pp，收益+8.9%"></span><span class="sc-dot" style="left:33.720%;bottom:70.228%" title="1958：席位摆幅−11.6pp，收益+2.6%"></span><span class="sc-dot" style="left:75.600%;bottom:87.028%" title="1962：席位摆幅−1.1pp，收益+6.8%"></span><span class="sc-dot" style="left:36.800%;bottom:65.275%" title="1966：席位摆幅−10.8pp，收益+1.3%"></span><span class="sc-dot" style="left:68.960%;bottom:81.071%" title="1970：席位摆幅−2.8pp，收益+5.3%"></span><span class="sc-dot hl" style="left:35.880%;bottom:8.016%" title="1974：席位摆幅−11.0pp，收益−13.0%"></span><span class="sc-lab" style="left:35.880%;bottom:8.016%;transform:translate(-50%,-160%)">1974</span><span class="sc-dot" style="left:67.120%;bottom:68.009%" title="1978：席位摆幅−3.2pp，收益+2.0%"></span><span class="sc-dot" style="left:56.080%;bottom:64.317%" title="1982：席位摆幅−6.0pp，收益+1.1%"></span><span class="sc-dot" style="left:76.320%;bottom:69.985%" title="1986：席位摆幅−0.9pp，收益+2.5%"></span><span class="sc-dot" style="left:72.640%;bottom:78.885%" title="1990：席位摆幅−1.8pp，收益+4.7%"></span><span class="sc-dot" style="left:30.360%;bottom:44.858%" title="1994：席位摆幅−12.4pp，收益−3.8%"></span><span class="sc-dot" style="left:83.680%;bottom:67.973%" title="1998：席位摆幅+0.9pp，收益+2.0%"></span><span class="sc-dot" style="left:87.360%;bottom:57.465%" title="2002：席位摆幅+1.8pp，收益−0.6%"></span><span class="sc-dot" style="left:52.400%;bottom:64.003%" title="2006：席位摆幅−6.9pp，收益+1.0%"></span><span class="sc-dot" style="left:21.160%;bottom:66.209%" title="2010：席位摆幅−14.7pp，收益+1.6%"></span><span class="sc-dot" style="left:68.040%;bottom:71.879%" title="2014：席位摆幅−3.0pp，收益+3.0%"></span><span class="sc-dot" style="left:41.360%;bottom:40.557%" title="2018：席位摆幅−9.7pp，收益−4.9%"></span><span class="sc-dot" style="left:71.720%;bottom:67.487%" title="2022：席位摆幅−2.1pp，收益+1.9%"></span>
+        </div>
+        <div class="sc-x"><span style="left:0.000%">−20%</span><span style="left:40.000%">−10%</span><span style="left:80.000%">0%</span></div>
+      </div>
+      <p class="sc-foot">斜率 +0.39%/pp · R²=0.24</p>
+    </div>
+  
+    <div class="sc">
+      <div class="sc-head"><h4>选举后 12 个月</h4><span>ρ=0.30 · p=0.104</span></div>
+      <div class="sc-wrap">
+        <div class="sc-y"><span style="top:95.652%">−30%</span><span style="top:69.565%">0%</span><span style="top:43.478%">+30%</span><span style="top:17.391%">+60%</span></div>
+        <div class="sc-plot">
+          <div class="sc-gridline" style="top:95.652%"></div><div class="sc-gridline" style="top:69.565%"></div><div class="sc-gridline" style="top:43.478%"></div><div class="sc-gridline" style="top:17.391%"></div>
+          <svg class="sc-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0.000,65.513 100.000,53.991" fill="none" stroke="var(--sv-text-secondary)" stroke-width="1.4" stroke-dasharray="4 3" opacity=".7" vector-effect="non-scaling-stroke"/></svg>
+          <span class="sc-dot" style="left:70.400%;bottom:11.651%" title="1902：席位摆幅−2.4pp，收益−21.6%"></span><span class="sc-dot" style="left:48.040%;bottom:10.984%" title="1906：席位摆幅−8.0pp，收益−22.4%"></span><span class="sc-dot" style="left:20.440%;bottom:23.708%" title="1910：席位摆幅−14.9pp，收益−7.7%"></span><span class="sc-dot hl" style="left:23.920%;bottom:92.540%" title="1914：席位摆幅−14.0pp，收益+71.4%"></span><span class="sc-lab" style="left:23.920%;bottom:92.540%;transform:translate(-50%,120%)">1914</span><span class="sc-dot" style="left:59.760%;bottom:52.554%" title="1918：席位摆幅−5.1pp，收益+25.4%"></span><span class="sc-dot" style="left:9.200%;bottom:26.160%" title="1922：席位摆幅−17.7pp，收益−4.9%"></span><span class="sc-dot" style="left:71.720%;bottom:54.885%" title="1926：席位摆幅−2.1pp，收益+28.1%"></span><span class="sc-dot hl" style="left:32.200%;bottom:5.927%" title="1930：席位摆幅−11.9pp，收益−28.2%"></span><span class="sc-lab" style="left:32.200%;bottom:5.927%;transform:translate(-50%,-170%)">1930</span><span class="sc-dot" style="left:88.280%;bottom:62.842%" title="1934：席位摆幅+2.1pp，收益+37.3%"></span><span class="sc-dot" style="left:13.800%;bottom:28.189%" title="1938：席位摆幅−16.6pp，收益−2.6%"></span><span class="sc-dot" style="left:38.640%;bottom:47.495%" title="1942：席位摆幅−10.3pp，收益+19.6%"></span><span class="sc-dot" style="left:28.520%;bottom:30.664%" title="1946：席位摆幅−12.9pp，收益+0.3%"></span><span class="sc-dot" style="left:54.240%;bottom:49.989%" title="1950：席位摆幅−6.4pp，收益+22.5%"></span><span class="sc-dot" style="left:63.440%;bottom:55.225%" title="1954：席位摆幅−4.1pp，收益+28.5%"></span><span class="sc-dot" style="left:33.720%;bottom:46.478%" title="1958：席位摆幅−11.6pp，收益+18.4%"></span><span class="sc-dot" style="left:75.600%;bottom:49.458%" title="1962：席位摆幅−1.1pp，收益+21.9%"></span><span class="sc-dot" style="left:36.800%;bottom:35.567%" title="1966：席位摆幅−10.8pp，收益+5.9%"></span><span class="sc-dot" style="left:68.960%;bottom:37.217%" title="1970：席位摆幅−2.8pp，收益+7.8%"></span><span class="sc-dot" style="left:35.880%;bottom:50.459%" title="1974：席位摆幅−11.0pp，收益+23.0%"></span><span class="sc-dot" style="left:67.120%;bottom:31.131%" title="1978：席位摆幅−3.2pp，收益+0.8%"></span><span class="sc-dot" style="left:56.080%;bottom:47.716%" title="1982：席位摆幅−6.0pp，收益+19.9%"></span><span class="sc-dot" style="left:76.320%;bottom:33.701%" title="1986：席位摆幅−0.9pp，收益+3.8%"></span><span class="sc-dot" style="left:72.640%;bottom:49.545%" title="1990：席位摆幅−1.8pp，收益+22.0%"></span><span class="sc-dot" style="left:30.360%;bottom:52.369%" title="1994：席位摆幅−12.4pp，收益+25.2%"></span><span class="sc-dot" style="left:83.680%;bottom:49.441%" title="1998：席位摆幅+0.9pp，收益+21.9%"></span><span class="sc-dot" style="left:87.360%;bottom:41.883%" title="2002：席位摆幅+1.8pp，收益+13.2%"></span><span class="sc-dot" style="left:52.400%;bottom:38.371%" title="2006：席位摆幅−6.9pp，收益+9.1%"></span><span class="sc-dot" style="left:21.160%;bottom:34.082%" title="2010：席位摆幅−14.7pp，收益+4.2%"></span><span class="sc-dot" style="left:68.040%;bottom:32.855%" title="2014：席位摆幅−3.0pp，收益+2.8%"></span><span class="sc-dot" style="left:41.360%;bottom:38.233%" title="2018：席位摆幅−9.7pp，收益+9.0%"></span><span class="sc-dot" style="left:71.720%;bottom:32.352%" title="2022：席位摆幅−2.1pp，收益+2.2%"></span>
+        </div>
+        <div class="sc-x"><span style="left:0.000%">−20%</span><span style="left:40.000%">−10%</span><span style="left:80.000%">0%</span></div>
+      </div>
+      <p class="sc-foot">斜率 +0.53%/pp · R²=0.03</p>
+    </div>
+</div>
+<div class="sc-axis-title">总统党众议院席位占比变化（百分点，负值=失席位）</div>
+
+    <figcaption>横轴为总统所属党在众议院的席位占比变化（百分点，负值=失席位）。左图解释力更强（R²=0.24），右图几乎不解释收益差异（R²=0.03）；两图纵轴尺度不同，斜率数值不可直接比陡缓。1914 年 12 个月收益 +71.4%，为全样本最高；1930 年 −28.2%，为最低。</figcaption>
+  </figure>
+  <p>唯一稳定的关系在更短的窗口：席位摆幅与选举后 1 个月收益 ρ=0.52（p=0.003），总统党席位损失越大，投票后第一个月越弱；剔除 1930、1974 后 ρ=0.50（p=0.006）。3 个月仍有 ρ=0.36（p=0.049），但 6 个月降到 ρ=0.27（p=0.142），12 个月 ρ=0.30（p=0.104）。它是事件窗口的风险偏好反应，不是一年期趋势的起点，也不是可以提前交易的信号——席位摆幅要等计票结束才知道。</p>
+  <p>连续变量的一年期关系还受极端年份影响：全样本 ρ=0.30（p=0.104）；剔除 1914 年（一战休市、复市后 +71.4%）后 ρ=0.39（p=0.034）；剔除 1930、1974 后 ρ=0.30（p=0.108）；三者都剔除后 ρ=0.40（p=0.035）。方向一致——总统党失席位越多，随后一年偏弱——但显著性在 0.03–0.11 之间摆动，只能算脆弱线索，不能作为稳健结论。</p>
+  <p>多重检验方面：若只按 4 个期限做 BH 校正，1 个月关系仍显著（约 0.01），3 个月升到约 0.10；若把 3 种结果定义 × 4 个期限一起校正，1 个月约 0.03、3 个月约 0.29。12 个月的分类结果都不显著；连续的 12 个月关系虽然方向一致，但对极端年份敏感。样本只有 31 次，置信区间很宽——<b>“不显著”不等于“证明没有影响”</b>，只表示这套样本无法把影响从噪声里稳健地分离出来。</p>
+  <div class="callout"><b>不要用选举结果做一年期方向交易。</b>历史上翻盘与不翻盘的 12 个月收益区间高度重叠；结果更适合作为短期波动与风险偏好的事件变量。更可能主导 12 个月方向的，是盈利、利率、通胀与危机冲击，而这些不在选举变量的解释范围内。</div>
+</section>
+
+<section id="y2026">
+  <p class="sec-no">04 · 放回 2026</p>
+  <h2>低点在 3 月，不在 9 月；历史路径偏多，但分布很宽</h2>
+  <div class="split">
+    <div>
+      <p>2026 年 11 月 3 日将举行第 120 届国会中期选举。截至 10 月 20 日，道指收 52,495.88，年内 +9.2%；年内低点 45,166.64 出现在 3 月 27 日，较当时年内高点回撤 10.0%，比“九月十月见底”的传统叙事早得多。当前距 8 月 5 日高点 54,349.12 回撤 3.4%。</p>
+      <p>按月末路径口径，2026 年 10 月（截至 20 日）为 109.2（去年 12 月=100），高于 31 年同期均值 100.9 约 8.2%。历史给出的赔率是：选举后 12 个月上涨概率 80.6%，均值 +11.5%；但分布从 −28.2% 到 +71.4%，且“失去众议院”与“保住众议院”的差异不显著。</p>
+      <p>把历史当基准，而不是当预测：接下来可核对的是 11 月 3 日投票后的众议院控制权、12 月的政策议程与 2027 年的盈利/利率环境。这些不在这套选举变量的解释范围内，却是 12 个月收益的主要来源。</p>
+    </div>
+    <div class="tbl-wrap snap"><table><tbody><tr><th>10月20日收盘</th><td>52,495.88</td></tr><tr><th>年内涨跌</th><td>+9.2%</td></tr><tr><th>年内低点</th><td>45,166.64（3月27日）</td></tr><tr><th>低点回撤</th><td>−10.0%（相对当时年内高点）</td></tr><tr><th>距8月5日高点</th><td>−3.4%</td></tr><tr><th>10月路径（截至10/20）</th><td>109.2（去年12月=100）</td></tr><tr><th>31年同期均值</th><td>100.9</td></tr><tr><th>选举日</th><td>2026-11-03</td></tr></tbody></table></div>
+  </div>
+  <div class="callout"><b>2026 年的读数方式：</b>年内低点已经出现在 3 月，说明今年没有按“夏末秋初见底”的剧本走；路径高于历史同期均值，意味着后续更大的风险不是“选举前没跌够”，而是预期已经偏满时的意外冲击。</div>
+</section>
+
+<section id="appendix">
+  <p class="sec-no">附录</p>
+  <h2>31 次中期选举明细</h2>
+  <p class="lead">低点为选举年 1 月 1 日至投票日之间的最低日收盘；收益从投票日前最后一个收盘起算，分别为 21 / 63 / 126 / 252 个交易日后的价格收益。2026 年尚未投票。宽表可左右滑动查看。</p>
+  
+<div class="tbl-wrap"><table class="appendix">
+<thead><tr><th>年份</th><th>选举日</th><th>总统党</th><th>众院（前→后）</th><th>席位摆幅</th><th>低点日期</th><th>低点回撤</th><th>选前YTD</th><th>+1月</th><th>+3月</th><th>+6月</th><th>+12月</th></tr></thead>
+<tbody><tr><td>1902</td><td>11-04</td><td>R</td><td>R→R</td><td>−2.4pp</td><td>01-14</td><td class="neg">−3.6%</td><td class="pos">+1.5%</td><td class="neg">−5.3%</td><td class="neg">−2.1%</td><td class="neg">−5.3%</td><td class="neg">−21.6%</td></tr><tr><td>1906</td><td>11-06</td><td>R</td><td>R→R</td><td>−8.0pp</td><td>07-13</td><td class="neg">−17.3%</td><td class="neg">−1.7%</td><td class="pos">+0.6%</td><td class="neg">−1.0%</td><td class="neg">−10.4%</td><td class="neg">−22.4%</td></tr><tr><td>1910</td><td>11-08</td><td>R</td><td>R→D</td><td>−14.9pp</td><td>07-26</td><td class="neg">−25.1%</td><td class="neg">−13.5%</td><td class="neg">−5.8%</td><td class="neg">−2.6%</td><td class="neg">−3.4%</td><td class="neg">−7.7%</td></tr><tr><td>1914<sup>‡</sup></td><td>11-03</td><td>D</td><td>D→D</td><td>−14.0pp</td><td>07-30</td><td class="neg">−14.4%</td><td class="neg">−9.3%</td><td class="pos">+3.5%</td><td class="pos">+1.2%</td><td class="pos">+10.5%</td><td class="pos">+71.4%</td></tr><tr><td>1918</td><td>11-05</td><td>D</td><td>D→R</td><td>−5.1pp</td><td>01-15</td><td class="neg">−4.3%</td><td class="pos">+15.3%</td><td class="neg">−5.4%</td><td class="neg">−6.7%</td><td class="pos">+6.1%</td><td class="pos">+25.4%</td></tr><tr><td>1922</td><td>11-07</td><td>R</td><td>R→R</td><td>−17.7pp</td><td>01-10</td><td class="neg">−1.3%</td><td class="pos">+21.4%</td><td class="neg">−2.6%</td><td class="neg">−1.3%</td><td class="pos">+2.7%</td><td class="neg">−4.9%</td></tr><tr><td>1926</td><td>11-02</td><td>R</td><td>R→R</td><td>−2.1pp</td><td>03-30</td><td class="neg">−16.7%</td><td class="neg">−3.9%</td><td class="pos">+3.9%</td><td class="pos">+2.4%</td><td class="pos">+7.4%</td><td class="pos">+28.1%</td></tr><tr><td>1930</td><td>11-04</td><td>R</td><td>R→D</td><td>−11.9pp</td><td>10-31</td><td class="neg">−37.6%</td><td class="neg">−25.4%</td><td class="neg">−1.1%</td><td class="neg">−10.6%</td><td class="neg">−9.9%</td><td class="neg">−28.2%</td></tr><tr><td>1934</td><td>11-06</td><td>D</td><td>D→D</td><td>+2.1pp</td><td>07-26</td><td class="neg">−22.8%</td><td class="neg">−3.8%</td><td class="pos">+6.1%</td><td class="pos">+7.1%</td><td class="pos">+8.6%</td><td class="pos">+37.3%</td></tr><tr><td>1938</td><td>11-08</td><td>D</td><td>D→D</td><td>−16.6pp</td><td>03-31</td><td class="neg">−26.4%</td><td class="pos">+28.2%</td><td class="neg">−4.8%</td><td class="neg">−9.2%</td><td class="neg">−18.6%</td><td class="neg">−2.6%</td></tr><tr><td>1942</td><td>11-03</td><td>D</td><td>D→D</td><td>−10.3pp</td><td>04-28</td><td class="neg">−18.6%</td><td class="pos">+3.4%</td><td class="neg">−0.2%</td><td class="pos">+5.1%</td><td class="pos">+19.4%</td><td class="pos">+19.6%</td></tr><tr><td>1946</td><td>11-05</td><td>D</td><td>D→R</td><td>−12.9pp</td><td>10-09</td><td class="neg">−23.2%</td><td class="neg">−9.6%</td><td class="neg">−4.0%</td><td class="neg">−0.4%</td><td class="neg">−0.6%</td><td class="pos">+0.3%</td></tr><tr><td>1950</td><td>11-07</td><td>D</td><td>D→D</td><td>−6.4pp</td><td>01-13</td><td class="neg">−2.6%</td><td class="pos">+11.2%</td><td class="neg">−0.1%</td><td class="pos">+8.9%</td><td class="pos">+13.1%</td><td class="pos">+22.5%</td></tr><tr><td>1954</td><td>11-02</td><td>R</td><td>R→D</td><td>−4.1pp</td><td>01-11</td><td class="neg">−1.5%</td><td class="pos">+26.0%</td><td class="pos">+8.9%</td><td class="pos">+15.7%</td><td class="pos">+19.4%</td><td class="pos">+28.5%</td></tr><tr><td>1958</td><td>11-04</td><td>R</td><td>D→D</td><td>−11.6pp</td><td>02-25</td><td class="neg">−4.7%</td><td class="pos">+25.1%</td><td class="pos">+2.6%</td><td class="pos">+7.5%</td><td class="pos">+12.9%</td><td class="pos">+18.4%</td></tr><tr><td>1962</td><td>11-06</td><td>D</td><td>D→D</td><td>−1.1pp</td><td>06-26</td><td class="neg">−26.2%</td><td class="neg">−16.5%</td><td class="pos">+6.8%</td><td class="pos">+11.8%</td><td class="pos">+17.7%</td><td class="pos">+21.9%</td></tr><tr><td>1966</td><td>11-08</td><td>D</td><td>D→D</td><td>−10.8pp</td><td>10-07</td><td class="neg">−25.2%</td><td class="neg">−17.2%</td><td class="pos">+1.3%</td><td class="pos">+7.3%</td><td class="pos">+11.5%</td><td class="pos">+5.9%</td></tr><tr><td>1970</td><td>11-03</td><td>R</td><td>D→D</td><td>−2.8pp</td><td>05-26</td><td class="neg">−22.2%</td><td class="neg">−4.0%</td><td class="pos">+5.3%</td><td class="pos">+14.1%</td><td class="pos">+22.4%</td><td class="pos">+7.8%</td></tr><tr><td>1974</td><td>11-05</td><td>R</td><td>D→D</td><td>−11.0pp</td><td>10-04</td><td class="neg">−34.4%</td><td class="neg">−20.7%</td><td class="neg">−13.0%</td><td class="pos">+6.4%</td><td class="pos">+24.0%</td><td class="pos">+23.0%</td></tr><tr><td>1978</td><td>11-07</td><td>D</td><td>D→D</td><td>−3.2pp</td><td>02-28</td><td class="neg">−9.2%</td><td class="neg">−3.7%</td><td class="pos">+2.0%</td><td class="pos">+2.0%</td><td class="pos">+4.8%</td><td class="pos">+0.8%</td></tr><tr><td>1982</td><td>11-02</td><td>R</td><td>D→D</td><td>−6.0pp</td><td>08-12</td><td class="neg">−12.0%</td><td class="pos">+16.8%</td><td class="pos">+1.1%</td><td class="pos">+3.7%</td><td class="pos">+18.2%</td><td class="pos">+19.9%</td></tr><tr><td>1986</td><td>11-04</td><td>R</td><td>D→D</td><td>−0.9pp</td><td>01-22</td><td class="neg">−4.0%</td><td class="pos">+22.4%</td><td class="pos">+2.5%</td><td class="pos">+15.8%</td><td class="pos">+23.8%</td><td class="pos">+3.8%</td></tr><tr><td>1990</td><td>11-06</td><td>R</td><td>D→D</td><td>−1.8pp</td><td>10-11</td><td class="neg">−21.2%</td><td class="neg">−9.7%</td><td class="pos">+4.7%</td><td class="pos">+13.9%</td><td class="pos">+17.9%</td><td class="pos">+22.0%</td></tr><tr><td>1994</td><td>11-08</td><td>D</td><td>D→R</td><td>−12.4pp</td><td>04-04</td><td class="neg">−9.7%</td><td class="pos">+2.0%</td><td class="neg">−3.8%</td><td class="pos">+2.7%</td><td class="pos">+15.0%</td><td class="pos">+25.2%</td></tr><tr><td>1998</td><td>11-03</td><td>D</td><td>R→R</td><td>+0.9pp</td><td>08-31</td><td class="neg">−19.3%</td><td class="pos">+10.1%</td><td class="pos">+2.0%</td><td class="pos">+6.9%</td><td class="pos">+25.7%</td><td class="pos">+21.9%</td></tr><tr><td>2002</td><td>11-05</td><td>R</td><td>R→R</td><td>+1.8pp</td><td>10-09</td><td class="neg">−31.5%</td><td class="neg">−13.4%</td><td class="neg">−0.6%</td><td class="neg">−8.6%</td><td class="neg">−2.2%</td><td class="pos">+13.2%</td></tr><tr><td>2006</td><td>11-07</td><td>R</td><td>R→D</td><td>−6.9pp</td><td>01-20</td><td class="neg">−3.4%</td><td class="pos">+13.4%</td><td class="pos">+1.0%</td><td class="pos">+3.5%</td><td class="pos">+9.6%</td><td class="pos">+9.1%</td></tr><tr><td>2010</td><td>11-02</td><td>D</td><td>D→R</td><td>−14.7pp</td><td>07-02</td><td class="neg">−13.6%</td><td class="pos">+7.3%</td><td class="pos">+1.6%</td><td class="pos">+7.6%</td><td class="pos">+13.7%</td><td class="pos">+4.2%</td></tr><tr><td>2014</td><td>11-04</td><td>D</td><td>R→R</td><td>−3.0pp</td><td>02-03</td><td class="neg">−7.0%</td><td class="pos">+4.9%</td><td class="pos">+3.0%</td><td class="pos">+2.9%</td><td class="pos">+3.1%</td><td class="pos">+2.8%</td></tr><tr><td>2018</td><td>11-06</td><td>R</td><td>R→D</td><td>−9.7pp</td><td>03-23</td><td class="neg">−11.6%</td><td class="pos">+3.7%</td><td class="neg">−4.9%</td><td class="neg">−0.4%</td><td class="pos">+0.1%</td><td class="pos">+9.0%</td></tr><tr><td>2022</td><td>11-08</td><td>D</td><td>D→R</td><td>−2.1pp</td><td>09-30</td><td class="neg">−21.9%</td><td class="neg">−8.7%</td><td class="pos">+1.9%</td><td class="pos">+1.6%</td><td class="pos">+0.4%</td><td class="pos">+2.2%</td></tr><tr class="hl"><td>2026</td><td>11-03</td><td>R</td><td>R→待选</td><td class="muted">待选</td><td>03-27</td><td class="neg">−10.0%</td><td class="pos">+9.2%</td><td colspan="4" class="muted">选举未举行，后续收益待定</td></tr></tbody>
+</table></div>
+
+  <div class="callout"><b>说明：</b>席位摆幅为总统所属党在众议院的席位占比变化（百分点），用于剔除议席总数变化；第 65 届（1917–1919）与第 72 届（1931–1933）按实际组织多数调整。‡ 1914 年 7 月 31 日至 12 月 11 日纽交所因一战休市，选举后收益从 12 月 12 日复市首日收盘起算；1902–1966 年选举日休市时使用投票日前最后一个交易日收盘。2026 年低点与 YTD 截至 2026-10-20。</div>
+</section>
+
+<section class="method">
+  <h2>方法与限制</h2>
+  <h3>价格序列</h3>
+  <ul>
+    <li>道琼斯工业平均指数日收盘，1900-01-02 至 2026-10-20，共 34,150 个交易日；价格指数，不含股息、交易成本与税。</li>
+    <li>1885–2019 年使用本地历史日线存档；2019-12-24 之后接 FRED DJIA。重叠区间 2016-10-21 至 2019-12-24 的最大相对偏差 0.29%。</li>
+    <li>已知历史收盘价核对：1929-10-28 为 260.64、1929-10-29 为 230.07、1987-10-19 为 1,738.74、2009-03-09 为 6,547.05，均与公开记录一致。</li>
+  </ul>
+  <h3>选举与结果</h3>
+  <ul>
+    <li>众议院席位与组织多数来自美国众议院历史办公室（House Historian）的 Party Divisions of the House of Representatives 表；只纳入众议院，未纳入参议院控制权。</li>
+    <li>选举日按“11 月第一个星期一之后的星期二”推算。1902–1966 年纽交所选举日休市，使用投票日前最后一个交易日收盘；1970 年后使用选举日收盘（结果在收盘后公布）。</li>
+    <li>1914 年 7 月 31 日至 12 月 11 日纽交所因一战休市，选举后收益从 12 月 12 日复市首日收盘起算，避免把休市前四个月计入“选举后”；该年波动率变化因休市剔除，波动率样本为 30 次。</li>
+    <li>2026 年 11 月 3 日选举尚未举行；2026 年的低点、YTD 与路径截至 2026-10-20，后续收益不可得。</li>
+  </ul>
+  <h3>统计口径</h3>
+  <ul>
+    <li>低点=选举年 1 月 1 日至投票日之间的最低日收盘；回撤=低点相对选举年年初至低点前最高收盘；另计算相对过去 12 个月高点的回撤用于对照。</li>
+    <li>选举后收益=投票日前最后一个收盘至 21 / 63 / 126 / 252 个交易日后的收盘。组间差异用 20,000 次置换检验；均值区间用 10,000 次 bootstrap；月份均匀性用 20,000 次蒙特卡洛 χ²；连续关系用 Spearman 相关。</li>
+    <li>基准为所有年份同一日历窗口（11 月–次年 10 月，及对应的 1 / 3 / 6 个月窗口）的收益；非中期年份为 94–95 个观测。12 个月窗口在相邻年份间存在重叠，p 值应视为近似。</li>
+    <li>文中 p 值除特别注明外未做多重检验校正；6 个月窗口与 1 个月相关性的 BH 校正结果已在正文说明。</li>
+  </ul>
+  <h3>主要限制</h3>
+  <ul>
+    <li>n=31，检验功效有限；不显著只表示无法从噪声中分离影响，不等于证明没有影响。</li>
+    <li>1900–1950 年的市场结构、道指成分与交易制度与今天差异很大，早期样本不宜直接外推。</li>
+    <li>只使用众议院控制权与席位摆幅衡量“选举结果”，未纳入参议院、州长、政策细节与市场预期差；选举结果对行情的影响可能被“预期已定价”抵消。</li>
+    <li>价格指数不含股息；若计入股息，长期收益水平会更高，但不改变月份分布与组间比较的方向。</li>
+  </ul>
+  <div class="callout"><b>数据核对：</b>FRED 与本地历史日线在 2016-10-21 至 2019-12-24 的重叠区间最大偏差 0.29%；四个危机日收盘价逐一核对。历史日线存档的来源元数据不完整，但数值与 FRED 及公开记录一致，故用于 2019 年之前；这是本研究最主要的数据限制。</div>
+  <p style="margin-top:14px;font-size:12px;color:var(--sv-text-secondary)">价格：FRED DJIA；1885–2019 历史日线存档。选举：U.S. House of Representatives, Office of the Historian, Party Divisions of the House of Representatives, 1789 to Present。</p>
+</section>
+
+<div class="footer">数据截至 2026-10-20｜历史表现不代表未来收益｜本报告为统计研究，不构成投资建议。</div>
+</div></div></main></body></html>

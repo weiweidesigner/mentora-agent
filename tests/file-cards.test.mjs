@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const start=source.indexOf('function fileDeliverables('),end=source.indexOf('async function renderMixedReportFlow',start);
 function setup(){
  const dom=new JSDOM('<main class="shell"><aside class="appSidebar"></aside><section class="conversation"><article><div class="finalAnswer"><section class="mixedReport">Report</section></div></article></section></main>',{url:'https://example.com/mentora/',runScripts:'outside-only'}),w=dom.window;
@@ -10,6 +11,11 @@ function setup(){
  w.fetch=async()=>({ok:true});w.closeActivityDrawer=()=>{};w.setSidebarCollapsed=value=>w.document.querySelector('.shell').classList.toggle('sidebar-collapsed',value);
  w.eval(source.slice(start,end));return {dom,w,article:w.document.querySelector('article')};
 }
+test('generated file cards use compact spacing and a slightly wider desktop row',()=>{
+ assert.match(styles,/\.generatedFileList\{[^}]*margin:8px 0 8px;/);
+ assert.match(styles,/\.generatedFileCard\{[^}]*width:min\(100%,420px\);max-width:100%;/);
+ assert.match(styles,/@media\(max-width:640px\)\{\.generatedFileCard\{width:100%;/);
+});
 test('backend-approved StreamViz HTML gets an accessible preview/download card after the report in a prefixed deployment',async()=>{
  const s=setup();
  s.w.renderFileDeliverables(s.article,{selectedSkill:{key:'streamviz'},fileArtifacts:[{url:'/mentora/generated/报告.html'}]});

@@ -725,8 +725,8 @@ textarea {
 }
 
 /* File deliverables are distinct from the report's preview and share actions. */
-.generatedFileList{display:flex;flex-direction:column;gap:10px;margin:18px 0 8px;min-width:0}
-.generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:fit-content;max-width:min(100%,360px);border:1px solid transparent;border-radius:12px;background:transparent;color:var(--ink);min-width:0;transition:background .14s ease,border-color .14s ease}
+.generatedFileList{display:flex;flex-direction:column;gap:10px;margin:8px 0 8px;min-width:0}
+.generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:min(100%,420px);max-width:100%;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--ink);min-width:0;transition:background .14s ease,border-color .14s ease}
 .generatedFileCard:hover,.generatedFileCard:focus-within{background:var(--soft);border-color:var(--line)}
 .generatedFileIcon{width:20px;height:20px;flex:none;pointer-events:none}
 .generatedFileOpen{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:inherit;text-align:left;border:0;padding:0;background:transparent;font:inherit;cursor:pointer}
@@ -738,7 +738,7 @@ textarea {
 .generatedFileDownload svg{width:21px;height:21px}
 .generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 .generatedFileDownload:hover{background:color-mix(in srgb,var(--ink) 12%,var(--soft-2))}
-@media(max-width:640px){.generatedFileCard{padding:12px;gap:10px}.generatedFileName{font-size:14px}}
+@media(max-width:640px){.generatedFileCard{width:100%;padding:12px;gap:10px}.generatedFileName{font-size:14px}}
 
 .shareActions {
   display: flex;

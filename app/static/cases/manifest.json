@@ -9,13 +9,13 @@
     "conversationUrl": "/static/cases/sse-kdj-backtest/conversation.json"
   },
   {
-    "id": "ashare-dashboard",
-    "title": "A 股市场一页报告",
-    "tag": "市场全景",
-    "question": "分析今天 A 股市场表现，做成一页报告给我。",
-    "preview": "指数与个股体感为何分化？通过涨跌分布、板块结构、成交分层及涨跌排行，完整复盘 A 股市场。",
-    "cachedDate": "2026-10-13",
-    "conversationUrl": "/static/cases/ashare-dashboard/conversation.json"
+    "id": "midterm-election-1902-2026",
+    "title": "中期选举与美股走势",
+    "tag": "历史研究",
+    "question": "从1900年到现在，每次中期选举前，最低点出现在几月，选举后行情如何，选举结果对行情走势是否有显著影响，分析完写一个html报告",
+    "preview": "低点通常出现在几月？对比 31 次中期选举，检验选举后行情与众议院结果是否具有显著影响。",
+    "cachedDate": "2026-10-21",
+    "conversationUrl": "/static/cases/midterm-election-1902-2026/conversation.json"
   },
   {
     "id": "amd-ratings",
