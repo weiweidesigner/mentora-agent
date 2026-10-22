@@ -1036,6 +1036,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             return ""
         return self._public_thought_summary(
             arguments.get("thoughtSummary"), arguments.get("thought_summary"),
+            arguments.get("description"), arguments.get("title"),
         )
 
     @staticmethod

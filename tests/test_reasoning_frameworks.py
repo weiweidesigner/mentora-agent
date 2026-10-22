@@ -523,6 +523,15 @@ def test_public_thought_summary_is_short_and_user_facing() -> None:
     assert event["thoughtSummary"] == "确认项目运行环境"
 
 
+def test_deepseek_tool_description_is_forwarded_as_thought_summary(tmp_path: Path) -> None:
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / "generated")
+
+    assert client._jev_tool_thought_summary(
+        "bash",
+        {"command": "python3 tool.py", "description": "计算全市场涨跌分布"},
+    ) == "计算全市场涨跌分布"
+
+
 def test_skill_catalog_exposes_bridge_descriptions_without_routing(tmp_path: Path) -> None:
     bridge = tmp_path / ".agents" / "skills" / "sample-skill"
     bridge.mkdir(parents=True)

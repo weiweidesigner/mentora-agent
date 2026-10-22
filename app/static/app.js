@@ -1931,100 +1931,11 @@ function compactReasoningTitle(value, lang) {
   return text;
 }
 
-function toolCommandText(params, shellCommand) {
-  const commands = [...shellCommand];
-  params.forEach((raw) => {
-    const text = String(raw || "").trim();
-    if (!text) return;
-    try {
-      const parsed = JSON.parse(text);
-      if (parsed && typeof parsed === "object") {
-        const command = parsed.command ?? parsed.cmd ?? parsed.input?.command ?? parsed.input?.cmd;
-        if (Array.isArray(command)) commands.push(command.map((item) => String(item)).join(" "));
-        else if (command) commands.push(String(command));
-        else commands.push(text);
-        return;
-      }
-    } catch {
-      // Non-JSON CLI arguments are already useful semantic input.
-    }
-    commands.push(text);
-  });
-  return commands.join(" ").trim();
-}
-
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
-  lang = normalizeLang(lang);
-  const isHans = lang === "zh-Hans";
-  const isHant = lang === "zh-Hant";
-  const localized = (hans, hant, english) => isHans ? hans : isHant ? hant : english;
-  const observation = String(data?.observation || data?.result || data?.output || "");
-  if (script === "job_output" || fallback === "job_output") {
-    if (data?.phase === "completed" && !/\[status:\s*running\]|no new output/i.test(observation)) {
-      return localized("正在读取任务结果", "正在讀取工作結果", "Reading task results");
-    }
-    return localized("后台任务仍在运行", "背景工作仍在執行", "Background task is still running");
-  }
-  if (data?.skillId) {
-    const titles = {account:"读取模拟账户",candidates:"读取候选池",scan:"读取市场扫描结果",quote:"获取最新行情",history:"获取历史行情",save_candidate:"更新候选池",search:"搜索相关事实",plan:"生成模拟下单计划",execute:"执行模拟成交"};
-    const label = data.skillId === "portfolio-backtest" ? "执行策略回测" : data.skillId === "portfolio-jev" ? "评估机会与持仓风险" : titles[data.operation] || data.tool || "调用工具";
-    return data.phase === "failed" ? `${label} · 失败` : label;
-  }
-  const command = toolCommandText(params, shellCommand);
-  const lowerCommand = command.toLowerCase();
-  if (/skill\.md\b/i.test(command)) {
-    return localized("正在读取相关 Skill 规范", "正在讀取相關 Skill 規範", "Reading the relevant Skill instructions");
-  }
-  if (/schemas?\/|\.schema\.json\b/i.test(command)) {
-    return localized("正在核对图表数据契约", "正在核對圖表資料契約", "Checking the chart data contract");
-  }
-  if (/(?:^|\s)(?:rg|grep|find)(?:\s|$)/.test(lowerCommand)) {
-    return localized("正在定位所需文件与能力", "正在定位所需檔案與能力", "Locating the required files and capabilities");
-  }
-  if (/(?:^|\s)(?:ls|pwd)(?:\s|$)/.test(lowerCommand)) {
-    return localized("正在检查项目与运行环境", "正在檢查專案與執行環境", "Checking the project and runtime environment");
-  }
-  const directNetworkCommand = /(?:^|[;&|\n]\s*)(?:curl|wget)\b/i.test(command)
-    || /urllib\.request|urlopen\s*\(|requests\.(?:get|post|request)\s*\(/i.test(command);
-  if (directNetworkCommand) {
-    return localized("正在等待网络响应", "正在等待網路回應", "Waiting for a network response");
-  }
-  const scriptMatch = command.match(/(?:^|[\s/])([A-Za-z0-9_-]+\.(?:py|sh))\b/);
-  const effectiveScript = scriptMatch?.[1] || script;
-  const displayName = toolDisplayName(effectiveScript, fallback, lang);
-  if (effectiveScript === "code_interpreter.py") {
-    return localized("正在整理并计算数据", "正在整理並計算資料", "Organizing and calculating the data");
-  }
-  if (effectiveScript === "external_info_search.py" || effectiveScript === "ainvest_news_search.py") {
-    return localized("正在检索相关事实与市场信息", "正在檢索相關事實與市場資訊", "Searching for relevant facts and market context");
-  }
-  if (effectiveScript === "yahoo_data.py") {
-    const symbol = cliValue(params, "--symbols") || code;
-    return localized(
-      symbol && symbol !== "CODEX" ? `正在获取 ${symbol} 的行情数据` : "正在获取行情数据",
-      symbol && symbol !== "CODEX" ? `正在取得 ${symbol} 的行情資料` : "正在取得行情資料",
-      symbol && symbol !== "CODEX" ? `Retrieving market data for ${symbol}` : "Retrieving market data",
-    );
-  }
-  if (effectiveScript === "render_streamviz.py" || /(?:render|build|generate).{0,32}\.html/i.test(command)) {
-    return localized("正在生成 HTML 报告", "正在產生 HTML 報告", "Rendering the HTML report");
-  }
-  if (effectiveScript === "inspect_html.py" || /playwright|screenshot|(?:validate|inspect|check).{0,30}(?:html|layout)/i.test(command)) {
-    return localized("正在验证 HTML 报告", "正在驗證 HTML 報告", "Validating the HTML report");
-  }
-  if (/^(?:python(?:3|\d+(?:\.\d+)*)?|node)(?:\s|$)/i.test(command.trim()) || /\.py(?:\s|$)/i.test(command)) {
-    return localized("正在执行本地计算", "正在執行本地計算", "Running local computation");
-  }
   const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
   const reasoningTitle = compactReasoningTitle(reasoning, lang);
   if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
-  if (/^(?:bash|shell|exec_command|command_execution)$/i.test(effectiveScript)) {
-    return localized("正在处理数据与准备分析", "正在處理資料與準備分析", "Preparing data and analysis");
-  }
-  if (/\.py$|\.sh$/.test(effectiveScript)) {
-    return localized(`正在执行${displayName}`, `正在執行${displayName}`, `Running ${displayName}`);
-  }
-  return localized("正在推进当前分析步骤", "正在推進目前分析步驟", "Advancing the current analysis step");
+  return String(data?.tool || script || fallback || "Tool").trim();
 }
 
 function refreshSavedToolStepTitles(root, lang) {

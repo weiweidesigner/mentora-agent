@@ -4,20 +4,14 @@ import {readFileSync} from 'node:fs';
 
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 
-test('background and network activity labels describe the actual wait state',()=>{
-  assert.match(source,/后台任务仍在运行/);
-  assert.match(source,/正在读取任务结果/);
-  assert.match(source,/正在等待网络响应/);
-  assert.doesNotMatch(source,/正在读取后台任务结果/);
-});
-
-test('actual commands override model prose when distinguishing local compute from network work',()=>{
-  const networkIndex=source.indexOf('const directNetworkCommand');
-  const reasoningIndex=source.indexOf('const reasoning = data?.thoughtSummary',networkIndex);
-  assert.ok(networkIndex>0 && reasoningIndex>networkIndex);
-  assert.match(source,/正在执行本地计算/);
-  assert.match(source,/requests\\\.\(\?:get\|post\|request\)/);
-  assert.doesNotMatch(source,/\(\?:curl\|wget\|http\)/);
+test('tool activity titles come from the model thought summary',()=>{
+  const functionStart=source.indexOf('function toolActivityTitle(');
+  const functionEnd=source.indexOf('\nfunction refreshSavedToolStepTitles',functionStart);
+  const implementation=source.slice(functionStart,functionEnd);
+  assert.match(implementation,/const reasoning = data\?\.thoughtSummary/);
+  assert.match(implementation,/return reasoningTitle/);
+  assert.doesNotMatch(implementation,/正在执行本地计算|正在等待网络响应|正在处理数据与准备分析|正在生成 HTML 报告/);
+  assert.match(implementation,/return String\(data\?\.tool \|\| script \|\| fallback \|\| "Tool"\)/);
 });
 
 test('DeepSeek connection steps use concise titles without descriptions',()=>{
