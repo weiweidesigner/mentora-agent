@@ -92,6 +92,10 @@ def market_state(market, now=None):
     return result
 
 
+class ExecutionPreferences(BaseModel):
+    reasoningEffort: Literal['low', 'medium', 'high', 'xhigh', 'ultra']
+
+
 class TaskInput(BaseModel):
     title: str = Field(min_length=1, max_length=80)
     agent: Literal['mentora', 'mentora-deal'] = 'mentora'
@@ -107,6 +111,10 @@ class TaskInput(BaseModel):
     monthDay: int = Field(default=1, ge=1, le=31)
     time: str = '09:00'
     timeMode: Literal['fixed', 'open', 'close'] = 'fixed'
+    triggerMode: Literal['once', 'window'] = 'once'
+    windowStart: str = '09:30'
+    windowEnd: str = '15:00'
+    intervalMinutes: int = Field(default=30, ge=5, le=240)
     offset: int = Field(default=-30, ge=-180, le=180)
     timezone: str = Field(default='market', max_length=80)
     enabled: bool = True
@@ -132,6 +140,18 @@ class TaskInput(BaseModel):
                 raise ValueError('请选择有效的时区')
         if not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', self.time):
             raise ValueError('时间格式应为 HH:MM')
+        if self.triggerMode == 'window':
+            if any(not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', v) for v in (self.windowStart, self.windowEnd)):
+                raise ValueError('时段格式应为 HH:MM')
+            if self.windowStart >= self.windowEnd:
+                raise ValueError('结束时间必须晚于开始时间，请使用市场当地时间')
+            if self.stage == 'rest' or self.cadence != 'trading' or self.timezone != 'market':
+                raise ValueError('时段触发请使用交易日、交易场景和市场当地时区')
+            opening, closing = '09:30', '15:00' if self.market == 'CN' else '16:00'
+            if ((self.stage == 'pre' and self.windowEnd > opening)
+                    or (self.stage == 'live' and (self.windowStart < opening or self.windowEnd > closing))
+                    or (self.stage == 'post' and self.windowStart < closing)):
+                raise ValueError('所选时间段超出交易场景，请调整时段或切换场景')
         if self.assetType == 'watchlist' and not self.symbols.strip():
             raise ValueError('请选择自选列表中的具体标的，或改为全市场分析')
         if any(day < 0 or day > 6 for day in self.weekdays):
@@ -163,6 +183,8 @@ class TaskInput(BaseModel):
 def next_occurrence(config, after):
     if not config['enabled']:
         return None
+    if config.get('triggerMode') == 'window':
+        return next_window_occurrence(config, after)
     market = config['market']
     zone = ZoneInfo(MARKETS[market]['zone'] if config['timezone'] == 'market' else config['timezone'])
     start = after.astimezone(zone).date()
@@ -195,7 +217,48 @@ def next_occurrence(config, after):
     return None
 
 
+def next_window_occurrence(config, after):
+    """Exchange-local, half-open windows; lunch and holidays never dispatch."""
+    market = config['market']
+    zone = ZoneInfo(MARKETS[market]['zone'])
+    first = after.astimezone(zone).date()
+    interval = dt.timedelta(minutes=config.get('intervalMinutes', 30))
+    for i in range(370):
+        day = first + dt.timedelta(days=i)
+        if config.get('endDate') and day.isoformat() > config['endDate']:
+            return None
+        s = session(market, day)
+        if s is None:
+            continue
+        opening, closing = (s[k].to_pydatetime() for k in ('open', 'close'))
+        start, end = (dt.datetime.combine(day, dt.time.fromisoformat(config[k]), zone) for k in ('windowStart', 'windowEnd'))
+        stage = config['stage']
+        if stage == 'pre':
+            end = min(end, opening)
+        elif stage == 'post':
+            # Preserve the user's offsets after the close on shortened sessions.
+            regular_close = dt.datetime.combine(day, dt.time(15 if market == 'CN' else 16), zone)
+            start, end = closing + (start - regular_close), closing + (end - regular_close)
+        else:
+            start, end = max(start, opening), min(end, closing)
+        candidate = start
+        if after >= candidate:
+            candidate += interval * (int((after - candidate) // interval) + 1)
+        while candidate < end:
+            # XSHG calendar versions may omit the lunch break; enforce it.
+            local_time = candidate.astimezone(zone).time()
+            lunch = market == 'CN' and dt.time(11, 30) <= local_time < dt.time(13)
+            break_start, break_end = s['break_start'], s['break_end']
+            if stage == 'live' and (lunch or (str(break_start) != 'NaT' and break_start is not None
+                    and break_start.to_pydatetime() <= candidate < break_end.to_pydatetime())):
+                candidate += interval
+                continue
+            return stamp(candidate)
+    return None
+
+
 def task_scene(config, at=None):
+    if config.get('triggerMode') == 'window':return config['stage']
     if config.get('stage')=='rest':return 'rest'
     if config.get('timeMode')=='open':return 'pre' if config.get('offset',0)<=0 else 'live'
     if config.get('timeMode')=='close':return 'post' if config.get('offset',0)>=0 else 'live'
@@ -249,6 +312,12 @@ class DayTasks:
                 created TEXT NOT NULL, deleted INTEGER NOT NULL DEFAULT 0
             );
             CREATE INDEX IF NOT EXISTS task_owner ON tasks(owner,deleted);
+            CREATE TABLE IF NOT EXISTS execution_preferences (
+                key TEXT PRIMARY KEY, value TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS preset_dismissals (
+                owner TEXT NOT NULL, task_id TEXT NOT NULL, PRIMARY KEY(owner,task_id)
+            );
             CREATE TABLE IF NOT EXISTS runs (
                 id TEXT PRIMARY KEY, task_id TEXT NOT NULL, owner TEXT NOT NULL,
                 config TEXT NOT NULL, status TEXT NOT NULL, created TEXT NOT NULL,
@@ -289,6 +358,16 @@ class DayTasks:
                 yield db
         finally:
             db.close()
+
+    def execution_preferences(self):
+        with self.db() as db:
+            row = db.execute("SELECT value FROM execution_preferences WHERE key='reasoningEffort'").fetchone()
+        return {'reasoningEffort': row['value'] if row else None}
+
+    def save_execution_preferences(self, preferences: ExecutionPreferences):
+        with self.db() as db:
+            db.execute("INSERT INTO execution_preferences(key,value) VALUES('reasoningEffort',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (preferences.reasoningEffort,))
+        return preferences.model_dump()
 
     def pack(self, data):
         config = dict(data)
@@ -364,15 +443,35 @@ class DayTasks:
                 db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?)',(task_id,SCENE_OWNER,self.pack(config),next_at,stamp(now_utc())))
                 db.execute('INSERT INTO result_links(task_id,token) VALUES(?,?)',(task_id,secrets.token_urlsafe(32)))
 
-    def scene_tasks(self):
+    def scene_tasks(self, owner=None):
         from app.day_presets import SCENE_OWNER
         with self.db() as db:
-            return [self.public(db,row) for row in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY id',(SCENE_OWNER,))]
+            return [self.public(db,row) for row in db.execute('SELECT * FROM tasks WHERE owner=? AND deleted=0 ORDER BY id',(SCENE_OWNER,)) if not owner or not db.execute('SELECT 1 FROM preset_dismissals WHERE owner=? AND task_id=?',(owner,row['id'])).fetchone()]
+
+    def dismiss_preset(self, owner, task_id):
+        """Remove a shared preset only from this browser owner's workspace."""
+        from app.day_presets import SCENE_OWNER
+        with self.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            source=db.execute('SELECT 1 FROM tasks WHERE id=? AND owner=? AND deleted=0',(task_id,SCENE_OWNER)).fetchone()
+            if not source:
+                return False
+            scoped_id=str(uuid.uuid5(uuid.NAMESPACE_URL,'day-preset-rerun:'+owner+':'+task_id))
+            scoped=db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0',(scoped_id,owner)).fetchone()
+            if scoped and scoped['active_run']:
+                raise HTTPException(409,'请等待任务执行完成再删除')
+            if scoped:
+                db.execute('UPDATE tasks SET deleted=1,next_at=NULL WHERE id=?',(scoped_id,))
+                db.execute("UPDATE deliveries SET status='cancelled' WHERE run_id IN (SELECT id FROM runs WHERE task_id=?) AND status='pending'",(scoped_id,))
+            db.execute('INSERT OR IGNORE INTO preset_dismissals(owner,task_id) VALUES(?,?)',(owner,task_id))
+        return True
 
     def readable(self,db,owner,task_id):
         from app.day_presets import SCENE_OWNER
         row=db.execute('SELECT * FROM tasks WHERE id=? AND deleted=0 AND owner IN (?,?)',(task_id,owner,SCENE_OWNER)).fetchone()
         if not row:raise HTTPException(404,'任务不存在')
+        if row['owner']==SCENE_OWNER and db.execute('SELECT 1 FROM preset_dismissals WHERE owner=? AND task_id=?',(owner,task_id)).fetchone():
+            raise HTTPException(404,'任务不存在')
         return row
 
     def save(self, owner, payload, task_id=None):
@@ -475,6 +574,9 @@ class DayTasks:
     def execute(self, run):
         config = self.unpack(run['config'])
         try:
+            config['reasoningEffort'] = self.execution_preferences()['reasoningEffort'] or 'low'
+            with self.db() as db:
+                db.execute('UPDATE runs SET config=? WHERE id=?', (self.pack(config), run['id']))
             self.record_event(run['id'],'status',{'status':'start','message':'正在运行任务','detail':'研究任务已开始，正在读取任务内容与可用技能。','lang':'zh-CN'})
             run_config = dict(config)
             run_config['_owner'] = run['owner']
@@ -488,7 +590,9 @@ class DayTasks:
                         {'role': 'user', 'text': previous_answer.get('question') or self.unpack(previous['config'])['question']},
                         {'role': 'assistant', 'text': str(previous_answer.get('interpretation', ''))[:16000]},
                     ]
-            answer = self.runner(run_config, run['id'])
+            from app.reasoning_preferences import reasoning_effort_scope
+            with reasoning_effort_scope(config['reasoningEffort']):
+                answer = self.runner(run_config, run['id'])
             if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
                 raise ValueError('empty result')
             with self.db() as db:
@@ -513,18 +617,27 @@ class DayTasks:
                 db.execute('UPDATE tasks SET active_run=NULL WHERE id=? AND active_run=?', (run['task_id'], run['id']))
 
     def send(self, delivery, run):
-        config = self.unpack(run['config'])
-        answer = json.loads(run['answer'])
+        target_data=json.loads(delivery['target'])
+        config = self.unpack(target_data.get('notificationConfig') or run['config'])
+        answer = json.loads(run['answer'] or '{}')
+        notification=target_data.get('notification')
         prefix = os.getenv('AICHART_BASE_PATH', '').rstrip('/')
-        with self.db() as db:
-            token = db.execute('SELECT token FROM result_links WHERE task_id=?', (run['task_id'],)).fetchone()['token']
+        token=''
+        if not notification:
+            with self.db() as db:
+                token = db.execute('SELECT token FROM result_links WHERE task_id=?', (run['task_id'],)).fetchone()['token']
         link = f"{os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')}/?dayShare={token}"
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))[:900]
         content = f"{config['title']}\n{MARKETS[config['market']]['name']} · {STAGES[config['stage']]}\n{run['finished']}\n\n{summary}\n\n查看最新完整分析：{link}"
+        title=config['title']+'已更新'
+        if notification:
+            title=notification['title'];summary=notification['body']
+            link=os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')+notification['path']
+            content=summary+'\n\n'+notification.get('linkLabel','查看观察列表')+'：'+link
         if delivery['channel'] == 'wecom':
             WeComRobotClient(config['wecomUrl']).send_markdown(content)
         elif delivery['channel'] == 'serverchan':
-            response = requests.post('https://sctapi.ftqq.com/' + config['serverchanKey'] + '.send', data={'title': config['title'].replace('\n', ' ') + '已更新', 'desp': content}, timeout=15, allow_redirects=False)
+            response = requests.post('https://sctapi.ftqq.com/' + config['serverchanKey'] + '.send', data={'title': title.replace('\n', ' '), 'desp': content}, timeout=15, allow_redirects=False)
             response.raise_for_status()
             if response.json().get('code') != 0:
                 raise ValueError('ServerChan rejected message')
@@ -543,7 +656,7 @@ class DayTasks:
             from pywebpush import webpush, WebPushException
             target = json.loads(delivery['target'])
             try:
-                webpush(subscription_info=json.loads(target['payload']), data=json.dumps({'title': config['title'] + '已更新', 'body': summary[:100], 'url': prefix + '/?dayResult=' + run['task_id'], 'tag': run['task_id']}), vapid_private_key=str(self.vapid_path), vapid_claims={'sub': os.getenv('VEYA_PUSH_CONTACT', 'https://weiweidesigner.com')}, timeout=15, ttl=3600)
+                webpush(subscription_info=json.loads(target['payload']), data=json.dumps({'title': title, 'body': summary[:100], 'url': prefix + '/?dayResult=' + run['task_id'], 'tag': run['task_id']}), vapid_private_key=str(self.vapid_path), vapid_claims={'sub': os.getenv('VEYA_PUSH_CONTACT', 'https://weiweidesigner.com')}, timeout=15, ttl=3600)
             except WebPushException as exc:
                 if exc.response is not None and exc.response.status_code in (404, 410):
                     with self.db() as db:
@@ -649,9 +762,20 @@ def create_router(service):
             raise HTTPException(403, '不支持跨站请求')
         return owner(request, response)
 
+    @router.get('/execution-preferences')
+    def execution_preferences(request: Request, response: Response):
+        owner(request, response)
+        return service.execution_preferences()
+
+    @router.put('/execution-preferences')
+    def save_execution_preferences(payload: ExecutionPreferences, request: Request, response: Response):
+        writer(request, response)
+        return service.save_execution_preferences(payload)
+
     @router.get('/tasks')
     def tasks(request: Request, response: Response):
-        return {'tasks': service.list(owner(request, response)), 'sceneTasks':service.scene_tasks(), 'markets': [market_state(m) for m in MARKETS], 'serverTime': stamp(now_utc()), 'pushPublicKey': service.public_key}
+        user=owner(request,response)
+        return {'tasks': service.list(user), 'sceneTasks':service.scene_tasks(user), 'markets': [market_state(m) for m in MARKETS], 'serverTime': stamp(now_utc()), 'pushPublicKey': service.public_key}
 
     @router.post('/plan')
     def plan(payload: dict, request: Request, response: Response):
@@ -712,6 +836,8 @@ def create_router(service):
     @router.delete('/tasks/{task_id}')
     def remove(task_id: str, request: Request, response: Response):
         user = writer(request, response)
+        if service.dismiss_preset(user,task_id):
+            return {'ok':True}
         with service.db() as db:
             db.execute('BEGIN IMMEDIATE')
             row = service.owned(db, user, task_id)
@@ -740,9 +866,13 @@ def create_router(service):
             while True:
                 with service.db() as db:
                     rows=db.execute('SELECT id,event,payload FROM run_events WHERE run_id=? AND id>? ORDER BY id LIMIT 100',(run_id,cursor)).fetchall()
-                    run=db.execute('SELECT status FROM runs WHERE id=?',(run_id,)).fetchone()
+                    run=db.execute('SELECT status,created,finished FROM runs WHERE id=?',(run_id,)).fetchone()
                 for row in rows:
                     cursor=row['id'];data=json.loads(row['payload']);data['_taskEventId']=cursor
+                    if run:
+                        data['runStartedAt']=run['created']
+                        if row['event'] in ('final','error') and run['finished']:
+                            data['thinkingElapsed']=max(0,(dt.datetime.fromisoformat(run['finished'])-dt.datetime.fromisoformat(run['created'])).total_seconds()*1000)
                     yield 'id: '+str(cursor)+'\nevent: '+row['event']+'\ndata: '+json.dumps(data,ensure_ascii=False)+'\n\n'
                 if len(rows)==100:continue
                 if not run or run['status'] in ('success','failed'):

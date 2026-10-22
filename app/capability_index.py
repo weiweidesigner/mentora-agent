@@ -1,0 +1,192 @@
+"""Fast, bounded capability retrieval for the general Mentora agent.
+
+The index narrows the context presented to the model.  It deliberately does
+not choose an execution plan: the model may combine candidates or fall back to
+the full skill directory when the shortlist is insufficient.
+"""
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from app.business_chart_dependency import load_registry_data
+
+
+_SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "kline.py": ("k线", "k線", "蜡烛图", "行情图", "candlestick", "price chart"),
+    "multi_kline.py": ("多k线", "多标的k线", "多周期k线", "compare candlestick"),
+    "multi_intraday.py": ("多股分时", "盘中对比", "intraday comparison"),
+    "income_statement.py": ("利润表", "损益表", "收入利润", "income statement"),
+    "balance_sheet.py": ("资产负债表", "balance sheet"),
+    "cash_flow.py": ("现金流量表", "现金流", "cash flow"),
+    "valuation.py": ("估值", "valuation"),
+    "revenue_sources.py": ("收入构成", "业务收入", "revenue breakdown"),
+    "revenue_geography.py": ("地区收入", "地理收入", "revenue geography"),
+    "analyst_recommendations.py": ("分析师评级", "华尔街评级", "analyst recommendation"),
+    "price_target_vs_actual.py": ("目标价", "price target"),
+    "eps_estimate.py": ("eps预期", "每股收益预测", "eps estimate"),
+    "revenue_estimate.py": ("营收预期", "收入预测", "revenue estimate"),
+    "bar_chart.py": ("柱状图", "柱形图", "bar chart"),
+    "bar_line.py": ("柱折图", "柱线图", "双轴", "bar line"),
+    "line_chart.py": ("折线图", "趋势图", "line chart"),
+    "group_line.py": ("多系列折线", "分组折线", "group line"),
+    "grouped_bar.py": ("分组柱状", "并列柱", "grouped bar"),
+    "pie.py": ("饼图", "占比", "pie chart"),
+    "treemap.py": ("矩形图", "树图", "treemap"),
+    "timeline.py": ("时间线", "timeline"),
+    "flowchart.py": ("流程图", "flowchart"),
+    "mind_map.py": ("思维导图", "脑图", "mind map"),
+    "external_info_search.py": ("联网搜索", "外部搜索", "最新新闻", "为什么", "原因", "解释", "kimi", "web search", "latest news"),
+    "ainvest_news_search.py": ("ainvest新闻", "站内新闻", "美股新闻", "最新新闻", "为什么", "原因", "解释"),
+    "ainvest_video_search.py": ("视频搜索", "shorts", "youtube video"),
+    "url_content_reader.py": ("读取链接", "网页正文", "url", "webpage"),
+    "code_interpreter.py": ("数据清洗", "聚合", "csv", "json", "同比", "环比", "code interpreter"),
+}
+
+_SKILL_ALIASES: dict[str, tuple[str, ...]] = {
+    "streamviz": ("streamviz", "dashboard", "仪表盘", "看板", "交互式html", "流式网页"),
+    "custom-html-widget": ("html报告", "html页面", "html组件", "widget", "mini app"),
+    "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),
+    "flux-image": ("生成图片", "插画", "海报", "image generation"),
+    "market-data": ("行情数据", "报价", "ohlcv", "market data"),
+    "a-share-data": ("a股", "沪深", "中国股票"),
+    "chart-markup": ("标注", "参考线", "事件点", "mark"),
+}
+
+
+def _terms(value: str) -> set[str]:
+    text = str(value or "").lower().replace("_", " ").replace("-", " ")
+    terms = set(re.findall(r"[a-z0-9]+|[\u3400-\u9fff]{2,}", text))
+    for chunk in re.findall(r"[\u3400-\u9fff]{2,}", text):
+        terms.update(chunk[i:i + 2] for i in range(len(chunk) - 1))
+    return terms
+
+
+def _score(query: str, searchable: str, aliases: tuple[str, ...] = ()) -> int:
+    q = query.lower()
+    haystack = searchable.lower()
+    score = 0
+    for alias in aliases:
+        if alias.lower() in q:
+            score += 16 + min(8, len(alias))
+    q_terms = _terms(q)
+    candidate_terms = _terms(haystack + " " + " ".join(aliases))
+    score += 2 * len(q_terms & candidate_terms)
+    for term in q_terms:
+        if len(term) >= 3 and term in haystack:
+            score += 2
+    return score
+
+
+@dataclass(frozen=True)
+class CapabilityShortlist:
+    skills: tuple[dict[str, str], ...]
+    modules: tuple[dict[str, str], ...]
+
+    def render(self) -> str:
+        if not self.skills and not self.modules:
+            return ""
+        lines = [
+            "\n\n宿主轻量能力检索（候选集，不是写死路由）：",
+            "优先在下列候选中选择、组合或放弃；候选不足时才扩展读取 .agents/skills，不要先扫描全部目录。",
+            "下列 Skill 元数据已完成发现；不要再调用 skill 工具重复加载 bridge。选定组件后，contract 的一次回执会同时提供完整规范、CLI 和 schema，该回执即完成契约读取。",
+        ]
+        if self.skills:
+            lines.append("相关 Skill：")
+            lines.extend(f"- {item['name']}: {item['description'][:220]}" for item in self.skills)
+        if self.modules:
+            lines.append("相关可执行能力：")
+            for item in self.modules:
+                lines.append(
+                    f"- {item['script']} [Skill: {item['skill']}]: {item['description'][:260]} "
+                    f"| 契约: python3 app/skill_runner.py contract --script {item['script']} "
+                    f"| 执行: python3 app/skill_runner.py execute --script {item['script']} -- <该组件参数>"
+                )
+        lines.append(
+            "对最终选定的一个组件调用 contract 一次；不再单独读取 bridge、SKILL.md 或 schema，不用 ls/cat/grep 反复查找。"
+            "统一入口只允许 module_registry 中的脚本，会原样返回结构化 stdout 并验证产物；"
+            "execute 会自动创建 outputs/ 下的目标目录，不要额外调用 mkdir。"
+            "成功回执的 artifacts[].verified=true 且 bytes>0 已是产物验证，不要再用 test/ls/wc/cat 复查。"
+            "同一数据和参数失败后不要重复调用。"
+        )
+        return "\n".join(lines)
+
+
+class CapabilityIndex:
+    def __init__(self, project_root: Path) -> None:
+        self.root = project_root.resolve()
+        self._skills = self._load_skills()
+        self._modules = self._load_modules()
+
+    def _load_skills(self) -> list[dict[str, str]]:
+        entries: list[dict[str, str]] = []
+        for path in sorted((self.root / ".agents/skills").glob("*/SKILL.md")):
+            try:
+                frontmatter = path.read_text(encoding="utf-8").split("---", 2)[1]
+            except (OSError, IndexError):
+                continue
+            match = re.search(r"(?m)^description:\s*(.+)$", frontmatter)
+            if match:
+                entries.append({"name": path.parent.name, "description": match.group(1).strip()})
+        return entries
+
+    def _script_skill(self, script: str, module_name: str) -> str:
+        preferred = {
+            "ainvest_news_search": "internal-search",
+            "ainvest_video_search": "video-search",
+            "external_info_search": "external-search",
+            "url_content_reader": "external-search",
+        }.get(module_name)
+        if preferred:
+            return preferred
+        matches = [p.parent.parent.name for p in (self.root / "app/skills").glob(f"*/scripts/{script}")]
+        return matches[0] if matches else "unknown"
+
+    def _load_modules(self) -> list[dict[str, str]]:
+        try:
+            raw = load_registry_data(self.root / "app/module_registry.json")
+        except (OSError, json.JSONDecodeError):
+            return []
+        entries: list[dict[str, str]] = []
+        for item in raw if isinstance(raw, list) else []:
+            if not isinstance(item, dict):
+                continue
+            script = Path(str(item.get("script") or "")).name
+            if not script.endswith(".py"):
+                continue
+            name = str(item.get("name") or Path(script).stem)
+            entries.append({
+                "name": name,
+                "script": script,
+                "label": str(item.get("label") or name),
+                "description": str(item.get("description") or item.get("label") or name).strip(),
+                "skill": self._script_skill(script, name),
+            })
+        return entries
+
+    def shortlist(self, question: str, *, skill_limit: int = 4, module_limit: int = 6) -> CapabilityShortlist:
+        ranked_modules: list[tuple[int, dict[str, str]]] = []
+        for item in self._modules:
+            aliases = _SEMANTIC_ALIASES.get(item["script"], ())
+            searchable = " ".join((item["name"], item["label"], item["description"], item["script"]))
+            ranked_modules.append((_score(question, searchable, aliases), item))
+        ranked_modules.sort(key=lambda pair: (-pair[0], pair[1]["script"]))
+        top_module_score = ranked_modules[0][0] if ranked_modules else 0
+        module_floor = max(4, int(top_module_score * 0.30))
+        selected_modules = [item for score, item in ranked_modules if score >= module_floor][:module_limit]
+
+        module_skills = {item["skill"] for item in selected_modules}
+        ranked_skills: list[tuple[int, dict[str, str]]] = []
+        for item in self._skills:
+            score = _score(question, f"{item['name']} {item['description']}", _SKILL_ALIASES.get(item["name"], ()))
+            if item["name"] in module_skills:
+                score += 12
+            ranked_skills.append((score, item))
+        ranked_skills.sort(key=lambda pair: (-pair[0], pair[1]["name"]))
+        top_skill_score = ranked_skills[0][0] if ranked_skills else 0
+        skill_floor = max(4, int(top_skill_score * 0.30))
+        selected_skills = [item for score, item in ranked_skills if score >= skill_floor][:skill_limit]
+        return CapabilityShortlist(tuple(selected_skills), tuple(selected_modules))

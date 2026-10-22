@@ -17,7 +17,8 @@ def test_chat_body_matches_streamviz_default_body_size() -> None:
         rule = styles.split(selector + " {", 1)[1].split("}", 1)[0]
         assert "font-size: var(--chat-body-font-size);" in rule
     source = (ROOT / "app/static/app.js").read_text(encoding="utf-8")
-    assert ".streamingAnswer{font-size:16px;line-height:1.65}" in source
+    assert '/static/share-answer.css' in source
+    assert 'var(--share-body-font-size,var(--chat-body-font-size))' in (ROOT/'app/static/share-answer.css').read_text()
 
 
 def test_streamviz_dependency_and_bundle_are_present() -> None:
@@ -73,8 +74,8 @@ def test_shared_page_uses_saved_theme_and_full_viewport_width() -> None:
     })
 
     assert '<html lang="zh-CN" data-theme="dark" style="color-scheme:dark">' in page
-    assert "background:#10131a;color:#eef2f7" in page
-    assert "body{box-sizing:border-box;padding:0}" in page
+    assert '/static/share-answer.css' in page
+    assert 'background:var(--bg);color:var(--ink)' in (ROOT/'app/static/share-answer.css').read_text()
     assert ".shareAnswerDocument{box-sizing:border-box;width:100%;max-width:none" in page
 
 
@@ -117,7 +118,7 @@ def test_shared_page_replaces_live_streamviz_dom_with_saved_artifact() -> None:
     })
 
     assert "临时组件" not in page
-    assert '<iframe class="reportDocumentFrame" src="/share-artifact/report.html"' in page
+    assert '<iframe class="reportDocumentFrame" src="/share-artifact/report.html?theme=light"' in page
 
 
 def test_shared_streamviz_artifact_freezes_runtime_theme(tmp_path, monkeypatch) -> None:
@@ -289,6 +290,73 @@ def test_module_html_is_emitted_as_streamviz_deltas(tmp_path, monkeypatch) -> No
     assert module["streamvizCompatible"] is True
 
 
+def test_durable_chat_streams_generated_html_and_places_unmarked_artifact(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
+    monkeypatch.setenv("AICHART_STREAMVIZ_FRAME_DELAY", "0")
+    report = tmp_path / "live-report.html"
+    report.write_text("<!doctype html><html><body><section>live</section></body></html>", encoding="utf-8")
+
+    def upstream(_payload):
+        yield "module", {"htmlUrl": "/generated/live-report.html", "label": "Live report"}
+        yield "final", {"interpretation": "报告已生成", "reportArtifacts": []}
+
+    monkeypatch.setattr(presentation, "framework_events", upstream)
+    events = list(presentation.durable_chat_events(
+        presentation.ChatRequest(question="生成 HTML 报告"), "owner",
+    ))
+
+    assert events[0][0] == "answer_text"
+    assert any(name == "visualization" and data.get("delta") for name, data in events)
+    final = next(data for name, data in events if name == "final")
+    assert final["reportArtifacts"] == [{"url": "/generated/live-report.html", "label": "Live report"}]
+    assert "[[AIME_CHART:/generated/live-report.html]]" in final["interpretation"]
+
+
+def test_script_backed_html_is_published_as_live_iframe_module(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
+    (tmp_path / "interactive.html").write_text(
+        "<!doctype html><html><body><main>interactive</main><script>void 0</script></body></html>",
+        encoding="utf-8",
+    )
+    module = {"htmlUrl": "/generated/interactive.html", "label": "Interactive"}
+    events = list(presentation.streamviz_events_for_module(module))
+    assert events == [("module", module)]
+    assert module["streamvizCompatible"] is False
+
+
+def test_frontend_buffers_visualizations_and_iframe_modules_until_answer_text() -> None:
+    source = (ROOT / "app/static/app.js").read_text(encoding="utf-8")
+    queue = source[source.index("function queueStreamVisualization"):source.index("function revealPendingVisualizations")]
+    module = source[source.index("function appendStreamVisualizationModule"):source.index("function renderStreamAnswerText")]
+    assert "!article.answerTextStarted" in queue
+    assert "article.pendingVisualizations" in queue
+    assert "upsertStreamVisualization(article, data)" in queue
+    assert "!article.answerTextStarted" in module
+    assert "article.pendingVisualizationModules" in module
+    assert "createArtifactFallbackFrame" in module
+
+
+def test_answer_text_stream_finishes_before_buffered_visualization(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
+    monkeypatch.setenv("AICHART_STREAMVIZ_FRAME_DELAY", "0")
+    (tmp_path / "ordered.html").write_text("<html><body><p>chart</p></body></html>", encoding="utf-8")
+    long_answer = "先展示文本。" * 80
+
+    def upstream(_payload):
+        yield "module", {"htmlUrl": "/generated/ordered.html"}
+        yield from presentation.LOCAL_FRAMEWORKS._answer_text_events(long_answer)
+        yield "final", {"interpretation": long_answer, "reportArtifacts": []}
+
+    monkeypatch.setattr(presentation, "framework_events", upstream)
+    events = list(presentation.durable_chat_events(presentation.ChatRequest(question="ordered"), "owner"))
+    answer_indexes = [index for index, (name, _data) in enumerate(events) if name == "answer_text"]
+    visual_index = next(index for index, (name, _data) in enumerate(events) if name == "visualization")
+    assert len(answer_indexes) > 1
+    assert events[answer_indexes[0]][1]["final"] is False
+    assert events[answer_indexes[-1]][1]["final"] is True
+    assert answer_indexes[-1] < visual_index
+
+
 def test_explicit_streamviz_uses_model_deltas_even_with_upstream_html(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
     old = tmp_path / "evidence.html"
@@ -401,18 +469,17 @@ def test_prefixed_cloud_artifacts_remain_visible_in_shared_report(monkeypatch):
     assert presentation.canonical_host_url("https://example.com/veya/generated/chart.html").startswith("https://example.com/")
 
 
-def test_chat_stream_preserves_public_text_and_real_widget_events_without_batch_replay(monkeypatch):
+def test_chat_stream_preserves_public_text_and_real_widget_events_with_html_publishing(monkeypatch):
     def events(_payload):
         yield "module", {"htmlUrl":"/generated/evidence.html"}
         yield "answer_text", {"text":"公开分析正文", "replace":True}
         yield "visualization", {"id":"native-widget", "delta":"<p>actual model delta</p>"}
         yield "final", {"interpretation":"公开分析正文", "reportArtifacts":[{"url":"/generated/evidence.html"}]}
     monkeypatch.setattr(presentation, "framework_events", events)
-    monkeypatch.setattr(presentation, "streamviz_events_for_module", lambda _: (_ for _ in ()).throw(AssertionError("Batch HTML must never be replayed")))
     response=TestClient(presentation.app).post("/api/chat/stream",json={"question":"test", "reasoningFramework":"deepseek"})
     assert response.status_code==200
     names=[line[7:] for line in response.text.splitlines() if line.startswith('event: ')]
-    assert names==["module", "answer_text", "visualization", "final"]
+    assert names==["answer_text", "module", "visualization", "final"]
 
 
 def test_embedded_runtime_bundles_the_current_mobile_metric_and_table_contract():

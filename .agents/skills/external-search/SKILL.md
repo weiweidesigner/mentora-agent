@@ -1,6 +1,6 @@
 ---
 name: external-search
-description: Search current non-AInvest web information with Kimi-grounded answers, or read user-provided URLs with source metadata.
+description: Search current non-AInvest web information through Tavily with automatic Serper fallback, explicitly selected Kimi, or read user-provided URLs with source metadata.
 ---
 
 # Veya skill bridge

@@ -309,7 +309,13 @@
       const article = createAssistantMessage(cached.question);
       article.classList.add("cachedCaseAnswer");
       const cachedSteps = cached.activity?.steps || [];
-      if (cachedSteps.length && typeof appendStep === "function") {
+      if (typeof restoreSavedActivity === 'function') {
+        await restoreSavedActivity(article, cached.activity || {});
+        if (version !== loadVersion) return;
+        article.dataset.cachedActivityCount = String(cachedSteps.length || article.querySelectorAll('.thinkingSteps li').length);
+        article.dataset.thinkingState = 'done';
+        updateThinkingSummary(article, '已思考');
+      } else if (cachedSteps.length && typeof appendStep === "function") {
         cachedSteps.forEach((step, index) => appendStep(article, step.title, step.detail || "此案例未保存该步骤的执行明细", step.state || "done", `case-step-${index}`));
         article.dataset.cachedActivityCount = String(cachedSteps.length);
         if (Number(cached.activity.elapsedMs) > 0) article.dataset.cachedElapsedMs = String(cached.activity.elapsedMs);

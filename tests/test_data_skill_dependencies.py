@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_data_skills_are_pinned_repository_links():
-    for repository, skill in [('yahoo-market-data', 'yahoo-data'), ('data-code-interpreter', 'code-interpreter')]:
+    for repository, skill in [('data-code-interpreter', 'code-interpreter')]:
         manifest = json.loads((ROOT / f'{repository}.lock.json').read_text())
         checkout = ROOT / manifest['checkout']
         link = ROOT / f'app/skills/{skill}'
@@ -22,9 +22,7 @@ def test_data_skills_are_pinned_repository_links():
 
 def test_host_classification_and_schema_lookup_survive_repository_links(monkeypatch):
     from app import main
-    assert main.skill_name_for_script_filename('yahoo_data.py') == 'yahoo-data'
     assert main.skill_name_for_script_filename('code_interpreter.py') == 'code-interpreter'
-    assert main.script_tool_category('yahoo_data.py') == 'yahoo_data'
     assert main.script_tool_category('code_interpreter.py') == 'code_interpreter'
     script = ROOT / 'app/skills/code-interpreter/scripts/code_interpreter.py'
     spec = importlib.util.spec_from_file_location('host_interpreter', script)

@@ -8,7 +8,7 @@ openai>=1.40.0
 playwright>=1.45.0
 autogen-agentchat==0.5.7
 autogen-ext[openai]==0.5.7
-deepseek-harness-sdk==0.1.1rc1
+deepseek-harness-sdk==0.2.1rc2
 typesafe-sdk>=0.6.0,<0.7.0
 
 # Install the pinned private repository first: python scripts/sync_business_charts.py
@@ -21,7 +21,6 @@ typesafe-sdk>=0.6.0,<0.7.0
 -r .dependencies/data-vis-charts/requirements.txt
 
 # Data and transformation skills are supplied by pinned public repositories.
--r .dependencies/yahoo-market-data/requirements.txt
 -r .dependencies/data-code-interpreter/requirements.txt
 
 # Visualization routing is maintained in a pinned public repository.

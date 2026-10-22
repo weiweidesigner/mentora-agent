@@ -150,6 +150,9 @@ def test_creative_image_routing_excludes_financial_charts_and_edits():
     assert is_image("生成一张蓝色陶瓷杯的图片", [])
     assert not is_image("画 AMD 周线 K 线图", [])
     assert not is_image("为什么图片没生成", [])
+    assert not is_image("生成一份简短HTML科普，解释久期和凸性的区别", [])
+    assert not is_image("制作一个网页说明交易规则", [])
+    assert not is_image("Generate an HTML report about bonds", [])
     assert not is_image("画一张猫的插画", [SimpleNamespace(dataUrl="data:image/png;base64,aA==")])
     uploaded = [SimpleNamespace(dataUrl="data:image/png;base64,aA==")]
     assert is_image("画一个这个风格的鹈鹕骑车", uploaded)

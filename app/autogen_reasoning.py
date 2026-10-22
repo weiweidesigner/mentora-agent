@@ -12,6 +12,7 @@ class AutoGenPlanningError(RuntimeError):
 
 
 AUTOGEN_PLANNER_VISUAL_GUIDANCE = (
+    "用户要求 HTML 报告、HTML 页面或 HTML 组件时，规划 custom-html-widget 展示阶段，先验证研究证据再复用 streamviz 生成完整独立 HTML；不能仅以 Markdown 或独立图表代替报告。"
     "采用 Skill 优先、证据先行、图文协同的规划方式。时间序列、两项及以上比较、排名、构成、分布、"
     "K线、资金流、事件过程或关系网络在数据质量足够且存在匹配组件时，默认规划 1 个最能支撑核心结论的主图；"
     "无需等待用户明确说‘画图’。单一数值、简单状态、纯操作结果、数据不足或图形可能误导时不要强行追加图表。"

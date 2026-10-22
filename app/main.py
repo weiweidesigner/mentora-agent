@@ -92,7 +92,7 @@ SKILL_SCRIPT_DIRS = (
     SKILLS_DIR / "video-search" / "scripts",
     SKILLS_DIR / "vision-chart-analyst" / "scripts",
 )
-DEFAULT_DEEPSEEK_MODEL = "deepseek-v4-flash"
+DEFAULT_DEEPSEEK_MODEL = "deepseek-flash"
 DEFAULT_ARK_MODEL = "ep-20260630194841-rm58b"
 DEFAULT_ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
 MODEL_API_KEY_ENV_NAMES = ("DEEPSEEK_API_KEY", "ARK_API_KEY", "VOLCANO_API_KEY", "VOLCENGINE_API_KEY")
@@ -2526,8 +2526,8 @@ AGENT_TOOL_METADATA = (
     AgentToolMetadata(
         name=CHART_RECALL_TOOL,
         skill=STRUCTURED_DATA_SKILLS_LABEL,
-        description="图表与数据工具：读取 app/skills 中的业务召回、通用图表、Yahoo 通用结构化数据源和代码解释器 SKILL，并结合模块元数据选择一个或多个脚本。",
-        when_to_use="用户问题涉及财务数据、行情数据、估值、分红、K 线、资金流、成交量、季节性、分析师评级，或需要 Yahoo 能覆盖的全球市场、宏观、事件窗口等通用结构化数据时调用。必须按用户明确询问的维度最小化选择模块：只问股价走势/K 线时仅调用 kline.py；只有明确问到资金、成交结构、关键统计、财务、现金流、估值或评级时才增加对应模块。K 线已内置 OHLCV 取数，不得再调用 Yahoo close 或通用折线重复取数和绘图。",
+        description="图表与数据工具：读取 app/skills 中的业务召回、通用图表、现有结构化数据源和代码解释器 SKILL，并结合模块元数据选择一个或多个脚本。",
+        when_to_use="用户问题涉及财务数据、行情数据、估值、分红、K 线、资金流、成交量、季节性、分析师评级，或需要当前已安装工具支持的全球市场、宏观、事件窗口等结构化数据时调用。必须按用户明确询问的维度最小化选择模块：只问股价走势/K 线时仅调用 kline.py；只有明确问到资金、成交结构、关键统计、财务、现金流、估值或评级时才增加对应模块。K 线已内置 OHLCV 取数，不得再重复取数并用通用折线表达同一维度。",
         input_contract="用户问句、SKILL.md、module_registry.json。模型输出脚本名、标的代码、CLI 参数与选择理由。",
         output_contract="一个或多个通过 CLI 生成的 HTML 文件、JSON payload、模块运行元数据。",
     ),
@@ -3221,12 +3221,6 @@ def enforce_data_query_search_scope(question: str, skills: list[str]) -> list[st
 def non_us_replacement_skill_names(question: str) -> list[str]:
     lower = str(question or "").lower()
     names: list[str] = []
-    if any(term.lower() in lower for term in (*INCOME_STATEMENT_TERMS, *EPS_METRIC_TERMS, *FINANCIAL_BROAD_TERMS)):
-        names.append("yahoo-data")
-    elif any(term.lower() in lower for term in (*PRICE_INTENT_TERMS, "行情", "k线", "成交量", "走势")):
-        names.append("yahoo-data")
-    else:
-        names.append("yahoo-data" if is_structured_data_query(question) else "external-search")
     if structured_data_query_requires_search(question):
         names.append("external-search")
     if any(term in lower or term in question for term in ("图", "图表", "chart", "可视化", "柱", "折线", "饼图")):
@@ -3301,12 +3295,9 @@ def fallback_relevant_skill_names(question: str) -> list[str]:
             add(replacement)
     if any(term.lower() in lower for term in ("图表", "chart", "可视化", "visual", *MIND_MAP_TERMS, "流程图", "timeline", "柱状", "折线", "饼图")):
         add("generic-chart")
-    if any(term.lower() in lower for term in ("yahoo", "雅虎", "累计收益", "单日", "daily return", "market cap")):
-        add("yahoo-data")
     if any(term.lower() in lower for term in ("json", "csv", "表格", "清洗", "聚合", "分组", "筛选", "排序", "计算")):
         add("code-interpreter")
     if should_use_yahoo_grouped_line_cumulative_policy(question):
-        add("yahoo-data")
         add("code-interpreter")
         add("generic-chart")
     if wants_external_search_for_question(question):

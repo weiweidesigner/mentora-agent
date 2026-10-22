@@ -26,9 +26,15 @@ chmod 600 .env
 python -m uvicorn app.presentation:app --host 127.0.0.1 --port 8000
 ```
 
-`python scripts/setup_dependencies.py --check` 离线验证固定提交及接入链接。组件更新后修改对应锁文件，再运行 `--update`。JEV 工具活动路由 `app/jev_tool_activity_router.py` 与所有展示逻辑由此主仓库统一维护，可视化组件选择仍引用 `jev_vis_router`。
+`python scripts/setup_dependencies.py --check` 离线验证固定提交及接入链接。组件更新后修改对应锁文件，再运行 `--update`。展示逻辑由此主仓库统一维护，可视化组件选择仍引用 `jev_vis_router`。工具事件直接使用 Agent 提供的公开进度，不再为进度分类或翻译额外调用模型。
+
+Harness 默认会从工具子进程环境中移除凭据变量。`AICHART_TOOL_ENV_KEYS` 显式列出本项目 CLI 工具可以使用的变量名；真实值仍只保存在本地 `.env`。宿主通过公共 ShellSpec 环境接口传递这些值，不把凭据写进命令、提示词或事件日志。若项目已安装 `.venv`，CLI 同时使用该环境的 Python 和依赖。SDK 和 headless 模式的所有推理档位均加载此环境适配。
+
+通用只读行情入口位于 `app/skills/market-data/scripts/read_market_data.py`，复用已安装的市场适配器，支持任意美股/ETF/指数及沪深北股票的报价批次和支持范围内的完整日线。默认 4 路并发，保留原始数据时间、来源及单项失败；`--refresh` 可显式重取。Harness 工具环境适配器按用户轮次注入独立缓存目录，报价默认复用 60 秒、历史数据 1800 秒，错误不缓存；脱离 Harness 使用时需显式指定 `--cache-dir` 才跨进程复用。完整契约见 `app/skills/market-data/SKILL.md`。此入口不初始化账户、不执行交易；原有交易取数与风控不变。
 
 保持现有 `AICHART_*` 环境变量与会话存储键兼容，界面品牌、页面标题与分享文案使用 Veya。FLUX 运行器及模型权重另外部署，在本地 `.env` 设置路径。
+
+通用联网搜索默认使用 Tavily，失败时自动切换 Serper；Kimi 保留为显式可选来源。结果保留真实 provider 与 `fallback_attempts`。AInvest 站内搜索、结构化行情与指定 URL 读取保持为独立能力。
 
 ## StreamViz dependency
 
@@ -180,11 +186,13 @@ AICHART_CODEX_OLLAMA_MODEL=aimechart/glm-4.6v-flash-9b-codex:latest
 AICHART_CODEX_GLM_ADAPTER_URL=http://127.0.0.1:8010/local-glm/v1
 AICHART_CODEX_OLLAMA_CONTEXT_WINDOW=16384
 AICHART_CODEX_OLLAMA_COMPACT_TOKEN_LIMIT=12288
-DSH_HOME=~/.dsh
+AICHART_DSH_HOME=~/.dsh
 DSH_BIN=
 AICHART_DEEPSEEK_SDK_PATH=
 AICHART_DEEPSEEK_PROVIDER=deepseek-official
-AICHART_DEEPSEEK_MODEL=deepseek-v4-flash
+AICHART_DEEPSEEK_MODEL=deepseek-flash
+AICHART_DEEPSEEK_REASONING_EFFORT=low
+AICHART_DEEPSEEK_MAX_TOKENS=32768
 AICHART_DEEPSEEK_TIMEOUT_SECONDS=1200
 AICHART_DEEPSEEK_RUN_TIMEOUT_SECONDS=1200
 AICHART_OLLAMA_URL=http://127.0.0.1:11434
@@ -209,9 +217,9 @@ LAYA_VISUAL_SUPPORTING_MIN_CONFIDENCE=0.55
 ollama create aimechart/glm-4.6v-flash-9b-codex:latest -f ollama/Modelfile.glm-codex
 ```
 
-`/api/chat` 和 `/api/chat/stream` 维持同一响应/SSE 契约，再根据请求中的 `reasoningFramework` 路由到对应适配器；`inferenceModel` 独立保存并传递完整模型 ID。网页固定传递 `deepseek-v4-flash`；只有直接通过 API 指定本地模型 ID 为 `haervwe/GLM-4.6V-Flash-9B:latest` 时，DeepSeek Harness 或 Codex 才切换到本机 Ollama。Codex 路径在后台使用 `aimechart/glm-4.6v-flash-9b-codex:latest` 这一隐藏的 16K 上下文派生配置，并设置 Codex 的上下文与压缩阈值。由于本地 Ollama 模板有时将工具调用放进普通文本，Codex 的 GLM 路径经由本机 `/local-glm/v1` Responses 适配器；它仅将完整、已声明且参数符合 schema 的调用提升为真正的 `function_call`，不会推断业务路由、补造工具结果或执行不完整调用。该适配器由 Veya 8010 服务承载，因此使用 Codex + GLM 前须先启动网页服务；若端口不同，同步修改 `AICHART_CODEX_GLM_ADAPTER_URL`。DeepSeek Harness 仍直接使用原始 Ollama 模型。DeepSeek Harness 的真实 session ID 和 Codex thread ID 分开保存，并进一步按模型隔离，不会相互覆盖。DeepSeek SDK runtime 会在服务生命周期内按 session 与模型复用，以支持同一前台会话连续对话；服务关闭时统一释放。会话标题仍只做字符串截取，不产生第二次模型调用。
+`/api/chat` 和 `/api/chat/stream` 维持同一响应/SSE 契约，再根据请求中的 `reasoningFramework` 路由到对应适配器；`inferenceModel` 独立保存并传递完整模型 ID。网页固定传递 `deepseek-flash`；只有直接通过 API 指定本地模型 ID 为 `haervwe/GLM-4.6V-Flash-9B:latest` 时，DeepSeek Harness 或 Codex 才切换到本机 Ollama。Codex 路径在后台使用 `aimechart/glm-4.6v-flash-9b-codex:latest` 这一隐藏的 16K 上下文派生配置，并设置 Codex 的上下文与压缩阈值。由于本地 Ollama 模板有时将工具调用放进普通文本，Codex 的 GLM 路径经由本机 `/local-glm/v1` Responses 适配器；它仅将完整、已声明且参数符合 schema 的调用提升为真正的 `function_call`，不会推断业务路由、补造工具结果或执行不完整调用。该适配器由 Veya 8010 服务承载，因此使用 Codex + GLM 前须先启动网页服务；若端口不同，同步修改 `AICHART_CODEX_GLM_ADAPTER_URL`。DeepSeek Harness 仍直接使用原始 Ollama 模型。DeepSeek Harness 的真实 session ID 和 Codex thread ID 分开保存，并进一步按模型隔离，不会相互覆盖。DeepSeek SDK runtime 会在服务生命周期内按 session 与模型复用，以支持同一前台会话连续对话；服务关闭时统一释放。会话标题仍只做字符串截取，不产生第二次模型调用。
 
-可通过 `/api/health` 查看 DeepSeek 与 Codex 的本机可用状态。DeepSeek Harness SDK 和 `dsh` Runtime 都不可用时，调用会返回明确的安装提示。AutoGen 不再作为聊天推理框架接受或展示。
+可通过 `/api/health` 查看 DeepSeek 与 Codex 的本机可用状态，以及服务器实际安装的 `deepseek-harness-sdk` 和 `deepseek-harness-runtime-bin` 版本。未安装的发行包版本返回 `null`，不会阻断健康检查。DeepSeek Harness SDK 和 `dsh` Runtime 都不可用时，调用会返回明确的安装提示。AutoGen 不再作为聊天推理框架接受或展示。
 
 运行输出会写入 `outputs/generated/`，该目录可作为运行时产物目录处理。
 
@@ -236,7 +244,7 @@ python3 scripts/sync_cn_trading_data.py --update
 
 ## Kimi search dependency
 
-Kimi 搜索由公开仓库 `weiweidesigner/kimi-search` 管理，使用 `kimi-search.lock.json` 固定提交。`external_info_search.py` 链接到 `.dependencies/kimi-search` 的实现；URL 阅读器由独立公开 `url-content-reader` 仓库维护。搜索运行时只依赖标准库。
+Kimi 搜索由公开仓库 `weiweidesigner/kimi-search` 管理，使用 `kimi-search.lock.json` 固定提交。宿主的 `external_info_search.py` 负责 Tavily→Serper 路由，显式选择 Kimi 时调用 `.dependencies/kimi-search` 的实现；URL 阅读器由独立公开 `url-content-reader` 仓库维护。搜索运行时只依赖标准库。
 
 ```bash
 python3 scripts/sync_kimi_search.py
@@ -281,6 +289,12 @@ python3 scripts/sync_us_market_vedio.py --update
 ```
 
 ## 验证
+
+所有问题都通过所选框架的通用 Agent 推理循环执行。模型根据本轮问题和历史约束，自行选择技能、数据范围、工具调用、验证方式、图表与交付结构；普通对话和定时任务共用此入口。历史 `AICHART_BOUNDED_RESEARCH` 开关已移除，不再将行情问题分流到固定数据能力或预设报告流程。
+
+轻度档通过 `app/dsh_lightweight.cordis.yml` 加载同轮只读执行缓存（保留历史文件名以兼容部署）。它只复用参数相同、依赖文件未变且时效有效的成功读取，并合并相同的进行中读取；新轮次或文件变化使缓存失效，动态查询缓存最多 60 秒。失败、写入、订单、账户变更和无法确认只读的命令不缓存，也不限制模型更换参数、修正产物或继续取证。该模块不注入分析模板、不切换研究/交付阶段、不隐藏工具、不限制搜索次数，也不替模型决定何时结束。运行器原有的用户取消与整轮超时仍有效，超时必须明确报告未完成状态。
+
+来源、数据时间和必要验证要求由对应 Skill 及真实工具回执提供；缓存不会构造行情、结论或交易回执。HTML 等交付需求仍须完整履行。`node --test tests/lightweight-guard.test.mjs` 与 `tests/fixtures/run_dsh_guard_probe.py` 验证同轮缓存、失效、并发去重及真实运行器透传。
 
 安装依赖后运行 `python -m pip install -r requirements-dev.txt`、`python -m pytest tests -q` 与 `node --test tests/*.test.mjs`。部分集成测试需要额外的本地模型、Codex Skill 或配置；本地凭据检查在公开检出未配置密钥时跳过。
 

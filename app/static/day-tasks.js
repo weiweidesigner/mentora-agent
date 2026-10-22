@@ -9,18 +9,21 @@
   const zones = {CN:'Asia/Shanghai',HK:'Asia/Hong_Kong',US:'America/New_York'};
   const cadences = {trading:'交易日',daily:'每天',weekdays:'工作日',weekly:'每周',monthly:'每月',custom:'自定义',once:'指定日期一次'};
   // Optional plans to create, separate from the already scheduled scene tasks.
-  const recommendations = [
-    {id:'morning',icon:'🗓️',title:'经济数据与政策日历',stage:'pre',type:'index',time:'09:00',description:'跟踪你关注的经济数据和政策日程，提前整理已确认的发布安排。',question:'在{{market}}开盘前整理用户关注的经济数据与政策日历，列出已确认的发布时间、前值、可靠预期与关注点。创建前澄清关注地区、事件范围及提醒时间；注明来源，区分已发布数据与待发布日程。'},
-    {id:'announcements',icon:'📄',title:'自选股公告与财报提醒',stage:'pre',type:'watchlist',time:'09:00',description:'为你的自选股检查公告与财报日期，标出值得关注的新变化。',question:'每天开盘前检查{{market}}自选股{{symbols}}的公告、业绩预告、财报披露及已确认的未来七天财报日期。创建前先澄清自选股名单和提醒时间，不假设用户持仓。逐一注明时间和来源，没有新变化时简要说明。'},
-    {id:'intraday',icon:'🔔',title:'关注标的价量异动观察',stage:'live',type:'index',time:'10:30',description:'按你指定的标的和观察条件，定时核验价格、量能与相关消息。',question:'盘中观察{{market}}用户指定标的{{symbols}}的价格、量能与相关消息。创建前澄清标的、观察时间和希望关注的变化条件。比较可靠历史同期口径，说明行情时间和延迟，仅提供研究观察，不下单，也不创建外部价格提醒。'},
-    {id:'sectors',icon:'⚖️',title:'行业 ETF 相对强弱对照',stage:'live',type:'etf',time:'14:00',description:'选择几只行业 ETF，对照相对表现、量能和共同驱动因素。',question:'定时比较{{market}}中用户选择的ETF {{symbols}}，对照涨跌、量能与相对基准表现，梳理共同驱动与分歧。创建前澄清ETF名单、基准与执行时间。注明数据日期与来源，不将成交量直接解释为资金流入。'},
-    {id:'closing',icon:'📒',title:'投资观察笔记回顾',stage:'post',type:'index',description:'回顾你在对话中记录的投资观察，整理已验证变化与待核实问题。',question:'收盘后回顾用户在对话中记录的{{market}}投资观察与{{symbols}}相关研究笔记，对照新证据，整理已验证变化、尚未解决的问题和后续观察清单。创建前澄清笔记来源、跟踪范围与时间。只使用用户实际提供的记录，不假设持仓、收益或交易。'},
-    {id:'watchlist',icon:'💰',title:'自选股分红与派息日历',stage:'post',type:'watchlist',description:'跟踪自选股已公告的分红、除权除息和派息安排。',question:'定时检查{{market}}自选股{{symbols}}已公告的分红、股权登记、除权除息与派息安排，区分已确认事项和未确认预期。创建前澄清股票名单与执行时间。注明公告日期、来源及币种，不预测未公告的分红。'},
-    {id:'weekend-research',icon:'🔎',title:'周末自选股研究',stage:'rest',type:'watchlist',time:'09:00',description:'利用休市时间梳理关注公司的业务变化、近期财报与研究问题。',question:'在{{market}}休市日研究用户选择的公司{{symbols}}，结合已披露财报、公告与可靠资料，梳理业务变化和待核实问题。创建前澄清公司名单、研究重点、重复频率与时间。明确数据截至日期，不把历史收盘数据作为实时行情。'},
-    {id:'next-week-earnings',icon:'📅',title:'下周财报观察清单',stage:'rest',type:'index',time:'17:00',description:'为关注的公司整理下周已确认的财报日期与重点观察指标。',question:'在{{market}}休市日整理用户关注公司{{symbols}}下周已确认的财报日期、发布时段与观察指标，区分官方已确认日期和第三方预计日期。创建前澄清公司范围、执行日期与时间；注明来源，不编造一致预期或财报结果。'}
-  ];
+  const recommendations = [];
+
+  const dealContract='请使用 Mentora Deal 的完整研究与交易流程：筛选、行情核验、回测、模型决策和风控，通过 portfolio-order 为符合条件的标的自动提交模拟买入订单；不是仅研究。卖出仅限账户实际持仓，且须通过独立卖出决策与可卖数量校验。筛选最多5只值得评估买入的股票，按优先级给出代码、公司、催化及原始来源、行情时间与币种、买入确认条件或有证据的关注区间、失效条件、主要风险和下一步核验事项。区分已成交、未成交、等待确认与排除，列出真实订单回执或具体拦截原因；没有合适标的就明确本轮不下单，不凑名单。数据陈旧或缺失时不得给出已满足的买入信号，不捏造价格、指标、账户持仓或可交易性。';
+  const dealIdeas={
+    pre:[['催化驱动买入候选','结合隔夜市场、政策、公司公告和财报，筛选基本面与催化相互印证的买入候选。区分已兑现利好和待确认催化，说明开盘后必须验证的量价条件。'],['优质股回调观察','筛选基本面有支撑、近期回调但逻辑尚未失效的股票，对照估值、趋势与最新公告，寻找值得等待买点的候选。']],
+    live:[['放量突破机会','筛选相对指数及行业偏强、突破关键价格且成交量确认的股票，排除过度追高和缺乏流动性的标的；没有实时证据时只列待核验候选。'],['回踩企稳机会','寻找强势行业中回踩关键支撑后企稳的股票，核对价格、成交量、最新消息与日内相对强弱，说明何时确认、何时放弃。']],
+    post:[['下一交易日买入清单','根据完整收盘数据复盘强势行业、价格结构与催化持续性，形成下一交易日买入候选和观察顺序，写明开盘确认条件。'],['财报与公告新机会','核验收盘后新披露财报、业绩预告、指引和公司公告，筛选盈利改善或催化未充分定价的候选，区分披露事实、市场预期和推测。']]
+  };
+  for(const m of ['CN','US'])for(const [stage,ideas] of Object.entries(dealIdeas))ideas.forEach(([label,focus],i)=>{
+    recommendations.push({id:`deal-${m}-${stage}-${i}`,market:m,agent:'mentora-deal',pack:i===0,icon:flags[m],title:`${names[m]}${{pre:'盘前',live:'盘中',post:m==='CN'?'收盘':'盘后'}[stage]} · ${label}`,stage,type:'stocks',description:focus,question:`在${names[m]}${stages[stage]}寻找可以买入研究的标的。${focus}${m==='CN'?'排除ST、停牌与无法买入的涨停标的，核验板块涨跌幅限制，并考虑T+1。':'核对盘前/盘后与常规交易报价，注意点差和流动性；将财报公布时点与美东交易日对齐。'}${dealContract}`});
+  });
+  const windowDefaults=(m,stage)=>({pre:['08:30','09:30',30],live:['09:30',m==='CN'?'15:00':'16:00',30],post:[m==='CN'?'15:15':'16:15',m==='CN'?'18:00':'20:00',60],rest:['09:00','10:00',30]}[stage]);
   function recommendedTask(item) {
-    return {...template(item.stage,item.type),title:item.title,question:item.question,timeMode:'fixed',time:item.time||(market==='CN'?'15:30':'16:30'),timezone:'market'};
+    const m=item.market||market,[windowStart,windowEnd,intervalMinutes]=windowDefaults(m,item.stage);
+    return {...template(item.stage,item.type,m),title:item.title,question:item.question,agent:item.agent||'mentora',triggerMode:item.agent?'window':'once',windowStart,windowEnd,intervalMinutes,timeMode:'fixed',time:item.time||(m==='CN'?'15:30':'16:30'),timezone:'market'};
   }
   const el = name => form.elements.namedItem(name);
   const mobile = () => window.matchMedia('(max-width: 760px)').matches;
@@ -109,7 +112,7 @@
     } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();liveArticle?.remove();userNode.remove();$('taskChatError').textContent=error.message;if(!revision){$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}}
     finally{revision?.article.querySelectorAll('textarea,button').forEach(node=>node.disabled=false);if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
-  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay]);
+  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.triggerMode,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
   let originalQuestionTemplate = '', originalVisibleQuestion = '';
   let wizardDraft = null, wizardStep = 0, saving = false;
@@ -126,6 +129,7 @@
   const zoneFor = task => task.timezone === 'market' ? zones[task.market] : (task.timezone || 'Asia/Shanghai');
   const selected = () => [...tasks,...sceneTasks].find(t => t.id === selectedId) || (sharedEntry?.task.id === selectedId ? sharedEntry.task : null);
   const editable = task => Boolean(task && tasks.some(t => t.id === task.id));
+  const canDeleteTask=task=>Boolean(task&&task!==sharedEntry?.task&&(editable(task)||task.systemPreset));
   function message(text, target) { const node=$(target || (dialog.open ? 'dayDialogMessage' : workspace.hidden ? 'dayMessage' : 'taskMessage'));node.textContent=text;node.classList.toggle('is-success',/^定时任务已创建|^任务已保存/.test(text)); }
   async function api(path, method = 'GET', data) {
     const response = await fetch('/api/day/' + path,{method,credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json','X-Veya-Day':'1'},...(data === undefined ? {} : {body:JSON.stringify(data)})});
@@ -143,6 +147,7 @@
     return '活动';
   }
   function schedule(task) {
+    if(task.triggerMode==='window')return `交易日 · ${task.windowStart}–${task.windowEnd} · 每 ${task.intervalMinutes} 分钟（${task.market==='US'?'美东时间':'市场当地时间'}）`;
     const repeat = task.cadence==='custom' ? '每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、') : task.cadence==='weekly' ? '每周'+'一二三四五六日'[(task.weekdays || [0])[0]] : task.cadence==='monthly' ? `每月 ${task.monthDay || 1} 日` : cadences[task.cadence];
     const zone=zoneFor(task),zoneName=zone==='America/New_York'?'美东时间':['Asia/Shanghai','Asia/Hong_Kong'].includes(zone)?'北京时间':zone;
     const timing = task.timeMode==='fixed' ? `${task.time}（${zoneName}）` : `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'} ${Math.abs(task.offset)} 分钟`;
@@ -156,7 +161,7 @@
       live:`检查{{market}}中{{symbols}}的${asset}盘中表现，汇总价格、成交量与板块异动，分析可能原因与需要继续观察的信号。注明行情时间和延迟，不具备实时数据时明确说明。`,
       post:`复盘{{market}}中{{symbols}}的${asset}今日表现，说明涨跌驱动、市场强弱和重要事件，并列出下一交易日的关注清单。区分已确认事实与推测，注明数据时间。`
     };
-    return {title:`${names[selectedMarket]}${type==='stocks'?'':assets[type]} · ${stages[stage]}`,agent:'mentora',market:selectedMarket,stage,assetType:type,symbols:'',question:questions[stage],cadence:'trading',date:'',endDate:'',weekdays:[0],monthDay:1,timeMode:stage==='live'?'fixed':stage==='pre'?'open':'close',offset:stage==='post'?15:-30,time:selectedMarket==='US'?'09:00':'08:30',timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false};
+    return {title:`${names[selectedMarket]}${type==='stocks'?'':assets[type]} · ${stages[stage]}`,agent:'mentora',market:selectedMarket,stage,assetType:type,symbols:'',question:questions[stage],cadence:'trading',date:'',endDate:'',weekdays:[0],monthDay:1,triggerMode:'once',windowStart:'09:30',windowEnd:selectedMarket==='CN'?'15:00':'16:00',intervalMinutes:30,timeMode:stage==='live'?'fixed':stage==='pre'?'open':'close',offset:stage==='post'?15:-30,time:selectedMarket==='US'?'09:00':'08:30',timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false};
   }
   const sceneCopy={pre:{title:'新的一天，从容开场',label:'盘前',emoji:'🌅'},live:{title:'行情起伏，陪你看清',label:'盘中',emoji:'☀️'},post:{title:'收盘了，慢慢复盘',label:'盘后',emoji:'🌇'},rest:{title:'市场休息，也歇一歇',label:'休市',emoji:'🧳'}};
   function homeScene(){const info=markets.find(m=>m.market==='CN');if(!info||info.calendarError)return null;if(info.closed||info.stage==='rest')return 'rest';if(info.openAt&&info.closeAt){const now=Date.now()+serverDelta;return now<new Date(info.openAt).getTime()?'pre':now<new Date(info.closeAt).getTime()?'live':'post';}return info.stage;}
@@ -186,30 +191,41 @@
   function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
     const ready=t=>t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date&&resultScene(t)===scene;
     const rows=[...sceneTasks.filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),...tasks.filter(t=>(t.resultMarket||t.market)==='CN'&&((t.activeRun&&(t.scene||resultScene(t))===scene)||ready(t)))];
+    const rank=t=>t.activeRun?0:ready(t)?1:2;
+    rows.sort((a,b)=>rank(a)-rank(b)||(rank(a)===2?(Date.parse(a.nextAt)||Infinity)-(Date.parse(b.nextAt)||Infinity):0));
     updateHomePanel(rows.length?`<div class="daySceneGrid">${rows.map(t=>{
       const active=!!t.activeRun,done=!active&&ready(t),running=active&&t.lastRun?.status==='running',run=active?t.activeRun:done?t.resultVersion:'';
       const label=running?'正在运行任务':active?'等待运行':!t.enabled?'已暂停':t.lastRun?.status==='failed'?'执行未完成':'等待执行';
+      const scheduled=label==='等待执行'&&Number.isFinite(Date.parse(t.nextAt))
+        ? `${dayDate(t.nextAt)===date?'今天':new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'long',day:'numeric',...(dayDate(t.nextAt).slice(0,4)!==date.slice(0,4)?{year:'numeric'}:{})}).format(new Date(t.nextAt))} ${new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(t.nextAt))}` : '';
+      const statusText=label==='等待执行'?`${label} · ${scheduled||'时间待确定'}`:label;
       const description=plainSummary(visibleQuestion(t).split(' 使用项目已有金融研究技能')[0]);
-      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span>${esc(label)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
+      return `<button class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" type="button" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${done?`<div class="caseCardTop"><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span class="caseCardTag">${esc(statusText)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</button>`;
     }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`);
   }
 
+  function taskTimeOrder(a,b) {
+    const time=t=>{const value=Date.parse(t.nextAt);return t.enabled&&Number.isFinite(value)?value:Infinity;};
+    const group=t=>t.activeRun?0:time(t)<Infinity?1:2;
+    const rank=group(a)-group(b);if(rank)return rank;
+    const at=time(a),bt=time(b);return at===bt?0:at<bt?-1:1;
+  }
   function visibleTasks() {
     const query=$('taskSearch').value.trim().toLowerCase();
-    const presets=sceneTasks.slice().sort((a,b)=>Number((b.scene||b.stage)===homeScene())-Number((a.scene||a.stage)===homeScene())||Number(!!b.activeRun)-Number(!!a.activeRun)||String(a.nextAt||'').localeCompare(String(b.nextAt||'')));
-    return [...tasks,...presets].filter(t=>(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query)));
+    return [...tasks,...sceneTasks].filter(t=>matchesScene(t)&&(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query))).sort(taskTimeOrder);
   }
   function sidebarDate(value, task, includeTime=true, relative=true) {
     if(!value||!Number.isFinite(new Date(value).getTime()))return '';
-    const zone=zoneFor(task),parts=date=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hourCycle:'h23'}).formatToParts(date).map(p=>[p.type,p.value]));
+    const zone='Asia/Shanghai',parts=date=>Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit',hourCycle:'h23'}).formatToParts(date).map(p=>[p.type,p.value]));
     const d=parts(new Date(value)),now=parts(new Date(Date.now()+serverDelta));
     const day=n=>Date.UTC(Number(n.year),Number(n.month)-1,Number(n.day));
     const delta=Math.round((day(d)-day(now))/86400000);
     const label=includeTime&&relative&&delta===0?'今天':includeTime&&relative&&delta===1?'明天':`${d.year!==now.year?d.year+'年':''}${Number(d.month)}月${Number(d.day)}日`;
     const clock=relative?`${Number(d.hour)}${Number(d.minute)?':'+d.minute:'时'}`:`${String(d.hour).padStart(2,'0')}:${d.minute}`;
-    return includeTime?`${label} ${clock}`:label;
+    return includeTime?`${label} ${clock}${task.market==='US'?'（北京时间）':''}`:label;
   }
   function compactSchedule(task) {
+    if(task.triggerMode==='window')return `${names[task.market]} · ${stages[task.stage]} · ${task.market==='US'?'美东 ':''}${task.windowStart}–${task.windowEnd} 每${task.intervalMinutes}分钟`;
     const time=task.timeMode==='fixed'?String(task.time||'').replace(/^0/,''): `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'}${Math.abs(task.offset)}分钟`;
     const repeat=task.cadence==='weekly'?'每周'+'一二三四五六日'[(task.weekdays||[0])[0]]:task.cadence==='custom'?'每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、'):cadences[task.cadence]||'';
     return task.cadence==='once'?'仅一次':`${repeat}${time?' '+time:''}`;
@@ -231,6 +247,7 @@
   function taskRows(rows, sidebar=false) {
     return rows.map(t=>`<div class="taskListRow"><button type="button" class="taskListItem ${selectedId===t.id?'is-selected':''} ${completed(t)?'is-completed':!t.enabled?'is-paused':''}" data-task-open="${t.id}" ${selectedId===t.id?'aria-current="true"':''}><span class="taskListIcon" aria-hidden="true">◷</span><span><strong>${esc(t.title)}<em class="taskAgentBadge">${taskAgent(t)==='mentora-deal'?'Mentora Deal':'Mentora'}</em></strong><small>${esc(taskSubtitle(t))}</small></span>${completed(t)?'<span class="taskListComplete" aria-label="已完成"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>':'<span class="taskListArrow" aria-hidden="true">›</span>'}</button><button type="button" class="taskMoreButton" data-task-more="${esc(t.id)}" aria-label="更多：${esc(t.title)}" aria-haspopup="menu" aria-expanded="false" aria-controls="taskMoreMenu"><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M288 512a74.666667 74.666667 0 1 1-149.333333 0 74.666667 74.666667 0 0 1 149.333333 0zM512 437.333333a74.666667 74.666667 0 1 1 0 149.333334 74.666667 74.666667 0 0 1 0-149.333334zM885.333333 512a74.666667 74.666667 0 1 0-149.333333 0 74.666667 74.666667 0 0 0 149.333333 0z"/></svg></button></div>`).join('');
   }
+  function matchesScene(t){return ($('taskMarketFilter').value==='all'||$('taskMarketFilter').value===(t.market||market))&&($('taskStageFilter').value==='all'||$('taskStageFilter').value===t.stage);}
   function renderLists() {
     closeTaskMenu();
     const rows=visibleTasks();
@@ -241,7 +258,7 @@
     $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
-    $('taskRecommendations').innerHTML=recommendations.map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
+    $('taskRecommendations').innerHTML=recommendations.filter(matchesScene).map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
     const url=new URL(location.href);
@@ -405,26 +422,60 @@
       }
     } catch(error){message(error.message);} finally{busy=false;}
   }
+  function setWindowInterval(minutes,unit='minutes') {
+    el('windowInterval').value=String(minutes);
+    el('windowIntervalUnit').value=unit;
+    el('windowIntervalAmount').min=unit==='hours'?String(5/60):'5';
+    el('windowIntervalAmount').max=unit==='hours'?'4':'240';
+    el('windowIntervalAmount').step=unit==='hours'?'any':'1';
+    el('windowIntervalAmount').value=String(unit==='hours'?minutes/60:minutes);
+  }
   function updateFields(event) {
     if(!editing && ['assetType','stage','market'].includes(event?.target?.name)) {
       const suggestion=template(el('stage').value,el('assetType').value,el('market').value);
       if(el('question').value===suggestedQuestion){el('question').value=suggestion.question;suggestedQuestion=suggestion.question;}
       if(el('title').value===suggestedTitle){el('title').value=suggestion.title;suggestedTitle=suggestion.title;}
     }
+    if(event?.target===el('timezone')&&el('timezone').value!=='market')el('timeMode').value='fixed';
     if(event?.target===el('repeat'))el('cadence').value=el('repeat').checked?'daily':'once';
     if(event?.target===el('cadence'))el('repeat').checked=el('cadence').value!=='once';
-    if(event?.target===el('cadence'))el('timeMode').value='fixed';
+
     if(event?.target===el('timeMode') && el('timeMode').value!=='fixed' && el('cadence').value==='daily')el('cadence').value='trading';
+    if(['stage','market'].includes(event?.target?.name)||(event?.target===el('triggerMode')&&el('triggerMode').value==='window')){
+      const [start,end,interval]=windowDefaults(el('market').value,el('stage').value);
+      el('windowStart').value=start;el('windowEnd').value=end;setWindowInterval(interval);
+      if(el('stage').value==='rest'){el('triggerMode').value='once';el('stage').value='pre';}
+    }
+    if(event?.target===el('triggerMode')&&el('triggerMode').value==='window'){el('endMode').value='never';el('endDate').value='';}
+    if(event?.target===el('windowIntervalUnit'))setWindowInterval(Number(el('windowInterval').value)||30,el('windowIntervalUnit').value);
+    if(event?.target===el('windowIntervalAmount'))el('windowInterval').value=String(Math.round(Number(el('windowIntervalAmount').value)*(el('windowIntervalUnit').value==='hours'?60:1)));
+    if(event?.target===el('triggerMode')&&el('triggerMode').value==='once'){
+      el('timeMode').value='fixed';
+      if(el('stage').value==='rest')el('stage').value='pre';
+    }
+    const windowed=el('triggerMode').value==='window';
+    $('dayMarketLabel').hidden=!windowed;
+    const sceneZoneLabel=el('market').value==='US'?'美东时间':el('market').value==='HK'?'香港时间':'北京时间';
+    $('dayWindowStartText').textContent=`开始时间（${sceneZoneLabel}）`;
+    $('dayWindowEndText').textContent=`结束时间（${sceneZoneLabel}，不含）`;
+    $('dayStageLabel').hidden=!windowed;
+    if(!windowed&&el('timezone').value==='market')el('timezone').value=zones[el('market').value]||'Asia/Shanghai';
+    el('windowIntervalAmount').disabled=el('windowIntervalUnit').disabled=!windowed;
+    $('dayScheduleModeHelp').textContent=windowed?`按交易场景：在所选市场的每个交易日，仅于场景时段内按间隔时间执行。时间均为${sceneZoneLabel}${el('market').value==='US'?'，自动适配夏令时':''}。`:'按绝对时间：按指定时间或间隔执行，重复用于选择日期规则；交易场景不参与限制。';
+    if(windowed){el('cadence').value='trading';el('timezone').value='market';el('repeat').checked=true;}
+    el('cadence').disabled=windowed;el('timezone').disabled=windowed;el('repeat').disabled=windowed;
+    $('dayWindowFields').hidden=!windowed;$('dayTimeModeLabel').hidden=windowed;
     const cadence=el('cadence').value, relative=el('timeMode').value!=='fixed';
-    $('dayCadenceLabel').hidden=!el('repeat').checked;
+    $('dayRepeatLabel').hidden=windowed;
+    $('dayCadenceLabel').hidden=windowed||!el('repeat').checked;
     $('dayDateLabel').hidden=el('repeat').checked;el('date').required=!el('repeat').checked;
     $('dayCustomLabel').hidden=cadence!=='custom';
     $('dayWeekLabel').hidden=cadence!=='weekly';$('dayMonthLabel').hidden=cadence!=='monthly';
-    $('dayTimeLabel').hidden=false;$('dayOffsetLabel').hidden=true;
-    $('dayEndModeLabel').hidden=cadence==='once';$('dayEndLabel').hidden=cadence==='once'||el('endMode').value!=='date';
+    $('dayTimeLabel').hidden=windowed||relative;$('dayOffsetLabel').hidden=windowed||!relative;
+    $('dayEndModeLabel').hidden=windowed||cadence==='once';$('dayEndLabel').hidden=windowed||cadence==='once'||el('endMode').value!=='date';
     el('endDate').required=!$('dayEndLabel').hidden;
     for(const [channel,id] of [['serverchan','dayServerchanFields'],['feishu','dayFeishuFields'],['wecom','dayWecomFields']])$(id).hidden=!el(channel).checked;
-    $('dayNextPreview').textContent=relative?'跟随市场实际开收盘时间，自动处理夏令时与提前收盘。':`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
+    $('dayNextPreview').textContent=windowed?`${names[el('market').value]} · ${stages[el('stage').value]} · ${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（市场当地时间）`:relative?'跟随市场实际开收盘时间，自动处理夏令时与提前收盘。':`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
     window.VeyaTaskEditor?.sync();
   }
   function edit(task, readOnly=false) {
@@ -434,8 +485,9 @@
     originalQuestionTemplate=task.question;
     originalVisibleQuestion=String(task.question).replace(/\{\{market\}\}/g,names[task.market]||'所选市场').replace(/\{\{symbols\}\}/g,task.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');
     el('question').value=originalVisibleQuestion;
-    if(task.timeMode!=='fixed'&&task.nextAt)el('time').value=new Intl.DateTimeFormat('en-GB',{timeZone:zoneFor(task),hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(task.nextAt));
-    el('timeMode').value='fixed';el('date').value=task.date||today();
+    el('triggerMode').value=task.triggerMode||'once';
+    {const minutes=Number(task.intervalMinutes)||30;setWindowInterval(minutes,minutes%60===0?'hours':'minutes');}
+    el('date').value=task.date||today();
     for(const channel of ['serverchan','feishu','wecom'])el(channel).checked=false;
     el('repeat').checked=task.cadence!=='once';el('weekday').value=(task.weekdays||[0])[0];el('monthDay').value=task.monthDay||1;
     el('endMode').value=task.endDate?'date':'never';
@@ -446,7 +498,7 @@
     $('dayEnablePush').hidden=readOnly;
     updateFields();
     if(readOnly)form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=true);
-    window.VeyaTaskEditor?.reset(task,readOnly);
+    window.VeyaTaskEditor?.reset({...task,timezone:el('timezone').value},readOnly);
     if(!dialog.open)dialog.showModal();
     dialog.querySelector('.dayDialogBody').scrollTop=0;
     message(readOnly?(task?.systemPreset?'这是按计划执行的公共预制任务，可查看任务参数。':'这是分享的运行结果。请在创建任务的浏览器中编辑任务。'):'','dayDialogMessage');
@@ -461,6 +513,10 @@
     if(data.assetType==='watchlist'&&!data.symbols.trim())data.assetType='stocks';
     if(data.endMode==='never')data.endDate='';if(!el('repeat').checked)data.cadence='once';if(data.cadence==='once')data.endDate='';
     if(data.timeMode!=='fixed')data.timezone='market';
+    data.intervalMinutes=Number(data.intervalMinutes)||30;
+    if(el('triggerMode').value==='window')data.intervalMinutes=Math.round(Number(el('windowIntervalAmount').value)*(el('windowIntervalUnit').value==='hours'?60:1));
+    if(el('triggerMode').value==='window'){data.cadence='trading';data.timezone='market';data.timeMode='fixed';}
+    if(data.triggerMode==='once'&&data.stage==='rest')data.stage='pre';
     return data;
   }
   function visibleQuestion(d){return String(d.question||'').replace(/\{\{market\}\}/g,names[d.market]).replace(/\{\{symbols\}\}/g,d.symbols||(d.assetType==='watchlist'?'待确认的自选股':'全市场')).replace(/\{\{date\}\}/g,'执行当天');}
@@ -498,7 +554,7 @@
     $('wizardQuestion').innerHTML=content+`<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardNext">${q?(wizardStep===d.questions.length-1?'发送回答并创建':'下一步'):'创建任务'}</button></div>`;
   }
   async function requestPlan(){const d=wizardDraft;if(!d||d.planning)return;d.planning=true;(d.activity||=[]).push({title:'请求任务配置模型',detail:'根据任务面板支持的参数生成草稿与澄清问题。'});renderWizardTranscript();$('taskClarification').hidden=true;const version=viewVersion;
-    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:Object.fromEntries(['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'].filter(k=>d[k]!==undefined).map(k=>[k,d[k]])),answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
+    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:Object.fromEntries(['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'].filter(k=>d[k]!==undefined).map(k=>[k,d[k]])),answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
       Object.assign(d,plan.draft,{reply:plan.reply,questions:plan.questions,ready:plan.ready});d.planning=false;d.activity.push({title:plan.ready?'任务参数已确认':'需要补充参数',detail:plan.reply});wizardStep=0;renderWizardTranscript();renderWizard();
     }catch(error){if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;d.planning=false;d.reply='暂时未能生成任务配置，请重试。';d.activity.push({title:'配置请求失败',detail:error.message});renderWizardTranscript();$('taskClarification').hidden=false;$('wizardQuestionTitle').textContent='配置生成失败';$('wizardProgress').textContent='';$('wizardPrevious').disabled=$('wizardForward').disabled=true;$('wizardQuestion').innerHTML='<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardRetry">重试</button></div>';$('wizardError').textContent=error.message;}
     finally{d.planning=false;}
@@ -512,12 +568,12 @@
     if(d.ready)await saveDraft();
   }
   async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),activity:d.activity||[]};
-    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
+    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
     d.activity.push({title:'保存任务',detail:schedule(d)});$('taskClarification').hidden=true;renderWizardTranscript(true);
     try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);await loadTaskConfirmation(task,viewVersion);}message('','taskMessage');}
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}
   }
-  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.agent,t.cadence,t.time,t.timezone,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
+  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.agent,t.cadence,t.time,t.timezone,t.triggerMode,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
   function renderCreatedTask(task){workspace.dataset.taskView='result';const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
     renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
     if(record?.answers?.length)renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);
@@ -526,7 +582,7 @@
     article.innerHTML=`<div class="bubble assistantBubble"><button type="button" class="thinkingTrigger is-complete" aria-label="查看任务创建过程"><span class="thinkingSummaryText">查看任务创建过程</span><span class="thinkingChevron" aria-hidden="true"></span></button><ol class="thinkingSteps" hidden>${[...(record?.activity||[]),{title:'任务已保存',detail:task.title+' · '+schedule(task)}].map(a=>`<li class="is-done"><div class="activityStepTitle">${esc(a.title)}</div><div class="activityStepDetail">${esc(a.detail||'')}</div></li>`).join('')}</ol><div class="taskCreatedLink"><span class="taskCreatedClock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l-3 3"/></svg></span><div><strong>${esc(task.title)}</strong><small>${esc(schedule(task))}</small></div><button class="dayButton" type="button" data-edit-task="1">打开</button></div><div class="taskCreatedReply">${esc(reply||'')}</div></div>`;
     article.querySelector('.thinkingTrigger').onclick=()=>{if(typeof toggleActivityDrawer==='function')toggleActivityDrawer(article);};target.append(article);requestAnimationFrame(()=>article.scrollIntoView?.({block:'start'}));
   }
-  async function loadTaskConfirmation(task,version){if(!editable(task))return;
+  async function loadTaskConfirmation(task,version){if(!editable(task)&&!(action==='delete'&&canDeleteTask(task)))return;
     const config=confirmationConfig(task),record=creationRecord(task.id)||{},reply=$('taskThread').querySelector('.taskCreatedReply');if(!reply)return;
     if(record.confirmationConfig===config&&record.confirmation)return;
     reply.textContent='正在生成确认答复…';
@@ -550,7 +606,7 @@
     menuAnchor=button;menuTaskId=task.id;taskMenu.setAttribute('aria-label','任务操作：'+task.title);button.setAttribute('aria-expanded','true');
     const action=(id,label,icon,disabled=false,danger=false)=>`<button type="button" role="menuitem" data-task-action="${id}" class="${danger?'is-danger':''}" ${disabled?'disabled':''}>${menuIcon(icon)}<span>${label}</span></button>`;
     const toggle=completed(task)?'重新安排':task.enabled?'暂停':'开启';
-    taskMenu.innerHTML=(editable(task)?action('toggle',toggle,task.enabled?'<circle cx="12" cy="12" r="9"/><path d="M10 9v6m4-6v6"/>':'<circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4Z"/>')+action('run','立即运行','<path d="M20 10a8 8 0 1 0 0 5M20 4v6h-6"/>',!!task.activeRun):'')+action('edit',editable(task)?'编辑':'查看设置','<path d="m4 16-1 5 5-1L20 8l-4-4ZM14 6l4 4"/>')+action('share','分享','<path d="m10 14 4-4m-6 2-2 2a4 4 0 0 0 6 6l2-2m-4-12 2-2a4 4 0 0 1 6 6l-2 2"/>',!task.resultVersion)+(editable(task)?'<hr role="separator">'+action('delete','删除','<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',!!task.activeRun,true):'');
+    taskMenu.innerHTML=(editable(task)?action('toggle',toggle,task.enabled?'<circle cx="12" cy="12" r="9"/><path d="M10 9v6m4-6v6"/>':'<circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4Z"/>')+action('run','立即运行','<path d="M20 10a8 8 0 1 0 0 5M20 4v6h-6"/>',!!task.activeRun):'')+action('edit',editable(task)?'编辑':'查看设置','<path d="m4 16-1 5 5-1L20 8l-4-4ZM14 6l4 4"/>')+action('share','分享','<path d="m10 14 4-4m-6 2-2 2a4 4 0 0 0 6 6l2-2m-4-12 2-2a4 4 0 0 1 6 6l-2 2"/>',!task.resultVersion)+(canDeleteTask(task)?'<hr role="separator">'+action('delete','删除','<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',!!task.activeRun,true):'');
     taskMenu.hidden=false;if(taskMenu.showPopover)taskMenu.showPopover();const r=button.getBoundingClientRect(),width=Math.min(224,innerWidth-24);taskMenu.style.width=width+'px';taskMenu.style.left=Math.max(12,Math.min(r.right-width,innerWidth-width-12))+'px';const height=taskMenu.scrollHeight;taskMenu.style.top=(r.bottom+height+12<innerHeight?r.bottom+6:Math.max(12,r.top-height-6))+'px';taskMenu.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
   }
   async function shareTask(task){
@@ -561,26 +617,26 @@
     openShareDialog(article);
   }
   taskMenu.addEventListener('click',async event=>{const button=event.target.closest('[data-task-action]');if(!button||button.disabled)return;const task=[...tasks,...sceneTasks].find(t=>t.id===menuTaskId)||(sharedEntry?.task.id===menuTaskId?sharedEntry.task:null),action=button.dataset.taskAction;closeTaskMenu();if(!task)return;
-    try{if(action==='share'){await shareTask(task);return;}if(action==='edit'){edit(task,!editable(task));return;}if(!editable(task))return;
+    try{if(action==='share'){await shareTask(task);return;}if(action==='edit'){edit(task,!editable(task));return;}if(!editable(task)&&!(action==='delete'&&canDeleteTask(task)))return;
       if(action==='toggle'){if(completed(task))edit(task);else await toggleTask(task);}
       if(action==='run'){await api('tasks/'+task.id+'/run','POST');await refresh();await selectTask(task.id);message('任务已提交到云端，关闭页面后仍会执行。','taskMessage');}
-      if(action==='delete'){deleteTaskId=task.id;$('taskDeleteName').textContent=task.title;$('taskDeleteMessage').textContent='';$('taskDeleteConfirm').disabled=false;$('taskDeleteDialog').showModal();}
+      if(action==='delete'){deleteTaskId=task.id;$('taskDeleteDialog').querySelector('p').innerHTML=(task.systemPreset||task.personalOverride)?`将从你的任务列表移除“<strong id="taskDeleteName">${esc(task.title)}</strong>”，仅影响当前浏览器，不影响其他用户。`:`将删除“<strong id="taskDeleteName">${esc(task.title)}</strong>”及其任务入口，并停止后续执行。`;$('taskDeleteName').textContent=task.title;$('taskDeleteMessage').textContent='';$('taskDeleteConfirm').disabled=false;$('taskDeleteDialog').showModal();}
     }catch(error){message(error.message,'taskMessage');}
   });
   document.addEventListener('click',event=>{if(menuAnchor&&!event.target.closest('[data-task-more],#taskMoreMenu'))closeTaskMenu();});
   document.addEventListener('keydown',event=>{if(event.key==='ArrowDown'&&event.target.closest('[data-task-more]')){event.preventDefault();openTaskMenu(event.target.closest('[data-task-more]'));return;}if(taskMenu.hidden)return;if(event.key==='Escape'){event.preventDefault();closeTaskMenu(true);}else if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const buttons=[...taskMenu.querySelectorAll('button:not(:disabled)')],index=buttons.indexOf(document.activeElement);buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowUp'?-1:1)+buttons.length)%buttons.length]?.focus();}else if(event.key==='Tab')closeTaskMenu();});
   window.addEventListener('resize',()=>closeTaskMenu());$('taskSidebarList').addEventListener('scroll',()=>closeTaskMenu());
   $('taskDeleteCancel').onclick=()=>$('taskDeleteDialog').close();
-  $('taskDeleteConfirm').onclick=async()=>{const task=tasks.find(t=>t.id===deleteTaskId);if(!task||task.activeRun)return;const button=$('taskDeleteConfirm');button.disabled=true;try{await api('tasks/'+task.id,'DELETE');tasks=tasks.filter(t=>t.id!==task.id);$('taskDeleteDialog').close();if(selectedId===task.id)showLanding();else renderLists();renderHome();message('任务已删除。','taskMessage');}catch(error){$('taskDeleteMessage').textContent=error.message;}finally{button.disabled=false;}};
+  $('taskDeleteConfirm').onclick=async()=>{const task=[...tasks,...sceneTasks].find(t=>t.id===deleteTaskId);if(!task||task.activeRun)return;const button=$('taskDeleteConfirm');button.disabled=true;try{await api('tasks/'+task.id,'DELETE');tasks=tasks.filter(t=>t.id!==task.id);sceneTasks=sceneTasks.filter(t=>t.id!==task.id);$('taskDeleteDialog').close();if(selectedId===task.id)showLanding();else renderLists();renderHome();message('任务已删除。','taskMessage');}catch(error){$('taskDeleteMessage').textContent=error.message;}finally{button.disabled=false;}};
   async function toggleTask(task) {await api('tasks/'+task.id,'PUT',{...task,enabled:!task.enabled});await refresh();message(task.enabled?'已暂停后续执行，已有结果仍保留。':'任务已开启。','taskMessage');}
-  function newTask() {if(!$('taskWizard').hidden)showLanding();wizardDraft=null;edit(template());}
+  function newTask() {if(!$('taskWizard').hidden)showLanding();wizardDraft=null;edit({...template(),timeMode:'fixed'});}
   document.addEventListener('click',async event=>{
     const b=event.target.closest('button');if(!b)return;
     if(b.dataset.taskMore){event.stopPropagation();openTaskMenu(b);return;}
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
       if(b.dataset.template){const d=template(b.dataset.template);beginWizard(visibleQuestion(d),d);return;}
-      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);beginWizard(visibleQuestion(d),d);}return;}
+      if(b.dataset.recommendation){const item=recommendations.find(r=>r.id===b.dataset.recommendation);if(item){const d=recommendedTask(item);if(item.agent)edit(d);else beginWizard(visibleQuestion(d),d);}return;}
       if(b.dataset.confirmationRetry){const task=selected();if(task)await loadTaskConfirmation(task,viewVersion);return;}
       if(b.dataset.editTask){const task=selected();if(task)edit(task,!editable(task));return;}
 
@@ -610,6 +666,16 @@
   $('taskChatInput').addEventListener('input',updateChatComposer);
   $('taskChatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();$('taskChatForm').requestSubmit();}});
   $('taskSearch').addEventListener('input',renderLists);
+  for(const id of ['taskMarketFilter','taskStageFilter'])$(id).addEventListener('change',renderLists);
+  $('taskAddDealPack').addEventListener('click',async e=>{
+    const b=e.currentTarget;b.disabled=true;let added=0;
+    try{for(const item of recommendations.filter(r=>r.pack)){
+      if(tasks.some(t=>t.agent==='mentora-deal'&&t.market===item.market&&t.title===item.title))continue;
+      const task=await api('tasks','POST',recommendedTask(item));tasks.push(task);added++;
+    }$('taskPackMessage').textContent=added?`已添加 ${added} 个 Mentora Deal 任务，云端将在各自交易时段执行。`:'六个场景任务已在列表中，无需重复添加。';
+    }catch(error){$('taskPackMessage').textContent=`已添加 ${added} 个任务。${error.message}，可再次点击补齐。`;}
+    finally{b.disabled=false;renderLists();renderHome();}
+  });
   for(const id of ['taskFilter','taskSidebarFilter'])$(id).addEventListener('change',e=>{filter=e.target.value;renderLists();});
   $('taskRunSelect').addEventListener('change',async e=>{try{await selectTask(selectedId,{runId:e.target.value});}catch(error){message(error.message);}});
   $('wizardQuestion').addEventListener('change',collectWizard);

@@ -61,7 +61,7 @@ def test_multi_asset_policy_prefers_kline_and_removes_company_modules() -> None:
     assert updated["steps"][0]["cli_args"] == ["--period", "1d"]
 
 
-def test_kline_falls_back_to_yahoo_for_etf_or_option(monkeypatch) -> None:
+def test_kline_does_not_restore_yahoo_when_etf_or_option_data_is_missing(monkeypatch) -> None:
     kline = load_kline_module()
     expected = [{"time": 1, "open": 1, "high": 2, "low": 1, "close": 2, "volume": 10}]
     calls: list[tuple[str, str]] = []
@@ -75,9 +75,9 @@ def test_kline_falls_back_to_yahoo_for_etf_or_option(monkeypatch) -> None:
 
     for symbol in ("SPY", "AAPL260918C00200000"):
         rows, source = kline.fetch_rows({}, symbol, "1d", 100)
-        assert rows == expected
-        assert source == "yahoo"
-    assert calls == [("yahoo", "SPY"), ("yahoo", "AAPL260918C00200000")]
+        assert rows == []
+        assert source != "yahoo"
+    assert calls == []
 
 
 def test_default_candle_colors_follow_market_not_ui_language() -> None:

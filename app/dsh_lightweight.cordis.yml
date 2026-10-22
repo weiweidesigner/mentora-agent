@@ -1,0 +1,3 @@
+- insert:
+    - id: mentora-lightweight-guard
+      name: ./dsh_lightweight_guard.cjs

@@ -15,7 +15,7 @@
     "name": "external_info_search",
     "script": "external_info_search.py",
     "label": "External Info Search",
-    "description": "Kimi 联网搜索答案工具。保留 Moonshot Formula tools/fibers 搜索链路，将 Kimi 最终答案写入 payload.answer，articles 只保存可提取的引用元数据。不会调用旧搜索引擎或二次抓取网页重建答案。默认使用 kimi-k3；MOONSHOT_API_KEY 由宿主本地环境提供。实现由公开 kimi-search 仓库固定版本引用。cli_args 可使用 --query、--site、--source kimi、--limit、--max-details。"
+    "description": "通用联网搜索工具。默认按 Tavily → Serper 自动回退，返回第一个成功来源的 answer、articles、source 和 fallback_attempts；Kimi 仅在用户明确要求或 Agent 明确选择时使用。适合当前事实、事件、新闻、公告及非 AInvest 来源。成功结果应在本轮复用，不要重复抓取结果页。cli_args 可使用 --query、--site、--source auto|tavily|serper|kimi、--limit、--timeout、--output。"
   },
   {
     "name": "url_content_reader",
@@ -129,7 +129,7 @@
     "name": "code_interpreter",
     "script": "code_interpreter.py",
     "label": "Code Interpreter",
-    "description": "代码解释器工具。适合用户提供原始 JSON、CSV、表格或数组数据，并要求根据语义进行清洗、聚合、分组、排序、计算同比/环比/占比/累计值/派生指标。该工具会让模型生成受限 Python transform(raw_data, question) 脚本处理原始数据，并输出可供后续组件使用的 chartPayload 和 lineChartData；它自身绝不生成或渲染可见图表。只有路由另行选择具体图表组件时，才由下游图表 SKILL 渲染。它不是实时金融数据源，不应用于替代 Yahoo、K线、财报、新闻等取数模块。cli_args 可使用 --question、--data-json、--data、--raw-data、--payload、--chart-type、--title。"
+    "description": "代码解释器工具。适合用户提供原始 JSON、CSV、表格或数组数据，并要求根据语义进行清洗、聚合、分组、排序、计算同比/环比/占比/累计值/派生指标。该工具会让模型生成受限 Python transform(raw_data, question) 脚本处理原始数据，并输出可供后续组件使用的 chartPayload 和 lineChartData；它自身绝不生成或渲染可见图表。只有路由另行选择具体图表组件时，才由下游图表 SKILL 渲染。它不是实时金融数据源，不应用于替代行情、财报、新闻等取数模块。cli_args 可使用 --question、--data-json、--data、--raw-data、--payload、--chart-type、--title。"
   },
   {
     "name": "capital_structure",

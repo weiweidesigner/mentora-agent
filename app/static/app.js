@@ -5,6 +5,12 @@ const attachButton = document.querySelector("#attachButton");
 const imageInput = document.querySelector("#imageInput");
 const attachmentPreview = document.querySelector("#attachmentPreview");
 const composerBox = document.querySelector(".composerBox");
+const reasoningStrengthControl = document.querySelector("#reasoningStrengthControl");
+const reasoningStrengthButton = document.querySelector("#reasoningStrengthButton");
+const reasoningStrengthLabel = document.querySelector("#reasoningStrengthLabel");
+const reasoningStrengthPopover = document.querySelector("#reasoningStrengthPopover");
+const reasoningStrengthPopoverLabel = document.querySelector("#reasoningStrengthPopoverLabel");
+const reasoningStrengthSlider = document.querySelector("#reasoningStrengthSlider");
 const messages = document.querySelector("#messages");
 const shell = document.querySelector(".shell");
 const conversation = document.querySelector(".conversation");
@@ -76,11 +82,128 @@ const THEME_STORAGE_KEY = "aime-chart-theme-v1";
 const SUPPORTED_FRAMEWORKS = new Set(["deepseek", "codex"]);
 const DEFAULT_REASONING_FRAMEWORK = SUPPORTED_FRAMEWORKS.has(window.AIME_CHAT_CONFIG?.reasoningFramework)
   ? window.AIME_CHAT_CONFIG.reasoningFramework : "deepseek";
-const DEFAULT_INFERENCE_MODEL = "deepseek-v4-flash";
+const DEFAULT_INFERENCE_MODEL = "deepseek-flash";
+const REASONING_EFFORT_STORAGE_KEY = "mentora-reasoning-effort-v1";
+const REASONING_EFFORT_LEVELS = ["low", "medium", "high", "xhigh", "ultra"];
+const REASONING_EFFORT_LABELS = {
+  low: "轻度",
+  medium: "中",
+  high: "高",
+  xhigh: "极高",
+  ultra: "Ultra",
+};
+let currentReasoningEffort = (() => {
+  try {
+    const stored = String(localStorage.getItem(REASONING_EFFORT_STORAGE_KEY) || "").toLowerCase();
+    return REASONING_EFFORT_LEVELS.includes(stored) ? stored : "low";
+  } catch {
+    return "low";
+  }
+})();
 const storedThemeMode = (() => {
   try { return localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark"; }
   catch { return "dark"; }
 })();
+
+function applyReasoningEffort(value, { persist = true } = {}) {
+  const effort = REASONING_EFFORT_LEVELS.includes(String(value).toLowerCase())
+    ? String(value).toLowerCase()
+    : "low";
+  const index = REASONING_EFFORT_LEVELS.indexOf(effort);
+  const label = REASONING_EFFORT_LABELS[effort];
+  currentReasoningEffort = effort;
+  if (reasoningStrengthLabel) reasoningStrengthLabel.textContent = label;
+  if (reasoningStrengthPopoverLabel) reasoningStrengthPopoverLabel.textContent = label;
+  if (reasoningStrengthSlider) {
+    reasoningStrengthSlider.value = String(index);
+    reasoningStrengthSlider.setAttribute("aria-valuetext", label);
+    reasoningStrengthSlider.parentElement.style.setProperty("--strength-progress", `calc(${index * 25}% + ${16 - index * 8}px)`);
+    reasoningStrengthSlider.parentElement.querySelectorAll(".reasoningStrengthDots span").forEach((dot, dotIndex) => {
+      dot.classList.toggle("is-filled", dotIndex <= index);
+    });
+  }
+  if (currentSession) currentSession.reasoningEffort = effort;
+  if (persist) {
+    try { localStorage.setItem(REASONING_EFFORT_STORAGE_KEY, effort); }
+    catch { /* Storage can be unavailable in privacy mode. */ }
+  }
+}
+
+function setReasoningStrengthPopover(open) {
+  const isOpen = Boolean(open);
+  if (reasoningStrengthPopover) reasoningStrengthPopover.hidden = !isOpen;
+  reasoningStrengthControl?.classList.toggle("is-open", isOpen);
+  reasoningStrengthButton?.setAttribute("aria-expanded", String(isOpen));
+  if (isOpen) requestAnimationFrame(() => reasoningStrengthSlider?.focus({ preventScroll: true }));
+}
+
+reasoningStrengthButton?.addEventListener("click", () => {
+  setReasoningStrengthPopover(reasoningStrengthPopover?.hidden !== false);
+});
+
+let reasoningPreferenceRevision = 0;
+let reasoningPreferenceTimer;
+let reasoningPreferenceWrites = Promise.resolve();
+
+function reportReasoningSyncError() {
+  const hint = reasoningStrengthControl?.querySelector('.reasoningStrengthHint');
+  if (hint) hint.textContent = '定时任务推理强度同步失败，请重新选择';
+  reasoningStrengthButton?.setAttribute('title', '定时任务推理强度同步失败，请重新选择');
+}
+
+function saveGlobalReasoningEffort(effort) {
+  reasoningPreferenceWrites = reasoningPreferenceWrites.catch(() => {}).then(async () => {
+    const response = await fetch('/api/day/execution-preferences', {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json', 'X-Veya-Day': '1'},
+      body: JSON.stringify({reasoningEffort: effort}),
+    });
+    if (!response.ok) throw new Error('Reasoning preference sync failed');
+    const hint = reasoningStrengthControl?.querySelector('.reasoningStrengthHint');
+    if (hint) hint.textContent = '思考强度 · 同步定时任务';
+    reasoningStrengthButton?.setAttribute('title', '思考强度 · 同步定时任务');
+  }).catch(reportReasoningSyncError);
+  return reasoningPreferenceWrites;
+}
+
+async function loadGlobalReasoningEffort() {
+  const revision = reasoningPreferenceRevision;
+  try {
+    const response = await fetch('/api/day/execution-preferences', {cache: 'no-store'});
+    if (!response.ok) throw new Error('Reasoning preference unavailable');
+    const preferences = await response.json();
+    if (revision !== reasoningPreferenceRevision) return;
+    if (REASONING_EFFORT_LEVELS.includes(preferences.reasoningEffort)) {
+      applyReasoningEffort(preferences.reasoningEffort);
+    } else {
+      await saveGlobalReasoningEffort(currentReasoningEffort);
+    }
+  } catch {
+    reportReasoningSyncError();
+  }
+}
+
+reasoningStrengthSlider?.addEventListener("input", () => {
+  applyReasoningEffort(REASONING_EFFORT_LEVELS[Number(reasoningStrengthSlider.value)] || "low");
+  reasoningPreferenceRevision += 1;
+  clearTimeout(reasoningPreferenceTimer);
+  const effort = currentReasoningEffort;
+  reasoningPreferenceTimer = setTimeout(() => { void saveGlobalReasoningEffort(effort); }, 120);
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (!reasoningStrengthControl?.classList.contains("is-open")) return;
+  if (!reasoningStrengthControl.contains(event.target)) setReasoningStrengthPopover(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !reasoningStrengthControl?.classList.contains("is-open")) return;
+  setReasoningStrengthPopover(false);
+  reasoningStrengthButton?.focus({ preventScroll: true });
+});
+
+applyReasoningEffort(currentReasoningEffort, { persist: false });
+void loadGlobalReasoningEffort();
 
 function currentThemeMode() {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -212,7 +335,9 @@ document.querySelector(".mobileBrand")?.addEventListener("click", () => {
   requestAnimationFrame(() => conversation.scrollTo({top:0,behavior:"smooth"}));
 });
 input.addEventListener("input", updateComposerState);
-input.addEventListener("keydown", event => handleMessageEnter(event, input, () => form.requestSubmit()));
+input.addEventListener("keydown", event => handleMessageEnter(event, input, () => {
+  if (!button.classList.contains("is-running")) form.requestSubmit();
+}));
 function handleMessageEnter(event, textarea, send) {
   if (event.key !== "Enter" || event.isComposing || event.keyCode === 229) return;
   event.preventDefault();
@@ -239,6 +364,10 @@ updateComposerState();
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (button.classList.contains("is-running")) {
+    await stopActiveRun();
+    return;
+  }
   const question = input.value.trim();
   const images = pendingImages.slice();
   if ((!question && !images.length) || button.disabled) return;
@@ -257,12 +386,14 @@ async function submitQuestion(question, options = {}) {
   if (!String(currentSession.question || "").trim()) currentSession.question = question;
   const framework = DEFAULT_REASONING_FRAMEWORK;
   const model = DEFAULT_INFERENCE_MODEL;
+  const reasoningEffort = currentReasoningEffort;
   if (options.replaceSessionQuestion) {
     currentSession.question = question;
     currentSession.messages = [];
   }
   currentSession.messages.push({ role: "user", text: question, images: imageSessionPayload(images) });
   const submittedSession = currentSession;
+  submittedSession.reasoningEffort = reasoningEffort;
   submittedSession.status = "queued";
   submittedSession.requestId = `request-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   submittedSession.title = submittedSession.title === "新建对话" ? question.slice(0, 28) : submittedSession.title;
@@ -297,6 +428,7 @@ async function submitQuestion(question, options = {}) {
         engineSessionId: submittedSession.frameworkSessionIds?.[`${framework}:${model}`] || "",
         reasoningFramework: framework,
         inferenceModel: model,
+        reasoningEffort,
         resolvedInferenceModel: "",
         history: submittedSession.messages.slice(0, -1).slice(-8),
         sessionTitle: submittedSession.title === "新建对话" ? question : submittedSession.title,
@@ -308,9 +440,13 @@ async function submitQuestion(question, options = {}) {
       throw new Error(errorData.detail || "请求失败");
     }
     const run = await response.json();
+    applyRunTiming(assistant, "status", run);
+    if (run.runStartedAt) submittedSession.thinkingStartedAt = run.runStartedAt;
     submittedSession.activeRunId = run.runId;
     submittedSession.status = "running";
     persistChatSession(submittedSession);
+    button.disabled = false;
+    updateComposerState();
     if (currentSession?.id === submittedSession.id && !controller.signal.aborted) await followChatRun(submittedSession, assistant, controller);
   } catch (error) {
     if (error.name !== "AbortError" && currentSession?.id === submittedSession.id) {
@@ -360,9 +496,11 @@ async function syncServerSessions() {
 }
 
 async function resumeChatRun(session, article) {
+  applyRunTiming(article, "status", {runStartedAt: session.thinkingStartedAt});
   const controller = new AbortController();
   activeController = controller;
-  button.disabled = true;
+  button.disabled = false;
+  updateComposerState();
   try { await followChatRun(session, article, controller); }
   catch (error) {
     if (error.name !== "AbortError" && currentSession?.id === session.id) appendStep(article, "后台执行中", "正在等待连接恢复，任务继续执行。", "loading", "background-run");
@@ -371,10 +509,43 @@ async function resumeChatRun(session, article) {
   }
 }
 
+async function stopActiveRun() {
+  const session=currentSession;
+  const runId=String(session?.activeRunId || "");
+  if (!runId || button.classList.contains("is-stopping")) return;
+  button.classList.add("is-stopping");
+  button.disabled=true;
+  try {
+    const response=await fetch(`/api/chat/runs/${encodeURIComponent(runId)}/cancel`,{method:"POST"});
+    if (!response.ok) throw new Error("停止任务失败");
+    const result=await response.json();
+    if (result.status !== "interrupted") return;
+    activeController?.abort();
+    activeController=null;
+    if (currentSession?.id === session.id && currentSession.activeRunId === runId) {
+      currentSession.status="interrupted";
+      currentSession.activeRunId="";
+      currentSession.lastRunId=runId;
+      currentSession.updatedAt=Date.now();
+      currentSession.error="";
+      persistChatSession(currentSession);
+      const article=Array.from(messages.querySelectorAll(".message.assistant")).at(-1);
+      if (article && !article.activityEnded) showStopped(article,"已停止本轮任务");
+    }
+  } catch (error) {
+    button.title=error.message || "停止任务失败";
+  } finally {
+    button.classList.remove("is-stopping");
+    button.disabled=false;
+    updateComposerState();
+  }
+}
+
 activityClose?.addEventListener("click", closeActivityDrawer);
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if(typeof closeGeneratedFilePreview==='function')closeGeneratedFilePreview();
     closeShareDialog();
     closeActivityDrawer();
     if (isMobileLayout()) setSidebarCollapsed(true);
@@ -454,6 +625,7 @@ function createAssistantMessage(question, options = {}) {
   const article = document.createElement("article");
   article.className = "message assistant";
   article.dataset.startedAt = String(Date.now());
+  article.dataset.question = question;
   article.dataset.thinkingState = "active";
   article.dataset.lang = lang;
   article.dataset.currentThinking = copyFor(lang, "thinking");
@@ -468,16 +640,32 @@ function createAssistantMessage(question, options = {}) {
         <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thinking"))}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
       </button>
-      <ol class="thinkingSteps" hidden></ol>
+      <ol class="thinkingSteps" hidden>
+        <li class="is-loading is-initial-status">
+          <div class="activityStepTitle">${escapeHtml(initialActivityTitle(lang))}</div>
+          <div class="activityStepDetail">${escapeHtml(initialActivityDetail(lang))}</div>
+        </li>
+      </ol>
       <div class="routeChips" hidden></div>
       <div class="finalAnswer"></div>
     </div>
   `;
   article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
+  article.activityStepKeys.add("initial-status");
   article.taskContext = options.taskContext || null;
   if (options.target) options.target.append(article);
   else appendMessage(article, true);
   return article;
+}
+
+function initialActivityTitle(lang) {
+  const language = normalizeLang(lang);
+  return language === "zh-Hans" ? "正在启动 Agent" : language === "zh-Hant" ? "正在啟動 Agent" : "Starting the agent";
+}
+
+function initialActivityDetail(lang) {
+  const language = normalizeLang(lang);
+  return language === "zh-Hans" ? "正在连接执行进度，后续步骤由 Agent 按任务需要决定。" : language === "zh-Hant" ? "正在連接執行進度，後續步驟由 Agent 按任務需要決定。" : "Connecting to execution progress. The agent will determine the steps needed for the task.";
 }
 
 function showAgentIdentity(article, agent) {
@@ -498,7 +686,20 @@ function showAgentIdentity(article, agent) {
   }
 }
 
+function applyRunTiming(article, eventName, data) {
+  const raw = data?.runStartedAt;
+  const start = Number(raw) || Date.parse(raw);
+  if (Number.isFinite(start) && start > 0) article.dataset.startedAt = String(start);
+  if (eventName === "final" || eventName === "error") {
+    const supplied = data?.thinkingElapsed;
+    const elapsed = supplied != null && Number.isFinite(Number(supplied)) ? Number(supplied)
+      : Date.now() - Number(article.dataset.startedAt || Date.now());
+    article.dataset.cachedElapsedMs = String(Math.max(0, elapsed));
+  }
+}
+
 function handleStreamEvent(article, eventName, data) {
+  applyRunTiming(article, eventName, data);
   showAgentIdentity(article, data?.agent);
   const lang = setArticleLanguage(article, data?.lang || article.dataset.lang || "en");
   if (eventName === "status") {
@@ -557,6 +758,10 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "error") {
+    if (data.code === "cancelled") {
+      showStopped(article, data.detail || "已停止本轮任务");
+      return;
+    }
     showError(article, data.detail || "生成失败", {skipSessionRecord:!!article.taskContext});
   }
 }
@@ -704,6 +909,23 @@ function prepareStreamVisualizationCode(code) {
     bodyPattern,
     (_match, open, content, close) => `${open}<div data-aime-streamviz-root="true">${content}</div>${close}`,
   );
+}
+
+function streamVisualizationReplayPlan(code) {
+  const source = String(code || "");
+  // prepareStreamVisualizationCode gives every compatible document a stable
+  // root.  Replay from that root so the complete head/theme is available on
+  // every frame, regardless of which report template produced the body.
+  const root = /<[a-z][\w:-]*\b[^>]*\bdata-aime-streamviz-root\s*=\s*["']true["'][^>]*>/i.exec(source);
+  if (!root) return null;
+  const start = root.index;
+  const remaining = Math.max(0, source.length - start);
+  return {
+    start,
+    // Keep the replay visible for normal reports without making large cached
+    // documents take tens of seconds to finish.
+    step: Math.max(180, Math.ceil(remaining / 48)),
+  };
 }
 
 function mountStreamVisualization(host, payload) {
@@ -885,7 +1107,9 @@ function createArtifactFallbackFrame(item, index, options = {}) {
   // artifact's scripts while applying the same width and surface tokens as the
   // surrounding conversation and share page.
   if (source.pathname.startsWith("/generated/") && source.pathname.endsWith(".html")) {
-    const artifactSource = new URL(`/share-artifact/${encodeURIComponent(source.pathname.split("/").pop() || "")}`, window.location.origin);
+    // URL.pathname is already percent-encoded, including Chinese filenames.
+    // Preserve it when switching routes so filenames are not encoded twice.
+    const artifactSource = new URL(source.pathname.replace("/generated/", "/share-artifact/"), window.location.origin);
     artifactSource.searchParams.set("theme", currentThemeMode());
     artifactSource.searchParams.set("v", String(Date.now()));
     frame.src = artifactSource.href;
@@ -981,11 +1205,12 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       return;
     }
     const code = prepareStreamVisualizationCode(rawCode);
-    if (options.replay && code.includes('<article class="veya-report"') && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      // Replay the saved document through the same incremental renderer as live HTML.
-      // Load its theme first, then reveal content while retaining one artifact host.
-      const contentStart = Math.max(0, code.indexOf("<article class=\"veya-report\""));
-      for (let end = contentStart; end < code.length; end += 180) {
+    const replayPlan = options.replay ? streamVisualizationReplayPlan(code) : null;
+    if (replayPlan && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      // This is a cached case replay, not a fabricated live model event. Load
+      // the complete theme first, then reveal any compatible HTML body through
+      // the same incremental renderer while retaining one artifact host.
+      for (let end = replayPlan.start; end < code.length; end += replayPlan.step) {
         if (!host.isConnected || options.signal?.aborted) return;
         mountStreamVisualization(host, {
           title: item.title || item.label || "",
@@ -1044,8 +1269,20 @@ function appendStreamVisualizationModule(article, data = {}) {
       title: data.label || data.title || "",
     });
   }
-  // Tool completion registers evidence, not an answer position. The final
-  // narrative places each chart beside its explanation using AIME_CHART markers.
+  if (article.activityEnded) return;
+  if (!article.answerTextStarted) {
+    article.pendingVisualizationModules = article.pendingVisualizationModules || [];
+    article.pendingVisualizationModules.push(data);
+    return;
+  }
+  const lane = streamVisualizationLane(article);
+  if (!lane) return;
+  const existing = Array.from(lane.querySelectorAll("[data-artifact-url]"))
+    .some((item) => item.dataset.artifactUrl === url);
+  if (existing) return;
+  const item = { url, title: data.label || data.title || "", renderMode: "iframe" };
+  lane.appendChild(createArtifactFallbackFrame(item, article.streamVisualizationArtifacts.length - 1));
+  keepScrollPosition(isNearBottom());
 }
 
 function renderStreamAnswerText(article, data = {}) {
@@ -1063,12 +1300,13 @@ function renderStreamAnswerText(article, data = {}) {
   const stick = isNearBottom();
   preview.innerHTML = formatInsight(text);
   article.answerTextStarted = true;
-  revealPendingVisualizations(article);
+  if (data.final !== false) revealPendingVisualizations(article);
   keepScrollPosition(stick);
 }
 
 function queueStreamVisualization(article, data = {}) {
-  if (!article.answerTextStarted && !article.activityEnded) {
+  if (article.activityEnded) return;
+  if (!article.answerTextStarted) {
     article.pendingVisualizations = article.pendingVisualizations || [];
     article.pendingVisualizations.push(data);
     return;
@@ -1080,6 +1318,9 @@ function revealPendingVisualizations(article) {
   const pending = article.pendingVisualizations || [];
   article.pendingVisualizations = [];
   pending.forEach(data => upsertStreamVisualization(article, data));
+  const modules = article.pendingVisualizationModules || [];
+  article.pendingVisualizationModules = [];
+  modules.forEach(data => appendStreamVisualizationModule(article, data));
 }
 
 function upsertStreamVisualization(article, data = {}) {
@@ -1526,8 +1767,8 @@ function appendToolStep(article, data) {
   const shellCommand = Array.isArray(data?.shellCommand) ? data.shellCommand.map((item) => String(item)) : [];
   const output = String(data?.observation || "").trim();
   const preObservation = String(data?.preObservation || "").trim();
-  const observation = publicToolObservation([preObservation, output].filter(Boolean).join("\n"));
   const phase = String(data?.phase || "").trim().toLowerCase();
+  const observation = phase === "started" ? "" : publicToolObservation([preObservation, output].filter(Boolean).join("\n"));
   const callId = String(data?.callId || "").trim();
   if (script === "multimodal_vision" && mergeVisionToolStep(article, { script, code, params, shellCommand, lang })) {
     return;
@@ -1559,7 +1800,7 @@ function appendToolStep(article, data) {
       if (titleElement) titleElement.textContent = dynamicTitle;
       const detailElement = existingItem.querySelector(":scope > .activityStepDetail");
       if (detailElement && detail) detailElement.textContent = detail;
-      if (observation && !existingItem.querySelector(".toolStepOutputBlock")) {
+      if (observation) {
         let drawer = existingItem.querySelector(":scope > .activityDrawerOnly");
         if (!drawer) {
           drawer = document.createElement("div");
@@ -1572,9 +1813,10 @@ function appendToolStep(article, data) {
           drawerDetail.className = "toolStepDetail";
           drawer.appendChild(drawerDetail);
         }
-        drawerDetail.insertAdjacentHTML(
-          "beforeend",
-          `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
+        const existingOutput = existingItem.querySelector(".toolStepOutputBlock");
+        if (existingOutput) existingOutput.innerHTML = toolBlockHtml(skillOutputLabel(lang), observation);
+        else drawerDetail.insertAdjacentHTML(
+          "beforeend", `<div class="toolStepOutputBlock">${toolBlockHtml(skillOutputLabel(lang), observation)}</div>`,
         );
       }
       existingItem.classList.remove("is-loading", "is-done", "is-error");
@@ -1601,7 +1843,16 @@ function appendToolStep(article, data) {
 }
 
 function publicToolObservation(value) {
-  const text = String(value || "").trim();
+  let text = String(value || "").trim();
+  try {
+    const envelope = JSON.parse(text);
+    if (envelope && typeof envelope === "object") {
+      if (envelope.callId && envelope.name && "arguments" in envelope) return "";
+      if (envelope.message?.role === "tool" || envelope.message?.source?.kind === "tool") {
+        text = (envelope.message.content || []).filter(block => block.type === "text").map(block => block.text || "").join("\n").trim();
+      }
+    }
+  } catch { /* Plain tool text is already the observation. */ }
   const hasKeyCheck = /\b[A-Z][A-Z0-9_]*_API_KEY\s+(?:set|configured|present)\b|key present above\s*\(count\)/i.test(text);
   if (!hasKeyCheck) return text;
   const cleaned = text
@@ -1661,9 +1912,7 @@ function compactReasoningTitle(value, lang) {
     text = text
       .replace(/^(?:这一步|這一步|本步|当前步骤|當前步驟)\s*(?:需要|将|將|会|會|先要|先)?\s*/, "")
       .replace(/^(?:首先|先|需要|将|將|会|會)\s*/, "");
-    if (text && !/^(?:正在|准备|準備|继续|繼續|等待|检查|檢查|读取|讀取|搜索|搜尋|检索|檢索|获取|取得|整理|计算|計算|生成|分析|验证|驗證|比较|比較|识别|識別|定位|调用|調用|执行|執行|汇总|彙總|综合|綜合)/.test(text)) {
-      text = `正在${text}`;
-    } else if (text && !/^(?:正在|准备|準備|继续|繼續|等待)/.test(text)) {
+    if (/^(?:检查|檢查|读取|讀取|搜索|搜尋|检索|檢索|获取|取得|整理|计算|計算|生成|分析|验证|驗證|比较|比較|识别|識別|定位|调用|調用|执行|執行|汇总|彙總|综合|綜合)/.test(text)) {
       text = `正在${text}`;
     }
     return text.length > 34 ? `${text.slice(0, 33).trim()}…` : text;
@@ -1709,6 +1958,9 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
   const isHans = lang === "zh-Hans";
   const isHant = lang === "zh-Hant";
   const localized = (hans, hant, english) => isHans ? hans : isHant ? hant : english;
+  if (script === "job_output" || fallback === "job_output") {
+    return localized("正在读取后台任务结果", "正在讀取背景工作結果", "Reading background task results");
+  }
   if (/skill\.md\b/i.test(command)) {
     return localized("正在读取相关 Skill 规范", "正在讀取相關 Skill 規範", "Reading the relevant Skill instructions");
   }
@@ -2055,9 +2307,9 @@ function shellCommandLabel(lang) {
 
 function skillOutputLabel(lang) {
   lang = normalizeLang(lang);
-  if (lang === "zh-Hans") return "SKILL输出（完整结果）";
-  if (lang === "zh-Hant") return "SKILL 輸出（完整結果）";
-  return "SKILL output (full result)";
+  if (lang === "zh-Hans") return "工具返回";
+  if (lang === "zh-Hant") return "工具回傳";
+  return "Tool result";
 }
 
 function skillErrorLabel(lang) {
@@ -2720,11 +2972,176 @@ function createGeneratedImageArtifact(item) {
   return preview;
 }
 
+function fileDeliverables(data) {
+  const items=Array.isArray(data.fileArtifacts)?data.fileArtifacts:[];
+  const skillSource=JSON.stringify(data.selectedSkill||data.label||'').toLowerCase();
+  const allowHtml=skillSource.includes('streamviz');
+  const seen=new Set(),files=[];
+  for(const item of items){
+    try{
+      const url=new URL(item.url||item.htmlUrl,window.location.origin);
+      const match=url.pathname.match(/^(.*\/)generated\/([^/]+)$/);
+      if(url.origin!==window.location.origin||!match)continue;
+      const storedName=decodeURIComponent(match[2]);
+      if(/[\\/]/.test(storedName)||storedName==='..'||seen.has(url.pathname))continue;
+      if(!/\.(?:html|pdf|docx|xlsx|pptx|csv|txt|md|json|png|jpe?g|webp|svg|zip)$/i.test(storedName))continue;
+      if(/\.html$/i.test(storedName)&&!allowHtml)continue;
+      const suffix=storedName.slice(storedName.lastIndexOf('.'));
+      const name=(storedName.slice(0,-suffix.length).replace(/deepseek[-_ ]*/gi,'').replace(/^[-_ .]+|[-_ .]+$/g,'')||'report')+suffix;
+      const theme=currentThemeMode(),type=name.split('.').at(-1).toUpperCase();
+      const open=type==='HTML'?`${match[1]}share-artifact/${match[2]}?theme=${theme}`:url.pathname;
+      files.push({name,type,open,download:`${match[1]}api/artifacts/${match[2]}/download?theme=${theme}`});
+      seen.add(url.pathname);
+    }catch{/* Invalid or external paths are never exposed as generated files. */}
+  }
+  return files;
+}
+
+function bindGeneratedFileDownload(link){
+  link.addEventListener('click',async event=>{
+    const url=new URL(link.href,window.location.origin);url.searchParams.set('theme',currentThemeMode());link.href=url.pathname+url.search;
+    // Legacy server attachment headers still contain the internal provider prefix.
+    if(!/deepseek/i.test(decodeURIComponent(url.pathname)))return;
+    event.preventDefault();
+    if(link.getAttribute('aria-busy')==='true')return;
+    const name=link.download;link.setAttribute('aria-busy','true');
+    try{
+      const response=await fetch(url.pathname+url.search,{credentials:'same-origin',cache:'no-store'});
+      if(!response.ok)throw new Error('download failed');
+      const objectUrl=URL.createObjectURL(await response.blob());
+      const anchor=document.createElement('a');anchor.href=objectUrl;anchor.download=name;anchor.hidden=true;document.body.append(anchor);anchor.click();anchor.remove();
+      setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);link.title='下载文件';
+    }catch{link.title='下载失败，请重试';}
+    finally{link.removeAttribute('aria-busy');}
+  });
+}
+
+function filePreviewControlIcon(kind){
+  const paths={
+    expand:'M475.3408 850.5344h-266.24a37.2736 37.2736 0 0 1-37.2736-37.2736v-266.24a37.2736 37.2736 0 1 1 74.5472 0v228.9664h228.9664a37.2736 37.2736 0 0 1 0 74.5472zM830.3104 495.5648a37.2736 37.2736 0 0 1-37.2736-37.2736V229.3248h-228.9664a37.2736 37.2736 0 1 1 0-74.5472h266.24a37.2736 37.2736 0 0 1 37.2736 37.2736v266.24a37.2736 37.2736 0 0 1-37.2736 37.2736z',
+    collapse:'M384 512a128 128 0 0 0 128-128V170.666667a42.666667 42.666667 0 1 0-85.333333 0v213.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 1 0 0 85.333333h213.333333z m277.333333 42.666667a128 128 0 0 0-128 128v170.666666a42.666667 42.666667 0 1 0 85.333334 0v-170.666666a42.666667 42.666667 0 0 1 42.666666-42.666667H853.333333a42.666667 42.666667 0 1 0 0-85.333333h-192z',
+    download:'M828.1 896.7H199.9c-73.2 0-132.8-59.6-132.8-132.8V514.5c0-17.7 14.3-32 32-32s32 14.3 32 32v249.4c0 37.9 30.9 68.8 68.8 68.8h628.2c37.9 0 68.8-30.9 68.8-68.8V514.5c0-17.7 14.3-32 32-32s32 14.3 32 32v249.4c0 73.2-59.6 132.8-132.8 132.8z M512.4 740.7c-17.7 0-32-14.3-32-32V151.8c0-17.7 14.3-32 32-32s32 14.3 32 32v556.9c0 17.7-14.3 32-32 32z M518.5 737.4c-8.2 0-16.4-3.1-22.6-9.4-12.5-12.5-12.5-32.8 0-45.3l156.9-156.9c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3L541.1 728c-6.2 6.3-14.4 9.4-22.6 9.4z M506.2 737.2c-8.2 0-16.4-3.1-22.6-9.4L326.7 570.9c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l156.9 156.9c12.5 12.5 12.5 32.8 0 45.3-6.3 6.3-14.5 9.4-22.7 9.4z',
+    close:'M865.6 809.6c16 16 16 41.6 0 56-8 8-17.6 11.2-28.8 11.2s-20.8-3.2-28.8-11.2L512 568 214.4 865.6c-8 8-17.6 11.2-28.8 11.2s-20.8-3.2-28.8-11.2c-16-16-16-41.6 0-56L456 512 158.4 214.4c-16-16-16-41.6 0-56 16-16 41.6-16 56 0L512 456 809.6 158.4c16-16 41.6-16 56 0 16 16 16 41.6 0 56L568 512l297.6 297.6z'
+  };
+  return `<svg class="fileControlIcon fileControlIcon--${kind}" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="${paths[kind]}"/></svg>`;
+}
+
+function renderFileDeliverables(article,data){
+  const answer=article.querySelector('.finalAnswer');
+  if(!answer)return;
+  answer.querySelector('.generatedFileList')?.remove();
+  const files=fileDeliverables(data);
+  if(!files.length)return;
+  const list=document.createElement('section');list.className='generatedFileList';list.setAttribute('aria-label','生成的文件');
+  list.innerHTML=files.map(file=>`<div class="generatedFileCard"><svg class="generatedFileIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg><button class="generatedFileOpen" type="button" aria-haspopup="dialog" aria-label="预览 ${escapeHtml(file.name)}"><span class="generatedFileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span><span class="generatedFileType">${escapeHtml(file.type)}</span></button><a class="generatedFileDownload" href="${escapeHtml(file.download)}" download="${escapeHtml(file.name)}" aria-label="下载文件 ${escapeHtml(file.name)}" title="下载文件">${filePreviewControlIcon('download')}</a></div>`).join('');
+  list.querySelectorAll('.generatedFileOpen').forEach((button,index)=>{
+    button.addEventListener('click',()=>void openGeneratedFilePreview(files[index],button));
+  });
+  list.querySelectorAll('.generatedFileDownload').forEach(bindGeneratedFileDownload);
+  const report=answer.querySelector('.mixedReport');
+  if(report)report.after(list);else answer.append(list);
+}
+
+function ensureGeneratedFilePreview(){
+  let panel=document.getElementById('generatedFilePreview');
+  if(panel)return panel;
+  const host=document.querySelector('.shell');if(!host)return null;
+  panel=document.createElement('aside');panel.id='generatedFilePreview';panel.className='generatedFilePreview';panel.hidden=true;
+  panel.setAttribute('aria-label','文件预览');panel.setAttribute('role','dialog');panel.setAttribute('tabindex','-1');
+  panel.innerHTML=`<header class="filePreviewHeader"><span class="filePreviewTitle"></span><div class="filePreviewActions"><a class="filePreviewDownload" title="下载文件" aria-label="下载文件" download>${filePreviewControlIcon('download')}</a><div class="filePreviewWindowControls"><button class="filePreviewExpand" type="button" title="全屏" aria-label="全屏" aria-pressed="false">${filePreviewControlIcon('expand')}${filePreviewControlIcon('collapse')}</button><button class="filePreviewClose" type="button" title="关闭预览" aria-label="关闭预览">${filePreviewControlIcon('close')}</button></div></div></header><div class="filePreviewBody"><p class="filePreviewStatus" role="status">正在加载文件…</p><iframe class="filePreviewFrame" title="文件预览" hidden></iframe><button class="filePreviewRetry" type="button" hidden>重试</button></div>`;
+  host.append(panel);
+  bindGeneratedFileDownload(panel.querySelector('.filePreviewDownload'));
+  panel.querySelector('.filePreviewClose').addEventListener('click',()=>closeGeneratedFilePreview());
+  panel.querySelector('.filePreviewExpand').addEventListener('click',()=>{
+    const expanded=panel.classList.toggle('is-expanded');host.classList.toggle('file-preview-expanded',expanded);
+    const button=panel.querySelector('.filePreviewExpand');button.setAttribute('aria-pressed',String(expanded));button.setAttribute('aria-label',expanded?'退出全屏':'全屏');button.title=expanded?'退出全屏':'全屏';
+    syncGeneratedFilePreviewMode(panel);
+  });
+  panel.querySelector('.filePreviewRetry').addEventListener('click',()=>void openGeneratedFilePreview(panel.file, panel.returnFocus));
+  panel.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();closeGeneratedFilePreview();}});
+  window.addEventListener('veya:chat-navigate',()=>closeGeneratedFilePreview(false));
+  window.addEventListener('resize',()=>{if(!panel.hidden)syncGeneratedFilePreviewMode(panel);});
+  window.addEventListener('aime:theme-change',()=>{if(!panel.hidden&&panel.file)void openGeneratedFilePreview(panel.file,panel.returnFocus);});
+  return panel;
+}
+
+function syncGeneratedFilePreviewMode(panel){
+  const mobile=window.innerWidth<1024;
+  const overlay=!panel.hidden&&(mobile||panel.classList.contains('is-expanded'));
+  for(const [sibling,wasInert] of panel.inertSiblings||[]){if(!wasInert)sibling.removeAttribute('inert');}
+  panel.inertSiblings=null;
+  if(overlay){
+    if(mobile)panel.setAttribute('aria-modal','true');else panel.removeAttribute('aria-modal');
+    panel.inertSiblings=new Map();
+    for(const sibling of panel.parentElement.children){
+      if(sibling===panel||(!mobile&&sibling.classList.contains('appSidebar')))continue;
+      panel.inertSiblings.set(sibling,sibling.hasAttribute('inert'));sibling.setAttribute('inert','');
+    }
+  }else{
+    panel.removeAttribute('aria-modal');
+  }
+}
+
+function closeGeneratedFilePreview(restoreFocus=true){
+  const panel=document.getElementById('generatedFilePreview');if(!panel||panel.hidden)return;
+  panel.controller?.abort();clearTimeout(panel.loadTimeout);panel.querySelector('.filePreviewFrame').removeAttribute('src');panel.hidden=true;
+  panel.classList.remove('is-expanded');
+  panel.querySelector('.filePreviewExpand').setAttribute('aria-pressed','false');
+  panel.querySelector('.filePreviewExpand').setAttribute('aria-label','全屏');panel.querySelector('.filePreviewExpand').title='全屏';
+  syncGeneratedFilePreviewMode(panel);
+  const host=document.querySelector('.shell');host?.classList.remove('file-preview-open','file-preview-expanded');
+  if(restoreFocus&&panel.returnFocus?.isConnected)panel.returnFocus.focus({preventScroll:true});
+}
+
+async function openGeneratedFilePreview(file,trigger){
+  const open=new URL(file.open,window.location.origin),downloadUrl=new URL(file.download,window.location.origin);
+  if(file.type==='HTML')open.searchParams.set('theme',currentThemeMode());downloadUrl.searchParams.set('theme',currentThemeMode());
+  file={...file,open:open.pathname+open.search,download:downloadUrl.pathname+downloadUrl.search};
+  const panel=ensureGeneratedFilePreview();if(!panel)return;
+  if(typeof closeActivityDrawer==='function')closeActivityDrawer();
+  const host=document.querySelector('.shell');
+  panel.controller?.abort();clearTimeout(panel.loadTimeout);const controller=new AbortController();panel.controller=controller;
+  panel.file=file;panel.returnFocus=trigger;panel.hidden=false;host.classList.add('file-preview-open');
+  syncGeneratedFilePreviewMode(panel);
+  const title=panel.querySelector('.filePreviewTitle');title.textContent=file.name;title.title=file.name;
+  const download=panel.querySelector('.filePreviewDownload');download.href=file.download;download.download=file.name;
+  const status=panel.querySelector('.filePreviewStatus'),frame=panel.querySelector('.filePreviewFrame'),retry=panel.querySelector('.filePreviewRetry');
+  frame.onload=null;frame.onerror=null;frame.removeAttribute('src');frame.hidden=true;status.hidden=false;status.textContent='正在加载文件…';retry.hidden=true;
+  panel.querySelector('.filePreviewClose').focus({preventScroll:true});
+  if(!['HTML','PDF','PNG','JPG','JPEG','WEBP','SVG','TXT','MD','JSON'].includes(file.type)){
+    status.textContent='此格式暂不支持预览，可点击右上角下载查看。';return;
+  }
+  panel.loadTimeout=setTimeout(()=>{
+    if(controller.signal.aborted||panel.controller!==controller)return;
+    controller.abort();frame.hidden=true;status.hidden=false;status.textContent='文件加载超时，请重试。';retry.hidden=false;
+  },20000);
+  try{
+    const response=await fetch(file.open,{credentials:'same-origin',cache:'no-store',signal:controller.signal});
+    if(!response.ok)throw new Error('文件暂时无法加载');
+    void response.body?.cancel?.().catch?.(()=>{});
+    if(controller.signal.aborted||panel.controller!==controller)return;
+    frame.onload=()=>{
+      if(controller.signal.aborted||panel.controller!==controller)return;
+      try{if(frame.contentWindow?.location.href==='about:blank')return;}catch{}
+      clearTimeout(panel.loadTimeout);
+      status.hidden=true;frame.hidden=false;
+      try{frame.contentDocument?.addEventListener('keydown',event=>{if(event.key==='Escape'&&!event.defaultPrevented)closeGeneratedFilePreview();});}catch{}
+    };
+    frame.onerror=()=>{if(panel.controller===controller&&!controller.signal.aborted){clearTimeout(panel.loadTimeout);status.hidden=false;status.textContent='文件加载失败，请重试。';retry.hidden=false;}};
+    frame.title=file.name;frame.src=file.open;
+  }catch(error){
+    if(controller.signal.aborted||panel.controller!==controller)return;
+    clearTimeout(panel.loadTimeout);
+    status.textContent='文件加载失败，请重试。';retry.hidden=false;
+  }
+}
+
 async function renderMixedReportFlow(article, data, container, onDone) {
   if (!container) {
     onDone?.();
     return;
   }
+  if(typeof renderFileDeliverables==='function')renderFileDeliverables(article,data);
   const replaceNodes = (nodes) => {
     container.replaceChildren(...nodes);
     container.querySelectorAll(".streamvizFinalSlot").forEach((slot) => {
@@ -2965,6 +3382,21 @@ function showError(article, message, options = {}) {
   keepScrollPosition(shouldStick);
 }
 
+function showStopped(article, message="已停止本轮任务", options={}) {
+  if (!article || article.activityEnded) return;
+  const target=article.querySelector(".finalAnswer") || article.querySelector(".bubble");
+  article.querySelectorAll(".thinkingSteps li.is-loading").forEach((item)=>{
+    item.classList.remove("is-loading","is-error");
+    item.classList.add("is-done");
+  });
+  article.dataset.thinkingState="stopped";
+  article.activityEnded=true;
+  updateThinkingSummary(article,copyFor(article.dataset.lang || "en","stoppedAfter"));
+  if (target && !target.textContent.trim()) target.innerHTML=`<p class="stopped">${escapeHtml(message)}</p>`;
+  if (!options.skipSessionRecord) recordAssistantStopped(article,message);
+  syncActivityDrawer(article);
+}
+
 function completeThinking(article) {
   article.querySelectorAll(".thinkingSteps li").forEach((item) => {
     if (item.dataset.skillCallId && item.classList.contains("is-error")) return;
@@ -3003,6 +3435,7 @@ function toggleActivityDrawer(article) {
 }
 
 function openActivityDrawer(article) {
+  if(typeof closeGeneratedFilePreview==='function')closeGeneratedFilePreview(false);
   activeActivityArticle = article;
   activityAutoFollow = !article.classList.contains("cachedCaseAnswer") && article.dataset.historicalTaskRun !== "true";
   shell?.classList.add("activity-open");
@@ -3076,8 +3509,26 @@ function buildActivityTerminal(article, lang, elapsed, state) {
   `;
 }
 
+function activitySourceItems(items) {
+  const comparable = value => String(value || "").replace(/^[\s*•·—–-]+/, "").replace(/[\s。.!！:：]+$/g, "").trim().toLowerCase();
+  const navigation = /^(?:财经|焦点|首页|主页|新闻|热点|更多|导航|finance|focus|home|news|menu)$/i;
+  return (Array.isArray(items) ? items : []).flatMap(item => {
+    if (!item?.url || !isPublicEvidenceUrl(item.url)) return [];
+    const title = String(item.title || item.moduleLabel || item.code || "").trim();
+    const originalSite = String(item.siteName || "").trim();
+    const rawSummary = String(item.summary || "").trim();
+    const summary = [title, originalSite].some(value => value && comparable(value) === comparable(rawSummary)) ? "" : rawSummary;
+    // A bare navigation label is not a research citation. Keep it only if
+    // the provider supplied a distinct, substantive summary.
+    if (navigation.test(title || originalSite) && !summary) return [];
+    const siteName = !originalSite || comparable(originalSite) === comparable(title)
+      ? domainFromUrl(item.url) || originalSite : originalSite;
+    return [{...item, siteName, title: comparable(title) === comparable(siteName) ? "" : title, summary}];
+  });
+}
+
 function buildActivitySources(article, lang) {
-  const sources = Array.isArray(article.activitySources) ? article.activitySources : [];
+  const sources = activitySourceItems(article.activitySources);
   if (!sources.length) return "";
   const title = `${copyFor(lang, "sources")} · ${sources.length}`;
   const cards = sources
@@ -3087,8 +3538,8 @@ function buildActivitySources(article, lang) {
           <img class="activitySourceLogo" src="${escapeHtml(item.iconUrl || sourceLogoSrc(item.siteName, item.url))}" data-source-site="${escapeHtml(item.siteName || "")}" onerror="${escapeHtml(sourceImageFallbackAttribute(item.siteName || ""))}" alt="" />
           <span>${escapeHtml(item.siteName || "AInvest")}</span>
         </div>
-        <div class="activitySourceTitle">${escapeHtml(item.title || item.moduleLabel || item.code || "")}</div>
-        <div class="activitySourceSummary">${escapeHtml(item.summary || "")}</div>
+        ${item.title ? `<div class="activitySourceTitle">${escapeHtml(item.title)}</div>` : ""}
+        ${item.summary ? `<div class="activitySourceSummary">${escapeHtml(item.summary)}</div>` : ""}
       </a>
     `)
     .join("");
@@ -3647,7 +4098,11 @@ function updateComposerState() {
   resizeComposerInput();
   const hasText = input.value.trim().length > 0;
   const hasImages = pendingImages.length > 0;
-  button.classList.toggle("is-ready", hasText || hasImages);
+  const running=Boolean(activeController && currentSession?.activeRunId && ["queued","running"].includes(currentSession.status));
+  button.classList.toggle("is-running",running);
+  button.classList.toggle("is-ready",!running && (hasText || hasImages));
+  button.setAttribute("aria-label",running ? "停止任务" : "发送");
+  button.title=running ? "停止任务" : "";
 }
 
 function resizeComposerInput(inputElement = input, boxElement = composerBox) {
@@ -3700,6 +4155,7 @@ function ensureCurrentSession(question) {
     updatedAt: Date.now(),
     reasoningFramework: DEFAULT_REASONING_FRAMEWORK,
     inferenceModel: DEFAULT_INFERENCE_MODEL,
+    reasoningEffort: currentReasoningEffort,
     engineSessionId: "",
     frameworkSessionIds: {},
     resolvedInferenceModel: "",
@@ -3721,6 +4177,7 @@ async function recordAssistantResult(data) {
   resultSession.error = "";
   resultSession.reportUrl = data.reportUrl;
   resultSession.reportArtifacts = Array.isArray(data.reportArtifacts) ? data.reportArtifacts : [];
+  resultSession.fileArtifacts = Array.isArray(data.fileArtifacts) ? data.fileArtifacts : [];
   resultSession.code = data.code;
   resultSession.interpretation = data.interpretation || "";
   resultSession.sources = Array.isArray(data.sources) ? data.sources : [];
@@ -3747,8 +4204,10 @@ async function recordAssistantResult(data) {
     reportUrl: data.reportUrl,
     agent: data.agent || assistantArticle?.dataset.agent || '',
     reportArtifacts: resultSession.reportArtifacts,
+    fileArtifacts: resultSession.fileArtifacts,
     code: data.code,
     label: data.selectedSkill?.label || "",
+    selectedSkill: data.selectedSkill || null,
     interpretation: data.interpretation || "",
     sources: resultSession.sources,
     videos: resultSession.videos,
@@ -3783,6 +4242,23 @@ function recordAssistantError(article, message) {
   });
   currentSession.title = String(currentSession.question || "新建对话").trim().slice(0, 28) || "新建对话";
   saveCurrentSession();
+}
+
+function recordAssistantStopped(article,message) {
+  if (!currentSession) return;
+  const runId=String(currentSession.activeRunId || currentSession.lastRunId || "");
+  currentSession.status="interrupted";
+  currentSession.activeRunId="";
+  currentSession.lastRunId=runId;
+  currentSession.updatedAt=Date.now();
+  currentSession.error="";
+  currentSession.thinkingStepsHtml=article?.querySelector?.(".thinkingSteps")?.innerHTML || "";
+  currentSession.thinkingStartedAt=Number(article?.dataset?.startedAt || Date.now());
+  currentSession.thinkingElapsed=Math.max(0,Date.now()-currentSession.thinkingStartedAt);
+  if (!currentSession.messages.some((item)=>item.role==="assistant" && item.chatRunId===runId && item.errorCode==="cancelled")) {
+    currentSession.messages.push({role:"assistant",error:String(message),errorCode:"cancelled",chatRunId:runId,thinkingStepsHtml:currentSession.thinkingStepsHtml,thinkingElapsed:currentSession.thinkingElapsed});
+  }
+  persistChatSession(currentSession);
 }
 
 async function summarizeSessionTitle(question, interpretation) {
@@ -3875,8 +4351,63 @@ function renderHistory() {
   });
 }
 
+// Replay only recorded public activity. Never replay final/module events or run tools again.
+async function restoreSavedActivity(article, activity = {}) {
+  const list = article.querySelector('.thinkingSteps');
+  if (!list || list.children.length || article.activityRestorePending) return;
+  const summary = article.querySelector('.thinkingSummaryText');
+  const savedLabel = summary?.textContent;
+  article.activityRestorePending = true;
+  try {
+    let events = Array.isArray(activity.events) ? activity.events : [];
+    const steps = Array.isArray(activity.steps) ? activity.steps : [];
+    if (!events.length && !steps.length && activity.runId) {
+      const response = await fetch(`/api/chat/runs/${encodeURIComponent(activity.runId)}/activity`, {cache:'no-store'});
+      if (!response.ok) throw new Error('activity unavailable');
+      const saved = await response.json();
+      events = Array.isArray(saved.events) ? saved.events : [];
+    }
+    article.activityEnded = false;
+    for (const [index, step] of steps.entries()) {
+      if (!step || !step.title) continue;
+      if (typeof appendCachedActivityStep === 'function') appendCachedActivityStep(article, step, index);
+      else appendStep(article, String(step.title), String(step.detail || ''), step.state === 'error' ? 'error' : 'done', `saved-step:${index}`);
+    }
+    for (const [index, record] of events.entries()) {
+      if (!record || typeof record !== 'object') continue;
+      const data = record?.data || {};
+      if (record.event === 'tool_step') appendToolStep(article, data);
+      else if (record.event === 'agent_event') appendAgentChatEvent(article, data);
+      else if (record.event === 'module_error') appendModuleErrorStep(article, data);
+      else if (record.event === 'status' && shouldRenderStatusEvent(data)) {
+        const lang = article.dataset.lang || 'zh-CN';
+        appendStep(article, statusTitle(data, lang), statusDetail(data, lang), 'done', `saved-status:${index}`);
+      } else if (record.event === 'progress') {
+        const text = String(data.text || data.detail || data.message || '').trim();
+        if (text) appendStep(article, String(data.title || text), data.title ? text : '', 'done', `saved-progress:${index}`);
+      }
+    }
+    list.querySelectorAll('li.is-loading').forEach(item => {item.classList.remove('is-loading');item.classList.add('is-done');});
+    if (Number(activity.elapsedMs) > 0) article.dataset.cachedElapsedMs = String(activity.elapsedMs);
+    if (!list.children.length) appendStep(article, '执行明细未保存', '此记录没有可恢复的执行步骤，未补造过程。', 'done', 'saved-activity-empty');
+    article.dataset.activityRestored = 'true';
+  } catch {
+    if (!list.children.length) appendStep(article, '执行记录暂时不可用', '原始记录未改动，重新打开会话可重试。', 'done', 'saved-activity-unavailable');
+  } finally {
+    list.querySelectorAll('li.is-loading').forEach(item => {item.classList.remove('is-loading');item.classList.add('is-done');});
+    article.activityRestorePending = false;
+    article.activityEnded = true;
+    if (summary && savedLabel !== undefined) summary.textContent = savedLabel;
+    const trigger = article.querySelector('.thinkingTrigger');
+    trigger?.classList.remove('is-thinking');
+    trigger?.classList.toggle('is-complete', article.dataset.thinkingState !== 'error');
+    syncActivityDrawer(article);
+  }
+}
+
 // History and scheduled runs share the same answer shell and report renderer.
 async function renderSavedAssistantAnswer(article, data, options = {}) {
+  article.dataset.question = options.question || article.dataset.question || '';
   const lang = article.dataset.lang || detectLanguage(options.question || "");
   article.dataset.lang = lang;
   article.dataset.thinkingState = "done";
@@ -3903,6 +4434,7 @@ async function renderSavedAssistantAnswer(article, data, options = {}) {
       </div>
     </div>`;
   refreshSavedToolStepTitles(article.querySelector(".thinkingSteps"), lang);
+  void restoreSavedActivity(article, {...(data.activity || {}), runId:data.chatRunId || options.chatRunId || '', elapsedMs:options.thinkingElapsed});
   if(typeof showAgentIdentity==='function')showAgentIdentity(article, data.agent || (data.selectedSkill?.key==='mentora-deal'?'mentora-deal':''));
   article.querySelector(".thinkingTrigger").addEventListener("click", options.onThinkingClick || (() => toggleActivityDrawer(article)));
   await renderMixedReportFlow(article, {...data, sources:article.activitySources}, article.querySelector(".mixedReport"), () => {
@@ -3919,6 +4451,7 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
   const reportArtifacts = Array.isArray(value("reportArtifacts", [])) ? value("reportArtifacts", []) : [];
   const actionLinks = Array.isArray(value("actionLinks", [])) ? value("actionLinks", []) : [];
   const error = String(value("error", "") || "");
+  const errorCode = String(value("errorCode", "") || "");
   const question = String(session.question || session.title || "");
   if (!reportUrl && !interpretation && !reportArtifacts.some((item) => item?.url) && !actionLinks.length) {
     if (!error) return;
@@ -3931,7 +4464,8 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
       savedSteps.innerHTML = String(value("thinkingStepsHtml", "") || "");
       refreshSavedToolStepTitles(savedSteps, detectLanguage(question));
     }
-    showError(article, error, { skipSessionRecord: true });
+    if (errorCode === "cancelled") showStopped(article, error, { skipSessionRecord: true });
+    else showError(article, error, { skipSessionRecord: true });
     return;
   }
   const lang = detectLanguage(question);
@@ -3954,12 +4488,14 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
   article.shareSession = session;
   appendMessage(article, true);
   renderSavedAssistantAnswer(article, {
-    agent: value("agent", ""), reportUrl, reportArtifacts, interpretation,
+    agent: value("agent", ""), reportUrl, reportArtifacts, fileArtifacts:value("fileArtifacts",[]),
+    selectedSkill:value("selectedSkill",null), label:value("label",""), interpretation,
     sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks,
   }, {
     thinkingLabel: `${copyFor(lang, "thoughtFor")} ${formatDuration(Number(value("thinkingElapsed", 0) || 0))}`,
     thinkingStepsHtml: String(value("thinkingStepsHtml", "") || ""),
     thinkingElapsed: Number(value("thinkingElapsed", 0) || 0),
+    chatRunId: String(value('chatRunId', isLatest ? session.lastRunId || '' : '') || ''),
   });
 }
 
@@ -3977,6 +4513,7 @@ function restoreSession(sessionId) {
   currentSession = session;
   currentSession.reasoningFramework = DEFAULT_REASONING_FRAMEWORK;
   currentSession.inferenceModel = DEFAULT_INFERENCE_MODEL;
+  currentSession.reasoningEffort = currentReasoningEffort;
   currentSession.frameworkSessionIds = currentSession.frameworkSessionIds || {};
   const restoredEngineKey = `${previousFramework}:${previousModel}`;
   if (currentSession.engineSessionId && !currentSession.frameworkSessionIds[restoredEngineKey]) {
@@ -4049,7 +4586,16 @@ function openShareDialog(article) {
   );
   if (article) article.shareSession = session;
   const mixedReport = article?.querySelector?.(".mixedReport");
-  if (mixedReport?.innerHTML) session.answerHtml = mixedReport.innerHTML;
+  if (mixedReport?.innerHTML) session.answerHtml = typeof shareAnswerMarkup==='function'?shareAnswerMarkup({...session,answerHtml:mixedReport.innerHTML}):mixedReport.innerHTML;
+  const contentWidth=mixedReport?.getBoundingClientRect?.().width;
+  if(Number.isFinite(contentWidth)&&contentWidth>0)session.shareContentWidth=Math.round(contentWidth);
+  session.shareContextClasses=['cachedCaseAnswer','cachedReplay'].filter(name=>article?.classList?.contains(name));
+  const text=mixedReport?.querySelector?.('.streamingAnswer')||mixedReport?.querySelector?.('.reportInterpretation');
+  if(text&&typeof getComputedStyle==='function'){
+    const style=getComputedStyle(text);
+    session.shareBodyFontSize=parseFloat(style.fontSize);
+    session.shareBodyLineHeight=parseFloat(style.lineHeight);
+  }
   activeShareSession = session;
   if (currentSession?.id === session.id) saveCurrentSession();
   const title = session.question || session.title || "Mentora";
@@ -4057,6 +4603,7 @@ function openShareDialog(article) {
   if (shareTitle) shareTitle.textContent = title;
   if (sharePreviewTitle) sharePreviewTitle.textContent = "";
   if (sharePreviewIframe) {
+    sharePreviewIframe.shareViewportWidth=session.shareContentWidth?Math.max(360,Math.min(3840,session.shareContentWidth+56)):session.shareViewportWidth;
     sharePreviewIframe.removeAttribute("src");
     sharePreviewIframe.srcdoc = buildShareAnswerDocument(session);
     sharePreviewIframe.onload = () => prepareSharePreviewFrame(sharePreviewIframe);
@@ -4085,8 +4632,9 @@ function shareAnswerMarkup(session) {
   let artifactIndex = 0;
   // A cloned React iframe has neither its runtime nor its host message channel.
   // Share the saved document at the original position instead of copying it.
-  container.querySelectorAll(".streamvizArtifactHost, .visualize-widget-block").forEach((host) => {
+  container.querySelectorAll(".reportDocumentFrame, .streamvizArtifactHost, .visualize-widget-block, .fileReportReference").forEach((host) => {
     if (!container.contains(host)) return;
+    if(host.classList.contains('reportDocumentFrame')){artifactIndex+=1;return;}
     const url = host.dataset.artifactUrl || artifactUrls[artifactIndex];
     artifactIndex += 1;
     if (!url) { host.remove(); return; }
@@ -4117,8 +4665,11 @@ function buildShareAnswerDocument(session) {
   const title = escapeHtml(session?.question || session?.title || "Mentora");
   const theme = session?.themeMode === "dark" ? "dark" : "light";
   const answer = shareAnswerMarkup(session);
-  const pageBackground = theme === "dark" ? "#10131a" : "#f7f8fa";
-  const pageText = theme === "dark" ? "#eef2f7" : "#151922";
+  const contextClasses=(Array.isArray(session?.shareContextClasses)?session.shareContextClasses:[]).filter(name=>['cachedCaseAnswer','cachedReplay'].includes(name)).join(' ');
+  const typography=[];
+  for(const [key,name,low,high] of [['shareBodyFontSize','--share-body-font-size',10,40],['shareBodyLineHeight','--share-body-line-height',12,100]]){
+    const value=Number(session?.[key]);if(Number.isFinite(value)&&value>=low&&value<=high)typography.push(`${name}:${value}px`);
+  }
   return `<!doctype html>
 <html lang="zh-CN" data-theme="${theme}" style="color-scheme:${theme}">
 <head>
@@ -4126,21 +4677,15 @@ function buildShareAnswerDocument(session) {
   <base href="${window.location.origin}/" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="/static/styles.css" />
-  <style>
-    html,body{margin:0;background:${pageBackground};color:${pageText};overflow:visible}
-    body{padding:24px 28px 30px;box-sizing:border-box}
-    .shareAnswerDocument{box-sizing:border-box;width:100%;max-width:none;margin:0}
-    .shareAnswerTitle{display:block;margin:0 0 18px;font-size:20px;font-weight:750;line-height:1.4;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:break-word}
-    .reportDocumentFrame{margin:18px 0}
-    .streamingAnswer{font-size:16px;line-height:1.65}
-    .deferredActions,.capabilityBar{display:none!important}
-  </style>
+  <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css" />
+  <link rel="stylesheet" href="/static/share-answer.css" />
 </head>
-<body>
-  <main class="shareAnswerDocument">
+<body style="${escapeHtml(typography.join(';'))}">
+  <main class="shareAnswerDocument ${escapeHtml(contextClasses)}">
     <h1 class="shareAnswerTitle">${title}</h1>
     <section class="mixedReport">${answer}</section>
   </main>
+  <script src="/static/share-chart-layout.js"></script>
 </body>
 </html>`;
 }
@@ -4151,6 +4696,10 @@ function shareUrlForSession(session) {
 
 function resizeSharePreviewFrame(frame) {
   try {
+    if(frame.shareViewportWidth&&frame.parentElement?.clientWidth){
+      frame.style.width=`${frame.shareViewportWidth}px`;
+      frame.style.zoom=String(Math.min(1,frame.parentElement.clientWidth/frame.shareViewportWidth));
+    }
     const body = frame.contentDocument?.body;
     const root = frame.contentDocument?.documentElement;
     const content = frame.contentDocument?.querySelector(".shareAnswerDocument");
@@ -4172,20 +4721,6 @@ function prepareSharePreviewFrame(frame) {
   try {
     const doc = frame.contentDocument;
     if (doc) {
-      const style = doc.createElement("style");
-      const isDark = doc.documentElement.dataset.theme === "dark";
-      style.textContent = `
-        html, body { background: ${isDark ? "#10131a" : "#f7f8fa"} !important; }
-        body { margin: 0 !important; }
-        .report-canvas {
-          box-sizing: border-box !important;
-          padding: 22px 24px 30px !important;
-        }
-        .report-title {
-          display: none !important;
-        }
-      `;
-      doc.head.appendChild(style);
       frame.shareResizeObserver?.disconnect();
       if ("ResizeObserver" in window) {
         frame.shareResizeObserver = new ResizeObserver(() => resizeSharePreviewFrame(frame));
@@ -4193,7 +4728,7 @@ function prepareSharePreviewFrame(frame) {
       }
       doc.querySelectorAll(".reportDocumentFrame").forEach((chartFrame) => {
         const resizeChart = () => {
-          resizeReportDocumentFrame(chartFrame);
+          doc.defaultView?.resizeShareCharts?.();
           resizeSharePreviewFrame(frame);
         };
         chartFrame.addEventListener("load", resizeChart, { once: true });
@@ -4418,7 +4953,7 @@ function openDeleteDialog(sessionId) {
   pendingDeleteSessionId = sessionId;
   const session = loadSessions().find((item) => item.id === sessionId);
   const title = session?.title || session?.question || "this chat";
-  deleteMessage.innerHTML = `This will delete <strong>${escapeHtml(title)}</strong>.`;
+  deleteMessage.textContent = "删除后，此对话及其消息将无法恢复。";
   closeSessionMenu();
   deleteDialog.hidden = false;
 }

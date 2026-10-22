@@ -341,6 +341,43 @@ def test_framework_prompt_chooses_chart_scope_from_question(tmp_path: Path) -> N
     assert "禁止把大段数组" in prompt
 
 
+def test_research_report_prompt_keeps_model_selected_skills_and_workflow(tmp_path: Path) -> None:
+    generated = tmp_path / "generated"
+    generated.mkdir()
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+
+    prompt = client._prompt(
+        "deepseek",
+        "分析历次中期选举对行情的影响，做显著性检验并写一个 HTML 报告",
+        [],
+        [],
+    )
+
+    assert "本轮是研究报告任务，宿主已预解析执行路径" not in prompt
+    assert "--max-details 3" not in prompt
+    assert "custom-html-widget" in prompt
+    assert "按用户问题的实际范围选择" in prompt
+
+
+def test_previous_report_artifact_is_exposed_for_incremental_followup(tmp_path: Path) -> None:
+    generated = tmp_path / "generated"
+    generated.mkdir()
+    report = generated / "existing-report.html"
+    report.write_text("<html><body>existing</body></html>", encoding="utf-8")
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+
+    prompt = client._prompt(
+        "deepseek",
+        "检查并修正上一版报告",
+        [],
+        [{"role": "assistant", "text": "报告已生成", "reportArtifacts": [{"path": str(report)}]}],
+    )
+
+    assert str(report) in prompt
+    assert "直接读取并增量修改对应产物" in prompt
+    assert "不要从头重做" in prompt
+
+
 def test_jev_visual_plan_adds_semantic_chart_and_narrative_guidance(tmp_path: Path) -> None:
     generated = tmp_path / "generated"
     generated.mkdir()
@@ -460,6 +497,13 @@ def test_visual_route_metadata_is_attached_to_final_payload() -> None:
     assert result[-1][1]["status"][0] == "JEV 已应用可视化语义规划"
 
 
+def test_visual_semantic_routing_only_blocks_explicit_visual_requests() -> None:
+    assert LocalAgentFrameworks._requires_visual_semantic_routing("生成一份 HTML 报告") is False
+    assert LocalAgentFrameworks._requires_visual_semantic_routing("画苹果的 K 线图") is True
+    assert LocalAgentFrameworks._requires_visual_semantic_routing("生成市场仪表盘") is True
+    assert LocalAgentFrameworks._requires_visual_semantic_routing("苹果现在能买吗") is False
+
+
 def test_public_thought_summary_is_short_and_user_facing() -> None:
     assert LocalAgentFrameworks._public_thought_summary(
         "Reasoning: 正在核对节前节后的交易日口径。后续内部推导不应展示。"
@@ -493,6 +537,18 @@ def test_skill_catalog_exposes_bridge_descriptions_without_routing(tmp_path: Pat
 
     assert client._skill_catalog() == "- sample-skill: Render a sample chart. | scripts: example.py"
     assert client._skill_catalog(include_scripts=False) == "- sample-skill: Render a sample chart."
+
+
+def test_prompt_uses_bounded_capability_retrieval_instead_of_full_catalog(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    client = LocalAgentFrameworks(project_root=root, generated_dir=tmp_path)
+
+    prompt = client._prompt("deepseek", "Show NVDA 15 minute candlestick chart", [], [])
+
+    assert "宿主轻量能力检索" in prompt
+    assert "候选集，不是写死路由" in prompt
+    assert "kline.py" in prompt
+    assert "已安装 Skill 索引" not in prompt
 
 
 @pytest.mark.parametrize(
@@ -659,7 +715,9 @@ def test_deepseek_sdk_streams_events_and_returns_real_session_id(
     monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=FakeHarness))
     client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
 
-    events = list(client.stream("deepseek", "测试", [], session_key="session-real"))
+    events = list(client.stream(
+        "deepseek", "测试", [], session_key="session-real", reasoning_effort="high",
+    ))
 
     tool_steps = [data for name, data in events if name == "tool_step"]
     final = next(data for name, data in events if name == "final")
@@ -669,7 +727,10 @@ def test_deepseek_sdk_streams_events_and_returns_real_session_id(
     assert [step["thoughtSummary"] for step in tool_steps] == ["正在确认项目运行环境", "正在确认项目运行环境"]
     assert tool_steps[1]["params"] == ['{"command":"pwd"}']
     assert final["engineSessionId"] == "session-real"
-    assert created_options[0]["session_root"] == str(dsh_home / "sessions")
+    assert created_options[0]["dsh_home"] == str(dsh_home)
+    assert created_options[0]["runtime_cwd"] == str(dsh_home / "runtime")
+    assert created_options[0]["reasoning_effort"] == "high"
+    assert created_options[0]["max_tokens"] == 32768
 
 
 def test_deepseek_intermediate_turn_end_does_not_stop_the_run(
@@ -745,7 +806,7 @@ def test_deepseek_stuck_run_times_out_and_closes_runtime(
     monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=FakeHarness))
     client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
 
-    with pytest.raises(ReasoningFrameworkError, match="已终止卡住的会话"):
+    with pytest.raises(ReasoningFrameworkError, match="执行时限"):
         list(client.stream("deepseek", "测试", [], session_key="session-timeout"))
     assert closed.is_set()
 
@@ -844,22 +905,42 @@ def test_deepseek_routes_execution_commentary_to_progress(tmp_path, monkeypatch,
     assert 'private reasoning' not in str(events) and 'child private text' not in str(events)
 
 
-def test_public_progress_localization_is_cached_and_failure_keeps_fallback(tmp_path, monkeypatch):
-    monkeypatch.setenv('DEEPSEEK_API_KEY','test-key')
-    calls=[]
-    class Client:
-        def __init__(self,**kwargs):self.chat=SimpleNamespace(completions=self)
-        def __enter__(self):return self
-        def __exit__(self,*args):pass
-        def create(self,**kwargs):
-            calls.append(kwargs)
-            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='我先读取 TradingView 组件规范。'))])
-    monkeypatch.setitem(sys.modules,'openai',SimpleNamespace(OpenAI=Client))
-    client=LocalAgentFrameworks(project_root=tmp_path,generated_dir=tmp_path/'outputs')
-    text="I'll read the TradingView skill first."
-    assert client._localized_progress(text,'用 TradingView 看苹果')=='我先读取 TradingView 组件规范'
-    assert client._localized_progress(text,'用 TradingView 看苹果')=='我先读取 TradingView 组件规范'
-    assert len(calls)==1
-    assert json.loads(calls[0]['messages'][1]['content'])['public_progress']==text
-    monkeypatch.delenv('DEEPSEEK_API_KEY')
-    assert client._localized_progress('Loading the chart.','展示日线')==''
+def test_progress_never_invokes_an_auxiliary_model(tmp_path, monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail('progress labeling must not call a model')
+    monkeypatch.setenv('DEEPSEEK_API_KEY', 'fixture-not-secret')
+    monkeypatch.setitem(sys.modules, 'openai', SimpleNamespace(OpenAI=forbidden))
+    router = SimpleNamespace(configured=True, route=forbidden)
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path/'outputs', tool_activity_router=router)
+    assert client._localized_progress('正在核对数据。', '分析市场') == '正在核对数据'
+    assert client._localized_progress('Loading the chart.', '展示日线') == ''
+    assert client._localized_progress('Loading the chart.', 'Show the chart') == 'Loading the chart.'
+    assert client._jev_tool_thought_summary('bash', {'command': 'python tool.py'}) == ''
+    assert client._jev_tool_thought_summary('bash', '{"thoughtSummary":"正在读取报价"}') == '正在读取报价'
+    assert client._jev_tool_thought_summary('bash', 'invalid transport') == ''
+
+
+def test_low_effort_loads_runtime_guard_and_effort_changes_use_separate_harnesses(tmp_path, monkeypatch):
+    generated = tmp_path / 'outputs' / 'generated'
+    generated.mkdir(parents=True)
+    monkeypatch.setenv('DSH_HOME', str(tmp_path / 'dsh'))
+    options = []
+
+    class Harness:
+        def __init__(self, **kwargs): options.append(kwargs)
+        def run(self, prompt, *, session_id, on_notification):
+            return SimpleNamespace(session_id=session_id, final_response='完成', events=[], notifications=[])
+        def close(self): pass
+
+    monkeypatch.setitem(sys.modules, 'deepseek_harness', SimpleNamespace(DeepSeekHarness=Harness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+    for effort in ('high', 'low', 'low', 'high'):
+        list(client.stream('deepseek', '复盘A股', [], session_key='same-session', reasoning_effort=effort))
+    assert len(options) == 2
+    assert options[0]['reasoning_effort'] == 'high'
+    environment_patch = str(tmp_path / 'app' / 'dsh_tool_environment.cordis.yml')
+    assert options[0]['patches'] == (environment_patch,)
+    assert options[1]['reasoning_effort'] == 'low'
+    assert options[1]['patches'] == (environment_patch, str(tmp_path / 'app' / 'dsh_lightweight.cordis.yml'))
+    assert options[1]['env']['MENTORA_PROJECT_ROOT'] == str(tmp_path)
+    client.close()

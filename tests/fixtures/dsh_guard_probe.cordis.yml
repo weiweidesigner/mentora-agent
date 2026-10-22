@@ -1,0 +1,3 @@
+- insert:
+    - id: mentora-guard-probe
+      name: ./dsh_guard_probe.cjs

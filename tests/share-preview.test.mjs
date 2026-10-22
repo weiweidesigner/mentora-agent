@@ -46,3 +46,27 @@ test('missing artifacts do not leave an empty live iframe in the preview', () =>
   assert.equal(doc.querySelector('iframe'), null);
   assert.equal(doc.body.textContent, 'Text');
 });
+
+test('file-only report reference expands in its original place for sharing',()=>{
+ const doc=markup({themeMode:'dark',answerHtml:'<p>Summary</p><span class="fileReportReference" hidden data-artifact-url="/generated/report.html"></span><p>Limits</p>',reportArtifacts:[{url:'/generated/report.html'}]});
+ const frame=doc.querySelector('iframe');assert.equal(frame.getAttribute('src'),'/share-artifact/report.html?theme=dark');
+ assert.equal(frame.previousElementSibling.textContent,'Summary');assert.equal(frame.nextElementSibling.textContent,'Limits');assert.equal(frame.hidden,false);
+});
+
+test('existing frame before a legacy widget does not reuse its artifact',()=>{
+  const doc=markup({answerHtml:'<iframe class="reportDocumentFrame" src="/generated/a.html"></iframe><p>Middle</p><div class="visualize-widget-block"></div>',reportArtifacts:[{url:'/generated/a.html'},{url:'/generated/b.html'}]});
+  assert.deepEqual([...doc.querySelectorAll('iframe')].map(f=>f.getAttribute('src')),['/share-artifact/a.html?theme=light','/share-artifact/b.html?theme=light']);
+});
+
+test('preview shares the export stylesheet and captured typography',()=>{
+  const dom=new JSDOM('',{url:'http://localhost/'});
+  const context=vm.createContext({document:dom.window.document,window:dom.window,URL,escapeHtml:s=>String(s).replaceAll('"','&quot;')});
+  const stop=source.indexOf('\nfunction shareUrlForSession',end);
+  vm.runInContext(source.slice(start,stop),context);
+  context.session={answerHtml:'<p>Answer</p>',shareBodyFontSize:18,shareBodyLineHeight:29.7,shareContextClasses:['cachedReplay','invalid']};
+  const doc=new JSDOM(vm.runInContext('buildShareAnswerDocument(session)',context)).window.document;
+  assert.ok(doc.querySelector('link[href="/static/share-answer.css"]'));
+  assert.equal(doc.body.style.getPropertyValue('--share-body-font-size'),'18px');
+  assert.equal(doc.body.style.getPropertyValue('--share-body-line-height'),'29.7px');
+  assert.equal(doc.querySelector('main').className,'shareAnswerDocument cachedReplay');
+});

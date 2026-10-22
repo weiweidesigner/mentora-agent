@@ -30,6 +30,7 @@ test('Share opens when history storage is full, preserves history and retries pe
     currentThemeMode: () => 'dark',
     document: { documentElement: { clientWidth: 695 }, querySelector: () => ({ textContent: '' }) },
     window: { innerWidth: 695 },
+    getComputedStyle: () => ({fontSize:'18px',lineHeight:'29.7px'}),
     sharePreviewTitle: {},
     sharePreviewIframe: { removeAttribute: () => {}, srcdoc: '' },
     prepareSharePreviewFrame: () => {},
@@ -38,7 +39,7 @@ test('Share opens when history storage is full, preserves history and retries pe
     shareDialog: dialog,
     transientShareSessionForArticle: () => null,
     activeShareSession: null,
-    article: { querySelector: () => ({ innerHTML: '<p>Current answer</p>' }) },
+    article: { classList:{contains: name=>name==='cachedReplay'},querySelector: () => ({ innerHTML: '<p>Current answer</p>',getBoundingClientRect:()=>({width:604}),querySelector:()=>({}) }) },
   });
   vm.runInContext(['loadSessions', 'storeSessions', 'isRestorableSession', 'saveCurrentSession', 'openShareDialog'].map(implementation).join('\n'), context);
   vm.runInContext('openShareDialog(article)', context);
@@ -47,6 +48,10 @@ test('Share opens when history storage is full, preserves history and retries pe
   assert.equal(stored, JSON.stringify(previous));
   assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(loadSessions().map(s => s.id))', context)), ['current', 'previous']);
   assert.equal(context.activeShareSession.themeMode, 'dark');
+  assert.equal(context.activeShareSession.shareContentWidth,604);
+  assert.equal(context.activeShareSession.shareBodyFontSize,18);
+  assert.equal(context.activeShareSession.shareBodyLineHeight,29.7);
+  assert.equal(context.sharePreviewIframe.shareViewportWidth,660);
   quotaFull = false;
   vm.runInContext('saveCurrentSession()', context);
   assert.deepEqual(JSON.parse(stored).map(s => s.id), ['current', 'previous']);

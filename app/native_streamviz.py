@@ -15,6 +15,7 @@ from typing import Any, Iterator
 
 from openai import OpenAI
 
+from app.file_artifacts import collect_file_artifacts
 from app.reasoning_frameworks import ReasoningFrameworkError
 
 
@@ -368,10 +369,13 @@ def stream_native_widget(
 
     if not calls:
         raise ReasoningFrameworkError("StreamViz 模型未返回 visualize_show_widget 工具调用，未生成可视化。")
+    file_artifacts, _ = collect_file_artifacts(
+        question, "", artifacts, generated_dir, generated_dir.parent, allow_html=True
+    )
     yield "final", {
         "question": question, "code": "", "selectedSkill": {"key": "native-streamviz", "label": "Native StreamViz", "script": TOOL_NAME, "reason": "模型工具调用参数以 SSE 增量渲染。"},
         "htmlUrl": artifacts[0]["url"] if artifacts else "", "reportUrl": artifacts[0]["url"] if artifacts else "",
-        "reportArtifacts": artifacts, "payloadUrl": None,
+        "reportArtifacts": artifacts, "fileArtifacts": file_artifacts, "payloadUrl": None,
         "interpretation": "".join(answer_parts).strip() or "已生成原生流式可视化。",
         "status": ["Native StreamViz 已完成"], "agentRunId": "", "studioSessionId": None,
         "engineSessionId": "", "reasoningFramework": "native-streamviz", "inferenceModel": model,

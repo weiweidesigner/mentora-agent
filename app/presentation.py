@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import html
 import hashlib
+import importlib.metadata
 import secrets
 import os
 import re
@@ -106,6 +107,7 @@ class ChatRequest(BaseModel):
     engineSessionId: str = ""
     reasoningFramework: Literal["deepseek", "codex"] = Field(default_factory=default_reasoning_framework)
     inferenceModel: str = ""
+    reasoningEffort: Literal["low", "medium", "high", "xhigh", "ultra"] = "low"
     resolvedInferenceModel: str = ""
     history: list[dict[str, Any]] = Field(default_factory=list)
     sessionTitle: str = ""
@@ -127,13 +129,36 @@ def durable_chat_events(payload,user):
     portfolio=globals().get('PORTFOLIO')
     research_only=bool(portfolio and portfolio.workflow.research_only_request(payload.question))
     deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or (not payload.agent and portfolio.workflow.handles_question(payload.question,payload.history))))
-    events=portfolio.workflow.stream_idea(user,payload.question,payload.history) if deal else framework_events(payload)
+    events=portfolio.workflow.stream_idea(user,payload.question,payload.history,reasoning_effort=payload.reasoningEffort) if deal else framework_events(payload)
     if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
     charts={}
+    pending_displays=[]
+    answer_started=False
     for event,data in events:
         if event=='module':
             url=str(data.get('htmlUrl') or data.get('url') or '')
             if url.startswith(('/generated/','/share-artifact/')):charts[url]=dict(url=url,label=data.get('label') or data.get('title') or '')
+            if not answer_started:
+                pending_displays.append(('module',dict(data)))
+            else:
+                for module_event,module_data in streamviz_events_for_module(dict(data)):
+                    yield module_event,module_data
+            continue
+        if event in {'visualization','visualize_widget'} and not answer_started:
+            pending_displays.append((event,dict(data)))
+            continue
+        if event=='answer_text':
+            yield event,data
+            if data.get('final') is False:
+                continue
+            answer_started=True
+            for display_event,display_data in pending_displays:
+                if display_event=='module':
+                    yield from streamviz_events_for_module(display_data)
+                else:
+                    yield display_event,display_data
+            pending_displays.clear()
+            continue
         if event=='tool_step' and isinstance(data.get('output'),dict):
             artifact=data['output'].get('chartArtifact')
             if artifact and artifact.get('url'):charts[artifact['url']]=artifact
@@ -145,10 +170,25 @@ def durable_chat_events(payload,user):
             if charts:
                 data['reportArtifacts']=list(charts.values())
                 data['reportUrl']=data.get('reportUrl') or next(iter(charts))
+                interpretation=str(data.get('interpretation') or '').rstrip()
+                references={str(item.get('path') or item.get('url') or '') for item in data['reportArtifacts']
+                            if isinstance(item,dict) and (item.get('path') or item.get('url'))}
+                if not any(f'[[AIME_CHART:{reference}]]' in interpretation for reference in references):
+                    markers='\n'.join(f'[[AIME_CHART:{url}]]' for url in charts)
+                    data['interpretation']=f'{interpretation}\n\n{markers}'.strip()
+            if not answer_started and str(data.get('interpretation') or '').strip():
+                answer_started=True
+                yield 'answer_text',{'text':data['interpretation'],'replace':True,'lang':data.get('lang','zh-CN')}
+            for display_event,display_data in pending_displays:
+                if display_event=='module':
+                    yield from streamviz_events_for_module(display_data)
+                else:
+                    yield display_event,display_data
+            pending_displays.clear()
         yield event,data
 
 
-app.include_router(create_chat_session_router(CHAT_SESSIONS,ChatRequest,durable_chat_events))
+app.include_router(create_chat_session_router(CHAT_SESSIONS,ChatRequest,durable_chat_events,LOCAL_FRAMEWORKS.cancel))
 
 
 class ShareSessionRequest(BaseModel):
@@ -341,6 +381,7 @@ def framework_events(payload: ChatRequest) -> Iterator[tuple[str, dict[str, Any]
         engine_session_id=payload.engineSessionId,
         history=payload.history,
         inference_model=payload.inferenceModel,
+        reasoning_effort=payload.reasoningEffort,
         resolved_inference_model=payload.resolvedInferenceModel,
         visualization_theme=payload.themeMode,
     ):
@@ -429,12 +470,24 @@ def index() -> FileResponse:
     )
 
 
+def installed_package_version(distribution: str) -> str | None:
+    """Return the installed distribution version without failing health checks."""
+    try:
+        return importlib.metadata.version(distribution)
+    except importlib.metadata.PackageNotFoundError:
+        return None
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "role": "presentation-gateway",
         "agent": "multi-framework",
+        "versions": {
+            "deepseekHarnessSdk": installed_package_version("deepseek-harness-sdk"),
+            "deepseekHarnessRuntime": installed_package_version("deepseek-harness-runtime-bin"),
+        },
         "frameworks": LOCAL_FRAMEWORKS.availability(),
         "models": LOCAL_FRAMEWORKS.inference_models(),
     }
@@ -605,81 +658,39 @@ def _share_artifact_frames(session: dict[str, Any]) -> str:
 
 
 def standalone_share_html(session: dict[str, Any]) -> str:
+    from app.share_markup import share_markup
     title = html.escape(str(session.get("question") or session.get("title") or "Mentora"))
-    answer_html = _strip_streamviz_artifact_hosts(str(session.get("answerHtml") or "").strip())
+    answer_html = str(session.get("answerHtml") or "").strip()
     answer_html = answer_html.replace("http://127.0.0.1:8000/", "/")
     answer_html = re.sub(r'(<iframe\b[^>]*?)\sstyle="[^"]*"', r"\1", answer_html, flags=re.I)
     answer_html = re.sub(r'\sdata-(?:resize-observed|chart-embed)="[^"]*"', "", answer_html, flags=re.I)
-    # The chat DOM may already contain a report frame.  The authoritative frame
-    # is appended from reportArtifacts below; retaining both creates duplicate
-    # reports and, for a legacy empty artifact, a huge blank region.
-    answer_html = re.sub(
-        r'<iframe\b(?=[^>]*\bclass=["\'][^"\']*\breportDocumentFrame\b[^"\']*["\'])[^>]*>(?:\s*</iframe>)?',
-        "",
-        answer_html,
-        flags=re.I,
-    )
+    theme_mode = "dark" if session.get("themeMode") == "dark" else "light"
+    artifacts=session.get('reportArtifacts') if isinstance(session.get('reportArtifacts'),list) else []
+    urls=[canonical_host_url(str(a.get('url') or a.get('htmlUrl') or '')) for a in artifacts if isinstance(a,dict)]
+    if not urls and session.get('reportUrl'):urls=[canonical_host_url(str(session['reportUrl']))]
+    had_markup=bool(answer_html)
+    answer_html=share_markup(answer_html,urls,theme_mode,os.getenv('AICHART_BASE_PATH','').strip().rstrip('/'))
     if not answer_html:
         answer_html = f'<div class="plainAnswer">{html.escape(str(session.get("interpretation") or ""))}</div>'
-    answer_html += _share_artifact_frames(session)
-    theme_mode = "dark" if session.get("themeMode") == "dark" else "light"
-    page_background = "#10131a" if theme_mode == "dark" else "#f7f8fa"
-    page_text = "#eef2f7" if theme_mode == "dark" else "#151922"
+    if not had_markup:answer_html += _share_artifact_frames(session)
+    typography=[]
+    for key,css_name,low,high in [('shareBodyFontSize','--share-body-font-size',10,40),('shareBodyLineHeight','--share-body-line-height',12,100)]:
+        try:value=float(session.get(key,0))
+        except (TypeError,ValueError):continue
+        if low<=value<=high:typography.append(f'{css_name}:{value:g}px')
+    body_style=html.escape(';'.join(typography),quote=True)
+    contexts=session.get('shareContextClasses') if isinstance(session.get('shareContextClasses'),list) else []
+    context_classes=' '.join(name for name in contexts if name in ('cachedCaseAnswer','cachedReplay'))
     return f'''<!doctype html>
 <html lang="zh-CN" data-theme="{theme_mode}" style="color-scheme:{theme_mode}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css">
+<title>{title}</title><link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css"><link rel="stylesheet" href="/static/share-answer.css">
 <style>
-html,body{{margin:0;height:auto!important;min-height:100%;overflow:visible!important;background:{page_background};color:{page_text}}}
-body{{box-sizing:border-box;padding:0}}
-.shareAnswerDocument{{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:38px 46px 46px;background:transparent}}
-.shareAnswerTitle{{display:block;margin:0 0 24px;font-size:24px;line-height:1.4;font-weight:760;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:break-word}}
-.reportInterpretation{{margin:6px 0 8px!important}}
-.reportDocumentFrame{{display:block;width:100%;height:420px;min-height:0!important;margin:18px 0!important;border:0;background:transparent}}
+.shareAnswerDocument{{box-sizing:border-box;width:100%;max-width:none;margin:0;background:transparent}}
 .streamvizArtifactHost,.visualize-widget-block{{display:block;width:100%;max-width:100%;height:auto;overflow:visible}}
 .visualize-widget-panel{{display:block;width:100%;height:var(--visualize-widget-height,260px)!important;min-height:0;overflow:visible}}
 .visualize-widget-frame{{display:block;width:100%;height:var(--visualize-widget-height,260px)!important;border:0;background:transparent}}
-.streamingAnswer{{margin-bottom:8px!important;font-size:17px;line-height:1.7}}
-.streamingAnswer h2{{font-size:22px;margin:22px 0 10px}} .streamingAnswer h3{{font-size:19px;margin:18px 0 8px}}
-.plainAnswer{{white-space:pre-wrap;font-size:17px;line-height:1.7}}
-@media(max-width:720px){{.shareAnswerDocument{{padding:24px 20px 30px;border-radius:14px}}.reportDocumentFrame{{height:340px}}}}
-</style></head><body><main class="shareAnswerDocument"><h1 class="shareAnswerTitle">{title}</h1><section class="mixedReport">{answer_html}</section></main>
-<script>
-(function(){{
-  function resizeChartFrame(frame){{
-    try {{
-      var doc = frame.contentDocument;
-      if (!doc) return;
-      var body = doc.body;
-      var root = doc.documentElement;
-      var nativeChart = doc.querySelector('.multi-kline, .kline-component');
-      if (nativeChart) {{
-        frame.style.setProperty('height', Math.ceil(nativeChart.getBoundingClientRect().bottom) + 'px', 'important');
-        return;
-      }}
-      var wrap = doc.querySelector('#wrap, [data-timeline-container="true"], .component-root, .chart-container, main');
-      var wrapRect = wrap ? wrap.getBoundingClientRect() : null;
-      var height = Math.max(
-        wrapRect ? Math.ceil(wrapRect.bottom) : 0,
-        body ? body.scrollHeight : 0,
-        body ? body.offsetHeight : 0,
-        root ? root.scrollHeight : 0,
-        root ? root.offsetHeight : 0,
-        260
-      );
-      frame.style.setProperty('height', height + 'px', 'important');
-    }} catch (error) {{}}
-  }}
-  function resizeAll(){{
-    document.querySelectorAll('.reportDocumentFrame').forEach(resizeChartFrame);
-  }}
-  document.querySelectorAll('.reportDocumentFrame').forEach(function(frame){{
-    frame.addEventListener('load', function(){{ resizeChartFrame(frame); }}, {{once:true}});
-  }});
-  window.addEventListener('load', resizeAll);
-  setTimeout(resizeAll, 300);
-  setTimeout(resizeAll, 1200);
-}})();
-</script></body></html>'''
+</style></head><body style="{body_style}"><main class="shareAnswerDocument {context_classes}"><h1 class="shareAnswerTitle">{title}</h1><section class="mixedReport">{answer_html}</section></main>
+<script src="/static/share-chart-layout.js"></script></body></html>'''
 
 
 STREAMVIZ_THEME_PATH = STATIC_DIR / "vendor" / "streamviz" / "artifact-theme.css"
@@ -720,6 +731,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = sync_native_kline_theme(artifact, theme)
     artifact = upgrade_widget_tradingview(artifact)
+    presentation_script=(STATIC_DIR/'artifact-presentation.js').read_text(encoding='utf-8')
+    host_controls=f'<script data-artifact-host-theme="{theme}">{presentation_script}</script>'
+    artifact=re.sub(r'</body\s*>',lambda _:host_controls+'</body>',artifact,count=1,flags=re.I) if re.search(r'</body\s*>',artifact,re.I) else artifact+host_controls
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'
     if 'data-sv-chart-geometry' not in artifact:
         geometry = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
@@ -743,6 +757,21 @@ def shared_streamviz_artifact_page(filename: str, theme: Literal["light", "dark"
     return share_streamviz_artifact(filename, theme)
 
 
+@app.get('/api/artifacts/{filename}/download')
+def download_generated_artifact(filename: str, theme: Literal['light','dark']='light'):
+    from app.file_artifacts import FILE_SUFFIXES
+    suffix=Path(filename).suffix.lower()
+    if suffix not in FILE_SUFFIXES:raise HTTPException(400,'unsupported generated file type')
+    path=generated_file(filename,suffix)
+    if not path.stat().st_size:raise HTTPException(404,'generated file is empty')
+    if suffix=='.html':
+        document=share_streamviz_artifact(path.name,theme)
+        return Response(content=document.body,media_type='text/html',headers={
+            'Content-Disposition':"attachment; filename*=UTF-8''"+quote(path.name),
+            'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'})
+    return FileResponse(path,filename=path.name,headers={'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'})
+
+
 def screenshot_base_url(request: Request) -> str:
     configured = os.getenv("AICHART_LOCAL_BASE_URL", "").strip()
     if configured:
@@ -754,7 +783,7 @@ def screenshot_base_url(request: Request) -> str:
 def share_viewport_width(session: dict[str, Any]) -> int:
     """Return the CSS viewport width captured when the user opened Share."""
     try:
-        width = int(float(session.get("shareViewportWidth") or 1320))
+        width = int(float(session['shareContentWidth']))+56 if session.get('shareContentWidth') else int(float(session.get("shareViewportWidth") or 1320))
     except (TypeError, ValueError):
         width = 1320
     return max(360, min(width, 3840))
@@ -802,32 +831,11 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page(viewport={{"width": {viewport_width}, "height": 900}}, device_scale_factor={device_scale_factor})
     page.goto({share_url!r}, wait_until="networkidle", timeout=60000)
+    page.evaluate("document.fonts.ready")
     answer = page.locator(".shareAnswerDocument")
     answer.wait_for(state="visible", timeout=60000)
     page.wait_for_timeout(2500)
-    page.evaluate("""
-      () => {{
-        document.querySelectorAll('.reportDocumentFrame').forEach(frame => {{
-          try {{
-            const doc = frame.contentDocument;
-            if (!doc) return;
-            const body = doc.body;
-            const root = doc.documentElement;
-            const wrap = doc.querySelector('#wrap, [data-timeline-container="true"], .component-root, .chart-container, main');
-            const wrapRect = wrap?.getBoundingClientRect();
-            const height = Math.max(
-              wrapRect ? Math.ceil(wrapRect.bottom) : 0,
-              body?.scrollHeight || 0,
-              body?.offsetHeight || 0,
-              root?.scrollHeight || 0,
-              root?.offsetHeight || 0,
-              260
-            );
-            frame.style.setProperty('height', `${{height}}px`, 'important');
-          }} catch (error) {{}}
-        }});
-      }}
-    """)
+    page.evaluate("window.resizeShareCharts?.()")
     page.wait_for_timeout(350)
     page_height = page.evaluate("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)")
     for y in range(0, int(page_height), 650):
@@ -945,7 +953,7 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
         "用列表或表格呈现可比较信息，关键结论适度加粗；引用写成[来源名称](https://...)，不堆砌裸链接或长篇无分节文字。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
-    payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',themeMode='dark',history=config.get('_history',[]))
+    payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',reasoningEffort=config.get('reasoningEffort','low'),themeMode='dark',history=config.get('_history',[]))
     answer=None
     for event_name,data in durable_chat_events(payload,config['_owner']):
         if event_name=='error':raise RuntimeError('Scheduled research stream failed')

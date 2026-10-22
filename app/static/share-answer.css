@@ -1,0 +1,10 @@
+/* The preview and exported image use the same frame; answer typography stays
+   in styles.css, shared with the actual conversation. */
+html,body{margin:0;height:auto!important;min-height:100%;overflow:visible!important;background:var(--bg);color:var(--ink)}
+body{box-sizing:border-box;padding:0}
+.shareAnswerDocument{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:24px 28px 30px}
+.shareAnswerTitle{display:block;margin:0 0 18px;font-size:20px;font-weight:750;line-height:1.4;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere;word-break:break-word}
+.shareAnswerDocument :is(.streamingAnswer,.reportInterpretation,.plainAnswer){font-size:var(--share-body-font-size,var(--chat-body-font-size));line-height:var(--share-body-line-height,1.65)}
+.reportDocumentFrame{display:block;width:100%;height:420px;min-height:0!important;margin:18px 0;border:0;background:transparent}
+.plainAnswer{white-space:pre-wrap}
+.deferredActions,.capabilityBar{display:none!important}

@@ -36,9 +36,50 @@ def create(client, **changes):
     return client.post('/api/day/tasks', json=config(**changes), headers={'X-Veya-Day':'1'})
 
 
+def test_execution_preferences_validated_and_durable(client, service):
+    assert client.get('/api/day/execution-preferences').json() == {'reasoningEffort': None}
+    assert client.put('/api/day/execution-preferences', json={'reasoningEffort':'ultra'}).status_code == 403
+    assert client.put('/api/day/execution-preferences', json={'reasoningEffort':'invalid'}, headers={'X-Veya-Day':'1'}).status_code == 422
+    response = client.put('/api/day/execution-preferences', json={'reasoningEffort':'ultra'}, headers={'X-Veya-Day':'1'})
+    assert response.status_code == 200
+    reopened = DayTasks(service.directory, service.runner)
+    assert reopened.execution_preferences() == {'reasoningEffort':'ultra'}
+
+
+def test_existing_tasks_use_latest_effort_at_execution_and_snapshot_it(client, service):
+    from app.day_presets import SCENE_OWNER
+    captured = []
+    service.runner = lambda values, run_id: (captured.append(values) or {'interpretation':'done'})
+    for owner in ('alice', SCENE_OWNER):
+        task = service.save(owner, TaskInput(**config(enabled=False)))
+        with service.db() as db:
+            service.enqueue(db, service.owned(db, owner, task['id']))
+        run = service.claim()
+        client.put('/api/day/execution-preferences', json={'reasoningEffort':'ultra'}, headers={'X-Veya-Day':'1'})
+        service.execute(run)
+        assert captured[-1]['reasoningEffort'] == 'ultra'
+        client.put('/api/day/execution-preferences', json={'reasoningEffort':'low'}, headers={'X-Veya-Day':'1'})
+        with service.db() as db:
+            snapshot = db.execute('SELECT config FROM runs WHERE id=?', (run['id'],)).fetchone()
+        assert service.unpack(snapshot['config'])['reasoningEffort'] == 'ultra'
+
+
 def test_cn_holiday_is_skipped():
     value = next_occurrence(config(), moment('2026-09-30T02:00:00+00:00'))
     assert value.startswith('2026-10-08T01:00:00')
+
+
+def test_replayed_task_events_carry_original_start_and_final_elapsed(client,service):
+    task=create(client,enabled=False).json()
+    run=client.post('/api/day/tasks/'+task['id']+'/run',headers={'X-Veya-Day':'1'}).json()['runId']
+    service.record_event(run,'status',{'message':'working'})
+    service.record_event(run,'final',{'interpretation':'done'})
+    with service.db() as db:
+        db.execute("UPDATE runs SET status='success',created=?,finished=? WHERE id=?",('2026-10-21T03:00:00+00:00','2026-10-21T03:20:00+00:00',run))
+    response=client.get('/api/day/tasks/'+task['id']+'/runs/'+run+'/events')
+    events=[json.loads(line[6:]) for line in response.text.splitlines() if line.startswith('data: ')]
+    assert events[0]['runStartedAt']=='2026-10-21T03:00:00+00:00'
+    assert events[1]['thinkingElapsed']==20*60*1000
 
 
 def test_us_fixed_market_time_follows_dst():
@@ -307,3 +348,70 @@ def test_weekday_custom_and_additional_timezone_schedule():
     TaskInput(**config(timezone='America/Los_Angeles'))
     with pytest.raises(ValueError):
         TaskInput(**config(timezone='Not/A_Timezone'))
+
+
+def window_config(**changes):
+    return config(stage='live',triggerMode='window',windowStart='09:30',windowEnd='15:00',**changes)
+
+
+def test_window_skips_lunch_end_boundary_and_holiday():
+    c=window_config(intervalMinutes=30)
+    assert next_occurrence(c,moment('2026-10-21T03:00:00Z')).startswith('2026-10-21T05:00:00')
+    assert next_occurrence(c,moment('2026-10-21T06:30:00Z')).startswith('2026-10-22T01:30:00')
+    assert next_occurrence(c,moment('2026-09-30T07:00:00Z')).startswith('2026-10-08T01:30:00')
+
+
+def test_window_is_anchored_not_shifted_by_scheduler_delay():
+    assert next_occurrence(window_config(intervalMinutes=17),moment('2026-10-21T02:05:11Z')).startswith('2026-10-21T02:21:00')
+
+
+def test_us_window_handles_dst_and_early_close():
+    c=window_config(market='US',intervalMinutes=30)
+    c['windowEnd']='16:00'
+    assert next_occurrence(c,moment('2026-03-06T21:00:00Z')).startswith('2026-03-09T13:30:00')
+    assert next_occurrence(c,moment('2026-10-30T20:00:00Z')).startswith('2026-11-02T14:30:00')
+    assert next_occurrence(c,moment('2026-11-27T17:30:00Z')).startswith('2026-11-30T14:30:00')
+    c.update(stage='post',windowStart='16:15',windowEnd='20:00',intervalMinutes=60)
+    assert next_occurrence(c,moment('2026-11-27T18:00:00Z')).startswith('2026-11-27T18:15:00')
+
+
+@pytest.mark.parametrize('changes',[
+    {'windowStart':'15:00','windowEnd':'09:30'}, {'windowEnd':'24:00'},
+    {'intervalMinutes':4}, {'cadence':'daily'}, {'timezone':'Asia/Shanghai'},
+    {'stage':'pre','windowEnd':'10:00'}, {'stage':'live','windowStart':'08:30'},
+    {'stage':'post','windowStart':'14:00'}, {'stage':'rest'},
+])
+def test_invalid_window_rejected(changes):
+    with pytest.raises(ValueError):
+        TaskInput(**{**window_config(),**changes})
+
+
+def test_window_api_persistence_and_scheduler_dedup(client,service):
+    task=create(client,**{k:v for k,v in window_config(intervalMinutes=30).items() if k not in ('title','question')}).json()
+    assert task['triggerMode']=='window' and task['scene']=='live'
+    with service.db() as db:
+        db.execute('UPDATE tasks SET next_at=? WHERE id=?',('2026-10-21T02:00:00+00:00',task['id']))
+    service.tick(moment('2026-10-21T02:00:15Z'))
+    service.tick(moment('2026-10-21T02:00:25Z'))
+    with service.db() as db:
+        assert db.execute('SELECT count(*) FROM runs').fetchone()[0]==1
+    saved=client.get('/api/day/tasks').json()['tasks'][0]
+    assert saved['nextAt'].startswith('2026-10-21T02:30:00')
+
+
+def test_public_preset_delete_is_owner_scoped_and_persistent(client,service):
+    from app.day_presets import SCENE_OWNER
+    source=service.save(SCENE_OWNER,TaskInput(**config(enabled=False)))
+    assert source['id'] in [t['id'] for t in client.get('/api/day/tasks').json()['sceneTasks']]
+    response=client.delete('/api/day/tasks/'+source['id'],headers={'X-Veya-Day':'1'})
+    assert response.status_code==200
+    assert source['id'] not in [t['id'] for t in client.get('/api/day/tasks').json()['sceneTasks']]
+    other=TestClient(client.app)
+    assert source['id'] in [t['id'] for t in other.get('/api/day/tasks').json()['sceneTasks']]
+    assert client.get('/api/day/tasks/'+source['id']+'/result').status_code==404
+    with service.db() as db:
+        assert db.execute('SELECT deleted FROM tasks WHERE id=?',(source['id'],)).fetchone()['deleted']==0
+        owner=db.execute('SELECT owner FROM preset_dismissals WHERE task_id=?',(source['id'],)).fetchone()['owner']
+    restarted=DayTasks(service.directory,service.runner)
+    assert source['id'] not in [t['id'] for t in restarted.scene_tasks(owner)]
+    assert source['id'] in [t['id'] for t in restarted.scene_tasks('different-owner')]

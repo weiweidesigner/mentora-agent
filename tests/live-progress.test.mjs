@@ -6,7 +6,8 @@ const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8'
 function setup(){
  const dom=new JSDOM('<article><button class="thinkingTrigger"><span class="thinkingSummaryText">正在思考</span></button><div class="finalAnswer"></div></article>',{runScripts:'outside-only'}),w=dom.window;
  w.setArticleLanguage=()=> 'zh-Hans';w.copyFor=()=> '正在思考';w.formatDuration=()=> '1s';w.activeActivityArticle=null;
- w.eval(source.slice(source.indexOf('function handleStreamEvent('),source.indexOf('const streamVisualizationCodeCache')));
+ w.showAgentIdentity=()=>{};
+ w.eval(source.slice(source.indexOf('function applyRunTiming('),source.indexOf('const streamVisualizationCodeCache')));
  const start=source.indexOf('function updateThinkingSummary('),end=source.indexOf('\nfunction ',start+10);
  w.eval(source.slice(start,end));
  return {dom,w,article:w.document.querySelector('article')};
@@ -33,5 +34,7 @@ test('first-person model progress keeps its natural wording in tool updates',()=
   f.w.normalizeLang=value=>value;f.w.stripStagePrefix=value=>value;
   f.w.eval(source.slice(source.indexOf('function compactReasoningTitle('),source.indexOf('function toolCommandText(')));
   assert.equal(f.w.compactReasoningTitle('我先核对组件设置，再加载苹果日线。','zh-Hans'),'我先核对组件设置，再加载苹果日线');
+  assert.equal(f.w.compactReasoningTitle('现在盘前结构已经清楚。','zh-Hans'),'现在盘前结构已经清楚');
+  assert.equal(f.w.compactReasoningTitle('检查图表表达。','zh-Hans'),'正在检查图表表达');
  }finally{f.dom.window.close();}
 });

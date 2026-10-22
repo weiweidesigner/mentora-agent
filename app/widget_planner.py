@@ -129,7 +129,7 @@ remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_bo
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
 TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
-    response = client.chat.completions.create(model=os.getenv('AICHART_TASK_PLANNER_MODEL') or os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-v4-flash'), messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], response_format={'type':'json_object'}, max_tokens=6500)
+    response = client.chat.completions.create(model=os.getenv('AICHART_TASK_PLANNER_MODEL') or os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'), messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], response_format={'type':'json_object'}, max_tokens=6500)
     return json.loads(response.choices[0].message.content or '{}')
 
 

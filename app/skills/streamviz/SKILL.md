@@ -102,6 +102,23 @@ python3 app/skills/streamviz/scripts/render_streamviz.py \
 
 并在 `[[AIME_SKILLS:...]]` 中同时写入 `streamviz` 和真实执行的上游 Skill，例如 `a-share-data,external-search,streamviz`。
 
+### 批量检查 HTML
+
+需要检查多个视口或明暗主题时，可复用以下工具，一次启动浏览器并批量返回结果，无需反复编写浏览器探测代码、逐张截图后再询问下一步：
+
+```bash
+python3 app/skills/streamviz/scripts/inspect_html.py \
+  --input outputs/generated/<framework>-streamviz.html \
+  --output outputs/<framework>-layout-check.json \
+  --screenshots-dir outputs/<framework>-layout-check
+```
+
+默认检查 320、390、1000px 的明暗主题；可用 `--widths`、`--themes` 指定任务需要的组合。`--screenshots-dir` 可省略。工具不修改产物；JSON 分开报告整页横向溢出、JavaScript 错误和文字裁切警告，并提供相关元素和截图路径。表格自身横向滚动及显式省略号属于有意的布局，不按整页溢出处理。
+
+检查器对单个视口和整批任务都有硬超时；超时会写入 `inspection-timeout` 并立即返回。不要把超时的检查转入后台后反复调用 `job_output` 等待；保留已生成的 HTML，依据已返回的检查结果继续回答。
+
+这些是运行和布局证据，不验证数据、统计方法、视觉语义或全部交互。Agent 根据任务需要选择检查方法，汇总实际缺陷后决定修复和复验；工具不限制推理或修改轮数。若已满足用户要求，无需为用户未要求的字体、间距或配色偏好反复重绘；发现实际可读性或语义问题时继续修正。
+
 ## 表达边界
 
 - 报告的区块用留白分隔，不添加贯穿页面的亮色分割线；指标小卡片默认透明背景、1px 语义边框、8px 圆角、无阴影，桌面按可用宽度并列与换行；移动端以约 196–260px 宽的小卡片横向滑动、靠边吸附，卡间距 10px，不能强制铺深色卡片背景。需要状态底色时使用语义状态变量，不能混用固定颜色。

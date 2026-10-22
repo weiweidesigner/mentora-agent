@@ -1,6 +1,6 @@
 ---
 name: external-search
-description: Kimi-grounded web answer skill for non-AInvest information. The search script returns Kimi's final answer after its Formula tool loop; citations are supporting metadata, not reconstructed search-engine output. URL reading remains a separate capability.
+description: Live web retrieval with automatic Tavily then Serper fallback, an explicitly selectable Kimi route, and separate URL reading.
 ---
 
 # External Search
@@ -9,15 +9,29 @@ Use this skill when a request needs external web evidence or content from specif
 
 ## Scripts
 
-- `external_info_search.py`: uses the existing Moonshot Formula tools/fibers loop, and writes Kimi's final `message.content` as the primary `answer` observation.
+- `external_info_search.py`: searches Tavily first, then Serper. It writes the first successful provider's evidence to the common payload contract for the agent's reasoning stage.
 - `url_content_reader.py`: reads user-provided URLs; it does not discover new pages.
 
 ## Routing Notes
 
-Use `external_info_search.py` for web discovery, current facts, event dates, news, announcements, and non-AInvest sources. Downstream reasoning must consume payload `answer` first. `articles` only contains citations/references extracted from Kimi's final response when available.
+Use `external_info_search.py` for web discovery, current facts, event dates, news, announcements, and non-AInvest sources. Downstream reasoning consumes payload `answer` and uses `articles` as traceable source metadata.
 
-Do not call legacy search engines, crawl returned pages, or rebuild Kimi's answer from tool arguments. Execute requested Formula fibers, submit their outputs as tool messages, continue the model loop, and consume the final answer.
+## Exact CLI and output
+
+```sh
+python3 app/skills/external-search/scripts/external_info_search.py --query "<research question>" --source auto --output outputs/data/search.json
+```
+
+The default `--source auto` order is Tavily → Serper. A provider fails over when it is unconfigured, rejects the request, exhausts quota, times out, or returns no results. `fallback_attempts` records every attempted provider and `source` records the provider that succeeded. Kimi is not an automatic fallback because it performs an additional model synthesis. Use `--source kimi` only when the user requests Kimi or the Agent explicitly chooses it for the task.
+
+`--site <domain>` may repeat. `--limit 1..10` controls the result count. `--timeout` controls each retrieval request. `--source tavily|serper|kimi|moonshot` selects one provider; `moonshot` is a compatibility alias for Kimi. `--freshness-context` accepts a JSON object string and is passed to Kimi when that source is selected.
+
+The JSON output includes `source`, `model`, `answer`, `articles`, `article_count`, `usage`, and `fallback_attempts`. Missing credentials and provider errors stay in `fallback_attempts`; do not describe an unattempted provider as failed or a failed route as successful.
 
 Use `url_content_reader.py` only when the user provides one or more URLs and asks to read, summarize, extract, or analyze them.
 
-The Kimi script is pinned through `kimi-search.lock.json` to the public `weiweidesigner/kimi-search` repository. Credentials remain in the host ignored `.env` or process environment. `url_content_reader.py` is separately pinned through `url-content-reader.lock.json` to the public `weiweidesigner/url-content-reader` repository. Its logical host entry and URL-reading output contract remain unchanged.
+## Evidence reuse and stopping
+
+One successful discovery result is the reusable observation for that research question. Consume its `answer` and `articles` directly; do not open result URLs with `web_fetch`, `curl`, or ad-hoc HTTP code merely to confirm the same fact. Run at most one narrower follow-up search when the first result has the wrong date or lacks an essential field. A blocked or failed direct URL read is terminal for that route in the current turn: keep the limitation and continue with available structured/search evidence instead of trying more domains.
+
+Tavily uses `TAVILY_API_KEY`; Serper uses `SERPER_API_KEY`; Kimi uses `MOONSHOT_API_KEY`. Credentials stay in the host environment. The Kimi implementation remains pinned through `kimi-search.lock.json`; URL reading remains pinned separately through `url-content-reader.lock.json`.

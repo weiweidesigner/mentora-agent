@@ -11,7 +11,7 @@ const userMessageSource=appSource.slice(appSource.indexOf('function renderUserMe
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));
 const base={title:'我的盘中分析',agent:'mentora',market:'CN',stage:'live',assetType:'stocks',symbols:'',question:'分析市场',cadence:'daily',date:'',endDate:'',time:'12:00',timeMode:'fixed',offset:0,timezone:'market',enabled:true,newChat:true,browser:false,serverchan:false,feishu:false,wecom:false,weekdays:[0],monthDay:1,notifications:[],lastRun:{status:'success'},successAt:'2026-10-15T04:00:00Z',resultVersion:'run-new',summary:'## 核心结论\n\n**已保存的结果**',nextAt:'2026-10-16T04:00:00Z'};
-function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null}={}) {
+function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live'}],url='https://example.com/veya/',shared=null,serverTime='2026-10-15T04:00:00Z'}={}) {
  const dom=new JSDOM(html,{url,runScripts:'outside-only'}),w=dom.window,requests=[],saves=[];
  w.matchMedia=()=>({matches:mobile});w.setInterval=()=>0;w.structuredClone=structuredClone;w.requestAnimationFrame=f=>f();
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -26,7 +26,7 @@ function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live
   else if(options.method==='PUT'){const id=path.split('/').at(-1),index=tasks.findIndex(t=>t.id===id);data={...tasks[index],...JSON.parse(options.body)};tasks[index]=data;}
   else if(options.method==='DELETE'){tasks=tasks.filter(t=>!path.endsWith('/'+t.id));data={ok:true};}
   else if(options.method==='POST'&&path.endsWith('/run')){const task=tasks.find(t=>path.includes('/'+t.id+'/'));task.activeRun='queued';task.lastRun={status:'queued'};data={runId:'queued'};}
-  else if(path.endsWith('/tasks'))data={tasks,sceneTasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:scene,status:scene==='rest'?'今日休市':'交易中'}],serverTime:'2026-10-15T04:00:00Z',pushPublicKey:''};
+  else if(path.endsWith('/tasks'))data={tasks,sceneTasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:scene,status:scene==='rest'?'今日休市':'交易中'}],serverTime,pushPublicKey:''};
   else if(path.endsWith('/runs'))data={runs:path.includes('created')?[]:[{id:'run-new',status:'success',created:'2026-10-15T04:00:00Z',finished:'2026-10-15T04:00:00Z',available:true},{id:'run-old',status:'success',created:'2026-10-14T04:00:00Z',finished:'2026-10-14T04:00:00Z',available:true}]};
   else if(path.includes('/runs/'))data={question:'本次原始问句',cachedDate:'2026-10-15T04:00:00Z',answer:{interpretation:path.endsWith('run-old')?'上一次缓存内容':'最新缓存内容'}};
   else data={};
@@ -65,6 +65,11 @@ test('opening and switching task conversations starts at the latest message',asy
 
 test('task follow-up input does not show a nested focus outline',()=>{
  assert.match(styles,/#taskChatInput:focus-visible\s*\{\s*outline:\s*none;\s*\}/);
+});
+
+test('task conversation date stays centered and visually secondary',()=>{
+ assert.match(styles,/\.taskConversationDate\s*\{[^}]*position:absolute;[^}]*left:50%;[^}]*top:50%;[^}]*transform:translate\(-50%,-50%\);[^}]*font-size:11px;[^}]*opacity:\.62;/);
+ assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.taskConversationDate\s*\{\s*font-size:10px;opacity:\.58;\s*\}/);
 });
 
 test('new task opens the existing panel and task landing has no composer',async()=>{
@@ -210,9 +215,9 @@ test('sidebar summarizes upcoming, monitoring, monthly, paused and completed tas
  d.querySelector('#taskSidebarFilter').value='completed';d.querySelector('#taskSidebarFilter').dispatchEvent(new h.w.Event('change'));assert.equal(d.querySelectorAll('#taskSidebarList [data-task-open]').length,1);assert.ok(row('done'));h.dom.window.close();
 });
 
-test('sidebar dates use the task time zone and failed or queued runs never get a completion mark',async()=>{
+test('sidebar dates use Beijing time and failed or queued runs never get a completion mark',async()=>{
  const h=setup({tasks:[{...base,id:'us',market:'US',timezone:'America/New_York',time:'08:00',nextAt:'2026-10-15T12:00:00Z'},{...base,id:'queued',activeRun:'queued',lastRun:{status:'queued'}},{...base,id:'failed',cadence:'once',enabled:false,nextAt:null,lastRun:{status:'failed'}}]});await tick();const d=h.w.document;
- assert.equal(d.querySelector('[data-task-open="us"] small').textContent,'今天 8时 · 每天 8:00');assert.equal(d.querySelector('[data-task-open="queued"] small').textContent,'排队中');assert.equal(d.querySelector('[data-task-open="failed"] small').textContent,'运行失败');assert.equal(d.querySelector('[data-task-open="failed"] .taskListComplete'),null);h.dom.window.close();
+ assert.equal(d.querySelector('[data-task-open="us"] small').textContent,'今天 20时（北京时间） · 每天 8:00');assert.equal(d.querySelector('[data-task-open="queued"] small').textContent,'排队中');assert.equal(d.querySelector('[data-task-open="failed"] small').textContent,'运行失败');assert.equal(d.querySelector('[data-task-open="failed"] .taskListComplete'),null);h.dom.window.close();
 });
 
 test('more menu opens separately from the task and exposes pause, run, edit, share and delete',async()=>{
@@ -287,7 +292,7 @@ test('already scheduled presets appear in task lists, separate recommendations c
  const presets=['pre','live','post','rest'].flatMap(stage=>[1,2,3].map(i=>({...base,id:stage+i,title:'已创建-'+stage+i,stage,time:'09:00',systemPreset:true})));
  const h=setup({tasks:[],sceneTasks:presets});await tick();const d=h.w.document;d.querySelector('#navTasks').click();
  assert.equal(d.querySelectorAll('#taskLandingList [data-task-open]').length,12);assert.equal(d.querySelectorAll('[data-recommendation-scene]').length,0);assert.equal(d.querySelector('#taskSceneTabs'),null);
- const cards=d.querySelectorAll('[data-recommendation]');assert.equal(cards.length,8);assert.ok([...cards].every(e=>!e.textContent.includes('已创建-')));
+ const cards=d.querySelectorAll('[data-recommendation]');assert.equal(cards.length,20);assert.ok([...cards].every(e=>!e.textContent.includes('已创建-')));
  d.querySelector('[data-recommendation]').click();await tick();assert.ok(h.requests.some(r=>r.path.endsWith('/plan')));assert.equal(h.saves.length,0);h.dom.window.close();
 });
 
@@ -295,8 +300,9 @@ test('scene presets show scheduled, running and unread results and viewing clear
  const t={...base,systemPreset:true,scene:'live',resultScene:'live',resultDate:'2026-10-15'};
  const h=setup({tasks:[],sceneTasks:[{...t,id:'waiting',resultVersion:null,lastRun:null},{...t,id:'running',activeRun:'run-active',lastRun:{status:'running'},livePreview:'正在核验最新成交量与行情时间'},{...t,id:'done'}]});await tick();const d=h.w.document;
  const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,3);
- assert.match(cards[0].textContent,/等待执行/);assert.match(cards[1].textContent,/正在运行任务/);assert.equal(cards[1].querySelector('p').textContent,base.question);assert.doesNotMatch(cards[1].textContent,/核验最新成交量/);assert.ok(cards[1].classList.contains('is-running'));assert.ok(cards[1].querySelector('.dayRunSpinner'));assert.equal(cards[1].dataset.taskRun,'run-active');
- assert.equal(cards[2].querySelector('.dayResultEmoji'),null);assert.ok(cards[2].querySelector('[aria-label="未读结果"]'));cards[2].click();await tick();assert.equal(d.querySelector('[data-task-open="done"] .dayUnreadDot'),null);assert.equal(JSON.parse(h.w.localStorage.getItem('mentora-task-seen')).done,'run-new');assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
+ assert.deepEqual([...cards].map(card=>card.dataset.taskOpen),['running','done','waiting']);
+ assert.match(cards[2].textContent,/等待执行/);assert.match(cards[0].textContent,/正在运行任务/);assert.equal(cards[0].querySelector('p').textContent,base.question);assert.doesNotMatch(cards[0].textContent,/核验最新成交量/);assert.ok(cards[0].classList.contains('is-running'));assert.ok(cards[0].querySelector('.dayRunSpinner'));assert.equal(cards[0].dataset.taskRun,'run-active');
+ assert.equal(cards[1].querySelector('.dayResultEmoji'),null);assert.ok(cards[1].querySelector('[aria-label="未读结果"]'));cards[1].click();await tick();assert.equal(d.querySelector('[data-task-open="done"] .dayUnreadDot'),null);assert.equal(JSON.parse(h.w.localStorage.getItem('mentora-task-seen')).done,'run-new');assert.equal(h.requests.some(r=>r.method==='POST'),false);h.dom.window.close();
 });
 
 test('running task replays real events into the normal live renderer and finishes with settings entry',async()=>{
@@ -319,4 +325,87 @@ test('polling preserves running cards and spinners rather than restarting their 
  assert.equal(card.getAttribute('style'),null);
  running.title='更新后的任务名称';d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();assert.equal(d.querySelector('#dayPanel [data-task-open="running"]'),card);assert.match(card.textContent,/更新后的任务名称/);
  running.activeRun=null;running.lastRun={status:'success'};d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();assert.equal(card.classList.contains('is-running'),false);assert.equal(card.querySelector('.dayRunSpinner'),null);h.dom.window.close();
+});
+
+test('Deal templates filter by market and scene and save a repeating window',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ const market=d.querySelector('#taskMarketFilter'),scene=d.querySelector('#taskStageFilter');
+ market.value='US';scene.value='live';scene.dispatchEvent(new h.w.Event('change'));
+ assert.equal(d.querySelectorAll('[data-recommendation^="deal-"]').length,2);
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();
+ const f=d.querySelector('#dayForm');assert.equal(f.elements.agent.value,'mentora-deal');assert.equal(f.elements.market.value,'US');assert.equal(f.elements.triggerMode.value,'window');
+ assert.equal(d.querySelector('#dayWindowFields').hidden,false);assert.equal(f.elements.windowEnd.value,'16:00');
+ f.elements.windowIntervalAmount.value='15';f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(h.saves[0].intervalMinutes,15);assert.equal(h.saves[0].cadence,'trading');assert.equal(h.saves[0].timezone,'market');assert.equal(h.saves[0].windowStart,'09:30');
+ h.dom.window.close();
+});
+
+test('six scene pack creates two markets and is safe to click twice',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('#taskAddDealPack').click();await tick();
+ assert.equal(h.saves.length,6);assert.equal(new Set(h.saves.map(t=>t.market+':'+t.stage)).size,6);
+ assert.ok(h.saves.every(t=>t.agent==='mentora-deal'&&t.triggerMode==='window'));
+ d.querySelector('#taskAddDealPack').click();await tick();assert.equal(h.saves.length,6);h.dom.window.close();
+});
+
+test('task lists merge personal and public tasks by actual next execution time',async()=>{
+ const h=setup({tasks:[
+  {...base,id:'late',nextAt:'2026-10-15T13:30:00Z'},
+  {...base,id:'paused',enabled:false,nextAt:'2026-10-15T01:00:00Z'},
+  {...base,id:'early',nextAt:'2026-10-15T06:30:00Z'},
+  {...base,id:'us',market:'US',nextAt:'2026-10-15T08:30:00-04:00'},
+  {...base,id:'running',activeRun:'active',lastRun:{status:'running'},nextAt:'2026-10-16T01:00:00Z'},
+ ],sceneTasks:[{...base,id:'scene',systemPreset:true,nextAt:'2026-10-15T03:00:00Z'}]});await tick();
+ assert.deepEqual([...h.w.document.querySelectorAll('#taskLandingList [data-task-open]')].map(e=>e.dataset.taskOpen),['running','scene','early','us','late','paused']);
+ assert.deepEqual([...h.w.document.querySelectorAll('#taskSidebarList [data-task-open]')].map(e=>e.dataset.taskOpen),['running','scene','early','us','late']);
+ h.dom.window.close();
+});
+
+ test('scene intervals accept hours and switching to clock mode unlocks date rules',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm');
+ const change=(name,value)=>{f.elements[name].value=value;f.elements[name].dispatchEvent(new h.w.Event('change',{bubbles:true}));};
+ change('windowIntervalUnit','hours');assert.equal(f.elements.windowIntervalAmount.value,'0.5');
+ change('windowIntervalAmount','2');f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(h.saves[0].intervalMinutes,120);assert.equal(h.saves[0].cadence,'trading');
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();change('triggerMode','once');
+ assert.equal(d.querySelector('#dayStageLabel').hidden,true);assert.equal(d.querySelector('#dayWindowFields').hidden,true);assert.equal(f.elements.cadence.disabled,false);
+ assert.equal(f.elements.windowIntervalAmount.disabled,true);assert.equal(f.elements.timeMode.value,'fixed');h.dom.window.close();
+ });
+
+test('market belongs below scheduling mode and is hidden for absolute time',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm');
+ const mode=d.querySelector('[data-editor-field="triggerMode"]').closest('.taskSettingRow'),market=d.querySelector('#dayMarketLabel');
+ assert.equal(mode.nextElementSibling,market);assert.equal(market.hidden,false);
+ f.elements.triggerMode.value='once';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+ assert.equal(market.hidden,true);assert.equal(d.querySelector('#dayStageLabel').hidden,true);assert.equal(f.elements.timezone.value,'America/New_York');
+ f.elements.triggerMode.value='window';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+ assert.equal(market.hidden,false);assert.equal(f.elements.timezone.value,'market');h.dom.window.close();
+});
+
+test('repeat controls belong only to absolute-time scheduling',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm');
+ for(const id of ['dayRepeatLabel','dayCadenceLabel','dayEndModeLabel'])assert.equal(d.querySelector('#'+id).hidden,true);
+ f.elements.triggerMode.value='once';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+ for(const id of ['dayRepeatLabel','dayCadenceLabel','dayEndModeLabel'])assert.equal(d.querySelector('#'+id).hidden,false);
+ f.elements.endMode.value='date';f.elements.endDate.value='2026-12-31';
+ f.elements.triggerMode.value='window';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+ assert.equal(f.elements.endDate.value,'');assert.equal(f.elements.endMode.value,'never');h.dom.window.close();
+});
+
+ test('US next run uses today in Beijing even when New York is still yesterday',async()=>{
+ const h=setup({serverTime:'2026-10-15T02:00:00Z',tasks:[{...base,id:'us',market:'US',timezone:'market',nextAt:'2026-10-15T12:30:00Z',triggerMode:'window',windowStart:'08:30',windowEnd:'09:30',intervalMinutes:30}]});await tick();
+ const text=h.w.document.querySelector('#taskSidebarList [data-task-open="us"] small').textContent;
+ assert.match(text,/今天 20:30（北京时间）/);assert.match(text,/美东 08:30–09:30/);assert.doesNotMatch(text,/明天/);h.dom.window.close();
+ });
+
+test('public preset offers personal delete and cancel keeps it intact',async()=>{
+ const h=setup({tasks:[],sceneTasks:[{...base,id:'public-preset',systemPreset:true}]});await tick();const d=h.w.document;
+ d.querySelector('[data-task-more="public-preset"]').click();const action=d.querySelector('[data-task-action="delete"]');assert.ok(action);action.click();
+ assert.match(d.querySelector('#taskDeleteDialog').textContent,/仅影响当前浏览器/);
+ d.querySelector('#taskDeleteCancel').click();assert.equal(h.requests.some(r=>r.method==='DELETE'),false);
+ d.querySelector('[data-task-more="public-preset"]').click();d.querySelector('[data-task-action="delete"]').click();d.querySelector('#taskDeleteConfirm').click();await tick();
+ assert.ok(h.requests.some(r=>r.method==='DELETE'&&r.path.endsWith('/public-preset')));assert.equal(d.querySelector('#taskSidebarList [data-task-open="public-preset"]'),null);h.dom.window.close();
 });

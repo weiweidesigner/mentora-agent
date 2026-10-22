@@ -193,6 +193,16 @@ def upgrade_legacy_shareholder_returns(artifact, theme):
         return artifact
 
 
+def upgrade_native_chart_scroll(artifact: str) -> str:
+    """Let both wheel axes reach the page, including nested saved srcdoc charts."""
+    if 'id="kline-canvas"' not in artifact and 'id=&quot;kline-canvas&quot;' not in artifact:
+        return artifact
+    old = 'if (!e.ctrlKey && Math.abs(e.deltaY) >= Math.abs(e.deltaX)) return;'
+    new = 'if (!e.ctrlKey) return;'
+    import html
+    return artifact.replace(old, new).replace(html.escape(old, quote=True), html.escape(new, quote=True))
+
+
 def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
     """Repair saved native layouts without changing their data or custom marks."""
     if 'class="payout-ratio"' in artifact and 'data-mobile-layout="2"' not in artifact:
@@ -214,6 +224,7 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
                 artifact = _native_payout_ratio().render_html(values)
             except (ValueError, TypeError, KeyError):
                 pass
+    artifact = upgrade_native_chart_scroll(artifact)
     artifact = upgrade_legacy_ratings(artifact, theme)
     artifact = upgrade_legacy_revenue_player(artifact, theme)
     artifact = upgrade_legacy_shareholder_returns(artifact, theme)

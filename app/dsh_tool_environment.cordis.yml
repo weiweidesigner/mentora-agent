@@ -1,0 +1,3 @@
+- insert:
+    - id: mentora-tool-environment
+      name: ./dsh_tool_environment.cjs

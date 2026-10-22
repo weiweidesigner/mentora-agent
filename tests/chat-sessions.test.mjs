@@ -38,9 +38,10 @@ test('leaving while submission is accepted still saves the original background r
   const context=vm.createContext({
     currentSession:initial,lastQuestion:'',activeController:null,serverSessionReady:Promise.resolve(),
     DEFAULT_REASONING_FRAMEWORK:'deepseek',DEFAULT_INFERENCE_MODEL:'test',AbortController,
-    currentThemeMode:()=> 'dark',ensureCurrentSession:()=>initial,
+    currentThemeMode:()=> 'dark',currentReasoningEffort:()=> 'low',ensureCurrentSession:()=>initial,
     imageSessionPayload:()=>[],imageRequestPayload:x=>x,
     addUserMessage:()=>({}),createAssistantMessage:()=>({}),showAgentIdentity:()=>{},
+    applyRunTiming:()=>{},
     saveCurrentSession:()=>saved.push({...initial}),persistChatSession:s=>saved.push({...s}),
     updateComposerState:()=>{},input:{focus(){}},button:{disabled:false},autoFollow:false,
     fetch:()=>pending,followChatRun:()=>assert.fail('detached view must not attach a stream'),
@@ -66,4 +67,13 @@ test('late title completion cannot write the answer into a different session',as
   context.currentSession=second;finishTitle('first title');await result;
   assert.equal(saved[0].id,'first');assert.equal(saved[0].messages[0].interpretation,'first answer');
   assert.deepEqual(second.messages,[]);
+});
+
+test('running composer exposes a stop action instead of disabling send',()=>{
+  assert.match(source,/classList\.toggle\("is-running",running\)/);
+  assert.match(source,/aria-label",running \? "停止任务" : "发送"/);
+  assert.match(source,/\/api\/chat\/runs\/\$\{encodeURIComponent\(runId\)\}\/cancel/);
+  const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
+  assert.match(css,/#submitButton\.is-running \.sendArrow/);
+  assert.match(css,/content: none/);
 });

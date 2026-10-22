@@ -31,6 +31,8 @@ def test_native_tool_arguments_are_forwarded_as_visualization_deltas(tmp_path, m
     assert visualization[-1]["htmlUrl"].startswith("/generated/native-streamviz-")
     final = next(data for name, data in events if name == "final")
     assert final["reportArtifacts"][0]["url"].startswith("/generated/native-streamviz-")
+    assert final["fileArtifacts"][0]["type"] == "HTML"
+    assert final["fileArtifacts"][0]["downloadUrl"].endswith("/download")
     assert "<circle" in (tmp_path / final["reportArtifacts"][0]["path"].split("/")[-1]).read_text(encoding="utf-8")
 
 

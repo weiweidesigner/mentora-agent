@@ -17,7 +17,7 @@ def test_inference_models_keep_complete_ids_and_use_display_names(monkeypatch, t
     monkeypatch.setattr(frameworks, "_ollama_models", lambda: ["haervwe/GLM-4.6V-Flash-9B:latest"])
 
     assert frameworks.inference_models() == [
-        {"id": "deepseek-v4-flash", "name": "deepseek-v4-flash", "provider": "deepseek", "available": True},
+        {"id": "deepseek-flash", "name": "deepseek-flash", "provider": "deepseek", "available": True},
         {"id": "haervwe/GLM-4.6V-Flash-9B:latest", "name": "GLM-4.6v-Flash (自部署)", "provider": "ollama", "available": True},
     ]
 

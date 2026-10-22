@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/us-market-news.git",
-  "revision": "e69f667983e860488f9c388d20e8b73a071e90b3",
+  "revision": "e496424f09f07aaea1f41c77b31e237aa2bbc85a",
   "checkout": ".dependencies/us-market-news",
   "links": {
     "app/skills/internal-search": "app/skills/internal-search"
