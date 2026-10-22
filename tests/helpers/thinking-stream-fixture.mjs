@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 
 const source = readFileSync(new URL('../../app/static/app.js', import.meta.url), 'utf8');
-const names = ['appendStep', 'appendRichStep', 'appendToolStep', 'activityActionIcon',
+const names = ['appendStep', 'appendRichStep', 'appendToolStep', 'activityToolKind', 'activityToolVerb', 'activitySummaryKey', 'rememberActivityDisclosure', 'activityToolMarkup', 'buildActivityFlow', 'syncInlineActivity', 'activityActionIcon',
   'publicToolObservation', 'compactReasoningTitle', 'modelActivitySummary', 'toolActivityTitle', 'refreshSavedToolStepTitles', 'toolBlockHtml',
   'formatShellCommand', 'shellQuote', 'skillOutputLabel', 'showError', 'showStopped', 'completeThinking',
   'updateThinkingSummary', 'toggleActivityDrawer', 'openActivityDrawer', 'closeActivityDrawer',
@@ -41,6 +41,7 @@ article.dataset.startedAt = String(Date.now() - 269000);
 article.activityEnded = false;
 article.querySelector('.thinkingTrigger').addEventListener('click', () => toggleActivityDrawer(article));
 activityClose.addEventListener('click', closeActivityDrawer);
+document.addEventListener('toggle', rememberActivityDisclosure, true);
 updateThinkingSummary(article, '', {live:true});
 window.finish = () => {
   article.dataset.cachedElapsedMs = '269000';
