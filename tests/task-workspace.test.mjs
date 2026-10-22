@@ -72,6 +72,11 @@ test('task conversation date stays centered and visually secondary',()=>{
  assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.taskConversationDate\s*\{\s*font-size:9px;opacity:\.44;\s*\}/);
 });
 
+test('task run timestamp stays centered and visually secondary',()=>{
+ assert.match(styles,/\.taskRunTimestamp\s*\{[^}]*display:block;[^}]*width:100%;[^}]*text-align:center;[^}]*font-size:10px;[^}]*opacity:\.48;/);
+ assert.match(styles,/@media\(max-width:760px\)[\s\S]*?\.taskRunTimestamp\s*\{\s*margin-bottom:20px;font-size:9px;opacity:\.44;\s*\}/);
+});
+
 test('new task opens the existing panel and task landing has no composer',async()=>{
  const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('#navTasks').click();assert.equal(d.querySelector('#taskPromptForm'),null);d.querySelector('#taskSidebarNew').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#taskWizard').hidden,true);assert.equal(h.requests.some(r=>r.path.endsWith('/plan')),false);h.dom.window.close();
 });

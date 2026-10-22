@@ -4414,6 +4414,7 @@ p {
 .taskInfoActions .taskTopActions { gap:16px; }
 .taskInfoActions .taskTopActions button { font-size:12px; }
 .taskThread { padding-bottom:28px; }
+.taskRunTimestamp { display:block;width:100%;margin:0 0 24px;text-align:center;font-size:10px;font-weight:400;line-height:1.4;color:var(--muted);opacity:.48;letter-spacing:.01em; }
 .taskFollowups { width:min(100%,880px);margin:0 auto;padding:0 24px; }
 .taskFollowups .taskUserBubble { margin-top:28px; }
 .taskChatAnswer { margin-bottom:32px!important; }
@@ -4439,6 +4440,7 @@ p {
  .taskConversationBack { font-size:0;width:34px;height:34px;padding:0; }
  .taskConversationBack::before { content:'‹';font-size:25px;line-height:1; }
  .taskConversationDate { font-size:9px;opacity:.44; }
+ .taskRunTimestamp { margin-bottom:20px;font-size:9px;opacity:.44; }
  .taskHistoryControl { grid-column:3;padding:5px 8px; }
  .taskHistoryControl span { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap; }
  .taskHistoryControl select { max-width:110px; }
