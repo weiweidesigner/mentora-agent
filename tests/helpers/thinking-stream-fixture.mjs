@@ -4,7 +4,7 @@ const source = readFileSync(new URL('../../app/static/app.js', import.meta.url),
 const names = ['appendStep', 'appendRichStep', 'appendToolStep', 'activityToolKind', 'activityToolVerb', 'activitySummaryKey', 'rememberActivityDisclosure', 'activityToolMarkup', 'buildActivityFlow', 'syncInlineActivity', 'activityActionIcon',
   'publicToolObservation', 'compactReasoningTitle', 'modelActivitySummary', 'toolActivityTitle', 'refreshSavedToolStepTitles', 'toolBlockHtml',
   'formatShellCommand', 'shellQuote', 'skillOutputLabel', 'showError', 'showStopped', 'completeThinking',
-  'updateThinkingSummary', 'toggleActivityDrawer', 'openActivityDrawer', 'closeActivityDrawer',
+  'updateThinkingSummary', 'setInlineActivityExpanded', 'toggleActivityDrawer', 'openActivityDrawer', 'closeActivityDrawer',
   'syncActivityDrawer', 'formatDuration', 'escapeHtml'];
 const functions = names.map(name => {
   const start = source.indexOf(`function ${name}(`);

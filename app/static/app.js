@@ -302,12 +302,21 @@ function syncResponsiveShell() {
 syncResponsiveShell();
 mobileShellQuery.addEventListener?.("change", () => {
   syncResponsiveShell();
+  if (isMobileLayout()) {
+    const expanded = Array.from(document.querySelectorAll('.message.assistant[data-activity-inline-expanded="true"]'));
+    const current = expanded.filter((article) => !article.querySelector(".thinkingFlow")?.hidden).at(-1);
+    expanded.forEach((article) => {
+      syncInlineActivity(article);
+      article.querySelector(".thinkingTrigger")?.setAttribute("aria-expanded", "false");
+    });
+    if (current && !activeActivityArticle) openActivityDrawer(current);
+  }
   if (!activeActivityArticle || !activityDrawer?.classList.contains("is-open")) return;
   if (isMobileLayout()) openActivityDrawer(activeActivityArticle);
   else {
-    activityDrawer.removeAttribute("aria-modal");
-    activityDrawer.removeAttribute("role");
-    document.querySelector(".activityBackdrop")?.setAttribute("hidden", "");
+    const article = activeActivityArticle;
+    closeActivityDrawer();
+    setInlineActivityExpanded(article, true);
   }
 });
 
@@ -2004,11 +2013,12 @@ function syncInlineActivity(article) {
     view.id = `thinking-${crypto.randomUUID()}`;
     source.before(view);
   }
-  view.hidden = article.activityEnded || article.dataset.thinkingCollapsed === "true" || article.dataset.thinkingState !== "active";
-  const signature = `${article.activityEnded}:${source.innerHTML}`;
+  const live = !article.activityEnded && article.dataset.thinkingState === "active";
+  view.hidden = live ? article.dataset.thinkingCollapsed === "true" : isMobileLayout() || article.dataset.activityInlineExpanded !== "true";
+  const signature = `${article.activityEnded}:${article.activitySources?.length || 0}:${source.innerHTML}`;
   if (article.activityFlowSignature !== signature) {
     const focused = view.contains(document.activeElement) ? document.activeElement.closest("details")?.dataset.activityKey : "";
-    view.innerHTML = buildActivityFlow(article);
+    view.innerHTML = buildActivityFlow(article) + (article.activityEnded ? buildActivitySources(article, article.dataset.lang || "en") : "");
     if (focused) Array.from(view.querySelectorAll("details[data-activity-key]")).find((item) => item.dataset.activityKey === focused)?.querySelector("summary")?.focus({preventScroll:true});
     article.activityFlowSignature = signature;
   }
@@ -3618,18 +3628,21 @@ function updateThinkingSummary(article, prefix, options = {}) {
     if (!options.live) {
       list.querySelectorAll("details[open]").forEach((detail) => { detail.open = false; });
       delete article.dataset.thinkingCollapsed;
-      if (article.activityWasLive) article.activityDisclosureState?.clear();
+      if (article.activityWasLive) {
+        article.activityDisclosureState?.clear();
+        delete article.dataset.activityInlineExpanded;
+      }
     }
   }
   const flow = options.clockOnly ? article.querySelector(".thinkingFlow") : syncInlineActivity(article);
-  if (flow) flow.hidden = !options.live || article.dataset.thinkingCollapsed === "true";
+  if (flow) flow.hidden = options.live ? article.dataset.thinkingCollapsed === "true" : isMobileLayout() || article.dataset.activityInlineExpanded !== "true";
   article.activityWasLive = Boolean(options.live);
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
     trigger.classList.toggle("is-thinking", Boolean(options.live));
     trigger.classList.toggle("is-complete", !options.live && article.dataset.thinkingState !== "error");
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
-    trigger.setAttribute("aria-expanded", String(Boolean(options.live && flow && !flow.hidden)));
+    trigger.setAttribute("aria-expanded", String(Boolean(flow && !flow.hidden)));
     trigger.setAttribute("aria-controls", flow?.id || "activityDrawer");
   }
   if (activeActivityArticle === article && activityElapsed) {
@@ -3637,10 +3650,25 @@ function updateThinkingSummary(article, prefix, options = {}) {
   }
 }
 
+function setInlineActivityExpanded(article, expanded) {
+  if (activeActivityArticle) closeActivityDrawer();
+  article.dataset.activityInlineExpanded = String(expanded);
+  if (!article.activityEnded && article.dataset.thinkingState === "active") article.dataset.thinkingCollapsed = String(!expanded);
+  const flow = syncInlineActivity(article);
+  const trigger = article.querySelector(".thinkingTrigger");
+  trigger?.setAttribute("aria-expanded", String(expanded));
+  if (flow) trigger?.setAttribute("aria-controls", flow.id);
+}
+
 function toggleActivityDrawer(article) {
   if (!article.activityEnded && article.dataset.thinkingState === "active") {
     article.dataset.thinkingCollapsed = article.dataset.thinkingCollapsed === "true" ? "false" : "true";
     updateThinkingSummary(article, "", { live: true });
+    return;
+  }
+  if (!isMobileLayout()) {
+    const flow = syncInlineActivity(article);
+    setInlineActivityExpanded(article, Boolean(flow?.hidden));
     return;
   }
   if (activeActivityArticle === article && activityDrawer?.classList.contains("is-open")) {
@@ -3651,6 +3679,10 @@ function toggleActivityDrawer(article) {
 }
 
 function openActivityDrawer(article) {
+  if (!isMobileLayout()) {
+    setInlineActivityExpanded(article, true);
+    return;
+  }
   if(typeof closeGeneratedFilePreview==='function')closeGeneratedFilePreview(false);
   activeActivityArticle = article;
   activityAutoFollow = !article.classList.contains("cachedCaseAnswer") && article.dataset.historicalTaskRun !== "true";

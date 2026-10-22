@@ -42,10 +42,13 @@ test('independent active tools do not complete each other and final flow collaps
   assert.equal(a.querySelector('.thinkingSteps').hidden, true);
   assert.equal(a.querySelectorAll('details[open], li.is-loading').length, 0);
   a.querySelector('.thinkingTrigger').click();
-  assert.ok(w.document.querySelector('.shell.activity-open'));
-  assert.equal(w.document.querySelector('#activityDrawer').getAttribute('aria-hidden'), 'false');
-  assert.equal(w.document.querySelectorAll('#activityBody details.activityTool').length, 2);
-  assert.equal(w.document.querySelectorAll('#activityBody details.activityGroup').length, 1);
+  assert.equal(w.document.querySelector('.shell.activity-open'), null);
+  assert.equal(w.document.querySelector('#activityDrawer').getAttribute('aria-hidden'), 'true');
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelectorAll('.thinkingFlow details.activityTool').length, 2);
+  assert.equal(a.querySelectorAll('.thinkingFlow details.activityGroup').length, 1);
+  a.querySelector('.thinkingTrigger').click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   dom.window.close();
 });
 
@@ -200,8 +203,8 @@ test('incomplete calls do not acquire a success badge when a run stops', () => {
   const dom = fixture(), w = dom.window, a = w.article;
   w.appendToolStep(a, started); w.showStopped(a);
   a.querySelector('.thinkingTrigger').click();
-  assert.match(w.document.querySelector('#activityBody .activityToolState').textContent, /未记录完成结果/);
-  assert.doesNotMatch(w.document.querySelector('#activityBody .activityToolState').textContent, /成功/);
+  assert.match(a.querySelector('.thinkingFlow .activityToolState').textContent, /未记录完成结果/);
+  assert.doesNotMatch(a.querySelector('.thinkingFlow .activityToolState').textContent, /成功/);
   dom.window.close();
 });
 
@@ -216,5 +219,21 @@ test('historical Shell inputs migrate into the same unified panel without invent
   assert.equal(panel.querySelector('.toolStepInput').textContent, '$ python3 verify.py');
   assert.match(panel.querySelector('.toolStepOutputBlock').textContent, /data verified/);
   assert.equal(panel.querySelector('.activityToolState').textContent, '已返回结果');
+  dom.window.close();
+});
+
+test('desktop inline replay remains expanded after synchronization and direct open never creates a sidebar', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {...started, phase:'completed', observation:'done'}); w.finish();
+  w.openActivityDrawer(a);
+  w.syncActivityDrawer(a);
+  w.updateThinkingSummary(a, '');
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'true');
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-controls'), a.querySelector('.thinkingFlow').id);
+  assert.equal(w.document.querySelector('.shell.activity-open'), null);
+  assert.equal(w.document.querySelector('.activityBackdrop'), null);
+  w.setInlineActivityExpanded(a, false);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   dom.window.close();
 });
