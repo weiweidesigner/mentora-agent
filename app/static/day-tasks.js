@@ -188,8 +188,8 @@
     });
     for(const card of existing.values())card.remove();
   }
-  const enablingTasks=new Set();
-  const enableTaskIcon='<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 12c276.142 0 500 223.858 500 500s-223.858 500-500 500S12 788.142 12 512 235.858 12 512 12zm0 71.429C275.307 83.429 83.429 275.307 83.429 512S275.307 940.571 512 940.571 940.571 748.693 940.571 512 748.693 83.429 512 83.429zm-71.429 245.285a35.714 35.714 0 0 1 19.786 6l221.357 147.572a35.714 35.714 0 0 1 0 59.428L460.357 689.286a35.714 35.714 0 0 1-55.5-29.715V364.43c0-19.725 15.99-35.715 35.714-35.715z"/></svg>';
+  const runningNowTasks=new Set();
+  const runNowTaskIcon='<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 12c276.142 0 500 223.858 500 500s-223.858 500-500 500S12 788.142 12 512 235.858 12 512 12zm0 71.429C275.307 83.429 83.429 275.307 83.429 512S275.307 940.571 512 940.571 940.571 748.693 940.571 512 748.693 83.429 512 83.429zm-71.429 245.285a35.714 35.714 0 0 1 19.786 6l221.357 147.572a35.714 35.714 0 0 1 0 59.428L460.357 689.286a35.714 35.714 0 0 1-55.5-29.715V364.43c0-19.725 15.99-35.715 35.714-35.715z"/></svg>';
   function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
     const ready=t=>t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date&&resultScene(t)===scene;
     const rows=[...sceneTasks.filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),...tasks.filter(t=>(t.resultMarket||t.market)==='CN'&&((t.activeRun&&(t.scene||resultScene(t))===scene)||ready(t)))];
@@ -202,7 +202,7 @@
         ? `${dayDate(t.nextAt)===date?'今天':new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',month:'long',day:'numeric',...(dayDate(t.nextAt).slice(0,4)!==date.slice(0,4)?{year:'numeric'}:{})}).format(new Date(t.nextAt))} ${new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(t.nextAt))}` : '';
       const statusText=label==='等待执行'?`${label} · ${scheduled||'时间待确定'}`:label;
       const description=plainSummary(visibleQuestion(t).split(' 使用项目已有金融研究技能')[0]);
-      return `<article role="button" tabindex="0" class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${paused&&editable(t)?`<button class="dayTaskEnableIcon" type="button" data-task-enable="${esc(t.id)}" aria-label="开启：${esc(t.title)}" title="开启" ${enablingTasks.has(t.id)?'disabled':''}>${enableTaskIcon}</button>`:''}${done?`<div class="caseCardTop"><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span class="caseCardTag">${esc(statusText)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</article>`;
+      return `<article role="button" tabindex="0" class="caseCard daySceneCard ${done?'is-complete':'is-pending'} ${running?'is-running':''}" data-task-open="${esc(t.id)}" data-task-run="${esc(run)}">${paused&&editable(t)?`<button class="dayTaskRunNowIcon" type="button" data-task-run-now="${esc(t.id)}" aria-label="立即执行：${esc(t.title)}" title="立即执行" ${runningNowTasks.has(t.id)?'disabled':''}>${runNowTaskIcon}</button>`:''}${done?`<div class="caseCardTop"><span class="caseCardTag">${esc(t.title)}</span>${seenRuns[t.id]!==t.resultVersion?'<span class="dayUnreadDot" role="img" aria-label="未读结果"></span>':''}</div><h2>${esc(t.resultHeadline||plainSummary(t.summary).split(/[。！？]/)[0].slice(0,64))}</h2><p>${esc(t.resultDescription||plainSummary(t.summary))}</p>`:`<div class="caseCardTop dayTaskStatus">${active?`<span class="dayRunSpinner ${running?'':'is-queued'}" aria-hidden="true"></span>`:''}<span class="caseCardTag">${esc(statusText)}</span></div><h2>${esc(t.title)}</h2><p class="dayTaskDescription">${esc(description)}</p>`}</article>`;
     }).join('')}</div>`:`<p class="dayHomeEmpty">${scene?'今天的这一时段暂无任务。':'正在同步交易日历…'}</p>`);
   }
 
@@ -634,7 +634,7 @@
   function newTask() {if(!$('taskWizard').hidden)showLanding();wizardDraft=null;edit({...template(),timeMode:'fixed'});}
   document.addEventListener('click',async event=>{
     const b=event.target.closest('button,[data-task-open]');if(!b)return;
-    if(b.dataset.taskEnable){event.stopPropagation();const task=[...tasks,...sceneTasks].find(t=>t.id===b.dataset.taskEnable);if(!task||task.enabled||enablingTasks.has(task.id))return;enablingTasks.add(task.id);renderHome();try{await toggleTask(task);}catch(error){message(error.message);}finally{enablingTasks.delete(task.id);renderHome();}return;}
+    if(b.dataset.taskRunNow){event.stopPropagation();const task=[...tasks,...sceneTasks].find(t=>t.id===b.dataset.taskRunNow);if(!task||task.activeRun||runningNowTasks.has(task.id))return;runningNowTasks.add(task.id);renderHome();try{const result=await api('tasks/'+task.id+'/run','POST');pinnedRun=false;await refresh();await selectTask(result.taskId||task.id,{runId:result.runId||''});}catch(error){message(error.message);}finally{runningNowTasks.delete(task.id);renderHome();}return;}
     if(b.dataset.taskMore){event.stopPropagation();openTaskMenu(b);return;}
     try {
       if(b.dataset.taskOpen){await selectTask(b.dataset.taskOpen,{runId:b.dataset.taskRun||''});return;}
