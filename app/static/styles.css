@@ -842,7 +842,7 @@ textarea {
 }
 
 .message.user + .message.assistant {
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 
@@ -872,6 +872,7 @@ textarea {
 }
 
 .userMessageWrap {
+  position: relative;
   display: grid;
   justify-items: end;
   gap: 10px;
@@ -887,6 +888,10 @@ textarea {
 }
 
 .userActions {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 6px;
