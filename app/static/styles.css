@@ -5072,7 +5072,7 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .activityAction:focus-visible,.thinkingTrigger:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
 .activityTool>.toolStepDetail{margin-top:8px;gap:8px}
-.activityGroupItems{gap:12px;margin:8px 0 0;padding:0 0 0 24px}
+.activityGroupItems{gap:12px;margin:8px 0 0;padding:0}
 .activityCurrentAction{gap:8px;margin-top:6px}
 .activityGroup[open]+.activityCurrentAction{display:none}
 .activityCommandPanel{display:grid;gap:14px;min-width:0;max-height:min(420px,50dvh);overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--ink) 3%,var(--bg));padding:14px 16px 12px}
@@ -5086,7 +5086,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .is-error>.activityTool>.activityAction{color:var(--danger)}
 .activityBody{min-width:0;padding:20px 24px 28px}
 .activityBody .activityNarrative>p{font-size:14px;line-height:1.75}
-.activityBody .activityGroupItems{padding-left:16px}
+.activityBody .activityGroupItems{padding-left:0}
 .activityBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:125}
 .activityBackdrop[hidden]{display:none}
 @keyframes activityTextFade{0%,100%{opacity:.5}50%{opacity:1}}
