@@ -133,6 +133,11 @@ test('A-share case combines narrative analysis with one integrated StreamViz rep
   assert.ok(evidence.rankings.every(group=>group.rows.length===10));
 });
 
+test('midterm election case removes the standalone reader gutter when embedded',()=>{
+ const report=readFileSync(new URL('../app/static/cases/midterm-election-1902-2026/report.html',import.meta.url),'utf8');
+ assert.match(report,/<script src="\/static\/artifact-presentation\.js"><\/script>/);
+});
+
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();

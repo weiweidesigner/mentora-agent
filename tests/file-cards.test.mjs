@@ -16,6 +16,9 @@ test('generated file cards use compact spacing and a slightly wider desktop row'
  assert.match(styles,/\.generatedFileCard\{[^}]*width:min\(100%,420px\);max-width:100%;/);
  assert.match(styles,/@media\(max-width:640px\)\{\.generatedFileCard\{width:100%;/);
 });
+test('cached case replays do not show a thinking summary control',()=>{
+ assert.match(styles,/\.cachedCaseAnswer \.thinkingTrigger\{display:none!important\}/);
+});
 test('backend-approved StreamViz HTML gets an accessible preview/download card after the report in a prefixed deployment',async()=>{
  const s=setup();
  s.w.renderFileDeliverables(s.article,{selectedSkill:{key:'streamviz'},fileArtifacts:[{url:'/mentora/generated/报告.html'}]});

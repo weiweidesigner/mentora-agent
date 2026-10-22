@@ -7,10 +7,10 @@
     "reportArtifacts": [
       {
         "path": "case:midterm-election-1902-2026/report.html",
-        "url": "/static/cases/midterm-election-1902-2026/report.html"
+        "url": "/static/cases/midterm-election-1902-2026/report.html?v=20261022-full-width"
       }
     ],
-    "reportUrl": "/static/cases/midterm-election-1902-2026/report.html",
+    "reportUrl": "/static/cases/midterm-election-1902-2026/report.html?v=20261022-full-width",
     "sources": [],
     "lang": "zh-CN"
   },
