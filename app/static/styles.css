@@ -4880,16 +4880,16 @@ p {
 .dayHeading { align-items:center;gap:12px; }
 .daySceneArt { display:flex;align-items:center;justify-content:center; }
 .daySceneCard { position:relative; }
-.daySceneGrid .caseCard.daySceneCard:has(.dayRerunIcon) { padding-right:48px; }
-.dayRerunIcon {
+.daySceneGrid .caseCard.daySceneCard:has(.dayRerunIcon),.daySceneGrid .caseCard.daySceneCard:has(.dayTaskEnableIcon) { padding-right:48px; }
+.dayRerunIcon,.dayTaskEnableIcon {
   position:absolute;top:8px;right:8px;z-index:2;display:grid;place-items:center;
   width:28px;height:28px;min-width:28px;min-height:28px;padding:6px;border:0;border-radius:8px;
   background:transparent;color:var(--muted);cursor:pointer;
 }
-.dayRerunIcon svg { display:block;width:16px;height:16px;flex:none; }
-.dayRerunIcon:hover { background:var(--soft-2);color:var(--ink); }
-.dayRerunIcon:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
-.dayRerunIcon:disabled { opacity:.45;cursor:wait; }
+.dayRerunIcon svg,.dayTaskEnableIcon svg { display:block;width:16px;height:16px;flex:none;fill:currentColor; }
+.dayRerunIcon:hover,.dayTaskEnableIcon:hover { background:var(--soft-2);color:var(--ink); }
+.dayRerunIcon:focus-visible,.dayTaskEnableIcon:focus-visible { outline:2px solid var(--accent);outline-offset:2px; }
+.dayRerunIcon:disabled,.dayTaskEnableIcon:disabled { opacity:.45;cursor:wait; }
 .taskRerunButton {
   margin-top:12px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;
   background:var(--soft);color:var(--ink);font:inherit;font-size:13px;cursor:pointer;

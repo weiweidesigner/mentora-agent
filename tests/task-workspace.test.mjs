@@ -23,7 +23,7 @@ function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live
   else if(path.endsWith('/plan')){const p=JSON.parse(options.body);data={reply:'请确认何时收到这份报告。',draft:{...base,...p.draft},questions:p.answers.length?[]:[{field:'time',question:'你希望几点收到？',options:[],multiple:false}],ready:!!p.answers.length};if(p.answers.length)data.draft.time=p.answers.at(-1).value;}
   else if(options.method==='POST'&&path.endsWith('/tasks')){data={...base,...JSON.parse(options.body),id:'created',resultVersion:null,lastRun:null,nextAt:'2026-11-05T10:30:00Z'};saves.push(JSON.parse(options.body));tasks.push(data);}
   else if(path.includes('/shared/'))data=shared||{};
-  else if(options.method==='PUT'){const id=path.split('/').at(-1),index=tasks.findIndex(t=>t.id===id);data={...tasks[index],...JSON.parse(options.body)};tasks[index]=data;}
+  else if(options.method==='PUT'){const id=path.split('/').at(-1),taskIndex=tasks.findIndex(t=>t.id===id),sceneIndex=sceneTasks.findIndex(t=>t.id===id),current=taskIndex>=0?tasks[taskIndex]:sceneTasks[sceneIndex];data={...current,...JSON.parse(options.body)};if(taskIndex>=0)tasks[taskIndex]=data;else if(sceneIndex>=0)sceneTasks[sceneIndex]=data;}
   else if(options.method==='DELETE'){tasks=tasks.filter(t=>!path.endsWith('/'+t.id));data={ok:true};}
   else if(options.method==='POST'&&path.endsWith('/run')){const task=tasks.find(t=>path.includes('/'+t.id+'/'));task.activeRun='queued';task.lastRun={status:'queued'};data={runId:'queued'};}
   else if(path.endsWith('/tasks'))data={tasks,sceneTasks,markets:[{market:'CN',name:'A股',zone:'Asia/Shanghai',stage:scene,status:scene==='rest'?'今日休市':'交易中'}],serverTime,pushPublicKey:''};
@@ -282,6 +282,14 @@ test('planning progress is clickable and opens the existing activity drawer with
 test('My Day removes market picker and subtitle, shows a scene clock and only today’s matching result cards',async()=>{
  const presets=['pre','live','post','rest'].map((stage,i)=>({...base,id:'preset-'+stage,title:'场景任务'+i,stage,time:['08:00','12:00','16:00','09:00'][i],systemPreset:true,resultScene:stage,resultDate:'2026-10-15',resultHeadline:'执行所得标题'+i,resultDescription:'执行所得正文'+i,emoji:'🌇'}));
  for(const scene of ['pre','live','post','rest']){const h=setup({tasks:[],scene,sceneTasks:[...presets,{...presets[0],id:'old',scene:'pre',resultScene:scene,resultDate:'2026-10-14'}]});await tick();const d=h.w.document;assert.equal(d.querySelector('#dayMarketSelect'),null);assert.equal(d.querySelector('.dayHeader p'),null);assert.match(d.querySelector('#dayClock').textContent,/2026年10月15日.*\d{2}:\d{2}:\d{2}/);assert.equal(d.querySelector('#daySceneArt').dataset.scene,scene);const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,scene==='pre'?2:1);if(scene==='pre'){assert.equal(cards[1].dataset.taskRun,'');assert.match(cards[1].textContent,/等待执行/);assert.doesNotMatch(cards[1].textContent,/执行所得标题/);}assert.equal(cards[0].dataset.taskOpen,'preset-'+scene);assert.match(cards[0].querySelector('h2').textContent,/执行所得标题/);assert.match(cards[0].querySelector('p').textContent,/执行所得正文/);assert.match(cards[0].querySelector('.caseCardTag').textContent,/场景任务/);h.dom.window.close();}
+});
+
+test('paused My Day card has a dedicated enable button that does not open the task',async()=>{
+ const paused={...base,id:'paused-scene',systemPreset:true,enabled:false,lastRun:null,resultVersion:null,scene:'live'};
+ const h=setup({tasks:[],sceneTasks:[paused]});await tick();const d=h.w.document,button=d.querySelector('[data-task-enable="paused-scene"]');
+ assert.ok(button);assert.equal(button.getAttribute('aria-label'),'开启：'+base.title);assert.ok(button.querySelector('svg path'));
+ button.click();await tick();assert.ok(h.requests.some(r=>r.method==='PUT'&&r.path.endsWith('/paused-scene')&&r.body.enabled===true));
+ assert.equal(new URL(h.w.location).searchParams.get('task'),null);assert.equal(d.querySelector('[data-task-enable="paused-scene"]'),null);h.dom.window.close();
 });
 
 test('shared scene results open the normal saved conversation without allowing edits',async()=>{
