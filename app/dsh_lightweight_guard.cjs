@@ -53,6 +53,26 @@ function textOf(result) {
   return (result.content || []).filter(b => b.type === 'text').map(b => b.text || '').join('\n');
 }
 
+function plainJson(value, fallback) {
+  const seen = new WeakSet();
+  try {
+    return JSON.parse(JSON.stringify(value, (_key, item) => {
+      if (typeof item === 'bigint') return String(item);
+      if (typeof item === 'number' && !Number.isFinite(item)) return null;
+      if (typeof item === 'undefined' || typeof item === 'function' || typeof item === 'symbol') return undefined;
+      if (item && typeof item === 'object') {
+        if (seen.has(item)) return '[circular]';
+        seen.add(item);
+      }
+      return item;
+    }));
+  } catch { return fallback; }
+}
+
+function transformedResult(content, isError = false) {
+  return {content: plainJson(content, []), isError: Boolean(isError)};
+}
+
 function boundedString(value, limit = 500) {
   const text = String(value);
   return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
@@ -87,7 +107,9 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
   let parsed = null;
   try { parsed = JSON.parse(text); } catch { /* Preserve arbitrary text as a file. */ }
   const structured = parsed && typeof parsed === 'object' && hasStructuredRows(parsed);
-  if (text.length <= threshold && !(structured && text.length > STRUCTURED_FILE_THRESHOLD)) return result;
+  if (text.length <= threshold && !(structured && text.length > STRUCTURED_FILE_THRESHOLD)) {
+    return transformedResult(result.content || [], result.isError || failed(result));
+  }
   const directory = path.join(root, 'outputs', 'tool-results');
   fs.mkdirSync(directory, {recursive: true});
   const suffix = parsed && typeof parsed === 'object' ? '.json' : '.txt';
@@ -110,7 +132,7 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
     if (!replaced) { content.push({...block, text: receipt}); replaced = true; }
   }
   if (!replaced) content.unshift({type: 'text', text: receipt});
-  return {...result, content};
+  return transformedResult(content, result.isError || failed(result));
 }
 
 function isNetworkUnavailable(result) {
@@ -143,23 +165,48 @@ function failureKey(exec, result) {
 }
 
 function firstFailureSummary(exec, result, root) {
-  const compacted = compactToolResult(exec, result, root, 1200);
-  if (compacted !== result) return compacted;
   const text = textOf(result);
+  if (text.length > 1200) return compactToolResult(exec, result, root, 1200);
   const summary = JSON.stringify({
     failed: true,
     summary: boundedString(text, 1200),
     handoff: 'Failure recorded once. Do not retry the same route without a materially different recovery path.',
   });
-  return {...result, isError: true, content: [{type: 'text', text: summary}, ...(result.content || []).filter(block => block.type !== 'text')]};
+  return transformedResult([{type: 'text', text: summary}, ...(result.content || []).filter(block => block.type !== 'text')], true);
 }
 
 function repeatedFailureObservation() {
-  return {content: [{type: 'text', text: JSON.stringify({
+  return transformedResult([{type: 'text', text: JSON.stringify({
     failed: true,
     deduplicated: true,
     summary: 'The same failure was already reported in this turn; duplicate diagnostics were omitted.',
-  })}], isError: true};
+  })}], true);
+}
+
+function retryFamily(exec) {
+  const command = String(exec.arguments?.command || '');
+  if (isDirectExternalCall(exec)) return 'direct-network';
+  if (exec.name === 'web_search' || DATA_SCRIPT.test(command)) return 'research-data';
+  if (/render_streamviz\.py|(?:write|render|build|generate).{0,40}\.html/i.test(command)) return 'html-render';
+  if (/inspect_html\.py|playwright|screenshot|(?:validate|inspect|check).{0,30}(?:html|layout)/i.test(command)) return 'html-validation';
+  return '';
+}
+
+function boundedStage(exec) {
+  const command = String(exec.arguments?.command || '');
+  const description = String(exec.arguments?.description || '');
+  if (/render_streamviz\.py|(?:write|render|build|generate).{0,40}\.html/i.test(`${command} ${description}`)) return 'html-render';
+  if (/inspect_html\.py|playwright|screenshot|(?:validate|inspect|check|核对|检查|验证).{0,30}(?:html|layout|布局)/i.test(`${command} ${description}`)) return 'html-validation';
+  if (/(?:code_interpreter|transform\.py)|(?:summari[sz]e|aggregate|consolidat|汇总|聚合).{0,30}(?:data|result|数据|结果)/i.test(`${command} ${description}`)) return 'summary-calculation';
+  return '';
+}
+
+function boundedObservation(message) {
+  return transformedResult([{type:'text',text:JSON.stringify({
+    skipped:true,
+    reason:message,
+    next:'Use the successful existing evidence or artifact and finish the response; do not open another research or delivery loop.',
+  })}], false);
 }
 
 function failed(result) {
@@ -183,10 +230,7 @@ function webFetchFailed(result) {
 }
 
 function webFetchCircuitObservation() {
-  return {
-    content: [{type: 'text', text: 'Direct URL retrieval skipped: a direct network attempt already failed, was blocked, or exhausted its deadline in this turn. Reuse available search/market observations or use the external-search skill once; do not retry direct reads with more domains.'}],
-    isError: false,
-  };
+  return transformedResult([{type: 'text', text: 'Direct URL retrieval skipped: a direct network attempt already failed, was blocked, or exhausted its deadline in this turn. Reuse available search/market observations or use the external-search skill once; do not retry direct reads with more domains.'}], false);
 }
 
 // The export name is retained for existing Cordis deployments.
@@ -195,15 +239,24 @@ class LightweightGuard {
   reset() {
     this.generation=Symbol();this.cache=new Map();this.flights=new Map();
     this.directNetworkUnavailable=false;
-    this.failureKeys=new Set();this.jobPolls=new Map();
+    this.failureKeys=new Set();this.familyFailures=new Map();this.completedStages=new Set();this.jobPolls=new Map();
     this.stats={executed:0,reused:0,suppressed:0};
   }
   async execute(exec, next) {
+    const family=retryFamily(exec),stage=boundedStage(exec);
+    if(family && (this.familyFailures.get(family) || 0)>=2){
+      this.stats.suppressed++;
+      return boundedObservation('The primary route and its one allowed alternative already failed. Disclose the limitation instead of trying another route.');
+    }
+    if(stage && this.completedStages.has(stage)){
+      this.stats.suppressed++;
+      return boundedObservation(`The ${stage} step already completed successfully and may run only once.`);
+    }
     if(exec.name==='job_output' && !exec.signal?.aborted){
       const key=jobKey(exec),last=this.jobPolls.get(key) || 0;
       if(this.now()-last<JOB_POLL_COOLDOWN_MS){
         this.stats.suppressed++;
-        return {content:[{type:'text',text:'[status: running] Poll skipped during the 5-second cooldown; wait for asynchronous completion instead of immediately polling again.'}],isError:false};
+        return transformedResult([{type:'text',text:'[status: running] Poll skipped during the 5-second cooldown; wait for asynchronous completion instead of immediately polling again.'}],false);
       }
       capTimeout(exec,JOB_POLL_TIMEOUT_MS);
       const result=await this.executeCached(exec,next);
@@ -215,9 +268,12 @@ class LightweightGuard {
       capTimeout(exec,exec.name==='web_fetch'?EXTERNAL_CALL_TIMEOUT_MS:EXTERNAL_BATCH_TIMEOUT_MS);
       const result=await this.executeCached(exec,next);
       if(isNetworkUnavailable(result) || exec.name==='web_fetch' && webFetchFailed(result))this.directNetworkUnavailable=true;
+      if(!failed(result) && stage)this.completedStages.add(stage);
       return result;
     }
-    return this.executeCached(exec,next);
+    const result=await this.executeCached(exec,next);
+    if(!failed(result) && stage)this.completedStages.add(stage);
+    return result;
   }
   async executeCached(exec, next) {
     const call=inspect(exec,this.root),generation=this.generation;
@@ -225,6 +281,8 @@ class LightweightGuard {
       this.stats.executed++;
       const raw=await next();
       if(failed(raw) || isNetworkUnavailable(raw)){
+        const family=retryFamily(exec);
+        if(family)this.familyFailures.set(family,(this.familyFailures.get(family) || 0)+1);
         const key=failureKey(exec,raw);
         if(this.failureKeys.has(key))return repeatedFailureObservation();
         this.failureKeys.add(key);
@@ -263,4 +321,5 @@ function apply(ctx) {
   ctx.on('tools/execute',(exec,next)=>exec.agent?cacheFor(exec.agent).execute(exec,next):next(),{prepend:true});
 }
 module.exports={name,inject,apply,LightweightGuard,inspect,failed,webFetchFailed,compactToolResult,
-  isNetworkUnavailable,isDirectExternalCall,DEFAULT_COMPACTION_THRESHOLD,JOB_POLL_TIMEOUT_MS};
+  isNetworkUnavailable,isDirectExternalCall,plainJson,transformedResult,retryFamily,boundedStage,
+  DEFAULT_COMPACTION_THRESHOLD,JOB_POLL_TIMEOUT_MS};

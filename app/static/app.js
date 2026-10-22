@@ -1960,10 +1960,6 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
     const label = data.skillId === "portfolio-backtest" ? "执行策略回测" : data.skillId === "portfolio-jev" ? "评估机会与持仓风险" : titles[data.operation] || data.tool || "调用工具";
     return data.phase === "failed" ? `${label} · 失败` : label;
   }
-  const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
-  const reasoningTitle = compactReasoningTitle(reasoning, lang);
-  if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
-
   const command = toolCommandText(params, shellCommand);
   const lowerCommand = command.toLowerCase();
   if (/skill\.md\b/i.test(command)) {
@@ -1978,7 +1974,9 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
   if (/(?:^|\s)(?:ls|pwd)(?:\s|$)/.test(lowerCommand)) {
     return localized("正在检查项目与运行环境", "正在檢查專案與執行環境", "Checking the project and runtime environment");
   }
-  if (/(?:curl|wget|http)/.test(lowerCommand)) {
+  const directNetworkCommand = /(?:^|[;&|\n]\s*)(?:curl|wget)\b/i.test(command)
+    || /urllib\.request|urlopen\s*\(|requests\.(?:get|post|request)\s*\(/i.test(command);
+  if (directNetworkCommand) {
     return localized("正在等待网络响应", "正在等待網路回應", "Waiting for a network response");
   }
   const scriptMatch = command.match(/(?:^|[\s/])([A-Za-z0-9_-]+\.(?:py|sh))\b/);
@@ -1998,6 +1996,18 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
       symbol && symbol !== "CODEX" ? `Retrieving market data for ${symbol}` : "Retrieving market data",
     );
   }
+  if (effectiveScript === "render_streamviz.py" || /(?:render|build|generate).{0,32}\.html/i.test(command)) {
+    return localized("正在生成 HTML 报告", "正在產生 HTML 報告", "Rendering the HTML report");
+  }
+  if (effectiveScript === "inspect_html.py" || /playwright|screenshot|(?:validate|inspect|check).{0,30}(?:html|layout)/i.test(command)) {
+    return localized("正在验证 HTML 报告", "正在驗證 HTML 報告", "Validating the HTML report");
+  }
+  if (/^(?:python(?:3|\d+(?:\.\d+)*)?|node)(?:\s|$)/i.test(command.trim()) || /\.py(?:\s|$)/i.test(command)) {
+    return localized("正在执行本地计算", "正在執行本地計算", "Running local computation");
+  }
+  const reasoning = data?.thoughtSummary || data?.thought || data?.action || data?.nextThought || data?.expectedObservation || "";
+  const reasoningTitle = compactReasoningTitle(reasoning, lang);
+  if (reasoningTitle && !/^(?:正在执行|正在執行|Running)\s*(?:bash|shell|exec_command)$/i.test(reasoningTitle)) return reasoningTitle;
   if (/^(?:bash|shell|exec_command|command_execution)$/i.test(effectiveScript)) {
     return localized("正在处理数据与准备分析", "正在處理資料與準備分析", "Preparing data and analysis");
   }

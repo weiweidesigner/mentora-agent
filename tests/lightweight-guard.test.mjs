@@ -13,13 +13,40 @@ const setup = t => {
   return {root, guard: new LightweightGuard(root)};
 };
 
-test('failures with changed parameters execute but duplicate diagnostics stay compact', async t => {
+test('a failing research route gets only one materially different alternative', async t => {
   const {guard}=setup(t);let bodies=0;
   for(const symbol of ['bad','other','bad']){
     const result=await guard.execute(shell(`python3 app/skills/a-share-data/scripts/price_snapshot.py --thscodes ${symbol}`),async()=>{bodies++;return ok('[exit code: 1] Target not found');});
-    assert.match(result.content[0].text,/Target not found|deduplicated/);
+    assert.match(result.content[0].text,/Target not found|deduplicated|one allowed alternative/);
   }
-  assert.equal(bodies,3);assert.equal(guard.cache.size,0);
+  assert.equal(bodies,2);assert.equal(guard.cache.size,0);
+});
+
+test('every wrapped result contains only losslessly serializable content and isError', async t => {
+  const {guard}=setup(t);
+  const raw={content:[{type:'text',text:'small result',metadata:{count:1n}}],isError:false,value:{exitCode:0},internal:()=>{}};
+  const result=await guard.execute(shell('python3 local.py'),async()=>raw);
+  assert.deepEqual(Object.keys(result).sort(),['content','isError']);
+  assert.equal(result.content[0].metadata.count,'1');
+  const encoded=JSON.stringify(result);
+  assert.deepEqual(JSON.parse(encoded),result);
+});
+
+test('successful delivery stages run once per turn and reset on the next turn', async t => {
+  const {guard}=setup(t);let bodies=0;
+  const summarize=shell('python3 app/skills/code-interpreter/scripts/code_interpreter.py --input evidence.json');
+  const render=shell('python3 app/skills/streamviz/scripts/render_streamviz.py --input payload.json --output report.html');
+  const validate=shell('python3 app/skills/streamviz/scripts/inspect_html.py report.html');
+  assert.equal((await guard.execute(summarize,async()=>{bodies++;return ok('summarized');})).isError,false);
+  assert.equal(JSON.parse((await guard.execute(summarize,async()=>{bodies++;return ok('summarized twice');})).content[0].text).skipped,true);
+  assert.equal((await guard.execute(render,async()=>{bodies++;return ok('rendered');})).isError,false);
+  assert.equal(JSON.parse((await guard.execute(render,async()=>{bodies++;return ok('rendered twice');})).content[0].text).skipped,true);
+  assert.equal((await guard.execute(validate,async()=>{bodies++;return ok('valid');})).isError,false);
+  assert.equal(JSON.parse((await guard.execute(validate,async()=>{bodies++;return ok('validated twice');})).content[0].text).skipped,true);
+  assert.equal(bodies,3);
+  guard.reset();
+  await guard.execute(render,async()=>{bodies++;return ok('next turn');});
+  assert.equal(bodies,4);
 });
 
 test('elapsed time and many tool calls never force a workflow phase or stop research', async t => {
