@@ -2015,10 +2015,10 @@ function syncInlineActivity(article) {
   }
   const live = !article.activityEnded && article.dataset.thinkingState === "active";
   view.hidden = live ? article.dataset.thinkingCollapsed === "true" : isMobileLayout() || article.dataset.activityInlineExpanded !== "true";
-  const signature = `${article.activityEnded}:${article.activitySources?.length || 0}:${source.innerHTML}`;
+  const signature = `${article.activityEnded}:${source.innerHTML}`;
   if (article.activityFlowSignature !== signature) {
     const focused = view.contains(document.activeElement) ? document.activeElement.closest("details")?.dataset.activityKey : "";
-    view.innerHTML = buildActivityFlow(article) + (article.activityEnded ? buildActivitySources(article, article.dataset.lang || "en") : "");
+    view.innerHTML = buildActivityFlow(article);
     if (focused) Array.from(view.querySelectorAll("details[data-activity-key]")).find((item) => item.dataset.activityKey === focused)?.querySelector("summary")?.focus({preventScroll:true});
     article.activityFlowSignature = signature;
   }
@@ -3732,8 +3732,7 @@ function syncActivityDrawer(article) {
   if (activityLabel) activityLabel.textContent = copyFor(lang, "activity");
   activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
-  const sources = buildActivitySources(article, lang);
-  activityBody.innerHTML = `${buildActivityFlow(article)}${sources}`;
+  activityBody.innerHTML = buildActivityFlow(article);
   if (shouldStick) {
     scrollActivityToLatest(true);
   } else {
