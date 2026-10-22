@@ -478,6 +478,15 @@ def installed_package_version(distribution: str) -> str | None:
         return None
 
 
+def locked_dependency_revision(filename: str) -> str | None:
+    """Read a pinned dependency revision without making health checks fragile."""
+    try:
+        revision = json.loads((ROOT / filename).read_text(encoding="utf-8")).get("revision")
+    except (OSError, json.JSONDecodeError):
+        return None
+    return str(revision) if revision else None
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     return {
@@ -488,6 +497,7 @@ def health() -> dict[str, Any]:
             "deepseekHarnessSdk": installed_package_version("deepseek-harness-sdk"),
             "deepseekHarnessRuntime": installed_package_version("deepseek-harness-runtime-bin"),
             "mentoraDeal": os.getenv("MENTORA_DEAL_REVISION"),
+            "dataVisCharts": locked_dependency_revision("data-vis-charts.lock.json"),
         },
         "frameworks": LOCAL_FRAMEWORKS.availability(),
         "models": LOCAL_FRAMEWORKS.inference_models(),
