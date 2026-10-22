@@ -7,6 +7,12 @@ const crypto = require('node:crypto');
 const name = 'mentora-lightweight-guard';
 const inject = ['tools'];
 const READ_TOOLS = new Set(['read', 'skill', 'web_fetch', 'web_search']);
+const DEFAULT_COMPACTION_THRESHOLD = 4000;
+const STRUCTURED_FILE_THRESHOLD = 1000;
+const EXTERNAL_CALL_TIMEOUT_MS = 10000;
+const EXTERNAL_BATCH_TIMEOUT_MS = 30000;
+const JOB_POLL_TIMEOUT_MS = 8000;
+const JOB_POLL_COOLDOWN_MS = 5000;
 const DATA_SCRIPT = /(?:a-share-data|screener|external-search|internal-search|url-content-reader|tradingview-market-data)\/scripts\//;
 const SIDE_EFFECT = /portfolio[-_/ ]?(?:order|account|data)|\b(?:place_order|submit_order|cancel_order|save_candidate)\b|ainvest[-_/ ]?(?:alert|watchlist)/i;
 const stable = value => JSON.stringify(value, (key, item) => item && typeof item === 'object' && !Array.isArray(item)
@@ -39,12 +45,121 @@ function inspect(exec, root) {
     && DATA_SCRIPT.test(scripts[0]) && /^\s*python[\d.]*\s/.test(simple);
   const sideEffect = SIDE_EFFECT.test(command) || SIDE_EFFECT.test(exec.name) || SIDE_EFFECT.test(args.name || '');
   const cacheable = !sideEffect && (READ_TOOLS.has(exec.name) || !!safeShell);
-  const actualArgs = Object.fromEntries(Object.entries(args).filter(([key]) => !['description', 'timeoutMs', 'justification'].includes(key)));
+  const actualArgs = Object.fromEntries(Object.entries(args).filter(([key]) => !['description', 'timeoutMs', 'timeout_ms', 'justification'].includes(key)));
   return {cacheable, key:hash(stable({name:exec.name,cwd,args:actualArgs})),
     signature:()=>stable(dependencies.map(f=>[f,fingerprint(f)]))};
 }
 function textOf(result) {
   return (result.content || []).filter(b => b.type === 'text').map(b => b.text || '').join('\n');
+}
+
+function boundedString(value, limit = 500) {
+  const text = String(value);
+  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
+}
+
+function compactValue(value, depth = 0) {
+  if (depth >= 3) {
+    if (Array.isArray(value)) return {count: value.length};
+    if (value && typeof value === 'object') return {keys: Object.keys(value).slice(0, 30)};
+    return value;
+  }
+  if (Array.isArray(value)) {
+    const summary = {count: value.length};
+    if (value.length) summary.sample = compactValue(value[0], depth + 1);
+    return summary;
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).slice(0, 40)
+      .map(([key, item]) => [key, compactValue(item, depth + 1)]));
+  }
+  return typeof value === 'string' ? boundedString(value) : value;
+}
+
+function hasStructuredRows(value, depth = 0) {
+  if (depth > 2 || !value || typeof value !== 'object') return false;
+  if (Array.isArray(value)) return value.length > 1;
+  return Object.values(value).some(item => Array.isArray(item) && item.length > 1 || hasStructuredRows(item, depth + 1));
+}
+
+function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_THRESHOLD) {
+  const text = textOf(result);
+  let parsed = null;
+  try { parsed = JSON.parse(text); } catch { /* Preserve arbitrary text as a file. */ }
+  const structured = parsed && typeof parsed === 'object' && hasStructuredRows(parsed);
+  if (text.length <= threshold && !(structured && text.length > STRUCTURED_FILE_THRESHOLD)) return result;
+  const directory = path.join(root, 'outputs', 'tool-results');
+  fs.mkdirSync(directory, {recursive: true});
+  const suffix = parsed && typeof parsed === 'object' ? '.json' : '.txt';
+  const reference = path.join(directory, `${String(exec.name || 'tool').replace(/[^a-z0-9_-]+/gi, '-')}-${crypto.randomUUID()}${suffix}`);
+  fs.writeFileSync(reference, parsed && typeof parsed === 'object' ? JSON.stringify(parsed) : text, {encoding: 'utf8', mode: 0o600});
+  const summary = parsed && typeof parsed === 'object'
+    ? compactValue(parsed)
+    : {characters: text.length, head: text.slice(0, 700), tail: text.slice(-240)};
+  const receipt = JSON.stringify({
+    compacted: true,
+    failed: failed(result),
+    summary,
+    fullOutputPath: reference,
+    handoff: 'Pass this file path to downstream tools; do not copy its contents into model context.',
+  });
+  let replaced = false;
+  const content = [];
+  for (const block of result.content || []) {
+    if (block.type !== 'text') { content.push(block); continue; }
+    if (!replaced) { content.push({...block, text: receipt}); replaced = true; }
+  }
+  if (!replaced) content.unshift({type: 'text', text: receipt});
+  return {...result, content};
+}
+
+function isNetworkUnavailable(result) {
+  return /network is unreachable|network unreachable|enetunreach|ehostunreach|temporary failure in name resolution|urlerror\([^\n]*(?:timed out|unreachable)/i.test(textOf(result));
+}
+
+function isDirectExternalCall(exec) {
+  if (exec.name === 'web_fetch') return true;
+  if (exec.name !== 'bash') return false;
+  const command = String(exec.arguments?.command || '');
+  return !DATA_SCRIPT.test(command) && /(?:https?:\/\/|\bcurl\b|\bwget\b|urllib\.request|requests\.(?:get|post|request))/i.test(command);
+}
+
+function capTimeout(exec, timeoutMs) {
+  const args = exec.arguments || (exec.arguments = {});
+  if (Object.hasOwn(args, 'timeout_ms')) args.timeout_ms = Math.min(Number(args.timeout_ms) || timeoutMs, timeoutMs);
+  else if (Object.hasOwn(args, 'timeoutMs')) args.timeoutMs = Math.min(Number(args.timeoutMs) || timeoutMs, timeoutMs);
+  else args.timeout_ms = timeoutMs;
+}
+
+function jobKey(exec) {
+  const args = exec.arguments || {};
+  return String(args.job_id || args.jobId || args.id || args.session_id || args.sessionId || stable(args));
+}
+
+function failureKey(exec, result) {
+  const normalized = textOf(result).toLowerCase().replace(/https?:\/\/\S+/g, '<url>')
+    .replace(/\b\d+(?:\.\d+)?(?:ms|s)?\b/g, '<n>').replace(/\s+/g, ' ').trim();
+  return hash(`${exec.name}:${normalized}`);
+}
+
+function firstFailureSummary(exec, result, root) {
+  const compacted = compactToolResult(exec, result, root, 1200);
+  if (compacted !== result) return compacted;
+  const text = textOf(result);
+  const summary = JSON.stringify({
+    failed: true,
+    summary: boundedString(text, 1200),
+    handoff: 'Failure recorded once. Do not retry the same route without a materially different recovery path.',
+  });
+  return {...result, isError: true, content: [{type: 'text', text: summary}, ...(result.content || []).filter(block => block.type !== 'text')]};
+}
+
+function repeatedFailureObservation() {
+  return {content: [{type: 'text', text: JSON.stringify({
+    failed: true,
+    deduplicated: true,
+    summary: 'The same failure was already reported in this turn; duplicate diagnostics were omitted.',
+  })}], isError: true};
 }
 
 function failed(result) {
@@ -54,7 +169,7 @@ function failed(result) {
   for (const line of text.split('\n')) {
     try {
       const data = JSON.parse(line);
-      if (data && (data.ok === false || data.status === 'error' || data.status === 'failed'
+      if (data && (data.ok === false || data.failed === true || data.status === 'error' || data.status === 'failed'
         || typeof data.code === 'number' && data.code !== 0 && data.code !== 200 && data.message && data.data === null)) return true;
     } catch { /* Non-JSON tool text. */ }
   }
@@ -69,7 +184,7 @@ function webFetchFailed(result) {
 
 function webFetchCircuitObservation() {
   return {
-    content: [{type: 'text', text: 'Direct URL retrieval skipped: a web_fetch attempt already failed or was blocked in this turn. Reuse available search/market observations or use the external-search skill once; do not retry web_fetch with more domains.'}],
+    content: [{type: 'text', text: 'Direct URL retrieval skipped: a direct network attempt already failed, was blocked, or exhausted its deadline in this turn. Reuse available search/market observations or use the external-search skill once; do not retry direct reads with more domains.'}],
     isError: false,
   };
 }
@@ -79,26 +194,44 @@ class LightweightGuard {
   constructor(root, now = Date.now) { this.root=path.resolve(root);this.now=now;this.reset(); }
   reset() {
     this.generation=Symbol();this.cache=new Map();this.flights=new Map();
-    this.webFetchTail=null;this.webFetchFailures=0;
+    this.directNetworkUnavailable=false;
+    this.failureKeys=new Set();this.jobPolls=new Map();
     this.stats={executed:0,reused:0,suppressed:0};
   }
   async execute(exec, next) {
-    if(exec.name==='web_fetch' && !exec.signal?.aborted){
-      const previous=this.webFetchTail;let release;
-      this.webFetchTail=new Promise(resolve=>{release=resolve;});
-      if(previous)await previous;
-      try{
-        if(this.webFetchFailures>=1){this.stats.suppressed++;return webFetchCircuitObservation();}
-        const result=await this.executeCached(exec,next);
-        if(webFetchFailed(result))this.webFetchFailures++;
-        return result;
-      }finally{release();}
+    if(exec.name==='job_output' && !exec.signal?.aborted){
+      const key=jobKey(exec),last=this.jobPolls.get(key) || 0;
+      if(this.now()-last<JOB_POLL_COOLDOWN_MS){
+        this.stats.suppressed++;
+        return {content:[{type:'text',text:'[status: running] Poll skipped during the 5-second cooldown; wait for asynchronous completion instead of immediately polling again.'}],isError:false};
+      }
+      capTimeout(exec,JOB_POLL_TIMEOUT_MS);
+      const result=await this.executeCached(exec,next);
+      this.jobPolls.set(key,this.now());
+      return result;
+    }
+    if(isDirectExternalCall(exec) && !exec.signal?.aborted){
+      if(this.directNetworkUnavailable){this.stats.suppressed++;return webFetchCircuitObservation();}
+      capTimeout(exec,exec.name==='web_fetch'?EXTERNAL_CALL_TIMEOUT_MS:EXTERNAL_BATCH_TIMEOUT_MS);
+      const result=await this.executeCached(exec,next);
+      if(isNetworkUnavailable(result) || exec.name==='web_fetch' && webFetchFailed(result))this.directNetworkUnavailable=true;
+      return result;
     }
     return this.executeCached(exec,next);
   }
   async executeCached(exec, next) {
     const call=inspect(exec,this.root),generation=this.generation;
-    const run=async()=>{this.stats.executed++;return next();};
+    const run=async()=>{
+      this.stats.executed++;
+      const raw=await next();
+      if(failed(raw) || isNetworkUnavailable(raw)){
+        const key=failureKey(exec,raw);
+        if(this.failureKeys.has(key))return repeatedFailureObservation();
+        this.failureKeys.add(key);
+        return firstFailureSummary(exec,raw,this.root);
+      }
+      return compactToolResult(exec,raw,this.root);
+    };
     // Never alter cancellation, failures, mutations or unknown commands.
     if(!call.cacheable || exec.signal?.aborted)return run();
     const signature=call.signature(),cached=this.cache.get(call.key);
@@ -129,4 +262,5 @@ function apply(ctx) {
   ctx.on('agent/turn-stopping',({agent})=>{if(agent)cacheFor(agent).reset();});
   ctx.on('tools/execute',(exec,next)=>exec.agent?cacheFor(exec.agent).execute(exec,next):next(),{prepend:true});
 }
-module.exports={name,inject,apply,LightweightGuard,inspect,failed,webFetchFailed};
+module.exports={name,inject,apply,LightweightGuard,inspect,failed,webFetchFailed,compactToolResult,
+  isNetworkUnavailable,isDirectExternalCall,DEFAULT_COMPACTION_THRESHOLD,JOB_POLL_TIMEOUT_MS};

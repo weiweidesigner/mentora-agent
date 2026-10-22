@@ -27,6 +27,7 @@ from app.jev_tool_activity_router import JevToolActivityRouter, JevToolActivityR
 from app.jev_visualization_router import JevVisualizationDecision, JevVisualizationRouter, JevVisualizationRouterError
 from app.business_chart_dependency import load_registry_data
 from app.capability_index import CapabilityIndex
+from app.cost_monitor import COSTS
 
 
 class ReasoningFrameworkError(RuntimeError):
@@ -1134,6 +1135,17 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 snapshot[path.resolve()] = (stat.st_mtime_ns, stat.st_size)
         return snapshot
 
+    @staticmethod
+    def _requires_html_deliverable(question: str) -> bool:
+        """Detect an explicit HTML deliverable, not a generic request for analysis."""
+        text = str(question or "")
+        return bool(re.search(
+            r"(?:生成|制作|创建|做|导出|交付|给我).{0,32}(?:HTML|html)(?:页面|报告|组件|文件|仪表盘|看板)?"
+            r"|(?:完整|交互|独立运行|可下载).{0,24}(?:HTML|html)"
+            r"|(?:HTML|html).{0,32}(?:页面|报告|组件|文件|仪表盘|看板)",
+            text,
+        ))
+
     @property
     def _codex_trace_path(self) -> Path:
         configured = os.getenv("AICHART_CODEX_TRACE_FILE", "").strip()
@@ -1609,6 +1621,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         inference_model: str = "",
         reasoning_effort: str = "",
         visualization_guidance: str = "",
+        _repair_attempt: int = 0,
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         self._add_deepseek_sdk_path()
         selected_model = inference_model.strip() or os.getenv("AICHART_DEEPSEEK_MODEL", "deepseek-flash")
@@ -1632,7 +1645,29 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "已核验且时效仍有效的同轮数据和执行契约可复用；相互独立的工作可并行，"
             "存在依赖的工作按顺序执行。根据真实结果继续推理、补证或修正，"
             "证据和交付均满足用户要求后再结束。"
+            "外部地址应在一次批处理中并发请求，单个来源最多等待 10 秒、整批最多 30 秒；"
+            "首次出现 network unreachable 后立即停止同类直连，不要换域名反复试探。"
+            "后台命令只允许短轮询，job_output 的单次等待不得超过 8 秒，避免连续阻塞轮询；"
+            "没有新输出时继续其他可执行工作或等待异步完成通知。"
+            "结构化数据和超过约 4,000 字符的工具结果使用 fullOutputPath 文件交接，"
+            "后续工具直接读取文件；不要把完整内容重新复制进推理上下文。"
         )
+        if selected_reasoning_effort == "low":
+            prompt += (
+                "\n\n轻度档执行约束：保持通用 Agent 判断，但采用最短的充分证据路径。"
+                "宿主候选已经完成能力发现；命中候选时直接通过 skill_runner 各读取一次 contract，"
+                "随后批量执行，不再调用 skill/read/--help/grep/sed 查看同一能力的桥接、源码或参数。"
+                "完整批量请求优先于小样本探测；主数据源成功后不要再用等价来源重复核验。"
+                "大型工具结果的完整内容由宿主保存到 fullOutputPath；推理只使用回执中的 summary，"
+                "后续计算和渲染直接传该文件路径，禁止 cat、read 或把完整数组重新放回上下文。"
+                "只有用户明确询问原因、新闻或外部证据，或者结构化数据仍缺少结论所需的关键事实时，才调用联网搜索。"
+                "某个非关键字段或次要口径不可得时，披露限制并继续完成其余答案，不要连续尝试多个替代入口。"
+                "使用 code_interpreter 时，首次执行就写一个确定性的 transform(raw_data, question) 文件并传 "
+                "--transform-file；文件只含这一个顶层函数，全部逻辑写在函数内，不写 import、辅助函数或 lambda；"
+                "结构化结果传 --payload-output。禁止让该工具再调用辅助模型生成代码，也不要读取其实现。"
+                "工具回执已经证明结果或产物有效后，立即进入回答；不要列目录、重读生成文件或为了格式再次渲染。"
+                "这些约束只减少重复发现和重复取证，不缩减用户要求的分析、图表或文件交付。"
+            )
         dsh_home = Path(os.getenv("AICHART_DSH_HOME", os.getenv("DSH_HOME", "~/.dsh"))).expanduser()
         if not dsh_home.is_absolute():
             dsh_home = self.project_root / dsh_home
@@ -1655,7 +1690,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "runtime_cwd": str(runtime_cwd),
             "dsh_home": str(dsh_home),
             "request_timeout_seconds": self._deepseek_timeout_seconds(),
-            "patches": (str(self.project_root / "app" / "dsh_tool_environment.cordis.yml"),),
+            "patches": (
+                str(self.project_root / "app" / "dsh_tool_environment.cordis.yml"),
+                str(self.project_root / "app" / "dsh_lightweight.cordis.yml"),
+            ),
             "env": {
                 "MENTORA_PROJECT_ROOT": str(self.project_root),
                 "MENTORA_TOOL_ENV_KEYS": os.getenv("AICHART_TOOL_ENV_KEYS", ""),
@@ -1663,8 +1701,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         }
         if selected_reasoning_effort in supported_reasoning_efforts:
             options["reasoning_effort"] = selected_reasoning_effort
-        if selected_reasoning_effort == "low":
-            options["patches"] += (str(self.project_root / "app" / "dsh_lightweight.cordis.yml"),)
         max_tokens = os.getenv("AICHART_DEEPSEEK_MAX_TOKENS", "32768").strip()
         if max_tokens:
             try:
@@ -1687,7 +1723,12 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         with self._deepseek_harness_guard:
             cached = requested_harness_key in self._deepseek_harnesses
         session_root = dsh_home / "sessions"
-        if not cached and any(session_root.glob(f"*/{requested_session_id}/session.jsonl*")):
+        # DSH persistence currently writes session.v4.jsonl.zstd (older builds
+        # used session.jsonl*). A server restart drops the in-memory Harness,
+        # so reusing either on-disk id makes the runtime reject the new run as
+        # "session already exists". Keep conversation history in our prompt,
+        # but allocate a fresh engine session for the replacement Harness.
+        if not cached and any(session_root.glob(f"*/{requested_session_id}/session*.jsonl*")):
             requested_session_id = f"session-{uuid.uuid4().hex}"
         harness_key = f"{requested_session_id}::{selected_model}::{selected_reasoning_effort}"
         with self._active_run_guard:self._active_deepseek_runs[session_key]=harness_key
@@ -1719,6 +1760,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         tool_index = 0
         runtime_sources: list[dict[str, str]] = []
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
+        usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
         latest_progress_summary = ""
         started_at = time.monotonic()
@@ -1738,7 +1780,19 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 event_type = str(event.get("type") or "")
             else:
                 event_type = ""
-            if event_type in {"tool/call", "tool/result", "todo/write"}:
+            if event_type == "assistant/chunk":
+                event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
+                usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
+                if usage:
+                    try:
+                        usage_totals["input"] += max(0, int(usage.get("inputTokens") or 0))
+                        usage_totals["cached"] += max(0, int(usage.get("cacheReadTokens") or 0))
+                        usage_totals["output"] += max(0, int(usage.get("outputTokens") or 0))
+                        usage_totals["reasoning"] += max(0, int(usage.get("reasoningTokens") or 0))
+                    except (TypeError, ValueError):
+                        pass
+            elif event_type in {"tool/call", "tool/result", "todo/write"}:
                 if event_type == "tool/call" and pending_public_text:
                     latest_progress_summary = self._localized_progress(pending_public_text, question)
                     if latest_progress_summary:
@@ -1862,6 +1916,39 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     break
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
+        if self._requires_html_deliverable(question) and not re.search(
+            r"\[\[AIME_CHART:[^\]\n]+\.html\]\]", answer
+        ):
+            if _repair_attempt < 1:
+                self._drop_deepseek_harness(harness_key)
+                yield "status", {
+                    "message": "数据阶段已完成，正在继续生成并验证 HTML 交付文件",
+                    "phase": "html-deliverable-repair",
+                    "lang": "zh-CN",
+                }
+                repair_guidance = (
+                    f"{visualization_guidance}\n\n" if visualization_guidance else ""
+                ) + (
+                    "交付完整性修复：上一阶段已完成数据获取和计算，但未生成用户明确要求的最终 HTML。"
+                    "复用工作区中本轮已生成的中间数据，直接完成 custom-html-widget/streamviz 展示阶段。"
+                    "必须生成、验证一个 outputs/generated 下的完整可交互 HTML，并在最终回答中同时交付 "
+                    "[[AIME_CHART:绝对路径]] 和 [[AIME_FILE:绝对路径]]。不得再以‘将生成’、‘页面将展示’等未完成描述结束。"
+                )
+                yield from self._stream_deepseek(
+                    question,
+                    [],
+                    session_key,
+                    "",
+                    history,
+                    inference_model,
+                    reasoning_effort,
+                    repair_guidance,
+                    _repair_attempt=1,
+                )
+                return
+            raise ReasoningFrameworkError(
+                "Agent 完成了数据阶段，但未生成用户要求的 HTML 交付文件，本轮不能标记为完成。"
+            )
         # The final answer owns chart selection and placement. Intermediate
         # tool HTML and filesystem recency must never manufacture a marker.
         # Always publish the actual final response before any buffered visual
@@ -1869,6 +1956,19 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         # answer body has started rendering.
         yield from self._answer_text_events(answer)
         actual_session_id = str(getattr(result, "session_id", "") or requested_session_id)
+        if selected_model != local_model and any(usage_totals.values()):
+            try:
+                COSTS.record(
+                    provider="deepseek", service="Mentora 对话", operation="DeepSeek Harness 推理",
+                    model=selected_model,
+                    input_tokens=usage_totals["input"] + usage_totals["cached"],
+                    cached_input_tokens=usage_totals["cached"], output_tokens=usage_totals["output"],
+                    reasoning_tokens=usage_totals["reasoning"], conversation_id=session_key,
+                    conversation_title=question,
+                    metadata={"engineSessionId": actual_session_id, "reasoningEffort": selected_reasoning_effort},
+                )
+            except Exception:
+                pass
         run_id = f"deepseek-{actual_session_id}"
         yield "agent_event", {
             "engine": FRAMEWORKS["deepseek"], "agent": "Root Agent", "phase": "run", "status": "completed",
@@ -1931,8 +2031,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         environment["MENTORA_TOOL_ENV_KEYS"] = os.getenv("AICHART_TOOL_ENV_KEYS", "")
         launch = [dsh_bin, "--profile", "headless"]
         launch.extend(["--patch", str(self.project_root / "app" / "dsh_tool_environment.cordis.yml")])
-        if lightweight:
-            launch.extend(["--patch", str(self.project_root / "app" / "dsh_lightweight.cordis.yml")])
+        launch.extend(["--patch", str(self.project_root / "app" / "dsh_lightweight.cordis.yml")])
         launch.append(prompt)
         try:
             completed = subprocess.run(

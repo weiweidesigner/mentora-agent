@@ -682,7 +682,8 @@ function showAgentIdentity(article, agent) {
     const base = new URL(document.querySelector('.brandMark')?.src || '/static/assets/mentora-logo.svg', location.href);
     avatar.src = base.href; avatar.alt = ''; avatar.width = 24; avatar.height = 24;
     const name = document.createElement('span'); name.textContent = 'Mentora Deal';
-    identity.append(avatar, name); article.prepend(identity);
+    identity.append(avatar, name);
+    article.querySelector('.assistantBubble')?.prepend(identity);
   }
 }
 
@@ -1908,16 +1909,16 @@ function compactReasoningTitle(value, lang) {
   if (!text) return "";
   text = text.split(/[。！？!?\n]/, 1)[0].trim();
   if (lang === "zh-Hans" || lang === "zh-Hant") {
-    if (/^我/.test(text)) return text.length > 64 ? `${text.slice(0, 63).trim()}…` : text;
+    if (/^我/.test(text)) return text;
     text = text
       .replace(/^(?:这一步|這一步|本步|当前步骤|當前步驟)\s*(?:需要|将|將|会|會|先要|先)?\s*/, "")
       .replace(/^(?:首先|先|需要|将|將|会|會)\s*/, "");
     if (/^(?:检查|檢查|读取|讀取|搜索|搜尋|检索|檢索|获取|取得|整理|计算|計算|生成|分析|验证|驗證|比较|比較|识别|識別|定位|调用|調用|执行|執行|汇总|彙總|综合|綜合)/.test(text)) {
       text = `正在${text}`;
     }
-    return text.length > 34 ? `${text.slice(0, 33).trim()}…` : text;
+    return text;
   }
-  return text.length > 72 ? `${text.slice(0, 71).trim()}…` : text;
+  return text;
 }
 
 function toolCommandText(params, shellCommand) {
@@ -1944,6 +1945,16 @@ function toolCommandText(params, shellCommand) {
 
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
   lang = normalizeLang(lang);
+  const isHans = lang === "zh-Hans";
+  const isHant = lang === "zh-Hant";
+  const localized = (hans, hant, english) => isHans ? hans : isHant ? hant : english;
+  const observation = String(data?.observation || data?.result || data?.output || "");
+  if (script === "job_output" || fallback === "job_output") {
+    if (data?.phase === "completed" && !/\[status:\s*running\]|no new output/i.test(observation)) {
+      return localized("正在读取任务结果", "正在讀取工作結果", "Reading task results");
+    }
+    return localized("后台任务仍在运行", "背景工作仍在執行", "Background task is still running");
+  }
   if (data?.skillId) {
     const titles = {account:"读取模拟账户",candidates:"读取候选池",scan:"读取市场扫描结果",quote:"获取最新行情",history:"获取历史行情",save_candidate:"更新候选池",search:"搜索相关事实",plan:"生成模拟下单计划",execute:"执行模拟成交"};
     const label = data.skillId === "portfolio-backtest" ? "执行策略回测" : data.skillId === "portfolio-jev" ? "评估机会与持仓风险" : titles[data.operation] || data.tool || "调用工具";
@@ -1955,12 +1966,6 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
 
   const command = toolCommandText(params, shellCommand);
   const lowerCommand = command.toLowerCase();
-  const isHans = lang === "zh-Hans";
-  const isHant = lang === "zh-Hant";
-  const localized = (hans, hant, english) => isHans ? hans : isHant ? hant : english;
-  if (script === "job_output" || fallback === "job_output") {
-    return localized("正在读取后台任务结果", "正在讀取背景工作結果", "Reading background task results");
-  }
   if (/skill\.md\b/i.test(command)) {
     return localized("正在读取相关 Skill 规范", "正在讀取相關 Skill 規範", "Reading the relevant Skill instructions");
   }
@@ -1974,7 +1979,7 @@ function toolActivityTitle(data, script, fallback, code, params, shellCommand, l
     return localized("正在检查项目与运行环境", "正在檢查專案與執行環境", "Checking the project and runtime environment");
   }
   if (/(?:curl|wget|http)/.test(lowerCommand)) {
-    return localized("正在获取外部数据与证据", "正在取得外部資料與證據", "Retrieving external data and evidence");
+    return localized("正在等待网络响应", "正在等待網路回應", "Waiting for a network response");
   }
   const scriptMatch = command.match(/(?:^|[\s/])([A-Za-z0-9_-]+\.(?:py|sh))\b/);
   const effectiveScript = scriptMatch?.[1] || script;
@@ -3156,9 +3161,46 @@ async function renderMixedReportFlow(article, data, container, onDone) {
     ? data.reportArtifacts.filter((item) => item && item.url)
     : [];
   if (!reportArtifacts.length && data.reportUrl) reportArtifacts.push({ url: data.reportUrl });
+  // Deployment prefixes and preview URLs refer to the same generated file.
+  const chartReferenceKey = reference => {
+    try {
+      const url = new URL(String(reference).trim(), window.location.origin);
+      if (url.origin !== window.location.origin) return null;
+      const pathname = decodeURIComponent(url.pathname);
+      const match = pathname.match(/\/(?:generated|share-artifact)\/([^/\\\x00]+\.html)$/i);
+      return match ? ["", "generated", match[1]].join("/") : null;
+    } catch { return null; }
+  };
+  const references = new Map();
+  const registerArtifact = (item, index) => {
+    for (const reference of [item.path, item.url].filter(Boolean)) {
+      references.set(String(reference).trim(), index);
+      const key = chartReferenceKey(reference);
+      if (key) references.set(key, index);
+    }
+  };
+  reportArtifacts.forEach(registerArtifact);
+  const appScript = Array.from(document.scripts).find(script => /\/static\/app\.js(?:[?#]|$)/.test(script.src));
+  const deploymentPrefix = appScript ? new URL(appScript.src).pathname.split("/static/app.js")[0]
+    : window.location.pathname.match(/^\/(?:mentora|veya)(?=\/|$)/)?.[0] || "";
+  const interpretationWithCharts = String(data.interpretation || "").replace(/\[\[AIME_CHART:([^\]]*)\]\]/g, (marker, rawReference) => {
+    const reference = rawReference.trim();
+    const key = chartReferenceKey(reference);
+    if (references.has(reference) || (key && references.has(key))) return marker;
+    // Saved Deal results may retain the placement marker but omit metadata.
+    // Recover only same-origin generated HTML; never mount arbitrary URLs.
+    if (key) {
+      const item = {url: deploymentPrefix + key, renderMode: "iframe"};
+      registerArtifact(item, reportArtifacts.length);
+      reportArtifacts.push(item);
+      return marker;
+    }
+    return "\n\n图表暂不可用，请重新生成。\n\n";
+  }).replace(/\[\[AIME_CHART:[^\]]*$/g, "");
+
   const sources = Array.isArray(data.sources) ? data.sources.filter((item) => item?.url) : [];
   const videos = Array.isArray(data.videos) ? data.videos.filter((item) => item && (item.videoUrl || item.url)) : [];
-  const sourcePrepared = stripSourceInventoryFromInsight(sanitizeUserFacingInsight(data.interpretation || ""), sources);
+  const sourcePrepared = stripSourceInventoryFromInsight(sanitizeUserFacingInsight(interpretationWithCharts), sources);
   const videoPrepared = prepareInsightForVideos(sourcePrepared, videos);
   const makeVideoLane = () => buildVideoLane(videos, { showHeading: !videoPrepared.hadMarker });
   if (!data.reportUrl && !reportArtifacts.length) {
@@ -3214,11 +3256,10 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       /^#{1,6}\s*(?:生成图表|图表文件|图表输出|Generated Charts?|Chart Files?)\s*$/gim,
       "",
     );
-    reportArtifacts.forEach((item, index) => {
-      const marker = `\n\n@@AIME_CHART_${index}@@\n\n`;
-      for (const reference of new Set([item.path, item.url].filter(Boolean))) {
-        tokenized = tokenized.split(`[[AIME_CHART:${reference}]]`).join(marker);
-      }
+    tokenized = tokenized.replace(/\[\[AIME_CHART:([^\]]*)\]\]/g, (_marker, rawReference) => {
+      const reference = rawReference.trim();
+      const index = references.get(reference) ?? references.get(chartReferenceKey(reference));
+      return index === undefined ? "" : `\n\n@@AIME_CHART_${index}@@\n\n`;
     });
     const rendered = new Set();
     const nodes = [];

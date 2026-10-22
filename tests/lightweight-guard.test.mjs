@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import policy from '../app/dsh_lightweight_guard.cjs';
-const {LightweightGuard, failed, webFetchFailed} = policy;
+const {LightweightGuard, failed, webFetchFailed, compactToolResult, JOB_POLL_TIMEOUT_MS} = policy;
 const ok = text => ({content: [{type: 'text', text}], isError: false});
 const shell = (command, extra = {}) => ({name: 'bash', arguments: {command, description: 'query', ...extra}});
 const setup = t => {
@@ -13,11 +13,11 @@ const setup = t => {
   return {root, guard: new LightweightGuard(root)};
 };
 
-test('failures and changed parameters are returned to the model without retry policy', async t => {
+test('failures with changed parameters execute but duplicate diagnostics stay compact', async t => {
   const {guard}=setup(t);let bodies=0;
   for(const symbol of ['bad','other','bad']){
     const result=await guard.execute(shell(`python3 app/skills/a-share-data/scripts/price_snapshot.py --thscodes ${symbol}`),async()=>{bodies++;return ok('[exit code: 1] Target not found');});
-    assert.equal(result.content[0].text,'[exit code: 1] Target not found');
+    assert.match(result.content[0].text,/Target not found|deduplicated/);
   }
   assert.equal(bodies,3);assert.equal(guard.cache.size,0);
 });
@@ -108,18 +108,18 @@ test('concurrent identical queries share one in-flight execution', async t => {
   release(ok('data'));assert.deepEqual(await a, await b);assert.equal(bodies, 1);
 });
 
-test('direct URL reads serialize and stop after the first blocked or failed response', async t => {
+test('direct URL reads run concurrently and later calls stop after network unreachable', async t => {
   const {guard}=setup(t);let active=0,maxActive=0,bodies=0;
   const body=async text=>{bodies++;active++;maxActive=Math.max(maxActive,active);await new Promise(r=>setTimeout(r,5));active--;return ok(text);};
-  const calls=[
-    guard.execute({name:'web_fetch',arguments:{url:'https://one.example'}},()=>body('Fetched https://one.example (HTTP 403)')),
-    guard.execute({name:'web_fetch',arguments:{url:'https://two.example'}},()=>body('Error: web fetch failed: TypeError: fetch failed')),
-    guard.execute({name:'web_fetch',arguments:{url:'https://three.example'}},()=>body('should not run')),
-  ];
-  const results=await Promise.all(calls);
-  assert.equal(maxActive,1);assert.equal(bodies,1);assert.equal(guard.stats.suppressed,2);
-  assert.match(results[1].content[0].text,/do not retry web_fetch/);
-  assert.match(results[2].content[0].text,/do not retry web_fetch/);
+  await Promise.all([
+    guard.execute({name:'web_fetch',arguments:{url:'https://one.example'}},()=>body('evidence one')),
+    guard.execute({name:'web_fetch',arguments:{url:'https://two.example'}},()=>body('evidence two')),
+  ]);
+  assert.equal(maxActive,2);assert.equal(bodies,2);
+  await guard.execute({name:'web_fetch',arguments:{url:'https://bad.example'}},()=>body('URLError: Network is unreachable'));
+  const stopped=await guard.execute({name:'web_fetch',arguments:{url:'https://three.example'}},()=>body('should not run'));
+  assert.equal(bodies,3);assert.equal(guard.stats.suppressed,1);
+  assert.match(stopped.content[0].text,/do not retry direct reads/);
 });
 
 test('trades are never memoized and cannot be reported from cache', async t => {
@@ -145,4 +145,73 @@ test('failure classifier reads structured statuses rather than any occurrence of
   assert.equal(failed(ok('{"code":2003,"message":"Missing X-api-key","data":null}')),true);
   assert.equal(webFetchFailed(ok('Fetched https://example.com (HTTP 404)')),true);
   assert.equal(webFetchFailed(ok('Fetched https://example.com (HTTP 200)')),false);
+});
+
+test('large JSON from any tool is persisted and replaced by a compact file reference', t => {
+  const {root}=setup(t);
+  const rows=Array.from({length:2000},(_,index)=>({symbol:`S${index}`,value:index}));
+  const result=compactToolResult({name:'bash'},ok(JSON.stringify({rows})),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.compacted,true);
+  assert.equal(receipt.summary.rows.count,2000);
+  assert.match(receipt.handoff,/downstream tools/);
+  assert.equal(JSON.parse(fs.readFileSync(receipt.fullOutputPath,'utf8')).rows.length,2000);
+  assert.ok(result.content[0].text.length<1000);
+});
+
+test('large text is persisted while the model receives bounded head and tail samples', t => {
+  const {root}=setup(t);
+  const text='begin\n'+'x'.repeat(15000)+'\nend';
+  const result=compactToolResult({name:'web_fetch'},ok(text),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.summary.characters,text.length);
+  assert.match(receipt.summary.head,/begin/);
+  assert.match(receipt.summary.tail,/end/);
+  assert.equal(fs.readFileSync(receipt.fullOutputPath,'utf8'),text);
+});
+
+test('large failures are persisted and replaced by one bounded diagnostic summary', t => {
+  const {root}=setup(t);
+  const result={content:[{type:'text',text:'Traceback (most recent call last):\n'+'x'.repeat(15000)}],isError:true};
+  const compacted=compactToolResult({name:'bash'},result,root);
+  const receipt=JSON.parse(compacted.content[0].text);
+  assert.equal(receipt.failed,true);
+  assert.equal(fs.readFileSync(receipt.fullOutputPath,'utf8').length,15035);
+});
+
+test('structured row data uses a file reference below the general text threshold', t => {
+  const {root}=setup(t);
+  const rows=Array.from({length:80},(_,value)=>({value,label:`row-${value}`}));
+  const result=compactToolResult({name:'bash'},ok(JSON.stringify({rows})),root);
+  assert.equal(JSON.parse(result.content[0].text).compacted,true);
+});
+
+test('duplicate failures are summarized once per turn', async t => {
+  const {guard}=setup(t);const exec=shell('python3 failed.py');
+  const first=await guard.execute(exec,async()=>ok('[exit code: 1] same failure'));
+  const second=await guard.execute(exec,async()=>ok('[exit code: 1] same failure'));
+  assert.match(first.content[0].text,/same failure/);
+  assert.equal(JSON.parse(second.content[0].text).deduplicated,true);
+});
+
+test('background job polling is capped and immediate repeat polls are suppressed', async t => {
+  let now=10000;const {root}=setup(t);const guard=new LightweightGuard(root,()=>now);let bodies=0;
+  const exec={name:'job_output',arguments:{job_id:'job-1',wait:true,timeout_ms:60000}};
+  await guard.execute(exec,async()=>{bodies++;return ok('(no new output)\n[status: running]');});
+  assert.equal(exec.arguments.timeout_ms,JOB_POLL_TIMEOUT_MS);
+  const repeat=await guard.execute({name:'job_output',arguments:{job_id:'job-1',wait:true,timeout_ms:60000}},async()=>{bodies++;return ok('done');});
+  assert.equal(bodies,1);assert.match(repeat.content[0].text,/cooldown/);
+});
+
+test('environment adapter only forwards the configured shell environment', async () => {
+  const adapter=(await import('../app/dsh_tool_environment.cjs')).default;
+  const handlers=new Map();
+  const shell={resolve:()=>({env:{}})};
+  adapter.apply({
+    shell,
+    on:(event,handler)=>handlers.set(event,handler),
+    effect:callback=>callback(),
+  });
+  assert.deepEqual(adapter.inject,['shell']);
+  assert.equal(handlers.has('tools/execute'),false);
 });
