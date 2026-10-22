@@ -16,6 +16,20 @@
   let overlay = null;
   let restoreOverlayNodes = null;
   let restoreHomeScroll = false;
+  async function fetchCasePayload(url) {
+    const retryDelays = [0, 250, 750, 1500];
+    for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
+      if (retryDelays[attempt]) await new Promise(resolve => window.setTimeout(resolve, retryDelays[attempt]));
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (response.ok) return await response.json();
+        if (response.status && response.status < 500) break;
+      } catch (error) {
+        // A deployment can briefly reset the upstream connection. Retry below.
+      }
+    }
+    throw new Error("案例暂时无法打开");
+  }
   function mountCaseOverlay(homeScrollTop) {
     const horizontalPositions = [...conversation.querySelectorAll('.caseLane,#inspirationTabs')]
       .map(node => [node, node.scrollLeft]);
@@ -292,9 +306,7 @@
     messages.innerHTML = '<div class="caseLoading" role="status">正在打开缓存对话…</div>';
     try {
       if (!responseCache.has(id)) {
-        const response = await fetch(row.conversationUrl, { cache: "no-store" });
-        if (!response.ok) throw new Error("案例暂时无法打开");
-        responseCache.set(id, await response.json());
+        responseCache.set(id, await fetchCasePayload(row.conversationUrl));
       }
       if (version !== loadVersion) return;
       const cached = structuredClone(responseCache.get(id));

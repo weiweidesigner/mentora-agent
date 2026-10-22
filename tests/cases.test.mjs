@@ -7,7 +7,7 @@ import { JSDOM } from 'jsdom';
 
 const source = readFileSync(new URL('../app/static/cases.js', import.meta.url), 'utf8');
 const tick = () => new Promise(resolve => setTimeout(resolve, 20));
-function setup(url = 'https://example.com/', text = '完整缓存答案', catalog = null) {
+function setup(url = 'https://example.com/', text = '完整缓存答案', catalog = null, options = {}) {
   const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section>${catalog ? '<section id="inspirationSquare"><div id="inspirationTabs"></div><div id="inspirationPanel"></div></section>' : ''}<header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
   const w = dom.window;
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
@@ -23,7 +23,15 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
     sanitizeUserFacingInsight: value => value, formatInsight: value => `<p>${value}</p>`,
     renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
-    fetch: async url => {requests.push(url); const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0]; return {ok:true,json:async()=>url.includes('/inspiration/manifest.json')?catalog:url.endsWith('manifest.json')?rows:{question:row.question,answer:{interpretation:text}}};},
+    fetch: async url => {
+      requests.push(url);
+      const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0];
+      if (!url.endsWith('manifest.json') && options.failConversationAttempts > 0) {
+        options.failConversationAttempts -= 1;
+        return {ok:false,status:502,json:async()=>({})};
+      }
+      return {ok:true,status:200,json:async()=>url.includes('/inspiration/manifest.json')?catalog:url.endsWith('manifest.json')?rows:{question:row.question,answer:{interpretation:text}}};
+    },
   });
   vm.runInContext(source,context);
   return {w, requests, sent, conversation, messages, startNewChat: context.startNewChat};
@@ -49,6 +57,14 @@ test('direct case links work and returning home restores cards', async () => {
   assert.equal(h.conversation.classList.contains('is-case'),false);
   h.w.document.querySelector('.caseCard').click();await tick();
   assert.equal(h.requests.length,2,'reopening reuses cached response');
+});
+
+test('case replay recovers from a transient deployment gateway error', async () => {
+  const h=setup('https://example.com/?case=amd','重试后的完整答案',null,{failConversationAttempts:1});
+  await new Promise(resolve=>setTimeout(resolve,340));
+  assert.match(h.messages.textContent,/重试后的完整答案/);
+  assert.equal(h.requests.filter(url=>url.endsWith('/conversation.json')).length,2);
+  assert.doesNotMatch(h.messages.textContent,/案例暂时无法打开/);
 });
 
 test('cached answers reveal progressively and stop when leaving the case', async () => {
