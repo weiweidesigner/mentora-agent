@@ -43,12 +43,14 @@ def test_health_exposes_installed_harness_versions(monkeypatch):
         'deepseek-harness-runtime-bin': '0.2.1rc2',
     }
     monkeypatch.setattr(presentation.importlib.metadata, 'version', versions.__getitem__)
+    monkeypatch.setenv('MENTORA_DEAL_REVISION', '9934bcfda0eadfa4a7d98d9f78626eccc9341a8b')
 
     payload = presentation.health()
 
     assert payload['versions'] == {
         'deepseekHarnessSdk': '0.2.1rc2',
         'deepseekHarnessRuntime': '0.2.1rc2',
+        'mentoraDeal': '9934bcfda0eadfa4a7d98d9f78626eccc9341a8b',
     }
 
 
@@ -57,10 +59,12 @@ def test_health_tolerates_missing_harness_distribution(monkeypatch):
         raise presentation.importlib.metadata.PackageNotFoundError
 
     monkeypatch.setattr(presentation.importlib.metadata, 'version', missing)
+    monkeypatch.delenv('MENTORA_DEAL_REVISION', raising=False)
 
     assert presentation.health()['versions'] == {
         'deepseekHarnessSdk': None,
         'deepseekHarnessRuntime': None,
+        'mentoraDeal': None,
     }
 
 

@@ -487,6 +487,7 @@ def health() -> dict[str, Any]:
         "versions": {
             "deepseekHarnessSdk": installed_package_version("deepseek-harness-sdk"),
             "deepseekHarnessRuntime": installed_package_version("deepseek-harness-runtime-bin"),
+            "mentoraDeal": os.getenv("MENTORA_DEAL_REVISION"),
         },
         "frameworks": LOCAL_FRAMEWORKS.availability(),
         "models": LOCAL_FRAMEWORKS.inference_models(),
