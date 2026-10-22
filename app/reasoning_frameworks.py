@@ -1639,6 +1639,15 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         supported_reasoning_efforts = {"low", "medium", "high", "xhigh", "ultra"}
         if selected_reasoning_effort not in supported_reasoning_efforts:
             selected_reasoning_effort = os.getenv("AICHART_DEEPSEEK_REASONING_EFFORT", "low").strip().lower()
+        harness_reasoning_effort = selected_reasoning_effort
+        if selected_model == "deepseek-flash":
+            harness_reasoning_effort = {
+                "low": "low",
+                "medium": "high",
+                "high": "high",
+                "xhigh": "high",
+                "ultra": "max",
+            }[selected_reasoning_effort]
         local_model = os.getenv("AICHART_OLLAMA_MODEL", "haervwe/GLM-4.6V-Flash-9B:latest").strip() or "haervwe/GLM-4.6V-Flash-9B:latest"
         try:
             from deepseek_harness import DeepSeekHarness
@@ -1715,7 +1724,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             },
         }
         if selected_reasoning_effort in supported_reasoning_efforts:
-            options["reasoning_effort"] = selected_reasoning_effort
+            options["reasoning_effort"] = harness_reasoning_effort
         max_tokens = os.getenv("AICHART_DEEPSEEK_MAX_TOKENS", "32768").strip()
         if max_tokens:
             try:

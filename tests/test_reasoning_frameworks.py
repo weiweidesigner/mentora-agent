@@ -944,3 +944,49 @@ def test_low_effort_loads_runtime_guard_and_effort_changes_use_separate_harnesse
     assert options[1]['patches'] == (environment_patch, str(tmp_path / 'app' / 'dsh_lightweight.cordis.yml'))
     assert options[1]['env']['MENTORA_PROJECT_ROOT'] == str(tmp_path)
     client.close()
+
+
+@pytest.mark.parametrize(
+    ("requested_effort", "harness_effort"),
+    (
+        ("low", "low"),
+        ("medium", "high"),
+        ("high", "high"),
+        ("xhigh", "high"),
+        ("ultra", "max"),
+    ),
+)
+def test_deepseek_flash_maps_ui_effort_to_supported_harness_effort(
+    tmp_path, monkeypatch, requested_effort, harness_effort
+):
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    monkeypatch.setenv("DSH_HOME", str(tmp_path / "dsh"))
+    options = []
+
+    class Harness:
+        def __init__(self, **kwargs):
+            options.append(kwargs)
+
+        def run(self, prompt, *, session_id, on_notification):
+            return SimpleNamespace(session_id=session_id, final_response="完成", events=[], notifications=[])
+
+        def close(self):
+            pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=Harness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+
+    list(
+        client.stream(
+            "deepseek",
+            "复盘A股",
+            [],
+            session_key=f"effort-{requested_effort}",
+            inference_model="deepseek-flash",
+            reasoning_effort=requested_effort,
+        )
+    )
+
+    assert options[0]["reasoning_effort"] == harness_effort
+    client.close()
