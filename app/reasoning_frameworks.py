@@ -646,6 +646,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
 联网搜索使用 external-search 的通用路由：默认 Tavily，失败时自动切换 Serper；只有用户明确要求 Kimi 或 Agent 根据任务明确选择该来源时才使用 Kimi。internal-search 仍是 AInvest 站内文章搜索；结构化行情和用户指定 URL 的读取使用各自工具。保留实际 provider 和 fallback_attempts，不得伪装搜索成功。
 按用户问题的实际范围选择所需的数据源、分析步骤和图表数量；每张图应回答一个明确问题。避免重复取数，能批量获取时优先批量获取。数据源因限流、超时或无数据失败时，尝试另一个匹配来源并说明降级情况。
+这是所有推理框架都必须遵守的收敛协议：取证前先定义本问题的最小充分证据条件；条件满足后立即锁定研究，不得再搜索、打开新数据源或做非必要的鲁棒性检查。锁定后只允许一次确定性汇总计算、一次必要的 HTML 渲染和一次有界验证，然后必须结束。任一工具失败后最多允许一条实质不同的替代路线；已有可用证据时直接披露限制并继续交付。
+联网请求的单来源超时不得超过 10 秒，同一批次总时限不得超过 30 秒，不得设置网络重试。首次出现 network unreachable 后立即停止同类来源。不得把 timeout、timeout_ms、--max-time 或库函数的超时参数设为更大数值。
 根据指标、资产、数据形态和用户指定的展示方式，在业务图表与通用图表 Skill 中选择最合适的组件；不要仅因为问题涉及股票就固定选择业务图表。
 需要组合时按“数据/搜索 → 计算转换 → 图表渲染 → 视觉验证 → 投顾解读”执行，只选择任务真正需要的环节。
 采用“Skill 优先、证据先行、图文协同”的分析方式：先确认可靠数据与口径，再提炼结论，最后选择最能解释该结论的图表。对于时间序列、两项及以上比较、排名、构成、分布、K 线、资金流、事件过程或关系网络，只要已有匹配图表 Skill 且数据质量足够，默认生成图表，不必等待用户再次要求。
@@ -1447,9 +1449,17 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         observed_skills: list[str] = []
         runtime_sources: list[dict[str, str]] = []
         completed_tools: list[dict[str, Any]] = []
+        codex_env = os.environ.copy()
+        command_guard = (self.project_root / "scripts" / "codex-command-guard").resolve()
+        if command_guard.is_dir():
+            codex_env["MENTORA_CODEX_GUARD_BIN"] = str(command_guard)
+            codex_env["MENTORA_REAL_PYTHON"] = sys.executable
+            codex_env["BASH_ENV"] = str(command_guard / "shell-env.sh")
+            codex_env["PATH"] = f"{command_guard}{os.pathsep}{codex_env.get('PATH', '')}"
         process = subprocess.Popen(
             command,
             cwd=self.project_root,
+            env=codex_env,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,

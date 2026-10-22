@@ -1,0 +1,3 @@
+#!/bin/sh
+printf '%s\n' 'Direct wget is disabled for Mentora reasoning. Use the matching project Skill; one alternative route is allowed after failure.' >&2
+exit 64

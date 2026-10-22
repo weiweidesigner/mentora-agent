@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+
+real_python="${MENTORA_REAL_PYTHON:-/usr/bin/python3}"
+first="${1:-}"
+source_file=""
+temporary=""
+
+case "$first" in
+  -)
+    temporary="$(mktemp "${TMPDIR:-/tmp}/mentora-codex-python.XXXXXX")"
+    trap 'rm -f "$temporary"' EXIT HUP INT TERM
+    tee "$temporary" >/dev/null
+    source_file="$temporary"
+    ;;
+  -c)
+    temporary="$(mktemp "${TMPDIR:-/tmp}/mentora-codex-python.XXXXXX")"
+    trap 'rm -f "$temporary"' EXIT HUP INT TERM
+    printf '%s' "${2:-}" > "$temporary"
+    source_file="$temporary"
+    ;;
+  *.py)
+    case "$first" in
+      app/skill_runner.py|*/app/skill_runner.py|app/skills/*|*/app/skills/*) exec "$real_python" "$@" ;;
+    esac
+    source_file="$first"
+    ;;
+esac
+
+if [ -n "$source_file" ] && [ -f "$source_file" ] && grep -Eiq '(urllib([.]request)?|urlopen[[:space:]]*[(]|(^|[^[:alnum:]_])requests([.]|[[:space:]])|httpx|aiohttp|socket[.]create_connection|subprocess[^\n]*(curl|wget))' "$source_file"; then
+  printf '%s\n' 'Direct Python networking is disabled for Mentora reasoning. Use a matching project Skill with a per-source timeout of at most 10 seconds.' >&2
+  exit 64
+fi
+
+if [ "$first" = "-" ]; then
+  shift
+  exec "$real_python" "$temporary" "$@"
+fi
+exec "$real_python" "$@"
