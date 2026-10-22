@@ -494,6 +494,7 @@ def health() -> dict[str, Any]:
         "role": "presentation-gateway",
         "agent": "multi-framework",
         "versions": {
+            "mentoraAgent": os.getenv("MENTORA_AGENT_REVISION"),
             "deepseekHarnessSdk": installed_package_version("deepseek-harness-sdk"),
             "deepseekHarnessRuntime": installed_package_version("deepseek-harness-runtime-bin"),
             "mentoraDeal": os.getenv("MENTORA_DEAL_REVISION"),

@@ -44,14 +44,17 @@ def test_health_exposes_installed_harness_versions(monkeypatch):
     }
     monkeypatch.setattr(presentation.importlib.metadata, 'version', versions.__getitem__)
     monkeypatch.setenv('MENTORA_DEAL_REVISION', '9934bcfda0eadfa4a7d98d9f78626eccc9341a8b')
+    monkeypatch.setenv('MENTORA_AGENT_REVISION', 'afc65ea162d519eb944eeab1ced886297085ee6e')
+    data_vis_revision = presentation.locked_dependency_revision('data-vis-charts.lock.json')
 
     payload = presentation.health()
 
     assert payload['versions'] == {
+        'mentoraAgent': 'afc65ea162d519eb944eeab1ced886297085ee6e',
         'deepseekHarnessSdk': '0.2.1rc2',
         'deepseekHarnessRuntime': '0.2.1rc2',
         'mentoraDeal': '9934bcfda0eadfa4a7d98d9f78626eccc9341a8b',
-        'dataVisCharts': 'eaede5913a3932cb374f09c1e214c8d7555f2d16',
+        'dataVisCharts': data_vis_revision,
     }
 
 
@@ -61,12 +64,15 @@ def test_health_tolerates_missing_harness_distribution(monkeypatch):
 
     monkeypatch.setattr(presentation.importlib.metadata, 'version', missing)
     monkeypatch.delenv('MENTORA_DEAL_REVISION', raising=False)
+    monkeypatch.delenv('MENTORA_AGENT_REVISION', raising=False)
+    data_vis_revision = presentation.locked_dependency_revision('data-vis-charts.lock.json')
 
     assert presentation.health()['versions'] == {
+        'mentoraAgent': None,
         'deepseekHarnessSdk': None,
         'deepseekHarnessRuntime': None,
         'mentoraDeal': None,
-        'dataVisCharts': 'eaede5913a3932cb374f09c1e214c8d7555f2d16',
+        'dataVisCharts': data_vis_revision,
     }
 
 
