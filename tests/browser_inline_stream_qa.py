@@ -16,7 +16,7 @@ server=HTTPServer(('127.0.0.1',0),Handler);threading.Thread(target=server.serve_
 bootstrap='''
 window.mounts=[];window.fetches=[];window.fallbacks=0;
 window.canonicalArtifact=v=>v;
-window.sanitizeUserFacingInsight=v=>v;
+window.sanitizeUserFacingInsight=v=>v;window.modelActivitySummary=v=>v;
 window.formatInsight=v=>v.split(/\\n\\n/).map(s=>s.startsWith('## ')?'<h2>'+s.slice(3)+'</h2>':'<p>'+s+'</p>').join('');
 window.isNearBottom=()=>false;window.keepScrollPosition=()=>{};window.syncInlineActivity=()=>{};
 window.guardStreamVisualization=()=>{};window.prepareStreamVisualizationCode=v=>v;
@@ -41,6 +41,7 @@ with sync_playwright() as p:
         page.add_style_tag(content=':root{--ink:#17202c;--muted:#6d7585;--chat-body-font-size:16px}body{margin:0;padding:20px;background:#fafafa}article{max-width:1200px;margin:auto}[data-theme="dark"]{--ink:#e6edf3;--muted:#94a3b8;background:#111;color:#e6edf3}')
         page.evaluate('(theme)=>document.documentElement.dataset.theme=theme',theme)
         page.add_script_tag(content=bootstrap+compatible+artifact+core+source[source.index('function renderFinalAnswer('):source.index('function buildShareSessionForArticle(')])
+        page.add_script_tag(content='window.escapeHtml=s=>String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(\'"\',"&quot;");'+source[source.index('function activityToolKind('):source.index('function activityFileChangesFromTool(')]+source[source.index('function activityFileChangesMarkup('):source.index('function bindActivityFileChangeButtons(')]+source[source.index('function activityActionIcon('):source.index('function publicToolObservation(')])
         page.evaluate('''()=>{
             window.article=document.querySelector('article');
             appendStreamVisualizationModule(article,{htmlUrl:'/generated/a.html',label:'Fixture',path:'/home/ubuntu/outputs/generated/a.html'});
@@ -72,15 +73,21 @@ with sync_playwright() as p:
             document.querySelector('.finalAnswer').replaceChildren();article.streamAnswerNodes=new Map();delete article.streamAnswerRaw;article.streamVisualizationArtifacts=[];
             queueStreamVisualization(article,{id:'native',htmlUrl:'/generated/native.html',reset:true,delta:'<svg>',native:true});
             if(!document.querySelector('.streamvizArtifactHost'))throw Error('native stream waits for text');
-            window.nativeHost=document.querySelector('.streamvizArtifactHost');window.nativeFrame=nativeHost.querySelector('iframe');window.nativeWindow=nativeFrame.contentWindow;
+            window.nativeHost=document.querySelector('.streamvizArtifactHost');if(!nativeHost.querySelector('.streamvizToolThought')||nativeHost.querySelector('iframe'))throw Error('tool thought must precede completed visualization');
             renderStreamAnswerText(article,{text:'Before\\n\\n[[AIME_CHART:/generated/native.html]]\\n\\nAfter',final:false});
             queueStreamVisualization(article,{id:'native',delta:'<text>more</text></svg>',native:true,final:true});
             if(document.querySelectorAll('.streamvizArtifactHost').length!==1||document.querySelector('.streamChartSlot .streamvizArtifactHost')!==nativeHost)throw Error('native duplicated on relocation');
             if(nativeHost.streamVisualizationCode!=='<svg><text>more</text></svg>')throw Error('native delta lost');
-            if(nativeHost.querySelector('iframe')!==nativeFrame||nativeFrame.contentWindow!==nativeWindow)throw Error('native frame reset');
+            if(!nativeHost.querySelector('iframe')||nativeHost.querySelector('.streamvizToolThought'))throw Error('completed visualization did not replace tool thought');
             renderStreamAnswerText(article,{text:'Before [[AIME_C',final:false});
             if(document.querySelector('.streamAnswerPreview').textContent.includes('[[AIME'))throw Error('partial marker leaked');
             document.querySelector('.finalAnswer').replaceChildren();article.streamVisualizationArtifacts=[];
+            const thoughtList=document.createElement('ul');thoughtList.className='thinkingSteps';article.append(thoughtList);
+            renderStreamAnswerText(article,{blockId:'prelude',delta:'我先读取组件契约',final:false});
+            renderStreamAnswerText(article,{blockId:'prelude',discard:true});
+            renderPublicProgress(article,{blockId:'prelude',text:'我先读取组件契约'});
+            renderPublicProgress(article,{blockId:'prelude',text:'我先读取组件契约并核对数据'});
+            if(thoughtList.children.length!==1||!thoughtList.textContent.includes('核对数据')||document.querySelector('.finalAnswer').textContent.includes('组件契约'))throw Error('commentary belongs in thinking, exactly once');
             renderStreamAnswerText(article,{blockId:'one',delta:'Part one',final:false});
             renderStreamAnswerText(article,{blockId:'two',delta:'Part two',final:false});
             renderStreamAnswerText(article,{blockId:'one',delta:' continued',final:false});
@@ -102,6 +109,24 @@ with sync_playwright() as p:
             if(document.querySelector('.finalAnswer').innerHTML!==html)throw Error('late answer changed final');
         }''')
         assert not errors,errors
+        page.evaluate('''()=>{
+            const fixture=document.createElement('div');fixture.id='file-fixture';
+            fixture.innerHTML=activityFileChangesMarkup([{name:'merge_cn_week.py',path:'/outputs/merge_cn_week.py',relativePath:'outputs/merge_cn_week.py',kind:'created',added:48,removed:0}], 'zh-CN')+'<span class="activityActionIcon">'+activityActionIcon('search')+'</span>';
+            document.body.append(fixture);
+            const row=fixture.querySelector('.activityFileChange');
+            if(row.tagName==='BUTTON'||getComputedStyle(row).backgroundColor!=='rgba(0, 0, 0, 0)')throw Error('file row has button background');
+            if(!row.querySelector('button.activityFileChangeName[data-tooltip]')||!row.querySelector('.activityFileChangeExpand'))throw Error('file hover targets not separated');
+            const icon=fixture.querySelector('[data-icon-kind="search"]');
+            if(!icon?.querySelector('circle')||icon.getAttribute('viewBox')!=='0 0 24 24'||!icon.querySelector('path'))throw Error('search icon is not a complete magnifying glass');
+            if(getComputedStyle(document.querySelector('.reportInterpretation')).maxWidth!=='100%')throw Error('prose still artificially constrained');
+        }''')
+        page.mouse.move(0,0)
+        assert page.locator('#file-fixture .activityFileChangeExpand').evaluate("n=>getComputedStyle(n).opacity")=='0'
+        page.locator('#file-fixture .activityFileChangeName').hover()
+        assert page.locator('#file-fixture .activityFileChangeNameText').evaluate("n=>getComputedStyle(n).textDecorationLine")=='underline'
+        page.locator('#file-fixture .activityFileChangeStatus').hover()
+        assert page.locator('#file-fixture .activityFileChangeNameText').evaluate("n=>getComputedStyle(n).textDecorationLine")=='none'
+        page.screenshot(path=str(BASE/f'progress-{width}-{theme}.png'))
         checks.append({'width':width,'theme':theme,'inline':True,'earlyStreamViz':True,'stableFrames':True,'lateModule':True})
         page.close()
     browser.close()

@@ -58,7 +58,7 @@ def test_model_delta_arrives_before_harness_finishes(tmp_path,monkeypatch,bridge
         assert first['delta']=='first' and not finished.is_set()
         release.set()
         rest=list(events)
-        assert [event for event,data in rest if event in {'answer_text','tool_step'}]==['tool_step','answer_text']
+        assert [event for event,data in rest if event in {'answer_text','tool_step'} and not data.get('discard')]==['tool_step','answer_text']
         assert 'private' not in str(first)+str(rest)
     finally:release.set();client._drop_deepseek_harness('real-delta')
 

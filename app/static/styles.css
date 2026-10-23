@@ -2070,7 +2070,7 @@ p {
 /* One narrative column, with full-width visuals at the author's exact marker. */
 .streamAnswerPreview,.mixedReport{min-width:0}
 :is(.streamAnswerPreview,.mixedReport)>.reportInterpretation{
-  width:100%;max-width:84ch;margin:0 0 12px;line-height:1.65;color:var(--ink);
+  width:100%;max-width:100%;margin:0 0 12px;line-height:1.65;color:var(--ink);
   overflow-wrap:anywhere;box-sizing:border-box;
 }
 :is(.streamAnswerPreview,.mixedReport)>.reportInterpretation :is(h1,h2,h3,h4,h5){
@@ -2083,8 +2083,13 @@ p {
 :is(.streamAnswerPreview,.mixedReport)>:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell,.streamvizArtifactHost)+.reportInterpretation{margin-top:4px}
 .streamChartPending{display:flex;align-items:center;gap:8px;min-height:96px;padding:16px;color:var(--muted);font-size:14px;box-sizing:border-box}
 .streamChartPending:before{content:"";width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:streamChartSpin .9s linear infinite}
+.streamvizToolThought{display:flex;flex-direction:column;gap:6px;padding:8px 0;color:var(--muted);font-size:14px;line-height:1.5}
+.streamvizToolThoughtText{color:var(--ink);font-size:var(--chat-body-font-size,16px);font-weight:400}
+.streamvizToolThoughtState{display:flex;align-items:center;gap:8px}
+.streamvizToolThoughtState::before{content:"";width:12px;height:12px;border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:streamChartSpin .9s linear infinite}
+.streamvizArtifactHost[data-visualization-phase="running"]{min-height:0}
 @keyframes streamChartSpin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.streamChartPending:before{animation:none}}
+@media(prefers-reduced-motion:reduce){.streamChartPending:before,.streamvizToolThoughtState::before{animation:none}}
 
 .relatedVideoSection {
   width: 100%;

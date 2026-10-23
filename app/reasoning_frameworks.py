@@ -694,7 +694,7 @@ class LocalAgentFrameworks:
 {question}{image_note}{history_note}{artifact_note}
 
 你是 Mentora 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
-公开回答可以按实际执行顺序分段输出：先给出有依据的部分结论，再调用工具，然后继续回答；不要为凑交互而增加工具或重复已输出段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具，其参数会实时显示；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。普通组件生成的完整 HTML 则直接展示，不伪装成逐字生成。
+计划、取数检查、契约读取和执行过程属于公开进度说明，不是正式答案；有消息通道时使用 commentary。正式答案以有依据的结论和解读为主，不复述这些执行日志，也不要为凑交互增加工具或重复段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。宿主先显示工具说明和执行状态，成功结束后在同一位置展示组件；普通组件生成的完整 HTML 直接展示，不伪装成逐字生成。
 Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Yahoo 行情/财务接口，包括临时代码和组件回退；历史会话中的 Yahoo 命令不得复用。使用现有其他数据源；无匹配数据时明确说明限制，不得编造或替换标的。 该禁用策略不是本轮取数失败的原因。数据缺口必须依据本轮真实工具回执说明已尝试来源及实际失败原因；不得把工具移除、内部配置或未发生的请求写成市场数据缺失的原因。
 请直接完成用户任务，而不是解释如何完成。宿主会根据本轮语义提供少量候选 Skill 和组件；它们只是检索结果，你仍负责选择、组合或放弃。优先阅读所选候选的契约并执行；只有候选明显不足时才扩展检索 .agents/skills，禁止为了发现工具而扫描全部目录。不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
@@ -1852,7 +1852,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 text = str(item.get("text") or "")
                 if text and text != public_items.get(item_id):
                     public_items[item_id] = text
-                    yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
+                    if item.get('channel') == 'commentary':
+                        yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary'}
+                    else:
+                        yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
                 if item.get("channel") != "commentary":answer = text or answer
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
@@ -2150,7 +2153,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
                 if str(payload.get('sessionId') or requested_session_id)==requested_session_id and event_data.get('channel') not in {'analysis','reasoning'}:
-                    yield from public_stream.chunk(chunk)
+                    yield from public_stream.chunk({**chunk,**({'channel':event_data['channel']} if event_data.get('channel') else {})})
                 usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
                 if usage:
                     try:
@@ -2161,6 +2164,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     except (TypeError, ValueError):
                         pass
             elif event_type in {"tool/call", "tool/result", "todo/write"}:
+                if event_type == 'tool/call':yield from public_stream.settle_progress()
                 if event_type == "tool/call" and pending_public_text:
                     latest_progress_summary = self._localized_progress(pending_public_text, question)
                     if latest_progress_summary:

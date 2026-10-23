@@ -767,12 +767,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "progress") {
-    const text = modelActivitySummary(data?.thoughtSummary || data?.text || data?.detail || data?.message, lang);
-    if (!text || article.activityEnded) return;
-    article.dataset.publicThoughtText = text;
-    if (article.taskContext && data?.kind === "analysis") article.dataset.hasAnalysisSummary = "true";
-    appendStep(article, text, "", "loading", `model-progress:${text}`);
-    article.querySelector(".thinkingSteps > li:last-child")?.classList.add("is-model-summary");
+    if (!article.activityEnded) renderPublicProgress(article, data);
     return;
   }
   if (eventName === "answer_text") {
@@ -1360,8 +1355,18 @@ function replayOrderedStream(article, blocks, container) {
     if (url && !article.streamVisualizationArtifacts.some(artifact => artifact.url === url))
       article.streamVisualizationArtifacts.push({...item, url});
   }
-  for (const block of blocks) {
+  for (const [index, block] of blocks.entries()) {
+    if (block.kind === 'progress') {
+      renderPublicProgress(article,{...block.data,blockId:block.id});
+      continue;
+    }
     if (block.kind === 'text') {
+      // Older stored turns predate explicit public-commentary settlement.
+      const boundary = blocks.slice(index + 1).find(item => item.kind === 'text' || item.kind === 'tool_step');
+      if (boundary?.kind === 'tool_step' && !/\[\[AIME_(?:CHART|FILE):/.test(block.text || '')) {
+        renderPublicProgress(article,{text:block.text,blockId:block.id});
+        continue;
+      }
       const node = document.createElement('div');
       node.className = 'streamAnswerPreview';
       node.dataset.blockId = block.id || '';
@@ -1513,6 +1518,28 @@ function syncStreamAnswerPlacement(article, preview) {
   });
 }
 
+function renderPublicProgress(article, data = {}) {
+  const text = modelActivitySummary(data.thoughtSummary || data.text || data.detail || data.message, article.dataset.lang || 'zh-CN');
+  const list = article.querySelector('.thinkingSteps');
+  if (!text || !list) return;
+  const key = String(data.blockId || `model-progress:${text}`);
+  let item = Array.from(list.children).find(node => node.dataset.publicBlockId === key);
+  if (!item) {
+    item = document.createElement('li');
+    item.className = 'is-model-summary';
+    item.dataset.publicBlockId = key;
+    item.innerHTML = '<div class="activityStepTitle"></div>';
+    list.append(item);
+  }
+  item.querySelector('.activityStepTitle').textContent = text;
+  item.classList.toggle('is-loading', !article.activityEnded);
+  item.classList.toggle('is-done', Boolean(article.activityEnded));
+  article.dataset.publicThoughtText = text;
+  if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
+  updateThinkingSummary(article, '', {live:!article.activityEnded});
+  syncActivityDrawer(article);
+}
+
 function renderStreamAnswerText(article, data = {}) {
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
@@ -1599,6 +1626,34 @@ function upsertStreamVisualization(article, data = {}) {
     article.nonVisualVisualizationIds.add(key);
     window.AimeStreamViz?.unmount?.(host);
     host.remove();
+    return;
+  }
+  if (!data.final) {
+    let thought = host.querySelector('.streamvizToolThought');
+    if (!thought) {
+      thought = document.createElement('div');
+      thought.className = 'streamvizToolThought';
+      thought.setAttribute('role','status');
+      thought.innerHTML = '<span class="streamvizToolThoughtText"></span><span class="streamvizToolThoughtState">正在生成可视化…</span>';
+      host.append(thought);
+    }
+    let title = data.thoughtSummary || data.title || '';
+    if (!title) {
+      const match = (host.streamVisualizationRawArguments || '').match(/"title"\s*:\s*("(?:[^"\\]|\\.)*")/);
+      try { if (match) title = JSON.parse(match[1]); } catch {}
+    }
+    thought.querySelector('.streamvizToolThoughtText').textContent = title || '构建可视化组件';
+    host.dataset.visualizationPhase = 'running';
+    keepScrollPosition(isNearBottom());
+    return;
+  }
+  host.querySelector('.streamvizToolThought')?.remove();
+  host.dataset.visualizationPhase = 'completed';
+  host.classList.remove('is-live');
+  if (data.htmlUrl && !host.streamVisualizationCode && !host.streamVisualizationRawArguments) {
+    const completed = createStreamVisualizationArtifact({url:data.htmlUrl,title:data.title || ''},0);
+    completed.dataset.visualizationId = key;
+    host.replaceWith(completed);
     return;
   }
   mountStreamVisualization(host, {
@@ -2133,7 +2188,7 @@ function activityFileChangesFromTool(data, tool, observation, phase) {
 }
 
 function activityFileChangesMarkup(changes, lang) {
-  const chinese = lang === "zh-Hans" || lang === "zh-Hant";
+  const chinese = /^zh/.test(lang || '');
   return `<div class="activityFileChanges">${changes.map((change, index) => {
     const kind = String(change.kind || "edited");
     const label = chinese
@@ -2144,21 +2199,21 @@ function activityFileChangesMarkup(changes, lang) {
     const added = hasStats ? Math.max(0, Number(change.added) || 0) : 0;
     const removed = hasStats ? Math.max(0, Number(change.removed) || 0) : 0;
     const previewable = change.previewable !== false && kind !== "deleted";
-    const tag = previewable ? "button" : "div";
-    const attributes = previewable ? `type="button" data-file-change-index="${index}" data-file-name="${escapeHtml(change.name)}" data-relative-path="${escapeHtml(change.relativePath || "")}" data-change-kind="${escapeHtml(kind)}" aria-label="${escapeHtml(label + " " + change.name)}"` : "";
-    return `<${tag} class="activityFileChange${previewable ? " is-previewable" : ""}" ${attributes}>
+    const attributes = `type="button" data-file-change-index="${index}" data-file-name="${escapeHtml(change.name)}" data-relative-path="${escapeHtml(change.relativePath || "")}" data-change-kind="${escapeHtml(kind)}" aria-label="${escapeHtml(label + " " + change.name)}"`;
+    const name = `<span class="activityFileChangeNameText">${escapeHtml(change.name)}</span>`;
+    return `<div class="activityFileChange${previewable ? " is-previewable" : ""}">
       <span class="activityFileChangeIcon" aria-hidden="true">${activityActionIcon("edit")}</span>
       <span class="activityFileChangeStatus">${escapeHtml(label)}</span>
-      <span class="activityFileChangeName" title="${escapeHtml(change.path || change.relativePath || change.name)}">${escapeHtml(change.name)}</span>
+      ${previewable ? `<button class="activityFileChangeName" data-tooltip="${escapeHtml(change.path || change.relativePath || change.name)}" ${attributes}>${name}</button>` : `<span class="activityFileChangeName">${name}</span>`}
       ${hasStats ? `<span class="activityFileChangeStats"><span class="is-added">+${added}</span> <span class="is-removed">-${removed}</span></span>` : ""}
       ${kind === "created" ? '<span class="activityFileCreatedDot" aria-hidden="true"></span>' : ""}
-      ${previewable ? '<span class="activityFileChangeChevron" aria-hidden="true"></span>' : ""}
-    </${tag}>`;
+      ${previewable ? `<button class="activityFileChangeExpand" ${attributes}><span class="activityFileChangeChevron" aria-hidden="true"></span></button>` : ""}
+    </div>`;
   }).join("")}</div>`;
 }
 
 function bindActivityFileChangeButtons(root) {
-  root?.querySelectorAll?.(".activityFileChange[data-file-change-index]").forEach((button) => {
+  root?.querySelectorAll?.(".activityFileChange [data-file-change-index]").forEach((button) => {
     if (button.dataset.boundFilePreview === "true") return;
     button.dataset.boundFilePreview = "true";
     button.addEventListener("click", () => {
@@ -2259,7 +2314,7 @@ function activityToolMarkup(article, item, key) {
   if (summary) {
     summary.className = "activityAction";
     summary.title = argument;
-    summary.innerHTML = `<span class="activityActionIcon" aria-hidden="true">${activityActionIcon(tool)}</span><span class="activityActionText">${escapeHtml(action)}</span><span class="activityActionChevron" aria-hidden="true"></span>`;
+    summary.innerHTML = `<span class="activityActionIcon" aria-hidden="true">${activityActionIcon(kind === 'tool' ? tool : kind)}</span><span class="activityActionText">${escapeHtml(action)}</span><span class="activityActionChevron" aria-hidden="true"></span>`;
   }
   if (!details.querySelector(".activityCommandPanel")) {
     const output = item.querySelector(".toolStepOutputBlock")?.textContent || "";
@@ -2424,7 +2479,7 @@ function activityActionIcon(tool) {
     return '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M639.75 56c17.496 0 31.712 14.042 31.995 31.47l.004.53v179.999l95.25.001c17.496 0 31.713 14.042 31.996 31.47l.004.53v212c0 147.199-111.18 268.716-254.499 284.634V936c0 17.673-14.327 32-32 32-17.497 0-31.714-14.042-31.996-31.47l-.005-.53V796.633C337.332 780.727 226 659.363 226 512V300c0-17.673 14.327-32 32-32l95.249-.001V88c0-17.673 14.328-32 32-32 17.497 0 31.714 14.042 31.996 31.47l.005.53-.001 179.999h190.5V88c0-17.673 14.327-32 32-32zM639.539 331.998l-254.077.001-.212.001-.211-.002-95.039.001V512c0 121.597 97.631 220.406 218.82 222.37l3.609.029 3.876-.032 3.517-.085c118.418-3.82 213.244-100.07 215.148-218.645l.029-3.637V331.999H639.96l-.212.001-.21-.002z"/></svg>';
   }
   if (activityToolKind(name) === "search") {
-    return '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M446.112323 177.545051c137.567677 0.219798 252.612525 104.59798 266.162424 241.493333 13.562828 136.895354-78.778182 261.818182-213.617777 289.008485-134.852525 27.203232-268.386263-52.156768-308.945455-183.608889s25.018182-272.252121 151.738182-325.779394A267.235556 267.235556 0 0 1 446.112323 177.545051m0-62.060607c-182.794343 0-330.989899 148.195556-330.989899 330.989899s148.195556 330.989899 330.989899 330.989899 330.989899-148.195556 330.989899-330.989899-148.195556-330.989899-330.989899z m431.321212 793.341415a30.849293 30.849293 0 0 1-21.94101-9.102223l-157.220202-157.220202c-11.752727-12.179394-11.584646-31.534545 0.37495-43.50707 11.972525-11.972525 31.327677-12.140606 43.494141-0.37495l157.220202 157.220202a31.036768 31.036768 0 0 1 6.723232 33.810101 31.004444 31.004444 0 0 1-28.651313 19.174142z m0 0"/></svg>';
+    return '<svg data-icon-kind="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>';
   }
   const path = /bash|shell|exec|command|python/.test(name)
     ? '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 8 4 4-4 4m6 0h4"/>'
