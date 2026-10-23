@@ -18,6 +18,12 @@ def emit_model_activity(phase):
     emit=_events.get()
     if emit:emit('model_activity',{'phase':phase})
 
+def emit_public_progress(text):
+    """Forward the model's public action summary without templating its wording."""
+    emit=_events.get()
+    if emit and isinstance(text,str) and text.strip():
+        emit('progress',{'text':text.strip(),'kind':'analysis','agent':'mentora-deal','lang':'zh-CN'})
+
 def public_value(value):
     if isinstance(value,dict):return {str(k):('[redacted]' if re.search(r'api.?key|authorization|password|cookie|secret|owner',str(k),re.I) else public_value(v)) for k,v in value.items()}
     if isinstance(value,(tuple,list)):return [public_value(v) for v in value]
