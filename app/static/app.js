@@ -1182,17 +1182,17 @@ function createArtifactFallbackFrame(item, index, options = {}) {
   const loadingStartedAt = Date.now();
   const demoLoadingMs = Math.max(0, Number(options.demoLoadingMs || 0));
   const shell = document.createElement("div");
-  shell.className = `reportFrameShell${demoLoadingMs ? " is-chart-loading is-case-demo" : ""}`;
+  shell.className = `reportFrameShell is-chart-loading${demoLoadingMs ? " is-case-demo" : ""}`;
   shell.dataset.artifactUrl = String(item.url || "");
   const loading = document.createElement("div");
   loading.className = "chartLoadingOverlay";
-  loading.hidden = !demoLoadingMs;
+  loading.hidden = false;
   loading.setAttribute("role", "status");
-  loading.innerHTML = '<div class="chartLoadingBars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><span>正在加载图表…</span>';
+  loading.innerHTML = '<span class="chartLoadingLabel">正在加载图表</span>';
   const frame = document.createElement("iframe");
   frame.className = "reportDocumentFrame";
   shell.append(frame);
-  if (demoLoadingMs) shell.append(loading);
+  shell.append(loading);
   frame.dataset.artifactUrl = String(item.url || "");
   frame.title = `Analysis chart ${index + 1}`;
   frame.scrolling = "no";
@@ -1276,6 +1276,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   if (Number(options.demoLoadingMs) > 0) return createArtifactFallbackFrame(item, index, { demoLoadingMs: options.demoLoadingMs });
   const host = document.createElement("div");
   host.className = `streamvizArtifactHost${options.live ? " is-live" : ""}`;
+  host.dataset.loadingKind = 'artifact';
   host.dataset.artifactUrl = String(item.url || "");
   mountStreamVisualization(host, {
     title: item.title || item.label || "",
@@ -1324,7 +1325,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       exportCode: code,
       final: true,
       showActions: options.showActions === true,
-      loadingMessage: options.loadingMessage || "正在生成可视化",
+      loadingMessage: options.loadingMessage || "正在加载图表",
       loadingDwellMs: 0,
     });
     host.dataset.artifactCodeReady = "true";

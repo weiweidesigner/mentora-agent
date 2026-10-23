@@ -3935,14 +3935,45 @@ p {
 .reportFrameShell>.widgetChartActivation span{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:12px;opacity:0;transition:opacity .18s;pointer-events:none}
 .reportFrameShell>.widgetChartActivation:hover span,.reportFrameShell>.widgetChartActivation:focus-visible span{opacity:1}
 .reportFrameShell>.widgetChartActivation:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
-.reportFrameShell.is-chart-loading{min-height:240px}
+.reportFrameShell.is-chart-loading{min-height:180px}
 .reportFrameShell.is-chart-loading .reportDocumentFrame{visibility:hidden}
-.chartLoadingOverlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--muted);font-size:13px}
-.chartLoadingBars{display:flex;align-items:flex-end;gap:7px;height:52px}
-.chartLoadingBars i{width:10px;border-radius:3px 3px 0 0;background:var(--accent);opacity:.55;animation:chartLoadingPulse 1.1s ease-in-out infinite}
-.chartLoadingBars i:nth-child(1){height:20px}.chartLoadingBars i:nth-child(2){height:34px;animation-delay:.12s}.chartLoadingBars i:nth-child(3){height:24px;animation-delay:.24s}.chartLoadingBars i:nth-child(4){height:45px;animation-delay:.36s}.chartLoadingBars i:nth-child(5){height:32px;animation-delay:.48s}
-@keyframes chartLoadingPulse{50%{opacity:.2;transform:scaleY(.65)}}
-@media(prefers-reduced-motion:reduce){.chartLoadingBars i{animation:none}}
+.chartLoadingOverlay{position:absolute;inset:0}
+/* Artifact fetching/rendering only. Native tool-generation thoughts keep their
+   separate lifecycle and appearance. No simulated data or progress percentage. */
+:is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline){
+  --chart-loading-grid:color-mix(in srgb,var(--muted) 9%,transparent);
+  display:flex;position:relative;isolation:isolate;width:100%;min-height:180px;
+  padding:20px;overflow:hidden;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--line) 65%,transparent);
+  border-radius:8px;background:color-mix(in srgb,var(--soft) 35%,var(--bg));
+  color:var(--muted);font:inherit;font-size:12px;line-height:1.5;
+}
+.chartLoadingOverlay{position:absolute}
+:is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::before{
+  content:"";position:absolute;inset:20px 20px 48px;border-left:1px solid var(--chart-loading-grid);border-bottom:1px solid var(--chart-loading-grid);
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(33.333% - 1px),var(--chart-loading-grid) calc(33.333% - 1px),var(--chart-loading-grid) 33.333%);
+  pointer-events:none;
+}
+:is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::after{
+  content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 28%,color-mix(in srgb,var(--muted) 5%,transparent) 50%,transparent 72%);
+  transform:translateX(-100%);animation:artifactLoadingSheen 2.6s ease-in-out infinite;pointer-events:none;
+}
+.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-icon{display:none}
+:is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text){
+  display:flex;align-items:center;gap:8px;position:absolute;left:20px;right:20px;bottom:14px;
+  color:var(--muted);font-size:12px;font-weight:400;line-height:1.5;animation:none;
+}
+:is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text)::before{
+  content:"";flex:none;width:11px;height:11px;box-sizing:border-box;border:1.25px solid color-mix(in srgb,var(--muted) 22%,transparent);border-top-color:var(--muted);border-radius:50%;animation:streamChartSpin 1.15s linear infinite;
+}
+@keyframes artifactLoadingSheen{to{transform:translateX(100%)}}
+@media(max-width:600px){
+  .reportFrameShell.is-chart-loading{min-height:148px}
+  :is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline){min-height:148px}
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::after{animation:none;background:none}
+  :is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text)::before{animation:none}
+}
 
 .reportFrameShell.is-case-demo:not(.is-chart-loading) .reportDocumentFrame{animation:chartContentEnter .22s ease-out}
 @keyframes chartContentEnter{from{opacity:0}to{opacity:1}}
