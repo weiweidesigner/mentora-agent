@@ -2067,6 +2067,25 @@ p {
   width: 100%;
 }
 
+/* One narrative column, with full-width visuals at the author's exact marker. */
+.streamAnswerPreview,.mixedReport{min-width:0}
+:is(.streamAnswerPreview,.mixedReport)>.reportInterpretation{
+  width:100%;max-width:84ch;margin:0 0 12px;line-height:1.65;color:var(--ink);
+  overflow-wrap:anywhere;box-sizing:border-box;
+}
+:is(.streamAnswerPreview,.mixedReport)>.reportInterpretation :is(h1,h2,h3,h4,h5){
+  margin:16px 0 8px;font-weight:650;line-height:1.4;color:var(--ink);
+}
+:is(.streamAnswerPreview,.mixedReport)>.reportInterpretation>:first-child{margin-top:0}
+:is(.streamAnswerPreview,.mixedReport)>.reportInterpretation>:last-child{margin-bottom:0}
+.streamChartSlot{min-width:0;width:100%;margin:4px 0 16px}
+.streamChartSlot+.reportInterpretation{margin-top:4px}
+:is(.streamAnswerPreview,.mixedReport)>:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell,.streamvizArtifactHost)+.reportInterpretation{margin-top:4px}
+.streamChartPending{display:flex;align-items:center;gap:8px;min-height:96px;padding:16px;color:var(--muted);font-size:14px;box-sizing:border-box}
+.streamChartPending:before{content:"";width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:streamChartSpin .9s linear infinite}
+@keyframes streamChartSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.streamChartPending:before{animation:none}}
+
 .relatedVideoSection {
   width: 100%;
   margin: 8px 0 16px;
@@ -5283,7 +5302,9 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .is-error>.activityTool>.activityAction{color:var(--danger)}
 .activityBody{min-width:0;padding:20px 24px 28px}
 .activityBody .activityNarrative>p{font-size:14px;line-height:1.55}
-.interleavedFlow{display:flex;flex-direction:column;gap:18px;min-width:0}
+.interleavedFlow{display:flex;flex-direction:column;gap:8px;min-width:0}
+.interleavedFlow>.streamAnswerPreview{margin:0;min-width:0}
+.interleavedFlow>.streamAnswerPreview:empty{display:none}
 .interleavedFlow .streamvizLiveLane{margin:0;min-width:0}
 .orderedTool{font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
 .orderedTool[data-phase="running"],.orderedTool[data-phase="started"]{opacity:.8}

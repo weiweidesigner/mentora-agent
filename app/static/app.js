@@ -764,7 +764,6 @@ function handleStreamEvent(article, eventName, data) {
   }
   if (eventName === "tool_step") {
     appendToolStep(article, data);
-    renderOrderedTool(article, data);
     return;
   }
   if (eventName === "progress") {
@@ -1352,38 +1351,28 @@ function orderedStreamFlow(article) {
   return flow;
 }
 
-function renderOrderedTool(article, data = {}) {
-  if (article.activityEnded) return;
-  const flow = orderedStreamFlow(article);
-  if (!flow) return;
-  const key = String(data.callId || `tool-${data.index || flow.children.length}`);
-  let row = Array.from(flow.querySelectorAll('.orderedTool')).find(node => node.dataset.callId === key);
-  if (!row) {
-    row = document.createElement('div');
-    row.className = 'orderedTool';
-    row.dataset.callId = key;
-    flow.appendChild(row);
-  }
-  row.dataset.phase = data.phase || 'completed';
-  row.textContent = `${data.phase === 'started' || data.phase === 'running' ? '执行中 · ' : data.phase === 'failed' ? '执行失败 · ' : '已执行 · '}${data.thoughtSummary || data.title || data.tool || '工具'}`;
-}
-
 function replayOrderedStream(article, blocks, container) {
+  article.streamVisualizationArtifacts ||= [];
+  for (const block of blocks) {
+    if (block.kind !== 'visualization') continue;
+    const item = canonicalArtifact(block.data || {});
+    const url = item.htmlUrl || item.url;
+    if (url && !article.streamVisualizationArtifacts.some(artifact => artifact.url === url))
+      article.streamVisualizationArtifacts.push({...item, url});
+  }
   for (const block of blocks) {
     if (block.kind === 'text') {
       const node = document.createElement('div');
-      node.className = 'reportInterpretation';
-      node.innerHTML = formatInsight(sanitizeUserFacingInsight(String(block.text || '').replace(/\[\[AIME_(?:CHART|SKILLS):[\s\S]*?(?:\]\]|$)/g, '')));
+      node.className = 'streamAnswerPreview';
+      node.dataset.blockId = block.id || '';
+      node.streamText = String(block.text || '');
       container.appendChild(node);
-    } else if (block.kind === 'tool_step') {
-      const node = document.createElement('div');
-      node.className = 'orderedTool';
-      node.textContent = `${block.data?.phase === 'failed' ? '执行失败' : '已执行'} · ${block.data?.thoughtSummary || block.data?.title || block.data?.tool || '工具'}`;
-      container.appendChild(node);
-    } else if (block.kind === 'visualization') {
+      syncStreamAnswerPlacement(article, node);
+    } else if (block.kind === 'visualization' && block.data?.native) {
       const item = canonicalArtifact(block.data || {});
       const url = item.htmlUrl || item.url;
-      if (url) container.appendChild(withArtifactWidgetControl(createArtifactFallbackFrame({...item,url},0),{...item,url}));
+      if (url && !Array.from(container.querySelectorAll('[data-artifact-url]')).some(node => streamChartReferenceKey(node.dataset.artifactUrl) === streamChartReferenceKey(url)))
+        container.appendChild(withArtifactWidgetControl(createStreamVisualizationArtifact({...item,url},0),{...item,url}));
     }
   }
 }
@@ -1412,26 +1401,123 @@ function appendStreamVisualizationModule(article, data = {}) {
     : [];
   if (!article.streamVisualizationArtifacts.some((item) => item.url === url)) {
     article.streamVisualizationArtifacts.push({
+      ...data,
       url,
+      path: data.path || "",
       title: data.label || data.title || "",
     });
-  }
+  } else Object.assign(article.streamVisualizationArtifacts.find(item => item.url === url), data, {url});
   if (article.activityEnded) return;
-  const lane = streamVisualizationLane(article, url);
-  if (!lane) return;
-  const existing = Array.from(lane.querySelectorAll("[data-artifact-url]"))
-    .some((item) => item.dataset.artifactUrl === url);
-  if (existing) return;
-  const item = { url, title: data.label || data.title || "", renderMode: "iframe" };
-  lane.appendChild(withArtifactWidgetControl(createArtifactFallbackFrame(item, article.streamVisualizationArtifacts.length - 1),item));
+  // A tool artifact is inventory until the prose references it. Once referenced,
+  // resolve its existing slot immediately, even while text is still streaming.
+  syncStreamAnswerPlacement(article);
   keepScrollPosition(isNearBottom());
 }
 
+function streamChartReferenceKey(reference) {
+  try {
+    const url = new URL(String(reference || "").trim(), window.location.origin);
+    if (url.origin !== window.location.origin) return "";
+    const match = decodeURIComponent(url.pathname).match(/\/(?:generated|share-artifact)\/([^/\\\x00]+\.html)$/i);
+    return match ? `/generated/${match[1]}` : "";
+  } catch { return ""; }
+}
+
+function syncStreamAnswerPlacement(article, preview) {
+  if (article.activityEnded && !preview) return;
+  const target = article.querySelector(".finalAnswer");
+  if (!target) return;
+  if (!preview) {
+    target.querySelectorAll(".streamAnswerPreview").forEach(node => syncStreamAnswerPlacement(article, node));
+    return;
+  }
+  const raw = String(preview.streamText || "").replace(/\[\[AIME_(?:SKILLS|FILE):[\s\S]*?(?:\]\]|$)/g, "");
+  const tokens = [], pattern = /\[\[AIME_CHART:([^\]]+)\]\]/g;
+  let cursor = 0, match;
+  while ((match = pattern.exec(raw))) {
+    tokens.push({text: raw.slice(cursor, match.index)});
+    tokens.push({reference: match[1].trim()});
+    cursor = pattern.lastIndex;
+  }
+  let tail = raw.slice(cursor);
+  const open = tail.lastIndexOf("[[");
+  const marker = "[[AIME_CHART:";
+  if (open >= 0 && (marker.startsWith(tail.slice(open)) || tail.slice(open).startsWith(marker))) tail = tail.slice(0, open);
+  tokens.push({text: tail});
+  preview.streamAnswerNodes ||= new Map();
+  const desired = [], seen = new Set();
+  let textIndex = 0;
+  for (const token of tokens) {
+    if (token.text !== undefined) {
+      const text = sanitizeUserFacingInsight(token.text);
+      const key = `text:${textIndex++}`;
+      if (!text.trim()) continue;
+      let node = preview.streamAnswerNodes.get(key);
+      if (!node) {
+        node = document.createElement("div");
+        node.className = "streamingAnswer reportInterpretation";
+        preview.streamAnswerNodes.set(key, node);
+      }
+      if (node.streamText !== text) {node.innerHTML = formatInsight(text); node.streamText = text;}
+      desired.push(node);
+      continue;
+    }
+    const key = streamChartReferenceKey(token.reference);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    let slot = preview.streamAnswerNodes.get(key);
+    if (!slot) {
+      slot = document.createElement("section");
+      slot.className = "streamChartSlot";
+      slot.dataset.chartReference = key;
+      slot.setAttribute("aria-label", "图表");
+      const status = document.createElement("div");
+      status.className = "streamChartPending";
+      status.setAttribute("role", "status");
+      status.textContent = "正在准备图表…";
+      slot.append(status);
+      preview.streamAnswerNodes.set(key, slot);
+    }
+    if (!slot.isConnected) preview.append(slot);
+    if (!slot.querySelector("[data-artifact-url]")) {
+      const existing = Array.from(target.querySelectorAll("[data-artifact-url]"))
+        .find(node => streamChartReferenceKey(node.dataset.artifactUrl) === key);
+      const artifact = (article.streamVisualizationArtifacts || []).find(item =>
+        [item.url, item.path].some(reference => streamChartReferenceKey(reference) === key));
+      let host = existing?.closest(".chatArtifactShell") || existing;
+      if (!host && artifact) {
+        const node = artifact.renderMode === "iframe" ? createArtifactFallbackFrame(artifact, 0)
+          : createStreamVisualizationArtifact(artifact, 0, {live: true});
+        host = withArtifactWidgetControl(node, artifact);
+      }
+      if (host) {
+        slot.querySelector(".streamChartPending")?.remove();
+        if (host.isConnected && slot.isConnected && slot.moveBefore) slot.moveBefore(host, null);
+        else slot.append(host);
+      }
+    }
+    desired.push(slot);
+  }
+  // Keep hosts connected across text snapshots: replacing preview.innerHTML
+  // would reset iframe state and StreamViz roots on every token.
+  desired.forEach((node, index) => {
+    const before = preview.children[index] || null;
+    if (before === node) return;
+    if (node.isConnected && preview.moveBefore) preview.moveBefore(node, before);
+    else preview.insertBefore(node, before);
+  });
+  Array.from(preview.children).filter(node => !desired.includes(node)).forEach(node => {
+    if (node.classList.contains("streamChartSlot") && node.querySelector("[data-artifact-url]")) {
+      streamVisualizationLane(article)?.append(node);
+    } else node.remove();
+  });
+}
+
 function renderStreamAnswerText(article, data = {}) {
-  article.dataset.activityPhase = "answer";
-  syncInlineActivity(article);
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
+  article.dataset.activityPhase = "answer";
+  syncInlineActivity(article);
   const flow = orderedStreamFlow(article);
   const key = String(data.blockId || 'legacy-answer');
   let preview = Array.from(flow.querySelectorAll('.streamAnswerPreview')).find(node => node.dataset.blockId === key);
@@ -1441,24 +1527,22 @@ function renderStreamAnswerText(article, data = {}) {
   }
   if (!preview) {
     preview = document.createElement('div');
-    preview.className = 'streamAnswerPreview streamingAnswer reportInterpretation';
+    preview.className = 'streamAnswerPreview';
     preview.dataset.blockId = key;
     flow.appendChild(preview);
   }
   preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
-  const raw = preview.streamText;
-  const text = sanitizeUserFacingInsight(raw.replace(/\[\[AIME_(?:CHART|SKILLS|FILE):[\s\S]*?(?:\]\]|$)/g, ""));
-  if (!text.trim()) return;
   const stick = isNearBottom();
-  preview.innerHTML = formatInsight(text);
   article.answerTextStarted = true;
-  if (data.final !== false) revealPendingVisualizations(article);
+  syncStreamAnswerPlacement(article, preview);
+  revealPendingVisualizations(article);
   keepScrollPosition(stick);
 }
 
 function queueStreamVisualization(article, data = {}) {
   if (article.activityEnded) return;
   upsertStreamVisualization(article, data);
+  syncStreamAnswerPlacement(article);
 }
 
 function revealPendingVisualizations(article) {
@@ -1476,7 +1560,7 @@ function upsertStreamVisualization(article, data = {}) {
   if (!lane) return;
   if (article.nonVisualVisualizationIds?.has(key)) return;
   if (data.discard) {
-    const provisional = Array.from(lane.querySelectorAll(".streamvizArtifactHost"))
+    const provisional = Array.from(article.querySelector(".finalAnswer").querySelectorAll(".streamvizArtifactHost"))
       .find((item) => item.dataset.visualizationId === key);
     if (provisional) {
       clearTimeout(provisional.streamvizFallbackTimer);
@@ -1485,8 +1569,11 @@ function upsertStreamVisualization(article, data = {}) {
     }
     return;
   }
-  let host = Array.from(lane.querySelectorAll(".streamvizArtifactHost"))
+  let host = Array.from(article.querySelector(".finalAnswer").querySelectorAll(".streamvizArtifactHost"))
     .find((item) => item.dataset.visualizationId === key);
+  if (!host && data.htmlUrl) host = Array.from(article.querySelectorAll(".streamvizArtifactHost[data-artifact-url]"))
+    .find(item => streamChartReferenceKey(item.dataset.artifactUrl) === streamChartReferenceKey(data.htmlUrl));
+  if (host) host.dataset.visualizationId = key;
   if (!host) {
     host = document.createElement("div");
     host.className = "streamvizArtifactHost is-live";
@@ -3096,7 +3183,6 @@ function renderFinalAnswer(article, data) {
   completeThinking(article);
   updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "thoughtFor"));
   article.dataset.thinkingState = "done";
-  article.activityEnded = true;
   const streamedArtifacts = Array.isArray(article.streamVisualizationArtifacts)
     ? article.streamVisualizationArtifacts
     : [];
@@ -3104,6 +3190,9 @@ function renderFinalAnswer(article, data) {
     data.reportArtifacts = streamedArtifacts;
   }
   if (!data.reportUrl && data.reportArtifacts?.[0]?.url) data.reportUrl = data.reportArtifacts[0].url;
+  (data.reportArtifacts || []).forEach(item => appendStreamVisualizationModule(article, item));
+  syncStreamAnswerPlacement(article);
+  article.activityEnded = true;
   data.sources = mergeSourcesByUrl(
     Array.isArray(data.sources) ? data.sources : [],
     sourcesFromInsightMarkdown(data.interpretation || ""),
@@ -3121,14 +3210,7 @@ function renderFinalAnswer(article, data) {
     // The completed answer is the same ordered DOM that was streamed. Never
     // flatten its prose or move an existing chart behind later text.
     target.querySelectorAll('.streamingAnswer').forEach(node => node.classList.remove('streamingAnswer'));
-    const shown = new Set(Array.from(target.querySelectorAll('[data-artifact-url]')).map(node => node.dataset.artifactUrl));
-    for (const item of data.reportArtifacts || []) {
-      const artifact = canonicalArtifact(item);
-      if (artifact.url && !shown.has(artifact.url)) {
-        target.querySelector('.interleavedFlow').appendChild(withArtifactWidgetControl(createArtifactFallbackFrame(artifact,0),artifact));
-        shown.add(artifact.url);
-      }
-    }
+    // Tool inventory is not an instruction to append unreferenced charts.
     renderFileDeliverables(article,data);
     target.insertAdjacentHTML('beforeend', `${capabilityBarHtml}${actionsHtml}`);
     attachResultActionHandlers(article);
@@ -3648,6 +3730,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
   }
   if(typeof renderFileDeliverables==='function')renderFileDeliverables(article,data);
   if (Array.isArray(data.streamBlocks) && data.streamBlocks.length) {
+    article.streamVisualizationArtifacts = (data.reportArtifacts || []).map(canonicalArtifact);
     replayOrderedStream(article,data.streamBlocks,container);
     onDone?.();
     return;

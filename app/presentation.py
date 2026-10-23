@@ -174,10 +174,10 @@ def durable_chat_events(payload,user):
     charts={}
     answer_started=False
     for event,data in events:
-        if event=='answer_text':answer_started=True
+        if event=='answer_text' and str(data.get('text') or data.get('delta') or '').strip():answer_started=True
         if event in {'module','visualization','visualize_widget'}:
             url=str(data.get('htmlUrl') or data.get('url') or '')
-            if url.startswith(('/generated/','/share-artifact/')):charts[url]=dict(url=url,label=data.get('label') or data.get('title') or '')
+            if url.startswith(('/generated/','/share-artifact/')):charts[url]={**data,'url':url,'label':data.get('label') or data.get('title') or ''}
         if event=='tool_step' and isinstance(data.get('output'),dict):
             artifact=data['output'].get('chartArtifact')
             if artifact and artifact.get('url'):charts[artifact['url']]=artifact
@@ -185,16 +185,12 @@ def durable_chat_events(payload,user):
             data=dict(data)
             if research_only:data['agent']='mentora'
             for artifact in data.get('reportArtifacts') or []:
-                if artifact.get('url'):charts[artifact['url']]=artifact
+                if artifact.get('url'):charts[artifact['url']]={**charts.get(artifact['url'],{}),**artifact}
             if charts:
                 data['reportArtifacts']=list(charts.values())
                 data['reportUrl']=data.get('reportUrl') or next(iter(charts))
-                interpretation=str(data.get('interpretation') or '').rstrip()
-                references={str(item.get('path') or item.get('url') or '') for item in data['reportArtifacts']
-                            if isinstance(item,dict) and (item.get('path') or item.get('url'))}
-                if not any(f'[[AIME_CHART:{reference}]]' in interpretation for reference in references):
-                    markers='\n'.join(f'[[AIME_CHART:{url}]]' for url in charts)
-                    data['interpretation']=f'{interpretation}\n\n{markers}'.strip()
+                # Artifact discovery is inventory, not a request to dump every
+                # intermediate chart after the final prose and footnotes.
             if not answer_started and str(data.get('interpretation') or '').strip():
                 answer_started=True
                 yield 'answer_text',{'text':data['interpretation'],'replace':True,'lang':data.get('lang','zh-CN')}
