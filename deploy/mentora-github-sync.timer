@@ -1,0 +1,11 @@
+[Unit]
+Description=Check GitHub main for Mentora updates every two minutes
+
+[Timer]
+OnBootSec=90s
+OnUnitInactiveSec=2min
+RandomizedDelaySec=15s
+Unit=mentora-github-sync.service
+
+[Install]
+WantedBy=timers.target
