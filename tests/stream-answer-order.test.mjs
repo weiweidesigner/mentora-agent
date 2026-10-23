@@ -11,16 +11,19 @@ function fixture() {
   w.formatInsight = value => value;
   w.isNearBottom = () => false;
   w.keepScrollPosition = () => {};
-  w.eval(source.slice(source.indexOf('function appendStreamVisualizationModule('), source.indexOf('function upsertStreamVisualization(')));
+  w.syncInlineActivity=()=>{};
+  w.withArtifactWidgetControl=node=>node;
+  w.createArtifactFallbackFrame=item=>{const node=w.document.createElement('iframe');node.dataset.artifactUrl=item.url;return node;};
+  w.eval(source.slice(source.indexOf('function orderedStreamFlow('), source.indexOf('function upsertStreamVisualization(')));
   return { w, article:w.document.querySelector('article'), close:()=>w.close() };
 }
-test('completed chart tools register evidence without displaying a chart before prose', () => {
+test('completed chart tools display immediately without waiting for prose', () => {
   const f = fixture();
   try {
     f.w.appendStreamVisualizationModule(f.article, {htmlUrl:'/generated/chart.html',label:'图表'});
     f.w.appendStreamVisualizationModule(f.article, {htmlUrl:'/generated/chart.html',label:'图表'});
     assert.equal(f.article.streamVisualizationArtifacts.length, 1);
-    assert.equal(f.article.querySelector('.finalAnswer').children.length, 0);
+    assert.equal(f.article.querySelectorAll('iframe').length, 1);
   } finally { f.close(); }
 });
 test('public text snapshots render once and never expose chart marker coordinates', () => {
@@ -36,18 +39,76 @@ test('public text snapshots render once and never expose chart marker coordinate
     assert.equal(f.article.querySelector('.streamAnswerPreview').textContent,'完整解释。');
   } finally { f.close(); }
 });
-test('native visualization events wait until public prose starts and retain event order', () => {
+test('native visualization events forward immediately and retain event order', () => {
   const f=fixture(), rendered=[];
   f.w.upsertStreamVisualization=(_article,data)=>rendered.push(data);
   try {
     for (const event of [{id:'chart',reset:true},{id:'chart',delta:'<p>chart</p>'},{id:'chart',final:true}]) f.w.queueStreamVisualization(f.article,event);
-    assert.equal(rendered.length,0);
+    assert.equal(rendered.length,3);
     assert.equal(f.article.querySelector('.finalAnswer').children.length,0);
     f.w.renderStreamAnswerText(f.article,{text:'先给结论。'});
     assert.equal(rendered.length,3);
     assert.equal(rendered[1].delta,'<p>chart</p>');
-    assert.equal(f.article.pendingVisualizations.length,0);
+    assert.equal(f.article.pendingVisualizations?.length || 0,0);
     f.w.queueStreamVisualization(f.article,{id:'chart',title:'更新'});
     assert.equal(rendered.length,4);
   } finally {f.close();}
+});
+
+test('text, tools and charts stay interleaved while earlier blocks update',()=>{
+ const f=fixture();try{
+ f.w.renderStreamAnswerText(f.article,{blockId:'a',delta:'A'});
+ f.w.renderOrderedTool(f.article,{callId:'c',tool:'read',phase:'running'});
+ f.w.appendStreamVisualizationModule(f.article,{htmlUrl:'/generated/fixture.html'});
+ f.w.renderStreamAnswerText(f.article,{blockId:'b',delta:'B'});
+ f.w.renderOrderedTool(f.article,{callId:'c',tool:'read',phase:'completed'});
+ f.w.renderStreamAnswerText(f.article,{blockId:'b',delta:'!'});
+ const children=[...f.article.querySelector('.interleavedFlow').children];
+ assert.deepEqual(children.map(n=>n.className),['streamAnswerPreview streamingAnswer reportInterpretation','orderedTool','streamvizLiveLane','streamAnswerPreview streamingAnswer reportInterpretation']);
+ assert.equal(children[0].textContent,'A');assert.equal(children[3].textContent,'B!');assert.equal(children[1].dataset.phase,'completed');
+ }finally{f.close();}
+});
+test('history replays the same text/tool/chart/text order',()=>{
+ const f=fixture();try{
+ f.w.replayOrderedStream(f.article,[{kind:'text',text:'A'},{kind:'tool_step',data:{tool:'read'}},{kind:'visualization',data:{htmlUrl:'/generated/fixture.html'}},{kind:'text',text:'B'}],f.article.querySelector('.finalAnswer'));
+ assert.deepEqual([...f.article.querySelector('.finalAnswer').children].map(n=>n.tagName),['DIV','DIV','IFRAME','DIV']);
+ }finally{f.close();}
+});
+
+test('finalization preserves existing live nodes and does not reorder the chart',()=>{
+ const f=fixture();try{
+ const w=f.w;
+ w.eval(source.slice(source.indexOf('function renderFinalAnswer('),source.indexOf('function buildShareSessionForArticle(')));
+ for(const name of ['completeThinking','updateThinkingSummary','attachResultActionHandlers','syncActivityDrawer','renderFileDeliverables','recordAssistantResult'])w[name]=()=>{};
+ w.copyFor=()=>'';w.buildResultActions=()=>'';w.buildCapabilityBar=()=>'';w.buildShareSessionForArticle=()=>({});w.sourcesFromInsightMarkdown=()=>[];w.mergeSourcesByUrl=()=>[];
+ w.renderStreamAnswerText(f.article,{blockId:'a',delta:'A'});
+ w.appendStreamVisualizationModule(f.article,{htmlUrl:'/generated/fixture.html'});
+ w.renderStreamAnswerText(f.article,{blockId:'b',delta:'B'});
+ const flow=f.article.querySelector('.interleavedFlow'),nodes=[...flow.children];
+ w.renderFinalAnswer(f.article,{interpretation:'A B',reportArtifacts:[{url:'/generated/fixture.html'}]});
+ assert.equal(f.article.querySelector('.interleavedFlow'),flow);
+ assert.deepEqual([...flow.children],nodes);
+ assert.equal(f.article.querySelectorAll('iframe').length,1);
+ }finally{f.close();}
+});
+
+test('native argument deltas increment one live host and final URL settles in place',()=>{
+ const f=fixture();try{
+ const w=f.w,seen=[];
+ const start=source.indexOf('function upsertStreamVisualization(');
+ const end=start+1+source.slice(start+1).search(/\n(?:async )?function /);
+ w.eval(source.slice(start,end));
+ w.mountStreamVisualization=(host,data)=>seen.push(data);
+ w.renderStreamAnswerText(f.article,{blockId:'a',delta:'A'});
+ w.queueStreamVisualization(f.article,{id:'v',argumentDelta:'{"title":"Chart",',native:true,reset:true});
+ const host=f.article.querySelector('.streamvizArtifactHost');
+ w.renderStreamAnswerText(f.article,{blockId:'b',delta:'B'});
+ w.queueStreamVisualization(f.article,{id:'v',argumentDelta:'"widget_code":"<p>1</p>"}',native:true});
+ w.queueStreamVisualization(f.article,{id:'v',htmlUrl:'/generated/live.html',native:true,final:true});
+ assert.equal(f.article.querySelector('.streamvizArtifactHost'),host);
+ assert.equal(f.article.querySelectorAll('.streamvizArtifactHost').length,1);
+ assert.equal(host.dataset.artifactUrl,'/generated/live.html');
+ assert.equal(JSON.parse(seen.at(-1).toolRawInput).widget_code,'<p>1</p>');
+ assert.equal(f.article.querySelector('.interleavedFlow').lastChild.textContent,'B');
+ }finally{f.close();}
 });

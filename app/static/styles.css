@@ -5283,6 +5283,11 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .is-error>.activityTool>.activityAction{color:var(--danger)}
 .activityBody{min-width:0;padding:20px 24px 28px}
 .activityBody .activityNarrative>p{font-size:14px;line-height:1.55}
+.interleavedFlow{display:flex;flex-direction:column;gap:18px;min-width:0}
+.interleavedFlow .streamvizLiveLane{margin:0;min-width:0}
+.orderedTool{font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.orderedTool[data-phase="running"],.orderedTool[data-phase="started"]{opacity:.8}
+.orderedTool[data-phase="failed"]{color:var(--danger,#d95555)}
 .activityBody .activityGroupItems{padding-left:0}
 .activityBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:125}
 .activityBackdrop[hidden]{display:none}

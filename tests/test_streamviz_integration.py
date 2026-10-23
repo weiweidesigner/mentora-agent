@@ -270,26 +270,9 @@ def test_streamviz_handles_stream_events_and_preserves_iframe_fallback() -> None
     assert "createArtifactFallbackFrame" in source
 
 
-def test_module_html_is_emitted_as_streamviz_deltas(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
-    monkeypatch.setenv("AICHART_STREAMVIZ_FRAME_DELAY", "0")
-    code = "<!doctype html><html><body><section>streamed</section></body></html>"
-    (tmp_path / "sample.html").write_text(code, encoding="utf-8")
-    module = {"htmlUrl": "/generated/sample.html", "label": "示例图表"}
-
-    events = list(presentation.streamviz_events_for_module(module))
-
-    assert events[0][0] == "visualization"
-    assert events[0][1]["reset"] is True
-    assert events[0][1]["htmlUrl"] == "/generated/sample.html"
-    assert events[-2][0] == "visualization"
-    assert events[-2][1]["final"] is True
-    assert events[-1] == ("module", module)
-    streamed_code = "".join(item[1].get("delta", "") for item in events)
-    assert "streamed" in streamed_code
-    assert 'data-aime-streamviz-root="true"' in streamed_code
-    assert module["streamvizCompatible"] is True
-
+def test_finished_html_is_published_once_without_synthetic_deltas():
+    module={"htmlUrl":"/generated/sample.html","label":"Chart"}
+    assert list(presentation.streamviz_events_for_module(module))==[("module",module)]
 
 def test_durable_chat_streams_generated_html_and_places_unmarked_artifact(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
@@ -306,8 +289,8 @@ def test_durable_chat_streams_generated_html_and_places_unmarked_artifact(tmp_pa
         presentation.ChatRequest(question="生成 HTML 报告"), "owner",
     ))
 
-    assert events[0][0] == "answer_text"
-    assert any(name == "visualization" and data.get("delta") for name, data in events)
+    assert events[0][0] == "module"
+    assert not any(name == "visualization" for name, data in events)
     final = next(data for name, data in events if name == "final")
     assert final["reportArtifacts"] == [{"url": "/generated/live-report.html", "label": "Live report"}]
     assert "[[AIME_CHART:/generated/live-report.html]]" in final["interpretation"]
@@ -322,18 +305,18 @@ def test_script_backed_html_is_published_as_live_iframe_module(tmp_path, monkeyp
     module = {"htmlUrl": "/generated/interactive.html", "label": "Interactive"}
     events = list(presentation.streamviz_events_for_module(module))
     assert events == [("module", module)]
-    assert module["streamvizCompatible"] is False
+    assert not module.get("streamvizCompatible")
 
 
 def test_frontend_buffers_visualizations_and_iframe_modules_until_answer_text() -> None:
     source = (ROOT / "app/static/app.js").read_text(encoding="utf-8")
     queue = source[source.index("function queueStreamVisualization"):source.index("function revealPendingVisualizations")]
     module = source[source.index("function appendStreamVisualizationModule"):source.index("function renderStreamAnswerText")]
-    assert "!article.answerTextStarted" in queue
-    assert "article.pendingVisualizations" in queue
+    assert "!article.answerTextStarted" not in queue
+    assert "article.pendingVisualizations" not in queue
     assert "upsertStreamVisualization(article, data)" in queue
-    assert "!article.answerTextStarted" in module
-    assert "article.pendingVisualizationModules" in module
+    assert "!article.answerTextStarted" not in module
+    assert "article.pendingVisualizationModules" not in module
     assert "createArtifactFallbackFrame" in module
 
 
@@ -351,31 +334,16 @@ def test_answer_text_stream_finishes_before_buffered_visualization(tmp_path, mon
     monkeypatch.setattr(presentation, "framework_events", upstream)
     events = list(presentation.durable_chat_events(presentation.ChatRequest(question="ordered"), "owner"))
     answer_indexes = [index for index, (name, _data) in enumerate(events) if name == "answer_text"]
-    visual_index = next(index for index, (name, _data) in enumerate(events) if name == "visualization")
-    assert len(answer_indexes) > 1
-    assert events[answer_indexes[0]][1]["final"] is False
-    assert events[answer_indexes[-1]][1]["final"] is True
-    assert answer_indexes[-1] < visual_index
+    assert len(answer_indexes) == 1
+    assert events[answer_indexes[0]][1]["text"] == long_answer
+    assert [name for name,_ in events] == ["module","answer_text","final"]
 
 
-def test_explicit_streamviz_uses_model_deltas_even_with_upstream_html(tmp_path, monkeypatch) -> None:
-    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
-    old = tmp_path / "evidence.html"
-    old.write_text('<section>已核验的事实</section>', encoding="utf-8")
-    def upstream(*_args, **_kwargs):
-        yield "module", {"htmlUrl": "/generated/evidence.html"}
-        yield "final", {"interpretation": f"事实\n[[AIME_CHART:{old}]]", "reportUrl": "/generated/evidence.html", "reportArtifacts": [{"url": "/generated/evidence.html"}]}
-    def native(_question, _dir, *, evidence, theme_mode):
-        assert "已核验的事实" in evidence
-        yield "visualization", {"id": "live", "argumentDelta": '{"widget_code":"<section>事实'}
-        yield "final", {"reportArtifacts": [{"url": "/generated/live.html", "path": str(tmp_path / "live.html")}]}
-    monkeypatch.setattr(presentation.LOCAL_FRAMEWORKS, "stream", upstream)
-    monkeypatch.setattr(presentation, "stream_native_widget", native)
-    events = list(presentation.framework_events(presentation.ChatRequest(question="用 streamviz 展示", reasoningFramework="deepseek")))
-    assert [name for name, _data in events] == ["visualization", "final"]
-    assert events[-1][1]["reportArtifacts"][0]["url"] == "/generated/live.html"
-    assert "[[AIME_CHART:" + str(tmp_path / "live.html") + "]]" in events[-1][1]["interpretation"]
-
+def test_native_streamviz_stays_in_same_agent_loop(monkeypatch):
+    expected=[("answer_text",{"blockId":"a","delta":"first"}),("visualization",{"id":"v","argumentDelta":"actual"}),("answer_text",{"blockId":"b","delta":"second"}),("final",{"interpretation":"first second"})]
+    monkeypatch.setattr(presentation.LOCAL_FRAMEWORKS,"stream",lambda *args,**kwargs:iter(expected))
+    monkeypatch.setattr(presentation,"stream_native_widget",lambda *args,**kwargs:(_ for _ in ()).throw(AssertionError("second model pass")))
+    assert list(presentation.framework_events(presentation.ChatRequest(question="streamviz",reasoningFramework="deepseek")))==expected
 
 def test_streamviz_model_failure_keeps_existing_html(tmp_path, monkeypatch) -> None:
     report = {"interpretation": "事实", "reportUrl": "/generated/evidence.html", "reportArtifacts": [{"url": "/generated/evidence.html"}]}
@@ -387,7 +355,7 @@ def test_streamviz_model_failure_keeps_existing_html(tmp_path, monkeypatch) -> N
     monkeypatch.setattr(presentation.LOCAL_FRAMEWORKS, "stream", upstream)
     monkeypatch.setattr(presentation, "stream_native_widget", native)
     events = list(presentation.framework_events(presentation.ChatRequest(question="用 streamviz 展示", reasoningFramework="deepseek")))
-    assert any(data.get("discard") for name, data in events if name == "visualization")
+    assert not any(name == "visualization" for name, data in events)
     assert events[-1] == ("final", report)
 
 
@@ -399,7 +367,7 @@ def test_nested_iframe_module_keeps_existing_renderer(tmp_path, monkeypatch) -> 
     events = list(presentation.streamviz_events_for_module(module))
 
     assert events == [("module", module)]
-    assert module["streamvizCompatible"] is False
+    assert not module.get("streamvizCompatible")
 
 
 def test_mobile_artifact_layout_is_owned_by_streamviz() -> None:
@@ -454,7 +422,7 @@ def test_final_artifacts_are_not_replayed_as_fake_deltas(tmp_path, monkeypatch) 
     assert "event: visualization" not in response.text
     assert "event: final" in response.text
     assert '"delta"' not in response.text
-    payload=json.loads(next(line[6:] for line in response.text.splitlines() if line.startswith("data: ")))
+    payload=[json.loads(line[6:]) for line in response.text.splitlines() if line.startswith("data: ")][-1]
     assert payload["reportArtifacts"][0]["url"]=="/generated/final-chart.html"
 
 
@@ -480,7 +448,7 @@ def test_chat_stream_preserves_public_text_and_real_widget_events_with_html_publ
     response=TestClient(presentation.app).post("/api/chat/stream",json={"question":"test", "reasoningFramework":"deepseek"})
     assert response.status_code==200
     names=[line[7:] for line in response.text.splitlines() if line.startswith('event: ')]
-    assert names==["answer_text", "module", "visualization", "final"]
+    assert names==["module", "answer_text", "visualization", "final"]
 
 
 def test_embedded_runtime_bundles_the_current_mobile_metric_and_table_contract():

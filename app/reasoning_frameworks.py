@@ -18,6 +18,7 @@ import uuid
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Iterator
+from app.public_stream import PublicStream, WIDGET_TOOL
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urlsplit
@@ -693,6 +694,7 @@ class LocalAgentFrameworks:
 {question}{image_note}{history_note}{artifact_note}
 
 你是 Mentora 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
+公开回答可以按实际执行顺序分段输出：先给出有依据的部分结论，再调用工具，然后继续回答；不要为凑交互而增加工具或重复已输出段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具，其参数会实时显示；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。普通组件生成的完整 HTML 则直接展示，不伪装成逐字生成。
 Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Yahoo 行情/财务接口，包括临时代码和组件回退；历史会话中的 Yahoo 命令不得复用。使用现有其他数据源；无匹配数据时明确说明限制，不得编造或替换标的。 该禁用策略不是本轮取数失败的原因。数据缺口必须依据本轮真实工具回执说明已尝试来源及实际失败原因；不得把工具移除、内部配置或未发生的请求写成市场数据缺失的原因。
 请直接完成用户任务，而不是解释如何完成。宿主会根据本轮语义提供少量候选 Skill 和组件；它们只是检索结果，你仍负责选择、组合或放弃。优先阅读所选候选的契约并执行；只有候选明显不足时才扩展检索 .agents/skills，禁止为了发现工具而扫描全部目录。不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
@@ -1054,19 +1056,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 
     @staticmethod
     def _answer_text_events(answer: str) -> Iterator[tuple[str, dict[str, Any]]]:
-        """Incrementally publish final prose before releasing visual modules."""
+        """Compatibility fallback for engines without deltas: one honest snapshot."""
         text = str(answer or "")
         if not text:
             return
-        chunk_size = max(96, min(320, (len(text) + 17) // 18))
-        if len(text) <= chunk_size:
-            yield "answer_text", {"text": text, "replace": True}
-            return
-        delay = max(0.0, min(0.03, float(os.getenv("AICHART_ANSWER_FRAME_DELAY", "0.018"))))
-        for end in range(chunk_size, len(text), chunk_size):
-            yield "answer_text", {"text": text[:end], "replace": True, "final": False}
-            if delay:
-                time.sleep(delay)
         yield "answer_text", {"text": text, "replace": True, "final": True}
 
     def _localized_progress(self, text: str, question: str) -> str:
@@ -1790,6 +1783,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         process.stdin.write(prompt)
         process.stdin.close()
         thread_id = engine_session_id
+        public_items = {}
         answer = ""
         started = time.monotonic()
         run_timeout_seconds = self._codex_run_timeout_seconds()
@@ -1831,16 +1825,13 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 for skill_name in re.findall(r"(?:app|\.agents)/skills/([^/\s'\"]+)", str(command_text or "")):
                     if skill_name not in observed_skills:
                         observed_skills.append(skill_name)
-            if event_type == "item.completed" and item.get("type") == "agent_message":
-                # Codex also emits interim execution commentary as agent_message.
-                # Buffer messages until the turn finishes; only the last answer
-                # belongs in the user-facing response body.
-                if item.get("channel") == "commentary":
-                    progress = self._localized_progress(str(item.get("text") or ""), question)
-                    if progress:
-                        yield "progress", {"text": progress}
-                elif item.get("channel") != "analysis":
-                    answer = str(item.get("text") or answer)
+            if event_type in {"item.started", "item.updated", "item.completed"} and item.get("type") == "agent_message" and item.get("channel") not in {"analysis", "reasoning"}:
+                item_id = str(item.get("id") or f"codex-message-{len(public_items)}")
+                text = str(item.get("text") or "")
+                if text and text != public_items.get(item_id):
+                    public_items[item_id] = text
+                    yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
+                if item.get("channel") != "commentary":answer = text or answer
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
                 message = str(error.get("message") or "Codex 执行失败")
@@ -1921,7 +1912,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         if observed_skills:
             answer = re.sub(r"(?m)^\s*\[\[AIME_SKILLS:[^\]\n]+\]\]\s*$", "", answer).rstrip()
             answer += f"\n\n[[AIME_SKILLS:{','.join(observed_skills)}]]"
-        yield from self._answer_text_events(answer)
+        if not public_items:
+            yield from self._answer_text_events(answer)
         run_id = f"codex-{thread_id or session_key}"
         self._write_codex_trace(f"===== 运行完成 | runId: {run_id} =====")
         yield "agent_event", {
@@ -2108,6 +2100,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
+        public_stream = PublicStream('deepseek')
         latest_progress_summary = ""
         started_at = time.monotonic()
         run_timeout = self._deepseek_run_timeout_seconds()
@@ -2121,6 +2114,15 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 continue
             method = str(getattr(notification, "method", "") or "")
             payload = getattr(notification, "payload", {})
+            if method == 'mentora.public-stream':
+                if str(payload.get('sessionId') or '') == requested_session_id:
+                    frame=payload.get('frame') or {}
+                    if frame.get('type')=='start':
+                        public_stream.begin(frame.get('attemptId','live'))
+                        yield 'model_activity',{'phase':'started'}
+                    elif frame.get('type')=='chunk':yield from public_stream.chunk(frame.get('chunk') or {})
+                    elif frame.get('type')=='end':yield 'model_activity',{'phase':'completed'}
+                continue
             event = payload.get("event") if method == "session.event" and isinstance(payload, dict) else None
             if isinstance(event, dict):
                 event_type = str(event.get("type") or "")
@@ -2129,6 +2131,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             if event_type == "assistant/chunk":
                 event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
+                if str(payload.get('sessionId') or requested_session_id)==requested_session_id and event_data.get('channel') not in {'analysis','reasoning'}:
+                    yield from public_stream.chunk(chunk)
                 usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
                 if usage:
                     try:
@@ -2218,31 +2222,17 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         tool_step["fileChanges"] = [file_change]
                 yield "tool_step", tool_step
                 if event_type == "tool/result":
-                    for module in self._html_modules_from_tool_output(observation):
-                        yield "module", module
+                    if name==WIDGET_TOOL:
+                        for module in self._html_modules_from_tool_output(observation):
+                            public_stream.artifacts.append(dict(url=module['htmlUrl'],label=module.get('label','')))
+                            yield 'visualization',dict(id=result_call_id,toolName=WIDGET_TOOL,htmlUrl=module['htmlUrl'],title=module.get('label',''),native=True,live=True,final=True)
+                    else:
+                        for module in self._html_modules_from_tool_output(observation):
+                            yield "module", module
             elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
                 data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 message = data.get("message") if isinstance(data.get("message"), dict) else data
-                content = message.get("content")
-                if message.get("channel") not in {"analysis", "reasoning"} and isinstance(content, list):
-                    text = "".join(str(block.get("text") or "") for block in content if isinstance(block, dict) and block.get("type") == "text").strip()
-                    has_tools = bool(message.get("tool_calls") or message.get("toolCalls")) or any(
-                        isinstance(block, dict) and block.get("type") in {"tool_use", "tool_call", "tool-call", "toolCall"}
-                        for block in content
-                    )
-                    if pending_public_text:
-                        latest_progress_summary = self._localized_progress(pending_public_text, question)
-                        if latest_progress_summary:
-                            yield "progress", {"text": latest_progress_summary}
-                        pending_public_text = ""
-                    if text and (has_tools or message.get("channel") == "commentary"):
-                        latest_progress_summary = self._localized_progress(text, question)
-                        if latest_progress_summary:
-                            yield "progress", {"text": latest_progress_summary}
-                    elif text:
-                        # A text-only message may still precede a separate tool/call.
-                        # Hold it until that boundary or until the run completes.
-                        pending_public_text = text
+                yield from public_stream.message(message)
             elif method in {"subagent.started", "subagent.finished"}:
                 yield "agent_event", {
                     "engine": FRAMEWORKS["deepseek"],
@@ -2276,7 +2266,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     break
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
-        if self._requires_html_deliverable(question) and not re.search(
+        if not public_stream.artifacts and self._requires_html_deliverable(question) and not re.search(
             r"\[\[AIME_CHART:[^\]\n]+\.html\]\]", answer
         ):
             if _repair_attempt < 1:
@@ -2309,12 +2299,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             raise ReasoningFrameworkError(
                 "Agent 完成了数据阶段，但未生成用户要求的 HTML 交付文件，本轮不能标记为完成。"
             )
-        # The final answer owns chart selection and placement. Intermediate
-        # tool HTML and filesystem recency must never manufacture a marker.
-        # Always publish the actual final response before any buffered visual
-        # modules. The presentation gateway then releases charts after the
-        # answer body has started rendering.
-        yield from self._answer_text_events(answer)
+        # Only emit a provider fallback if its public chunks were unavailable.
+        yield from public_stream.finish(answer)
+        answer = public_stream.transcript(answer)
         actual_session_id = str(getattr(result, "session_id", "") or requested_session_id)
         if selected_model != local_model and any(usage_totals.values()):
             try:
@@ -2335,9 +2322,14 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "runId": run_id, "message": f"DeepSeek Harness · {selected_model} 已完成", "lang": "zh-CN",
         }
         runtime_sources.extend(self._sources_from_value(vars(result) if hasattr(result, "__dict__") else {}))
-        yield "final", self._artifact_payload(
+        final_payload = self._artifact_payload(
             "deepseek", question, answer, run_id, actual_session_id, runtime_sources, selected_model
         )
+        if public_stream.artifacts:
+            existing={item['url'] for item in final_payload['reportArtifacts']}
+            final_payload['reportArtifacts'].extend(item for item in public_stream.artifacts if item['url'] not in existing)
+            final_payload['reportUrl']=final_payload['reportUrl'] or public_stream.artifacts[0]['url']
+        yield 'final',final_payload
 
     def _drop_deepseek_harness(self, session_id: str) -> None:
         with self._deepseek_harness_guard:

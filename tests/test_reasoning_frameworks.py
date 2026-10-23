@@ -736,11 +736,11 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
 
     names = [name for name, _data in events]
     final = next(data for name, data in events if name == "final")
-    assert names == ["status", "agent_event", "tool_step", "progress", "answer_text", "agent_event", "final"]
-    assert [data["text"] for name, data in events if name == "progress"] == ["正在检查图表设置"]
+    assert names == ["status", "agent_event", "tool_step", "answer_text", "answer_text", "answer_text", "agent_event", "final"]
+    assert not any(name == "progress" for name, data in events)
     assert final["engineSessionId"] == "thread-123"
     assert final["interpretation"] == "完成"
-    assert [data["text"] for name, data in events if name == "answer_text"] == ["完成"]
+    assert [data["text"] for name, data in events if name == "answer_text"] == ["I will load the relevant skills.", "正在检查图表设置", "完成"]
 
 
 def test_deepseek_sdk_streams_events_and_returns_real_session_id(
@@ -1034,7 +1034,7 @@ def test_deepseek_streams_only_root_public_text_before_final(tmp_path, monkeypat
     client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
     events = list(client.stream("deepseek", "测试", [], session_key="stream-public-text"))
     snapshots = [data for kind,data in events if kind=="answer_text"]
-    assert snapshots == [{"text":"公开分析正文","replace":True}]
+    assert [data["delta"] for data in snapshots] == ["公开分析正文"]
     assert next(i for i,(kind,_) in enumerate(events) if kind=="answer_text") < next(i for i,(kind,_) in enumerate(events) if kind=="final")
 
 
@@ -1102,9 +1102,10 @@ def test_deepseek_routes_execution_commentary_to_progress(tmp_path, monkeypatch,
     monkeypatch.setitem(sys.modules,'deepseek_harness',SimpleNamespace(DeepSeekHarness=Harness))
     events=list(LocalAgentFrameworks(project_root=tmp_path,generated_dir=generated).stream('deepseek','用 TradingView 看苹果日线',[],session_key='progress-test'))
     progress=[d['text'] for k,d in events if k=='progress']
-    assert progress==[summary.rstrip('。')]
-    assert [d['text'] for k,d in events if k=='answer_text']==['苹果日线已生成。']
-    assert next(d for k,d in events if k=='tool_step')['thoughtSummary']==summary.rstrip('。')
+    assert progress==[]
+    assert [d['delta'] for k,d in events if k=='answer_text']==[summary,'苹果日线已生成。']
+    final=next(d for k,d in events if k=='final')
+    assert summary in final['interpretation']
     assert 'private reasoning' not in str(events) and 'child private text' not in str(events)
 
 

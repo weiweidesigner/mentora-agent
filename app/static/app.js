@@ -764,6 +764,7 @@ function handleStreamEvent(article, eventName, data) {
   }
   if (eventName === "tool_step") {
     appendToolStep(article, data);
+    renderOrderedTool(article, data);
     return;
   }
   if (eventName === "progress") {
@@ -800,6 +801,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "error") {
+    article.streamBlocks = Array.isArray(data.streamBlocks) ? data.streamBlocks : [];
     if (data.code === "cancelled") {
       showStopped(article, data.detail || "已停止本轮任务");
       return;
@@ -1337,15 +1339,66 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
   return host;
 }
 
-function streamVisualizationLane(article) {
+function orderedStreamFlow(article) {
+  const target = article.querySelector('.finalAnswer');
+  if (!target) return null;
+  article.orderedStream = true;
+  let flow = target.querySelector('.interleavedFlow');
+  if (!flow) {
+    flow = document.createElement('section');
+    flow.className = 'interleavedFlow mixedReport';
+    target.appendChild(flow);
+  }
+  return flow;
+}
+
+function renderOrderedTool(article, data = {}) {
+  if (article.activityEnded) return;
+  const flow = orderedStreamFlow(article);
+  if (!flow) return;
+  const key = String(data.callId || `tool-${data.index || flow.children.length}`);
+  let row = Array.from(flow.querySelectorAll('.orderedTool')).find(node => node.dataset.callId === key);
+  if (!row) {
+    row = document.createElement('div');
+    row.className = 'orderedTool';
+    row.dataset.callId = key;
+    flow.appendChild(row);
+  }
+  row.dataset.phase = data.phase || 'completed';
+  row.textContent = `${data.phase === 'started' || data.phase === 'running' ? '执行中 · ' : data.phase === 'failed' ? '执行失败 · ' : '已执行 · '}${data.thoughtSummary || data.title || data.tool || '工具'}`;
+}
+
+function replayOrderedStream(article, blocks, container) {
+  for (const block of blocks) {
+    if (block.kind === 'text') {
+      const node = document.createElement('div');
+      node.className = 'reportInterpretation';
+      node.innerHTML = formatInsight(sanitizeUserFacingInsight(String(block.text || '').replace(/\[\[AIME_(?:CHART|SKILLS):[\s\S]*?(?:\]\]|$)/g, '')));
+      container.appendChild(node);
+    } else if (block.kind === 'tool_step') {
+      const node = document.createElement('div');
+      node.className = 'orderedTool';
+      node.textContent = `${block.data?.phase === 'failed' ? '执行失败' : '已执行'} · ${block.data?.thoughtSummary || block.data?.title || block.data?.tool || '工具'}`;
+      container.appendChild(node);
+    } else if (block.kind === 'visualization') {
+      const item = canonicalArtifact(block.data || {});
+      const url = item.htmlUrl || item.url;
+      if (url) container.appendChild(withArtifactWidgetControl(createArtifactFallbackFrame({...item,url},0),{...item,url}));
+    }
+  }
+}
+
+function streamVisualizationLane(article, key = 'visualization') {
   const target = article.querySelector(".finalAnswer");
   if (!target) return null;
-  let lane = target.querySelector(".streamvizLiveLane");
+  const flow = orderedStreamFlow(article);
+  let lane = Array.from(flow.querySelectorAll('.streamvizLiveLane')).find(node => node.dataset.streamKey === key);
   if (!lane) {
     lane = document.createElement("section");
     lane.className = "streamvizLiveLane";
+    lane.dataset.streamKey = key;
     lane.setAttribute("aria-label", "正在生成的可视化");
-    target.appendChild(lane);
+    flow.appendChild(lane);
   }
   return lane;
 }
@@ -1364,12 +1417,7 @@ function appendStreamVisualizationModule(article, data = {}) {
     });
   }
   if (article.activityEnded) return;
-  if (!article.answerTextStarted) {
-    article.pendingVisualizationModules = article.pendingVisualizationModules || [];
-    article.pendingVisualizationModules.push(data);
-    return;
-  }
-  const lane = streamVisualizationLane(article);
+  const lane = streamVisualizationLane(article, url);
   if (!lane) return;
   const existing = Array.from(lane.querySelectorAll("[data-artifact-url]"))
     .some((item) => item.dataset.artifactUrl === url);
@@ -1384,15 +1432,19 @@ function renderStreamAnswerText(article, data = {}) {
   syncInlineActivity(article);
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
-  const raw = String(data.text || "");
+  const flow = orderedStreamFlow(article);
+  const key = String(data.blockId || 'legacy-answer');
+  let preview = Array.from(flow.querySelectorAll('.streamAnswerPreview')).find(node => node.dataset.blockId === key);
+  if (!preview) {
+    preview = document.createElement('div');
+    preview.className = 'streamAnswerPreview streamingAnswer reportInterpretation';
+    preview.dataset.blockId = key;
+    flow.appendChild(preview);
+  }
+  preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
+  const raw = preview.streamText;
   const text = sanitizeUserFacingInsight(raw.replace(/\[\[AIME_CHART:[\s\S]*?(?:\]\]|$)/g, ""));
   if (!text.trim()) return;
-  let preview = target.querySelector(".streamAnswerPreview");
-  if (!preview) {
-    preview = document.createElement("div");
-    preview.className = "streamAnswerPreview streamingAnswer reportInterpretation";
-    target.prepend(preview);
-  }
   const stick = isNearBottom();
   preview.innerHTML = formatInsight(text);
   article.answerTextStarted = true;
@@ -1402,11 +1454,6 @@ function renderStreamAnswerText(article, data = {}) {
 
 function queueStreamVisualization(article, data = {}) {
   if (article.activityEnded) return;
-  if (!article.answerTextStarted) {
-    article.pendingVisualizations = article.pendingVisualizations || [];
-    article.pendingVisualizations.push(data);
-    return;
-  }
   upsertStreamVisualization(article, data);
 }
 
@@ -1420,9 +1467,9 @@ function revealPendingVisualizations(article) {
 }
 
 function upsertStreamVisualization(article, data = {}) {
-  const lane = streamVisualizationLane(article);
-  if (!lane) return;
   const key = String(data.id || data.callId || data.toolCallId || "visualization");
+  const lane = streamVisualizationLane(article, key);
+  if (!lane) return;
   if (article.nonVisualVisualizationIds?.has(key)) return;
   if (data.discard) {
     const provisional = Array.from(lane.querySelectorAll(".streamvizArtifactHost"))
@@ -3066,6 +3113,25 @@ function renderFinalAnswer(article, data) {
     : buildShareSessionForArticle(article, data);
   const actionsHtml = buildResultActions(article, article.dataset.lang || "en");
   const capabilityBarHtml = buildCapabilityBar(article.actionLinks, article.dataset.lang || "en");
+  if (article.orderedStream) {
+    // The completed answer is the same ordered DOM that was streamed. Never
+    // flatten its prose or move an existing chart behind later text.
+    target.querySelectorAll('.streamingAnswer').forEach(node => node.classList.remove('streamingAnswer'));
+    const shown = new Set(Array.from(target.querySelectorAll('[data-artifact-url]')).map(node => node.dataset.artifactUrl));
+    for (const item of data.reportArtifacts || []) {
+      const artifact = canonicalArtifact(item);
+      if (artifact.url && !shown.has(artifact.url)) {
+        target.querySelector('.interleavedFlow').appendChild(withArtifactWidgetControl(createArtifactFallbackFrame(artifact,0),artifact));
+        shown.add(artifact.url);
+      }
+    }
+    renderFileDeliverables(article,data);
+    target.insertAdjacentHTML('beforeend', `${capabilityBarHtml}${actionsHtml}`);
+    attachResultActionHandlers(article);
+    if (!article.taskContext) recordAssistantResult(data);
+    syncActivityDrawer(article);
+    return;
+  }
   // Keep the live hosts connected until the final layout atomically moves them.
   // Their React roots and sandbox documents survive the result handoff.
   article.completedStreamVisualizationHosts = new Map();
@@ -3098,6 +3164,7 @@ function renderFinalAnswer(article, data) {
 
 function buildShareSessionForArticle(article, data = {}) {
   const session = currentSession || ensureCurrentSession(lastQuestion || "");
+  if (Array.isArray(data.streamBlocks)) session.streamBlocks = data.streamBlocks;
   session.updatedAt = Date.now();
   session.reportUrl = data.reportUrl || session.reportUrl || "";
   session.reportArtifacts = Array.isArray(data.reportArtifacts)
@@ -3576,6 +3643,11 @@ async function renderMixedReportFlow(article, data, container, onDone) {
     return;
   }
   if(typeof renderFileDeliverables==='function')renderFileDeliverables(article,data);
+  if (Array.isArray(data.streamBlocks) && data.streamBlocks.length) {
+    replayOrderedStream(article,data.streamBlocks,container);
+    onDone?.();
+    return;
+  }
   const replaceNodes = (nodes) => {
     container.replaceChildren(...nodes);
     container.querySelectorAll(".streamvizFinalSlot").forEach((slot) => {
@@ -3846,7 +3918,8 @@ function showError(article, message, options = {}) {
   article.dataset.thinkingState = "error";
   article.activityEnded = true;
   updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "stoppedAfter"));
-  target.innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
+  if (article.orderedStream) target.insertAdjacentHTML('beforeend', `<p class="error">${escapeHtml(message)}</p>`);
+  else target.innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
   if (!options.skipSessionRecord) recordAssistantError(article, message);
   syncActivityDrawer(article);
   keepScrollPosition(shouldStick);
@@ -4713,6 +4786,7 @@ async function recordAssistantResult(data) {
   resultSession.reportUrl = data.reportUrl;
   resultSession.reportArtifacts = Array.isArray(data.reportArtifacts) ? data.reportArtifacts : [];
   resultSession.fileArtifacts = Array.isArray(data.fileArtifacts) ? data.fileArtifacts : [];
+  resultSession.streamBlocks = Array.isArray(data.streamBlocks) ? data.streamBlocks : [];
   resultSession.code = data.code;
   resultSession.interpretation = data.interpretation || "";
   resultSession.sources = Array.isArray(data.sources) ? data.sources : [];
@@ -4740,6 +4814,7 @@ async function recordAssistantResult(data) {
     agent: data.agent || assistantArticle?.dataset.agent || '',
     reportArtifacts: resultSession.reportArtifacts,
     fileArtifacts: resultSession.fileArtifacts,
+    streamBlocks: resultSession.streamBlocks,
     code: data.code,
     label: data.selectedSkill?.label || "",
     selectedSkill: data.selectedSkill || null,
@@ -4774,6 +4849,7 @@ function recordAssistantError(article, message) {
   currentSession.messages.push({
     role: "assistant",
     error: currentSession.error,
+    streamBlocks: article?.streamBlocks || [],
   });
   currentSession.title = String(currentSession.question || "新建对话").trim().slice(0, 28) || "新建对话";
   saveCurrentSession();
@@ -5001,6 +5077,10 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
   if (!reportUrl && !interpretation && !reportArtifacts.some((item) => item?.url) && !actionLinks.length) {
     if (!error) return;
     const article = createAssistantMessage(question);
+    const blocks = value('streamBlocks', []);
+    if (blocks.length) {
+      replayOrderedStream(article, blocks, orderedStreamFlow(article));
+    }
     article.dataset.startedAt = String(Date.now() - Number(value("thinkingElapsed", 0) || 0));
     article.agentEvents = Array.isArray(value("agentEvents", [])) ? value("agentEvents", []) : [];
     article.dataset.agentRunId = String(value("agentRunId", "") || "");
@@ -5033,7 +5113,7 @@ function appendRestoredAssistantTurn(session, turn, isLatest = false) {
   article.shareSession = session;
   appendMessage(article, true);
   renderSavedAssistantAnswer(article, {
-    agent: value("agent", ""), reportUrl, reportArtifacts, fileArtifacts:value("fileArtifacts",[]),
+    agent: value("agent", ""), reportUrl, reportArtifacts, fileArtifacts:value("fileArtifacts",[]), streamBlocks:value('streamBlocks', []),
     selectedSkill:value("selectedSkill",null), label:value("label",""), interpretation,
     sources: article.activitySources, videos: article.videos, actionLinks: article.actionLinks,
   }, {

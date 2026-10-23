@@ -172,33 +172,12 @@ def durable_chat_events(payload,user):
     events=portfolio.workflow.stream_idea(user,payload.question,payload.history,reasoning_effort=payload.reasoningEffort) if deal else framework_events(payload)
     if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
     charts={}
-    pending_displays=[]
     answer_started=False
     for event,data in events:
-        if event=='module':
+        if event=='answer_text':answer_started=True
+        if event in {'module','visualization','visualize_widget'}:
             url=str(data.get('htmlUrl') or data.get('url') or '')
             if url.startswith(('/generated/','/share-artifact/')):charts[url]=dict(url=url,label=data.get('label') or data.get('title') or '')
-            if not answer_started:
-                pending_displays.append(('module',dict(data)))
-            else:
-                for module_event,module_data in streamviz_events_for_module(dict(data)):
-                    yield module_event,module_data
-            continue
-        if event in {'visualization','visualize_widget'} and not answer_started:
-            pending_displays.append((event,dict(data)))
-            continue
-        if event=='answer_text':
-            yield event,data
-            if data.get('final') is False:
-                continue
-            answer_started=True
-            for display_event,display_data in pending_displays:
-                if display_event=='module':
-                    yield from streamviz_events_for_module(display_data)
-                else:
-                    yield display_event,display_data
-            pending_displays.clear()
-            continue
         if event=='tool_step' and isinstance(data.get('output'),dict):
             artifact=data['output'].get('chartArtifact')
             if artifact and artifact.get('url'):charts[artifact['url']]=artifact
@@ -219,12 +198,6 @@ def durable_chat_events(payload,user):
             if not answer_started and str(data.get('interpretation') or '').strip():
                 answer_started=True
                 yield 'answer_text',{'text':data['interpretation'],'replace':True,'lang':data.get('lang','zh-CN')}
-            for display_event,display_data in pending_displays:
-                if display_event=='module':
-                    yield from streamviz_events_for_module(display_data)
-                else:
-                    yield display_event,display_data
-            pending_displays.clear()
         yield event,data
 
 
@@ -345,51 +318,7 @@ def streamviz_module_payload(data: dict[str, Any]) -> tuple[Path, str] | None:
 
 
 def streamviz_events_for_module(data: dict[str, Any]) -> Iterator[tuple[str, dict[str, Any]]]:
-    resolved = streamviz_module_payload(data)
-    if resolved is None:
-        data["streamvizCompatible"] = False
-        yield "module", data
-        return
-
-    path, code = resolved
-    visualization_id = f"module:{path.stem}"
-    data["streamvizCompatible"] = True
-    data["streamvizId"] = visualization_id
-    title = str(data.get("label") or data.get("title") or "")
-    loading_messages = [
-        f"正在构建{title}",
-        "正在接收可视化结构",
-        "正在完成图表交互",
-    ]
-    yield "visualization", {
-        "id": visualization_id,
-        "htmlUrl": str(data.get("htmlUrl") or ""),
-        "title": title,
-        "reset": True,
-        "final": False,
-        "loadingMessages": loading_messages,
-    }
-
-    target_frames = max(8, min(24, (len(code) + 24_999) // 25_000))
-    chunk_size = max(4_096, (len(code) + target_frames - 1) // target_frames)
-    frame_delay = max(0.0, min(0.03, float(os.getenv("AICHART_STREAMVIZ_FRAME_DELAY", "0.012"))))
-    for offset in range(0, len(code), chunk_size):
-        yield "visualization", {
-            "id": visualization_id,
-            "title": title,
-            "delta": code[offset : offset + chunk_size],
-            "final": False,
-            "loadingMessages": loading_messages,
-        }
-        if frame_delay:
-            time.sleep(frame_delay)
-    yield "visualization", {
-        "id": visualization_id,
-        "title": title,
-        "final": True,
-        "showActions": True,
-        "loadingMessages": loading_messages,
-    }
+    """Finished HTML is a module snapshot, never synthetic model deltas."""
     yield "module", data
 
 
@@ -411,8 +340,6 @@ def framework_events(payload: ChatRequest) -> Iterator[tuple[str, dict[str, Any]
             inference_model=payload.inferenceModel,
         )
         return
-    requested_streamviz = "streamviz" in question.lower()
-    deferred_final: dict[str, Any] | None = None
     for event_name, data in LOCAL_FRAMEWORKS.stream(
         payload.reasoningFramework,
         question,
@@ -425,77 +352,7 @@ def framework_events(payload: ChatRequest) -> Iterator[tuple[str, dict[str, Any]
         resolved_inference_model=payload.resolvedInferenceModel,
         visualization_theme=payload.themeMode,
     ):
-        if requested_streamviz and event_name == "final":
-            deferred_final = data
-            continue
-        if requested_streamviz and event_name in {"module", "visualization", "visualize_widget"}:
-            # These are batch artifacts from the evidence phase, not model
-            # generation deltas. They remain available as an error fallback.
-            continue
         yield event_name, data
-    if not requested_streamviz or deferred_final is None:
-        return
-    # Batch reports supply verified evidence and a durable fallback. The live
-    # visual is generated from model tool-argument deltas, not file replay.
-    upstream_artifacts = deferred_final.get("reportArtifacts")
-    has_upstream_report = bool(
-        deferred_final.get("reportUrl")
-        or (isinstance(upstream_artifacts, list) and any(isinstance(item, dict) and item.get("url") for item in upstream_artifacts))
-    )
-    evidence = str(deferred_final.get("interpretation") or "").strip()
-    # Artifact markers are transport directives, never user-facing evidence.
-    # The normal final-response path strips them, but this StreamViz hand-off
-    # intentionally consumes the raw upstream interpretation before that path.
-    evidence = re.sub(r"(?m)^\s*\[\[AIME_CHART:[^\]\n]+\]\]\s*$", "", evidence).strip()
-    evidence = re.sub(r"(?m)^\s*\[\[AIME_SKILLS:[^\]\n]+\]\]\s*$", "", evidence).strip()
-    for artifact in upstream_artifacts if isinstance(upstream_artifacts, list) else []:
-        resolved = streamviz_module_payload({"htmlUrl": artifact.get("url", "")}) if isinstance(artifact, dict) else None
-        if resolved:
-            # Retain the original tables, series, and visual evidence so the
-            # streaming renderer does not need to invent missing chart data.
-            reference = re.sub(r"<style\b[^>]*>[\s\S]*?</style>", "", resolved[1], flags=re.I)
-            evidence += f"\n\n上游已生成的证据看板（沿用事实与图形数据）：\n{reference[:60000]}"
-    native_final: dict[str, Any] | None = None
-    provisional_ids: set[str] = set()
-    try:
-        for event_name, data in stream_native_widget(question, GENERATED_DIR, evidence=evidence, theme_mode=payload.themeMode):
-            if event_name == "final":
-                native_final = data
-            else:
-                if event_name == "visualization" and data.get("id"):
-                    provisional_ids.add(str(data["id"]))
-                yield event_name, data
-    except Exception:
-        if not has_upstream_report:
-            raise
-        for visualization_id in provisional_ids:
-            yield "visualization", {"id": visualization_id, "discard": True}
-        yield "status", {"phase": "streamviz-fallback", "message": "流式绘制未完成，已保留上游生成的 HTML 看板", "lang": "zh-CN"}
-        yield "final", deferred_final
-        return
-    # An empty native tool payload is not a report.  Preserve the complete HTML
-    # that the evidence-producing skill already generated instead of replacing
-    # it with an empty StreamViz wrapper.
-    if native_final and native_final.get("reportArtifacts"):
-        report_path = native_final["reportArtifacts"][0].get("path", "")
-        marker_used = False
-        def replace_chart_marker(_match: re.Match[str]) -> str:
-            nonlocal marker_used
-            if marker_used or not report_path:
-                return ""
-            marker_used = True
-            return f"[[AIME_CHART:{report_path}]]"
-        native_final["interpretation"] = re.sub(
-            r"\[\[AIME_CHART:[^\]\n]+\]\]", replace_chart_marker,
-            str(deferred_final.get("interpretation") or ""),
-        )
-        native_final["sources"] = deferred_final.get("sources") or []
-        native_final["status"] = deferred_final.get("status") or []
-        for key in ("engineSessionId", "studioSessionId", "agentRunId", "reasoningFramework"):
-            native_final[key] = deferred_final.get(key, native_final.get(key))
-        yield "final", native_final
-    else:
-        yield "final", deferred_final
 
 
 @app.get("/")

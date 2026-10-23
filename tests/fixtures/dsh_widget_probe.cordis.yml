@@ -1,0 +1,3 @@
+- insert:
+    - id: widget-probe
+      name: ./dsh_widget_probe.cjs

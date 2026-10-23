@@ -84,6 +84,7 @@ class ChatSessions:
             self.cancelled.discard(run_id)
 
     def publish(self,run_id,event,data,status=None):
+        from app.public_stream import reduce_stream_block
         data=dict(data) if isinstance(data,dict) else {'message':str(data)}
         with self.db() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -94,17 +95,29 @@ class ChatSessions:
             row=db.execute('SELECT payload FROM sessions WHERE owner=? AND id=?',(run['owner'],run['session_id'])).fetchone()
             session=json.loads(row['payload']);session.update(status='running',updatedAt=time.time()*1000)
             if event in {'final','error'}:
+                blocks=[]
+                for prior in db.execute('SELECT event,data FROM chat_events WHERE run_id=? ORDER BY seq',(run_id,)):
+                    reduce_stream_block(blocks,prior['event'],json.loads(prior['data']))
+                if event=='final':
+                    shown={str(block.get('data',{}).get('htmlUrl') or block.get('data',{}).get('url') or '') for block in blocks if block['kind']=='visualization'}
+                    artifacts=list(data.get('reportArtifacts') or [])
+                    if not artifacts and data.get('reportUrl'):artifacts=[{'url':data['reportUrl']}]
+                    for artifact in artifacts:
+                        if artifact.get('url') and artifact['url'] not in shown:
+                            reduce_stream_block(blocks,'module',artifact)
+                            shown.add(artifact['url'])
+                data['streamBlocks']=blocks
                 status=status or ('completed' if event=='final' else 'failed')
                 elapsed=max(0,(time.time()-run['created'])*1000)
                 data['thinkingElapsed']=elapsed
                 session.update(status=status,activeRunId='',lastRunId=run_id,thinkingStartedAt=run['created']*1000,thinkingElapsed=elapsed)
                 if event=='final':
-                    session.update({key:data[key] for key in ('interpretation','reportArtifacts','fileArtifacts','reportUrl','code','agent','sources','videos','actionLinks','agentRunId','engineSessionId','reasoningFramework') if key in data})
+                    session.update({key:data[key] for key in ('streamBlocks','interpretation','reportArtifacts','fileArtifacts','reportUrl','code','agent','sources','videos','actionLinks','agentRunId','engineSessionId','reasoningFramework') if key in data})
                     session['messages'].append(dict(data,role='assistant'))
                     session['error']=''
                 else:
                     session['error']=data.get('detail','执行失败')
-                    session['messages'].append(dict(role='assistant',error=session['error'],errorCode=data.get('code',''),chatRunId=run_id))
+                    session['messages'].append(dict(role='assistant',error=session['error'],errorCode=data.get('code',''),chatRunId=run_id,streamBlocks=blocks))
                 db.execute('UPDATE chat_runs SET status=? WHERE id=?',(status,run_id))
             db.execute('INSERT INTO chat_events VALUES(?,?,?,?)',(run_id,seq,event,json.dumps(data,ensure_ascii=False)))
             db.execute('UPDATE sessions SET payload=?,updated=? WHERE owner=? AND id=?',(json.dumps(session,ensure_ascii=False),time.time(),run['owner'],run['session_id']))

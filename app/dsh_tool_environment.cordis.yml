@@ -3,5 +3,9 @@
     search: false
     fetch: false
 - insert:
+    - id: mentora-public-stream
+      name: ./dsh_public_stream.cjs
     - id: mentora-tool-environment
       name: ./dsh_tool_environment.cjs
+    - id: mentora-stream-widget
+      name: ./dsh_stream_widget.cjs
