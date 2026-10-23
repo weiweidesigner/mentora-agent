@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 WIDGET_TOOL='visualize_show_widget'
+PROGRESS_TOOL='report_progress'
 
 
 class PublicStream:
@@ -9,6 +10,30 @@ class PublicStream:
         self.prefix=prefix;self.turn=0;self.texts={};self.last_text='';self.has_text=False
         self.calls={};self.artifacts=[];self.segments=[]
         self.public_blocks={};self.progress_keys=set();self.final_keys=set()
+        self.progress_calls=set()
+
+    def progress_event(self, event_type, data):
+        """Consume the explicit progress tool only; never classify ordinary prose."""
+        message=data.get('message') if isinstance(data.get('message'),dict) else {}
+        source=message.get('source') if isinstance(message.get('source'),dict) else {}
+        call_id=str(data.get('callId') or message.get('toolCallId') or source.get('callId') or '')
+        name=data.get('name') or data.get('tool') or source.get('name')
+        if event_type=='tool/result' and (call_id in self.progress_calls or name==PROGRESS_TOOL):
+            return []
+        if event_type!='tool/call' or name!=PROGRESS_TOOL:
+            return None
+        if not call_id or call_id in self.progress_calls:
+            return []
+        self.progress_calls.add(call_id)
+        args=data.get('arguments') or data.get('input') or {}
+        if isinstance(args,str):
+            import json
+            try:args=json.loads(args)
+            except (TypeError,ValueError):return []
+        text=args.get('summary') if isinstance(args,dict) else None
+        if not isinstance(text,str) or not text.strip() or len(text)>240:
+            return []
+        return [('progress',dict(blockId=f'{self.prefix}:progress:{call_id}',text=text.strip(),kind='commentary'))]
 
     def _text(self,index,text,channel=None):
         if channel=='final_answer':channel='final'

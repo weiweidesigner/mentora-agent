@@ -5,6 +5,8 @@
 - insert:
     - id: mentora-public-stream
       name: ./dsh_public_stream.cjs
+    - id: mentora-public-progress
+      name: ./dsh_public_progress.cjs
     - id: mentora-tool-environment
       name: ./dsh_tool_environment.cjs
     - id: mentora-stream-widget

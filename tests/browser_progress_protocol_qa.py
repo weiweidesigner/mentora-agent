@@ -1,0 +1,52 @@
+"""Exercise candidate JS through the real page, without starting an agent run."""
+from pathlib import Path
+import json
+import sys
+from playwright.sync_api import sync_playwright
+
+source=(Path(__file__).parents[1]/'app/static/app.js').read_text()
+checks=[]
+with sync_playwright() as p:
+    browser=p.chromium.launch()
+    for width in (390,1280):
+        for theme in ('light','dark'):
+            page=browser.new_page(viewport={'width':width,'height':900})
+            errors=[]
+            page.on('pageerror',lambda error:errors.append(str(error)))
+            if '--live' not in sys.argv:
+                page.route('**/static/app.js*',lambda route:route.fulfill(status=200,content_type='text/javascript',body=source))
+            page.goto('https://weiweidesigner.com/mentora/',wait_until='domcontentloaded')
+            page.wait_for_function("typeof handleStreamEvent==='function'")
+            result=page.evaluate('''theme=>{
+                document.documentElement.dataset.theme=theme;
+                const article=createAssistantMessage('进度协议验证',{target:document.body});
+                article.dataset.lang='zh-CN';article.dataset.thinkingState='active';
+                const send=(event,data)=>handleStreamEvent(article,event,data);
+                const title=()=>article.querySelector('.thinkingSummaryText').textContent;
+                send('progress',{blockId:'p1',text:'核对日期与数据口径',kind:'commentary'});
+                if(title()!=='核对日期与数据口径')throw Error('progress title missing');
+                send('tool_step',{tool:'bash',callId:'b',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
+                if(title()!=='加载市场数据')throw Error('new tool did not replace old progress');
+                send('progress',{blockId:'p2',text:'汇总本周表现',kind:'commentary'});
+                if(title()!=='汇总本周表现')throw Error('new progress did not replace title');
+                send('tool_step',{tool:'bash',callId:'b',phase:'completed',thoughtSummary:'加载市场数据',params:['true']});
+                if(title()!=='汇总本周表现')throw Error('stale parallel completion overwrote title');
+                if(article.querySelector('.finalAnswer').textContent.trim())throw Error('progress leaked into answer');
+                if(article.querySelector('.thinkingFlow')?.hidden!==true)throw Error('history expanded automatically');
+                send('answer_text',{blockId:'answer',delta:'**已核实结论**：结果为 2。'});
+                if(!article.querySelector('.finalAnswer').textContent.includes('结果为 2'))throw Error('answer not streamed immediately');
+                send('tool_step',{tool:'read',callId:'later',phase:'started',thoughtSummary:'核对组件',params:['/outputs/fixture.json']});
+                if(!article.querySelector('.finalAnswer').textContent.includes('结果为 2'))throw Error('later tool hid answer');
+                send('progress',{blockId:'p3',text:'验证组件展示',kind:'commentary'});
+                const body=article.querySelector('.finalAnswer').textContent;
+                if(body.includes('验证组件展示')||body.includes('核对日期'))throw Error('duplicate progress paragraph');
+                if(title()!=='验证组件展示')throw Error('latest title not current');
+                const trigger=article.querySelector('.thinkingTrigger');trigger.click();
+                if(article.querySelector('.thinkingFlow').hidden)throw Error('cannot inspect progress history');
+                if(!article.querySelector('.thinkingFlow').textContent.includes('核对日期'))throw Error('lost history');
+                article.remove();return {width:innerWidth,theme,progressOnlyInThinking:true,latestStatus:true,answerImmediate:true,history:true};
+            }''',theme)
+            assert not errors, errors
+            checks.append(result);page.close()
+    browser.close()
+print(json.dumps(checks))

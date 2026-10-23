@@ -2007,6 +2007,14 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             visualization_guidance=visualization_guidance,
         )
         prompt += (
+            "\n\n本 Harness 没有 commentary/final 文本通道，普通 assistant text 会立即作为答案显示。"
+            "公开执行进度必须使用原生 report_progress(summary=一句用户语言的行动摘要) 工具，"
+            "不得把‘我先确认…’等计划或工具间进度写在普通 assistant text 中，也不要把摘要重复到答案。"
+            "已有工具的 description/title 可以说明当前动作，无需为每次工具调用额外调用 report_progress。"
+            "只有确有独立进度需要告知时才使用；不包含内部推理、分析结论、命令、路径或原始工具结果。"
+            "有依据的结论和解读直接作为普通答案文本输出；图文可以交错，之后调用工具也不会把正文移到思考区。"
+        )
+        prompt += (
             "\n\n工程执行建议：完整理解本轮问题和历史约束，由你决定研究范围、工具、步骤、"
             "图表及回答结构。不要套用固定市场报告模板或因轻度档删减用户要求。"
             "已核验且时效仍有效的同轮数据和执行契约可复用；相互独立的工作可并行，"
@@ -2179,6 +2187,13 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     except (TypeError, ValueError):
                         pass
             elif event_type in {"tool/call", "tool/result", "todo/write"}:
+                if str(payload.get('sessionId') or requested_session_id)!=requested_session_id:
+                    continue
+                tool_data=event.get('data') if isinstance(event.get('data'),dict) else {}
+                progress_events=public_stream.progress_event(event_type,tool_data)
+                if progress_events is not None:
+                    yield from progress_events
+                    continue
                 if event_type == "tool/call" and pending_public_text:
                     latest_progress_summary = self._localized_progress(pending_public_text, question)
                     if latest_progress_summary:

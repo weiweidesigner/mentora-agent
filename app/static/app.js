@@ -1534,7 +1534,14 @@ function renderPublicProgress(article, data = {}) {
   item.querySelector('.activityStepTitle').textContent = text;
   item.classList.toggle('is-loading', !article.activityEnded);
   item.classList.toggle('is-done', Boolean(article.activityEnded));
+  list.querySelectorAll('li.is-model-summary').forEach(previous => {
+    if (previous !== item) {
+      previous.classList.remove('is-loading');
+      previous.classList.add('is-done');
+    }
+  });
   article.dataset.publicThoughtText = text;
+  article.dataset.currentThinking = text;
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
   syncActivityDrawer(article);
@@ -2080,6 +2087,9 @@ function appendToolStep(article, data) {
   const thought = modelActivitySummary(data?.thoughtSummary, lang);
   const publicProgress = [data?.nextThought, thought].map(value => modelActivitySummary(value, lang))
     .find(value => value && ![tool, script].some(name => name && value.toLowerCase() === name.toLowerCase()));
+  // A new tool action supersedes older progress; completion of an older
+  // parallel call must not overwrite a newer progress update.
+  if (phase === 'started' && publicProgress) article.dataset.publicThoughtText = publicProgress;
   const flowingText = article.dataset.publicThoughtText || publicProgress || article.dataset.currentThinking || copyFor(lang, "thinking");
   let actionArgument = shellCommand.length ? shellCommand.map(shellQuote).join(" ") : "";
   let input = null;

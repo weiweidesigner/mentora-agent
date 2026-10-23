@@ -10,6 +10,7 @@ function setup(){
  w.setArticleLanguage=()=> 'zh-Hans';w.copyFor=()=> '正在思考';w.formatDuration=()=> '1s';w.activeActivityArticle=null;
  w.showAgentIdentity=()=>{};
  w.eval(source.slice(source.indexOf('function applyRunTiming('),source.indexOf('const streamVisualizationCodeCache')));
+ w.eval(source.slice(source.indexOf('function renderPublicProgress('),source.indexOf('function renderStreamAnswerText(')));
  const start=source.indexOf('function updateThinkingSummary('),end=source.indexOf('\nfunction ',start+10);
  w.eval(source.slice(start,end));
  return {dom,w,article:w.article};
@@ -41,5 +42,20 @@ test('first-person model progress keeps its natural wording in tool updates',()=
   assert.equal(f.w.compactReasoningTitle('我先核对组件设置，再加载苹果日线。','zh-Hans'),'我先核对组件设置，再加载苹果日线');
   assert.equal(f.w.compactReasoningTitle('现在盘前结构已经清楚。','zh-Hans'),'现在盘前结构已经清楚');
   assert.equal(f.w.compactReasoningTitle('检查图表表达。','zh-Hans'),'正在检查图表表达');
+ }finally{f.dom.window.close();}
+});
+
+test('latest progress replaces the live title; tool completions cannot revive stale titles',()=>{
+ const f=setup();
+ try{
+  f.w.handleStreamEvent(f.article,'progress',{blockId:'p1',text:'核对日期与数据口径'});
+  f.w.handleStreamEvent(f.article,'tool_step',{tool:'bash',callId:'b1',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
+  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'加载市场数据');
+  f.w.handleStreamEvent(f.article,'progress',{blockId:'p2',text:'汇总本周表现'});
+  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'汇总本周表现');
+  f.w.handleStreamEvent(f.article,'tool_step',{tool:'bash',callId:'b1',phase:'completed',thoughtSummary:'加载市场数据',params:['true']});
+  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'汇总本周表现');
+  assert.equal(f.article.querySelectorAll('.thinkingSteps .is-model-summary.is-loading').length,1);
+  assert.equal(f.article.querySelector('.finalAnswer').innerHTML,'');
  }finally{f.dom.window.close();}
 });
