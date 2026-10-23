@@ -3282,7 +3282,10 @@ function renderFinalAnswer(article, data) {
   if (article.orderedStream) {
     // The completed answer is the same ordered DOM that was streamed. Never
     // flatten its prose or move an existing chart behind later text.
-    target.querySelectorAll('.streamingAnswer').forEach(node => node.classList.remove('streamingAnswer'));
+    // streamingAnswer is also the established rich-text styling scope.
+    // Stop only the live cursor; retain table, emphasis and citation styling.
+    target.querySelectorAll('.is-streaming').forEach(node => node.classList.remove('is-streaming'));
+    attachInlineAnswerSources(target.querySelector('.interleavedFlow') || target, data.sources);
     // Tool inventory is not an instruction to append unreferenced charts.
     renderFileDeliverables(article,data);
     target.insertAdjacentHTML('beforeend', `${capabilityBarHtml}${actionsHtml}`);
@@ -3805,6 +3808,7 @@ async function renderMixedReportFlow(article, data, container, onDone) {
   if (Array.isArray(data.streamBlocks) && data.streamBlocks.length) {
     article.streamVisualizationArtifacts = (data.reportArtifacts || []).map(canonicalArtifact);
     replayOrderedStream(article,data.streamBlocks,container);
+    attachInlineAnswerSources(container, mergeSourcesByUrl(data.sources || [], sourcesFromInsightMarkdown(data.interpretation || '')));
     onDone?.();
     return;
   }

@@ -26,6 +26,7 @@ window.mountStreamVisualization=(host,data)=>{mounts.push({...data});host.datase
 window.withArtifactWidgetControl=(node,item)=>{const outer=document.createElement('div');outer.className='chatArtifactShell';outer.dataset.artifactUrl=item.url;outer.append(node);return outer};
 window.createArtifactFallbackFrame=(item,index)=>{fallbacks++;const node=document.createElement('div');node.className='reportFrameShell';node.dataset.artifactUrl=item.url;const frame=document.createElement('iframe');frame.srcdoc='<p>Native script fixture</p>';node.append(frame);return node};
 window.AimeStreamViz={unmount:()=>{}};
+window.attachInlineAnswerSources=()=>{};
 window.completeThinking=()=>{};window.updateThinkingSummary=()=>{};window.copyFor=()=>'';window.mergeSourcesByUrl=()=>[];window.sourcesFromInsightMarkdown=()=>[];
 window.buildResultActions=()=>'';window.buildCapabilityBar=()=>'';window.renderFileDeliverables=()=>{};window.attachResultActionHandlers=()=>{};window.syncActivityDrawer=()=>{};window.recordAssistantResult=()=>{};window.scrollToMessageStart=()=>{};window.buildShareSessionForArticle=()=>({});
 '''
