@@ -11,6 +11,7 @@ class PublicStream:
         self.public_blocks={};self.progress_keys=set();self.final_keys=set()
 
     def _text(self,index,text,channel=None):
+        if channel=='final_answer':channel='final'
         key=f'{self.prefix}:{self.turn}:text:{index}'
         seen=self.public_blocks.get(key,'')
         self.public_blocks[key]=text
@@ -30,7 +31,7 @@ class PublicStream:
         if not text or (text==seen and not confirming):return []
         self.has_text=True
         data=dict(blockId=key,live=True,final=False)
-        if text.startswith(seen) and not confirming:data['delta']=text[len(seen):]
+        if text.startswith(seen) and (not confirming or not seen):data['delta']=text[len(seen):]
         else:data.update(text=text,replace=True)
         return [('answer_text',data)]
 
@@ -45,12 +46,13 @@ class PublicStream:
         self.texts={}
 
     def chunk(self,chunk):
-        if chunk.get('channel') in {'analysis','reasoning'}:return []
+        channel=chunk.get('channel') or chunk.get('phase')
+        if channel in {'analysis','reasoning'}:return []
         kind=chunk.get('type');index=chunk.get('index',0)
         if kind=='text-delta':
             text=chunk.get('text')
             if not isinstance(text,str) or not text:return []
-            return self._text(index,self.texts.get(index,'')+text,chunk.get('channel'))
+            return self._text(index,self.texts.get(index,'')+text,channel)
         if kind=='tool-call-delta':
             call=self.calls.setdefault((self.turn,index),dict(id='',name='',arguments='',started=False))
             call['id']=chunk.get('id') or call['id'];call['name']=chunk.get('name') or call['name']
@@ -63,12 +65,13 @@ class PublicStream:
 
     def message(self,message):
         events=[]
-        if message.get('channel') not in {'analysis','reasoning'}:
+        channel=message.get('channel') or message.get('phase')
+        if channel not in {'analysis','reasoning'}:
             content=message.get('content') or []
             for index,block in enumerate(content if isinstance(content,list) else []):
                 if not isinstance(block,dict) or block.get('type')!='text':continue
                 text=str(block.get('text') or '')
-                events.extend(self._text(index,text,message.get('channel')))
+                events.extend(self._text(index,text,channel))
             self.last_text=''.join(str(b.get('text') or '') for b in content if isinstance(b,dict) and b.get('type')=='text') if isinstance(content,list) else ''
             if self.last_text:self.segments.append(self.last_text)
         self.turn=f'{self.turn}:next';self.texts={}

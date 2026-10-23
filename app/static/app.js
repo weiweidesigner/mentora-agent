@@ -2291,9 +2291,11 @@ function bindActivityCommandPanels(root) {
 
 function activityToolMarkup(article, item, key) {
   const clone = item.cloneNode(true);
+  const running = item.classList.contains("is-loading") && !article.activityEnded;
+  const rowClass = `activityToolRow ${item.className}${running ? ' is-current-tool' : ''}`;
   clone.querySelectorAll(".activityThoughtSummary, .activityStepTitle, :scope > .activityStepDetail").forEach((node) => node.remove());
   let details = clone.querySelector("details.activityTool");
-  if (!details) return `<li class="activityToolRow ${item.className}">${clone.innerHTML}</li>`;
+  if (!details) return `<li class="${rowClass}">${clone.innerHTML}</li>`;
   const tool = item.dataset.toolName || "工具详情";
   const kind = item.dataset.toolKind || activityToolKind(tool);
   const chinese = /^zh/.test(article.dataset.lang || "zh");
@@ -2310,7 +2312,6 @@ function activityToolMarkup(article, item, key) {
       .trim() || tool;
   }
   argument = Array.isArray(argument) ? argument.join(" ") : String(argument);
-  const running = item.classList.contains("is-loading") && !article.activityEnded;
   const action = `${activityToolVerb(kind, running, chinese)} ${argument}`;
   const summary = details.querySelector("summary");
   if (summary) {
@@ -2361,7 +2362,7 @@ function activityToolMarkup(article, item, key) {
   }
   details.dataset.activityKey = key;
   details.open = article.activityDisclosureState?.get(key) ?? false;
-  return `<li class="activityToolRow ${item.className}">${clone.innerHTML}</li>`;
+  return `<li class="${rowClass}">${clone.innerHTML}</li>`;
 }
 
 function buildActivityFlow(article) {
@@ -2414,7 +2415,7 @@ function buildActivityFlow(article) {
     const key = `group:${tools[0].key}`;
     const open = article.activityDisclosureState?.get(key) ?? tools.some(({key}) => article.activityDisclosureState?.get(key) === true);
     const icon = ["edit", "search", "read", "shell", "tool"].find((kind) => counts.has(kind));
-    return `<li class="activityToolGroup"><details class="activityGroup" data-activity-key="${escapeHtml(key)}"${open ? " open" : ""}>
+    return `<li class="activityToolGroup" data-tool-state="${active.length ? 'running' : 'completed'}"><details class="activityGroup" data-activity-key="${escapeHtml(key)}"${open ? " open" : ""}>
       <summary class="activityAction activityGroupAction"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(icon)}</span><span class="activityActionText">${escapeHtml(label)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>
       <ul class="activityGroupItems">${tools.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul></details>
       ${active.length ? `<ul class="activityCurrentAction">${active.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul>` : ""}</li>`;

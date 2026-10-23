@@ -2152,7 +2152,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     if frame.get('type')=='start':
                         public_stream.begin(frame.get('attemptId','live'))
                         yield 'model_activity',{'phase':'started'}
-                    elif frame.get('type')=='chunk':yield from public_stream.chunk(frame.get('chunk') or {})
+                    elif frame.get('type')=='chunk':
+                        chunk=frame.get('chunk') or {}
+                        channel=chunk.get('channel') or chunk.get('phase') or frame.get('channel') or frame.get('phase')
+                        yield from public_stream.chunk({**chunk,**({'channel':channel} if channel else {})})
                     elif frame.get('type')=='end':yield 'model_activity',{'phase':'completed'}
                 continue
             event = payload.get("event") if method == "session.event" and isinstance(payload, dict) else None
@@ -2264,6 +2267,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
                 data = event.get("data") if isinstance(event.get("data"), dict) else {}
                 message = data.get("message") if isinstance(data.get("message"), dict) else data
+                if not (message.get('channel') or message.get('phase')) and (data.get('channel') or data.get('phase')):
+                    message={**message,'channel':data.get('channel') or data.get('phase')}
                 yield from public_stream.message(message)
             elif method in {"subagent.started", "subagent.finished"}:
                 yield "agent_event", {

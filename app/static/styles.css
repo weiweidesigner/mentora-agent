@@ -5303,7 +5303,10 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .activityToolState{display:flex;align-items:center;justify-content:flex-end;gap:6px;text-align:right;color:var(--muted);font-size:12px;font-weight:400;padding:0}
 .activityRunningDot{display:inline-block;width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor;animation:activityTextFade 1.8s ease-in-out infinite}
 .is-error .activityToolState{color:var(--danger)}
-.activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon){animation:activityTextFade 1.8s ease-in-out infinite}
+.activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon){animation:none}
+.activityToolRow.is-current-tool>.activityTool>.activityAction .activityActionIcon,
+.activityToolRow.is-current-tool .activityFileChangeIcon,
+.activityToolGroup[data-tool-state="running"]>.activityGroup>.activityGroupAction .activityActionIcon{animation:activityIconPulse 1.6s ease-in-out infinite;transform-origin:center}
 .is-error>.activityTool>.activityAction{color:var(--danger)}
 .activityBody{min-width:0;padding:20px 24px 28px}
 .activityBody .activityNarrative>p{font-size:14px;line-height:1.55}
@@ -5318,6 +5321,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .activityBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:125}
 .activityBackdrop[hidden]{display:none}
 @keyframes activityTextFade{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes activityIconPulse{0%,100%{opacity:.45;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
 @media(hover:none){.activityActionChevron{opacity:.7}}
 @media(max-width:1023px){.activityDrawer{max-height:calc(100dvh - 24px);padding-bottom:env(safe-area-inset-bottom)}.activityAction{min-height:36px}.activityFlowList{gap:6px}.activityBody{padding:18px 20px 24px}}
-@media(prefers-reduced-motion:reduce){.activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon),.activityRunningDot,.activityConnection,.activityLiveThinking{animation:none}}
+@media(prefers-reduced-motion:reduce){.activityToolRow.is-current-tool .activityActionIcon,.activityToolRow.is-current-tool .activityFileChangeIcon,.activityToolGroup[data-tool-state="running"]>.activityGroup>.activityGroupAction .activityActionIcon,.activityRunningDot,.activityConnection,.activityLiveThinking{animation:none!important;transform:none!important}}

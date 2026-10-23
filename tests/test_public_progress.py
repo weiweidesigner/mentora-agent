@@ -10,6 +10,12 @@ spec=importlib.util.spec_from_file_location('public_stream_fixture',source)
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class Progress(unittest.TestCase):
+    def test_native_phase_alias_routes_opaque_text_without_content_rules(self):
+        stream=module.PublicStream()
+        assert stream.chunk({'type':'text-delta','phase':'commentary','text':'opaque-A'})[0][0]=='progress'
+        stream.message({'phase':'commentary','content':[{'type':'text','text':'opaque-A'}]})
+        assert stream.chunk({'type':'text-delta','phase':'final_answer','text':'opaque-B'})[0][0]=='answer_text'
+        assert stream.message({'phase':'analysis','content':[{'type':'text','text':'PRIVATE'}]})==[]
     def test_unknown_channel_streams_immediately_without_final_confirmation(self):
         stream=module.PublicStream();blocks=[]
         first=stream.chunk({'type':'text-delta','text':'指数历史数据可用。'})
