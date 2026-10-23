@@ -87,6 +87,7 @@ def prepare(revision,cache):
         dependency=mirror(path.stem,spec['repository'],safe(LEGACY,spec['checkout']),spec['revision'])
         checkout.parent.mkdir(parents=True,exist_ok=True)
         run(['git','clone','--quiet','--shared','--no-checkout',dependency,checkout])
+        run(['git','-C',checkout,'fetch','--quiet',dependency,spec['revision']])
         run(['git','-C',checkout,'remote','set-url','origin',spec['repository']])
         run(['git','-C',checkout,'checkout','--quiet','--detach',spec['revision']])
         locks.append(spec)
