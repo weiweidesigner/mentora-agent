@@ -10,9 +10,9 @@ Use `scripts/read_market_data.py` for quote/history batches, including a single 
 ## Exact CLI
 
 ```sh
-python3 app/skills/market-data/scripts/read_market_data.py --operation quote --symbols AAPL MSFT --output outputs/data/quotes.json
-python3 app/skills/market-data/scripts/read_market_data.py --operation history --symbols AAPL MSFT --output outputs/data/history.json
-python3 app/skills/market-data/scripts/read_market_data.py --operation quote --input outputs/data/requests.json --output outputs/data/snapshot.json
+python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote --symbols AAPL MSFT --output outputs/data/quotes.json
+python3 app/skill_runner.py execute --script read_market_data.py -- --operation history --symbols AAPL MSFT --output outputs/data/history.json
+python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote --input outputs/data/requests.json --output outputs/data/snapshot.json
 ```
 
 `--input` is a UTF-8 JSON array, e.g. `[{"symbol":"SPY","asset":"etf"},{"symbol":"AAPL","asset":"stocks"},{"symbol":"COMP","asset":"index"}]`. `--symbols` uses one `--asset stocks|etf|index` (default stocks); never infer an ETF's asset class from its ticker. Mainland symbols require the exchange suffix, e.g. `600519.SH`, and use the stock adapter. Markets supported here are US listings and mainland China; do not use foreign listings or Yahoo. US index history is returned as a per-item unsupported error while supported stocks and ETFs in the same mixed batch still run. History is the existing adapter's recent completed daily bars (approximately 132 US sessions, at least 65), forward adjusted; it is not an arbitrary date/interval query. Use the original K-line skill for different history contracts.

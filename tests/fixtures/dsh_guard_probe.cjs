@@ -22,8 +22,11 @@ exports.apply = ctx => {
       for (let i = 0; i < 3; i++) failures.push(await runBash(`python3 ${dir}/screener/scripts/run.py --variant ${i}`));
       const output = path.join(dir, 'generated.html');
       const renderCommand = `python3 ${dir}/generic-chart/scripts/render.py --output ${output}`;
-      const renders = [await runBash(renderCommand), await runBash(renderCommand)];
-      fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({readBodies,reads,failures,renders}));
+      const secondOutput = path.join(dir, 'generated-second.html');
+      const secondRenderCommand = `python3 ${dir}/generic-chart/scripts/render.py --output ${secondOutput}`;
+      const renders = [await runBash(renderCommand), await runBash(secondRenderCommand)];
+      const artifacts = [output, secondOutput].map(file => ({file, exists: fs.existsSync(file)}));
+      fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({readBodies,reads,failures,renders,artifacts}));
       await handle.dispose();
     } catch (error) {
       fs.writeFileSync(path.join(dir, 'result.json'), JSON.stringify({error: String(error), stack: error.stack}));

@@ -105,7 +105,8 @@ def test_dark_theme_styles_tool_activity_blocks() -> None:
     styles = (ROOT / "app/static/styles.css").read_text(encoding="utf-8")
 
     assert ':root[data-theme="dark"] .toolStepBlock {' in styles
-    assert "background: #171e28;" in styles
+    assert "background: #080808;" in styles
+    assert "border: 1px solid #303030;" in styles
     assert ':root[data-theme="dark"] .toolStepBlock code {' in styles
     assert "color: #dce4ef;" in styles
 

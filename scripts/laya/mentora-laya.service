@@ -1,0 +1,18 @@
+[Unit]
+Description=Mentora local Laya decision sidecar
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/veya-agent/scripts/laya
+Environment=TOKENIZERS_PARALLELISM=false
+Environment=LAYA_MODEL_PATH=/home/ubuntu/veya-laya-model
+Environment=LAYA_CPU_THREADS=2
+ExecStart=/home/ubuntu/veya-laya-venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8791 --workers 1
+Restart=on-failure
+RestartSec=5
+MemoryMax=2800M
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

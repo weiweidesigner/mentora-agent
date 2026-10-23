@@ -1,3 +1,7 @@
+- id: tool-web
+  config:
+    search: false
+    fetch: false
 - insert:
     - id: mentora-tool-environment
       name: ./dsh_tool_environment.cjs

@@ -1,5 +1,147 @@
 [
   {
+    "id": "ashare-kline",
+    "title": "国内股票 K 线",
+    "category": "国内市场",
+    "description": "Fuyao 真实 A 股日线，支持复权、成交量与原生交互；不含指数、ETF或分钟线。",
+    "provider": "ashare",
+    "skill": "a-share-data",
+    "script": "historical_kline.py",
+    "inputMode": "symbol",
+    "sourceLabel": "Fuyao",
+    "defaultSymbols": [
+      "600519.SH"
+    ],
+    "width": 12,
+    "height": 22,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "ashare-calendar",
+    "title": "国内交易日历",
+    "category": "国内市场",
+    "description": "查看内置数据源覆盖期内的 A 股交易日与休市日期。",
+    "provider": "ashare",
+    "skill": "a-share-data",
+    "script": "trading_calendar.py",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "sourceLabel": "Fuyao",
+    "width": 6,
+    "height": 18,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "kline",
+    "title": "AInvest K 线",
+    "category": "AInvest 行情",
+    "description": "股票、ETF、数字币及可识别期权合约的原生行情与技术指标。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "kline.py",
+    "inputMode": "symbol",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 12,
+    "height": 22,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "multi_kline",
+    "title": "多 K 线对比",
+    "category": "AInvest 行情",
+    "description": "多标的同周期，或同标的不同周期的原生 K 线对比。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "multi_kline.py",
+    "inputMode": "group",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 12,
+    "height": 22,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "multi_intraday",
+    "title": "美股多股分时",
+    "category": "AInvest 行情",
+    "description": "AInvest 真实分钟行情，比较多只美股盘中走势。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "multi_intraday.py",
+    "inputMode": "group",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 12,
+    "height": 22,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "about_company",
+    "title": "公司资料",
+    "category": "公司资料",
+    "description": "公司简介、行业、上市信息与主营业务。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "about_company.py",
+    "inputMode": "symbol",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 6,
+    "height": 18,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "related_section",
+    "title": "相关主题与板块",
+    "category": "公司资料",
+    "description": "公司相关主题与板块标签。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "related_section.py",
+    "inputMode": "symbol",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 6,
+    "height": 18,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
+    "id": "executive_profile",
+    "title": "公司管理层",
+    "category": "公司资料",
+    "description": "董事会、高管与公司管理层信息。",
+    "provider": "business",
+    "skill": "business-chart-recall",
+    "script": "executive_profile.py",
+    "inputMode": "symbol",
+    "sourceLabel": "AInvest",
+    "defaultSymbols": [
+      "AAPL"
+    ],
+    "width": 6,
+    "height": 18,
+    "requiresDataSource": false,
+    "libraryVisible": true
+  },
+  {
     "id": "tv-screener",
     "widget": "screener",
     "provider": "TradingView",
@@ -137,7 +279,15 @@
     "category": "个股诊断",
     "description": "日内区间、52 周区间、市值和成交统计。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "key_stats.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "valuation",
@@ -145,7 +295,15 @@
     "category": "个股诊断",
     "description": "查看市盈率、市销率等估值数据。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "valuation.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "investment_rating",
@@ -153,7 +311,15 @@
     "category": "个股诊断",
     "description": "综合基本面、技术面与情绪的投资评分。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "investment_rating.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "fundamental_investment_rating",
@@ -161,7 +327,15 @@
     "category": "个股诊断",
     "description": "比较价值、增长、健康、历史表现和分红。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "fundamental_investment_rating.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "wall_street_consensus",
@@ -169,7 +343,15 @@
     "category": "个股诊断",
     "description": "查看分析师评级、目标价与市场共识。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "wall_street_consensus.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "average_rating_history",
@@ -177,7 +359,15 @@
     "category": "个股诊断",
     "description": "跟踪平均分析师评级的历史变化。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "average_rating_history.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "price_target_vs_actual",
@@ -185,7 +375,15 @@
     "category": "个股诊断",
     "description": "比较分析师目标价与实际股价。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "price_target_vs_actual.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "analyst_recommendations",
@@ -193,7 +391,15 @@
     "category": "个股诊断",
     "description": "观察买入、持有、卖出评级及近期调整。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "analyst_recommendations.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "tv-advanced-chart",
@@ -328,7 +534,15 @@
     "category": "财务分析",
     "description": "对比营收、利润与盈利能力的历史变化。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "income_statement.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "balance_sheet",
@@ -336,7 +550,15 @@
     "category": "财务分析",
     "description": "查看资产、负债、权益与偿债能力。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "balance_sheet.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "cash_flow",
@@ -344,7 +566,15 @@
     "category": "财务分析",
     "description": "观察经营、投资与融资现金流。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "cash_flow.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "key_financial_indicators",
@@ -352,7 +582,15 @@
     "category": "财务分析",
     "description": "查看 EPS、ROE、净利率和债务等关键指标。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "key_financial_indicators.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "revenue_sources",
@@ -360,7 +598,15 @@
     "category": "财务分析",
     "description": "拆分各产品、业务线的收入贡献。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "revenue_sources.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "revenue_geography",
@@ -368,7 +614,15 @@
     "category": "财务分析",
     "description": "比较各地理市场的收入规模与占比。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "revenue_geography.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "revenue_expenses",
@@ -376,15 +630,15 @@
     "category": "财务分析",
     "description": "用流向图拆解收入、成本、费用与利润。",
     "provider": "business",
-    "inputMode": "symbol"
-  },
-  {
-    "id": "capital_structure",
-    "title": "资本结构",
-    "category": "财务分析",
-    "description": "对比市值、负债、现金与企业价值。",
-    "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "revenue_expenses.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "revenue_estimate",
@@ -392,7 +646,15 @@
     "category": "财务分析",
     "description": "比较实际营收与市场预期，关注下次披露。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "revenue_estimate.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "eps_estimate",
@@ -400,7 +662,15 @@
     "category": "财务分析",
     "description": "比较实际 EPS 与预期，观察业绩差异。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "eps_estimate.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "trade_flow",
@@ -408,7 +678,15 @@
     "category": "资金与回报",
     "description": "观察买卖订单、资金流向及盘中变化。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "trade_flow.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "volume_profile",
@@ -416,7 +694,15 @@
     "category": "资金与回报",
     "description": "查看不同价格区间的成交量与成交结构。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "volume_profile.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "shareholder_returns",
@@ -424,7 +710,15 @@
     "category": "资金与回报",
     "description": "对比个股、行业和市场的不同周期回报。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "shareholder_returns.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "payout_ratio",
@@ -432,7 +726,15 @@
     "category": "资金与回报",
     "description": "比较净利润、现金分红与派息比例。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "payout_ratio.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "dividend_yield",
@@ -440,7 +742,15 @@
     "category": "资金与回报",
     "description": "查看股息收益率的历史变化。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "dividend_yield.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "insider_trades",
@@ -448,7 +758,15 @@
     "category": "资金与回报",
     "description": "查看内部人买卖与近期交易记录。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "insider_trades.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "institution_trades",
@@ -456,7 +774,15 @@
     "category": "资金与回报",
     "description": "观察机构买卖活动与交易明细。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "institution_trades.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "congress_trades",
@@ -464,7 +790,15 @@
     "category": "资金与回报",
     "description": "查看议员交易摘要与个股走势。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "congress_trades.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "seasonals",
@@ -472,7 +806,15 @@
     "category": "资金与回报",
     "description": "比较历年不同月份的季节性收益。",
     "provider": "business",
-    "inputMode": "symbol"
+    "inputMode": "symbol",
+    "skill": "business-chart-recall",
+    "script": "seasonals.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "defaultSymbols": [
+      "AAPL"
+    ]
   },
   {
     "id": "tv-market-overview",

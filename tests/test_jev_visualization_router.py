@@ -178,8 +178,8 @@ def test_signed_bar_semantics_upgrade_no_mark_and_compile_color_rules() -> None:
     style = __import__("json").loads(args[args.index("--style-json") + 1])
 
     assert style["markStrategy"] == "signed-direction"
-    assert style["colorRules"][0]["color"] == "#00b899"
-    assert style["colorRules"][1]["color"] == "#ff2f57"
+    assert style["colorRules"][0]["color"] == "var(--sv-price-up)"
+    assert style["colorRules"][1]["color"] == "var(--sv-price-down)"
 
 
 def test_signed_distribution_semantics_take_precedence_over_signed_bar_height() -> None:
@@ -220,7 +220,9 @@ def test_signed_distribution_semantics_take_precedence_over_signed_bar_height() 
 
     assert style["markStrategy"] == "distribution-polarity"
     assert style["distributionColor"]["source"] == "x"
-    assert style["distributionColor"]["showZeroReference"] is True
+    assert style["distributionColor"]["negative"] == "var(--sv-price-down)"
+    assert style["distributionColor"]["positive"] == "var(--sv-price-up)"
+    assert "showZeroReference" not in style["distributionColor"]
     assert "colorRules" not in style
 
 
@@ -260,7 +262,7 @@ def test_grouped_distribution_route_preserves_series_colors() -> None:
     style = __import__("json").loads(args[args.index("--style-json") + 1])
 
     assert style["markStrategy"] == "distribution-polarity"
-    assert style["distributionColor"]["showZeroReference"] is True
+    assert "showZeroReference" not in style["distributionColor"]
     assert style["distributionColor"]["preserveSeriesColors"] is True
     assert "colorRules" not in style
 

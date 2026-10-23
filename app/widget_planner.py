@@ -14,6 +14,7 @@ from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.widget_library import ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS, CURRENCY_WIDGETS, BROKER_WIDGETS, allowed_markets
+from app.widget_capabilities import generation_catalogue
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ class Parameters(BaseModel):
 class Geometry(BaseModel):
     model_config = ConfigDict(extra='forbid')
     x: int | None = Field(default=None, ge=0, le=11)
-    y: int | None = Field(default=None, ge=0, le=10000)
+    y: float | None = Field(default=None, ge=0, le=10000, allow_inf_nan=False)
     w: int | None = Field(default=None, ge=3, le=12)
     h: int | None = Field(default=None, ge=6, le=40)
 
@@ -40,7 +41,8 @@ class Card(BaseModel):
     url: str = Field(default='', max_length=1200)
     request: str = Field(default='', max_length=6000)
     x: int = 0
-    y: int = 0
+    # Auto-sized cards are positioned in fractional rows to keep pixel gaps exact.
+    y: float = Field(default=0, ge=0, le=10000, allow_inf_nan=False)
     w: int = 6
     h: int = 18
     parameters: Parameters = Field(default_factory=Parameters)
@@ -58,6 +60,7 @@ class ChatMessage(BaseModel):
 
 
 class PlanningInput(BaseModel):
+    reasoningEffort: Literal['low', 'medium', 'high', 'xhigh', 'ultra'] = 'low'
     message: str = Field(min_length=1, max_length=6000)
     history: list[ChatMessage] = Field(default_factory=list, max_length=12)
     board: Board
@@ -72,6 +75,7 @@ class Action(BaseModel):
     layout: Geometry | None = None
     parameters: Parameters | None = None
     title: str | None = Field(default=None, max_length=160)
+    request: str | None = Field(default=None, max_length=6000)
 
 
 class Plan(BaseModel):
@@ -81,7 +85,7 @@ class Plan(BaseModel):
 
 
 def catalogue():
-    return json.loads((ROOT/'app/static/widget-catalog.json').read_text())
+    return generation_catalogue()
 
 
 def enrich_card(card: Card) -> dict:
@@ -128,8 +132,12 @@ remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_bo
 布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，普通图表h=10..40，滚动行情条tv-ticker-tape默认h=6、最低6。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
 TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
-禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
-    response = client.chat.completions.create(model=os.getenv('AICHART_TASK_PLANNER_MODEL') or os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'), messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], response_format={'type':'json_object'}, max_tokens=6500)
+看板支持国内K线（ashare-kline，a-share-data/historical_kline.py，只支持单只A股日线，不支持指数或ETF）、AInvest原生行情和业务组件（business-chart-recall）、通用图表（generic-前缀）和 StreamVis/StreamViz（streamviz）。优先遵循用户明确指定的组件，不要擅自换成TradingView。原生kline、多K线、多股分时已可用；按各自资产/周期契约选择，公司财报、估值和评级只用于支持的美股公司。A股日线只用ashare-kline，interval为1d；原生kline支持1m/5m/15m/30m/1h/2h/4h/1d/1w/1M/3M，multi_intraday只支持1m，multi_kline不支持1m。国内交易日历不需要股票代码，日期范围通过request传达。
+requiresDataSource=true的组件没有内置数据源，不在手动组件库展示，但可通过对话添加。必须在add/update的request中完整保留用户要看的业务问题、数据来源（用户提供的数据也可）、指标、时间范围、筛选和变换要求，交给通用执行agent选择真实数据源、必要计算并渲染；最终只交付该组件，不把上游数据源或研究报告作为额外卡片。不能因为它没有symbols而要求用户填写股票代码；只有实际缺少必要数据定义或可用来源时才澄清，不虚构数据。用户说StreamVis或streamvis也指streamviz。不要在这里生成数据或执行取数。
+非TradingView生成动作必须带request，不能把原需求缩减为股票代码。更新时合并原卡片request和本次修改，保留未更改的数据来源、日期及计算口径。只改标题/布局时不要重新生成。禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
+    effort = context.get('reasoningEffort', 'low')
+    api_effort = {'low':'low','medium':'high','high':'high','xhigh':'high','ultra':'max'}[effort]
+    response = client.chat.completions.create(model=os.getenv('AICHART_TASK_PLANNER_MODEL') or os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'), messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(context,ensure_ascii=False)}], response_format={'type':'json_object'}, max_tokens=6500, reasoning_effort=api_effort, extra_body={'thinking':{'type':'enabled'}})
     return json.loads(response.choices[0].message.content or '{}')
 
 
@@ -156,7 +164,7 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
             params = action.parameters.model_dump(exclude_none=True) if action.parameters else {}
             if not params:
                 clean.pop('parameters', None)
-            if action.type == 'add' or params or action.componentId:
+            if action.type == 'add' or params or action.componentId or action.request:
                 if component_id not in components:
                     raise ValueError('模型指定了不可用的组件。')
                 merged = {k:v for k,v in (card.get('parameters', {}) if card else {}).items() if v is not None}
@@ -170,7 +178,7 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                     allowed = allowed_markets(widget)
                     if merged.get('market','default') not in allowed:
                         raise ValueError('组件不支持指定的市场。')
-                elif not merged.get('symbols') and not meta.get('allowEmptySymbols') and widget not in CURRENCY_WIDGETS:
+                elif not merged.get('symbols') and not meta.get('allowEmptySymbols') and meta.get('inputMode') != 'data' and widget not in CURRENCY_WIDGETS:
                     raise ValueError('该组件需要明确的标的代码。')
                 if meta.get('inputMode') == 'symbol' and len(merged.get('symbols',[]))!=1:
                     raise ValueError('该组件只能配置一个标的。')
@@ -178,9 +186,13 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                     merged.pop('interval', None)
                 if merged.get('interval'):
                     intervals = {'advanced-chart':{'D','W','M','60'},'technical-analysis':{'1D','1W','1M','1h'}}
-                    if merged['interval'] not in intervals.get(widget,set()):
+                    native_intervals = {'ashare-kline':{'1d'},'kline':{'1m','5m','15m','30m','1h','2h','4h','1d','1w','1M','3M'},'multi_kline':{'5m','15m','30m','1h','2h','4h','1d','1w','1M','3M'},'multi_intraday':{'1m'}}
+                    if merged['interval'] not in intervals.get(widget,native_intervals.get(component_id,set())):
                         raise ValueError('组件不支持指定的周期。')
                 clean.update(componentId=component_id,parameters=merged)
+                if meta.get('provider') != 'TradingView':
+                    original = card.get('request', '') if card else ''
+                    clean['request'] = action.request or (original + '\n本次要求：' + payload.message if original else payload.message)
                 if card is not None:
                     card['parameters']=merged;card['component']=component_id
             if action.layout:
@@ -190,7 +202,7 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                 x = action.layout.x if action.layout.x is not None else (card['x'] if card else 0)
                 if x+w>12:
                     raise ValueError('卡片位置和宽度超出了画布。')
-            if action.type=='update' and not any(k in clean for k in ('layout','parameters','title','componentId')):
+            if action.type=='update' and not any(k in clean for k in ('layout','parameters','title','componentId','request')):
                 raise ValueError('缺少具体的调整内容。')
         if action.type=='update' and card is not None and action.layout:
             card.update(action.layout.model_dump(exclude_none=True))
@@ -202,12 +214,13 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
             raise ValueError('首次创建看板时，请根据用户需求生成具体标题，并添加 rename_board 动作。')
     if len(cards)+sum(a['type']=='add' for a in actions)-sum(a['type']=='remove' for a in actions)>60:
         raise ValueError('看板最多支持60张卡片。')
-    return {'reply':plan.reply,'actions':actions}
+    referenced = {a.get('componentId') for a in actions}
+    return {'reply':plan.reply,'actions':actions,'components':[c for c in components.values() if c['id'] in referenced]}
 
 
 def plan_widgets(payload: PlanningInput) -> dict:
     cards = [enrich_card(c) for c in payload.board.cards]
-    context = {'message':payload.message,'history':[m.model_dump() for m in payload.history],'board':{'id':payload.board.id,'title':payload.board.title,'cards':[{k:v for k,v in c.items() if k not in {'url','request'}} for c in cards]},'selectedCardId':payload.selectedCardId,'catalogue':catalogue()}
+    context = {'message':payload.message,'reasoningEffort':payload.reasoningEffort,'history':[m.model_dump() for m in payload.history],'board':{'id':payload.board.id,'title':payload.board.title,'cards':[{k:v for k,v in c.items() if k != 'url'} for c in cards]},'selectedCardId':payload.selectedCardId,'catalogue':catalogue()}
     for attempt in range(2):
         try:
             return validate_plan(model_plan(context),payload,copy.deepcopy(cards))
@@ -226,3 +239,8 @@ def plan_endpoint(payload: PlanningInput):
         raise HTTPException(status_code=422,detail=str(error)) from error
     except Exception as error:
         raise HTTPException(status_code=502,detail='模型暂时无法处理这个指令，请稍后重试。') from error
+
+
+@router.get('/api/widgets/generation-catalog')
+def generation_catalog_endpoint():
+    return catalogue()

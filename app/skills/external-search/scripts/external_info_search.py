@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import os
 import re
@@ -30,6 +31,10 @@ class SearchProviderError(RuntimeError):
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Search Tavily, then Serper. Kimi is explicitly selectable.")
     parser.add_argument("--query", "--topic", "--keyword", dest="query", default="")
+    parser.add_argument(
+        "--queries-file",
+        help="UTF-8 JSON file containing a queries array; independent queries run concurrently.",
+    )
     parser.add_argument("--site", action="append", default=[])
     parser.add_argument("--source", choices=["auto", "tavily", "serper", "kimi", "moonshot"], default="auto")
     parser.add_argument("--limit", type=int, default=6)
@@ -232,14 +237,27 @@ def write_json(path: str, payload: dict[str, Any]) -> None:
     target.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def main() -> int:
-    args = parse_args()
-    query = " ".join(str(args.query or "").split())
-    if not query:
-        print("Missing --query.", file=sys.stderr)
-        return 2
-    limit = max(1, min(int(args.limit), 10))
-    source = "kimi" if args.source == "moonshot" else args.source
+def load_queries(args: argparse.Namespace) -> list[str]:
+    values: list[Any] = []
+    if args.queries_file:
+        path = Path(args.queries_file).expanduser().resolve()
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        values = raw.get("queries", []) if isinstance(raw, dict) else raw
+        if not isinstance(values, list):
+            raise ValueError("--queries-file must contain a JSON array or an object with a queries array")
+    elif str(args.query or "").strip():
+        values = [args.query]
+    queries: list[str] = []
+    for value in values:
+        query = " ".join(str(value or "").split())
+        if query and query not in queries:
+            queries.append(query)
+    if len(queries) > 6:
+        raise ValueError("--queries-file accepts at most 6 independent queries")
+    return queries
+
+
+def run_query(args: argparse.Namespace, query: str, limit: int, source: str) -> dict[str, Any]:
     providers = [source] if source != "auto" else ["tavily", "serper"]
     attempts: list[dict[str, str]] = []
     result: dict[str, Any] | None = None
@@ -258,9 +276,15 @@ def main() -> int:
             if source != "auto":
                 break
     if result is None:
-        print("All external search providers failed: " + json.dumps(attempts, ensure_ascii=False), file=sys.stderr)
-        return 1
+        return {
+            "ok": False,
+            "requested_query": query,
+            "query": search_query(query, args.site),
+            "fallback_attempts": attempts,
+            "error": "All external search providers failed",
+        }
     payload = {
+        "ok": True,
         "type": "external-info-search",
         "query": search_query(query, args.site),
         "requested_query": query,
@@ -273,10 +297,46 @@ def main() -> int:
         "usage": result.get("usage") or {},
         "fallback_attempts": attempts,
     }
+    record_search(payload)
+    return payload
+
+
+def main() -> int:
+    args = parse_args()
+    try:
+        queries = load_queries(args)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print(f"Invalid search queries: {safe_error(exc)}", file=sys.stderr)
+        return 2
+    if not queries:
+        print("Missing --query or --queries-file.", file=sys.stderr)
+        return 2
+    limit = max(1, min(int(args.limit), 10))
+    source = "kimi" if args.source == "moonshot" else args.source
+    if len(queries) == 1:
+        payload = run_query(args, queries[0], limit, source)
+        if not payload.get("ok"):
+            print("All external search providers failed: " + json.dumps(payload["fallback_attempts"], ensure_ascii=False), file=sys.stderr)
+            return 1
+        payload.pop("ok", None)
+    else:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(queries)) as executor:
+            futures = [executor.submit(run_query, args, query, limit, source) for query in queries]
+            results = [future.result() for future in futures]
+        successful = [item for item in results if item.get("ok")]
+        if not successful:
+            print("All external search providers failed for every query.", file=sys.stderr)
+            return 1
+        payload = {
+            "type": "external-info-search-batch",
+            "queries": queries,
+            "query_count": len(queries),
+            "success_count": len(successful),
+            "results": results,
+        }
     write_json(args.output, payload)
     if args.payload_output and Path(args.payload_output).expanduser().resolve() != Path(args.output).expanduser().resolve():
         write_json(args.payload_output, payload)
-    record_search(payload)
     print(json.dumps(payload, ensure_ascii=False))
     return 0
 

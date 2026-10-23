@@ -68,3 +68,34 @@ def test_download_endpoint_returns_attachment_and_host_theme_without_switches(mo
     assert 'Embedded reports inherit the host palette' in result.text
     assert client.get('/api/artifacts/data.csv/download').text=='a,b\n1,2'
     assert client.get('/api/artifacts/secret.env/download').status_code==400
+
+
+def test_output_workspace_file_preview_is_line_numbered_and_confined(monkeypatch, tmp_path):
+    monkeypatch.setattr(presentation, 'ROOT', tmp_path)
+    outputs = tmp_path / 'outputs'; outputs.mkdir()
+    source = outputs / 'new-report.py'; source.write_text('print("safe")\n', encoding='utf-8')
+    outside = tmp_path / 'secret.py'; outside.write_text('TOKEN = "hidden"', encoding='utf-8')
+    client = TestClient(presentation.app)
+
+    preview = client.get('/api/workspace-file/preview', params={'path':'outputs/new-report.py','change':'created'})
+    assert preview.status_code == 200
+    assert '<th>1</th>' in preview.text and 'print(&quot;safe&quot;)' in preview.text
+    assert 'class="code-row created"' not in preview.text
+    diff_preview = client.get('/api/workspace-file/preview', params={'path':'outputs/new-report.py','change':'created','mode':'diff'})
+    assert 'class="code-row created"' in diff_preview.text
+    assert client.get('/api/workspace-file/preview', params={'path':'secret.py'}).status_code == 404
+    assert client.get('/api/workspace-file/preview', params={'path':'../secret.py'}).status_code == 404
+
+
+def test_codex_file_change_metadata_preserves_runtime_creation_kind(tmp_path):
+    output = tmp_path / 'outputs' / 'created.py'; output.parent.mkdir(); output.write_text('a\nb\n', encoding='utf-8')
+    event = LocalAgentFrameworks._codex_tool_event({
+        'type':'file_change', 'id':'change-1', 'changes':[
+            {'path':str(output), 'kind':'add'},
+            {'path':str(output.parent / 'existing.json'), 'kind':'update', 'additions':3, 'deletions':1},
+        ],
+    }, 1, tmp_path)
+    created, edited = event['fileChanges']
+    assert created['kind'] == 'created' and created['added'] == 2 and created['previewable'] is True
+    assert edited['kind'] == 'edited' and edited['added'] == 3 and edited['removed'] == 1
+    assert edited['previewable'] is False

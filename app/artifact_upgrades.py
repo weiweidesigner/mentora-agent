@@ -260,6 +260,28 @@ def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
     return artifact
 
 
+def upgrade_widget_generic_chart(artifact: str) -> str:
+    """Hide a generic chart heading only when it is embedded in a Widget card."""
+    if 'data-widget-generic-title' in artifact:
+        return artifact
+    generic_markers = ('const GENERIC_SERIES_LABELS', 'class="chart-component"', 'class="waterfall-component"',
+                       'class="treemap-component"', 'class="pie-component"', 'dynamic-bubble-v',
+                       'journeySvg', 'flowchart')
+    if not any(marker in artifact for marker in generic_markers):
+        return artifact
+    chrome = '''<script data-widget-generic-title>const p=new URLSearchParams(location.search);if(p.get('canvas')==='1'||p.get('widgetTitle')==='0')document.documentElement.dataset.widgetTitle='hidden';</script>
+<style data-widget-generic-title>
+html[data-widget-title="hidden"] .chart-title,
+html[data-widget-title="hidden"] .waterfall-title,
+html[data-widget-title="hidden"] .treemap-title,
+html[data-widget-title="hidden"] .pie-title,
+html[data-widget-title="hidden"] #header>#title,
+html[data-widget-title="hidden"] body>#title{display:none!important}
+html[data-widget-title="hidden"] .chart-component>.chart-stage{height:calc(100% - 8px)!important;margin-top:0!important}
+</style>'''
+    return re.sub(r'</head\s*>', lambda _: chrome+'</head>', artifact, count=1, flags=re.I) if re.search(r'</head\s*>', artifact, re.I) else artifact
+
+
 def upgrade_widget_tradingview(artifact: str) -> str:
     """Use one dashboard card title and omit the host's extra TradingView chrome.
 

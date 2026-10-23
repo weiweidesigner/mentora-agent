@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/data-code-interpreter.git",
-  "revision": "50624ab7d13b5d759af36f2eb3fe439977e341ec",
+  "revision": "1d78bff14f7239c01a9695ac2bd1c6327707632e",
   "checkout": ".dependencies/data-code-interpreter",
   "links": {
     "app/skills/code-interpreter": "app/skills/code-interpreter"

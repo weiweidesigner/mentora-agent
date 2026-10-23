@@ -18,6 +18,23 @@
   const workspace=document.createElement('section');workspace.id='portfolioWorkspace';workspace.className='portfolioWorkspace';workspace.hidden=true;workspace.setAttribute('aria-label','持仓账户');
   workspace.innerHTML=`<div class="pfPage"><header class="pfHeader"><h1>持仓</h1></header><nav class="pfTabs" role="tablist" aria-label="持仓页面">${views.map(([id,title])=>`<button data-pf-view="${id}" role="tab" aria-selected="false">${title}</button>`).join('')}</nav><div id="pfPanel"><div class="pfEmpty">正在读取账户…</div></div></div>`;
   shell.append(workspace);
+  const sharedReasoningControl=$('reasoningStrengthControl');
+  if(sharedReasoningControl){
+    const homeReasoningAnchor=document.createComment('shared reasoning selector');
+    sharedReasoningControl.before(homeReasoningAnchor);
+    const syncReasoningComposer=()=>{
+      if(typeof syncReasoningStrengthComposer==='function'){syncReasoningStrengthComposer();return;}
+      const target=workspace.hidden?homeReasoningAnchor.parentElement:workspace.querySelector('.pfIdeaComposer');
+      if(!target||sharedReasoningControl.parentElement===target)return;
+      if(typeof setReasoningStrengthPopover==='function')setReasoningStrengthPopover(false);
+      if(workspace.hidden)homeReasoningAnchor.after(sharedReasoningControl);
+      else target.querySelector('.pfIdeaSubmit').before(sharedReasoningControl);
+      if(workspace.hidden&&typeof resizeComposerInput==='function')resizeComposerInput();
+      else if(!workspace.hidden&&typeof updateIdeaComposer==='function')updateIdeaComposer();
+    };
+    new MutationObserver(syncReasoningComposer).observe(workspace,{attributes:true,attributeFilter:['hidden']});
+    syncReasoningComposer();
+  }
   const dialog=document.createElement('dialog');dialog.id='pfDialog';dialog.className='pfDialog';dialog.setAttribute('aria-label','账户操作');document.body.append(dialog);
   const toast=document.createElement('div');toast.className='pfToast';toast.hidden=true;toast.setAttribute('role','status');document.body.append(toast);
   let data=null,flow=null,items=[],view='overview',internal=false,loading=false,busy=false,timer=null,toastTimer=null,filter='all',lastNavView='';

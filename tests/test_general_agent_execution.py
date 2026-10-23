@@ -113,3 +113,32 @@ def test_native_tool_events_display_results_only_after_the_tool_returns(tmp_path
     assert tools[1]['observation'] == 'Actual returned text'
     assert tools[1]['callId'] == 'native-call' and tools[1]['tool'] == 'bash'
     client.close()
+
+
+def test_deepseek_usage_records_reasoning_tokens_per_conversation(tmp_path, monkeypatch):
+    monkeypatch.setenv('DSH_HOME', str(tmp_path / 'dsh'))
+    captured = []
+    class Harness:
+        def __init__(self, **kwargs): pass
+        def run(self, prompt, *, session_id, on_notification):
+            on_notification(SimpleNamespace(method='session.event', payload={
+                'sessionId': session_id,
+                'event': {'type': 'assistant/chunk', 'data': {'chunk': {'type': 'usage', 'usage': {
+                    'inputTokens': 120, 'cacheReadTokens': 80, 'outputTokens': 60, 'reasoningTokens': 25,
+                }}}},
+            }))
+            return SimpleNamespace(session_id=session_id, final_response='done', events=[], notifications=[])
+        def close(self): pass
+    monkeypatch.setitem(sys.modules, 'deepseek_harness', SimpleNamespace(DeepSeekHarness=Harness))
+    monkeypatch.setattr('app.reasoning_frameworks.COSTS.record', lambda **kwargs: captured.append(kwargs))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / 'generated')
+    list(client.stream('deepseek', '这是本轮对话标题', [], session_key='conversation-1'))
+    assert len(captured) == 1
+    assert captured[0] == {
+        'provider': 'deepseek', 'service': 'Mentora 对话', 'operation': 'DeepSeek Harness 推理',
+        'model': 'deepseek-flash', 'input_tokens': 200, 'cached_input_tokens': 80,
+        'output_tokens': 60, 'reasoning_tokens': 25, 'conversation_id': 'conversation-1',
+        'conversation_title': '这是本轮对话标题',
+        'metadata': {'engineSessionId': 'conversation-1', 'reasoningEffort': 'low'},
+    }
+    client.close()

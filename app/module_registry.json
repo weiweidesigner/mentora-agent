@@ -1,5 +1,11 @@
 [
   {
+    "name": "read_market_data",
+    "script": "read_market_data.py",
+    "label": "Batch Market Data",
+    "description": "批量读取美股、ETF、指数与A股报价或已完成日线历史。适合行情、价格、走势、市场表现、投资机会、股票研究；通过 --operation quote|history、--symbols 或 --input、--asset stocks|etf|index、--output 调用。同轮缓存和并发读取，完整数据存文件。指数历史不支持，混合批次保留成功行。"
+  },
+  {
     "name": "ainvest_news_search",
     "script": "ainvest_news_search.py",
     "label": "AInvest News Search",
@@ -15,7 +21,7 @@
     "name": "external_info_search",
     "script": "external_info_search.py",
     "label": "External Info Search",
-    "description": "通用联网搜索工具。默认按 Tavily → Serper 自动回退，返回第一个成功来源的 answer、articles、source 和 fallback_attempts；Kimi 仅在用户明确要求或 Agent 明确选择时使用。适合当前事实、事件、新闻、公告及非 AInvest 来源。成功结果应在本轮复用，不要重复抓取结果页。cli_args 可使用 --query、--site、--source auto|tavily|serper|kimi、--limit、--timeout、--output。"
+    "description": "通用联网搜索工具。默认按 Tavily → Serper 自动回退，返回第一个成功来源的 answer、articles、source 和 fallback_attempts；Kimi 仅在用户明确要求或 Agent 明确选择时使用。适合当前事实、事件、新闻、公告及非 AInvest 来源。多个独立角度优先写入 JSON queries 数组并通过 --queries-file 一次并发执行。成功结果应在本轮复用，不要重复抓取结果页。cli_args 可使用 --query、--queries-file、--site、--source auto|tavily|serper|kimi、--limit、--timeout、--output。"
   },
   {
     "name": "url_content_reader",
@@ -129,7 +135,7 @@
     "name": "code_interpreter",
     "script": "code_interpreter.py",
     "label": "Code Interpreter",
-    "description": "代码解释器工具。适合用户提供原始 JSON、CSV、表格或数组数据，并要求根据语义进行清洗、聚合、分组、排序、计算同比/环比/占比/累计值/派生指标。该工具会让模型生成受限 Python transform(raw_data, question) 脚本处理原始数据，并输出可供后续组件使用的 chartPayload 和 lineChartData；它自身绝不生成或渲染可见图表。只有路由另行选择具体图表组件时，才由下游图表 SKILL 渲染。它不是实时金融数据源，不应用于替代行情、财报、新闻等取数模块。cli_args 可使用 --question、--data-json、--data、--raw-data、--payload、--chart-type、--title。"
+    "description": "代码解释器工具。适合用户提供原始 JSON、CSV、表格或数组数据，并要求根据语义进行清洗、聚合、分组、排序、计算同比/环比/占比/累计值/派生指标。主 Agent 必须在首次执行时通过 --transform-file 或 --transform-code 提供确定性的 transform(raw_data, question)，工具不调用辅助模型生成代码。它输出可供后续组件使用的 chartPayload 和 lineChartData，自身不生成或渲染可见图表。只有路由另行选择具体图表组件时，才由下游图表 SKILL 渲染。它不是实时金融数据源，不应用于替代行情、财报、新闻等取数模块。cli_args 可使用 --question、--data-json、--data、--raw-data、--payload、--transform-file、--transform-code、--chart-type、--title。"
   },
   {
     "name": "capital_structure",
@@ -329,5 +335,41 @@
     "script": "trading_view_chart.py",
     "label": "TradingViewChart",
     "description": "TradingView 官方交互式组件：advanced-chart K线、symbol-overview、mini-chart、行情条、市场概览、热力图、筛选器、技术分析、公司概况、财务数据、新闻和经济日历。用户明确要求 TradingView 或托管交互行情组件时优先使用。支持交易所前缀 symbol、theme、language；CLI: --widget --symbol/--code --interval --height --config-json --title --output --payload-output --schema --list-widgets。先读 trading-view-chart/SKILL.md 与 schema。只生成浏览器托管的嵌入图表，不返回可供推理的行情数值；数值分析继续使用原数据工具。"
+  },
+  {
+    "name": "a_share_price_snapshot",
+    "script": "price_snapshot.py",
+    "label": "A 股行情快照",
+    "description": "批量读取一个或多个 A 股实时报价，或一次读取全市场快照。适合回答 A 股当前/上午/午盘/收盘表现、上涨下跌家数、市场宽度、成交额、板块横截面和个股涨跌分布；支持 --thscodes、--limit、--offset、--output。它输出结构化 JSON，不生成图表。宽泛的 A 股表现问题可直接使用全市场横截面并披露口径；它不覆盖指数、ETF 或盘中 K 线，只有用户明确询问指数点位或指数涨跌时才需要补充对应数据源。"
+  },
+  {
+    "name": "a_share_historical_kline",
+    "script": "historical_kline.py",
+    "label": "A 股历史 K 线",
+    "description": "读取一只 A 股的历史日线 OHLCV 并生成 K 线 HTML。适合明确股票代码的历史走势、复权行情和日线技术分析；支持 --thscode、--start、--end、--adjust、--output、--payload-output、--theme、--language。"
+  },
+  {
+    "name": "a_share_adjustment_factors",
+    "script": "adjustment_factors.py",
+    "label": "A 股复权因子",
+    "description": "读取一只 A 股的复权因子与公司行动事件。适合除权除息、前后复权和价格断点核对；支持 --thscode、--from、--to、--output，输出结构化 JSON。"
+  },
+  {
+    "name": "a_share_income_statements",
+    "script": "income_statements.py",
+    "label": "A 股利润表",
+    "description": "读取一只 A 股的年度或季度利润表。适合营收、利润、财务趋势和报告期比较；支持 --thscode、--period、--limit 或 --start/--end、--output，输出结构化 JSON。"
+  },
+  {
+    "name": "a_share_trading_calendar",
+    "script": "trading_calendar.py",
+    "label": "A 股交易日历",
+    "description": "读取 A 股交易日并生成可导航的月历 HTML。适合查询开市、休市和交易日安排；支持 --output、--data-output、--theme、--language。"
+  },
+  {
+    "name": "streamviz_render",
+    "script": "render_streamviz.py",
+    "label": "StreamViz 组件渲染",
+    "description": "泛化的可视化、整体视图、数据看板或未指定图表类型的视觉表达，默认优先使用 StreamViz；只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 内置结构确实无法表达时，才选择其他渲染组件。它是唯一的通用看板展示组件，无内置数据源。必须先使用匹配的数据、搜索或计算技能，或读取用户提供的数据，将核实的结构化事实通过 --input UTF-8 JSON 文件传入，--output 输出一个 standalone HTML 组件。默认复用已验证的 dashboard/comparison/timeline/flow/brief 模板，不再加载其他展示技能或手写 HTML；仅当用户明确要求定制或内置结构无法表达时使用 html。不得编造数据，不把上游数据源交付为额外组件。"
   }
 ]

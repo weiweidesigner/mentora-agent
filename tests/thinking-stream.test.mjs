@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import {markup, bootstrap} from './helpers/thinking-stream-fixture.mjs';
+
+const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 
 function fixture(mobile = false) {
   const dom = new JSDOM(markup, {runScripts:'outside-only', pretendToBeVisual:true, url:'https://example.com'});
@@ -11,22 +14,77 @@ function fixture(mobile = false) {
 }
 const started = {callId:'shell-1', tool:'bash', phase:'started', thoughtSummary:'我会使用现有数据计算。完成后生成报告。', shellCommand:['python3', 'analysis.py']};
 
-test('live flow separates complete model summary from an expandable real action', async () => {
+test('public thought stays verbatim with its corresponding tool visible underneath', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  const thought='我先确认 A 股全市场快照的口径和当前时间，再根据实际返回的数据判断上午市场宽度与结构';
+  a.dataset.publicThoughtText=thought;
+  w.appendToolStep(a,{callId:'snapshot',tool:'screener',phase:'started',thoughtSummary:'核对执行入口的必填参数'});
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent,thought);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/screener/);
+  a.querySelector('.thinkingTrigger').click();
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  assert.match(a.querySelector('.thinkingFlow').textContent,/screener/);
+  dom.window.close();
+});
+
+test('Deal tool names never replace the latest public streaming summary', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  const text='根据已取得的行情筛选符合条件的候选。';
+  w.appendStep(a,text,'','loading','public-progress');
+  w.appendToolStep(a,{callId:'deal-screen',tool:'screener',phase:'started'});
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent,text);
+  w.appendToolStep(a,{callId:'deal-screen',tool:'screener',phase:'completed',thoughtSummary:'screener'});
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent,text);
+  dom.window.close();
+});
+
+test('expanded completed thinking control points its chevron down', () => {
+  assert.match(styles,/\.thinkingTrigger\[aria-expanded="true"\] \.thinkingChevron\s*\{[^}]*transform:\s*rotate\(45deg\)/);
+  assert.match(styles,/\.thinkingTrigger\.is-thinking:hover \.thinkingChevron,[^}]*\.thinkingTrigger\.is-thinking\[aria-expanded="true"\] \.thinkingChevron\s*\{[^}]*opacity:\s*1/);
+});
+
+test('live progress shows elapsed time above the clickable flowing summary', () => {
+  const dom = fixture(), a = dom.window.article;
+  assert.match(a.querySelector('.thinkingElapsedLive').textContent, /^\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2$/);
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent, 'thinking');
+  dom.window.finish();
+  assert.equal(a.querySelector('.thinkingElapsedLive').hidden, true);
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent, '\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2');
+  dom.window.close();
+});
+
+test('inline expanded reasoning hides raw tool rows while retaining narrative summaries', () => {
+  assert.match(styles, /\.thinkingFlow\.reasoningOnly[^{}]*\.activityToolRow[^{}]*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(styles, /\.thinkingTrigger\.is-thinking \.thinkingChevron\s*\{[^}]*display:\s*none/);
+});
+
+test('created file dot receives optical baseline correction beside diff stats', () => {
+  assert.match(styles, /\.activityFileCreatedDot\s*\{[^}]*transform:\s*translateY\(-1px\)/);
+});
+
+test('live flow uses the latest model summary to disclose all reasoning inline', async () => {
   const dom = fixture(), w = dom.window, a = w.article;
   w.appendToolStep(a, started);
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent, '用时 4分钟 29秒');
+  assert.equal(a.querySelector('.thinkingSummaryText').textContent, started.thoughtSummary);
   assert.equal(a.querySelector('.thinkingSteps').hidden, true);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'false');
+  a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
-  assert.equal(a.querySelector('.activityNarrative p').textContent, started.thoughtSummary);
-  assert.match(a.querySelector('.activityActionText').textContent, /^正在运行 python3 analysis.py$/);
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'true');
+  assert.equal(a.querySelector('.activityReasoning'), null);
+  assert.match(a.querySelector('.thinkingFlow').textContent, /我会使用现有数据计算/);
+  assert.match(a.querySelector('.activityTool .activityActionText').textContent, /^正在运行 python3 analysis.py$/);
   assert.ok(a.querySelector('.activityActionIcon svg'));
-  assert.equal(a.querySelector('details').open, false);
+  assert.equal(a.querySelector('.thinkingFlow details.activityTool').open, false);
   assert.match(a.querySelector('details').textContent, /python3.*analysis.py/s);
-  a.querySelector('details').open = true;
+  a.querySelector('.activityTool').open = true;
   await new Promise(resolve => w.setTimeout(resolve, 0));
   w.appendToolStep(a, {...started, phase:'completed', observation:'<img src=x onerror=alert(1)>'});
   assert.equal(a.querySelectorAll('.thinkingSteps .is-tool-step').length, 1);
-  assert.equal(a.querySelector('details').open, true);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.activityTool').open, true);
   assert.equal(a.querySelector('img'), null);
   assert.match(a.querySelector('.toolStepOutputBlock').textContent, /<img/);
   dom.window.close();
@@ -40,27 +98,93 @@ test('independent active tools do not complete each other and final flow collaps
   a.querySelector('details').open = true;
   w.finish();
   assert.equal(a.querySelector('.thinkingSteps').hidden, true);
-  assert.equal(a.querySelectorAll('details[open], li.is-loading').length, 0);
+  assert.equal(a.querySelectorAll('.thinkingSteps details[open], li.is-loading').length, 0);
   a.querySelector('.thinkingTrigger').click();
   assert.equal(w.document.querySelector('.shell.activity-open'), null);
   assert.equal(w.document.querySelector('#activityDrawer').getAttribute('aria-hidden'), 'true');
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'true');
   assert.equal(a.querySelectorAll('.thinkingFlow details.activityTool').length, 2);
   assert.equal(a.querySelectorAll('.thinkingFlow details.activityGroup').length, 1);
   a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, true);
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'false');
   dom.window.close();
 });
 
-test('live header collapses inline without opening a drawer, then expands again', () => {
+test('live dynamic text reveals progress only after the user expands it', () => {
   const dom = fixture(), w = dom.window, a = w.article;
-  a.querySelector('.thinkingTrigger').click();
-  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
-  assert.equal(w.document.querySelector('.shell.activity-open'), null);
+  const trigger = a.querySelector('.thinkingTrigger');
+  a.dataset.thinkingCollapsed = 'true';
   w.updateThinkingSummary(a, '', {live:true});
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
+  assert.equal(trigger.disabled, false);
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false');
+  trigger.click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(trigger.getAttribute('aria-expanded'), 'true');
+  assert.equal(w.document.querySelector('.shell.activity-open'), null);
+  w.appendToolStep(a, {...started, phase:'completed', observation:'computed'});
+  assert.equal(a.querySelector('.thinkingFlow .activityNarrative').textContent, started.thoughtSummary);
+  assert.equal(a.querySelector('.thinkingFlow .activityTool').open, false);
+  assert.equal(a.querySelector('.thinkingFlow .activityLiveThinking').textContent, '正在思考');
+  w.appendToolStep(a, {callId:'progress-read', tool:'read', phase:'completed', params:['{"file_path":"source.json"}'], observation:'source'});
+  assert.equal(a.querySelector('.thinkingFlow .activityGroup').open, false);
+  assert.equal(a.querySelectorAll('.thinkingFlow details[open]').length, 0);
+  w.appendToolStep(a, {...started, callId:'next-shell', thoughtSummary:'数据已取得，接下来验证计算。'});
+  assert.equal(a.querySelectorAll('.thinkingFlow .activityNarrative').length, 2);
+  assert.equal(a.querySelectorAll('.thinkingFlow .activityLiveThinking').length, 0);
+  w.finish();
+  assert.equal(trigger.disabled, false);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
+  trigger.click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.thinkingFlow .activityLiveThinking'), null);
+  assert.equal(a.querySelectorAll('.thinkingFlow details[open]').length, 0);
+  dom.window.close();
+});
+
+test('mobile active progress stays inline and file differences open only on request', () => {
+  const dom = fixture(true), w = dom.window, a = w.article;
+  w.appendToolStep(a, {callId:'progress-file', tool:'file_change', phase:'completed', fileChanges:[
+    {name:'result.json', relativePath:'outputs/result.json', path:'/srv/outputs/result.json', kind:'created', added:1, removed:0, diff:'@@ -0,0 +1 @@\n+{}', previewable:true}
+  ]});
   assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.thinkingFlow .activityFileInline').hidden, true);
+  assert.equal(a.querySelector('.thinkingTrigger').disabled, false);
+  assert.equal(w.document.querySelector('#activityDrawer').getAttribute('aria-hidden'), 'true');
+  w.appendStep(a, '报告已经生成，正在核对。', '', 'loading', 'progress-next');
+  assert.equal(a.querySelector('.thinkingFlow .activityFileInline').hidden, true);
+  assert.equal(a.querySelectorAll('.thinkingFlow .activityLiveThinking').length, 0);
+  dom.window.close();
+});
+
+test('thinking alternates with real model requests, narrative summaries and tool execution', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  const thinking=()=>a.querySelector('.thinkingFlow .activityLiveThinking');
+  w.setModelActivity(a,'started');
+  assert.ok(thinking());
+  w.setModelActivity(a,'completed');
+  assert.equal(thinking(),null);
+  w.appendStep(a,'先核对原始来源，再决定下一步。','','loading','summary-1');
+  assert.equal(thinking(),null);
+  w.appendToolStep(a,{...started,thoughtSummary:''});
+  assert.equal(thinking(),null);
+  w.appendToolStep(a,{...started,thoughtSummary:'',phase:'completed',observation:'data returned'});
+  assert.equal(thinking(),null);
+  w.setModelActivity(a,'started');
+  assert.ok(thinking());
+  w.appendStep(a,'来源已核对，正在比较返回的证据。','','loading','summary-2');
+  assert.equal(thinking(),null);
+  assert.equal(a.querySelectorAll('.thinkingFlow .activityNarrative').length,2);
+  w.setModelActivity(a,'started');
+  assert.ok(thinking());
+  w.finish();
+  assert.equal(thinking(),null);
+  w.setModelActivity(a,'started');
+  assert.equal(thinking(),null);
   dom.window.close();
 });
 
@@ -128,6 +252,17 @@ test('live canned summaries are omitted while model wording stays unchanged', ()
   dom.window.close();
 });
 
+test('generic skill actions keep one verb and use the plug icon', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {callId:'skill-1', tool:'skill', phase:'completed'});
+  const action = a.querySelector('.thinkingFlow .activityActionText');
+  assert.equal(action.textContent, '已调用 skill');
+  const icon = a.querySelector('.thinkingFlow .activityActionIcon svg');
+  assert.equal(icon.getAttribute('viewBox'), '0 0 1024 1024');
+  assert.equal(icon.getAttribute('fill'), 'currentColor');
+  dom.window.close();
+});
+
 test('progress and tool summaries render once despite whitespace or terminal punctuation', () => {
   const dom = fixture(), w = dom.window, a = w.article;
   w.appendStep(a, '全市场 5580 只个股已取到', '', 'loading', 'progress-1');
@@ -156,6 +291,132 @@ test('adjacent calls form one truthful group between model paragraphs', async ()
   dom.window.close();
 });
 
+test('file changes distinguish created from edited files and open each preview independently', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {callId:'files-1', tool:'file_change', phase:'completed', fileChanges:[
+    {name:'new-report.py', relativePath:'outputs/new-report.py', path:'/srv/app/outputs/new-report.py', kind:'created', added:2, removed:0, diff:'--- /dev/null\n+++ new-report.py\n@@ -0,0 +1,2 @@\n+one\n+two', previewable:true},
+    {name:'existing.json', relativePath:'outputs/existing.json', path:'/srv/app/outputs/existing.json', kind:'edited', added:1, removed:1, diff:'--- existing.json\n+++ existing.json\n@@ -1 +1 @@\n-old\n+new', previewable:true},
+  ]});
+  const rows = a.querySelectorAll('.thinkingFlow .activityFileChange');
+  assert.equal(rows.length, 2);
+  assert.match(rows[0].textContent, /已创建.*new-report\.py.*\+2.*-0/s);
+  assert.match(rows[1].textContent, /已编辑.*existing\.json.*\+1.*-1/s);
+  assert.equal(rows[1].querySelector('.activityFileChangeName').dataset.tooltip, '/srv/app/outputs/existing.json');
+  rows[1].querySelector('.activityFileChangeName').click();
+  assert.equal(w.lastOpenedFile.file.name, 'existing.json');
+  assert.match(w.lastOpenedFile.file.open, /path=outputs%2Fexisting\.json/);
+  assert.equal(w.lastOpenedFile.file.workspaceFile, true);
+  rows[1].querySelector('.activityFileChangeExpand').click();
+  assert.equal(rows[1].nextElementSibling.hidden, false);
+  assert.equal(rows[1].nextElementSibling.querySelectorAll('.activityFileDiffTable .is-added').length, 1);
+  assert.equal(rows[1].nextElementSibling.querySelectorAll('.activityFileDiffTable .is-removed').length, 1);
+  dom.window.close();
+});
+
+test('deleted file rows do not expose the created-or-edited expansion arrow', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {callId:'deleted-1', tool:'file_change', phase:'completed', fileChanges:[
+    {name:'old.json', relativePath:'outputs/old.json', path:'/srv/app/outputs/old.json', kind:'deleted', added:0, removed:8, diff:'--- old.json\n+++ /dev/null\n@@ -1 +0,0 @@\n-old', previewable:false},
+  ]});
+  assert.equal(a.querySelector('.activityFileChangeExpand'), null);
+  dom.window.close();
+});
+
+test('legacy DeepSeek write results recover the file row without exposing content arguments', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  const params = ['{"content":"def transform():\\n    return 1"'];
+  w.appendToolStep(a, {callId:'write-old', tool:'write', phase:'completed', params,
+    observation:'<path>/home/ubuntu/veya-agent/outputs/transform.py</path>\n<type>file</type>\n<content>\nCreated file\n</content>'});
+  const row = a.querySelector('.thinkingFlow .activityFileChange');
+  assert.ok(row);
+  assert.match(row.textContent, /已创建.*transform\.py/s);
+  assert.equal(row.querySelector('.activityFileChangeStats'), null);
+  assert.doesNotMatch(a.querySelector('.thinkingFlow').textContent, /def transform|"content"/);
+  row.querySelector('.activityFileChangeName').click();
+  assert.match(w.lastOpenedFile.file.open, /path=outputs%2Ftransform\.py/);
+  dom.window.close();
+});
+
+test('legacy completed edit actions migrate into clickable file previews', () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  w.appendToolStep(a, {callId:'edit-old', tool:'edit', phase:'completed', params:['{"file_path":"/home/ubuntu/veya-agent/outputs/transform_a_share_review_v2.py"}'], observation:'updated'});
+  const row = a.querySelector('.thinkingFlow .activityFileChange');
+  assert.ok(row);
+  assert.match(row.textContent,/已编辑.*transform_a_share_review_v2\.py/s);
+  row.querySelector('.activityFileChangeName').click();
+  assert.equal(w.lastOpenedFile.file.name,'transform_a_share_review_v2.py');
+  assert.match(w.lastOpenedFile.file.open,/path=outputs%2Ftransform_a_share_review_v2\.py/);
+  dom.window.close();
+});
+
+test('search activities use the supplied magnifier icon', () => {
+  const dom = fixture(), w = dom.window;
+  const holder = w.document.createElement('div'); holder.innerHTML = w.activityActionIcon('external-search');
+  assert.equal(holder.querySelector('svg').getAttribute('viewBox'), '0 0 1024 1024');
+  assert.match(holder.querySelector('path').getAttribute('d'), /^M446\.112323/);
+  const a = w.article;
+  w.appendToolStep(a, {callId:'glob-1', tool:'glob', phase:'completed', params:['{"pattern":"*.py"}'], observation:'results'});
+  assert.match(a.querySelector('.thinkingFlow .activityActionIcon path').getAttribute('d'), /^M446\.112323/);
+  dom.window.close();
+});
+
+test('Deal skills retain their own icons and mixed groups show their actual operation', () => {
+  const dom=fixture(), w=dom.window, a=w.article;
+  w.appendToolStep(a,{callId:'account',skillId:'portfolio-account',tool:'portfolio-account',phase:'completed',input:{operation:'refresh'},output:{cash:100}});
+  w.appendToolStep(a,{callId:'search',skillId:'external-search',tool:'external-search',phase:'completed',input:{query:'facts'},output:{answer:'facts'}});
+  const group=a.querySelector('.activityGroupAction .activityActionIcon svg');
+  assert.equal(group.getAttribute('viewBox'),'0 0 1024 1024');
+  assert.match(group.querySelector('path').getAttribute('d'),/^M446\.112323/);
+  const rows=a.querySelectorAll('.activityGroupItems .activityActionIcon path');
+  assert.match(rows[0].getAttribute('d'),/^M639\.75/);
+  assert.match(rows[1].getAttribute('d'),/^M446\.112323/);
+  dom.window.close();
+});
+
+test('the latest live summary expands and collapses the complete reasoning history', async () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  w.appendToolStep(a,{...started,phase:'completed',observation:'first result'});
+  w.appendStep(a,'现在开始核验第二阶段。','','loading','stage-2');
+  const trigger=a.querySelector('.thinkingTrigger');
+  assert.equal(trigger.querySelector('.thinkingSummaryText').textContent,'现在开始核验第二阶段。');
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
+  trigger.click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  assert.match(a.querySelector('.thinkingFlow').textContent,/我会使用现有数据计算|first result/);
+  w.appendStep(a,'现在开始第三阶段。','','loading','stage-3');
+  assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/第三阶段/);
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  assert.match(a.querySelector('.thinkingFlow').textContent,/第二阶段/);
+  trigger.click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
+  w.finish();trigger.click();
+  assert.equal(a.querySelector('.thinkingFlow .activityReasoning'),null);
+  assert.equal(a.querySelectorAll('.thinkingFlow .activityNarrative').length,3);
+  dom.window.close();
+});
+
+test('an earlier parallel call stays visible while the newest stage advances', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  w.appendToolStep(a,{...started,callId:'parallel-earlier',thoughtSummary:'先启动长任务。'});
+  w.appendStep(a,'同时核对另一项证据。','','loading','parallel-next');
+  a.querySelector('.thinkingTrigger').click();
+  assert.match(a.querySelector('.thinkingFlow').textContent,/正在运行 python3 analysis.py/);
+  w.appendToolStep(a,{...started,callId:'parallel-earlier',thoughtSummary:'先启动长任务。',phase:'completed',observation:'finished'});
+  assert.match(a.querySelector('.thinkingFlow').textContent,/已运行 python3 analysis.py/);
+  assert.equal(a.querySelector('.activityReasoning'),null);
+  dom.window.close();
+});
+
+test('mixed command and file operations use read and edit icons', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  w.appendToolStep(a,{...started,thoughtSummary:'',phase:'completed',observation:'done'});
+  w.appendToolStep(a,{callId:'mixed-read',tool:'read',phase:'completed',params:['{"file_path":"source.py"}'],observation:'read'});
+  assert.match(a.querySelector('.activityGroupAction .activityActionIcon path').getAttribute('d'),/^M12 5/);
+  w.appendToolStep(a,{callId:'mixed-edit',tool:'edit',phase:'completed',params:['{"file_path":"source.py"}'],observation:'updated'});
+  assert.match(a.querySelector('.activityGroupAction .activityActionIcon path').getAttribute('d'),/^m16 3/);
+  dom.window.close();
+});
+
 test('native bash JSON becomes one Shell panel with plain command, output and real status', () => {
   const dom = fixture(), w = dom.window, a = w.article;
   const call = {callId:'native', tool:'bash', phase:'started', params:[JSON.stringify({command:"date -d @1792666513 '+%Y-%m-%d %H:%M:%S %Z'"})]};
@@ -174,11 +435,51 @@ test('native bash JSON becomes one Shell panel with plain command, output and re
   dom.window.close();
 });
 
-test('only the current connection state is visible and it disappears when research starts', () => {
+test('Shell commands expand independently of results and copy the full raw command in both views', async () => {
+  const dom = fixture(), w = dom.window, a = w.article;
+  const command = "python3 analysis.py\n  --input outputs/source.json\n  --output outputs/result.json";
+  let copied = "";
+  Object.defineProperty(w.navigator, 'clipboard', {value: {writeText: async text => { copied = text; }}});
+  w.appendToolStep(a, {callId:'long-shell', tool:'bash', phase:'completed', params:[JSON.stringify({command})], observation:'Analysis complete'});
+  let panel = a.querySelector('.thinkingFlow .activityCommandPanel');
+  let disclosure = panel.querySelector('.activityShellCommand');
+  assert.equal(panel.closest('details.activityTool').open, false);
+  panel.closest('details.activityTool').querySelector('summary').click();
+  assert.equal(disclosure.open, false);
+  assert.equal(disclosure.querySelector('code').textContent, '$ ' + command);
+  assert.equal(panel.querySelector('.toolStepOutputBlock').closest('.activityShellCommand'), null);
+  disclosure.querySelector('summary').click();
+  await new Promise(resolve => w.setTimeout(resolve, 0));
+  assert.equal(disclosure.open, true);
+  w.appendStep(a, '正在核对报告', '', 'loading', 'new-narrative');
+  panel = a.querySelector('.thinkingFlow .activityCommandPanel');
+  assert.equal(panel.querySelector('.activityShellCommand').open, true);
+  panel.querySelector('.activityCommandCopy').click();
+  await new Promise(resolve => w.setTimeout(resolve, 0));
+  assert.equal(copied, command);
+  assert.equal(panel.querySelector('.activityCommandCopy').getAttribute('aria-label'), '已复制');
+  w.finish();
+  Object.defineProperty(w, 'innerWidth', {value:390});
+  w.openActivityDrawer(a);
+  copied = '';
+  const mobilePanel = w.document.querySelector('#activityBody .activityCommandPanel');
+  mobilePanel.closest('details.activityTool').querySelector('summary').click();
+  assert.equal(mobilePanel.querySelector('.activityShellCommand').open, false);
+  mobilePanel.querySelector('.activityShellCommandToggle').click();
+  assert.equal(mobilePanel.querySelector('.activityShellCommand').open, true);
+  mobilePanel.querySelector('.activityCommandCopy').click();
+  await new Promise(resolve => w.setTimeout(resolve, 0));
+  assert.equal(copied, command);
+  dom.window.close();
+});
+
+test('connection states stay hidden before and after research starts', () => {
   const dom = fixture(), w = dom.window, a = w.article;
   w.appendStep(a, '正在连接Agent', '', 'loading', 'connect-agent');
   w.appendStep(a, '连接模型', '', 'loading', 'connect-model');
-  assert.equal(a.querySelector('.thinkingFlow').textContent, '连接模型');
+  assert.equal(a.querySelector('.thinkingSteps').children.length, 0);
+  assert.doesNotMatch(a.querySelector('.thinkingFlow').textContent, /正在连接Agent|连接模型/);
+  assert.match(a.querySelector('.thinkingFlow').textContent, /正在思考/);
   w.appendToolStep(a, started);
   assert.doesNotMatch(a.querySelector('.thinkingFlow').textContent, /正在连接Agent|连接模型/);
   w.finish(); a.querySelector('.thinkingTrigger').click();
@@ -190,9 +491,9 @@ test('clock ticks preserve the current disclosure DOM and long commands remain a
   const dom = fixture(), w = dom.window, a = w.article;
   const command = 'python3 analysis.py --input /outputs/' + 'long-path/'.repeat(40) + 'source.json';
   w.appendToolStep(a, {...started, shellCommand:[], params:[JSON.stringify({command})]});
-  const details = a.querySelector('.thinkingFlow details'); details.open = true;
+  const details = a.querySelector('.thinkingFlow .activityTool'); details.open = true;
   w.updateThinkingSummary(a, '', {live:true, clockOnly:true});
-  assert.equal(a.querySelector('.thinkingFlow details'), details);
+  assert.equal(a.querySelector('.thinkingFlow .activityTool'), details);
   assert.equal(details.open, true);
   assert.equal(details.querySelector('summary').title, command);
   assert.equal(details.querySelector('.toolStepInput').textContent, '$ ' + command);

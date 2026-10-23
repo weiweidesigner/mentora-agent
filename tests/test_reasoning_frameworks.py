@@ -10,6 +10,13 @@ from app.reasoning_frameworks import LocalAgentFrameworks, ReasoningFrameworkErr
 from app.jev_visualization_router import JevVisualizationDecision
 
 
+def test_deepseek_native_web_tools_are_disabled_by_environment_patch() -> None:
+    patch = (Path(__file__).parents[1] / "app" / "dsh_tool_environment.cordis.yml").read_text(encoding="utf-8")
+    assert "- id: tool-web" in patch
+    assert "search: false" in patch
+    assert "fetch: false" in patch
+
+
 def test_generated_html_tool_output_becomes_an_immediate_module(tmp_path: Path) -> None:
     generated = tmp_path / "outputs" / "generated"
     generated.mkdir(parents=True)
@@ -579,7 +586,8 @@ def test_framework_prompt_does_not_change_policy_for_expanded_scope(tmp_path: Pa
     assert "本次为扩展任务" not in prompt
     assert "本次为默认轻量任务" not in prompt
     assert "按用户问题的实际范围选择" in prompt
-    assert "选择 streamviz 作为“展示阶段” Skill" in prompt
+    assert "默认优先选择 streamviz 作为“展示阶段” Skill" in prompt
+    assert "不要为了比较候选而读取 generic-chart" in prompt
     assert "不能单独充当数据源、搜索或分析器" in prompt
 
 
@@ -637,6 +645,56 @@ def test_codex_tool_event_normalizes_command() -> None:
     assert event["index"] == 2
     assert event["code"] == "CODEX"
     assert event["params"] == ["python chart.py"]
+    assert event["thoughtSummary"] == ""
+
+
+def test_codex_tool_event_does_not_synthesize_progress_from_commands() -> None:
+    analyze = LocalAgentFrameworks._codex_tool_event(
+        {"type": "command_execution", "command": "python3 app/skill_runner.py execute --script code_interpreter.py"},
+        1,
+    )
+    report = LocalAgentFrameworks._codex_tool_event(
+        {"type": "command_execution", "command": "python3 app/skill_runner.py execute --script render_streamviz.py"},
+        2,
+    )
+
+    assert analyze["thoughtSummary"] == ""
+    assert report["thoughtSummary"] == ""
+
+
+def test_prompt_forbids_ad_hoc_network_probing(tmp_path: Path) -> None:
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / "generated")
+    prompt = client._prompt("codex", "分析长期市场数据", [], [])
+
+    assert "所有网络发现、网页读取和远程数据请求必须通过匹配的项目 Skill 执行" in prompt
+    assert "禁止编写临时 Python/Node 网络脚本" in prompt
+    assert "浏览器验证/CAPTCHA 页面" in prompt
+    assert "dataHandoffs" in prompt
+    assert "禁止再用 Python、cat、jq、sed 等重新展开完整文件" in prompt
+    assert "证据即视为充分：立即进入报告生成或最终回答" in prompt
+
+
+def test_codex_tool_event_compacts_network_failure_pages() -> None:
+    blocked = LocalAgentFrameworks._codex_tool_event(
+        {
+            "type": "command_execution",
+            "aggregated_output": (
+                '200 text/html <!DOCTYPE html><noscript>This site requires JavaScript '
+                'to verify your browser.</noscript>'
+            ),
+        },
+        1,
+    )
+    missing = LocalAgentFrameworks._codex_tool_event(
+        {
+            "type": "command_execution",
+            "aggregated_output": "^dji HTTPError HTTP Error 404: Not Found\n^spx HTTPError HTTP Error 404: Not Found",
+        },
+        2,
+    )
+
+    assert blocked["observation"] == "目标网站返回浏览器验证或反爬页面（可能是 HTTP 200），未获得可用数据。"
+    assert missing["observation"] == "数据源返回 HTTP 404；共 2 个请求失败，未获得可用数据。"
 
 
 def test_save_images_rejects_invalid_data(tmp_path: Path) -> None:
@@ -670,6 +728,8 @@ def test_codex_adapter_normalizes_jsonl_stream(tmp_path: Path, monkeypatch: pyte
     )
     fake_codex.chmod(0o755)
     monkeypatch.setenv("AICHART_CODEX_BIN", str(fake_codex))
+    monkeypatch.setenv("AICHART_CODEX_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-deepseek-key")
     client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
 
     events = list(client.stream("codex", "测试", [], session_key="client-1"))
@@ -740,6 +800,140 @@ def test_deepseek_sdk_streams_events_and_returns_real_session_id(
     assert created_options[0]["runtime_cwd"] == str(dsh_home / "runtime")
     assert created_options[0]["reasoning_effort"] == "high"
     assert created_options[0]["max_tokens"] == 32768
+
+
+def test_deepseek_write_events_hide_content_and_emit_created_file_metadata(tmp_path, monkeypatch):
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    target = tmp_path / "outputs" / "transform.py"
+
+    class FakeHarness:
+        def __init__(self, **_options):
+            pass
+
+        def run(self, _prompt, *, session_id, on_notification):
+            arguments = json.dumps({"content":"line one\nline two\n", "file_path":str(target)})
+            on_notification(SimpleNamespace(method="session.event", payload={
+                "sessionId":session_id, "event":{"type":"tool/call", "data":{
+                    "callId":"write-1", "name":"write", "arguments":arguments,
+                }},
+            }))
+            target.write_text("line one\nline two\n", encoding="utf-8")
+            on_notification(SimpleNamespace(method="session.event", payload={
+                "sessionId":session_id, "event":{"type":"tool/result", "data":{
+                    "message":{"source":{"callId":"write-1"}, "content":[{"type":"text", "text":f"<path>{target}</path>\n<type>file</type>\n<content>\nCreated file\n</content>"}]},
+                }},
+            }))
+            return SimpleNamespace(session_id=session_id, final_response="完成", events=[], notifications=[])
+
+        def close(self):
+            pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=FakeHarness))
+    monkeypatch.setenv("DSH_HOME", str(tmp_path / "dsh"))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+    events = list(client.stream("deepseek", "创建文件", [], session_key="write-session"))
+    steps = [data for name, data in events if name == "tool_step"]
+
+    assert len(steps) == 2
+    assert 'content' not in steps[0]['params'][0]
+    assert json.loads(steps[0]['params'][0]) == {'file_path':str(target)}
+    assert steps[1]['fileChanges'][0] == {
+        'path':str(target), 'relativePath':'outputs/transform.py', 'name':'transform.py',
+        'kind':'created', 'added':2, 'removed':0,
+        'diff':'--- transform.py\n+++ transform.py\n@@ -0,0 +1,2 @@\n+line one\n+line two',
+        'previewable':True,
+    }
+
+
+def test_deepseek_uses_fresh_engine_session_after_restart_when_v4_session_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    dsh_home = tmp_path / "shared-dsh"
+    persisted = dsh_home / "sessions" / "project" / "session-existing"
+    persisted.mkdir(parents=True)
+    (persisted / "session.v4.jsonl.zstd").write_bytes(b"persisted")
+    monkeypatch.setenv("DSH_HOME", str(dsh_home))
+    used_sessions: list[str] = []
+
+    class FakeHarness:
+        def __init__(self, **_options):
+            pass
+
+        def run(self, _prompt, *, session_id, on_notification):
+            used_sessions.append(session_id)
+            return SimpleNamespace(session_id=session_id, final_response="完成", events=[], notifications=[])
+
+        def close(self):
+            pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=FakeHarness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+
+    events = list(client.stream(
+        "deepseek", "继续分析", [], session_key="session-existing", engine_session_id="session-existing"
+    ))
+
+    final = next(data for name, data in events if name == "final")
+    assert used_sessions and used_sessions[0].startswith("session-")
+    assert used_sessions[0] != "session-existing"
+    assert final["engineSessionId"] == used_sessions[0]
+
+
+def test_deepseek_continues_when_explicit_html_deliverable_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    monkeypatch.setenv("DSH_HOME", str(tmp_path / "dsh"))
+    calls: list[str] = []
+
+    class FakeHarness:
+        def __init__(self, **_options):
+            pass
+
+        def run(self, prompt, *, session_id, on_notification):
+            calls.append(prompt)
+            if len(calls) == 1:
+                return SimpleNamespace(
+                    session_id=session_id,
+                    final_response="数据校准已完成，页面将展示预测分布。",
+                    events=[], notifications=[],
+                )
+            output = generated / "deepseek-nvda-forecast.html"
+            output.write_text("<!doctype html><main>完成</main>", encoding="utf-8")
+            return SimpleNamespace(
+                session_id=session_id,
+                final_response=(
+                    f"[[AIME_CHART:{output}]]\n[[AIME_FILE:{output}]]\n"
+                    "NVDA 概率预测页面已生成。\n"
+                    "[[AIME_SKILLS:streamviz,custom-html-widget]]"
+                ),
+                events=[], notifications=[],
+            )
+
+        def close(self):
+            pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=FakeHarness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+
+    events = list(client.stream(
+        "deepseek",
+        "生成一个完整、可交互、可独立运行的 HTML 股价预测页面",
+        [],
+        session_key="html-repair",
+        reasoning_effort="low",
+    ))
+
+    assert len(calls) == 2
+    assert "交付完整性修复" in calls[1]
+    assert any(data.get("phase") == "html-deliverable-repair" for name, data in events if name == "status")
+    final = next(data for name, data in events if name == "final")
+    assert final["reportUrl"] == "/generated/deepseek-nvda-forecast.html"
+    assert final["fileArtifacts"]
 
 
 def test_deepseek_intermediate_turn_end_does_not_stop_the_run(
@@ -929,7 +1123,7 @@ def test_progress_never_invokes_an_auxiliary_model(tmp_path, monkeypatch):
     assert client._jev_tool_thought_summary('bash', 'invalid transport') == ''
 
 
-def test_low_effort_loads_runtime_guard_and_effort_changes_use_separate_harnesses(tmp_path, monkeypatch):
+def test_all_efforts_load_runtime_guard_and_effort_changes_use_separate_harnesses(tmp_path, monkeypatch):
     generated = tmp_path / 'outputs' / 'generated'
     generated.mkdir(parents=True)
     monkeypatch.setenv('DSH_HOME', str(tmp_path / 'dsh'))
@@ -948,9 +1142,10 @@ def test_low_effort_loads_runtime_guard_and_effort_changes_use_separate_harnesse
     assert len(options) == 2
     assert options[0]['reasoning_effort'] == 'high'
     environment_patch = str(tmp_path / 'app' / 'dsh_tool_environment.cordis.yml')
-    assert options[0]['patches'] == (environment_patch,)
+    guard_patch = str(tmp_path / 'app' / 'dsh_lightweight.cordis.yml')
+    assert options[0]['patches'] == (environment_patch, guard_patch)
     assert options[1]['reasoning_effort'] == 'low'
-    assert options[1]['patches'] == (environment_patch, str(tmp_path / 'app' / 'dsh_lightweight.cordis.yml'))
+    assert options[1]['patches'] == (environment_patch, guard_patch)
     assert options[1]['env']['MENTORA_PROJECT_ROOT'] == str(tmp_path)
     client.close()
 
@@ -999,3 +1194,47 @@ def test_deepseek_flash_maps_ui_effort_to_supported_harness_effort(
 
     assert options[0]["reasoning_effort"] == harness_effort
     client.close()
+
+
+def test_low_effort_prompt_uses_shortest_sufficient_evidence_protocol(tmp_path, monkeypatch):
+    generated = tmp_path / "outputs" / "generated"
+    generated.mkdir(parents=True)
+    monkeypatch.setenv("DSH_HOME", str(tmp_path / "dsh"))
+    prompts = []
+
+    class Harness:
+        def __init__(self, **_kwargs):
+            pass
+
+        def run(self, prompt, *, session_id, on_notification):
+            prompts.append(prompt)
+            return SimpleNamespace(session_id=session_id, final_response="完成", events=[], notifications=[])
+
+        def close(self):
+            pass
+
+    monkeypatch.setitem(sys.modules, "deepseek_harness", SimpleNamespace(DeepSeekHarness=Harness))
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+    list(client.stream("deepseek", "分析市场", [], session_key="low-fast", reasoning_effort="low"))
+    list(client.stream("deepseek", "分析市场", [], session_key="high-full", reasoning_effort="high"))
+
+    assert "轻度档执行约束" in prompts[0]
+    assert "最短的充分证据路径" in prompts[0]
+    assert "才调用联网搜索" in prompts[0]
+    assert "--transform-file" in prompts[0]
+    assert "禁止让该工具再调用辅助模型" in prompts[0]
+    assert "fullOutputPath" in prompts[0]
+    assert "禁止 cat、read" in prompts[0]
+    assert "轻度档执行约束" not in prompts[1]
+    client.close()
+
+
+def test_tool_metadata_uses_conversation_language_without_translation_call(tmp_path):
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / 'outputs')
+    english = 'Copy relative chart into delivery directory'
+    chinese = '将图表复制到交付目录'
+    assert client._localized_tool_summary('生成图表', english, chinese) == chinese
+    assert client._localized_tool_summary('生成图表', english) == ''
+    assert client._localized_tool_summary('Render a chart', english, chinese) == english
+    prompt = client._prompt('deepseek', '生成图表', [], [])
+    assert 'description、title、thoughtSummary 也是直接展示给用户的步骤标题' in prompt

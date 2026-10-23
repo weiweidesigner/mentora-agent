@@ -34,6 +34,7 @@ with DeepSeekHarness(cwd=str(root), runtime_cwd=str(probe), dsh_home=str(probe /
     assert result["readBodies"] == 1, result
     assert (probe / "failure-bodies.txt").read_text() == "3", result
     assert (probe / "render-bodies.txt").read_text() == "2", result
+    assert all(artifact["exists"] for artifact in result["artifacts"]), result
     assert "MENTORA_LIGHTWEIGHT:" not in json.dumps(result), result
     print(json.dumps({"ok": True, "readBodies": 1, "failedToolBodies": 3,
                       "renderBodies": 2, "path": str(probe)}))

@@ -4,6 +4,8 @@ import { StreamVisualization, normalizeStreamVisualizationPayload } from "stream
 import "streamviz-react/styles.css";
 import chartGeometry from "../app/skills/streamviz/assets/chart-geometry.js?raw";
 
+import widgetControl from "../app/static/artifact-widget-control.js?raw";
+
 const roots = new WeakMap();
 const mountedPayloads = new Map();
 
@@ -23,7 +25,7 @@ function mount(container, payload = {}) {
   // Saved and live widgets render inside StreamViz's sandbox, bypassing the artifact route.
   const repairGeometry = (code) => typeof code === 'string' && code.includes('chartbox') && !code.includes('data-sv-chart-geometry')
     ? code + '<script data-sv-chart-geometry>' + chartGeometry + '</script>' : code;
-  props.code = repairGeometry(props.code);
+  props.code = repairGeometry(props.code) + "<script data-widget-control>" + widgetControl + "</script>";
   if (props.exportCode) props.exportCode = repairGeometry(props.exportCode);
   root.render(
     <StreamVisualization

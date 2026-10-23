@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/weiweidesigner/screener.git",
+  "revision": "9f135ff3b46864d558808cae995cb9888f1487b2",
+  "checkout": ".dependencies/screener",
+  "links": {
+    "app/skills/screener": ".",
+    ".agents/skills/screener": "."
+  }
+}

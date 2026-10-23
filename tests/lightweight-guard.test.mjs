@@ -13,40 +13,55 @@ const setup = t => {
   return {root, guard: new LightweightGuard(root)};
 };
 
-test('a failing research route gets only one materially different alternative', async t => {
+test('failed research does not substitute its receipt for another data or search command', async t => {
   const {guard}=setup(t);let bodies=0;
   for(const symbol of ['bad','other','bad']){
     const result=await guard.execute(shell(`python3 app/skills/a-share-data/scripts/price_snapshot.py --thscodes ${symbol}`),async()=>{bodies++;return ok('[exit code: 1] Target not found');});
     assert.match(result.content[0].text,/Target not found|deduplicated|one allowed alternative/);
   }
-  assert.equal(bodies,2);assert.equal(guard.cache.size,0);
+  assert.equal(bodies,3);assert.equal(guard.cache.size,0);
+  const search=await guard.execute({name:'web_search',arguments:{query:'independent evidence'}},async()=>ok('actual search evidence'));
+  assert.equal(search.content[0].text,'actual search evidence');
 });
 
 test('every wrapped result contains only losslessly serializable content and isError', async t => {
   const {guard}=setup(t);
   const raw={content:[{type:'text',text:'small result',metadata:{count:1n}}],isError:false,value:{exitCode:0},internal:()=>{}};
   const result=await guard.execute(shell('python3 local.py'),async()=>raw);
-  assert.deepEqual(Object.keys(result).sort(),['content','isError']);
+  assert.deepEqual(Object.keys(result).sort(),['content','isError','value']);
   assert.equal(result.content[0].metadata.count,'1');
+  assert.equal(result.value.exitCode,0);
   const encoded=JSON.stringify(result);
   assert.deepEqual(JSON.parse(encoded),result);
 });
 
-test('successful delivery stages run once per turn and reset on the next turn', async t => {
-  const {guard}=setup(t);let bodies=0;
-  const summarize=shell('python3 app/skills/code-interpreter/scripts/code_interpreter.py --input evidence.json');
-  const render=shell('python3 app/skills/streamviz/scripts/render_streamviz.py --input payload.json --output report.html');
-  const validate=shell('python3 app/skills/streamviz/scripts/inspect_html.py report.html');
-  assert.equal((await guard.execute(summarize,async()=>{bodies++;return ok('summarized');})).isError,false);
-  assert.equal(JSON.parse((await guard.execute(summarize,async()=>{bodies++;return ok('summarized twice');})).content[0].text).skipped,true);
-  assert.equal((await guard.execute(render,async()=>{bodies++;return ok('rendered');})).isError,false);
-  assert.equal(JSON.parse((await guard.execute(render,async()=>{bodies++;return ok('rendered twice');})).content[0].text).skipped,true);
-  assert.equal((await guard.execute(validate,async()=>{bodies++;return ok('valid');})).isError,false);
-  assert.equal(JSON.parse((await guard.execute(validate,async()=>{bodies++;return ok('validated twice');})).content[0].text).skipped,true);
-  assert.equal(bodies,3);
-  guard.reset();
-  await guard.execute(render,async()=>{bodies++;return ok('next turn');});
-  assert.equal(bodies,4);
+test('different renderers, calculations and file checks always execute their actual commands', async t => {
+  const {guard}=setup(t);const calls=[];
+  const commands=[
+    'python3 app/skill_runner.py execute --script bar_chart.py -- --payload bar.json --output outputs/generated/bar.html',
+    'python3 app/skill_runner.py execute --script group_line.py -- --payload line.json --output outputs/generated/line.html',
+    'ls -l outputs/generated/line.html',
+    'python3 app/skills/code-interpreter/scripts/code_interpreter.py --input first.json',
+    'python3 app/skills/code-interpreter/scripts/code_interpreter.py --input second.json',
+    'python3 app/skills/streamviz/scripts/inspect_html.py outputs/generated/bar.html',
+    'python3 app/skills/streamviz/scripts/inspect_html.py outputs/generated/line.html',
+  ];
+  for(const command of commands){
+    const result=await guard.execute(shell(command),async()=>{calls.push(command);return ok(command);});
+    assert.equal(result.content[0].text,command);
+  }
+  assert.deepEqual(calls,commands);
+  const missing=await guard.execute(shell('ls outputs/generated/missing.html'),async()=>({content:[{type:'text',text:'No such file'}],isError:true}));
+  assert.equal(missing.isError,true);
+  assert.doesNotMatch(missing.content[0].text,/bar_chart/);
+});
+
+test('large executable contracts retain exact CLI and schema instead of dataset compaction', t => {
+  const {root}=setup(t);
+  const contract={ok:true,capability:'group_line',cliHelp:'help '.repeat(1200),schema:{required:['data','series'],properties:{series:{description:'field '.repeat(1000)}}}};
+  const text=JSON.stringify(contract);
+  const result=compactToolResult(shell('python3 app/skill_runner.py contract --script group_line.py'),ok(text),root);
+  assert.deepEqual(JSON.parse(result.content[0].text),contract);
 });
 
 test('reading a capability contract does not consume its execution stage', async t => {
@@ -155,7 +170,7 @@ test('direct URL reads run concurrently and later calls stop after network unrea
   await guard.execute({name:'web_fetch',arguments:{url:'https://bad.example'}},()=>body('URLError: Network is unreachable'));
   const stopped=await guard.execute({name:'web_fetch',arguments:{url:'https://three.example'}},()=>body('should not run'));
   assert.equal(bodies,3);assert.equal(guard.stats.suppressed,1);
-  assert.match(stopped.content[0].text,/do not retry direct reads/);
+  assert.match(stopped.content[0].text,/Network is unreachable/);
 });
 
 test('trades are never memoized and cannot be reported from cache', async t => {
@@ -227,7 +242,7 @@ test('duplicate failures are summarized once per turn', async t => {
   const first=await guard.execute(exec,async()=>ok('[exit code: 1] same failure'));
   const second=await guard.execute(exec,async()=>ok('[exit code: 1] same failure'));
   assert.match(first.content[0].text,/same failure/);
-  assert.equal(JSON.parse(second.content[0].text).deduplicated,true);
+  assert.equal(second.content[0].text,first.content[0].text);
 });
 
 test('background job polling is capped and immediate repeat polls are suppressed', async t => {
@@ -236,7 +251,7 @@ test('background job polling is capped and immediate repeat polls are suppressed
   await guard.execute(exec,async()=>{bodies++;return ok('(no new output)\n[status: running]');});
   assert.equal(exec.arguments.timeout_ms,JOB_POLL_TIMEOUT_MS);
   const repeat=await guard.execute({name:'job_output',arguments:{job_id:'job-1',wait:true,timeout_ms:60000}},async()=>{bodies++;return ok('done');});
-  assert.equal(bodies,1);assert.match(repeat.content[0].text,/cooldown/);
+  assert.equal(bodies,1);assert.match(repeat.content[0].text,/status: running/);
 });
 
 test('environment adapter only forwards the configured shell environment', async () => {

@@ -51,3 +51,11 @@ test('legacy HTML is replaced from recorded tool events when the original run is
  assert.match(list.textContent,/native-shell.*真实结果/);
  assert.equal(list.hidden,true);f.dom.window.close();
 });
+test('server activity replaces partial local history so the full reasoning record returns',async()=>{
+ const f=fixture([{event:'progress',data:{text:'完整步骤一'}},{event:'progress',data:{text:'完整步骤二'}}]);
+ const list=f.article.querySelector('ol');list.innerHTML='<li>本地仅剩一步</li>';
+ await f.w.restoreSavedActivity(f.article,{runId:'complete-run'});
+ assert.equal(f.requests.length,1);
+ assert.doesNotMatch(list.textContent,/本地仅剩一步/);
+ assert.match(list.textContent,/完整步骤一.*完整步骤二/);f.dom.window.close();
+});

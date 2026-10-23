@@ -169,7 +169,7 @@ python3 -m playwright install chromium
 .venv/bin/python -m uvicorn app.presentation:app --reload --port 8000
 ```
 
-Codex 复用本机已登录的 `codex` CLI。DeepSeek Harness 使用官方 Python SDK 的 `session.event` 通知流展示工具调用和任务轨迹，并默认与本机 Web UI 共用 `~/.dsh/sessions`。若 SDK 尚未安装，会自动回退到功能受限的 `dsh --profile headless`；该回退模式只返回最终文本，不提供实时轨迹。
+Codex Harness 复用本机 `codex` CLI，默认通过 Responses API 连接 DeepSeek，并直接读取 `DEEPSEEK_API_KEY`，无需 OpenAI 或 Codex 登录。DeepSeek Harness 使用官方 Python SDK 的 `session.event` 通知流展示工具调用和任务轨迹，并默认与本机 Web UI 共用 `~/.dsh/sessions`。若 SDK 尚未安装，会自动回退到功能受限的 `dsh --profile headless`；该回退模式只返回最终文本，不提供实时轨迹。
 
 可选环境变量：
 
@@ -179,9 +179,14 @@ AUTOGEN_STUDIO_TEAM_ID=1
 AUTOGEN_STUDIO_USER_ID=guestuser@gmail.com
 AUTOGEN_STUDIO_SESSION_NAME="Veya · AgentChat"
 AICHART_CODEX_BIN=codex
-AICHART_CODEX_MODEL=
+AICHART_CODEX_PROVIDER=deepseek
+AICHART_CODEX_MODEL=deepseek-flash
+AICHART_CODEX_BASE_URL=https://api.deepseek.com/
+AICHART_CODEX_MODEL_CATALOG=app/codex-deepseek-models.json
+AICHART_CODEX_REASONING_EFFORT=low
 AICHART_CODEX_NETWORK_ACCESS=true
 AICHART_CODEX_RUN_TIMEOUT_SECONDS=1200
+AICHART_CODEX_TOOL_OUTPUT_TOKEN_LIMIT=3000
 AICHART_CODEX_OLLAMA_MODEL=aimechart/glm-4.6v-flash-9b-codex:latest
 AICHART_CODEX_GLM_ADAPTER_URL=http://127.0.0.1:8010/local-glm/v1
 AICHART_CODEX_OLLAMA_CONTEXT_WINDOW=16384

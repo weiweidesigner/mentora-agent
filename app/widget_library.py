@@ -194,20 +194,6 @@ def add_preset(component_id: str):
         result=build_widget(TradingViewInput(widget=item['widget'],symbols=symbols,preset=item.get('preset')))
         result['parameters']={'symbols':symbols,'market':'default',**({'interval':result['config']['interval']} if result['config'].get('interval') else {})}
         return result
-    manifest=json.loads((ROOT/'app/static/cases/inspiration/manifest.json').read_text())
-    case=next((row for row in manifest['cases'] if row['id']=='business-'+component_id),None)
-    if not case:
-        raise HTTPException(status_code=404,detail='该图表的预制内容暂不可用。')
-    cached=json.loads((ROOT/'app'/case['conversationUrl'].lstrip('/')).read_text())
-    artifact=cached['answer']['reportArtifacts'][0]
-    from urllib.parse import urlparse
-    source=(ROOT/'app'/urlparse(artifact['url']).path.lstrip('/')).resolve()
-    if not source.is_relative_to(ROOT/'app/static/cases') or not source.is_file():
-        raise HTTPException(status_code=404,detail='预制图表暂不可用。')
-    content=source.read_bytes()
-    target=GENERATED/('widget-preset-'+hashlib.sha256(content).hexdigest()[:24]+'.html')
-    GENERATED.mkdir(parents=True,exist_ok=True)
-    if not target.exists():target.write_bytes(content)
-    symbol=case['title'].split(' · ')[0].strip()
-    return {'title':case['title'],'url':'/generated/'+target.name,'mode':'preset','cachedDate':case['cachedDate'],
-            'parameters':{'symbols':[symbol],'market':'default'}}
+    # Native components must collect current source data through their Skill.
+    # Cached gallery examples are never a substitute for a successful refresh.
+    raise HTTPException(status_code=409,detail='此组件需要实时取数生成，请通过组件库或对话添加。')

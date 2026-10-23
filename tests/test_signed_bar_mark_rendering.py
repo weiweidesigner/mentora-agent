@@ -168,7 +168,6 @@ def test_bar_chart_colors_signed_distribution_from_x_bins_not_positive_frequency
                 "negative": "#ff2f57",
                 "positive": "#00b899",
                 "neutral": "#94a3b8",
-                "showZeroReference": True,
             },
         }
     )
@@ -178,9 +177,9 @@ def test_bar_chart_colors_signed_distribution_from_x_bins_not_positive_frequency
         "series": [{"field": "frequency", "label": "频次"}],
         "data": [
             {"returnBin": "<-3%", "frequency": 4},
-            {"returnBin": "-3%~-1%", "frequency": 12},
+            {"returnBin": "-3%~0%", "frequency": 12},
             {"returnBin": "-1%~1%", "frequency": 28},
-            {"returnBin": "1%~3%", "frequency": 15},
+            {"returnBin": "0%~3%", "frequency": 15},
             {"returnBin": ">3%", "frequency": 6},
         ],
     }
@@ -196,8 +195,8 @@ def test_bar_chart_colors_signed_distribution_from_x_bins_not_positive_frequency
         "#00b899",
     ]
     html = module.render_svg_chart(normalized, "bar")
-    assert "distribution-zero-line" in html
-    assert "row.__distributionSign" in html
+    assert "distribution-zero-line" not in html
+    assert "distribution-zero-label" not in html
 
 
 def test_grouped_bar_distribution_colors_all_series_by_same_x_bin() -> None:
@@ -219,9 +218,13 @@ def test_grouped_bar_distribution_colors_all_series_by_same_x_bin() -> None:
 
     normalized = module.normalize_xy_series(component, "grouped-bar", "分组分布", "bar", style)
 
-    assert normalized["data"][0]["__markColors"] == {"stockA": "#ff2f57", "stockB": "#ff2f57"}
+    assert normalized["data"][0]["__markColors"] == {
+        "stockA": "var(--sv-price-down)", "stockB": "var(--sv-price-down)"
+    }
     assert normalized["data"][1]["__markColors"] == {"stockA": "#94a3b8", "stockB": "#94a3b8"}
-    assert normalized["data"][2]["__markColors"] == {"stockA": "#00b899", "stockB": "#00b899"}
+    assert normalized["data"][2]["__markColors"] == {
+        "stockA": "var(--sv-price-up)", "stockB": "var(--sv-price-up)"
+    }
 
 
 def test_grouped_bar_auto_distribution_preserves_series_colors_and_zero_boundary() -> None:
@@ -244,7 +247,7 @@ def test_grouped_bar_auto_distribution_preserves_series_colors_and_zero_boundary
 
     distribution = normalized["visualStyle"]["distributionColor"]
     assert distribution["preserveSeriesColors"] is True
-    assert distribution["showZeroReference"] is True
+    assert "showZeroReference" not in distribution
     assert [row["__distributionSign"] for row in normalized["data"]] == [-1, 1]
     assert all("__markColors" not in row for row in normalized["data"])
     assert [item["color"] for item in normalized["series"]] == ["#4387f5", "#4bc3d5"]
@@ -255,6 +258,7 @@ def test_bar_chart_auto_detects_chinese_signed_distribution_without_style_json()
     component = {
         "type": "bar",
         "title": "个股涨跌幅分布",
+        "financialMarket": "CN",
         "xField": "bucket",
         "series": [{"field": "count", "label": "个股家数"}],
         "data": [
@@ -272,12 +276,40 @@ def test_bar_chart_auto_detects_chinese_signed_distribution_without_style_json()
     assert normalized["visualStyle"]["distributionColor"]["autoDetected"] is True
     assert [row["__distributionSign"] for row in normalized["data"]] == [-1, -1, 0, 1, 1]
     assert [row["__markColors"]["count"] for row in normalized["data"]] == [
-        "#ff2f57",
-        "#ff2f57",
+        "var(--sv-price-down)",
+        "var(--sv-price-down)",
         "#94a3b8",
-        "#00b899",
-        "#00b899",
+        "var(--sv-price-up)",
+        "var(--sv-price-up)",
     ]
+    assert normalized["financialMarket"] == "CN"
+    html = module.render_svg_chart(normalized, "bar")
+    assert 'data-financial-market="CN"' in html
+    assert ':root[data-financial-market="CN"]' in html
+
+
+def test_bar_chart_us_distribution_uses_same_semantics_with_us_market_mapping() -> None:
+    module = load_script("bar_chart.py")
+    component = {
+        "type": "bar",
+        "title": "US stocks return distribution",
+        "financialMarket": "US",
+        "xField": "bucket",
+        "series": [{"field": "count", "label": "stocks"}],
+        "data": [
+            {"bucket": "-2%~-1%", "count": 10},
+            {"bucket": "1%~2%", "count": 8},
+        ],
+    }
+
+    normalized = module.normalize_xy_series(component, "bar", "Bar chart", "bar")
+
+    assert normalized["financialMarket"] == "US"
+    assert normalized["data"][0]["__markColors"]["count"] == "var(--sv-price-down)"
+    assert normalized["data"][1]["__markColors"]["count"] == "var(--sv-price-up)"
+    html = module.render_svg_chart(normalized, "bar")
+    assert 'data-financial-market="US"' in html
+    assert ':root[data-financial-market="US"]' in html
 
 
 def test_bar_chart_does_not_auto_mark_ordinary_positive_categories() -> None:

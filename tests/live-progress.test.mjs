@@ -14,12 +14,14 @@ function setup(){
  w.eval(source.slice(start,end));
  return {dom,w,article:w.article};
 }
-test('public progress appears below elapsed time and leaves the answer untouched',()=>{
+test('public progress becomes the only live reasoning disclosure and leaves the answer untouched',()=>{
  const f=setup();
  try{
   const text='我先读取 TradingView 组件规范，再加载苹果日线。';
   f.w.handleStreamEvent(f.article,'progress',{text});
-  assert.match(f.article.querySelector('.thinkingSummaryText').textContent,/^用时 /);
+  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,text);
+  assert.equal(f.article.querySelector('.thinkingTrigger').disabled,false);
+  assert.equal(f.article.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'false');
   assert.equal(f.article.querySelector('.thinkingSteps').textContent.trim(),text);
   assert.equal(f.article.querySelector('.finalAnswer').innerHTML,'');
   assert.ok(f.article.querySelector('.thinkingTrigger').classList.contains('is-thinking'));

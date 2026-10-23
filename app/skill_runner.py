@@ -101,17 +101,125 @@ def _normalize_component_args(arguments: list[str], script: Path, project_root: 
     render, source-code inspection, and retry.
     """
     normalized = list(arguments)
-    if script.parent.parent.name != "generic-chart":
-        return normalized
+    file_compatible_flags: set[str] = set()
+    if script.parent.parent.name == "generic-chart":
+        file_compatible_flags = {"--data-json"}
+    elif script.name == "code_interpreter.py":
+        file_compatible_flags = {"--data-json", "--data", "--raw-data"}
     for index, value in enumerate(normalized[:-1]):
-        if value != "--data-json":
-            continue
-        candidate = Path(normalized[index + 1]).expanduser()
-        if not candidate.is_absolute():
-            candidate = project_root / candidate
-        if candidate.is_file():
-            normalized[index] = "--payload"
+        if value in file_compatible_flags:
+            candidate = Path(normalized[index + 1]).expanduser()
+            if not candidate.is_absolute():
+                candidate = project_root / candidate
+            if candidate.is_file():
+                normalized[index] = "--payload"
+    if script.name == "code_interpreter.py" and "--output" in normalized:
+        output_index = normalized.index("--output") + 1
+        if output_index < len(normalized):
+            output = Path(normalized[output_index]).expanduser()
+            if output.suffix.lower() == ".json":
+                if "--payload-output" not in normalized:
+                    normalized.extend(["--payload-output", str(output)])
+                normalized[output_index] = str(output.with_suffix(".html"))
     return normalized
+
+
+def _compact_observation(value: Any, *, depth: int = 0) -> Any:
+    """Keep large tool receipts useful without echoing complete datasets."""
+    if depth >= 3:
+        if isinstance(value, list):
+            return {"count": len(value)}
+        if isinstance(value, dict):
+            return {"keys": list(value)[:30]}
+        return value
+    if isinstance(value, list):
+        if len(value) <= 12:
+            return [_compact_observation(item, depth=depth + 1) for item in value]
+        result: dict[str, Any] = {"count": len(value)}
+        if value:
+            result["sample"] = [
+                _compact_observation(item, depth=depth + 1)
+                for item in value[:2]
+            ]
+            result["last"] = _compact_observation(value[-1], depth=depth + 1)
+        return result
+    if isinstance(value, dict):
+        compact: dict[str, Any] = {}
+        for key, item in list(value.items())[:40]:
+            if isinstance(item, (dict, list)):
+                compact[key] = _compact_observation(item, depth=depth + 1)
+            else:
+                compact[key] = item
+        return compact
+    return value
+
+
+def _structured_artifact_handoff(path: Path) -> dict[str, Any] | None:
+    """Return a bounded reasoning summary while keeping complete data on disk."""
+    if path.suffix.lower() != ".json" or not path.is_file() or path.stat().st_size <= 12000:
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    # Analysis tools commonly preserve source data alongside a compact result.
+    # The result is the useful reasoning handoff; rawData and transformCode must
+    # never be copied back into the model context.
+    subject = payload.get("result") if isinstance(payload, dict) and "result" in payload else payload
+    compact = _compact_observation(subject)
+    encoded = json.dumps(compact, ensure_ascii=False, separators=(",", ":"))
+    handoff: dict[str, Any] = {
+        "path": str(path),
+        "bytes": path.stat().st_size,
+        "instruction": (
+            "Use this summary for reasoning and pass path to downstream tools. "
+            "Do not reopen or print the complete artifact unless a required field is missing."
+        ),
+    }
+    if len(encoded) <= 4000:
+        handoff["summary"] = compact
+    else:
+        handoff["summaryPreview"] = encoded[:4000]
+        handoff["summaryTruncated"] = True
+    return handoff
+
+
+def _preferred_data_artifact(arguments: list[str], artifacts: list[Path], project_root: Path) -> Path | None:
+    """Prefer the structured handoff file over an HTML receipt."""
+    for flag in ("--payload-output", "--output"):
+        if flag not in arguments:
+            continue
+        index = arguments.index(flag) + 1
+        if index >= len(arguments):
+            continue
+        candidate = Path(arguments[index]).expanduser()
+        if candidate.suffix.lower() not in {".json", ".csv", ".tsv", ".txt"}:
+            continue
+        resolved = candidate if candidate.is_absolute() else project_root / candidate
+        resolved = resolved.resolve()
+        if resolved in artifacts and resolved.is_file():
+            return resolved
+    return next(
+        (path for path in artifacts if path.suffix.lower() in {".json", ".csv", ".tsv", ".txt"} and path.is_file()),
+        None,
+    )
+
+
+def _persist_large_observation(
+    *, project_root: Path, script: Path, stdout: str, parsed: Any, artifacts: list[Path], arguments: list[str]
+) -> Path:
+    existing = _preferred_data_artifact(arguments, artifacts, project_root)
+    if existing is not None:
+        return existing
+    directory = project_root / "outputs" / "tool-results"
+    directory.mkdir(parents=True, exist_ok=True)
+    suffix = ".json" if isinstance(parsed, (dict, list)) else ".txt"
+    path = directory / f"{script.stem}-{time.time_ns()}{suffix}"
+    if suffix == ".json":
+        path.write_text(json.dumps(parsed, ensure_ascii=False), encoding="utf-8")
+    else:
+        path.write_text(stdout, encoding="utf-8")
+    return path.resolve()
 
 
 def _execute(args: argparse.Namespace, project_root: Path) -> int:
@@ -122,6 +230,14 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
         if component_args[:1] == ["--"]:
             component_args = component_args[1:]
         component_args = _normalize_component_args(component_args, script, project_root)
+        if script.name == "code_interpreter.py" and not any(
+            flag in component_args for flag in ("--transform-file", "--transform-code")
+        ):
+            raise ValueError(
+                "code_interpreter requires an explicit deterministic --transform-file or "
+                "--transform-code; create transform(raw_data, question) once and execute it "
+                "directly. Do not inspect the implementation or invoke an auxiliary model."
+            )
         artifacts = _artifact_paths(component_args, project_root)
         output_root = (project_root / "outputs").resolve()
         for artifact in artifacts:
@@ -142,7 +258,46 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
             observation = json.loads(stdout) if stdout else None
         except json.JSONDecodeError:
             observation = stdout[-12000:]
+        if isinstance(observation, (dict, list)):
+            try:
+                oversized = len(json.dumps(observation, ensure_ascii=False)) > 12000
+            except (TypeError, ValueError):
+                oversized = False
+            if oversized:
+                reference = _persist_large_observation(
+                    project_root=project_root,
+                    script=script,
+                    stdout=stdout,
+                    parsed=observation,
+                    artifacts=artifacts,
+                    arguments=component_args,
+                )
+                observation = {
+                    "compacted": True,
+                    "summary": _compact_observation(observation),
+                    "fullOutputPath": str(reference),
+                    "handoff": "Pass this file path to downstream tools; do not copy its contents into model context.",
+                }
+        elif isinstance(observation, str) and len(observation) > 12000:
+            reference = _persist_large_observation(
+                project_root=project_root,
+                script=script,
+                stdout=stdout,
+                parsed=observation,
+                artifacts=artifacts,
+                arguments=component_args,
+            )
+            observation = {
+                "compacted": True,
+                "summary": observation[:1200],
+                "fullOutputPath": str(reference),
+                "handoff": "Pass this file path to downstream tools; do not copy its contents into model context.",
+            }
         ok = result.returncode == 0 and not missing
+        data_handoffs = [
+            handoff for path in artifacts
+            if (handoff := _structured_artifact_handoff(path)) is not None
+        ]
         receipt = {
             "ok": ok,
             "capability": str(metadata.get("name") or Path(args.script).stem),
@@ -150,6 +305,7 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
             "durationMs": round((time.monotonic() - started) * 1000),
             "exitCode": result.returncode,
             "observation": observation,
+            "dataHandoffs": data_handoffs,
             "artifacts": [
                 {"path": str(path), "bytes": path.stat().st_size, "verified": True}
                 for path in artifacts if path.is_file() and path.stat().st_size > 0
@@ -187,10 +343,6 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
         )
         skill = script.parent.parent.name
         skill_path = script.parent.parent / "SKILL.md"
-        try:
-            skill_instructions = skill_path.read_text(encoding="utf-8")
-        except OSError:
-            skill_instructions = ""
         schema_path = project_root / "app/skills" / skill / "schemas" / f"{script.stem}.schema.json"
         schema: Any = None
         if schema_path.is_file():
@@ -202,13 +354,24 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
         conventions = []
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:
             conventions.append("JSON 文件路径传 --payload；--data-json 只传内联 JSON，不传文件路径。")
+        if script.name == "code_interpreter.py":
+            conventions.append(
+                "JSON 文件路径统一传 --payload；--data-json、--data、--raw-data 只传内联 JSON。"
+                "skill_runner execute 会把误传的现有文件路径自动归一为 --payload，不需要失败后重试。"
+                "首次执行必须提供 --transform-file 或 --transform-code，其中定义确定性的 "
+                "transform(raw_data, question)。转换文件只能包含这一个顶层函数；不要写 import、辅助函数、"
+                "lambda、class、文件或网络访问。全部逻辑写在 transform 内并返回 JSON 可序列化 dict。"
+                "--output 是内部 HTML 回执；结构化结果传 --payload-output 并从其中的 result 字段读取。"
+                "若误把 .json 传给 --output，skill_runner 会自动改为同名 .html 回执并将原路径作为 "
+                "--payload-output。禁止让工具调用辅助模型生成代码，也不要读取工具源码。"
+            )
         print(json.dumps({
             "ok": result.returncode == 0,
             "capability": str(metadata.get("name") or script.stem),
             "script": args.script,
             "skill": skill,
             "skillPath": str(skill_path.resolve()) if skill_path.is_file() else None,
-            "skillInstructions": skill_instructions,
+            "capabilityDescription": str(metadata.get("description") or ""),
             "cliHelp": cli_help,
             "argumentConventions": conventions,
             "schemaPath": str(schema_path.resolve()) if schema_path.is_file() else None,

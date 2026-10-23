@@ -16,14 +16,8 @@ test('scheduled-task ISO start and terminal zero durations are supported',()=>{
  assert.equal(Number(article.dataset.startedAt),Date.parse('2026-10-21T03:00:00Z'));
  apply(article,'final',{thinkingElapsed:0});assert.equal(article.dataset.cachedElapsedMs,'0');
 });
-test('initial activity describes startup and uses normalized Chinese language tags',()=>{
- const context=vm.createContext({});
- vm.runInContext(source.slice(source.indexOf('function initialActivityTitle('),source.indexOf('function showAgentIdentity('))+
-   source.slice(source.indexOf('function normalizeLang('),source.indexOf('function setArticleLanguage(')),context);
- for(const lang of ['zh','zh-CN','zh-Hans']){
-  assert.equal(vm.runInContext(`initialActivityTitle(${JSON.stringify(lang)})`,context),'正在启动 Agent');
-  assert.match(vm.runInContext(`initialActivityDetail(${JSON.stringify(lang)})`,context),/正在连接执行进度/);
- }
- assert.equal(vm.runInContext('initialActivityTitle("zh-TW")',context),'正在啟動 Agent');
- assert.equal(vm.runInContext('initialActivityTitle("en")',context),'Starting the agent');
+test('new activity starts empty without connection placeholders',()=>{
+ const createMessage=source.slice(source.indexOf('function createAssistantMessage('),source.indexOf('function showAgentIdentity('));
+ assert.match(createMessage,/<ol class="thinkingSteps"><\/ol>/);
+ assert.doesNotMatch(createMessage,/initialActivityTitle|initialActivityDetail|is-initial-status/);
 });

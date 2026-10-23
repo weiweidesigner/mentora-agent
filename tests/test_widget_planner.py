@@ -24,10 +24,35 @@ def test_layout_plan_is_model_generated_and_contains_only_validated_actions(monk
     assert 'url' not in calls[0]['board']['cards'][0]
 
 
+def test_auto_sized_board_fractional_positions_reach_planner_and_survive_actions(monkeypatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    seen=[]
+    def model(context):
+        seen.append(context)
+        return {'reply':'已调整标题，保持当前布局。','actions':[{'type':'update','cardId':'two','title':'市场观察','layout':{'y':427/24}}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    app=FastAPI();app.include_router(planner.router)
+    request=payload().model_dump()
+    request['board']['cards'][1]['y']=427/24
+    with TestClient(app) as client:
+        response=client.post('/api/widgets/plan',json=request)
+    assert response.status_code==200
+    assert seen[0]['board']['cards'][1]['y']==427/24
+    assert response.json()['actions'][0]['layout']['y']==427/24
+
+
+@pytest.mark.parametrize('value',[-0.1,10001,float('nan'),float('inf')])
+def test_fractional_coordinates_still_reject_invalid_positions(value):
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):planner.Card(id='bad',y=value)
+    with pytest.raises(ValidationError):planner.Geometry(y=value)
+
+
 @pytest.mark.parametrize('action',[
     {'type':'update','cardId':'missing','layout':{'w':6}},
     {'type':'update','cardId':'two','layout':{'w':6}},
-    {'type':'add','componentId':'kline','parameters':{'symbols':['AAPL']}},
+    {'type':'add','componentId':'unregistered-component','parameters':{'symbols':['AAPL']}},
     {'type':'update','cardId':'one','layout':{'x':8,'w':6}},
     {'type':'update','cardId':'one','parameters':{'interval':'5s'}},
 ])
@@ -137,3 +162,27 @@ def test_first_custom_board_retries_missing_generated_title(monkeypatch):
 def test_custom_board_keeps_placeholder_when_clarification_is_needed():
     p=planner.PlanningInput(message='帮我创建一个',board={'id':'new','title':'自定义','cards':[]})
     assert planner.validate_plan({'reply':'想关注哪个市场？','actions':[]},p,[])['actions']==[]
+
+
+@pytest.mark.parametrize('effort,api_effort',[('low','low'),('medium','high'),('high','high'),('xhigh','high'),('ultra','max')])
+def test_widget_model_receives_selected_reasoning_effort(monkeypatch,effort,api_effort):
+    from types import SimpleNamespace
+    calls=[]
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"reply":"已理解","actions":[]}'))])
+    monkeypatch.setenv('DEEPSEEK_API_KEY','test-key')
+    monkeypatch.setattr(planner,'OpenAI',lambda **kwargs:SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create))))
+    planner.model_plan({'message':'调整看板','reasoningEffort':effort})
+    assert calls[0]['reasoning_effort']==api_effort
+    assert calls[0]['extra_body']['thinking']['type']=='enabled'
+
+
+def test_widget_plan_accepts_strength_and_passes_it_to_planning(monkeypatch):
+    seen=[]
+    monkeypatch.setattr(planner,'model_plan',lambda context:seen.append(context) or {'reply':'已理解','actions':[]})
+    request=payload().model_dump();request['reasoningEffort']='ultra'
+    planner.plan_widgets(planner.PlanningInput.model_validate(request))
+    assert seen[0]['reasoningEffort']=='ultra'
+    request['reasoningEffort']='invalid'
+    with pytest.raises(ValueError):planner.PlanningInput.model_validate(request)

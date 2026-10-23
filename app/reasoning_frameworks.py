@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import difflib
 import importlib.util
 import ipaddress
 import json
@@ -32,6 +33,14 @@ from app.cost_monitor import COSTS
 
 class ReasoningFrameworkError(RuntimeError):
     pass
+
+
+class ReasoningFrameworkConfigurationError(ReasoningFrameworkError):
+    error_code = "framework_configuration_error"
+
+    def __init__(self, detail: str):
+        self.public_detail = detail
+        super().__init__(detail)
 
 
 class ReasoningFrameworkTimeout(ReasoningFrameworkError):
@@ -90,7 +99,20 @@ class LocalAgentFrameworks:
 
     def availability(self) -> dict[str, dict[str, Any]]:
         codex_bin = os.getenv("AICHART_CODEX_BIN", "codex")
-        codex_ready = bool(shutil.which(codex_bin) or Path(codex_bin).is_file())
+        resolved_codex = shutil.which(codex_bin) or (codex_bin if Path(codex_bin).is_file() else "")
+        codex_ready = bool(resolved_codex)
+        codex_version = ""
+        codex_provider = os.getenv("AICHART_CODEX_PROVIDER", "deepseek").strip().lower() or "deepseek"
+        codex_credential_ready = False
+        if resolved_codex:
+            try:
+                version_result = subprocess.run(
+                    [resolved_codex, "--version"], capture_output=True, text=True, timeout=5, check=False,
+                )
+                codex_version = (version_result.stdout or version_result.stderr).strip()
+                codex_credential_ready = self._codex_provider_ready(resolved_codex, codex_provider)
+            except (OSError, subprocess.TimeoutExpired):
+                pass
         self._add_deepseek_sdk_path()
         deepseek_ready = importlib.util.find_spec("deepseek_harness") is not None or bool(self._dsh_bin())
         return {
@@ -102,9 +124,35 @@ class LocalAgentFrameworks:
             "codex": {
                 "label": FRAMEWORKS["codex"],
                 "available": codex_ready,
-                "detail": "" if codex_ready else "未找到 codex CLI",
+                "installed": codex_ready,
+                "credentialReady": codex_credential_ready,
+                "provider": codex_provider,
+                "version": codex_version,
+                "detail": (
+                    "" if codex_credential_ready
+                    else "Codex CLI 已安装，但未配置 DEEPSEEK_API_KEY"
+                    if codex_ready and codex_provider == "deepseek"
+                    else "Codex CLI 已安装，但 OpenAI Provider 尚未登录" if codex_ready
+                    else "未找到 codex CLI"
+                ),
             },
         }
+
+    @staticmethod
+    def _codex_authenticated(resolved_codex: str) -> bool:
+        try:
+            result = subprocess.run(
+                [resolved_codex, "login", "status"], capture_output=True, text=True, timeout=5, check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+        return result.returncode == 0
+
+    @classmethod
+    def _codex_provider_ready(cls, resolved_codex: str, provider: str) -> bool:
+        if provider == "deepseek":
+            return bool(os.getenv("DEEPSEEK_API_KEY", "").strip())
+        return cls._codex_authenticated(resolved_codex)
 
     def inference_models(self) -> list[dict[str, Any]]:
         deepseek_model = os.getenv("AICHART_DEEPSEEK_MODEL", "deepseek-flash").strip() or "deepseek-flash"
@@ -180,6 +228,7 @@ class LocalAgentFrameworks:
         if framework == "codex":
             events = self._stream_codex(
                 question, images, session_key, engine_session_id, history or [], inference_model,
+                reasoning_effort=reasoning_effort,
                 visualization_guidance=visualization_guidance,
             )
             yield from events
@@ -431,9 +480,12 @@ class LocalAgentFrameworks:
             "- 中间分析产物不等于最终展示图。只引用实际支撑最终判断的图表；未在正文引用的图表不会自动展示，不得为填充页面而追加。",
             "- 最终形成图文一体的回答：图表提供可视证据，文字说明洞察、因果边界、时间口径和风险。",
         ])
-        if "kline.py" in decision.selected_scripts and decision.mark_strategy != "no-mark":
+        if "kline.py" in decision.selected_scripts:
             lines.extend([
                 "- K线标记统一交给本地 Laya：先使用 business-chart-recall/kline.py 已取到的真实 OHLCV payload，再运行 python app/jev_kline_annotations.py --payload <行情payload> --question <原问句> --output <含标记payload>。",
+                "- 原生标记 v2：先读 kline.py --schema 的 annotationContract 或 python app/jev_kline_annotations.py --catalog；JEV 已知线/通道/干草叉/斐波那契/几何形状/测量/多空情景/笔记与表情的锚点和样式。严格按原生类型及线型、填充、levels 等白名单生成，不写外部覆盖层；未支持的江恩、模拟未来K线、分价成交量等不得伪装成已支持。",
+                "- 默认使用 native-v2-auto，不再沿用只生成旧水平线和气泡的候选集。普通走势/技术分析无需用户点名标记类型：将真实 OHLCV 交给 JEV 自动生成并评估适用的趋势线、通道、回撤和区间等原生候选；已有 props.annotations 只作补充，不能挡住新候选。允许 no-mark，不为凑类型强画；在结果中核对 candidateTypes/selectedTypes，不能把支持目录冒充实际选用。",
+                "- 标记集合由证据分析产生 props.annotations，再交 JEV 校验与选择；需要任意几何或仓位情景时必须先给出有证据的锚点。用户指定集合传 --selection-mode user-specified，要求全部传 --selection-mode all，不得按自动3点限额截断；必须说明 rejected/warning，缺失日期不能吸附到最近K线。",
                 "- 使用 Laya 输出 payload 调用原生 kline.py 渲染；不得手写猜测价位、在正文模型中生成坐标，或用通用 mark 替换原生 annotations。Laya 负责证据校验、选点、周期绑定和配色；原生组件负责避碰、绘制和触摸交互。",
             ])
         if decision.mark_strategy == "signed-direction":
@@ -645,7 +697,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 请直接完成用户任务，而不是解释如何完成。宿主会根据本轮语义提供少量候选 Skill 和组件；它们只是检索结果，你仍负责选择、组合或放弃。优先阅读所选候选的契约并执行；只有候选明显不足时才扩展检索 .agents/skills，禁止为了发现工具而扫描全部目录。不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
 联网搜索使用 external-search 的通用路由：默认 Tavily，失败时自动切换 Serper；只有用户明确要求 Kimi 或 Agent 根据任务明确选择该来源时才使用 Kimi。internal-search 仍是 AInvest 站内文章搜索；结构化行情和用户指定 URL 的读取使用各自工具。保留实际 provider 和 fallback_attempts，不得伪装搜索成功。
-按用户问题的实际范围选择所需的数据源、分析步骤和图表数量；每张图应回答一个明确问题。避免重复取数，能批量获取时优先批量获取。数据源因限流、超时或无数据失败时，尝试另一个匹配来源并说明降级情况。
+所有网络发现、网页读取和远程数据请求必须通过匹配的项目 Skill 执行。禁止编写临时 Python/Node 网络脚本，禁止直接使用 curl、wget、urllib、requests、httpx 或 fetch 探测第三方地址、逆向网页表单、轮换代码/参数/User-Agent，或绕过结构化数据 Skill 已声明的不支持范围；内联代码只可处理已有 Skill 写入本地文件的数据。HTTP 4xx/5xx、浏览器验证/CAPTCHA 页面，或预期结构化数据却返回 HTML，表示该来源本轮终止；只允许切换一次不同的已记录 Skill/provider，仍失败就保留错误并说明限制。
+按用户问题的实际范围选择所需的数据源、分析步骤和图表数量；每张图应回答一个明确问题。避免重复取数，能批量获取时优先批量获取。需要多个互不依赖的联网检索角度时，把 queries 写入一个 JSON 文件，通过 external_info_search.py 的 --queries-file 在一次工具调用中并行完成，不得逐条串行搜索。数据源因限流、超时或无数据失败时，尝试另一个匹配来源并说明降级情况。
 这是所有推理框架都必须遵守的收敛协议：取证前先定义本问题的最小充分证据条件；条件满足后立即锁定研究，不得再搜索、打开新数据源或做非必要的鲁棒性检查。锁定后只允许一次确定性汇总计算、一次必要的 HTML 渲染和一次有界验证，然后必须结束。任一工具失败后最多允许一条实质不同的替代路线；已有可用证据时直接披露限制并继续交付。
 联网请求的单来源超时不得超过 10 秒，同一批次总时限不得超过 30 秒，不得设置网络重试。首次出现 network unreachable 后立即停止同类来源。不得把 timeout、timeout_ms、--max-time 或库函数的超时参数设为更大数值。
 根据指标、资产、数据形态和用户指定的展示方式，在业务图表与通用图表 Skill 中选择最合适的组件；不要仅因为问题涉及股票就固定选择业务图表。
@@ -655,8 +708,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 不要为了“有图”而画图：单一数值、简单状态、纯操作结果、缺少可信数据或图形可能误导时，应改用简洁文字或表格，并说明限制。不得用示例、模拟或过期数据冒充实时证据。
 调用图表 Skill 前必须读取其数据契约和 CLI/schema；生成后确认 HTML 文件存在且非空。通过 app/skill_runner.py execute 执行时，其成功回执中 artifacts[].verified=true 与 bytes>0 已完成这项验证；不要再调用 test、ls、wc、cat 或读取 HTML 复核。复杂图、上传图复刻或视觉风险较高时，再执行对应视觉验证 Skill。
 工具之间必须用文件路径传递数据：数据、搜索或计算结果先写入 outputs 下的 JSON/CSV 文件，后续脚本只接收该文件路径。禁止把大段数组、K 线、新闻列表或完整 JSON 直接填入命令参数、提示词或最终回答。
+所有已注册的数据、搜索、计算和渲染脚本统一通过 app/skill_runner.py execute 调用，不得绕过 runner 直接执行 canonical script。runner 返回 dataHandoffs 时，直接使用其中的 summary 完成推理，并把 path 传给下游；除非摘要明确缺少用户要求的字段，否则禁止再用 Python、cat、jq、sed 等重新展开完整文件。
+当一次确定性计算已经覆盖用户要求的样本、口径、关键统计和限制，证据即视为充分：立即进入报告生成或最终回答。禁止以“再确认一次”“确定性汇总”“稳健性检查”为由重读结果、重算同一指标、额外切分子样本或寻找旁证；只有出现具体矛盾、执行失败或缺少用户明确要求的字段时才能补一步，并须说明缺口。不要连续输出笼统的“正在推进当前分析步骤”，进度应明确对应当前真实交付动作。
 需要图表时，把独立 HTML 写入 {self.generated_dir}，文件名以 {framework}- 开头；前端只接收生成文件的绝对路径，不接收内嵌图表数据。在最终 Markdown 的相应位置单独写一行 [[AIME_CHART:绝对HTML路径]]。
-当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板或交互式 HTML 时，选择 streamviz 作为“展示阶段” Skill；它不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，再将精简的、证据驱动的展示 payload 文件交给 streamviz 渲染。根据问题选择 dashboard、comparison、timeline、flow 或 brief 布局，并按需组合表格、排序、时间线和叙事区块；不要把所有内容都压成指标卡。若这些结构不适合任务，使用 streamviz payload 的 html 字段生成任意自包含 HTML/CSS/SVG/Canvas 页面，而不是退回到卡片或表格。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。网关会自动把已生成 HTML 以流式方式呈现。
+当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板、通用可视化或交互式 HTML，或者只说“可视化”而没有指定具体图表类型时，默认优先选择 streamviz 作为“展示阶段” Skill；不要为了比较候选而读取 generic-chart、business-chart-recall 或 custom-html-widget。只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 契约确实无法表达时，才选择其他展示 Skill。streamviz 是唯一的通用看板展示 Skill，不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，再将精简的、证据驱动的展示 payload 文件交给 streamviz 渲染。默认复用已经过响应式验证的 dashboard、comparison、timeline、flow 或 brief 模板，并按需组合表格、排序、时间线和叙事区块；不要手写 HTML/CSS，也不要把所有内容都压成指标卡。只有用户明确要求定制版式或内置结构确实无法表达时，才使用 streamviz payload 的 html 字段。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。网关会自动把已生成 HTML 以流式方式呈现。
 用户明确要求 HTML 报告、HTML 页面或 HTML 组件时，选择 custom-html-widget 组装完整独立 HTML；静态报告同样适用，不要求必须交互。先完成匹配的上游研究与验证，再按该 Skill 复用 streamviz 渲染并验证最终 .html 文件，以 AIME_CHART 标记交付。不能只交付 Markdown 或几张图表来代替用户要求的 HTML 报告；不能把普通文本回答强制改成 HTML。
 文件生成任务还须在最终回答中用 [[AIME_FILE:已验证生成文件的绝对路径]] 交付可下载文件，不能只说“已生成”。HTML 报告同时保留 AIME_CHART 预览标记。仅将最终交付文件标记为 AIME_FILE，不标记临时数据或中间产物。报告跟随宿主主题，不要添加浅色/暗色切换控件；独立下载文件也不需要第二套主题开关。
 最终答案末尾另起一行写 [[AIME_SKILLS:实际使用的Skill名称，以英文逗号分隔]]；未使用项目 Skill 时写 [[AIME_SKILLS:none]]。该标记只用于系统记录。
@@ -664,7 +719,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 最终回答使用用户的语言，先给核心结论，再给关键证据和图表解读，最后给风险、数据时间与口径。结论强度必须与证据质量匹配；代理数据、降级数据或不完整数据必须显式披露。不得把内部规划、命令日志或密钥写进答案。
 联网搜索、新闻、公告、研报或网页事实的来源由 Skill 工具返回的结构化数据自动收集，并由 Mentora 现有溯源组件展示。最终正文不要加入 Markdown 来源链接、裸 URL、“来源：”引导或“来源/参考资料”清单。
 除非任务本身要求修改项目，否则不要改动 app、tests 或配置文件；生成物只能写入 outputs。
-如果运行时支持工具步骤的 thoughtSummary 元数据，只提供一句面向用户的进度摘要，说明当前判断或行动目的；不要返回原始思维链、内部推理过程、命令或参数。"""
+如果运行时支持工具步骤的 thoughtSummary 元数据，只提供一句面向用户的进度摘要，说明当前判断或行动目的；不要返回原始思维链、内部推理过程、命令或参数。工具调用中的 description、title、thoughtSummary 也是直接展示给用户的步骤标题，必须使用用户要求的语言；中文会话用中文描述动作（例如“将图表复制到交付目录”“检查图表文件是否存在”），不要因工具文档或参数名是英文而写英文说明。命令、路径、代码、产品名保持原样。"""
                 + capability_note + self._source_readiness_guidance() + guidance_note)
 
     def _source_readiness_guidance(self) -> str:
@@ -1025,6 +1080,15 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         # on a second model invocation merely to translate a progress sentence.
         return ""
 
+    def _localized_tool_summary(self, question: str, *values: Any) -> str:
+        """Select public metadata in the user's language without another model call."""
+        for value in values:
+            if isinstance(value, str):
+                summary = self._localized_progress(value, question)
+                if summary:
+                    return summary
+        return ""
+
     def _jev_tool_thought_summary(self, script: str, arguments: Any) -> str:
         """Compatibility hook: only explicit public metadata, no routing model."""
         if isinstance(arguments, str):
@@ -1040,7 +1104,190 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         )
 
     @staticmethod
-    def _codex_tool_event(item: dict[str, Any], index: int) -> dict[str, Any]:
+    def _compact_codex_tool_observation(value: Any) -> str:
+        text = str(value or "").strip()
+        lowered = text.lower()
+        if any(marker in lowered for marker in (
+            "requires javascript to verify your browser",
+            "cf-chl-",
+            "captcha",
+            "browser verification",
+        )):
+            return "目标网站返回浏览器验证或反爬页面（可能是 HTTP 200），未获得可用数据。"
+        http_failures = re.findall(
+            r"(?:httperror\s+)?http error\s+(4\d\d|5\d\d)|\bhttp\s+(4\d\d|5\d\d)\b",
+            lowered,
+        )
+        if http_failures:
+            codes = [left or right for left, right in http_failures]
+            unique_codes = ", ".join(dict.fromkeys(codes))
+            suffix = f"；共 {len(codes)} 个请求失败" if len(codes) > 1 else ""
+            return f"数据源返回 HTTP {unique_codes}{suffix}，未获得可用数据。"
+        return text[:5000]
+
+    @staticmethod
+    def _file_change_stats(change: dict[str, Any], path: Path, kind: str) -> tuple[int, int]:
+        """Prefer runtime-provided counts, then derive them from a unified diff."""
+        def number(*names: str) -> int | None:
+            for name in names:
+                value = change.get(name)
+                if isinstance(value, int) and value >= 0:
+                    return value
+            return None
+
+        added = number("added", "additions", "lines_added", "linesAdded")
+        removed = number("removed", "deletions", "lines_removed", "linesRemoved")
+        diff = str(change.get("diff") or change.get("patch") or "")
+        if added is None and diff:
+            added = sum(1 for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++"))
+        if removed is None and diff:
+            removed = sum(1 for line in diff.splitlines() if line.startswith("-") and not line.startswith("---"))
+        if kind == "created" and added is None:
+            try:
+                added = len(path.read_text(encoding="utf-8").splitlines())
+            except (OSError, UnicodeDecodeError):
+                added = 0
+        return added or 0, removed or 0
+
+    @staticmethod
+    def _codex_file_changes(item: dict[str, Any], project_root: Path) -> list[dict[str, Any]]:
+        raw_changes = item.get("changes")
+        if not isinstance(raw_changes, list):
+            raw_changes = [item] if item.get("path") else []
+        changes: list[dict[str, Any]] = []
+        project_root = Path(project_root).resolve()
+        outputs_root = (project_root / "outputs").resolve()
+        for raw in raw_changes:
+            if not isinstance(raw, dict):
+                continue
+            raw_path = str(raw.get("path") or raw.get("file_path") or "").strip()
+            if not raw_path:
+                continue
+            path = Path(raw_path).expanduser()
+            if not path.is_absolute():
+                path = project_root / path
+            try:
+                path = path.resolve()
+                relative = path.relative_to(project_root)
+            except (OSError, ValueError):
+                continue
+            runtime_kind = str(raw.get("kind") or raw.get("change_type") or raw.get("status") or "update").lower()
+            kind = "created" if runtime_kind in {"add", "added", "create", "created", "new"} else (
+                "deleted" if runtime_kind in {"delete", "deleted", "remove", "removed"} else "edited"
+            )
+            added, removed = LocalAgentFrameworks._file_change_stats(raw, path, kind)
+            diff = str(raw.get("diff") or raw.get("patch") or "")
+            if not diff and kind == "created" and path.is_file():
+                try:
+                    lines = path.read_text(encoding="utf-8").splitlines()
+                    diff = "\n".join(difflib.unified_diff([], lines, fromfile="/dev/null", tofile=path.name, lineterm=""))
+                except (OSError, UnicodeDecodeError):
+                    diff = ""
+            if len(diff) > 200_000:
+                diff = diff[:200_000] + "\n… diff truncated"
+            previewable = kind != "deleted" and path.is_file() and (path == outputs_root or outputs_root in path.parents)
+            changes.append({
+                "path": str(path),
+                "relativePath": relative.as_posix(),
+                "name": path.name,
+                "kind": kind,
+                "added": added,
+                "removed": removed,
+                "diff": diff,
+                "previewable": previewable,
+            })
+        return changes
+
+    def _deepseek_write_context(self, name: str, arguments: Any) -> dict[str, Any]:
+        if not re.search(r"write|edit|patch", str(name), flags=re.I):
+            return {}
+        parsed = arguments
+        if isinstance(parsed, str):
+            try:
+                parsed = json.loads(parsed)
+            except json.JSONDecodeError:
+                return {}
+        if not isinstance(parsed, dict):
+            return {}
+        raw_path = str(parsed.get("file_path") or parsed.get("path") or "").strip()
+        if not raw_path:
+            return {}
+        path = Path(raw_path).expanduser()
+        if not path.is_absolute():
+            path = self.project_root / path
+        try:
+            path = path.resolve()
+            relative = path.relative_to(self.project_root.resolve())
+        except (OSError, ValueError):
+            return {}
+        before = ""
+        existed = path.is_file()
+        if existed:
+            try:
+                if path.stat().st_size <= 2_000_000:
+                    before = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                pass
+        content = parsed.get("content")
+        return {
+            "path": path,
+            "relativePath": relative.as_posix(),
+            "name": path.name,
+            "existed": existed,
+            "before": before,
+            "content": content if isinstance(content, str) else None,
+            "displayArguments": {"file_path": raw_path},
+        }
+
+    def _deepseek_file_change(self, context: dict[str, Any], observation: Any) -> dict[str, Any] | None:
+        change = context.get("fileChange")
+        if not isinstance(change, dict) or not isinstance(change.get("path"), Path):
+            return None
+        path: Path = change["path"]
+        text = observation if isinstance(observation, str) else json.dumps(observation, ensure_ascii=False)
+        if not path.is_file():
+            return None
+        kind = "created" if re.search(r"\bCreated file\b", text, flags=re.I) or not change.get("existed") else "edited"
+        after = change.get("content")
+        if not isinstance(after, str):
+            try:
+                after = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                after = ""
+        before_lines = str(change.get("before") or "").splitlines()
+        after_lines = after.splitlines()
+        if kind == "created":
+            before_lines = []
+            added, removed = len(after_lines), 0
+        else:
+            added = removed = 0
+            for opcode, left_start, left_end, right_start, right_end in difflib.SequenceMatcher(None, before_lines, after_lines).get_opcodes():
+                if opcode in {"replace", "delete"}:
+                    removed += left_end - left_start
+                if opcode in {"replace", "insert"}:
+                    added += right_end - right_start
+        diff = "\n".join(difflib.unified_diff(
+            before_lines, after_lines,
+            fromfile=str(change.get("name") or path.name),
+            tofile=str(change.get("name") or path.name),
+            lineterm="",
+        ))
+        if len(diff) > 200_000:
+            diff = diff[:200_000] + "\n… diff truncated"
+        outputs_root = (self.project_root / "outputs").resolve()
+        return {
+            "path": str(path),
+            "relativePath": str(change.get("relativePath") or ""),
+            "name": str(change.get("name") or path.name),
+            "kind": kind,
+            "added": added,
+            "removed": removed,
+            "diff": diff,
+            "previewable": outputs_root in path.parents,
+        }
+
+    @staticmethod
+    def _codex_tool_event(item: dict[str, Any], index: int, project_root: Path | None = None) -> dict[str, Any]:
         """Forward public model metadata; never synthesize summaries from commands."""
         item_type = str(item.get("type") or "agent_step")
         command = item.get("command")
@@ -1050,7 +1297,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         thought_summary = LocalAgentFrameworks._public_thought_summary(
             item.get("thoughtSummary"), item.get("thought_summary"), item.get("title"), item.get("description")
         )
-        return {
+        event = {
             "index": index,
             "total": index,
             "tool": name,
@@ -1058,11 +1305,16 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "code": "CODEX",
             "lang": "zh-CN",
             "params": [str(command)] if command else [],
-            "observation": str(item.get("aggregated_output") or item.get("output") or item.get("status") or "")[:5000],
+            "observation": LocalAgentFrameworks._compact_codex_tool_observation(
+                item.get("aggregated_output") or item.get("output") or item.get("status") or ""
+            ),
             "phase": "completed",
             "callId": str(item.get("id") or f"codex-tool-{index}"),
             "thoughtSummary": thought_summary,
         }
+        if item_type in {"file_change", "file_changes"}:
+            event["fileChanges"] = LocalAgentFrameworks._codex_file_changes(item, project_root or Path.cwd())
+        return event
 
     @staticmethod
     def _is_user_facing_html(path: Path) -> bool:
@@ -1259,13 +1511,14 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         engine_session_id: str,
         history: list[dict[str, Any]],
         inference_model: str = "",
+        reasoning_effort: str = "",
         _repair_attempt: int = 0,
         visualization_guidance: str = "",
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         codex_bin = os.getenv("AICHART_CODEX_BIN", "codex")
         resolved = shutil.which(codex_bin) or (codex_bin if Path(codex_bin).is_file() else "")
         if not resolved:
-            raise ReasoningFrameworkError("Codex 不可用：未找到 codex CLI，请安装并登录后重试")
+            raise ReasoningFrameworkError("Codex 不可用：未找到 codex CLI，请先安装 Codex Harness")
         image_paths = self._save_images("codex", session_key, images)
         prompt = self._prompt(
             "codex", question, image_paths, history,
@@ -1273,6 +1526,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         )
         network_enabled = os.getenv("AICHART_CODEX_NETWORK_ACCESS", "true").strip().lower() not in {"0", "false", "no"}
         network_config = f"sandbox_workspace_write.network_access={'true' if network_enabled else 'false'}"
+        configured_effort = os.getenv("AICHART_CODEX_REASONING_EFFORT", "low").strip().lower()
+        selected_effort = reasoning_effort.strip().lower() or configured_effort
+        if selected_effort not in {"low", "medium", "high", "xhigh", "ultra", "max"}:
+            selected_effort = "low"
         if engine_session_id:
             command = [
                 resolved, "exec", "resume", "--json", "--skip-git-repo-check",
@@ -1293,11 +1550,59 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             ).strip()
             or "aimechart/glm-4.6v-flash-9b-codex:latest"
         )
-        # Preserve the original Codex model configuration for existing remote
-        # selections. Only the newly added local model overrides Codex's model.
-        # A hidden Ollama derivative may be used here so Codex can have a
-        # smaller context without reducing the original model's DeepSeek path.
-        model = codex_local_model if is_local_glm else os.getenv("AICHART_CODEX_MODEL", "").strip()
+        codex_provider = os.getenv("AICHART_CODEX_PROVIDER", "deepseek").strip().lower() or "deepseek"
+        model = codex_local_model if is_local_glm else (
+            os.getenv("AICHART_CODEX_MODEL", "").strip()
+            or ("deepseek-flash" if codex_provider == "deepseek" else "")
+        )
+        if not is_local_glm and codex_provider == "deepseek":
+            if not os.getenv("DEEPSEEK_API_KEY", "").strip():
+                raise ReasoningFrameworkConfigurationError(
+                    "Codex Harness 的 DeepSeek Provider 未配置 DEEPSEEK_API_KEY。"
+                )
+            base_url = (
+                os.getenv("AICHART_CODEX_BASE_URL", "").strip()
+                or os.getenv("DEEPSEEK_BASE_URL", "").strip()
+                or "https://api.deepseek.com/"
+            ).rstrip("/") + "/"
+            configured_catalog = os.getenv("AICHART_CODEX_MODEL_CATALOG", "").strip()
+            catalog_path = (
+                Path(configured_catalog).expanduser()
+                if configured_catalog
+                else self.project_root / "app" / "codex-deepseek-models.json"
+            )
+            if not catalog_path.is_absolute():
+                catalog_path = self.project_root / catalog_path
+            command.extend(
+                [
+                    "--ignore-user-config",
+                    "--config",
+                    'model_provider="deepseek"',
+                    "--config",
+                    'model_providers.deepseek.name="DeepSeek"',
+                    "--config",
+                    f"model_providers.deepseek.base_url={json.dumps(base_url)}",
+                    "--config",
+                    'model_providers.deepseek.wire_api="responses"',
+                    "--config",
+                    'model_providers.deepseek.env_key="DEEPSEEK_API_KEY"',
+                    "--config",
+                    'web_search="disabled"',
+                ]
+            )
+            if catalog_path.is_file():
+                command.extend(
+                    ["--config", f"model_catalog_json={json.dumps(str(catalog_path.resolve()))}"]
+                )
+            selected_effort = {
+                "medium": "high",
+                "xhigh": "high",
+                "ultra": "max",
+            }.get(selected_effort, selected_effort)
+        elif not is_local_glm and not self._codex_authenticated(resolved):
+            raise ReasoningFrameworkConfigurationError(
+                "Codex Harness 的 OpenAI Provider 尚未认证，请配置 OpenAI 登录或 API Key。"
+            )
         if is_local_glm:
             capability_catalog = self._capability_index.shortlist(question).render()
             prompt = (
@@ -1401,8 +1706,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 [
                     "--config",
                     'web_search="disabled"',
-                    "--config",
-                    'model_reasoning_effort="medium"',
                     "--disable",
                     "multi_agent",
                     "--disable",
@@ -1429,6 +1732,17 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     f"model_auto_compact_token_limit={compact_limit}",
                 ]
             )
+        try:
+            tool_output_token_limit = int(
+                os.getenv("AICHART_CODEX_TOOL_OUTPUT_TOKEN_LIMIT", "3000")
+            )
+        except ValueError:
+            tool_output_token_limit = 3000
+        tool_output_token_limit = max(1024, min(tool_output_token_limit, 8192))
+        # This context-manager limit also covers direct commands and inline
+        # Python which do not pass through skill_runner.
+        command.extend(["--config", f"tool_output_token_limit={tool_output_token_limit}"])
+        command.extend(["--config", f'model_reasoning_effort="{selected_effort}"'])
         if model:
             command.extend(["--model", model])
         for path in image_paths:
@@ -1498,7 +1812,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             if event_type == "item.completed" and item.get("type") not in {"agent_message", "reasoning", "error"}:
                 completed_tools.append(item)
                 tool_index += 1
-                tool_event = self._codex_tool_event(item, tool_index)
+                tool_event = self._codex_tool_event(item, tool_index, self.project_root)
                 if not tool_event.get("thoughtSummary"):
                     tool_event["thoughtSummary"] = self._jev_tool_thought_summary(
                         str(tool_event.get("script") or ""), item.get("command") or tool_event.get("params") or []
@@ -1598,6 +1912,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     }
                     yield from self._stream_codex(
                         question, [], session_key, thread_id, [], inference_model,
+                        reasoning_effort=selected_effort,
                         _repair_attempt=1,
                         visualization_guidance=visualization_guidance,
                     )
@@ -1677,6 +1992,11 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "研究锁定后，只允许一次确定性汇总计算、一次 HTML 渲染（若任务需要）和一次有界验证，然后立即回答。"
             "任一工具失败后最多允许一条实质不同的替代路线；"
             "若现有可用证据已足以支撑结论，则直接披露缺失和影响，不得继续尝试新工具或新来源。"
+            "若最小充分证据需要多个独立联网角度，把查询写入一个 JSON queries 数组，"
+            "通过 external_info_search.py --queries-file 一次并行执行；不要逐条串行搜索。"
+            "通用可视化只选 streamviz 一个展示 Skill，默认使用其内置布局模板；"
+            "不要再加载 custom-html-widget 或手写 HTML，除非用户明确要求定制版式或模板确实无法表达。"
+            "默认只执行一次自动布局检查；只有检查返回具体缺陷时才读取截图、修复并复验。"
         )
         if selected_reasoning_effort == "low":
             prompt += (
@@ -1832,34 +2152,43 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 source = message.get("source") if isinstance(message.get("source"), dict) else {}
                 result_call_id = str(message.get("toolCallId") or source.get("callId") or "")
                 arguments = data.get("arguments") or data.get("input") or data.get("todos") or []
+                display_arguments = arguments
                 phase = "started"
                 if event_type == "tool/call":
                     name = str(data.get("name") or data.get("tool") or "工具")
-                    thought_summary = self._public_thought_summary(
+                    thought_summary = self._localized_tool_summary(question,
                         data.get("thoughtSummary"), data.get("thought_summary"), latest_progress_summary,
                         data.get("title"), data.get("description")
                     )
                     latest_progress_summary = ""
                     if not thought_summary:
-                        thought_summary = self._jev_tool_thought_summary(name, arguments)
+                        thought_summary = self._localized_tool_summary(
+                            question, self._jev_tool_thought_summary(name, arguments)
+                        )
+                    file_change = self._deepseek_write_context(name, arguments)
+                    if file_change:
+                        display_arguments = file_change["displayArguments"]
                     if call_id:
                         tool_context_by_call_id[call_id] = {
                             "name": name,
                             "arguments": arguments,
+                            "displayArguments": display_arguments,
+                            "fileChange": file_change,
                             "thoughtSummary": thought_summary,
                         }
                 elif event_type == "tool/result":
                     context = tool_context_by_call_id.get(result_call_id, {})
                     name = str(context.get("name") or "工具")
                     arguments = context.get("arguments") or arguments
-                    thought_summary = self._public_thought_summary(
+                    display_arguments = context.get("displayArguments") or arguments
+                    thought_summary = self._localized_tool_summary(question,
                         data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"),
                         context.get("thoughtSummary"),
                     )
                     phase = "failed" if message.get("isError") else "completed"
                 else:
                     name = "任务计划"
-                    thought_summary = self._public_thought_summary(
+                    thought_summary = self._localized_tool_summary(question,
                         data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"), data.get("description")
                     )
                     phase = "started"
@@ -1873,8 +2202,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         blocks = message.get("content") or []
                         observation = "\n".join(str(block.get("text") or "") for block in blocks
                                                 if isinstance(block, dict) and block.get("type") == "text")
-                params_text = arguments if isinstance(arguments, str) else json.dumps(arguments, ensure_ascii=False)
-                yield "tool_step", {
+                params_text = display_arguments if isinstance(display_arguments, str) else json.dumps(display_arguments, ensure_ascii=False)
+                tool_step = {
                     "index": tool_index, "total": tool_index, "tool": name, "script": name,
                     "code": "DSH", "lang": "zh-CN",
                     "params": [params_text[:3000]] if arguments else [],
@@ -1883,6 +2212,11 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     "callId": call_id or result_call_id or f"deepseek-tool-{tool_index}",
                     "thoughtSummary": thought_summary,
                 }
+                if event_type == "tool/result" and phase == "completed":
+                    file_change = self._deepseek_file_change(context, observation)
+                    if file_change:
+                        tool_step["fileChanges"] = [file_change]
+                yield "tool_step", tool_step
                 if event_type == "tool/result":
                     for module in self._html_modules_from_tool_output(observation):
                         yield "module", module

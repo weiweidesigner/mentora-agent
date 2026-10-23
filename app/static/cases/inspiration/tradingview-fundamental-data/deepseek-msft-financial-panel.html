@@ -1,0 +1,265 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{box-sizing:border-box}body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}.sv{padding:4px 0;max-width:100%}.sv-head{display:flex;gap:18px;align-items:start;justify-content:space-between;padding-bottom:0;border-bottom:0}.sv-kicker,.sv-metric p,.sv-node span,.sv-metric small,.sv-note{color:var(--sv-text-secondary);font-size:13px;margin:0}h1{margin:4px 0 0;font-size:25px;line-height:1.25}.sv-summary{margin:8px 0 0;line-height:1.65;color:var(--sv-text-secondary)}.sv-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}.sv-chip{padding:6px 10px;border:1px solid;border-radius:999px;font-size:13px;white-space:nowrap}.sv-chip--success{color:var(--sv-text-success,var(--sv-status-success));background:var(--sv-bg-success);border-color:var(--sv-border-success,var(--sv-border-subtle))}.sv-chip--warning{color:var(--sv-text-warning,var(--sv-warning));background:var(--sv-bg-warning);border-color:var(--sv-border-warning,var(--sv-border-subtle))}.sv-chip--danger{color:var(--sv-text-danger,var(--sv-status-danger));background:var(--sv-bg-danger);border-color:var(--sv-border-danger,var(--sv-border-subtle))}.sv-chip--neutral{color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}.sv-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;padding:16px 0;border-bottom:0}.sv--brief .sv-metrics{grid-template-columns:1fr}.sv--comparison .sv-metrics{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.sv-metric{min-width:0;padding:12px;border:0;border-radius:0;background:transparent}.sv-metric strong{display:block;margin:8px 0 5px;font-size:27px;line-height:1.1}.sv-section{padding-top:20px}h2{font-size:16px;margin:0 0 8px;color:var(--sv-text-secondary)}.sv-flow{display:grid;gap:12px}.sv-relation{display:grid;grid-template-columns:minmax(140px,1fr) 40px minmax(140px,1fr);align-items:center;gap:10px;position:relative}.sv-node{min-width:0;padding:15px 16px;border:1px solid var(--sv-border-subtle);border-radius:14px;background:var(--sv-surface-primary)}.sv-node b{display:block;font-size:16px;color:var(--sv-text-primary);overflow-wrap:anywhere}.sv-node span{display:block;margin-top:6px;line-height:1.45;overflow-wrap:anywhere}.sv-arrow{color:var(--sv-text-secondary);font-size:28px;line-height:1;text-align:center}.sv-relation em{grid-column:2;font-size:11px;font-style:normal;text-align:center;color:var(--sv-text-muted);white-space:nowrap}.sv-node--standalone{display:inline-block;margin-right:12px;vertical-align:top;min-width:180px}.sv-table-wrap{overflow:auto;border:1px solid var(--sv-border-subtle);border-radius:14px}table{border-collapse:collapse;width:100%;min-width:480px;font-size:14px}th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--sv-border-subtle)}th{background:var(--sv-surface-primary);color:var(--sv-text-secondary);font-weight:600}tr:last-child td{border-bottom:0}.sv-rankings{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}.sv-rank{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:10px;align-items:center;padding:13px 14px;border:1px solid var(--sv-border-subtle);border-radius:12px}.sv-rank>span{color:var(--sv-text-muted);font-size:12px}.sv-rank b,.sv-event b{display:block;color:var(--sv-text-primary)}.sv-rank small,.sv-event p{display:block;margin:4px 0 0;color:var(--sv-text-secondary);font-size:13px}.sv-rank strong{color:var(--sv-text-primary)}.sv-timeline{border-left:1px solid var(--sv-border-subtle);margin-left:7px;padding-left:20px;display:grid;gap:18px}.sv-event{position:relative;display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px}.sv-event:before{content:"";position:absolute;left:-20.5px;transform:translateX(-50%);top:5px;width:10px;height:10px;border-radius:50%;background:var(--sv-chart-series-1)}.sv-event time{color:var(--sv-text-secondary);font-size:13px}.sv-narrative{max-width:780px}.sv-narrative p{line-height:1.75;color:var(--sv-text-secondary)}.sv-note{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--sv-border-subtle);line-height:1.6}@media(max-width:580px){.sv-head{display:block}.sv-chips{justify-content:flex-start;margin-top:12px}.sv-relation{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr)}.sv-arrow{font-size:22px}.sv-event{grid-template-columns:1fr}}
+</style><style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
+/* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
+:is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
+/* Semantic contract; legacy card/metric classes are aliases, outer names do not matter. */
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout]))){display:grid!important;gap:var(--sv-card-gap)!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):not(:is(.card,.sv-card,[data-sv-card])):is([data-sv-layout],:has(>:is(.card,.sv-card,[data-sv-card],.metrics,[data-sv-layout])))>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric]){padding:var(--sv-card-padding)!important;margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card]){display:flex!important;flex-direction:column!important;gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.card,.sv-card,[data-sv-card])>:not(:is(style,script,template)){margin-block:0!important;min-width:0!important}
+:is([data-aime-streamviz-root],[data-visualize-root],[data-aime-streamviz-root] *,[data-visualize-root] *):is(.metrics,[data-sv-layout="metrics"]){display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="stack"]{grid-template-columns:minmax(0,1fr)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="grid"]{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-layout="components"]{gap:var(--sv-component-gap)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.hk-chips,.bars,.sv-line-values){gap:var(--sv-component-gap)!important}
+/* Embedded reports use the host column in both palettes, without a second centered canvas. */
+:is([data-aime-streamviz-root],[data-visualize-root])>:is(div,main,section,article):not(:is(.card,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric])){width:100%!important;max-width:none!important;margin-inline:0!important}
+/* Keep intrinsic chart widths inside their own scroll area, not the page grid. */
+:is([data-aime-streamviz-root],[data-visualize-root]){min-width:0;max-width:100%}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(div,section,article,header,footer){min-width:0}
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(.chips,.sv-chips){flex-wrap:wrap}
+:is([data-aime-streamviz-root],[data-visualize-root]) .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:640px){
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important}
+  :is([data-aime-streamviz-root],[data-visualize-root]) .metric{overflow-wrap:anywhere}
+  :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-grid,.cols){grid-template-columns:minmax(0,1fr)!important}
+  .svx .bd{min-width:0!important}
+  .svx .bdr3,.svx .scale-r{grid-template-columns:88px minmax(0,1fr) 64px!important}
+  .svx .bdrow{padding:10px 8px;column-gap:8px}
+  .svx .bfrow{grid-template-columns:80px minmax(0,1fr) minmax(0,1fr);height:52px}
+  .svx :is(.bleft,.brgt){position:relative;padding-bottom:18px}
+  .svx .bval{position:absolute;bottom:0;min-width:0;font-size:11px}
+  .svx .bleft .bval{right:4px}
+  .svx .brgt .bval{left:4px}
+  .svx .bdaxis{padding-top:16px;height:42px}
+  .svx .bdval{position:absolute;top:0;right:0;font-size:11px}
+}
+.sv-responsive-line{width:100%;min-width:0;color:var(--sv-text-secondary);font-size:12px}
+.sv-line-note{margin:0 0 12px 48px;line-height:1.5}
+.sv-line-body{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-rows:minmax(0,1fr);height:clamp(220px,24vw,320px);box-sizing:border-box;padding-top:8px}
+.sv-line-y-axis,.sv-line-plot{position:relative;min-width:0;min-height:0}
+.sv-line-y-axis span{position:absolute;right:8px;transform:translateY(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-plot svg{display:block;width:100%;height:100%;max-width:none}
+.sv-line-dot{position:absolute;left:100%;right:auto;width:7px;height:7px;box-sizing:border-box;border-radius:50%;transform:translate(-50%,-50%)}
+.sv-line-x-axis{position:relative;height:18px;margin:8px 0 0 48px}
+.sv-line-x-axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.sv-line-x-axis span:last-child{transform:translateX(-100%)}
+.sv-line-values{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin-top:10px;font-size:13px;line-height:1.5}
+.sv-line-values span{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv-line-values i{display:inline-block;width:16px;height:3px;margin-right:6px;vertical-align:middle}
+/* Generated palettes are aliases, never a separate fixed light/dark theme. */
+[data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+[data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
+[data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.card,.panel,.sv-metric,.sv-node,.sv-rank){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.stat,.metric,.chart,.table-wrap,.sv-table-wrap){background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(.cap,.bles,.note,.sub,.lg,.sv-summary,.sv-narrative p,.sv-node span,.sv-metric p,.sv-metric small,.sv-note,.sv-kicker,.stat span){color:var(--sv-text-secondary)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(table,.sv-node b,.sv-rank b,.sv-event b){color:var(--sv-text-primary)!important;border-color:var(--sv-border-subtle)!important}
+:is(.stv,.sv-report,.svv,.sv) :is(th,.sv-event time,.sv-rank small,.sv-event p){color:var(--sv-text-secondary)!important;background:var(--sv-surface-secondary)!important;border-color:var(--sv-border-subtle)!important}
+.stv .up{color:var(--sv-price-up)!important}.stv .dn{color:var(--sv-price-down)!important}.stv .nt{color:var(--sv-warning)!important}
+:is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-status-success)!important;background:var(--sv-bg-success)!important}
+:is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-warning)!important;background:var(--sv-bg-warning)!important}
+:is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-status-danger)!important;background:var(--sv-bg-danger)!important}
+:is(.sv-chip--neutral,.sv-badge,.chip){color:var(--sv-text-secondary);background:var(--sv-surface-secondary);border-color:var(--sv-border-subtle)}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] :is([style*="color:#8fa2bd"],[style*="color:#c3cfe0"],[style*="color:#b9c6dc"],[style*="color:#c7d2e8"]){color:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root] svg :is(text[fill="#e8eefb"],text[fill="#c3cfe0"],g[fill="#c3cfe0"],g[fill="#e8eefb"]){fill:var(--sv-text-primary)!important}
+[data-aime-streamviz-root] svg :is(text[fill="#8fa2bd"],g[fill="#8fa2bd"]){fill:var(--sv-text-secondary)!important}
+:root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
+:root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
+:root:not([data-theme="dark"]) *{box-sizing:border-box}
+:root:not([data-theme="dark"]) html,:root:not([data-theme="dark"]) body{margin:0;background:transparent;color:var(--sv-text-primary);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+:root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
+:root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
+:root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
+:root:not([data-theme="dark"]) .sv-badge{display:inline-flex;align-items:center;padding:5px 9px;border:1px solid var(--sv-border-subtle);border-radius:999px;font-size:12px}
+:root:not([data-theme="dark"]) .sv-badge-success{color:#09836f;background:#eaf8f2;border-color:#b7e6d5}
+:root:not([data-theme="dark"]) .sv-badge-warning{color:#a56417;background:#fff6df;border-color:#f0d28f}
+:root:not([data-theme="dark"]) .sv-badge-danger{color:#c34650;background:#fff0f1;border-color:#ffc3c8}
+:root:not([data-theme="dark"]) .svv{--bg:transparent!important;--card:#fff!important;--card2:#f6f7f9!important;--line:#dfe4eb!important;--text:#171b22!important;--muted:#667085!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root:not([data-theme="dark"]) .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#475467!important}
+:root:not([data-theme="dark"]) .svv .chip{color:#475467!important;background:#f6f7f9!important;border-color:#d0d5dd!important}
+:root:not([data-theme="dark"]) .svv .chip.success{color:#08745f!important;background:#e9f8f2!important;border-color:#9bdac7!important}
+:root:not([data-theme="dark"]) .svv .chip.warning{color:#925f0b!important;background:#fff5db!important;border-color:#ebc86f!important}
+:root:not([data-theme="dark"]) .svv .chip.danger{color:#b42335!important;background:#fff0f1!important;border-color:#f4aeb7!important}
+:root:not([data-theme="dark"]) .svv :is(.chart,.table-wrap){background:transparent!important}
+:root:not([data-theme="dark"]) .svv :is(.panel,.rank-html){background:#f6f7f9!important}
+:root:not([data-theme="dark"]) .svv table{color:#344054!important}
+:root:not([data-theme="dark"]) .svv thead th{color:#667085!important}
+:root:not([data-theme="dark"]) .svv tbody td{border-color:#dfe4eb!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#e8eefb"]{fill:#344054!important}
+:root:not([data-theme="dark"]) .svv svg text[fill="#93a4bd"]{fill:#667085!important}
+:root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
+:root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
+
+:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
+:root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
+:root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
+:root[data-theme="dark"] .svv .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .svv .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .svv .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .svv .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .svv :is(.chart,.table-wrap){background:transparent!important}
+:root[data-theme="dark"] .svv :is(.panel,.rank-html){background:#181e28!important}
+:root[data-theme="dark"] .svv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .svv thead th{color:#aab6c7!important}
+:root[data-theme="dark"] .svv tbody td{border-color:#334052!important}
+:root[data-theme="dark"] .svv svg text[fill="#e8eefb"]{fill:#dbe3ee!important}
+:root[data-theme="dark"] .svv svg text[fill="#93a4bd"]{fill:#aab6c7!important}
+:root[data-theme="dark"] .svv svg :is(line,path)[stroke="#233247"]{stroke:#334052!important}
+:root[data-theme="dark"] .svv svg line[stroke="#93a4bd"]{stroke:#7d8ca3!important}
+:root[data-theme="dark"] .sv-report{color:#f1f5f9!important;background:transparent!important}
+:root[data-theme="dark"] .sv-report :is(.sv-kicker,.sv-lead,.dsub,.dlabel,.dlabel-flat,.dhead-c,.bval,.tval,.mv-meta,.keyline){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report :is(.card,.metric){background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report :is(.metric span,.metric em,.bname em,.tname em,.mv-id em){color:#aab6c7!important}
+:root[data-theme="dark"] .sv-report .chip{color:#dbe3ee!important;background:#202733!important;border-color:#465268!important}
+:root[data-theme="dark"] .sv-report .chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-report .chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-report .chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+:root[data-theme="dark"] .sv-report .counts li{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .counts b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv-report :is(.btrack,.ttrack){background:#202733!important}
+:root[data-theme="dark"] .sv-report .mv{border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note{color:#aab6c7!important;background:#181e28!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv-report .note b{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv{--ink:#f1f5f9!important;--sub:#aab6c7!important;--line:#334052!important;--card:#181e28!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-sum,:root[data-theme="dark"] .sv .two p,:root[data-theme="dark"] .sv ol.steps{color:#c1cad7!important}
+:root[data-theme="dark"] .sv ol.steps b{color:#f1f5f9!important}
+:root[data-theme="dark"] .sv .sv-metric,:root[data-theme="dark"] .sv .pp-tabs>div,:root[data-theme="dark"] .sv .sv-narr>div,:root[data-theme="dark"] .sv .sv-note,:root[data-theme="dark"] .sv svg.payoff,:root[data-theme="dark"] .sv-card,:root[data-theme="dark"] .sv-metric{background:#181e28!important;border-color:#334052!important;color:#f1f5f9!important}
+:root[data-theme="dark"] .sv table{color:#dbe3ee!important}
+:root[data-theme="dark"] .sv thead th{color:#aab6c7!important;border-color:#334052!important}
+:root[data-theme="dark"] .sv tbody td{border-color:#2b3544!important}
+:root[data-theme="dark"] .sv tbody tr.hl{background:#1f3b46!important}
+:root[data-theme="dark"] .sv svg .ax,:root[data-theme="dark"] .sv svg .lk,:root[data-theme="dark"] .sv svg .lg{fill:#b9c5d5!important}
+:root[data-theme="dark"] .sv svg rect[fill="#eef2f7"],:root[data-theme="dark"] .sv svg rect[fill="#f8fafc"]{fill:#202733!important}
+:root[data-theme="dark"] .sv-badge-success,:root[data-theme="dark"] .sv .sv-chip.success{color:#7ce6c6!important;background:#133c36!important;border-color:#276658!important}
+:root[data-theme="dark"] .sv-badge-warning,:root[data-theme="dark"] .sv .sv-chip.warning{color:#ffd28b!important;background:#493617!important;border-color:#806128!important}
+:root[data-theme="dark"] .sv-badge-danger,:root[data-theme="dark"] .sv .sv-chip.danger{color:#ffabb7!important;background:#49202a!important;border-color:#7b3643!important}
+
+/* Report tables sit on the same card surface as ranked lists. Override the
+   widget runtime's independent neutral table palette inside report roots. */
+:is([data-aime-streamviz-root],[data-visualize-root]) :is(table,.table-wrap,.sv-table-wrap){background:transparent!important;border-color:var(--sv-border-subtle)!important}
+:is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+
+/* Financial direction is market-specific; success/danger remain status colors. */
+:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+[data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
+[data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
+
+/* Report sections stay open; compact metrics have their own outlined cards. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-metrics){border:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-metric,.metric,.stat):not([data-sv-surface]){background:transparent!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;box-shadow:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-head,.sv-section,.sv-note){border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--success,.sv-badge-success,.chip.success){color:var(--sv-text-success,var(--sv-status-success))!important;background:var(--sv-bg-success)!important;border-color:var(--sv-border-success,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--warning,.sv-badge-warning,.chip.warning){color:var(--sv-text-warning,var(--sv-warning))!important;background:var(--sv-bg-warning)!important;border-color:var(--sv-border-warning,var(--sv-border-subtle))!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-chip--danger,.sv-badge-danger,.chip.danger){color:var(--sv-text-danger,var(--sv-status-danger))!important;background:var(--sv-bg-danger)!important;border-color:var(--sv-border-danger,var(--sv-border-subtle))!important}
+
+/* Standalone reports and sandboxed reports share the semantic runtime palette. */
+:root:not([data-theme="dark"]){--sv-text-success:var(--sv-jade-11,#208368);--sv-text-warning:var(--sv-amber-11,#915930);--sv-text-danger:var(--sv-red-11,#ce2c31);--sv-border-success:var(--sv-jade-7,#92ceac);--sv-border-warning:var(--sv-amber-7,#e8c36a);--sv-border-danger:var(--sv-red-7,#f3aeaf);--sv-bg-success:var(--sv-jade-3,#e6f4ea);--sv-bg-warning:var(--sv-amber-3,#fff3d0);--sv-bg-danger:var(--sv-red-3,#feebec)}
+:root[data-theme="dark"]{--sv-text-success:var(--sv-jade-11,#7ce2bd);--sv-text-warning:var(--sv-amber-11,#facf72);--sv-text-danger:var(--sv-red-11,#ff9592);--sv-border-success:var(--sv-jade-7,#1b5745);--sv-border-warning:var(--sv-amber-7,#6a4f0b);--sv-border-danger:var(--sv-red-7,#7e2e33);--sv-bg-success:var(--sv-jade-3,#132d21);--sv-bg-warning:var(--sv-amber-3,#35290f);--sv-bg-danger:var(--sv-red-3,#3b1219)}
+/* Timeline copy stays on the page; only status badges get a tinted surface. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-event time,.sv-event p,.sv-rank small){background:transparent!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{border-left:1px solid var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-chip{border-width:.5px!important}
+/* Timeline events without dates do not reserve an empty tinted date column. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event:is(:has(>time:empty),:not(:has(>time))){grid-template-columns:minmax(0,1fr)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event>time:empty{display:none!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline :is(time,p){background:transparent!important;border:0!important;color:var(--sv-text-secondary)!important}
+
+/* Template reports share the compact metric rhythm; legacy margins must not stack. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metrics{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))!important;gap:var(--sv-card-gap)!important;padding:12px 0!important;align-items:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric{display:grid!important;gap:var(--sv-component-gap)!important;align-content:start}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric>:is(p,strong,small){margin:0!important;line-height:1.5;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-metric strong{font-size:clamp(22px,2.5vw,27px);line-height:1.3}
+/* Place the dot's centre on the centre of the 1px connector, independent of radius. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-timeline{--sv-timeline-inset:20px;padding-left:var(--sv-timeline-inset)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-event::before{left:calc(-1 * var(--sv-timeline-inset) - .5px)!important;transform:translateX(-50%);background:var(--sv-chart-series-1)!important}
+
+/* Compact metric cards tile across the available width and wrap as a group. */
+:root :is([data-aime-streamviz-root],[data-visualize-root]) :is([data-sv-metric],.metrics>.insight){box-sizing:border-box;min-width:0!important;padding:var(--sv-card-padding)!important;margin:0!important;border-width:1px!important;border-style:solid!important;border-color:var(--sv-border-subtle)!important;border-radius:8px!important;background:transparent!important;overflow-wrap:anywhere}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){align-items:stretch!important}
+@media(max-width:640px){
+  :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,[data-sv-layout="metrics"]){grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr))!important;gap:12px!important}
+  :root :is([data-aime-streamviz-root],[data-visualize-root]) :is(.stat-value,.sv-metric strong){font-size:22px!important}
+}
+
+/* Mobile summary metrics form compact swipeable cards, not a vertical feed. */
+@media(max-width:760px){
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"]){
+  display:grid!important;grid-auto-flow:column!important;grid-template-columns:none!important;
+  grid-auto-columns:clamp(196px,68vw,260px)!important;grid-template-rows:auto!important;
+  gap:10px!important;align-items:stretch!important;max-width:100%;min-width:0;
+  overflow-x:auto!important;overflow-y:hidden;scroll-snap-type:x mandatory;
+  scroll-padding-inline:1px;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;
+  padding:2px 1px 8px!important;scrollbar-width:thin;scrollbar-color:var(--sv-border-subtle) transparent;
+ }
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template)){
+  display:flex!important;flex-direction:column;justify-content:flex-start;gap:6px!important;
+  width:auto!important;min-width:0!important;min-height:0!important;height:auto!important;
+  padding:10px!important;margin:0!important;box-sizing:border-box;scroll-snap-align:start;
+ }
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>:is(p,strong,small,em){margin:0!important;overflow-wrap:anywhere}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>p{font-size:13px;line-height:1.4}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>strong{font-size:24px!important;line-height:1.2!important;white-space:nowrap}
+ :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.metrics,.sv-metrics,.pv-metrics,[data-sv-layout="metrics"])>:not(:is(style,script,template))>:is(small,em){font-size:12px;line-height:1.45}
+}
+
+/* Table headers stay on one line; each wide table owns its horizontal scroll. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.table-wrap,.sv-table-wrap,.pv-table-wrap){overflow-x:auto!important;max-width:100%;min-width:0}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) th{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap table{table-layout:auto!important;min-width:640px;width:100%}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .pv-table-wrap :is(th,td):nth-last-child(-n+2){white-space:nowrap!important;min-width:92px}
+
+/* Touch feedback is handled by the host; avoid native tap overlay blocks. */
+html{-webkit-tap-highlight-color:transparent}
+
+/* Additional categorical series stay distinct from the first three in both themes. */
+:root:not([data-theme="dark"]){--sv-chart-series-4:#d97706;--sv-chart-series-5:#8e4ec6;--sv-chart-series-6:#0090ff;--sv-chart-series-7:#ab4aba;--sv-chart-series-8:#46a758}
+:root[data-theme="dark"]{--sv-chart-series-4:#f6ad55;--sv-chart-series-5:#d19dff;--sv-chart-series-6:#70b8ff;--sv-chart-series-7:#e796f3;--sv-chart-series-8:#7ce2bd}
+</style><script data-sv-chart-geometry>/* Keep SVG geometry responsive while labels and endpoint markers retain pixel dimensions. */
+(() => {
+  const repair = () => document.querySelectorAll('.chartbox svg[viewBox][preserveAspectRatio="none"]:not([data-sv-geometry])').forEach(svg => {
+    if (!svg.matches('.line,.hist,.xlab')) return;
+    const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);
+    if(original.length!==4||!original.every(Number.isFinite))return;
+    svg.dataset.svGeometry='true';
+    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';
+    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';
+    const wrap=document.createElement('div');wrap.className='sv-geometry';
+    Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});
+    svg.before(wrap);wrap.append(svg);
+    svg.closest('.chartbox').style.overflowX='auto';
+    const labels=[...svg.querySelectorAll(':scope > text')].map(text=>{
+      const label=document.createElement('span');label.textContent=text.textContent;
+      const anchor=text.getAttribute('text-anchor')||'start';
+      Object.assign(label.style,{position:'absolute',fontSize:parseFloat(text.getAttribute('font-size')||'12')+'px',lineHeight:'1',whiteSpace:'nowrap',pointerEvents:'none',color:text.getAttribute('fill')||'var(--sv-text-secondary)',transform:`translate(${anchor==='middle'?'-50%':anchor==='end'?'-100%':'0'},-80%)`});
+      wrap.append(label);text.remove();return {label,x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))};
+    });
+    const dots=[...svg.querySelectorAll(':scope > circle')].map(circle=>{
+      const dot=document.createElement('span');Object.assign(dot.style,{position:'absolute',width:'7px',height:'7px',borderRadius:'50%',background:circle.getAttribute('fill'),transform:'translate(-50%,-50%)',pointerEvents:'none'});
+      wrap.append(dot);circle.remove();return {label:dot,x:Number(circle.getAttribute('cx')),y:Number(circle.getAttribute('cy'))};
+    });
+    let minY=original[1];
+    for(const line of svg.querySelectorAll('polyline[points]'))for(const point of line.getAttribute('points').trim().split(/\s+/)){const y=Number(point.split(',')[1]);if(Number.isFinite(y))minY=Math.min(minY,y);}
+    // The saved report's x labels are siblings rather than children of .xl.
+    const external=svg.matches('.line')?svg.closest('.chartbox').nextElementSibling:null;
+    const xlabels=external?.matches('.xl')?[...external.querySelectorAll('span')].map(label=>({label,x:parseFloat(label.style.left)/100*original[2]})):[];
+    const layout=()=>{
+      const rect=svg.getBoundingClientRect();if(!rect.width||!rect.height)return;
+      const dx=5*original[2]/rect.width,dy=svg.matches('.xlab')?0:8*original[3]/rect.height;
+      const box=[original[0]-dx,minY-dy,original[2]+2*dx,original[1]+original[3]-minY+2*dy];
+      svg.setAttribute('viewBox',box.join(' '));
+      for(const {label,x,y} of [...labels,...dots]){label.style.left=(x-box[0])/box[2]*100+'%';label.style.top=(y-box[1])/box[3]*100+'%';}
+      for(const {label,x} of xlabels)label.style.left=(x-box[0])/box[2]*100+'%';
+    };
+    layout();if(typeof ResizeObserver==='function')new ResizeObserver(layout).observe(wrap);
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();
+})();
+</script></head><body><main class="sv sv--dashboard" data-aime-streamviz-root="true"><header class="sv-head"><div><p class="sv-kicker">AInvest 财报模块口径 · 数据截至 FY2026 Q4（2026-06-30）</p><h1>微软（MSFT）财务数据面板：收入与盈利指标怎么读</h1><p class="sv-summary">微软最新季度（FY2026 Q4）营收 900.1 亿美元、同比 +17.7%，净利润 357.7 亿美元、同比 +31.3%；FY2026 全年营收 3,318.4 亿美元（+17.8%）、净利润 1,337.5 亿美元（+31.3%）。收入端增速连续 8 个季度稳定在 12%–18%，而利润端波动明显更大（+10.2% 至 +59.5%），说明读财报要同时看两条线：收入看“规模与增速”，利润看“转化效率”，两者背离时必须回到利润率里找原因。</p></div></header><section class="sv-metrics"><article class="sv-metric"><p>最新季度营收</p><strong>900.1 亿美元</strong><small>FY2026 Q4（截至 2026-06-30），同比 +17.7%</small></article><article class="sv-metric"><p>最新季度净利润</p><strong>357.7 亿美元</strong><small>同比 +31.3%，快于收入增速</small></article><article class="sv-metric"><p>最新季度净利率</p><strong>39.7%</strong><small>净利润 ÷ 营业收入</small></article><article class="sv-metric"><p>最新季度毛利率</p><strong>67.2%</strong><small>（营业收入 − 营业成本）÷ 营业收入</small></article><article class="sv-metric"><p>FY2026 全年营收</p><strong>3,318.4 亿美元</strong><small>同比 +17.8%</small></article><article class="sv-metric"><p>FY2026 全年净利润</p><strong>1,337.5 亿美元</strong><small>同比 +31.3%</small></article></section><section class="sv-section sv-table"><h2>最近 8 个季度的收入与盈利读数（亿美元）</h2><div class="sv-table-wrap"><table><thead><tr><th>季度</th><th>期末</th><th>营收</th><th>营收同比</th><th>净利润</th><th>净利润同比</th><th>净利率</th></tr></thead><tbody><tr><td>Q1 &#x27;25</td><td>2024-09-30</td><td></td><td>+16.0%</td><td></td><td>+10.7%</td><td>37.6%</td></tr><tr><td>Q2 &#x27;25</td><td>2024-12-31</td><td></td><td>+12.3%</td><td></td><td>+10.2%</td><td>34.6%</td></tr><tr><td>Q3 &#x27;25</td><td>2025-03-31</td><td></td><td>+13.3%</td><td></td><td>+17.7%</td><td>36.9%</td></tr><tr><td>Q4 &#x27;25</td><td>2025-06-30</td><td></td><td>+18.1%</td><td></td><td>+23.6%</td><td>35.6%</td></tr><tr><td>Q1 &#x27;26</td><td>2025-09-30</td><td></td><td>+18.4%</td><td></td><td>+12.5%</td><td>35.7%</td></tr><tr><td>Q2 &#x27;26</td><td>2025-12-31</td><td></td><td>+16.7%</td><td></td><td>+59.5%</td><td>47.3%</td></tr><tr><td>Q3 &#x27;26</td><td>2026-03-31</td><td></td><td>+18.3%</td><td></td><td>+23.1%</td><td>38.3%</td></tr><tr><td>Q4 &#x27;26</td><td>2026-06-30</td><td></td><td>+17.7%</td><td></td><td>+31.3%</td><td>39.7%</td></tr></tbody></table></div></section><section class="sv-section sv-table"><h2>四个必读口径：先看定义，再看数字</h2><div class="sv-table-wrap"><table><thead><tr><th>指标</th><th>口径</th><th>该看什么</th></tr></thead><tbody><tr><td>营业收入（Revenue）</td><td>Top line，主营业务的销售总额，不含成本费用</td><td>同比增速的方向与稳定性：连续加速=需求扩张，减速=增长动能减弱</td></tr><tr><td>毛利率（Gross Margin）</td><td>（营业收入 − 营业成本）÷ 营业收入</td><td>定价权与成本结构；毛利率下滑而收入增长，通常意味着低毛利业务占比上升或成本压力</td></tr><tr><td>净利润（Net Income）</td><td>收入扣除全部成本、费用、利息与税后的最终利润</td><td>同比增速是否快于收入增速；若大幅跳升，需确认是否含一次性项目而非经营改善</td></tr><tr><td>净利率（Net Margin）</td><td>净利润 ÷ 营业收入</td><td>利润的“转化效率”；这是解释收入与利润增速背离最直接的指标</td></tr><tr><td>同比 YoY</td><td>本期 ÷ 去年同期 − 1</td><td>跨季度可比性；软件公司有季节性，单看环比容易被季节性误导</td></tr><tr><td>每股收益（EPS）</td><td>净利润 ÷ 加权平均股本</td><td>股东实际分到的单位收益，受回购影响可能快于净利润增长</td></tr></tbody></table></div></section><section class="sv-section sv-narrative"><h2>三个读数要点</h2><p>第一，收入是“慢变量”，利润是“快变量”。最近 8 个季度微软营收同比稳定在 +12.3% 至 +18.4% 的窄区间，但净利润同比在 +10.2% 到 +59.5% 之间大幅摆动，净利率在 34.6%–47.3% 之间跳动。只看净利润增速会误判经营状况，必须用净利率把波动还原成效率变化。</p><p>第二，FY2026 Q2（截至 2025-12-31）是明显的离群点：净利率 47.3%、净利润同比 +59.5%，显著高于相邻季度的 35%–39%。这类单季跳升在读取时应先怀疑一次性因素（如投资收益、税项或资产处置），确认后再决定是否外推；把它当作常态会高估盈利中枢。</p><p>第三，趋势比单点重要。FY2026 Q4 营收同比 +17.7%、净利润同比 +31.3%、净利率 39.7%，属于“收入稳、利润更快”的良性组合，同时毛利率从 FY2025 Q1 的 69.4% 缓慢降到 67.2%——说明利润增长并非来自毛利端扩张，而是来自费用或税项等毛利以下的项目，这一点是判断盈利质量的关键。</p></section><p class="sv-note">数据来源：AInvest 财报模块（利润表与关键财务指标，经业务图表组件取数核实）。口径：金额单位为亿美元，原始取数单位为十亿美元（B USD）；微软财年（FY）截至 6 月 30 日，Q4 对应 4–6 月；同比为该季度对去年同期的比率。面板只呈现上述结构化数据，不含价格与估值；TradingView 基本面面板（同一回答内）为第三方实时控件，其数值以浏览器内 TradingView 展示为准。</p></main></body></html>

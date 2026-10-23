@@ -11,6 +11,12 @@ import pytest
 from app.reasoning_frameworks import LocalAgentFrameworks, ReasoningFrameworkError
 
 
+@pytest.fixture(autouse=True)
+def _codex_deepseek_provider(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AICHART_CODEX_PROVIDER", "deepseek")
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "test-deepseek-key")
+
+
 def test_inference_models_keep_complete_ids_and_use_display_names(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
     frameworks = LocalAgentFrameworks(project_root=tmp_path, generated_dir=tmp_path / "generated")
@@ -163,6 +169,8 @@ def test_codex_framework_routes_glm_model_to_local_ollama(monkeypatch, tmp_path:
     assert "--local-provider" not in command
     assert "--oss" not in command
     assert "--ignore-user-config" in command
+    config_values = [command[index + 1] for index, value in enumerate(command) if value == "--config"]
+    assert "tool_output_token_limit=3000" in config_values
     enabled_features = [command[index + 1] for index, value in enumerate(command) if value == "--enable"]
     disabled_features = [command[index + 1] for index, value in enumerate(command) if value == "--disable"]
     assert enabled_features == ["unified_exec", "skip_host_skill_discovery"]
@@ -180,7 +188,7 @@ def test_codex_framework_routes_glm_model_to_local_ollama(monkeypatch, tmp_path:
     assert 'model_providers.aimechart_glm.base_url="http://127.0.0.1:8010/local-glm/v1"' in config_values
     assert 'model_providers.aimechart_glm.wire_api="responses"' in config_values
     assert 'web_search="disabled"' in config_values
-    assert 'model_reasoning_effort="medium"' in config_values
+    assert 'model_reasoning_effort="low"' in config_values
     assert "model_context_window=16384" in config_values
     assert "model_auto_compact_token_limit=12288" in config_values
     final = next(data for event, data in events if event == "final")
@@ -219,6 +227,7 @@ def test_codex_framework_preserves_original_model_for_existing_remote_selection(
             [],
             session_key="session-original",
             inference_model="deepseek-v4-flash",
+            reasoning_effort="high",
         )
     )
 
@@ -227,6 +236,14 @@ def test_codex_framework_preserves_original_model_for_existing_remote_selection(
     assert "--oss" not in command
     assert "--local-provider" not in command
     assert "deepseek-v4-flash" not in command
+    assert "--ignore-user-config" in command
+    assert command[command.index("--model") + 1] == "deepseek-flash"
+    config_values = [command[index + 1] for index, value in enumerate(command) if value == "--config"]
+    assert 'model_provider="deepseek"' in config_values
+    assert 'model_providers.deepseek.wire_api="responses"' in config_values
+    assert 'model_providers.deepseek.env_key="DEEPSEEK_API_KEY"' in config_values
+    assert 'web_search="disabled"' in config_values
+    assert 'model_reasoning_effort="high"' in command
     final = next(data for event, data in events if event == "final")
     assert final["reasoningFramework"] == "codex"
     assert final["inferenceModel"] == "deepseek-v4-flash"

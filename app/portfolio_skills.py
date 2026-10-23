@@ -1,0 +1,1 @@
+../.dependencies/mentora-deal/app/portfolio_skills.py

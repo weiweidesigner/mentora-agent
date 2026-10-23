@@ -20,3 +20,15 @@ app/static/vendor/streamviz/*.map
 
 # Cloud Harness session runtime.
 .dsh/
+
+# Local verification and deployment artifacts.
+.codex_tmp/
+.codex-backups/
+.deploy-backups/
+backups/
+*.bak*
+*.codex-bak*
+*.before-*
+*.orig
+._*
+deploy/*.env

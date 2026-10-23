@@ -1,0 +1,30 @@
+{
+  "script": "render_streamviz.py",
+  "purpose": "Render one standalone component from verified upstream evidence, never fetch or invent source data.",
+  "builtInDataSources": [],
+  "cli": {"--input": "UTF-8 JSON file path, required", "--output": "standalone HTML path, required"},
+  "payloadShape": {
+    "title": "reader-facing component title",
+    "layout": "dashboard | comparison | timeline | flow | brief",
+    "eyebrow": "optional source period or context",
+    "summary": "optional evidence-supported summary",
+    "status": [{"label": "string", "tone": "success | warning | danger | neutral"}],
+    "metrics": [{"label": "string", "value": "verified value", "detail": "string"}],
+    "flow": {"title": "string", "nodes": [{"id": "string", "label": "string", "detail": "string"}], "edges": [{"from": "existing node id", "to": "existing node id", "label": "string"}]},
+    "blocks": [
+      {"type": "table", "title": "string", "columns": ["column name"], "rows": [{"column name": "value"}]},
+      {"type": "rankings", "title": "string", "items": [{"label": "string", "value": "value", "detail": "string"}]},
+      {"type": "timeline", "title": "string", "items": [{"time": "verified time", "label": "string", "detail": "string"}]},
+      {"type": "narrative", "title": "string", "paragraphs": ["evidence-supported text"]}
+    ],
+    "note": "source, data timestamp, units, coverage and limitations",
+    "html": "optional self-contained HTML/CSS/SVG/Canvas; overrides template fields; no external/local scripts or resources"
+  },
+  "modelInstructions": [
+    "Prefer StreamViz for generic visualization requests, dashboards, holistic visual summaries, and requests that do not name a specific chart type. Use a specialized renderer only when the user explicitly requests that chart type or this schema cannot express the required visual semantics.",
+    "First obtain verified data from the appropriate data/search/calculation skill or the user's explicit input. Keep units, time scope and source attribution. No placeholders or fabricated metrics.",
+    "All fields except title are optional. Omit unknown or inapplicable fields. Select only the blocks required for the requested component, not an entire dashboard wrapper.",
+    "Use assets/artifact-theme.css semantic variables for custom HTML. Root background stays transparent; support light/dark and 320/390px responsive layout without page overflow.",
+    "Render exactly one requested component; expose only its HTML in the final AIME_CHART marker, not upstream datasets, data-source cards, reports or intermediate charts."
+  ]
+}

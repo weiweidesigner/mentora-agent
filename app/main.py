@@ -32,7 +32,7 @@ from pydantic import BaseModel, Field
 
 from app.autogen_reasoning import AutoGenPlanningError, complete_text_with_autogen, plan_route_with_autogen
 from app.jev_visualization_router import JevVisualizationRouter, JevVisualizationRouterError
-from app.jev_kline_annotations import normalize_kline_annotations, kline_annotation_style
+from app.jev_kline_annotations import normalize_kline_annotations, kline_annotation_style, requested_annotation_type, drawing_style
 from app.business_chart_dependency import load_registry_data
 
 from app.agent_runtime import (
@@ -85,6 +85,8 @@ SKILLS_DIR = ROOT / "app" / "skills"
 SKILL_SCRIPT_DIRS = (
     SKILLS_DIR / "trading-view-chart" / "scripts",
     SKILLS_DIR / "generic-chart" / "scripts",
+    SKILLS_DIR / "a-share-data" / "scripts",
+    SKILLS_DIR / "streamviz" / "scripts",
     SKILLS_DIR / "business-chart-recall" / "scripts",
     SKILLS_DIR / "code-interpreter" / "scripts",
     SKILLS_DIR / "external-search" / "scripts",
@@ -611,6 +613,9 @@ def requested_text_draw_tool(question: str) -> str:
 
 def requested_native_kline_annotation_type(question: str) -> str:
     """Resolve an explicit semantic marker before asking the annotation model."""
+    native = requested_annotation_type(question)
+    if native:
+        return native
     text_tool = requested_text_draw_tool(question)
     if text_tool:
         return text_tool
@@ -695,6 +700,8 @@ def wants_model_derived_chart_annotation(question: str) -> bool:
     """Return True when chart coordinates must be inferred from market evidence first."""
     text = str(question or "")
     lower = text.lower()
+    if requested_annotation_type(text) and explicitly_targets_native_kline_chart(text):
+        return True
     if not any(term.lower() in lower for term in DERIVED_CHART_ANNOTATION_TERMS):
         return False
     # “在 K 线上画出一条卖点的线”没有逐字包含“画线”，但仍然是原生
@@ -1753,7 +1760,8 @@ def infer_model_kline_annotations(question: str, runs: list[ModuleRun], *, propo
     try:
         plan = JevVisualizationRouter().plan_kline_annotations(
             question=question, proposals=[exact] if exact else proposals,
-            requested_type=requested_native_kline_annotation_type(question),
+            requested_type="" if proposals else requested_native_kline_annotation_type(question),
+            selection_mode="all" if re.search(r"全部|所有|每个|\ball\b|\bevery\b", question, re.I) else "auto",
             language=html_lang_for_question(question), **context,
         )
         return tuple(_legacy_kline_mark({**mark, "source": "jev-kline-plan", "markStrategy": plan.mark_strategy, "markConfidence": plan.confidence}) for mark in plan.annotations)
@@ -1835,7 +1843,10 @@ def apply_model_kline_annotations(
             "text": annotation_text,
             "color": str(annotation.get("color") or semantic_color),
             "source": str(annotation.get("source") or "model"),
+            **drawing_style(annotation),
         }
+        if annotation_type.startswith("fib-") and not annotation.get("color"):
+            rendered_annotation.pop("color", None)
         existing: list[Any]
         if isinstance(payload.get("component"), dict):
             props = payload["component"].setdefault("props", {})
@@ -2849,7 +2860,7 @@ def jev_visual_semantics_prompt(metadata: dict[str, Any] | None) -> str:
         f"可视化编码为 {encoding_key}：{encoding}",
         f"证据编排为 {evidence_key}：{evidence}",
         f"标记策略为 {mark_key}：{mark_strategy}",
-        "当标记策略为 signed-direction 时，仅对单系列柱状图或柱折图通过 colorRules 应用正值绿、负值红、零值灰；多系列分组柱状图必须保留颜色用于系列与图例映射，以零轴位置表达正负。用户明确指定的颜色优先。",
+        "当标记策略为 signed-direction 时，仅对单系列柱状图或柱折图输出正、负、零的语义信号；颜色由渲染器按 financialMarket 映射：CN/HK 红涨绿跌，US 绿涨红跌。多系列分组柱状图必须保留颜色用于系列与图例映射。用户明确指定的颜色优先。",
         "当标记策略为 distribution-polarity 时，柱高表示频次/频率，极性必须由 X 轴区间判断并展示 0% 分界；单系列可用红绿灰着色，多系列分组分布必须保留系列颜色，禁止让 Mark 颜色破坏图例映射。",
         "标记策略只描述应该强调什么，不提供事实坐标。只有当上游数据能唯一解析 series/category/date/index/value/range 时，才按 chart-markup 协议生成 marks；自动模式通常选 1–3 个并以 5 个作为软默认上限，但用户指定数量或要求全部事件时必须完整保留，不得截断为 5 个。无法解析的目标必须跳过，禁止猜测日期、数值、排名或事件。",
         "如果是美股或美国上市标的，优先保留业务图表的内置取数、指标口径、交互和展示逻辑；端内文本搜索与视频搜索用于补充催化剂、市场叙事和观点，不能代替结构化业务证据。",
@@ -6608,8 +6619,8 @@ def apply_jev_mark_strategy_to_route(
         "version": 1,
         "markStrategy": "signed-direction",
         "colorRules": [
-            {"condition": ">0", "color": "#00b899", "semantic": "positive"},
-            {"condition": "<0", "color": "#ff2f57", "semantic": "negative"},
+            {"condition": ">0", "color": "var(--sv-price-up)", "semantic": "positive"},
+            {"condition": "<0", "color": "var(--sv-price-down)", "semantic": "negative"},
             {"condition": "=0", "color": "#94a3b8", "semantic": "neutral"},
         ],
     }
@@ -6618,11 +6629,10 @@ def apply_jev_mark_strategy_to_route(
         "markStrategy": "distribution-polarity",
         "distributionColor": {
             "source": "x",
-            "negative": "#ff2f57",
-            "positive": "#00b899",
+            "negative": "var(--sv-price-down)",
+            "positive": "var(--sv-price-up)",
             "neutral": "#94a3b8",
             "zero": 0,
-            "showZeroReference": True,
         },
     }
     semantic_style = signed_style if mark_strategy == "signed-direction" else distribution_style
@@ -20202,9 +20212,9 @@ def normalize_model_chart_annotations(raw_items: Any, question: str, runs: list[
             continue
         context = _jev_kline_context(run)
         if context.get("ohlcv"):
-            normalized = normalize_kline_annotations(proposals, requested_type=requested_native_kline_annotation_type(question), max_marks=3, **context)
+            normalized = normalize_kline_annotations(proposals, requested_type="" if proposals else requested_native_kline_annotation_type(question), max_marks=None, **context)
             marks.extend(_legacy_kline_mark({**mark, "source": "jev-kline-policy"}) for mark in normalized)
-    return tuple(marks[:3])
+    return tuple(marks)
 
 
 def parse_interpretation_result(raw: str, runs: list[ModuleRun], question: str) -> InterpretationResult:

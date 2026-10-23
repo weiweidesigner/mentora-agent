@@ -5,6 +5,13 @@ from types import SimpleNamespace
 from app import skill_runner
 
 
+def test_market_data_is_registered_and_resolves_to_its_batch_script():
+    root = Path(__file__).parents[1]
+    script, metadata = skill_runner._registered_script("read_market_data.py", root)
+    assert script == root / "app/skills/market-data/scripts/read_market_data.py"
+    assert metadata["name"] == "read_market_data"
+
+
 def test_kline_capability_executes_once_and_returns_verified_receipt(tmp_path, monkeypatch, capsys):
     script = tmp_path / "app/skills/business-chart-recall/scripts/kline.py"
     script.parent.mkdir(parents=True)
@@ -153,6 +160,260 @@ def test_generic_chart_runner_normalizes_json_file_to_payload(tmp_path, monkeypa
     assert "--data-json" not in seen[0]
 
 
+def test_code_interpreter_runner_normalizes_json_file_to_payload(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "code_interpreter", "script": "code_interpreter.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/code-interpreter/scripts/code_interpreter.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    payload = tmp_path / "outputs/raw.json"
+    payload.parent.mkdir(parents=True)
+    payload.write_text("{}")
+    output = tmp_path / "outputs/result.html"
+    seen = []
+
+    def fake_run(command, **_kwargs):
+        seen.append(command)
+        output.write_text("<html>ok</html>")
+        return SimpleNamespace(returncode=0, stdout='{"result": 1}', stderr="")
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", fake_run)
+    result = skill_runner.main([
+        "execute", "--script", "code_interpreter.py", "--",
+        "--data-json", str(payload), "--transform-code", "def transform(raw_data, question): return raw_data",
+        "--output", str(output),
+    ], project_root=tmp_path)
+
+    assert result == 0
+    assert "--payload" in seen[0]
+    assert "--data-json" not in seen[0]
+    assert json.loads(capsys.readouterr().out)["ok"] is True
+
+
+def test_code_interpreter_runner_normalizes_json_output_to_payload_output(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "code_interpreter", "script": "code_interpreter.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/code-interpreter/scripts/code_interpreter.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    payload = tmp_path / "outputs/raw.json"
+    payload.parent.mkdir(parents=True)
+    payload.write_text("{}")
+    requested_output = tmp_path / "outputs/result.json"
+    seen = []
+
+    def fake_run(command, **_kwargs):
+        seen.append(command)
+        html_output = Path(command[command.index("--output") + 1])
+        json_output = Path(command[command.index("--payload-output") + 1])
+        html_output.write_text("<html>ok</html>")
+        json_output.write_text('{"result": {"count": 1}}')
+        return SimpleNamespace(returncode=0, stdout='{"result": 1}', stderr="")
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", fake_run)
+    result = skill_runner.main([
+        "execute", "--script", "code_interpreter.py", "--", "--payload", str(payload),
+        "--transform-code", "def transform(raw_data, question): return raw_data",
+        "--output", str(requested_output),
+    ], project_root=tmp_path)
+
+    assert result == 0
+    assert seen[0][seen[0].index("--output") + 1].endswith("result.html")
+    assert seen[0][seen[0].index("--payload-output") + 1] == str(requested_output)
+    receipt = json.loads(capsys.readouterr().out)
+    assert {Path(item["path"]).suffix for item in receipt["artifacts"]} == {".html", ".json"}
+
+
+def test_code_interpreter_rejects_implicit_auxiliary_model_before_subprocess(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "code_interpreter", "script": "code_interpreter.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/code-interpreter/scripts/code_interpreter.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    payload = tmp_path / "outputs/raw.json"
+    payload.parent.mkdir(parents=True)
+    payload.write_text("{}")
+
+    def unexpected_run(*_args, **_kwargs):
+        raise AssertionError("subprocess must not run without an explicit transform")
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", unexpected_run)
+    result = skill_runner.main([
+        "execute", "--script", "code_interpreter.py", "--", "--payload", str(payload),
+    ], project_root=tmp_path)
+
+    assert result == 2
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["ok"] is False
+    assert "--transform-file" in receipt["error"]
+    assert "auxiliary model" in receipt["error"]
+
+
+def test_large_json_observation_is_compacted_when_saved_to_an_artifact(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "snapshot", "script": "snapshot.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/data/scripts/snapshot.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    output = tmp_path / "outputs/snapshot.json"
+    rows = [{"symbol": f"S{i}", "value": i} for i in range(2000)]
+
+    def fake_run(_command, **_kwargs):
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps({"data": {"total": len(rows), "item": rows}}))
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"data": {"total": len(rows), "item": rows}}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", fake_run)
+    result = skill_runner.main([
+        "execute", "--script", "snapshot.py", "--", "--output", str(output),
+    ], project_root=tmp_path)
+
+    assert result == 0
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["observation"]["compacted"] is True
+    assert receipt["observation"]["summary"]["data"]["item"]["count"] == 2000
+    assert receipt["observation"]["fullOutputPath"] == str(output)
+    assert "downstream tools" in receipt["observation"]["handoff"]
+
+
+def test_large_json_without_output_is_spooled_for_file_handoff(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "snapshot", "script": "snapshot.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/data/scripts/snapshot.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    rows = [{"symbol": f"S{i}", "value": i} for i in range(2000)]
+
+    monkeypatch.setattr(
+        skill_runner.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0, stdout=json.dumps({"rows": rows}), stderr="",
+        ),
+    )
+    result = skill_runner.main(["execute", "--script", "snapshot.py"], project_root=tmp_path)
+
+    assert result == 0
+    receipt = json.loads(capsys.readouterr().out)
+    reference = Path(receipt["observation"]["fullOutputPath"])
+    assert reference.is_file()
+    assert reference.parent == tmp_path / "outputs" / "tool-results"
+    assert len(json.loads(reference.read_text())["rows"]) == 2000
+
+
+def test_code_interpreter_compaction_prefers_payload_output_over_html_receipt(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "code_interpreter", "script": "code_interpreter.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/code-interpreter/scripts/code_interpreter.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    payload = tmp_path / "outputs/raw.json"
+    payload.parent.mkdir(parents=True)
+    payload.write_text("{}")
+    html = tmp_path / "outputs/receipt.html"
+    structured = tmp_path / "outputs/result.json"
+    rows = [{"symbol": f"S{i}", "value": i} for i in range(2000)]
+
+    def fake_run(_command, **_kwargs):
+        html.write_text("<html>ok</html>")
+        structured.write_text(json.dumps({"result": {"rows": rows}}))
+        return SimpleNamespace(returncode=0, stdout=json.dumps({"result": {"rows": rows}}), stderr="")
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", fake_run)
+    result = skill_runner.main([
+        "execute", "--script", "code_interpreter.py", "--", "--payload", str(payload),
+        "--transform-code", "def transform(raw_data, question): return raw_data",
+        "--output", str(html), "--payload-output", str(structured),
+    ], project_root=tmp_path)
+
+    assert result == 0
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["observation"]["fullOutputPath"] == str(structured)
+
+
+def test_large_structured_artifact_returns_result_summary_without_raw_data(tmp_path, monkeypatch, capsys):
+    registry = tmp_path / "app/module_registry.json"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(json.dumps([{
+        "name": "code_interpreter", "script": "code_interpreter.py", "description": "fixture"
+    }]))
+    script = tmp_path / "app/skills/code-interpreter/scripts/code_interpreter.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    source = tmp_path / "outputs/raw.json"
+    source.parent.mkdir(parents=True)
+    source.write_text("{}")
+    html = tmp_path / "outputs/receipt.html"
+    structured = tmp_path / "outputs/result.json"
+
+    def fake_run(_command, **_kwargs):
+        html.write_text("<html>ok</html>")
+        structured.write_text(json.dumps({
+            "rawData": [{"row": index, "payload": "x" * 100} for index in range(1000)],
+            "transformCode": "large internal implementation",
+            "result": {
+                "sampleCount": 31,
+                "horizons": [
+                    {"months": 1, "median": 2.17},
+                    {"months": 3, "median": 5.7},
+                    {"months": 6, "median": 11.29},
+                    {"months": 12, "median": 15.33},
+                ],
+            },
+        }))
+        return SimpleNamespace(returncode=0, stdout='{"ok":true}', stderr="")
+
+    monkeypatch.setattr(skill_runner.subprocess, "run", fake_run)
+    result = skill_runner.main([
+        "execute", "--script", "code_interpreter.py", "--", "--payload", str(source),
+        "--transform-code", "def transform(raw_data, question): return raw_data",
+        "--output", str(html), "--payload-output", str(structured),
+    ], project_root=tmp_path)
+
+    assert result == 0
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt["dataHandoffs"] == [{
+        "path": str(structured),
+        "bytes": structured.stat().st_size,
+        "instruction": (
+            "Use this summary for reasoning and pass path to downstream tools. "
+            "Do not reopen or print the complete artifact unless a required field is missing."
+        ),
+        "summary": {
+            "sampleCount": 31,
+            "horizons": [
+                {"months": 1, "median": 2.17},
+                {"months": 3, "median": 5.7},
+                {"months": 6, "median": 11.29},
+                {"months": 12, "median": 15.33},
+            ],
+        },
+    }]
+    assert "rawData" not in json.dumps(receipt["dataHandoffs"])
+
+
 def test_contract_returns_cli_and_schema_in_one_call(tmp_path, monkeypatch, capsys):
     registry = tmp_path / "app/module_registry.json"
     registry.parent.mkdir(parents=True)
@@ -176,4 +437,5 @@ def test_contract_returns_cli_and_schema_in_one_call(tmp_path, monkeypatch, caps
     receipt = json.loads(capsys.readouterr().out)
     assert receipt["cliHelp"] == "usage: sample --symbol SYMBOL"
     assert receipt["schema"]["required"] == ["symbol"]
-    assert receipt["skillInstructions"] == ""
+    assert receipt["capabilityDescription"] == "fixture"
+    assert "skillInstructions" not in receipt

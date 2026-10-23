@@ -11,6 +11,8 @@ const reasoningStrengthLabel = document.querySelector("#reasoningStrengthLabel")
 const reasoningStrengthPopover = document.querySelector("#reasoningStrengthPopover");
 const reasoningStrengthPopoverLabel = document.querySelector("#reasoningStrengthPopoverLabel");
 const reasoningStrengthSlider = document.querySelector("#reasoningStrengthSlider");
+const reasoningStrengthHomeAnchor = document.createComment("reasoning selector home");
+reasoningStrengthControl?.before(reasoningStrengthHomeAnchor);
 const messages = document.querySelector("#messages");
 const shell = document.querySelector(".shell");
 const conversation = document.querySelector(".conversation");
@@ -135,6 +137,19 @@ function setReasoningStrengthPopover(open) {
   reasoningStrengthControl?.classList.toggle("is-open", isOpen);
   reasoningStrengthButton?.setAttribute("aria-expanded", String(isOpen));
   if (isOpen) requestAnimationFrame(() => reasoningStrengthSlider?.focus({ preventScroll: true }));
+}
+
+function syncReasoningStrengthComposer() {
+  const target = document.querySelector('.portfolioWorkspace:not([hidden]) .pfIdeaComposer')
+    || document.querySelector('#widgetWorkspace:not([hidden]) .widgetComposerBox')
+    || reasoningStrengthHomeAnchor.parentElement;
+  if (!target || !reasoningStrengthControl || reasoningStrengthControl.parentElement === target) return;
+  setReasoningStrengthPopover(false);
+  const send = target.querySelector('.pfIdeaSubmit, #widgetGenerate');
+  if (send) send.before(reasoningStrengthControl);
+  else reasoningStrengthHomeAnchor.after(reasoningStrengthControl);
+  const textarea = target.querySelector('textarea');
+  if (textarea && typeof resizeComposerInput === 'function') resizeComposerInput(textarea, target);
 }
 
 reasoningStrengthButton?.addEventListener("click", () => {
@@ -402,6 +417,16 @@ form.addEventListener("submit", async (event) => {
   await submitQuestion(question || "请识别图片并整理信息", { images });
 });
 
+function boundedConversationHistory(history) {
+  const limit = 8;
+  const turns = Array.isArray(history) ? history : [];
+  const recent = turns.slice(-limit);
+  const anchor = turns.find(turn => turn?.role === 'user');
+  // Keep the human's original scope alongside recent follow-ups, without
+  // growing the context or promoting assistant text to user instructions.
+  return anchor && !recent.includes(anchor) ? [anchor, ...recent.slice(-(limit - 1))] : recent;
+}
+
 async function submitQuestion(question, options = {}) {
   const images = Array.isArray(options.images) ? options.images : [];
   lastQuestion = question;
@@ -454,7 +479,7 @@ async function submitQuestion(question, options = {}) {
         inferenceModel: model,
         reasoningEffort,
         resolvedInferenceModel: "",
-        history: submittedSession.messages.slice(0, -1).slice(-8),
+        history: boundedConversationHistory(submittedSession.messages.slice(0, -1)),
         sessionTitle: submittedSession.title === "新建对话" ? question : submittedSession.title,
         themeMode: currentThemeMode(),
       }),
@@ -666,36 +691,22 @@ function createAssistantMessage(question, options = {}) {
   article.activityStepKeys = new Set();
   article.innerHTML = `
     <div class="bubble assistantBubble">
+      <div class="thinkingElapsedLive" role="timer" aria-live="off"></div>
       <button class="thinkingTrigger is-thinking" type="button" aria-label="查看活动">
         <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thinking"))}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
       </button>
-      <ol class="thinkingSteps">
-        <li class="is-loading is-initial-status">
-          <div class="activityStepTitle">${escapeHtml(initialActivityTitle(lang))}</div>
-        </li>
-      </ol>
+      <ol class="thinkingSteps"></ol>
       <div class="routeChips" hidden></div>
       <div class="finalAnswer"></div>
     </div>
   `;
   article.querySelector(".thinkingTrigger").addEventListener("click", () => toggleActivityDrawer(article));
-  article.activityStepKeys.add("initial-status");
   updateThinkingSummary(article, "", { live: true });
   article.taskContext = options.taskContext || null;
   if (options.target) options.target.append(article);
   else appendMessage(article, true);
   return article;
-}
-
-function initialActivityTitle(lang) {
-  const language = normalizeLang(lang);
-  return language === "zh-Hans" ? "正在连接Agent" : language === "zh-Hant" ? "正在連接Agent" : "Connecting to agent";
-}
-
-function initialActivityDetail(lang) {
-  const language = normalizeLang(lang);
-  return language === "zh-Hans" ? "正在连接执行进度，后续步骤由 Agent 按任务需要决定。" : language === "zh-Hant" ? "正在連接執行進度，後續步驟由 Agent 按任務需要決定。" : "Connecting to execution progress. The agent will determine the steps needed for the task.";
 }
 
 function showAgentIdentity(article, agent) {
@@ -733,6 +744,10 @@ function handleStreamEvent(article, eventName, data) {
   applyRunTiming(article, eventName, data);
   showAgentIdentity(article, data?.agent);
   const lang = setArticleLanguage(article, data?.lang || article.dataset.lang || "en");
+  if (eventName === "model_activity") {
+    setModelActivity(article, data?.phase);
+    return;
+  }
   if (eventName === "status") {
     if (!shouldRenderStatusEvent(data)) return;
     appendStep(article, statusTitle(data, lang), statusDetail(data, lang), "loading", statusStepKey(data, lang));
@@ -752,8 +767,9 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "progress") {
-    const text = modelActivitySummary(data?.thoughtSummary || data?.text || data?.detail || data?.message);
+    const text = modelActivitySummary(data?.thoughtSummary || data?.text || data?.detail || data?.message, lang);
     if (!text || article.activityEnded) return;
+    article.dataset.publicThoughtText = text;
     if (article.taskContext && data?.kind === "analysis") article.dataset.hasAnalysisSummary = "true";
     appendStep(article, text, "", "loading", `model-progress:${text}`);
     article.querySelector(".thinkingSteps > li:last-child")?.classList.add("is-model-summary");
@@ -1110,6 +1126,58 @@ window.addEventListener("resize",dismissReportTooltip,{passive:true});
 document.addEventListener("pointerdown",dismissReportTooltip,{capture:true,passive:true});
 window.addEventListener("veya:chat-navigate",dismissReportTooltip);
 
+const addToWidgetIcon = `<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M960 224a32 32 0 0 0-32-32h-832a32 32 0 0 0-31.488 26.24L64 224v704a32 32 0 0 0 26.24 31.488L96 960H512a32 32 0 1 1 0 64H96a96 96 0 0 1-95.552-86.784L0 928v-704a96 96 0 0 1 86.784-95.552L96 128h832a96 96 0 0 1 95.552 86.784L1024 224V512a32 32 0 1 1-64 0V224zM801.92 576c16.64 0 30.08 13.44 30.08 30.08V768l161.92 0.064c16.64 0 30.08 13.44 30.08 30.08v3.84c0 16.64-13.44 30.08-30.08 30.08L832 831.936v161.92c0 16.64-13.44 30.144-30.08 30.144h-3.84A30.08 30.08 0 0 1 768 993.92V831.936L606.08 832A30.08 30.08 0 0 1 576 801.92v-3.84c0-16.64 13.44-30.08 30.08-30.08l161.92-.064V606.08c0-16.64 13.44-30.08 30.08-30.08h3.84zM736 0a32 32 0 1 1 0 64h-448a32 32 0 0 1 0-64h448z"/></svg>`;
+function withArtifactWidgetControl(node,item={}){
+  if(!node)return node;
+  const existing=node.closest?.('.chatArtifactShell');if(existing)return existing;
+  const shell=document.createElement('div');shell.className='chatArtifactShell';
+  shell.dataset.artifactUrl=String(item.url||node.dataset?.artifactUrl||'');
+  shell.dataset.artifactTitle=String(item.title||item.label||'');
+  const button=document.createElement('button');button.type='button';button.className='artifactAddToWidget';button.title='添加到 Widget';button.setAttribute('aria-label','添加到 Widget');button.innerHTML=addToWidgetIcon;
+  const add=(title,trigger=button)=>window.dispatchEvent(new CustomEvent('mentora:add-artifact-to-widget',{detail:{url:shell.dataset.artifactUrl,title:title||shell.dataset.artifactTitle||'可视化组件',trigger}}));
+  button.addEventListener('click',event=>{event.stopPropagation();add(button.parentElement?.textContent.trim());});
+  shell.append(node);
+  const observed=new WeakSet();
+  const attachToTitle=(root=shell)=>{
+    if(!observed.has(root)){
+      observed.add(root);
+      new MutationObserver(()=>attachToTitle(root)).observe(root,{childList:true,subtree:true});
+    }
+    const doc=root.ownerDocument||root;
+    const title=root.querySelector('.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
+    if(title?.textContent.trim()&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==title){
+      if(!doc.querySelector('[data-widget-title-button-style]')){
+        const style=doc.createElement('style');style.dataset.widgetTitleButtonStyle='true';
+        style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:center;width:28px;height:28px;margin:0 0 0 10px;padding:5px;border:0;border-radius:6px;background:transparent;color:inherit;opacity:.65;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
+        doc.head.append(style);
+      }
+      title.style.overflow='visible';title.style.maxHeight='none';title.append(button);
+      shell.dataset.artifactTitle=title.textContent.trim();
+    }
+    for(const frame of root.querySelectorAll('iframe')){
+      const connect=()=>{
+        // StreamViz keeps an opaque-origin sandbox. Its own runtime attaches the
+        // action; the parent verifies the frame before accepting its message.
+        frame.contentWindow?.postMessage({type:'mentora:widget-control'},'*');
+        try{if(frame.contentDocument?.body)attachToTitle(frame.contentDocument.body);}catch{}
+      };
+      if(!observed.has(frame)){observed.add(frame);frame.addEventListener('load',connect);}
+      connect();
+    }
+  };
+  attachToTitle();
+  return shell;
+}
+
+window.addEventListener('message',event=>{
+  if(!['mentora:add-widget','mentora:widget-ready'].includes(event.data?.type))return;
+  const frame=Array.from(document.querySelectorAll('.chatArtifactShell iframe')).find(f=>f.contentWindow===event.source);
+  if(!frame)return;
+  if(event.data.type==='mentora:widget-ready'){frame.contentWindow.postMessage({type:'mentora:widget-control'},'*');return;}
+  const shell=frame.closest('.chatArtifactShell');
+  window.dispatchEvent(new CustomEvent('mentora:add-artifact-to-widget',{detail:{url:shell.dataset.artifactUrl,title:String(event.data.title||shell.dataset.artifactTitle||'可视化组件').slice(0,160),trigger:shell.querySelector('.artifactAddToWidget')}}));
+});
+
 function createArtifactFallbackFrame(item, index, options = {}) {
   const loadingStartedAt = Date.now();
   const demoLoadingMs = Math.max(0, Number(options.demoLoadingMs || 0));
@@ -1307,11 +1375,13 @@ function appendStreamVisualizationModule(article, data = {}) {
     .some((item) => item.dataset.artifactUrl === url);
   if (existing) return;
   const item = { url, title: data.label || data.title || "", renderMode: "iframe" };
-  lane.appendChild(createArtifactFallbackFrame(item, article.streamVisualizationArtifacts.length - 1));
+  lane.appendChild(withArtifactWidgetControl(createArtifactFallbackFrame(item, article.streamVisualizationArtifacts.length - 1),item));
   keepScrollPosition(isNearBottom());
 }
 
 function renderStreamAnswerText(article, data = {}) {
+  article.dataset.activityPhase = "answer";
+  syncInlineActivity(article);
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
   const raw = String(data.text || "");
@@ -1690,8 +1760,20 @@ function appendMessage(article, forceScroll = false) {
   keepScrollPosition(shouldStick);
 }
 
+function setModelActivity(article, phase) {
+  if (article.activityEnded || !["started", "completed"].includes(phase)) return;
+  article.dataset.hasModelActivity = "true";
+  article.dataset.activityPhase = phase === "started" ? "thinking" : "idle";
+  syncActivityDrawer(article);
+}
+
+function isConnectionProgressText(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  return /^(?:正在连接 ?Agent|正在連接 ?Agent|连接模型|連接模型|Connecting to (?:agent|model))/i.test(text);
+}
+
 function appendStep(article, text, detail = "", state = "loading", stepKey = "") {
-  if (!text) return;
+  if (!text || isConnectionProgressText(text)) return;
   const list = article.querySelector(".thinkingSteps");
   const normalizedKey = stepKey || `${text}::${detail}::${state}`;
   if (!article.activityStepKeys) article.activityStepKeys = new Set();
@@ -1699,7 +1781,7 @@ function appendStep(article, text, detail = "", state = "loading", stepKey = "")
     return;
   }
   article.activityStepKeys.add(normalizedKey);
-  const isFirstStep = list.children.length === 0;
+  article.dataset.activityPhase = "summary";
   const shouldStick = isNearBottom();
   list.querySelectorAll("li.is-loading:not(.is-tool-step)").forEach((item) => {
     item.classList.remove("is-loading");
@@ -1712,7 +1794,7 @@ function appendStep(article, text, detail = "", state = "loading", stepKey = "")
     ${detail && String(detail).trim() !== String(text).trim() ? `<div class="activityStepDetail">${escapeHtml(detail)}</div>` : ""}
   `;
   list.appendChild(item);
-  if (state !== "error" && !isFirstStep) {
+  if (state !== "error") {
     article.dataset.currentThinking = detail || text;
   }
   updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "thinking"), { live: true });
@@ -1727,7 +1809,6 @@ function appendRichStep(article, { titleHtml, detailHtml = "", drawerDetailHtml 
   if (!article.activityStepKeys) article.activityStepKeys = new Set();
   if (article.activityStepKeys.has(normalizedKey)) return null;
   article.activityStepKeys.add(normalizedKey);
-  const isFirstStep = list.children.length === 0;
   const shouldStick = isNearBottom();
   list.querySelectorAll("li.is-loading:not(.is-tool-step)").forEach((item) => {
     item.classList.remove("is-loading");
@@ -1741,7 +1822,7 @@ function appendRichStep(article, { titleHtml, detailHtml = "", drawerDetailHtml 
     ${drawerDetailHtml ? `<div class="activityDrawerOnly">${drawerDetailHtml}</div>` : ""}
   `;
   list.appendChild(item);
-  if (state !== "error" && !isFirstStep) {
+  if (state !== "error") {
     article.dataset.currentThinking = currentThinking || item.textContent.trim();
   }
   updateThinkingSummary(article, copyFor(article.dataset.lang || "en", "thinking"), { live: true });
@@ -1796,11 +1877,15 @@ function appendToolStep(article, data) {
   const phase = String(data?.phase || "").trim().toLowerCase();
   const observation = phase === "started" ? "" : publicToolObservation([preObservation, output].filter(Boolean).join("\n"), lang);
   const callId = String(data?.callId || "").trim();
+  const fileChanges = activityFileChangesFromTool(data, tool, observation, phase);
   if (script === "multimodal_vision" && mergeVisionToolStep(article, { script, code, params, shellCommand, lang })) {
     return;
   }
   const dynamicTitle = toolActivityTitle(data, script, tool, code, params, shellCommand, lang);
-  const thought = modelActivitySummary(data?.thoughtSummary);
+  const thought = modelActivitySummary(data?.thoughtSummary, lang);
+  const publicProgress = [data?.nextThought, thought].map(value => modelActivitySummary(value, lang))
+    .find(value => value && ![tool, script].some(name => name && value.toLowerCase() === name.toLowerCase()));
+  const flowingText = article.dataset.publicThoughtText || publicProgress || article.dataset.currentThinking || copyFor(lang, "thinking");
   let actionArgument = shellCommand.length ? shellCommand.map(shellQuote).join(" ") : "";
   let input = null;
   if (!actionArgument && params[0]) {
@@ -1810,18 +1895,24 @@ function appendToolStep(article, data) {
       actionArgument = Array.isArray(argument) ? argument.join(" ") : typeof argument === "string" ? argument : "";
     } catch { actionArgument = params[0]; }
   }
+  if (/write|edit|patch/i.test(tool) && (!actionArgument || actionArgument.startsWith("{"))) {
+    actionArgument = observation.match(/<path>([^<]+)<\/path>/i)?.[1]
+      || observation.match(/(?:cannot (?:modify|write)|created|updated|wrote)[^"\n]*"([^"]+)"/i)?.[1]
+      || actionArgument;
+  }
   const kind = activityToolKind(script || tool);
   const renderTool = (item) => {
     const wasOpen = item.querySelector("details")?.open || false;
-    const previousThought = modelActivitySummary(item.querySelector(".activityThoughtSummary")?.textContent);
+    const previousThought = modelActivitySummary(item.querySelector(".activityThoughtSummary")?.textContent, lang);
     const command = actionArgument || item.dataset.toolArgument || "";
-    const inputText = kind === "shell" ? command : params.join("\n") || item.dataset.toolInput || "";
+    const inputText = kind === "shell" || (kind === "edit" && command) ? command : params.join("\n") || item.dataset.toolInput || "";
     const running = !["completed", "failed"].includes(phase);
     const chinese = lang === "zh-Hans" || lang === "zh-Hant";
     const verb = activityToolVerb(kind, running, chinese);
     const actionText = [verb, command || tool].join(" ");
     const state = phase === "failed" ? (chinese ? "失败" : "Failed") : running ? (chinese ? "执行中" : "Running") : (chinese ? "成功" : "Success");
     const statusIcon = running ? '<span class="activityRunningDot" aria-hidden="true"></span>' : phase === "failed" ? "×" : "✓";
+    const fileChangeMarkup = fileChanges.length ? activityFileChangesMarkup(fileChanges, lang) : "";
     const panel = `<section class="activityCommandPanel"><div class="activityCommandLabel">${escapeHtml(kind === "shell" ? "Shell" : tool)}</div>
       ${inputText ? `<pre class="toolStepInput"><code>${escapeHtml(kind === "shell" ? `$ ${inputText}` : inputText)}</code></pre>` : ""}
       ${observation ? `<pre class="toolStepOutputBlock"><code>${escapeHtml(observation)}</code></pre>` : ""}
@@ -1831,20 +1922,23 @@ function appendToolStep(article, data) {
     item.dataset.toolArgument = command;
     item.dataset.toolInput = inputText;
     item.dataset.toolPhase = phase;
-    item.innerHTML = `${thought || previousThought ? `<p class="activityThoughtSummary">${escapeHtml(thought || previousThought)}</p>` : ""}
-      <details class="activityTool"${wasOpen ? " open" : ""}>
+    item.dataset.fileChanges = fileChanges.length ? JSON.stringify(fileChanges) : "";
+    const toolDetails = `<details class="activityTool"${wasOpen ? " open" : ""}>
         <summary class="activityAction" title="${escapeHtml(actionText)}"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(script || tool)}</span><span class="activityActionText">${escapeHtml(actionText)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>
         <div class="toolStepDetail">${panel}</div>
       </details>`;
+    item.innerHTML = `${thought || previousThought ? `<p class="activityThoughtSummary">${escapeHtml(thought || previousThought)}</p>` : ""}
+      ${fileChangeMarkup}${fileChanges.length ? "" : toolDetails}`;
     item.classList.remove("is-loading", "is-done", "is-error");
     item.classList.add(phase === "failed" ? "is-error" : phase === "completed" ? "is-done" : "is-loading");
+    article.dataset.activityPhase = running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
   };
   if (["completed", "failed"].includes(phase) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
       .find((item) => item.dataset.toolCallId === callId);
     if (existingItem) {
       renderTool(existingItem);
-      article.dataset.currentThinking = compactReasoningTitle(data?.nextThought || data?.thoughtSummary, lang) || dynamicTitle;
+      article.dataset.currentThinking = flowingText;
       updateThinkingSummary(article, copyFor(lang, "thinking"), { live: true });
       syncActivityDrawer(article);
       return;
@@ -1854,7 +1948,7 @@ function appendToolStep(article, data) {
     titleHtml: `<span>${escapeHtml(dynamicTitle)}</span>`,
     state: phase === "failed" ? "error" : "loading",
     stepKey: `tool-step:${callId || data?.index || ""}:${phase || "step"}:${script}:${code}:${params.join("|")}`,
-    currentThinking: dynamicTitle,
+    currentThinking: flowingText,
     className: "is-tool-step",
   });
   if (item && callId) item.dataset.toolCallId = callId;
@@ -1872,10 +1966,80 @@ function appendToolStep(article, data) {
 function activityToolKind(tool) {
   const name = String(tool || "").toLowerCase();
   if (/bash|shell|exec|command/.test(name)) return "shell";
-  if (/write|edit|patch/.test(name)) return "edit";
+  if (/write|edit|patch|file[ _-]*changes?/.test(name)) return "edit";
   if (/search|web|fetch|browse|grep|glob/.test(name)) return "search";
   if (/read|file/.test(name)) return "read";
   return "tool";
+}
+
+function activityFileChangesFromTool(data, tool, observation, phase) {
+  const explicit = Array.isArray(data?.fileChanges) ? data.fileChanges.filter((change) => change?.name) : [];
+  if (explicit.length || phase !== "completed" || !/write|edit|patch/i.test(tool)) return explicit;
+  const path = observation.match(/<path>([^<]+)<\/path>/i)?.[1]?.trim();
+  if (!path || !/\/(?:outputs)\//.test(path) || !/<type>file<\/type>/i.test(observation)) return [];
+  const relativePath = `outputs/${path.split("/outputs/")[1]}`;
+  let added = null;
+  try {
+    const input = JSON.parse(String(data?.params?.[0] || ""));
+    if (typeof input.content === "string") added = input.content.split(/\r?\n/).length;
+  } catch {}
+  return [{
+    path,
+    relativePath,
+    name: path.split("/").at(-1),
+    kind: /\bCreated file\b/i.test(observation) ? "created" : "edited",
+    added,
+    removed: added == null ? null : 0,
+    previewable: true,
+  }];
+}
+
+function activityFileChangesMarkup(changes, lang) {
+  const chinese = lang === "zh-Hans" || lang === "zh-Hant";
+  return `<div class="activityFileChanges">${changes.map((change, index) => {
+    const kind = String(change.kind || "edited");
+    const label = chinese
+      ? (kind === "created" ? "已创建" : kind === "deleted" ? "已删除" : "已编辑")
+      : (kind === "created" ? "Created" : kind === "deleted" ? "Deleted" : "Edited");
+    const hasStats = change.added != null && change.removed != null
+      && Number.isFinite(Number(change.added)) && Number.isFinite(Number(change.removed));
+    const added = hasStats ? Math.max(0, Number(change.added) || 0) : 0;
+    const removed = hasStats ? Math.max(0, Number(change.removed) || 0) : 0;
+    const previewable = change.previewable !== false && kind !== "deleted";
+    const tag = previewable ? "button" : "div";
+    const attributes = previewable ? `type="button" data-file-change-index="${index}" data-file-name="${escapeHtml(change.name)}" data-relative-path="${escapeHtml(change.relativePath || "")}" data-change-kind="${escapeHtml(kind)}" aria-label="${escapeHtml(label + " " + change.name)}"` : "";
+    return `<${tag} class="activityFileChange${previewable ? " is-previewable" : ""}" ${attributes}>
+      <span class="activityFileChangeIcon" aria-hidden="true">${activityActionIcon("edit")}</span>
+      <span class="activityFileChangeStatus">${escapeHtml(label)}</span>
+      <span class="activityFileChangeName" title="${escapeHtml(change.path || change.relativePath || change.name)}">${escapeHtml(change.name)}</span>
+      ${hasStats ? `<span class="activityFileChangeStats"><span class="is-added">+${added}</span> <span class="is-removed">-${removed}</span></span>` : ""}
+      ${kind === "created" ? '<span class="activityFileCreatedDot" aria-hidden="true"></span>' : ""}
+      ${previewable ? '<span class="activityFileChangeChevron" aria-hidden="true"></span>' : ""}
+    </${tag}>`;
+  }).join("")}</div>`;
+}
+
+function bindActivityFileChangeButtons(root) {
+  root?.querySelectorAll?.(".activityFileChange[data-file-change-index]").forEach((button) => {
+    if (button.dataset.boundFilePreview === "true") return;
+    button.dataset.boundFilePreview = "true";
+    button.addEventListener("click", () => {
+      const relativePath = button.dataset.relativePath || "";
+      const name = button.dataset.fileName || relativePath.split("/").at(-1) || "file.txt";
+      const kind = button.dataset.changeKind === "created" ? "created" : "edited";
+      if (!relativePath) return;
+      const query = new URLSearchParams({path: relativePath, change: kind, theme: currentThemeMode()});
+      const download = new URLSearchParams({path: relativePath});
+      const suffix = name.includes(".") ? name.split(".").at(-1).toUpperCase() : "TXT";
+      void openGeneratedFilePreview({
+        name,
+        type: suffix,
+        open: `/api/workspace-file/preview?${query}`,
+        download: `/api/workspace-file/download?${download}`,
+        workspaceFile: true,
+      }, button);
+    });
+  });
 }
 
 function activityToolVerb(kind, running, chinese) {
@@ -1902,6 +2066,34 @@ function rememberActivityDisclosure(event) {
   }));
 }
 
+function bindActivityCommandPanels(root) {
+  root?.querySelectorAll?.(".activityCommandCopy").forEach((button) => {
+    if (button.commandCopyBound) return;
+    button.commandCopyBound = true;
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const command = button.closest(".activityCommandPanel")?.querySelector(".toolStepInput code")?.textContent.replace(/^\$ ?/, "") || "";
+      if (!command) return;
+      const label = button.dataset.copyLabel;
+      try {
+        await navigator.clipboard.writeText(command);
+        button.classList.add("is-copied");
+        button.setAttribute("aria-label", button.dataset.copiedLabel);
+        button.title = button.dataset.copiedLabel;
+      } catch {
+        button.setAttribute("aria-label", button.dataset.failedLabel);
+        button.title = button.dataset.failedLabel;
+      }
+      window.setTimeout(() => {
+        button.classList.remove("is-copied");
+        button.setAttribute("aria-label", label);
+        button.title = label;
+      }, 1600);
+    });
+  });
+}
+
 function activityToolMarkup(article, item, key) {
   const clone = item.cloneNode(true);
   clone.querySelectorAll(".activityThoughtSummary, .activityStepTitle, :scope > .activityStepDetail").forEach((node) => node.remove());
@@ -1915,7 +2107,13 @@ function activityToolMarkup(article, item, key) {
   if (!argument && input) {
     try { const parsed = JSON.parse(input); argument = parsed.command || parsed.cmd || parsed.file_path || parsed.path || parsed.url || ""; } catch { argument = input.replace(/^\$\s*/, ""); }
   }
-  if (!argument) argument = item.querySelector(".activityActionText")?.textContent.replace(/^(?:bash|shell|exec_command)\s*·\s*/, "") || tool;
+  if (!argument) {
+    const previousAction = item.querySelector(".activityActionText")?.textContent || "";
+    argument = previousAction
+      .replace(/^(?:bash|shell|exec_command)\s*·\s*/i, "")
+      .replace(/^(?:正在运行|已运行|正在读取|已读取|正在编辑|已编辑|正在搜索|已搜索|正在调用|已调用|Running|Ran|Reading|Read|Editing|Edited|Searching|Searched|Calling|Called)\s+/i, "")
+      .trim() || tool;
+  }
   argument = Array.isArray(argument) ? argument.join(" ") : String(argument);
   const running = item.classList.contains("is-loading") && !article.activityEnded;
   const action = `${activityToolVerb(kind, running, chinese)} ${argument}`;
@@ -1940,8 +2138,34 @@ function activityToolMarkup(article, item, key) {
     status.textContent = returned ? (chinese ? "已返回结果" : "Result returned") : (chinese ? "未记录完成结果" : "Completion not recorded");
     status.dataset.status = returned ? "returned" : "unknown";
   }
+  if (kind === "shell") {
+    const panel = details.querySelector(".activityCommandPanel");
+    const command = panel?.querySelector(".toolStepInput");
+    if (panel && command && !command.closest(".activityShellCommand")) {
+      panel.classList.add("activityShellPanel");
+      const disclosure = document.createElement("details");
+      disclosure.className = "activityShellCommand";
+      disclosure.dataset.activityKey = `command:${key}`;
+      disclosure.open = article.activityDisclosureState?.get(disclosure.dataset.activityKey) ?? false;
+      const toggle = document.createElement("summary");
+      toggle.className = "activityShellCommandToggle";
+      toggle.title = chinese ? "点击展开或收起全部命令" : "Click to expand or collapse the full command";
+      command.before(disclosure);
+      toggle.append(command);
+      disclosure.append(toggle);
+      const heading = panel.querySelector(".activityCommandLabel");
+      const header = document.createElement("header");
+      header.className = "activityCommandHeader";
+      panel.prepend(header);
+      if (heading) header.append(heading);
+      const copyLabel = chinese ? "复制命令" : "Copy command";
+      const copiedLabel = chinese ? "已复制" : "Copied";
+      const failedLabel = chinese ? "复制失败，请重试" : "Copy failed, try again";
+      header.insertAdjacentHTML("beforeend", `<button class="activityCommandCopy" type="button" aria-label="${copyLabel}" title="${copyLabel}" data-copy-label="${copyLabel}" data-copied-label="${copiedLabel}" data-failed-label="${failedLabel}"><svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M896 832h-64v-64h64a64 64 0 0 0 64-64V128a64 64 0 0 0-64-64H320a64 64 0 0 0-64 64v64H192V128a128 128 0 0 1 128-128h576a128 128 0 0 1 128 128v576a128 128 0 0 1-128 128z"/><path d="M704 1024H128a128 128 0 0 1-128-128V320a128 128 0 0 1 128-128h576a128 128 0 0 1 128 128v576a128 128 0 0 1-128 128zM128 256a64 64 0 0 0-64 64v576a64 64 0 0 0 64 64h576a64 64 0 0 0 64-64V320a64 64 0 0 0-64-64z"/></svg></button>`);
+    }
+  }
   details.dataset.activityKey = key;
-  details.open = article.activityDisclosureState?.get(key) ?? details.open;
+  details.open = article.activityDisclosureState?.get(key) ?? false;
   return `<li class="activityToolRow ${item.className}">${clone.innerHTML}</li>`;
 }
 
@@ -1949,36 +2173,37 @@ function buildActivityFlow(article) {
   const list = article.querySelector(".thinkingSteps");
   if (!list) return "";
   const chinese = /^zh/.test(article.dataset.lang || "zh");
-  const tokens = [], seen = new Set(), connections = [];
+  const tokens = [], seen = new Set();
   let group = null;
-  const addSummary = (value) => {
-    const text = modelActivitySummary(value);
+  const addSummary = (value, stage) => {
+    const text = modelActivitySummary(value, article.dataset.lang || "zh-CN");
     const key = activitySummaryKey(text);
     if (!key || seen.has(key)) return;
     seen.add(key);
-    tokens.push({text});
+    tokens.push({text, stage});
     group = null;
   };
   Array.from(list.children).forEach((item, index) => {
     const title = item.querySelector(".activityStepTitle")?.textContent.trim() || "";
-    if (item.classList.contains("is-initial-status") || /^(?:正在连[接結]|正在連接|连接模型|連接模型|Connecting to (?:agent|model))/.test(title)) {
-      if (title) connections.push(title);
+    if (item.classList.contains("is-initial-status") || isConnectionProgressText(title)) {
       return;
     }
     if (item.classList.contains("is-tool-step")) {
-      addSummary(item.querySelector(".activityThoughtSummary")?.textContent || "");
+      addSummary(item.querySelector(".activityThoughtSummary")?.textContent || "", index);
+      if (item.dataset.fileChanges) {
+        group = null;
+        tokens.push({tools: [{item, key: `tool:${item.dataset.toolCallId || index}`}]});
+        return;
+      }
       if (!group) { group = {tools: []}; tokens.push(group); }
       group.tools.push({item, key: `tool:${item.dataset.toolCallId || index}`});
     } else {
-      addSummary(title);
+      addSummary(title, index);
       const detail = item.querySelector(":scope > .activityStepDetail");
-      if (detail && !detail.querySelector("pre, .toolStepDetail")) addSummary(detail.textContent);
+      if (detail && !detail.querySelector("pre, .toolStepDetail")) addSummary(detail.textContent, index);
     }
   });
-  if (!tokens.length && !article.activityEnded && connections.length) {
-    return `<div class="activityConnection" role="status">${escapeHtml(connections.at(-1))}</div>`;
-  }
-  const content = tokens.map((token) => {
+  const renderToken = (token) => {
     if (token.text) return `<li class="activityNarrative"><p>${escapeHtml(token.text)}</p></li>`;
     const tools = token.tools;
     if (tools.length === 1) return activityToolMarkup(article, tools[0].item, tools[0].key);
@@ -1993,19 +2218,45 @@ function buildActivityFlow(article) {
     const label = (chinese && !active.length ? "已" : "") + Array.from(counts, ([kind, count]) => `${verbs[kind]} ${count} ${names[kind]}`).join(chinese ? "、" : ", ");
     const key = `group:${tools[0].key}`;
     const open = article.activityDisclosureState?.get(key) ?? tools.some(({key}) => article.activityDisclosureState?.get(key) === true);
-    const icon = tools.find(({item}) => activityToolKind(item.dataset.toolName) === "edit")?.item.dataset.toolName || tools[0].item.dataset.toolName;
+    const icon = ["edit", "search", "read", "shell", "tool"].find((kind) => counts.has(kind));
     return `<li class="activityToolGroup"><details class="activityGroup" data-activity-key="${escapeHtml(key)}"${open ? " open" : ""}>
       <summary class="activityAction activityGroupAction"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(icon)}</span><span class="activityActionText">${escapeHtml(label)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>
       <ul class="activityGroupItems">${tools.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul></details>
       ${active.length ? `<ul class="activityCurrentAction">${active.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul>` : ""}</li>`;
-  }).join("");
-  return `<ol class="activityFlowList">${content}</ol>`;
+  };
+  const live = !article.activityEnded && article.dataset.thinkingState === "active";
+  const thinking = !article.activityEnded && article.dataset.thinkingState === "active"
+    && article.dataset.activityPhase === "thinking" && !list.querySelector("li.is-tool-step.is-loading")
+    ? `<li class="activityLiveThinking" role="status">${chinese ? "正在思考" : "Thinking"}</li>` : "";
+  if (live) {
+    const fallbackThinking = thinking || (!tokens.length && !article.dataset.hasModelActivity ? `<li class="activityLiveThinking" role="status">${chinese ? "正在思考" : "Thinking"}</li>` : "");
+    return `<ol class="activityFlowList">${tokens.map(renderToken).join("")}${fallbackThinking}</ol>`;
+  }
+  return `<ol class="activityFlowList">${tokens.map(renderToken).join("")}</ol>`;
 }
 
 function syncInlineActivity(article) {
   const source = article.querySelector(".thinkingSteps");
   if (!source) return null;
   source.hidden = true;
+  let currentTool = article.querySelector(".thinkingCurrentTool");
+  if (!currentTool) {
+    currentTool = document.createElement("div");
+    currentTool.className = "thinkingCurrentTool";
+    source.before(currentTool);
+  }
+  const latestTool = Array.from(source.querySelectorAll("li.is-tool-step")).at(-1);
+  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || article.dataset.activityInlineExpanded === "true" || !latestTool;
+  if (!currentTool.hidden) {
+    const toolSignature = latestTool.outerHTML;
+    if (currentTool.dataset.signature !== toolSignature) {
+      currentTool.innerHTML = '<ol class="activityFlowList">' + activityToolMarkup(article, latestTool, "current-tool") + '</ol>';
+      currentTool.querySelectorAll(".activityThoughtSummary").forEach(node => node.remove());
+      bindActivityFileChangeButtons(currentTool);
+      bindActivityCommandPanels(currentTool);
+      currentTool.dataset.signature = toolSignature;
+    }
+  }
   let view = article.querySelector(".thinkingFlow");
   if (!view) {
     view = document.createElement("div");
@@ -2013,12 +2264,13 @@ function syncInlineActivity(article) {
     view.id = `thinking-${crypto.randomUUID()}`;
     source.before(view);
   }
-  const live = !article.activityEnded && article.dataset.thinkingState === "active";
-  view.hidden = live ? article.dataset.thinkingCollapsed === "true" : isMobileLayout() || article.dataset.activityInlineExpanded !== "true";
-  const signature = `${article.activityEnded}:${source.innerHTML}`;
+  view.hidden = article.dataset.activityInlineExpanded !== "true";
+  const signature = `${article.activityEnded}:${article.dataset.activityPhase || ""}:${source.innerHTML}`;
   if (article.activityFlowSignature !== signature) {
     const focused = view.contains(document.activeElement) ? document.activeElement.closest("details")?.dataset.activityKey : "";
     view.innerHTML = buildActivityFlow(article);
+    bindActivityFileChangeButtons(view);
+    bindActivityCommandPanels(view);
     if (focused) Array.from(view.querySelectorAll("details[data-activity-key]")).find((item) => item.dataset.activityKey === focused)?.querySelector("summary")?.focus({preventScroll:true});
     article.activityFlowSignature = signature;
   }
@@ -2027,14 +2279,21 @@ function syncInlineActivity(article) {
 
 function activityActionIcon(tool) {
   const name = String(tool).toLowerCase();
+  if (name === "tool-group") {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="4" height="4" rx="1"/><path d="M11 6h10"/><rect x="3" y="10" width="4" height="4" rx="1"/><path d="M11 12h10"/><rect x="3" y="16" width="4" height="4" rx="1"/><path d="M11 18h10"/></svg>';
+  }
+  if (activityToolKind(name) === "tool" || /(?:^|[\s._-])skill(?:$|[\s._-])/.test(name)) {
+    return '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M639.75 56c17.496 0 31.712 14.042 31.995 31.47l.004.53v179.999l95.25.001c17.496 0 31.713 14.042 31.996 31.47l.004.53v212c0 147.199-111.18 268.716-254.499 284.634V936c0 17.673-14.327 32-32 32-17.497 0-31.714-14.042-31.996-31.47l-.005-.53V796.633C337.332 780.727 226 659.363 226 512V300c0-17.673 14.327-32 32-32l95.249-.001V88c0-17.673 14.328-32 32-32 17.497 0 31.714 14.042 31.996 31.47l.005.53-.001 179.999h190.5V88c0-17.673 14.327-32 32-32zM639.539 331.998l-254.077.001-.212.001-.211-.002-95.039.001V512c0 121.597 97.631 220.406 218.82 222.37l3.609.029 3.876-.032 3.517-.085c118.418-3.82 213.244-100.07 215.148-218.645l.029-3.637V331.999H639.96l-.212.001-.21-.002z"/></svg>';
+  }
+  if (activityToolKind(name) === "search") {
+    return '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M446.112323 177.545051c137.567677 0.219798 252.612525 104.59798 266.162424 241.493333 13.562828 136.895354-78.778182 261.818182-213.617777 289.008485-134.852525 27.203232-268.386263-52.156768-308.945455-183.608889s25.018182-272.252121 151.738182-325.779394A267.235556 267.235556 0 0 1 446.112323 177.545051m0-62.060607c-182.794343 0-330.989899 148.195556-330.989899 330.989899s148.195556 330.989899 330.989899 330.989899 330.989899-148.195556 330.989899-330.989899-148.195556-330.989899-330.989899z m431.321212 793.341415a30.849293 30.849293 0 0 1-21.94101-9.102223l-157.220202-157.220202c-11.752727-12.179394-11.584646-31.534545 0.37495-43.50707 11.972525-11.972525 31.327677-12.140606 43.494141-0.37495l157.220202 157.220202a31.036768 31.036768 0 0 1 6.723232 33.810101 31.004444 31.004444 0 0 1-28.651313 19.174142z m0 0"/></svg>';
+  }
   const path = /bash|shell|exec|command|python/.test(name)
     ? '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 8 4 4-4 4m6 0h4"/>'
     : /write|edit|patch/.test(name)
     ? '<path d="m16 3 5 5L9 20l-6 1 1-6L16 3ZM14 5l5 5"/>'
     : /read|file/.test(name)
     ? '<path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15"/>'
-    : /search|web|fetch|browse/.test(name)
-    ? '<circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/>'
     : '<path d="m8 5-6 7 6 7m8-14 6 7-6 7m-3-16-2 18"/>';
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
 }
@@ -2127,8 +2386,11 @@ function compactReasoningTitle(value, lang) {
   return text;
 }
 
-function modelActivitySummary(value) {
+function modelActivitySummary(value, lang = "") {
   const text = typeof value === "string" ? value.trim() : "";
+  // Public descriptions must match the conversation language. Keep commands and
+  // file paths in the action details; never add a translation model to the stream.
+  if (/^zh/.test(normalizeLang(lang)) && text && !/[\u3400-\u9fff]/.test(text)) return "";
   // Recognize old generated labels for migration only. Never generate a summary.
   const legacy = /^(?:正在(?:执行本地计算|執行本地計算|处理数据与准备分析|處理資料與準備分析|检查项目与运行环境|檢查專案與執行環境|读取相关 Skill 规范|讀取相關 Skill 規範|核对图表数据契约|核對圖表資料契約|定位所需文件与能力|定位所需檔案與能力|获取外部数据与证据|取得外部資料與證據|整理并计算数据|整理並計算資料|检索相关事实与市场信息|檢索相關事實與市場資訊|推进当前分析步骤|推進目前分析步驟|汇总分析结果|生成报告|生成 HTML 报告|读取所需技能|等待网络响应|读取后台任务结果|处理数据与准备分析)|Preparing data and analysis|Checking the project and runtime environment|Reading the relevant Skill instructions|Checking the chart data contract|Locating the required files and capabilities|Retrieving external data and evidence|Organizing and calculating the data|Searching for relevant facts and market context|Advancing the current analysis step)[。.!！]?$/i;
   if (legacy.test(text) || /^(?:正在执行|正在執行|执行工具[:：]|執行工具[:：]|Running(?: tool:)?\s+)\s*(?:bash|shell|exec_command|command_execution|write|read|edit|glob|grep|python|\S+\.(?:py|sh))[。.!！]?$/i.test(text)) return "";
@@ -2137,15 +2399,16 @@ function modelActivitySummary(value) {
 }
 
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
-  const reasoningTitle = modelActivitySummary(data?.thoughtSummary);
+  const reasoningTitle = modelActivitySummary(data?.thoughtSummary, lang);
   if (reasoningTitle) return reasoningTitle;
   return String(data?.tool || script || fallback || "Tool").trim();
 }
 
 function refreshSavedToolStepTitles(root, lang) {
   root?.querySelectorAll?.(".activityStepTitle, .activityThoughtSummary, .toolStepThought, .activityStepDetail").forEach((node) => {
-    if (node.textContent.trim() && !modelActivitySummary(node.textContent)) {
-      root.dataset.legacyActivity = "true";
+    const summaryLang = node.matches(".activityStepDetail") ? "" : lang;
+    if (node.textContent.trim() && !modelActivitySummary(node.textContent, summaryLang)) {
+      if (modelActivitySummary(node.textContent) === "") root.dataset.legacyActivity = "true";
       const toolName = node.textContent.trim().match(/^(?:正在执行|正在執行|执行工具[:：]|Running(?: tool:)?\s+)\s*(bash|shell|exec_command|command_execution|write|read|edit|glob|grep)\s*$/i)?.[1];
       if (toolName && node.closest("li")) node.closest("li").dataset.toolName = toolName;
       node.remove();
@@ -2240,15 +2503,16 @@ function appendAgentChatEvent(article, data) {
   if (!Array.isArray(article.agentEvents)) article.agentEvents = [];
   article.agentEvents.push(eventRecord);
   article.dataset.agentRunId = eventRecord.runId || article.dataset.agentRunId || "";
-  const summary = modelActivitySummary(data?.thoughtSummary);
-  if (!isModelConnection && !summary) return;
+  if (isModelConnection) return;
+  const summary = modelActivitySummary(data?.thoughtSummary, lang);
+  if (!summary) return;
   appendRichStep(article, {
-    titleHtml: `<span>${escapeHtml(isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : summary)}</span>`,
+    titleHtml: `<span>${escapeHtml(summary)}</span>`,
     detailHtml: "",
     drawerDetailHtml: blocks.length ? `<div class="toolStepDetail">${blocks.join("")}</div>` : "",
     state: status === "failed" ? "error" : "loading",
     stepKey: `agentchat:${phase}:${status}:${agent}`,
-    currentThinking: isModelConnection ? (isChinese ? "连接模型" : "Connecting to model") : `${phaseLabel} ${statusLabel}`.trim(),
+    currentThinking: `${phaseLabel} ${statusLabel}`.trim(),
     className: "is-agentchat-step",
   });
 }
@@ -3265,7 +3529,7 @@ function closeGeneratedFilePreview(restoreFocus=true){
 
 async function openGeneratedFilePreview(file,trigger){
   const open=new URL(file.open,window.location.origin),downloadUrl=new URL(file.download,window.location.origin);
-  if(file.type==='HTML')open.searchParams.set('theme',currentThemeMode());downloadUrl.searchParams.set('theme',currentThemeMode());
+  if(file.type==='HTML'||file.workspaceFile)open.searchParams.set('theme',currentThemeMode());downloadUrl.searchParams.set('theme',currentThemeMode());
   file={...file,open:open.pathname+open.search,download:downloadUrl.pathname+downloadUrl.search};
   const panel=ensureGeneratedFilePreview();if(!panel)return;
   if(typeof closeActivityDrawer==='function')closeActivityDrawer();
@@ -3278,7 +3542,7 @@ async function openGeneratedFilePreview(file,trigger){
   const status=panel.querySelector('.filePreviewStatus'),frame=panel.querySelector('.filePreviewFrame'),retry=panel.querySelector('.filePreviewRetry');
   frame.onload=null;frame.onerror=null;frame.removeAttribute('src');frame.hidden=true;status.hidden=false;status.textContent='正在加载文件…';retry.hidden=true;
   panel.querySelector('.filePreviewClose').focus({preventScroll:true});
-  if(!['HTML','PDF','PNG','JPG','JPEG','WEBP','SVG','TXT','MD','JSON'].includes(file.type)){
+  if(!['HTML','PDF','PNG','JPG','JPEG','WEBP','SVG','TXT','MD','JSON','CSV','PY','JS','MJS','CJS','TS','TSX','JSX','CSS','SCSS','XML','YAML','YML','TOML','SH','SQL'].includes(file.type)){
     status.textContent='此格式暂不支持预览，可点击右上角下载查看。';return;
   }
   panel.loadTimeout=setTimeout(()=>{
@@ -3398,12 +3662,12 @@ async function renderMixedReportFlow(article, data, container, onDone) {
       if (streamedHost.classList.contains("streamvizArtifactHost")) guardStreamVisualization(streamedHost, item, index);
       const slot = document.createElement("div");
       slot.className = "streamvizFinalSlot";
-      slot.streamvizHost = streamedHost;
+      slot.streamvizHost = withArtifactWidgetControl(streamedHost,item);
       return slot;
     }
     if (isGeneratedImageArtifact(item)) return createGeneratedImageArtifact(item);
-    if (item.renderMode === "iframe") return createArtifactFallbackFrame(item, index, { demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
-    return createStreamVisualizationArtifact(item, index, { showActions: false, demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 });
+    if (item.renderMode === "iframe") return withArtifactWidgetControl(createArtifactFallbackFrame(item, index, { demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 }),item);
+    return withArtifactWidgetControl(createStreamVisualizationArtifact(item, index, { showActions: false, demoLoadingMs: article.classList.contains("cachedCaseAnswer") ? item.caseDemoLoadingMs : 0 }),item);
   };
   // A single FLUX result is visual-only, including previously saved conversations
   // whose interpretation still contains the old completion message.
@@ -3621,8 +3885,15 @@ function updateThinkingSummary(article, prefix, options = {}) {
   const minutes = Math.floor(elapsed / 60000);
   const seconds = Math.floor(elapsed / 1000) % 60;
   const duration = chinese ? `${minutes ? `${minutes}分钟 ` : ""}${seconds}秒` : formatDuration(elapsed);
-  target.textContent = article.dataset.elapsedUnrecorded === "true" ? (chinese ? "查看执行记录" : "View activity")
-    : `${chinese ? "用时" : "Elapsed"} ${duration}`;
+  const liveElapsed = article.querySelector(".thinkingElapsedLive");
+  if (liveElapsed) {
+    liveElapsed.hidden = !options.live;
+    if (options.live) liveElapsed.textContent = `${chinese ? "已处理" : "Worked for"} ${duration}`;
+  }
+  target.textContent = options.live
+    ? String(article.dataset.publicThoughtText || article.dataset.currentThinking || prefix || copyFor(lang, "thinking")).trim()
+    : article.dataset.elapsedUnrecorded === "true" ? (chinese ? "查看执行记录" : "View activity")
+      : `${chinese ? "已处理" : "Worked for"} ${duration}`;
   const list = article.querySelector(".thinkingSteps");
   if (list) {
     if (!options.live) {
@@ -3635,13 +3906,15 @@ function updateThinkingSummary(article, prefix, options = {}) {
     }
   }
   const flow = options.clockOnly ? article.querySelector(".thinkingFlow") : syncInlineActivity(article);
-  if (flow) flow.hidden = options.live ? article.dataset.thinkingCollapsed === "true" : isMobileLayout() || article.dataset.activityInlineExpanded !== "true";
+  if (flow) flow.hidden = article.dataset.activityInlineExpanded !== "true";
   article.activityWasLive = Boolean(options.live);
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
     trigger.classList.toggle("is-thinking", Boolean(options.live));
     trigger.classList.toggle("is-complete", !options.live && article.dataset.thinkingState !== "error");
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
+    trigger.disabled = false;
+    trigger.setAttribute("aria-label", options.live ? (chinese ? "展开或收起全部推理" : "Expand or collapse all reasoning") : (chinese ? "查看执行记录" : "View activity"));
     trigger.setAttribute("aria-expanded", String(Boolean(flow && !flow.hidden)));
     trigger.setAttribute("aria-controls", flow?.id || "activityDrawer");
   }
@@ -3653,7 +3926,6 @@ function updateThinkingSummary(article, prefix, options = {}) {
 function setInlineActivityExpanded(article, expanded) {
   if (activeActivityArticle) closeActivityDrawer();
   article.dataset.activityInlineExpanded = String(expanded);
-  if (!article.activityEnded && article.dataset.thinkingState === "active") article.dataset.thinkingCollapsed = String(!expanded);
   const flow = syncInlineActivity(article);
   const trigger = article.querySelector(".thinkingTrigger");
   trigger?.setAttribute("aria-expanded", String(expanded));
@@ -3662,8 +3934,8 @@ function setInlineActivityExpanded(article, expanded) {
 
 function toggleActivityDrawer(article) {
   if (!article.activityEnded && article.dataset.thinkingState === "active") {
-    article.dataset.thinkingCollapsed = article.dataset.thinkingCollapsed === "true" ? "false" : "true";
-    updateThinkingSummary(article, "", { live: true });
+    const flow = syncInlineActivity(article);
+    setInlineActivityExpanded(article, Boolean(flow?.hidden));
     return;
   }
   if (!isMobileLayout()) {
@@ -3733,6 +4005,8 @@ function syncActivityDrawer(article) {
   activityElapsed.textContent = article.dataset.cachedElapsedMs ? formatDuration(Number(article.dataset.cachedElapsedMs)) : article.dataset.elapsedUnrecorded === "true" || article.classList.contains("cachedCaseAnswer") ? "原始耗时未记录" : article.dataset.cachedActivityCount ? "缓存记录" : formatDuration(elapsed);
 
   activityBody.innerHTML = buildActivityFlow(article);
+  bindActivityFileChangeButtons(activityBody);
+  bindActivityCommandPanels(activityBody);
   if (shouldStick) {
     scrollActivityToLatest(true);
   } else {
@@ -4242,7 +4516,7 @@ function statusEventKey(data) {
 }
 
 function shouldRenderStatusEvent(data) {
-  const hidden = new Set(["received", "execute", "screenshot", "multimodal"]);
+  const hidden = new Set(["agent-connect", "received", "execute", "screenshot", "multimodal"]);
   return !hidden.has(statusEventKey(data));
 }
 
@@ -4615,21 +4889,21 @@ function renderHistory() {
 // Replay only recorded public activity. Never replay final/module events or run tools again.
 async function restoreSavedActivity(article, activity = {}) {
   const list = article.querySelector('.thinkingSteps');
-  const recoverLegacy = list?.dataset.legacyActivity === 'true' && activity.runId && article.dataset.activityRestored !== 'true';
-  if (!list || (list.children.length && !recoverLegacy) || article.activityRestorePending) return;
+  if (!list || article.dataset.activityRestored === 'true' || article.activityRestorePending) return;
   const summary = article.querySelector('.thinkingSummaryText');
   const savedLabel = summary?.textContent;
+  const originalHtml = list.innerHTML;
   article.activityRestorePending = true;
   try {
     let events = Array.isArray(activity.events) ? activity.events : [];
     const steps = Array.isArray(activity.steps) ? activity.steps : [];
-    if (!events.length && !steps.length && activity.runId) {
+    if (!events.length && activity.runId) {
       const response = await fetch(`/api/chat/runs/${encodeURIComponent(activity.runId)}/activity`, {cache:'no-store'});
       if (!response.ok) throw new Error('activity unavailable');
       const saved = await response.json();
       events = Array.isArray(saved.events) ? saved.events : [];
     }
-    if (recoverLegacy && events.length) {
+    if (events.length) {
       list.replaceChildren();
       article.activityStepKeys = new Set();
     }
@@ -4650,7 +4924,7 @@ async function restoreSavedActivity(article, activity = {}) {
         appendStep(article, statusTitle(data, lang), statusDetail(data, lang), 'done', `saved-status:${index}`);
       } else if (record.event === 'progress') {
         const rawText = data.thoughtSummary || data.text || data.detail || data.message || '';
-        const text = typeof modelActivitySummary === 'function' ? modelActivitySummary(rawText) : String(rawText).trim();
+        const text = typeof modelActivitySummary === 'function' ? modelActivitySummary(rawText, article.dataset.lang || 'zh-CN') : String(rawText).trim();
         if (text) appendStep(article, String(data.title || text), data.title ? text : '', 'done', `saved-progress:${index}`);
       }
     }
@@ -4659,6 +4933,7 @@ async function restoreSavedActivity(article, activity = {}) {
     if (!list.children.length) appendStep(article, '执行明细未保存', '此记录没有可恢复的执行步骤，未补造过程。', 'done', 'saved-activity-empty');
     article.dataset.activityRestored = 'true';
   } catch {
+    if (!list.children.length && originalHtml) list.innerHTML = originalHtml;
     if (!list.children.length) appendStep(article, '执行记录暂时不可用', '原始记录未改动，重新打开会话可重试。', 'done', 'saved-activity-unavailable');
   } finally {
     list.querySelectorAll('li.is-loading').forEach(item => {item.classList.remove('is-loading');item.classList.add('is-done');});

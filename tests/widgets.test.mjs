@@ -10,7 +10,7 @@ const tick=()=>new Promise(r=>setTimeout(r,15));
 function setup({storage,reply,plan,blocked=false,symbolResults=[]}={}) {
  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=widgets',runScripts:'outside-only'}),w=dom.window;
  w.ResizeObserver=class{observe(){}};w.CSS={escape:x=>x};w.matchMedia=()=>({matches:false});w.confirm=()=>true;
- w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(value){this.open=false;this.returnValue=value;this.dispatchEvent(new w.Event('close'));};
+ w.HTMLDialogElement.prototype.show=w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(value){this.open=false;this.returnValue=value;this.dispatchEvent(new w.Event('close'));};
  if(storage)w.localStorage.setItem('mentora-widget-boards-v1',JSON.stringify(storage));
  if(blocked)Object.defineProperty(w,'localStorage',{get(){throw Error('blocked');}});
  const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.startsWith('/api/widgets/symbols?'))return{ok:true,json:async()=>({results:symbolResults})};if(url.includes('catalog'))return{ok:true,json:async()=>catalog};if(url==='/api/widgets/plan')return{ok:true,json:async()=>typeof plan==='function'?plan(JSON.parse(options.body)):plan||{reply:'已添加图表。',actions:[{type:'add',componentId:'cash_flow',parameters:{symbols:['AAPL']}}]}};if(url.startsWith('/api/widgets/presets/'))return{ok:true,json:async()=>({url:'/generated/preset.html',title:'苹果预制图表',parameters:{symbols:['NASDAQ:AAPL'],market:'default'}})};if(url==='/api/widgets/tradingview')return{ok:true,json:async()=>({url:'/generated/direct-tv.html',title:'TradingView 直接添加',mode:'direct'})};return{ok:true,body:reply};};
@@ -20,15 +20,15 @@ function setup({storage,reply,plan,blocked=false,symbolResults=[]}={}) {
  w.eval(readFileSync(new URL('../app/static/widget-symbol-picker.js',import.meta.url),'utf8'));w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
-test('catalogue refers only to existing native business components',()=>{assert.ok(!catalog.some(c=>['kline','multi_intraday'].includes(c.id)));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(new Set(catalog.filter(c=>c.provider==='TradingView').map(c=>c.widget)).size,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/business-chart-recall/scripts/${c.id}.py`,import.meta.url),'utf8').length);assert.ok(c.category);}});
+test('catalogue refers only to existing data-backed components',()=>{assert.ok(catalog.some(c=>c.id==='ashare-kline'));assert.ok(!catalog.some(c=>c.requiresDataSource));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(new Set(catalog.filter(c=>c.provider==='TradingView').map(c=>c.widget)).size,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/${c.skill}/scripts/${c.script}`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,true);assert.ok(d.querySelector('#widgetWorkspace .widgetTopbar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的 Widget');
  submit(w,d,'帮我看看苹果的近期经营和股价');await tick();
  assert.ok(calls.some(c=>c.url==='/api/widgets/plan'));const body=JSON.parse(calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(body.question,/原生脚本取真实数据/);
- assert.equal(d.querySelectorAll('.widgetCard iframe').length,2);assert.match(d.querySelector('.widgetCard iframe').src,/share-artifact\/real-kline.html/);
+ assert.equal(d.querySelectorAll('.widgetCard iframe').length,1);assert.match(d.querySelector('.widgetCard iframe').src,/share-artifact\/real-revenue.html/);
  const resize=d.querySelector('.widgetResize');resize.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
  const data=JSON.parse(w.localStorage.getItem('mentora-widget-boards-v1')),cards=data.boards[0].cards;assert.equal(cards[0].w,7);
- const[a,b]=cards;assert.ok(a.x>=b.x+b.w||a.x+a.w<=b.x||a.y>=b.y+b.h||a.y+a.h<=b.y);
+ assert.equal(cards.length,1);assert.equal(cards[0].component,'cash_flow');
  assert.equal(d.querySelector('#widgetEmpty').hidden,true);dom.window.close();
 });
 
@@ -54,7 +54,7 @@ test('empty or failed output is visible and never inserts fabricated charts',asy
 function twoCards(){return {activeId:'board',boards:[{id:'board',title:'观察看板',messages:[],cards:[{id:'one',title:'苹果行情',component:'tv-advanced-chart',url:'/generated/one.html',status:'ready',x:0,y:0,w:6,h:18,parameters:{symbols:['NASDAQ:AAPL'],interval:'D'}},{id:'two',title:'筛选器',component:'tv-screener',url:'/generated/two.html',status:'ready',x:6,y:0,w:6,h:18,parameters:{market:'default'}}]}]};}
 test('card selection scopes model edits, applies parameter changes directly, and undo restores the board',async()=>{
  const s=setup({storage:twoCards(),plan:{reply:'已改为微软周线。',actions:[{type:'update',cardId:'one',componentId:'tv-advanced-chart',parameters:{symbols:['NASDAQ:MSFT'],interval:'W'},layout:{w:12,x:0}}]}});
- s.d.querySelector('[data-card="one"] .widgetCardHeader').click();assert.match(s.d.querySelector('#widgetScope').textContent,/已选/);
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();assert.match(s.d.querySelector('#widgetScope').textContent,/苹果行情/);
  submit(s.w,s.d,'改为微软周线并加宽');await tick();await tick();
  const request=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/plan').options.body);assert.equal(request.selectedCardId,'one');
  assert.equal(s.calls.some(c=>c.url==='/api/chat/stream'),false);
@@ -124,8 +124,8 @@ test('canvas composer replaces the sidebar and retains follow-up history',async(
  const requests=s.calls.filter(c=>c.url==='/api/widgets/plan').map(c=>JSON.parse(c.options.body));
  assert.equal(requests[1].history[0].content,'增加对比');assert.match(s.d.querySelector('#widgetStatus').textContent,/需要哪张/);s.dom.window.close();
 });
-test('drawer plus adds a ready preset without parameters or a model call',async()=>{
- for(const id of ['tv-advanced-chart','tv-forex-screener','cash_flow']){
+test('drawer plus adds a hosted preset without parameters or a model call',async()=>{
+ for(const id of ['tv-advanced-chart','tv-forex-screener']){
   const s=setup();s.d.querySelector('#widgetSidebarLibrary').click();await tick();
   assert.equal(s.d.querySelector('#widgetLibrary #widgetAddForm'),null);
   s.d.querySelector(`[data-add-preset="${id}"]`).click();await tick();
@@ -182,5 +182,5 @@ test('native financial configuration resolves a keyword to the native stock code
  assert.equal(s.d.querySelector('.widgetSymbolMarketField').hidden,true);
  s.d.querySelector('#widgetSymbol').value='微软';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
  const lookup=s.calls.find(c=>c.url.startsWith('/api/widgets/symbols?'));assert.match(lookup.url,/market=us/);
- const request=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(request.question,/标的 MSFT/);assert.doesNotMatch(request.question,/标的 NASDAQ:MSFT/);s.dom.window.close();
+ const request=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(request.question,/用户完整需求：MSFT/);assert.doesNotMatch(request.question,/用户完整需求：NASDAQ:MSFT/);s.dom.window.close();
 });

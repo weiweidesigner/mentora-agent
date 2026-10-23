@@ -31,7 +31,7 @@ try:
 except ModuleNotFoundError as exc:
     if exc.name != 'app.cost_monitor':raise
     create_cost_router=None
-from app.artifact_upgrades import upgrade_widget_tradingview
+from app.artifact_upgrades import upgrade_widget_generic_chart, upgrade_widget_tradingview
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
 
@@ -68,6 +68,46 @@ def portfolio_styles():
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
+
+WORKSPACE_PREVIEW_SUFFIXES = {
+    '.txt', '.md', '.json', '.csv', '.py', '.js', '.mjs', '.cjs', '.ts', '.tsx',
+    '.jsx', '.css', '.scss', '.html', '.xml', '.yaml', '.yml', '.toml', '.sh', '.sql',
+}
+
+
+def output_workspace_file(relative_path: str) -> Path:
+    outputs_root = (ROOT / 'outputs').resolve()
+    candidate = (ROOT / relative_path).resolve()
+    if outputs_root not in candidate.parents or candidate.suffix.lower() not in WORKSPACE_PREVIEW_SUFFIXES:
+        raise HTTPException(404, 'file is not available for preview')
+    if not candidate.is_file() or candidate.stat().st_size > 2_000_000:
+        raise HTTPException(404, 'file is not available for preview')
+    return candidate
+
+
+@app.get('/api/workspace-file/preview', response_class=HTMLResponse)
+def preview_output_workspace_file(path: str, change: Literal['created', 'edited'] = 'edited', theme: Literal['light', 'dark'] = 'light', mode: Literal['plain', 'diff'] = 'plain') -> HTMLResponse:
+    file_path = output_workspace_file(path)
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except UnicodeDecodeError as exc:
+        raise HTTPException(415, 'file is not UTF-8 text') from exc
+    dark = theme == 'dark'
+    rows = []
+    for number, line in enumerate(content.splitlines(), 1):
+        row_class = ' created' if mode == 'diff' and change == 'created' else ''
+        rows.append(f'<tr class="code-row{row_class}"><th>{number}</th><td><code>{html.escape(line) or "&#8203;"}</code></td></tr>')
+    palette = ('#151515', '#e8e8e8', '#2a2a2a', '#183524', '#53d769') if dark else ('#ffffff', '#242424', '#e5e7eb', '#edf8eb', '#2f9e2f')
+    document = f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(file_path.name)}</title><style>
+html,body{{margin:0;min-height:100%;background:{palette[0]};color:{palette[1]};font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}}table{{width:100%;border-collapse:collapse;font-size:13px;line-height:1.55}}th{{position:sticky;left:0;width:1%;min-width:44px;padding:0 12px;text-align:right;font-weight:400;color:#8b93a5;background:{palette[0]};border-right:1px solid {palette[2]};user-select:none}}td{{padding:0 14px;white-space:pre;vertical-align:top}}tr.created th,tr.created td{{background:{palette[3]}}}tr.created th{{color:{palette[4]};border-left:4px solid {palette[4]}}}code{{font:inherit}}.empty{{padding:32px;color:#8b93a5;text-align:center}}
+</style></head><body>{f'<table>{"".join(rows)}</table>' if rows else '<p class="empty">空文件</p>'}</body></html>'''
+    return HTMLResponse(document, headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
+
+
+@app.get('/api/workspace-file/download')
+def download_output_workspace_file(path: str) -> FileResponse:
+    file_path = output_workspace_file(path)
+    return FileResponse(file_path, filename=file_path.name, headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
 
 
 @app.middleware("http")
@@ -742,6 +782,7 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = sync_native_kline_theme(artifact, theme)
+    artifact = upgrade_widget_generic_chart(artifact)
     artifact = upgrade_widget_tradingview(artifact)
     presentation_script=(STATIC_DIR/'artifact-presentation.js').read_text(encoding='utf-8')
     host_controls=f'<script data-artifact-host-theme="{theme}">{presentation_script}</script>'

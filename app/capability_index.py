@@ -16,6 +16,15 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "read_market_data.py": ("行情", "报价", "价格", "走势", "美股", "投资机会", "股票机会", "quote", "market data", "stock opportunities"),
+    "price_snapshot.py": (
+        "a股表现", "a股行情", "市场表现", "上午行情", "午盘", "收盘",
+        "上涨家数", "下跌家数", "市场宽度", "全市场", "行情快照", "snapshot", "breadth",
+    ),
+    "historical_kline.py": ("a股k线", "a股历史行情", "a股走势", "历史k线"),
+    "adjustment_factors.py": ("复权因子", "除权除息", "adjustment factor"),
+    "income_statements.py": ("a股利润表", "a股财报", "a股营收", "a股净利润"),
+    "trading_calendar.py": ("a股交易日", "交易日历", "休市", "开市"),
     "kline.py": ("k线", "k線", "蜡烛图", "行情图", "candlestick", "price chart"),
     "multi_kline.py": ("多k线", "多标的k线", "多周期k线", "compare candlestick"),
     "multi_intraday.py": ("多股分时", "盘中对比", "intraday comparison"),
@@ -29,25 +38,26 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
     "price_target_vs_actual.py": ("目标价", "price target"),
     "eps_estimate.py": ("eps预期", "每股收益预测", "eps estimate"),
     "revenue_estimate.py": ("营收预期", "收入预测", "revenue estimate"),
-    "bar_chart.py": ("柱状图", "柱形图", "bar chart"),
+    "bar_chart.py": ("柱状图", "柱形图", "排名", "排行", "a股表现", "市场表现", "板块表现", "涨跌幅对比", "bar chart"),
     "bar_line.py": ("柱折图", "柱线图", "双轴", "bar line"),
     "line_chart.py": ("折线图", "趋势图", "line chart"),
     "group_line.py": ("多系列折线", "分组折线", "group line"),
-    "grouped_bar.py": ("分组柱状", "并列柱", "grouped bar"),
+    "grouped_bar.py": ("分组柱状", "并列柱", "a股表现", "市场表现", "上涨下跌", "涨跌分布", "grouped bar"),
     "pie.py": ("饼图", "占比", "pie chart"),
     "treemap.py": ("矩形图", "树图", "treemap"),
     "timeline.py": ("时间线", "timeline"),
     "flowchart.py": ("流程图", "flowchart"),
     "mind_map.py": ("思维导图", "脑图", "mind map"),
     "external_info_search.py": ("联网搜索", "外部搜索", "最新新闻", "为什么", "原因", "解释", "kimi", "web search", "latest news"),
+    "render_streamviz.py": ("可视化", "看板", "仪表盘", "dashboard", "visualization"),
     "ainvest_news_search.py": ("ainvest新闻", "站内新闻", "美股新闻", "最新新闻", "为什么", "原因", "解释"),
     "ainvest_video_search.py": ("视频搜索", "shorts", "youtube video"),
     "url_content_reader.py": ("读取链接", "网页正文", "url", "webpage"),
-    "code_interpreter.py": ("数据清洗", "聚合", "csv", "json", "同比", "环比", "code interpreter"),
+    "code_interpreter.py": ("数据清洗", "聚合", "统计", "汇总", "a股表现", "市场表现", "市场宽度", "横截面", "分布", "csv", "json", "同比", "环比", "code interpreter"),
 }
 
 _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
-    "streamviz": ("streamviz", "dashboard", "仪表盘", "看板", "交互式html", "流式网页"),
+    "streamviz": ("streamviz", "dashboard", "仪表盘", "看板", "可视化", "交互式html", "流式网页"),
     "custom-html-widget": ("html报告", "html页面", "html组件", "widget", "mini app"),
     "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),
     "flux-image": ("生成图片", "插画", "海报", "image generation"),
@@ -105,8 +115,15 @@ class CapabilityShortlist:
                     f"| 契约: python3 app/skill_runner.py contract --script {item['script']} "
                     f"| 执行: python3 app/skill_runner.py execute --script {item['script']} -- <该组件参数>"
                 )
+        if any(item["name"] == "streamviz" for item in self.skills):
+            lines.append(
+                "展示默认：用户仅要求‘可视化’、整体视图、看板或未指定具体图表类型时，优先使用 StreamViz，"
+                "不要再读取 generic-chart、business-chart-recall 或 custom-html-widget 比较展示方案；"
+                "只有用户明确指定专用图表或 StreamViz 契约无法表达时才扩展。"
+            )
         lines.append(
-            "对最终选定的一个组件调用 contract 一次；不再单独读取 bridge、SKILL.md 或 schema，不用 ls/cat/grep 反复查找。"
+            "对每个最终选定的组件最多调用 contract 一次；多个独立 contract 可在同一步并行获取。"
+            "不再单独读取 bridge、SKILL.md、源码或 schema，不用 --help、ls、cat、sed、grep 反复查找。"
             "统一入口只允许 module_registry 中的脚本，会原样返回结构化 stdout 并验证产物；"
             "execute 会自动创建 outputs/ 下的目标目录，不要额外调用 mkdir。"
             "成功回执的 artifacts[].verified=true 且 bytes>0 已是产物验证，不要再用 test/ls/wc/cat 复查。"

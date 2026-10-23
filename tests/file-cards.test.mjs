@@ -14,7 +14,26 @@ function setup(){
 test('generated file cards use compact spacing and a slightly wider desktop row',()=>{
  assert.match(styles,/\.generatedFileList\{[^}]*margin:8px 0 8px;/);
  assert.match(styles,/\.generatedFileCard\{[^}]*width:min\(100%,420px\);max-width:100%;/);
+ assert.match(styles,/\.generatedFileCard\{[^}]*border:1px solid var\(--line\);[^}]*background:var\(--soft\);/);
+ assert.match(styles,/\.generatedFileDownload\{[^}]*background:transparent;[^}]*opacity:0;/);
+ assert.match(styles,/\.generatedFileDownload:hover,\.generatedFileDownload:focus-visible\{background:var\(--soft-2\)\}/);
  assert.match(styles,/@media\(max-width:640px\)\{\.generatedFileCard\{width:100%;/);
+});
+test('activity file names underline only on hover and inline diffs keep their own card',()=>{
+ assert.match(styles,/\.activityFileChangeName\{[^}]*text-decoration:none/);
+ assert.match(styles,/\.activityFileChangeName:hover \.activityFileChangeNameText,\.activityFileChangeName:focus-visible \.activityFileChangeNameText\{[^}]*text-decoration-style:dashed/);
+ assert.match(styles,/\.activityFileChangeName\[data-tooltip\]::after\{[^}]*content:attr\(data-tooltip\);[^}]*border-radius:12px/);
+ assert.doesNotMatch(styles,/\.activityFileChange:hover[^\{]*\.activityFileChangeName/);
+ assert.match(styles,/\.activityFileChangeExpand\{[^}]*margin-left:0;[^}]*opacity:0;[^}]*visibility:hidden/);
+ assert.match(styles,/\.activityFileChange:hover \.activityFileChangeExpand,\.activityFileChange:focus-within \.activityFileChangeExpand\{[^}]*opacity:1;[^}]*visibility:visible/);
+ assert.match(styles,/\.activityFileChangeChevron\{[^}]*transform:rotate\(-45deg\)/);
+ assert.doesNotMatch(styles,/\.activityFileChangeExpand\[aria-expanded="true"\] \.activityFileChangeChevron/);
+ assert.match(styles,/\.activityFileInline\{[^}]*border:1px solid var\(--line\)/);
+});
+test('activity file change counts share the row baseline',()=>{
+ assert.match(styles,/\.activityFileChange\{[^}]*line-height:20px/);
+ assert.match(styles,/\.activityFileChangeStats\{[^}]*display:inline-flex;[^}]*align-items:baseline;[^}]*align-self:center;[^}]*line-height:inherit/);
+ assert.match(styles,/\.activityFileChangeStats>span\{line-height:inherit\}/);
 });
 test('cached case replays do not show a thinking summary control',()=>{
  assert.match(styles,/\.cachedCaseAnswer \.thinkingTrigger\{display:none!important\}/);
@@ -41,7 +60,7 @@ test('preview closes, returns focus and clears the document; downloading does no
  assert.equal(panel.classList.contains('is-expanded'),true);
  assert.equal(panel.querySelector('.filePreviewExpand').getAttribute('aria-label'),'退出全屏');
  assert.equal(panel.querySelector('.filePreviewExpand').querySelectorAll('svg').length,2);
- assert.ok(panel.querySelector('.filePreviewWindowControls .filePreviewClose'));
+ assert.ok(panel.querySelector('.filePreviewTab .filePreviewClose'));
  assert.equal(s.w.document.querySelector('.conversation').hasAttribute('inert'),true);
  assert.equal(s.w.document.querySelector('.appSidebar').hasAttribute('inert'),false);
  assert.equal(s.w.document.querySelector('.shell').classList.contains('sidebar-collapsed'),false);
@@ -84,6 +103,19 @@ test('historical provider prefixes are hidden without changing stored artifact U
  assert.equal(s.w.document.querySelector('.filePreviewTitle').textContent,'midterm-elections.html');s.dom.window.close();
 });
 
+test('file preview uses a tab header and breadcrumb navigation',async()=>{
+ const s=setup();
+ await s.w.openGeneratedFilePreview({name:'app.js',type:'JS',relativePath:'app/static/app.js',open:'/api/workspace-file/preview?path=outputs/app.js',download:'/api/workspace-file/download?path=outputs/app.js',workspaceFile:true},s.article);
+ const panel=s.w.document.querySelector('#generatedFilePreview');
+ assert.equal(panel.querySelector('.filePreviewTab').getAttribute('role'),'tab');
+ assert.equal(panel.querySelector('.filePreviewTypeIcon').textContent,'JS');
+ assert.equal(panel.querySelector('.filePreviewTitle').textContent,'app.js');
+ assert.match(panel.querySelector('.filePreviewBreadcrumb').textContent,/工作mentora-agentappstaticapp\.js/);
+ await s.w.openGeneratedFilePreview({name:'payload.json',type:'JSON',relativePath:'outputs/payload.json',open:'/api/workspace-file/preview?path=outputs/payload.json',download:'/api/workspace-file/download?path=outputs/payload.json',workspaceFile:true},s.article);
+ assert.equal(panel.querySelector('.filePreviewTypeIcon').textContent,'JSON');
+ s.dom.window.close();
+});
+
 test('file HTML keeps its inline document and compact file card together',async()=>{
  const s=setup();s.article.dataset.question='分析完写一个html报告';
  s.w.sanitizeUserFacingInsight=v=>v;s.w.stripSourceInventoryFromInsight=v=>v;s.w.prepareInsightForVideos=text=>({text,hadMarker:false});
@@ -110,13 +142,18 @@ test('artifact theme switch is removed while non-theme interactions survive and 
  assert.equal(dom.window.document.documentElement.dataset.theme,'dark');dom.window.close();
 });
 
-test('embedded HTML reports remove their nested reader gutter without changing standalone files',()=>{
+test('embedded HTML reports align their nested reader with chat text without changing standalone files',()=>{
  const script=readFileSync(new URL('../app/static/artifact-presentation.js',import.meta.url),'utf8');
- const embedded=new JSDOM('<html><head></head><body><main data-aime-streamviz-root="true"><div class="report"><div class="read">Report</div></div></main></body></html>',{runScripts:'outside-only'});
+ const embedded=new JSDOM('<html><head><style>body{margin:8px}.report>.read{padding:0 32px}</style></head><body><main data-aime-streamviz-root="true"><div class="wrapper"><div class="report"><div class="read">Report</div></div></div></main></body></html>',{runScripts:'outside-only'});
  Object.defineProperty(embedded.window,'frameElement',{value:{classList:{contains:name=>name==='reportDocumentFrame'}}});
  embedded.window.eval(script);
  assert.equal(embedded.window.document.documentElement.dataset.mentoraEmbed,'chat');
- assert.match(embedded.window.document.querySelector('[data-artifact-chat-layout]').textContent,/\.report > \.read/);
+ const chatLayout=embedded.window.document.querySelector('[data-artifact-chat-layout]').textContent;
+ assert.match(chatLayout,/html\[data-mentora-embed="chat"\] body/);
+ assert.match(chatLayout,/\[data-aime-streamviz-root\].*\.report > \.read/s);
+ assert.match(chatLayout,/padding-inline:0!important/);
+ assert.equal(embedded.window.getComputedStyle(embedded.window.document.body).marginLeft,'0px');
+ assert.equal(embedded.window.getComputedStyle(embedded.window.document.querySelector('.read')).paddingLeft,'0px');
  const standalone=new JSDOM('<html><head></head><body></body></html>',{runScripts:'outside-only'});
  standalone.window.eval(script);
  assert.equal(standalone.window.document.documentElement.hasAttribute('data-mentora-embed'),false);

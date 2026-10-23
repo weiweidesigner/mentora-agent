@@ -60,6 +60,17 @@ svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-hi
     :root[data-theme="dark"] #radar path { fill: rgba(255, 138, 24, .22); stroke-width: 3; }
 
   `;
+  palette.textContent += `
+:root{--mtr-segment-bg:#f3f3f3;--mtr-segment-border:#e7e7e7;--mtr-segment-text:#777;--mtr-segment-hover:#e9e9e9;--mtr-segment-active:#fff;--mtr-segment-ink:#242424;--mtr-segment-shadow:0 1px 3px #0000000d}
+:root[data-theme="dark"]{--mtr-segment-bg:#191919;--mtr-segment-border:#303030;--mtr-segment-text:#a0a0a0;--mtr-segment-hover:#262626;--mtr-segment-active:#343434;--mtr-segment-ink:#f3f3f3;--mtr-segment-shadow:0 1px 3px #00000033}
+.segmented{display:inline-flex!important;align-items:center!important;gap:2px!important;padding:2px!important;min-height:32px!important;height:auto!important;border:1px solid var(--mtr-segment-border)!important;border-radius:9px!important;background:var(--mtr-segment-bg)!important;box-shadow:none!important}
+.segmented>:is(button,.segment){display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:26px!important;height:auto!important;margin:0!important;padding:4px 13px!important;border:0!important;border-radius:6px!important;background:transparent!important;color:var(--mtr-segment-text)!important;font-size:12px!important;line-height:18px!important;font-weight:500!important;white-space:nowrap!important;box-shadow:none!important;cursor:pointer;transition:background .14s ease,color .14s ease}
+.segmented>:is(button,.segment):hover{background:var(--mtr-segment-hover)!important;color:var(--mtr-segment-ink)!important}
+.segmented>:is(button,.segment):is(.active,.selected,[aria-selected="true"],[aria-pressed="true"]){background:var(--mtr-segment-active)!important;color:var(--mtr-segment-ink)!important;box-shadow:var(--mtr-segment-shadow)!important;font-weight:600!important}
+:root[data-theme="dark"] .segmented button[aria-selected="false"]{color:var(--mtr-segment-text)!important}
+.segmented>:is(button,.segment):focus-visible{outline:2px solid var(--mtr-segment-text)!important;outline-offset:2px!important}
+@media(prefers-reduced-motion:reduce){.segmented>:is(button,.segment){transition:none!important}}
+`;
   document.documentElement.appendChild(palette);
 
   const syncBody = () => {

@@ -728,18 +728,17 @@ textarea {
 .generatedFileList{display:flex;flex-direction:column;gap:10px;margin:8px 0 8px;min-width:0}
 .finalAnswer.has-generated-files>.mixedReport>.reportFrameShell:last-child{margin-bottom:4px}
 .finalAnswer.has-generated-files>.generatedFileList{margin-top:4px}
-.generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:min(100%,420px);max-width:100%;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--ink);min-width:0;transition:background .14s ease,border-color .14s ease}
-.generatedFileCard:hover,.generatedFileCard:focus-within{background:var(--soft);border-color:var(--line)}
+.generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:min(100%,420px);max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);min-width:0}
 .generatedFileIcon{width:20px;height:20px;flex:none;pointer-events:none}
 .generatedFileOpen{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:inherit;text-align:left;border:0;padding:0;background:transparent;font:inherit;cursor:pointer}
 .generatedFileOpen::after{content:'';position:absolute;inset:0;border-radius:inherit}
 .generatedFileName{display:block;max-width:100%;font-size:14px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .generatedFileType{font-size:12px;line-height:1.4;color:var(--muted)}
-.generatedFileDownload{position:relative;z-index:1;width:36px;height:36px;flex:none;display:grid;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:var(--soft-2);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease}
+.generatedFileDownload{position:relative;z-index:1;width:36px;height:36px;flex:none;display:grid;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:transparent;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease,background .12s ease}
 .generatedFileCard:hover .generatedFileDownload,.generatedFileCard:focus-within .generatedFileDownload{opacity:1;visibility:visible;pointer-events:auto}
 .generatedFileDownload svg{width:21px;height:21px}
 .generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
-.generatedFileDownload:hover{background:color-mix(in srgb,var(--ink) 12%,var(--soft-2))}
+.generatedFileDownload:hover,.generatedFileDownload:focus-visible{background:var(--soft-2)}
 @media(max-width:640px){.generatedFileCard{width:100%;padding:12px;gap:10px}.generatedFileName{font-size:14px}}
 
 .shareActions {
@@ -1076,6 +1075,27 @@ textarea {
   width: 100%;
 }
 
+.assistantAgentIdentity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.assistantAgentIdentity img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
 p {
   margin: 0;
 }
@@ -1133,8 +1153,21 @@ p {
   transition: transform 0.16s ease;
 }
 
+.thinkingTrigger[aria-expanded="true"] .thinkingChevron {
+  transform: rotate(45deg);
+}
+
 .thinkingTrigger.is-thinking .thinkingChevron {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.16s ease, opacity 0.16s ease, visibility 0.16s ease;
+}
+
+.thinkingTrigger.is-thinking:hover .thinkingChevron,
+.thinkingTrigger.is-thinking:focus-visible .thinkingChevron,
+.thinkingTrigger.is-thinking[aria-expanded="true"] .thinkingChevron {
+  opacity: 1;
+  visibility: visible;
 }
 
 .thinkingSummaryText {
@@ -1326,6 +1359,8 @@ p {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .activityStepDetail {
@@ -1439,7 +1474,29 @@ p {
 
 .activityTimeline li.is-loading::before {
   background: var(--accent);
-  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12);
+  transform-origin: center;
+  will-change: transform, box-shadow, opacity;
+  animation: activityDotBreath 1.6s ease-in-out infinite;
+}
+
+@keyframes activityDotBreath {
+  0%, 100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+    opacity: 0.78;
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 7px rgba(37, 99, 235, 0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activityTimeline li.is-loading::before {
+    animation: none;
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12);
+  }
 }
 
 .activityTimeline li.is-done::before {
@@ -2588,12 +2645,28 @@ p {
 }
 
 .composer {
+  position: relative;
   flex: 0 0 auto;
   width: 100%;
   margin: 0;
   padding: 12px 24px 22px;
   background: linear-gradient(rgba(255, 255, 255, 0), #fff 20%);
 }
+
+.composer button.scrollToBottomButton{position:absolute;left:50%;top:-38px;z-index:28;display:grid;place-items:center;width:42px;height:42px;margin:0;padding:0;transform:translateX(-50%);border:1px solid var(--line);border-radius:50%;background:var(--bg);color:#8a8a8a;box-shadow:0 4px 14px color-mix(in srgb,var(--ink) 10%,transparent);cursor:pointer;transition:opacity .15s ease,transform .15s ease,background .15s ease}
+.scrollToBottomButton[hidden],.conversation.is-empty .scrollToBottomButton{display:none!important}
+.composer button.scrollToBottomButton:hover{transform:translateX(-50%) translateY(-1px);background:var(--soft);box-shadow:0 4px 14px color-mix(in srgb,var(--ink) 10%,transparent)}
+.composer button.scrollToBottomButton:active{transform:translateX(-50%) scale(.98)}
+.scrollToBottomButton:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.scrollToBottomButton svg{display:block;width:28px;height:28px;fill:currentColor}
+.scrollToBottomLoading{display:none;align-items:center;justify-content:center;gap:4px}
+.scrollToBottomLoading i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor;animation:scrollToBottomDots 1s ease-in-out infinite}
+.scrollToBottomLoading i:nth-child(2){animation-delay:.14s}
+.scrollToBottomLoading i:nth-child(3){animation-delay:.28s}
+.scrollToBottomButton.is-loading svg{display:none}
+.scrollToBottomButton.is-loading .scrollToBottomLoading{display:flex}
+@keyframes scrollToBottomDots{0%,70%,100%{opacity:.35;transform:translateY(0)}35%{opacity:1;transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.scrollToBottomLoading i{animation:none;opacity:.7}}
 
 .composerHint {
   display: none;
@@ -3684,7 +3757,7 @@ p {
 :root[data-theme="dark"] .activityHeader::before { background: #4a5667; }
 
 :root[data-theme="dark"] .activityTimeline li::after {
-  background: #344052;
+  background: #303030;
 }
 
 :root[data-theme="dark"] .activityStepTitle,
@@ -3697,10 +3770,10 @@ p {
 }
 
 :root[data-theme="dark"] .toolStepBlock {
-  border: 1px solid #344052;
-  background: #171e28;
+  border: 1px solid #303030;
+  background: #080808;
   color: #c8d2df;
-  box-shadow: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
 :root[data-theme="dark"] .toolStepBlockLabel {
@@ -3817,6 +3890,14 @@ p {
 /* Keep the rotated chevron inside the trigger's hit area. */
 .thinkingChevron{margin-right:2px}
 .reportFrameShell{position:relative;width:100%;min-width:0;margin:18px 0}
+.chatArtifactShell{position:relative;width:100%;min-width:0;margin:18px 0}
+.chatArtifactShell>.reportFrameShell,.chatArtifactShell>.streamvizArtifactHost{margin:0}
+.artifactWidgetTitle{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:600;color:var(--ink)}
+.artifactWidgetTitle[hidden]{display:none}
+.artifactAddToWidget{position:static;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;height:28px;padding:5px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;opacity:.7}
+.artifactAddToWidget svg{display:block;width:19px;height:19px;fill:currentColor}
+.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;background:var(--soft-2);color:var(--ink)}
+.artifactAddToWidget.is-added{color:#34d399}
 .reportFrameShell .reportDocumentFrame{margin:0}
 .reportFrameShell>.widgetChartActivation{position:absolute;inset:0;z-index:1;display:grid;place-items:center;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:var(--muted);cursor:zoom-in;touch-action:pan-y}
 .reportFrameShell>.widgetChartActivation[hidden]{display:none}
@@ -4814,6 +4895,8 @@ p {
 :root[data-theme="dark"] .composerBox:focus-within { border-color:#666;box-shadow:0 0 0 3px #ffffff0d; }
 :root[data-theme="dark"] .composer button { background:#4a4a4a;color:#f5f5f5; }
 :root[data-theme="dark"] .composer button:hover { background:#5c5c5c; }
+:root[data-theme="dark"] .composer button.scrollToBottomButton { background:#181818;border-color:#3a3a3a;color:#8a8a8a; }
+:root[data-theme="dark"] .composer button.scrollToBottomButton:hover { background:#242424;color:#aaa; }
 :root[data-theme="dark"] .composer button.is-ready { background:#e5e5e5;color:#101010; }
 :root[data-theme="dark"] .composer button.attachButton { background:transparent;color:#b8b8b8; }
 :root[data-theme="dark"] .composer textarea::placeholder { color:#888; }
@@ -4834,6 +4917,43 @@ p {
 :root[data-theme="dark"] .reasoningStrengthControl.is-open .reasoningStrengthButton {
   background: transparent;
   box-shadow: none;
+}
+
+/* The trading dock shares the home composer's live reasoning selector. */
+.portfolioWorkspace .pfIdeaComposer.composerBox,
+.portfolioWorkspace .pfIdeaComposer.composerBox.is-multiline {
+  grid-template-columns:38px minmax(0,1fr) auto 38px;
+}
+.portfolioWorkspace .pfIdeaComposer.composerBox.is-multiline .pfIdeaSubmit {
+  grid-column:4;
+  grid-row:2;
+}
+.portfolioWorkspace .pfIdeaComposer .reasoningStrengthControl { height:38px; }
+.portfolioWorkspace .pfIdeaComposer.composerBox button.reasoningStrengthButton,
+:root[data-theme="dark"] .portfolioWorkspace .pfIdeaComposer.composerBox button.reasoningStrengthButton {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  width:auto;
+  min-width:64px;
+  height:38px;
+  padding:0 10px;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  box-shadow:none;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:560;
+  line-height:1;
+  white-space:nowrap;
+}
+.portfolioWorkspace .pfIdeaComposer.composerBox button.reasoningStrengthButton:is(:hover,:focus-visible),
+:root[data-theme="dark"] .portfolioWorkspace .pfIdeaComposer.composerBox button.reasoningStrengthButton:is(:hover,:focus-visible) {
+  background:transparent;
+  box-shadow:none;
+  color:var(--ink);
 }
 
 /* Align question navigation by icon boxes, rather than font glyph baselines. */
@@ -5023,10 +5143,15 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 #dayMarketLabel[hidden] {display:none;}
 
 /* Generated files open in a full-height reading pane beside the conversation. */
-.generatedFilePreview{grid-column:3;grid-row:1;min-width:0;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr);border-left:1px solid var(--line);background:var(--bg);color:var(--ink);overflow:hidden;z-index:110}
+.generatedFilePreview{grid-column:3;grid-row:1;min-width:0;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr);border-left:1px solid var(--line);background:var(--bg);color:var(--ink);overflow:hidden;z-index:110}
 .generatedFilePreview[hidden],.generatedFilePreview [hidden]{display:none!important}
-.filePreviewHeader{display:flex;align-items:center;gap:12px;min-width:0;height:60px;padding:10px 16px;border-bottom:1px solid var(--line)}
-.filePreviewTitle{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px;font-weight:500}
+.filePreviewHeader{display:flex;align-items:center;gap:10px;min-width:0;height:52px;padding:6px 10px;background:var(--soft);border-bottom:1px solid var(--line)}
+.filePreviewTabs{display:flex;align-items:center;min-width:0;flex:1;align-self:stretch}
+.filePreviewTab{display:flex;align-items:center;gap:8px;min-width:0;max-width:min(100%,420px);height:38px;padding:0 8px 0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 5%,transparent)}
+.filePreviewTypeIcon{display:grid;place-items:center;flex:0 0 auto;min-width:24px;height:22px;padding:0 4px;border-radius:5px;background:color-mix(in srgb,var(--ink) 82%,var(--bg));color:var(--bg);font-size:8px;font-weight:700;letter-spacing:-.02em}
+.filePreviewTitle{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;font-weight:500}
+.filePreviewTab .filePreviewClose{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;padding:7px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.filePreviewTab .filePreviewClose:hover{background:var(--soft-2);color:var(--ink)}
 .filePreviewActions{display:flex;align-items:center;gap:6px;flex:none}
 .filePreviewActions :is(button,a){display:grid;place-items:center;width:32px;height:32px;padding:8px;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer;text-decoration:none}
 .filePreviewActions .filePreviewDownload,.filePreviewWindowControls{border:1px solid var(--line);border-radius:999px;background:var(--soft-2)}
@@ -5034,7 +5159,13 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 .filePreviewActions :is(button,a):hover{background:color-mix(in srgb,var(--ink) 10%,var(--soft-2))}
 .filePreviewActions :is(button,a):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .filePreviewActions svg{width:16px;height:16px}
+.filePreviewTab .filePreviewClose svg{width:14px;height:14px}
 .filePreviewExpand[aria-pressed="false"] .fileControlIcon--collapse,.filePreviewExpand[aria-pressed="true"] .fileControlIcon--expand{display:none}
+.filePreviewBreadcrumb{display:flex;align-items:center;gap:8px;min-width:0;height:40px;padding:0 14px;overflow-x:auto;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;white-space:nowrap;scrollbar-width:none}
+.filePreviewBreadcrumb::-webkit-scrollbar{display:none}
+.filePreviewBreadcrumbPart{flex:0 0 auto}
+.filePreviewBreadcrumbPart.is-current{color:var(--ink);font-weight:500}
+.filePreviewBreadcrumbSeparator{flex:0 0 7px;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg)}
 .filePreviewBody{position:relative;min-width:0;min-height:0;overflow:hidden;padding:24px 24px 0;box-sizing:border-box}
 .filePreviewFrame{display:block;width:100%;height:100%;border:0;background:var(--bg)}
 .filePreviewStatus{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;margin:0;padding:24px;font-size:14px;line-height:1.6;color:var(--muted)}
@@ -5048,21 +5179,65 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
  .shell.sidebar-collapsed.file-preview-open{grid-template-columns:56px minmax(340px,.8fr) minmax(0,1.2fr)}
  .shell.file-preview-open :is(.conversation,#taskWorkspace){min-width:0}
 }
-@media(max-width:1023px){.generatedFilePreview{position:fixed;inset:0;width:100%;height:100dvh;z-index:150}.filePreviewHeader{height:56px;padding:8px 12px}.filePreviewBody{padding:16px 16px 0}}
+@media(max-width:1023px){.generatedFilePreview{position:fixed;inset:0;width:100%;height:100dvh;z-index:150}.filePreviewHeader{height:50px;padding:5px 8px}.filePreviewTab{height:38px}.filePreviewBody{padding:16px 16px 0}}
 
 /* One narrative stream and bounded, nested tool disclosures in both surfaces. */
-.thinkingTrigger.is-thinking .thinkingChevron{display:inline-block}
-.thinkingTrigger[aria-expanded="true"] .thinkingChevron{transform:rotate(45deg)}
+.thinkingTrigger:disabled{opacity:1;cursor:default;pointer-events:none}
 .thinkingTrigger.is-thinking .thinkingSummaryText{background:none;color:inherit;animation:none}
+.thinkingElapsedLive{margin:0 0 8px;color:var(--muted);font-size:14px;font-weight:430;line-height:1.35}
+.thinkingElapsedLive[hidden]{display:none}
 .assistantBubble>.thinkingSteps{display:none!important}
-.thinkingFlow{margin:0 0 20px;padding:14px 0 0;border-top:1px solid var(--line);min-width:0}
+.thinkingFlow{margin:0 0 8px;padding:0;border:0;min-width:0}
 .thinkingFlow[hidden]{display:none}
-.activityFlowList,.activityGroupItems,.activityCurrentAction{list-style:none;margin:0;padding:0;display:grid;gap:18px;min-width:0}
+.thinkingCurrentTool{margin:4px 0 6px;min-width:0}
+.thinkingCurrentTool[hidden]{display:none}
+.activityFlowList,.activityGroupItems,.activityCurrentAction{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-width:0}
 .activityFlowList>li,.activityGroupItems>li,.activityCurrentAction>li{min-width:0;margin:0;padding:0;list-style:none}
-.activityNarrative>p{margin:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.75;overflow-wrap:anywhere;white-space:pre-wrap}
+.activityNarrative>p{margin:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap}
+:root .thinkingTrigger.is-thinking,:root[data-theme] .thinkingTrigger.is-thinking{margin:0 0 6px;padding:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55}
+:root[data-theme] .thinkingTrigger.is-thinking:hover,:root[data-theme] .thinkingTrigger.is-thinking:focus-visible{color:var(--ink)}
 .activityConnection{color:var(--muted);font-size:14px;line-height:1.6;animation:activityTextFade 1.8s ease-in-out infinite}
+.activityLiveThinking{color:var(--muted);font-size:14px;font-weight:400;line-height:1.55;animation:activityTextFade 1.8s ease-in-out infinite}
 .activityTool{min-width:0}
-.activityAction{display:flex;align-items:center;gap:8px;width:100%;max-width:100%;min-width:0;min-height:30px;padding:2px 0;list-style:none;cursor:pointer;color:color-mix(in srgb,var(--muted) 82%,var(--bg));font-size:14px;font-weight:400;line-height:1.6}
+.activityFileChanges{display:grid;gap:4px;min-width:0}
+.activityFileChangeItem{display:grid;min-width:0}
+.activityFileChange{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:30px;margin:0;padding:2px 0;color:color-mix(in srgb,var(--muted) 82%,var(--bg));font-size:14px;font-weight:400;line-height:20px;text-align:left}
+.activityFileChangeIcon{display:flex!important;align-items:center;justify-content:center;flex:0 0 18px!important;width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;max-width:18px!important;max-height:18px!important;overflow:hidden}
+.activityFileChangeIcon svg{display:block!important;flex:none!important;width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;max-width:18px!important;max-height:18px!important}
+.activityFileChangeStatus{flex:0 0 auto;white-space:nowrap}
+.activityFileChangeName{appearance:none;position:relative;min-width:0;margin:0;padding:0;overflow:visible;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;text-decoration:none}
+.activityFileChangeNameText{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activityFileChangeName:hover,.activityFileChangeName:focus-visible{color:var(--ink)}
+.activityFileChangeName:hover .activityFileChangeNameText,.activityFileChangeName:focus-visible .activityFileChangeNameText{text-decoration-line:underline;text-decoration-style:dashed;text-decoration-thickness:1px;text-underline-offset:4px}
+.activityFileChangeName:focus-visible{outline:none}
+.activityFileChangeName[data-tooltip]::after{content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 10px);z-index:40;width:max-content;max-width:min(520px,calc(100vw - 32px));padding:10px 14px;transform:translate(-50%,4px);border:1px solid color-mix(in srgb,var(--ink) 14%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--ink) 82%,var(--bg));color:var(--bg);box-shadow:0 8px 28px color-mix(in srgb,var(--ink) 18%,transparent);font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;text-align:center;white-space:normal;overflow-wrap:anywhere;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .14s ease,transform .14s ease,visibility .14s ease}
+.activityFileChangeName[data-tooltip]:hover::after,.activityFileChangeName[data-tooltip]:focus-visible::after{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.activityFileChangeStats{display:inline-flex;align-items:baseline;align-self:center;flex:0 0 auto;gap:4px;line-height:inherit;white-space:nowrap;font-variant-numeric:tabular-nums}
+.activityFileChangeStats>span{line-height:inherit}
+.activityFileChangeStats .is-added{color:#35a843}
+.activityFileChangeStats .is-removed{color:#e5484d}
+.activityFileCreatedDot{flex:0 0 7px;width:7px;height:7px;border-radius:50%;background:#9b6cff;transform:translateY(-1px)}
+.activityFileChangeExpand{appearance:none;display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;margin-left:0;padding:0;border:0;border-radius:5px;background:transparent;color:inherit;cursor:pointer;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .15s ease,visibility .15s ease,background .15s ease}
+.activityFileChange:hover .activityFileChangeExpand,.activityFileChange:focus-within .activityFileChangeExpand{opacity:1;visibility:visible;pointer-events:auto}
+.activityFileChangeExpand:hover,.activityFileChangeExpand:focus-visible{background:var(--soft);color:var(--ink);outline:none}
+.activityFileChangeChevron{width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);opacity:.8}
+.activityFileInline{min-width:0;max-height:min(520px,60dvh);margin:8px 0 10px 26px;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.activityFileInlineHeader{display:flex;align-items:center;gap:10px;height:42px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--soft);color:var(--muted);font-size:13px}
+.activityFileInlineHeader>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.activityFileInlineHeader .activityFileChangeStats{margin-left:auto}
+.activityFileDiffScroll{max-height:min(476px,calc(60dvh - 42px));overflow:auto}
+.activityFileDiffTable{width:100%;border-collapse:collapse;font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+.activityFileDiffTable th{width:1%;min-width:48px;padding:0 12px;border-right:1px solid var(--line);color:var(--muted);font-weight:400;text-align:right;user-select:none}
+.activityFileDiffTable td{padding:0 12px;white-space:pre;vertical-align:top}
+.activityFileDiffTable .is-added :is(th,td){background:color-mix(in srgb,#35a843 12%,var(--bg))}
+.activityFileDiffTable .is-added th{border-left:3px solid #35a843;color:#2f9e2f}
+.activityFileDiffTable .is-removed :is(th,td){background:color-mix(in srgb,#e5484d 12%,var(--bg))}
+.activityFileDiffTable .is-removed th{border-left:3px solid #e5484d;color:#e5484d}
+.activityFileDiffTable .is-hunk :is(th,td){padding-top:5px;padding-bottom:5px;background:var(--soft);color:var(--muted)}
+.activityFileInlineFrame{display:block;width:100%;height:min(476px,calc(60dvh - 42px));border:0;background:var(--bg)}
+.activityFileInlineEmpty{margin:0;padding:24px;color:var(--muted);font-size:13px;text-align:center}
+@media(hover:none){.activityFileChangeExpand{opacity:1;visibility:visible;pointer-events:auto}}
+.activityAction{display:flex;align-items:center;gap:8px;width:100%;max-width:100%;min-width:0;min-height:26px;padding:0;list-style:none;cursor:pointer;color:color-mix(in srgb,var(--muted) 82%,var(--bg));font-size:14px;font-weight:400;line-height:1.45}
 .activityAction::-webkit-details-marker{display:none}
 .activityActionIcon{display:flex;align-items:center;flex:0 0 18px;width:18px;height:18px}
 .activityActionIcon svg{width:100%;height:100%}
@@ -5071,25 +5246,40 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 .activityAction:hover .activityActionChevron,.activityAction:focus-visible .activityActionChevron,details[open]>.activityAction .activityActionChevron{opacity:1}
 details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .activityAction:focus-visible,.thinkingTrigger:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
-.activityTool>.toolStepDetail{margin-top:8px;gap:8px}
-.activityGroupItems{gap:12px;margin:8px 0 0;padding:0}
-.activityCurrentAction{gap:8px;margin-top:6px}
+.activityTool>.toolStepDetail{margin-top:5px;gap:6px}
+.activityGroupItems{gap:6px;margin:4px 0 0;padding:0}
+.activityCurrentAction{gap:5px;margin-top:3px}
 .activityGroup[open]+.activityCurrentAction{display:none}
-.activityCommandPanel{display:grid;gap:14px;min-width:0;max-height:min(420px,50dvh);overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--ink) 3%,var(--bg));padding:14px 16px 12px}
+.activityCommandPanel{display:grid;gap:8px;min-width:0;max-height:min(420px,50dvh);overflow:auto;overscroll-behavior:contain;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--ink) 3%,var(--bg));padding:11px 14px 10px}
 .activityCommandLabel{font-size:13px;font-weight:400;color:var(--muted)}
+.activityCommandHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px}
+.activityCommandCopy{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;margin:-2px -4px -2px 0;padding:4px;border:0;border-radius:5px;background:transparent;color:var(--muted);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s ease,background .15s ease}
+.activityCommandPanel:hover .activityCommandCopy,.activityCommandPanel:focus-within .activityCommandCopy{opacity:1;pointer-events:auto}
+.activityCommandCopy:hover{background:var(--soft-2);color:var(--ink)}
+.activityCommandCopy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.activityCommandCopy svg{display:block;width:16px;height:16px}
+.activityCommandCopy.is-copied{color:var(--accent)}
+.activityShellCommand{min-width:0}
+.activityShellCommandToggle{display:block;min-width:0;list-style:none;cursor:pointer;border-radius:3px}
+.activityShellCommandToggle::-webkit-details-marker{display:none}
+.activityShellCommandToggle::marker{content:""}
+.activityShellCommandToggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.activityShellCommand .toolStepInput{font-size:12px;line-height:18px}
+.activityShellCommand:not([open]) .toolStepInput{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;max-height:36px;overflow:hidden}
+@media(hover:none){.activityCommandCopy{opacity:1;pointer-events:auto}}
 .activityCommandPanel pre{margin:0;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
-.activityCommandPanel code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;font-weight:400;line-height:1.65;color:var(--muted)}
+.activityCommandPanel code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;font-weight:400;line-height:1.5;color:var(--muted)}
 .activityToolState{display:flex;align-items:center;justify-content:flex-end;gap:6px;text-align:right;color:var(--muted);font-size:12px;font-weight:400;padding:0}
 .activityRunningDot{display:inline-block;width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor;animation:activityTextFade 1.8s ease-in-out infinite}
 .is-error .activityToolState{color:var(--danger)}
 .activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon){animation:activityTextFade 1.8s ease-in-out infinite}
 .is-error>.activityTool>.activityAction{color:var(--danger)}
 .activityBody{min-width:0;padding:20px 24px 28px}
-.activityBody .activityNarrative>p{font-size:14px;line-height:1.75}
+.activityBody .activityNarrative>p{font-size:14px;line-height:1.55}
 .activityBody .activityGroupItems{padding-left:0}
 .activityBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:125}
 .activityBackdrop[hidden]{display:none}
 @keyframes activityTextFade{0%,100%{opacity:.5}50%{opacity:1}}
 @media(hover:none){.activityActionChevron{opacity:.7}}
-@media(max-width:1023px){.activityDrawer{max-height:calc(100dvh - 24px);padding-bottom:env(safe-area-inset-bottom)}.activityAction{min-height:40px}.activityFlowList{gap:16px}.activityBody{padding:18px 20px 24px}}
-@media(prefers-reduced-motion:reduce){.activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon),.activityRunningDot,.activityConnection{animation:none}}
+@media(max-width:1023px){.activityDrawer{max-height:calc(100dvh - 24px);padding-bottom:env(safe-area-inset-bottom)}.activityAction{min-height:36px}.activityFlowList{gap:6px}.activityBody{padding:18px 20px 24px}}
+@media(prefers-reduced-motion:reduce){.activityToolRow.is-loading>.activityTool>.activityAction :is(.activityActionText,.activityActionIcon),.activityRunningDot,.activityConnection,.activityLiveThinking{animation:none}}
