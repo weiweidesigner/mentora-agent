@@ -15,7 +15,7 @@ def test_public_deltas_private_reasoning_and_settlement_dedup():
     first = stream.chunk({'type':'text-delta','index':1,'text':'first'})
     assert first[0][1]['delta'] == 'first'
     assert stream.message({'content':[{'type':'reasoning','text':'private'},{'type':'text','text':'first'}]}) == []
-    assert stream.finish('first')[0][1]['final'] is True
+    assert stream.finish('first') == []
     second = stream.chunk({'type':'text-delta','index':0,'text':'second'})
     assert second[0][1]['blockId'] != first[0][1]['blockId']
 

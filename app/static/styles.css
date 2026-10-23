@@ -5220,12 +5220,12 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 .assistantBubble>.thinkingSteps{display:none!important}
 .thinkingFlow{margin:0 0 8px;padding:0;border:0;min-width:0}
 .thinkingFlow[hidden]{display:none}
-.thinkingCurrentTool{margin:4px 0 6px;min-width:0}
+.thinkingCurrentTool{margin:0 0 4px;min-width:0}
 .thinkingCurrentTool[hidden]{display:none}
 .activityFlowList,.activityGroupItems,.activityCurrentAction{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-width:0}
 .activityFlowList>li,.activityGroupItems>li,.activityCurrentAction>li{min-width:0;margin:0;padding:0;list-style:none}
 .activityNarrative>p{margin:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap}
-:root .thinkingTrigger.is-thinking,:root[data-theme] .thinkingTrigger.is-thinking{margin:0 0 6px;padding:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55}
+:root .thinkingTrigger.is-thinking,:root[data-theme] .thinkingTrigger.is-thinking{display:flex;margin:0 0 2px;padding:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55}
 :root[data-theme] .thinkingTrigger.is-thinking:hover,:root[data-theme] .thinkingTrigger.is-thinking:focus-visible{color:var(--ink)}
 .activityConnection{color:var(--muted);font-size:14px;line-height:1.6;animation:activityTextFade 1.8s ease-in-out infinite}
 .activityLiveThinking{color:var(--muted);font-size:14px;font-weight:400;line-height:1.55;animation:activityTextFade 1.8s ease-in-out infinite}

@@ -65,8 +65,8 @@ def test_codex_adapter_uses_app_server_deltas_and_keeps_interleaving(tmp_path,mo
     monkeypatch.setenv('AICHART_CODEX_BIN',str(binary));monkeypatch.setenv('AICHART_CODEX_PROVIDER','deepseek');monkeypatch.setenv('DEEPSEEK_API_KEY','fixture')
     monkeypatch.delenv('AICHART_CODEX_TRANSPORT',raising=False)
     events=list(LocalAgentFrameworks(project_root=tmp_path,generated_dir=tmp_path/'outputs/generated').stream('codex','fixture',[],session_key='test-codex'))
-    visible=[(kind,data) for kind,data in events if kind in {'answer_text','tool_step'} and not data.get('provisional')]
-    assert [kind for kind,data in visible]==['tool_step','tool_step','answer_text']
+    visible=[(kind,data) for kind,data in events if kind in {'answer_text','tool_step'} and not data.get('discard')]
+    assert [data['delta'] for kind,data in visible if kind=='answer_text' and 'delta' in data]==['First','Second']
     assert visible[-1][1]['text']=='Second'
     assert any(kind=='progress' and data.get('text')=='First' for kind,data in events)
     assert [data['phase'] for kind,data in visible if kind=='tool_step']==['started','completed']

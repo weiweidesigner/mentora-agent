@@ -767,6 +767,10 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "progress") {
+    if (data?.provisional) {
+      renderStreamAnswerText(article,{blockId:data.blockId,text:data.text || '',replace:true});
+      return;
+    }
     if (!article.activityEnded) renderPublicProgress(article, data);
     return;
   }
@@ -1355,18 +1359,14 @@ function replayOrderedStream(article, blocks, container) {
     if (url && !article.streamVisualizationArtifacts.some(artifact => artifact.url === url))
       article.streamVisualizationArtifacts.push({...item, url});
   }
-  for (const [index, block] of blocks.entries()) {
+  for (const original of blocks) {
+    const block = original.kind === 'progress' && original.data?.provisional
+      ? {kind:'text',id:original.id,text:original.data.text || ''} : original;
     if (block.kind === 'progress') {
       renderPublicProgress(article,{...block.data,blockId:block.id});
       continue;
     }
     if (block.kind === 'text') {
-      // Older stored turns predate explicit public-commentary settlement.
-      const boundary = blocks.slice(index + 1).find(item => item.kind === 'text' || item.kind === 'tool_step');
-      if (boundary?.kind === 'tool_step' && !/\[\[AIME_(?:CHART|FILE):/.test(block.text || '')) {
-        renderPublicProgress(article,{text:block.text,blockId:block.id});
-        continue;
-      }
       const node = document.createElement('div');
       node.className = 'streamAnswerPreview';
       node.dataset.blockId = block.id || '';
@@ -1532,10 +1532,9 @@ function renderPublicProgress(article, data = {}) {
     list.append(item);
   }
   item.querySelector('.activityStepTitle').textContent = text;
-  item.dataset.provisional = String(Boolean(data.provisional));
   item.classList.toggle('is-loading', !article.activityEnded);
   item.classList.toggle('is-done', Boolean(article.activityEnded));
-  article.dataset.publicThoughtText = data.provisional ? text.split(/\r?\n/).find(line => line.trim())?.slice(0,240) || text.slice(0,240) : text;
+  article.dataset.publicThoughtText = text;
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
   syncActivityDrawer(article);
@@ -1545,23 +1544,8 @@ function renderStreamAnswerText(article, data = {}) {
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
   const key = String(data.blockId || 'legacy-answer');
-  if (data.provisional) {
-    article.provisionalAnswerText ||= new Map();
-    const raw = Object.prototype.hasOwnProperty.call(data,'delta')
-      ? (article.provisionalAnswerText.get(key) || '') + String(data.delta || '') : String(data.text || '');
-    article.provisionalAnswerText.set(key,raw);
-    // Unknown-channel public text updates the one existing live summary.
-    // Never paint a second answer row and later move/remove it at a tool boundary.
-    const progressText = raw.replace(/\[\[AIME_(?:CHART|FILE|SKILLS):[\s\S]*?(?:\]\]|$)/g,'');
-    renderPublicProgress(article,{blockId:key,text:progressText,provisional:true});
-    return;
-  }
-  if (!data.discard) {
-    article.querySelectorAll('.thinkingSteps [data-provisional="true"]').forEach(node => {
-      if (node.dataset.publicBlockId === key) node.remove();
-    });
-    article.provisionalAnswerText?.delete(key);
-  }
+  // Public answer deltas render immediately, including unlabelled provider text.
+  // Only explicit progress events belong in the live thinking summary.
   article.dataset.activityPhase = "answer";
   syncInlineActivity(article);
   const flow = orderedStreamFlow(article);

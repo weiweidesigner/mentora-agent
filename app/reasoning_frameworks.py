@@ -1809,7 +1809,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 delta=str(public_item.get('delta') or '')
                 if delta:
                     public_items[item_id]=public_items.get(item_id,'')+delta
-                    yield 'answer_text',dict(blockId=item_id,delta=delta,live=True,final=False,provisional=public_item_channels.get(item_id)!='final')
+                    if public_item_channels.get(item_id)=='commentary':
+                        yield 'progress',dict(blockId=item_id,text=public_items[item_id],kind='commentary')
+                    else:
+                        yield 'answer_text',dict(blockId=item_id,delta=delta,live=True,final=False)
                 continue
             if event_type == "thread.started":
                 thread_id = str(event.get("thread_id") or thread_id)
@@ -1855,8 +1858,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 if text and (text != public_items.get(item_id) or channel != public_item_channels.get(item_id)):
                     public_items[item_id] = text
                     public_item_channels[item_id] = channel
-                    if channel != 'final':
-                        yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary','provisional':channel != 'commentary'}
+                    if channel == 'commentary':
+                        yield 'answer_text', {'blockId':item_id,'discard':True}
+                        yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary'}
                     else:
                         yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
                 if channel != "commentary":answer = text or answer
@@ -1947,7 +1951,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             yield from self._answer_text_events(answer)
         elif not any(channel=='final' for channel in public_item_channels.values()):
             key=next((key for key in reversed(public_items) if public_item_channels.get(key)!='commentary'),'codex-final')
-            yield 'answer_text',{'blockId':key,'text':answer,'replace':True,'live':True,'final':True,'provisional':False}
+            yield 'answer_text',{'blockId':key,'text':answer,'replace':True,'live':True,'final':True}
         run_id = f"codex-{thread_id or session_key}"
         self._write_codex_trace(f"===== 运行完成 | runId: {run_id} =====")
         yield "agent_event", {
@@ -2171,7 +2175,6 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     except (TypeError, ValueError):
                         pass
             elif event_type in {"tool/call", "tool/result", "todo/write"}:
-                if event_type == 'tool/call':yield from public_stream.settle_progress()
                 if event_type == "tool/call" and pending_public_text:
                     latest_progress_summary = self._localized_progress(pending_public_text, question)
                     if latest_progress_summary:
