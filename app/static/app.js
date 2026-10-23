@@ -1553,8 +1553,6 @@ function renderStreamAnswerText(article, data = {}) {
   const key = String(data.blockId || 'legacy-answer');
   // Public answer deltas render immediately, including unlabelled provider text.
   // Only explicit progress events belong in the live thinking summary.
-  article.dataset.activityPhase = "answer";
-  syncInlineActivity(article);
   const flow = orderedStreamFlow(article);
   let preview = Array.from(flow.querySelectorAll('.streamAnswerPreview')).find(node => node.dataset.blockId === key);
   if (data.discard) {
@@ -1569,7 +1567,19 @@ function renderStreamAnswerText(article, data = {}) {
   }
   preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
   const stick = isNearBottom();
-  article.answerTextStarted = true;
+  if (preview.streamText.trim()) {
+    article.answerTextStarted = true;
+    article.dataset.activityPhase = 'answer';
+    // Collapse once at the first actual answer, not at the end of generation.
+    // Later deltas must respect a user's deliberate reopening of the history.
+    if (article.dataset.answerActivityCollapsed !== 'true') {
+      article.dataset.answerActivityCollapsed = 'true';
+      article.dataset.activityInlineExpanded = 'false';
+      article.querySelector('.thinkingTrigger')?.setAttribute('aria-expanded', 'false');
+      if (typeof activeActivityArticle !== 'undefined' && activeActivityArticle === article) closeActivityDrawer();
+    }
+    syncInlineActivity(article);
+  }
   syncStreamAnswerPlacement(article, preview);
   revealPendingVisualizations(article);
   keepScrollPosition(stick);
@@ -2452,7 +2462,7 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const latestTool = Array.from(source.querySelectorAll("li.is-tool-step")).at(-1);
-  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || article.dataset.activityInlineExpanded === "true" || !latestTool;
+  currentTool.hidden = article.activityEnded || article.answerTextStarted || article.dataset.thinkingState !== "active" || article.dataset.activityInlineExpanded === "true" || !latestTool;
   if (!currentTool.hidden) {
     const toolSignature = latestTool.outerHTML;
     if (currentTool.dataset.signature !== toolSignature) {
