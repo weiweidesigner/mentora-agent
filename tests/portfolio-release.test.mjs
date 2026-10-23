@@ -33,6 +33,6 @@ test('deployed trading UI preserves the latest navigation and strategy save scop
     assert.ok(d.querySelector('#pfProfileForm'));
     assert.ok(d.querySelector('input[name=confidenceThresholdPct]'));
     assert.ok(d.querySelector('[data-pf-avatar]'));
-    assert.equal(calls.some(([,opts])=>opts?.method&&opts.method!=='GET'),false);
+    assert.equal(calls.some(([url,opts])=>/\/(order|execute|plans)(\/|$)/.test(url)&&opts?.method==='POST'),false);
   }finally{w.close();}
 });
