@@ -72,6 +72,31 @@ def requirements_digest(root):
             digest.update(str(path.relative_to(root)).encode());digest.update(path.read_bytes())
     return digest.hexdigest()
 
+def is_mountpoint(path):
+    return subprocess.run(['mountpoint','--quiet',str(path)],env=ENV,check=False,timeout=10).returncode==0
+
+def mount_runtime(destination):
+    """Keep persistent tool writes inside the sandbox's canonical workspace."""
+    destination=destination.resolve(strict=True)
+    if destination==LEGACY.resolve():return
+    if destination.parent!=BASE.resolve() or not re.fullmatch('[a-f0-9]{40}(?:-previous-attempt-[0-9]+)?',destination.name):
+        raise ValueError('Runtime mounts require a managed release')
+    for name in ('outputs','work'):
+        source=LEGACY/name
+        source.mkdir(mode=0o700,exist_ok=True)
+        target=destination/name
+        if target.is_symlink():
+            if target.resolve()!=source.resolve():raise ValueError('Unexpected runtime link: '+str(target))
+            target.unlink()  # Only the link is removed; persistent data stays untouched.
+        target.mkdir(mode=0o700,exist_ok=True)
+        if is_mountpoint(target):
+            if not os.path.samefile(source,target):raise ValueError('Unexpected runtime mount: '+str(target))
+        else:
+            if any(target.iterdir()):raise ValueError('Refusing to cover nonempty runtime directory: '+str(target))
+            run(['sudo','mount','--bind',source,target])
+            if not is_mountpoint(target) or not os.path.samefile(source,target):
+                raise RuntimeError('Runtime bind mount verification failed: '+str(target))
+
 def prepare(revision,cache):
     destination=BASE/revision
     if destination.exists():
@@ -100,7 +125,8 @@ def prepare(revision,cache):
                 target.parent.mkdir(parents=True,exist_ok=True)
                 target.symlink_to(os.path.relpath(source,target.parent))
             # A checked-in regular implementation is an intentional host override.
-    for name in ('outputs','work','.dsh','.dsh-v021','.env'):
+    mount_runtime(destination)
+    for name in ('.dsh','.dsh-v021','.env'):
         source=LEGACY/name
         if source.exists() and not (destination/name).exists():(destination/name).symlink_to(source)
     digest=requirements_digest(destination)
@@ -122,6 +148,7 @@ def prepare(revision,cache):
     deal=next((spec['revision'] for spec in locks if spec['checkout']=='.dependencies/mentora-deal'),'')
     (destination/'deploy-runtime.env').write_text('MENTORA_AGENT_REVISION='+revision+'\nMENTORA_DEAL_REVISION='+deal+'\n')
     run([environment/'bin/python','-c','import app.presentation'],cwd=destination)
+    run([environment/'bin/python',destination/'scripts/check_runtime_writes.py',destination],cwd=destination)
     return destination
 
 def switch(target):
@@ -140,7 +167,10 @@ def healthy():
     return False
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--retry',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--retry',action='store_true')
+    parser.add_argument('--mount-current',action='store_true');args=parser.parse_args()
+    if args.mount_current:
+        mount_runtime(BASE/'current');return
     BASE.mkdir(parents=True,exist_ok=True)
     for name in ('mirrors','environments'):(BASE/name).mkdir(exist_ok=True)
     with (BASE/'deploy.lock').open('w') as lock:

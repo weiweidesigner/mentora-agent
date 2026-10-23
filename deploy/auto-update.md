@@ -10,6 +10,15 @@ Preparation downloads locked dependency sources, selects a Python environment
 for the requirements, and checks Python/JavaScript syntax. Committed regular
 files take precedence over dependency links. Runtime data, outputs, environment
 secrets and Harness sessions remain in the existing server directories.
+`outputs` and `work` are bind-mounted into each release, not symlinked outside
+its workspace. This preserves shared data while keeping sandbox writes inside
+the canonical project path. Preparation verifies the mounts before activation;
+the web service's privileged `ExecStartPre` restores them after a reboot or rollback.
+It never changes the sandbox mode or grants write access to the legacy project root.
+`scripts/check_runtime_writes.py` uses the same Linux bwrap workspace-write
+profile as the installed Harness. Before activation it verifies writes under
+both shared directories and rejection of an outside-workspace write. Probe
+files are isolated and removed automatically; it makes no model/API calls.
 
 Only a prepared version replaces the `current` symlink. The web service then
 restarts and must pass HTTP checks. A failed start restores the preceding
