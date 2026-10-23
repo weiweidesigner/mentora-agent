@@ -902,7 +902,14 @@ textarea {
   transition: opacity 0.16s ease, transform 0.16s ease;
 }
 
+.userActions::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
 .message.user:hover .userActions,
+.message.user:focus-within .userActions,
 .message.user.is-editing .userActions {
   opacity: 1;
   transform: translateY(0);
@@ -3942,7 +3949,7 @@ p {
   .conversation:not(.is-empty):not(.is-case){padding-top:52px}
   .messages{padding-top:12px}
   .userMessageWrap{position:relative;gap:0;width:fit-content;max-width:calc(100vw - 64px)}
-  .userActions{position:absolute;right:calc(100% + 4px);bottom:0;flex-direction:column;gap:0}
+  .userActions{position:absolute;right:calc(100% + 4px);top:auto;bottom:0;flex-direction:column;gap:0}
   .userActionButton{width:28px;height:28px;flex:0 0 28px;border-radius:8px}
   .userActionButton svg{width:14px;height:14px}
   .message.user+.message.assistant{margin-top:12px}
