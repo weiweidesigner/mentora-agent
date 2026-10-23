@@ -59,6 +59,26 @@ test('inline expanded reasoning hides raw tool rows while retaining narrative su
   assert.doesNotMatch(styles, /\.thinkingTrigger\.is-thinking \.thinkingChevron\s*\{[^}]*display:\s*none/);
 });
 
+test('processed timer starts at one second without changing recorded timing', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  try {
+    w.Date.now=()=>100000;
+    for (const [elapsed,expected] of [[0,'1秒'],[1,'1秒'],[999,'1秒'],[1000,'1秒'],[1999,'1秒'],[2000,'2秒'],[60000,'1分钟 0秒']]) {
+      a.dataset.startedAt=String(100000-elapsed);
+      w.updateThinkingSummary(a,'',{live:true,clockOnly:true});
+      assert.equal(a.querySelector('.thinkingElapsedLive').textContent,`已处理 ${expected}`);
+      assert.equal(a.dataset.startedAt,String(100000-elapsed));
+    }
+    a.dataset.cachedElapsedMs='120';
+    w.updateThinkingSummary(a,'');
+    assert.equal(a.querySelector('.thinkingSummaryText').textContent,'已处理 1秒');
+    assert.equal(a.dataset.cachedElapsedMs,'120');
+    a.dataset.elapsedUnrecorded='true';
+    w.updateThinkingSummary(a,'');
+    assert.equal(a.querySelector('.thinkingSummaryText').textContent,'查看执行记录');
+  } finally { dom.window.close(); }
+});
+
 test('created file dot receives optical baseline correction beside diff stats', () => {
   assert.match(styles, /\.activityFileCreatedDot\s*\{[^}]*transform:\s*translateY\(-1px\)/);
 });

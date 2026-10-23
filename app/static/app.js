@@ -3879,7 +3879,7 @@ function updateThinkingSummary(article, prefix, options = {}) {
   const target = article.querySelector(".thinkingSummaryText");
   if (!target) return;
   const startedAt = Number(article.dataset.startedAt || Date.now());
-  const elapsed = article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Math.max(0, Date.now() - startedAt);
+  const elapsed = Math.max(1000, article.dataset.cachedElapsedMs ? Number(article.dataset.cachedElapsedMs) : Date.now() - startedAt);
   const lang = normalizeLang(article.dataset.lang || "en");
   const chinese = lang === "zh-Hans" || lang === "zh-Hant";
   const minutes = Math.floor(elapsed / 60000);
