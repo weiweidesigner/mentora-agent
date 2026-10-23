@@ -1551,6 +1551,7 @@ function renderPublicProgress(article, data = {}) {
   });
   article.dataset.publicThoughtText = text;
   article.dataset.currentThinking = text;
+  delete article.dataset.currentActivityCallId;
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
   syncActivityDrawer(article);
@@ -2105,12 +2106,14 @@ function appendToolStep(article, data) {
     return;
   }
   const dynamicTitle = toolActivityTitle(data, script, tool, code, params, shellCommand, lang);
-  const thought = modelActivitySummary(data?.thoughtSummary, lang);
-  const publicProgress = [data?.nextThought, thought].map(value => modelActivitySummary(value, lang))
+  const layaClassified = data?.activitySemantics?.provider === 'local-laya' && data.activitySemantics.status === 'classified';
+  const thought = layaClassified ? String(data?.thoughtSummary || '').trim() : modelActivitySummary(data?.thoughtSummary, lang);
+  const publicProgress = [data?.nextThought, thought].map(value => layaClassified && value === thought ? thought : modelActivitySummary(value, lang))
     .find(value => value && ![tool, script].some(name => name && value.toLowerCase() === name.toLowerCase()));
   // A new tool action supersedes older progress; completion of an older
   // parallel call must not overwrite a newer progress update.
-  if (phase === 'started' && publicProgress) article.dataset.publicThoughtText = publicProgress;
+  if (phase === 'started' && !data?.semanticUpdate) article.dataset.currentActivityCallId = callId;
+  if (publicProgress && ((phase === 'started' && !data?.semanticUpdate) || (data?.semanticUpdate && article.dataset.currentActivityCallId === callId))) article.dataset.publicThoughtText = publicProgress;
   const flowingText = article.dataset.publicThoughtText || publicProgress || article.dataset.currentThinking || copyFor(lang, "thinking");
   let actionArgument = shellCommand.length ? shellCommand.map(shellQuote).join(" ") : "";
   let input = null;
@@ -2148,6 +2151,7 @@ function appendToolStep(article, data) {
     item.dataset.toolArgument = command;
     item.dataset.toolInput = inputText;
     item.dataset.toolPhase = phase;
+    if (data?.activitySemantics) item.dataset.activitySemantics = JSON.stringify(data.activitySemantics);
     item.dataset.fileChanges = fileChanges.length ? JSON.stringify(fileChanges) : "";
     const toolDetails = `<details class="activityTool"${wasOpen ? " open" : ""}>
         <summary class="activityAction" title="${escapeHtml(actionText)}"><span class="activityActionIcon" aria-hidden="true">${activityActionIcon(script || tool)}</span><span class="activityActionText">${escapeHtml(actionText)}</span><span class="activityActionChevron" aria-hidden="true"></span></summary>
@@ -2157,9 +2161,9 @@ function appendToolStep(article, data) {
       ${fileChangeMarkup}${fileChanges.length ? "" : toolDetails}`;
     item.classList.remove("is-loading", "is-done", "is-error");
     item.classList.add(phase === "failed" ? "is-error" : phase === "completed" ? "is-done" : "is-loading");
-    article.dataset.activityPhase = running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
+    if (!data?.semanticUpdate) article.dataset.activityPhase = running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
   };
-  if (["completed", "failed"].includes(phase) && callId) {
+  if ((["completed", "failed"].includes(phase) || data?.semanticUpdate) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
       .find((item) => item.dataset.toolCallId === callId);
     if (existingItem) {
@@ -2402,8 +2406,8 @@ function buildActivityFlow(article) {
   const chinese = /^zh/.test(article.dataset.lang || "zh");
   const tokens = [], seen = new Set();
   let group = null;
-  const addSummary = (value, stage) => {
-    const text = modelActivitySummary(value, article.dataset.lang || "zh-CN");
+  const addSummary = (value, stage, layaClassified = false) => {
+    const text = layaClassified ? String(value || '').trim() : modelActivitySummary(value, article.dataset.lang || "zh-CN");
     const key = activitySummaryKey(text);
     if (!key || seen.has(key)) return;
     seen.add(key);
@@ -2416,7 +2420,9 @@ function buildActivityFlow(article) {
       return;
     }
     if (item.classList.contains("is-tool-step")) {
-      addSummary(item.querySelector(".activityThoughtSummary")?.textContent || "", index);
+      let semantics = {};
+      try { semantics = JSON.parse(item.dataset.activitySemantics || '{}'); } catch {}
+      addSummary(item.querySelector(".activityThoughtSummary")?.textContent || "", index, semantics.provider === 'local-laya' && semantics.status === 'classified');
       if (item.dataset.fileChanges) {
         group = null;
         tokens.push({tools: [{item, key: `tool:${item.dataset.toolCallId || index}`}]});
@@ -2626,6 +2632,7 @@ function modelActivitySummary(value, lang = "") {
 }
 
 function toolActivityTitle(data, script, fallback, code, params, shellCommand, lang) {
+  if (data?.activitySemantics?.provider === 'local-laya' && data.activitySemantics.status === 'classified' && data.thoughtSummary) return String(data.thoughtSummary);
   const reasoningTitle = modelActivitySummary(data?.thoughtSummary, lang);
   if (reasoningTitle) return reasoningTitle;
   return String(data?.tool || script || fallback || "Tool").trim();

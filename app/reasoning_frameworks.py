@@ -9,6 +9,7 @@ import os
 import queue
 import re
 import signal
+import shlex
 import shutil
 import subprocess
 import sys
@@ -25,7 +26,7 @@ from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 
-from app.jev_tool_activity_router import JevToolActivityRouter, JevToolActivityRouterError
+from app.jev_tool_activity_router import JevToolActivityRouter, JevToolActivityRouterError, ToolActivitySession
 from app.jev_visualization_router import JevVisualizationDecision, JevVisualizationRouter, JevVisualizationRouterError
 from app.business_chart_dependency import load_registry_data
 from app.capability_index import CapabilityIndex
@@ -82,7 +83,7 @@ class LocalAgentFrameworks:
         self._active_codex_processes: dict[str, Any] = {}
         self._active_deepseek_runs: dict[str, str] = {}
         self._tool_activity_guard = threading.Lock()
-        self._tool_activity_cache: dict[str, str] = {}
+        self._tool_activity_cache: dict[str, dict[str, Any]] = {}
         self._capability_index = CapabilityIndex(self.project_root)
         load_dotenv(self.project_root / ".env", override=False)
         self._visualization_router = visualization_router or JevVisualizationRouter()
@@ -280,6 +281,26 @@ class LocalAgentFrameworks:
                 if route.get("applied"):
                     data.setdefault("status", []).insert(0, "JEV 已应用可视化语义规划")
             yield event, data
+
+    def _tool_activity_arguments(self, arguments: Any) -> Any:
+        """Enrich invocations with registered facts, never Agent-proposed titles."""
+        actual = JevToolActivityRouter.semantic_arguments(arguments)
+        if not isinstance(actual, dict):
+            return actual
+        actual = {key: value for key, value in actual.items() if key != '__capability'}
+        try:
+            tokens = shlex.split(str(actual.get('command') or actual.get('cmd') or ''))
+            scripts = {Path(tokens[i + 1]).name for i, token in enumerate(tokens[:-1]) if token == '--script'}
+            scripts.update(Path(token.split('=', 1)[1]).name for token in tokens if token.startswith('--script='))
+            if scripts:
+                registry = load_registry_data(self.project_root / 'app' / 'module_registry.json')
+                descriptions = [str(item.get('label') or '') + ': ' + re.split(r'[。\n]', str(item.get('description') or ''), maxsplit=1)[0]
+                                for item in registry if isinstance(item, dict) and Path(str(item.get('script') or '')).name in scripts]
+                if descriptions:
+                    actual['__capability'] = '\n'.join(descriptions)[:700]
+        except (OSError, ValueError, TypeError):
+            pass
+        return actual
 
     def _visualization_candidates(self) -> list[dict[str, str]]:
         registry_path = self.project_root / "app" / "module_registry.json"
@@ -1084,7 +1105,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         return ""
 
     def _jev_tool_thought_summary(self, script: str, arguments: Any) -> str:
-        """Compatibility hook: only explicit public metadata, no routing model."""
+        """Legacy metadata fallback; live Harness semantics use ToolActivitySession."""
         if isinstance(arguments, str):
             try:
                 arguments = json.loads(arguments)
@@ -1096,6 +1117,19 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             arguments.get("thoughtSummary"), arguments.get("thought_summary"),
             arguments.get("description"), arguments.get("title"),
         )
+
+    @staticmethod
+    def _tool_activity_summary(semantics, question, fallback=''):
+        chinese=bool(re.search(r'[\u3400-\u9fff]',question))
+        if semantics.get('status')=='classified':
+            labels=JevToolActivityRouter.SUMMARIES if chinese else JevToolActivityRouter.EN_SUMMARIES
+            return labels.get(semantics.get('stage'),'')
+        if semantics.get('status')=='pending':
+            return '正在识别步骤语义' if chinese else 'Identifying the activity'
+        if fallback:
+            if semantics.get('reason')=='laya-not-configured':return fallback
+            return ('工具说明：' if chinese else 'Tool description: ')+fallback
+        return '步骤语义暂不可用' if chinese else 'Activity semantics unavailable'
 
     @staticmethod
     def _compact_codex_tool_observation(value: Any) -> str:
@@ -2142,160 +2176,185 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
         public_stream = PublicStream('deepseek')
+        activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)
+
+        def activity_updates(*,final=False):
+            updates=dict(activity.drain())
+            if final:
+                for call_id,context in tool_context_by_call_id.items():
+                    if context.get('activitySemantics',{}).get('status')=='pending' and call_id not in updates:
+                        updates[call_id]=dict(provider='host',status='fallback',reason='classification-not-ready')
+            for call_id,semantics in updates.items():
+                context=tool_context_by_call_id.get(call_id)
+                if not context or not context.get('lastToolStep'):continue
+                context['activitySemantics']=semantics
+                summary=self._tool_activity_summary(semantics,question,context.get('fallbackThought',''))
+                context['thoughtSummary']=summary
+                step={**context['lastToolStep'],'thoughtSummary':summary,'activitySemantics':semantics,'semanticUpdate':True}
+                context['lastToolStep']=step
+                yield 'tool_step',step
         latest_progress_summary = ""
         started_at = time.monotonic()
         run_timeout = self._deepseek_run_timeout_seconds()
-        while worker.is_alive() or not notifications.empty():
-            try:
-                notification = notifications.get(timeout=0.25)
-            except queue.Empty:
-                if time.monotonic() - started_at >= run_timeout:
-                    self._drop_deepseek_harness(harness_key)
-                    raise ReasoningFrameworkTimeout(run_timeout)
-                continue
-            method = str(getattr(notification, "method", "") or "")
-            payload = getattr(notification, "payload", {})
-            if method == 'mentora.public-stream':
-                if str(payload.get('sessionId') or '') == requested_session_id:
-                    frame=payload.get('frame') or {}
-                    if frame.get('type')=='start':
-                        public_stream.begin(frame.get('attemptId','live'))
-                        yield 'model_activity',{'phase':'started'}
-                    elif frame.get('type')=='chunk':
-                        chunk=frame.get('chunk') or {}
-                        channel=chunk.get('channel') or chunk.get('phase') or frame.get('channel') or frame.get('phase')
-                        yield from public_stream.chunk({**chunk,**({'channel':channel} if channel else {})})
-                    elif frame.get('type')=='end':yield 'model_activity',{'phase':'completed'}
-                continue
-            event = payload.get("event") if method == "session.event" and isinstance(payload, dict) else None
-            if isinstance(event, dict):
-                event_type = str(event.get("type") or "")
-            else:
-                event_type = ""
-            if event_type == "assistant/chunk":
-                event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
-                chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
-                if str(payload.get('sessionId') or requested_session_id)==requested_session_id and event_data.get('channel') not in {'analysis','reasoning'}:
-                    yield from public_stream.chunk({**chunk,**({'channel':event_data['channel']} if event_data.get('channel') else {})})
-                usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
-                if usage:
-                    try:
-                        usage_totals["input"] += max(0, int(usage.get("inputTokens") or 0))
-                        usage_totals["cached"] += max(0, int(usage.get("cacheReadTokens") or 0))
-                        usage_totals["output"] += max(0, int(usage.get("outputTokens") or 0))
-                        usage_totals["reasoning"] += max(0, int(usage.get("reasoningTokens") or 0))
-                    except (TypeError, ValueError):
-                        pass
-            elif event_type in {"tool/call", "tool/result", "todo/write"}:
-                if str(payload.get('sessionId') or requested_session_id)!=requested_session_id:
+        try:
+            while worker.is_alive() or not notifications.empty():
+                yield from activity_updates()
+                try:
+                    notification = notifications.get(timeout=0.25)
+                except queue.Empty:
+                    if time.monotonic() - started_at >= run_timeout:
+                        activity.close()
+                        self._drop_deepseek_harness(harness_key)
+                        raise ReasoningFrameworkTimeout(run_timeout)
                     continue
-                tool_data=event.get('data') if isinstance(event.get('data'),dict) else {}
-                progress_events=public_stream.progress_event(event_type,tool_data)
-                if progress_events is not None:
-                    yield from progress_events
+                method = str(getattr(notification, "method", "") or "")
+                payload = getattr(notification, "payload", {})
+                if method == 'mentora.public-stream':
+                    if str(payload.get('sessionId') or '') == requested_session_id:
+                        frame=payload.get('frame') or {}
+                        if frame.get('type')=='start':
+                            public_stream.begin(frame.get('attemptId','live'))
+                            yield 'model_activity',{'phase':'started'}
+                        elif frame.get('type')=='chunk':
+                            chunk=frame.get('chunk') or {}
+                            channel=chunk.get('channel') or chunk.get('phase') or frame.get('channel') or frame.get('phase')
+                            yield from public_stream.chunk({**chunk,**({'channel':channel} if channel else {})})
+                        elif frame.get('type')=='end':yield 'model_activity',{'phase':'completed'}
                     continue
-                if event_type == "tool/call" and pending_public_text:
-                    latest_progress_summary = self._localized_progress(pending_public_text, question)
-                    if latest_progress_summary:
-                        yield "progress", {"text": latest_progress_summary}
-                    pending_public_text = ""
-                tool_index += 1
-                data = event.get("data") if isinstance(event.get("data"), dict) else {}
-                runtime_sources.extend(self._sources_from_value(data))
-                call_id = str(data.get("callId") or "")
-                message = data.get("message") if isinstance(data.get("message"), dict) else {}
-                source = message.get("source") if isinstance(message.get("source"), dict) else {}
-                result_call_id = str(message.get("toolCallId") or source.get("callId") or "")
-                arguments = data.get("arguments") or data.get("input") or data.get("todos") or []
-                display_arguments = arguments
-                phase = "started"
-                if event_type == "tool/call":
-                    name = str(data.get("name") or data.get("tool") or "工具")
-                    thought_summary = self._localized_tool_summary(question,
-                        data.get("thoughtSummary"), data.get("thought_summary"), latest_progress_summary,
-                        data.get("title"), data.get("description")
-                    )
-                    latest_progress_summary = ""
-                    if not thought_summary:
-                        thought_summary = self._localized_tool_summary(
-                            question, self._jev_tool_thought_summary(name, arguments)
-                        )
-                    file_change = self._deepseek_write_context(name, arguments)
-                    if file_change:
-                        display_arguments = file_change["displayArguments"]
-                    if call_id:
-                        tool_context_by_call_id[call_id] = {
-                            "name": name,
-                            "arguments": arguments,
-                            "displayArguments": display_arguments,
-                            "fileChange": file_change,
-                            "thoughtSummary": thought_summary,
-                        }
-                elif event_type == "tool/result":
-                    context = tool_context_by_call_id.get(result_call_id, {})
-                    name = str(context.get("name") or "工具")
-                    arguments = context.get("arguments") or arguments
-                    display_arguments = context.get("displayArguments") or arguments
-                    thought_summary = self._localized_tool_summary(question,
-                        data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"),
-                        context.get("thoughtSummary"),
-                    )
-                    phase = "failed" if message.get("isError") else "completed"
+                event = payload.get("event") if method == "session.event" and isinstance(payload, dict) else None
+                if isinstance(event, dict):
+                    event_type = str(event.get("type") or "")
                 else:
-                    name = "任务计划"
-                    thought_summary = self._localized_tool_summary(question,
-                        data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"), data.get("description")
-                    )
+                    event_type = ""
+                if event_type == "assistant/chunk":
+                    event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                    chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
+                    if str(payload.get('sessionId') or requested_session_id)==requested_session_id and event_data.get('channel') not in {'analysis','reasoning'}:
+                        yield from public_stream.chunk({**chunk,**({'channel':event_data['channel']} if event_data.get('channel') else {})})
+                    usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
+                    if usage:
+                        try:
+                            usage_totals["input"] += max(0, int(usage.get("inputTokens") or 0))
+                            usage_totals["cached"] += max(0, int(usage.get("cacheReadTokens") or 0))
+                            usage_totals["output"] += max(0, int(usage.get("outputTokens") or 0))
+                            usage_totals["reasoning"] += max(0, int(usage.get("reasoningTokens") or 0))
+                        except (TypeError, ValueError):
+                            pass
+                elif event_type in {"tool/call", "tool/result", "todo/write"}:
+                    if str(payload.get('sessionId') or requested_session_id)!=requested_session_id:
+                        continue
+                    tool_data=event.get('data') if isinstance(event.get('data'),dict) else {}
+                    progress_events=public_stream.progress_event(event_type,tool_data)
+                    if progress_events is not None:
+                        yield from progress_events
+                        continue
+                    if event_type == "tool/call" and pending_public_text:
+                        latest_progress_summary = self._localized_progress(pending_public_text, question)
+                        if latest_progress_summary:
+                            yield "progress", {"text": latest_progress_summary}
+                        pending_public_text = ""
+                    tool_index += 1
+                    data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                    runtime_sources.extend(self._sources_from_value(data))
+                    call_id = str(data.get("callId") or "")
+                    message = data.get("message") if isinstance(data.get("message"), dict) else {}
+                    source = message.get("source") if isinstance(message.get("source"), dict) else {}
+                    result_call_id = str(message.get("toolCallId") or source.get("callId") or "")
+                    arguments = data.get("arguments") or data.get("input") or data.get("todos") or []
+                    display_arguments = arguments
                     phase = "started"
-                # A call envelope describes a pending invocation, not a result.
-                # Native results carry text blocks in message.content; don't
-                # expose transport metadata or image bytes as the observation.
-                observation = ""
-                if event_type == "tool/result":
-                    observation = data.get("result") or data.get("output") or data.get("content")
-                    if observation is None:
-                        blocks = message.get("content") or []
-                        observation = "\n".join(str(block.get("text") or "") for block in blocks
-                                                if isinstance(block, dict) and block.get("type") == "text")
-                params_text = display_arguments if isinstance(display_arguments, str) else json.dumps(display_arguments, ensure_ascii=False)
-                tool_step = {
-                    "index": tool_index, "total": tool_index, "tool": name, "script": name,
-                    "code": "DSH", "lang": "zh-CN",
-                    "params": [params_text[:3000]] if arguments else [],
-                    "observation": (observation if isinstance(observation, str) else json.dumps(observation, ensure_ascii=False))[:5000],
-                    "phase": phase,
-                    "callId": call_id or result_call_id or f"deepseek-tool-{tool_index}",
-                    "thoughtSummary": thought_summary,
-                }
-                if event_type == "tool/result" and phase == "completed":
-                    file_change = self._deepseek_file_change(context, observation)
-                    if file_change:
-                        tool_step["fileChanges"] = [file_change]
-                yield "tool_step", tool_step
-                if event_type == "tool/result":
-                    if name==WIDGET_TOOL:
-                        for module in self._html_modules_from_tool_output(observation):
-                            public_stream.artifacts.append(dict(url=module['htmlUrl'],label=module.get('label','')))
-                            yield 'visualization',dict(id=result_call_id,toolName=WIDGET_TOOL,htmlUrl=module['htmlUrl'],title=module.get('label',''),native=True,live=True,final=True)
+                    activity_semantics={}
+                    if event_type == "tool/call":
+                        name = str(data.get("name") or data.get("tool") or "工具")
+                        fallback_thought = self._localized_tool_summary(question,
+                            data.get("thoughtSummary"), data.get("thought_summary"), latest_progress_summary,
+                            data.get("title"), data.get("description"),self._jev_tool_thought_summary(name,arguments)
+                        )
+                        latest_progress_summary = ""
+                        activity_semantics=activity.request(call_id,name,self._tool_activity_arguments(arguments))
+                        thought_summary=self._tool_activity_summary(activity_semantics,question,fallback_thought)
+                        file_change = self._deepseek_write_context(name, arguments)
+                        if file_change:
+                            display_arguments = file_change["displayArguments"]
+                        if call_id:
+                            tool_context_by_call_id[call_id] = {
+                                "name": name,
+                                "arguments": arguments,
+                                "displayArguments": display_arguments,
+                                "fileChange": file_change,
+                                "thoughtSummary": thought_summary,
+                                "fallbackThought": fallback_thought,
+                                "activitySemantics": activity_semantics,
+                            }
+                    elif event_type == "tool/result":
+                        context = tool_context_by_call_id.get(result_call_id, {})
+                        name = str(context.get("name") or "工具")
+                        arguments = context.get("arguments") or arguments
+                        display_arguments = context.get("displayArguments") or arguments
+                        activity_semantics=context.get('activitySemantics',{})
+                        thought_summary=context.get('thoughtSummary','')
+                        phase = "failed" if message.get("isError") else "completed"
                     else:
-                        for module in self._html_modules_from_tool_output(observation):
-                            yield "module", module
-            elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
-                data = event.get("data") if isinstance(event.get("data"), dict) else {}
-                message = data.get("message") if isinstance(data.get("message"), dict) else data
-                if not (message.get('channel') or message.get('phase')) and (data.get('channel') or data.get('phase')):
-                    message={**message,'channel':data.get('channel') or data.get('phase')}
-                yield from public_stream.message(message)
-            elif method in {"subagent.started", "subagent.finished"}:
-                yield "agent_event", {
-                    "engine": FRAMEWORKS["deepseek"],
-                    "agent": "Subagent",
-                    "phase": "run",
-                    "status": "started" if method.endswith("started") else "completed",
-                    "runId": requested_session_id,
-                    "message": "DeepSeek 子智能体已启动" if method.endswith("started") else "DeepSeek 子智能体已完成",
-                    "lang": "zh-CN",
-                }
+                        name = "任务计划"
+                        thought_summary = self._localized_tool_summary(question,
+                            data.get("thoughtSummary"), data.get("thought_summary"), data.get("title"), data.get("description")
+                        )
+                        phase = "started"
+                    # A call envelope describes a pending invocation, not a result.
+                    # Native results carry text blocks in message.content; don't
+                    # expose transport metadata or image bytes as the observation.
+                    observation = ""
+                    if event_type == "tool/result":
+                        observation = data.get("result") or data.get("output") or data.get("content")
+                        if observation is None:
+                            blocks = message.get("content") or []
+                            observation = "\n".join(str(block.get("text") or "") for block in blocks
+                                                    if isinstance(block, dict) and block.get("type") == "text")
+                    params_text = display_arguments if isinstance(display_arguments, str) else json.dumps(display_arguments, ensure_ascii=False)
+                    tool_step = {
+                        "index": tool_index, "total": tool_index, "tool": name, "script": name,
+                        "code": "DSH", "lang": "zh-CN",
+                        "params": [params_text[:3000]] if arguments else [],
+                        "observation": (observation if isinstance(observation, str) else json.dumps(observation, ensure_ascii=False))[:5000],
+                        "phase": phase,
+                        "callId": call_id or result_call_id or f"deepseek-tool-{tool_index}",
+                        "thoughtSummary": thought_summary,
+                        "activitySemantics": activity_semantics,
+                    }
+                    if event_type == "tool/result" and phase == "completed":
+                        file_change = self._deepseek_file_change(context, observation)
+                        if file_change:
+                            tool_step["fileChanges"] = [file_change]
+                    step_context=tool_context_by_call_id.get(call_id or result_call_id)
+                    if step_context is not None:step_context['lastToolStep']=tool_step
+                    yield "tool_step", tool_step
+                    if event_type == "tool/result":
+                        if name==WIDGET_TOOL:
+                            for module in self._html_modules_from_tool_output(observation):
+                                public_stream.artifacts.append(dict(url=module['htmlUrl'],label=module.get('label','')))
+                                yield 'visualization',dict(id=result_call_id,toolName=WIDGET_TOOL,htmlUrl=module['htmlUrl'],title=module.get('label',''),native=True,live=True,final=True)
+                        else:
+                            for module in self._html_modules_from_tool_output(observation):
+                                yield "module", module
+                elif event_type == "assistant/message" and str(payload.get("sessionId") or requested_session_id) == requested_session_id:
+                    data = event.get("data") if isinstance(event.get("data"), dict) else {}
+                    message = data.get("message") if isinstance(data.get("message"), dict) else data
+                    if not (message.get('channel') or message.get('phase')) and (data.get('channel') or data.get('phase')):
+                        message={**message,'channel':data.get('channel') or data.get('phase')}
+                    yield from public_stream.message(message)
+                elif method in {"subagent.started", "subagent.finished"}:
+                    yield "agent_event", {
+                        "engine": FRAMEWORKS["deepseek"],
+                        "agent": "Subagent",
+                        "phase": "run",
+                        "status": "started" if method.endswith("started") else "completed",
+                        "runId": requested_session_id,
+                        "message": "DeepSeek 子智能体已启动" if method.endswith("started") else "DeepSeek 子智能体已完成",
+                        "lang": "zh-CN",
+                    }
+            yield from activity_updates(final=True)
+        finally:
+            activity.close()
         worker.join()
         with self._active_run_guard:
             if self._active_deepseek_runs.get(session_key)==harness_key:self._active_deepseek_runs.pop(session_key,None)

@@ -136,7 +136,7 @@ def reduce_stream_block(blocks,event,data):
         key=str(data.get('blockId') or data.get('callId') or f'{event}:{len(blocks)}')
         block=next((b for b in blocks if b['kind']==event and b['id']==key),None)
         if block is None:block=dict(kind=event,id=key);blocks.append(block)
-        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId','provisional') if k in data}
+        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId','provisional','activitySemantics') if k in data}
     elif event in {'visualization','visualize_widget','module'}:
         key=str(data.get('id') or data.get('callId') or data.get('htmlUrl') or data.get('url') or '')
         if not key:return
