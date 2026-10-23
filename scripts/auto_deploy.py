@@ -85,7 +85,10 @@ def prepare(revision,cache):
         if not re.fullmatch('[a-f0-9]{40}',spec['revision']):raise ValueError('Dependencies must pin a commit')
         checkout=safe(destination,spec['checkout'])
         dependency=mirror(path.stem,spec['repository'],safe(LEGACY,spec['checkout']),spec['revision'])
-        export(dependency,spec['revision'],checkout)
+        checkout.parent.mkdir(parents=True,exist_ok=True)
+        run(['git','clone','--quiet','--shared','--no-checkout',dependency,checkout])
+        run(['git','-C',checkout,'remote','set-url','origin',spec['repository']])
+        run(['git','-C',checkout,'checkout','--quiet','--detach',spec['revision']])
         locks.append(spec)
         for target,source in spec['links'].items():
             target=safe(destination,target);source=safe(checkout,source)
@@ -117,6 +120,7 @@ def prepare(revision,cache):
         run(['node','--check',path],cwd=destination)
     deal=next((spec['revision'] for spec in locks if spec['checkout']=='.dependencies/mentora-deal'),'')
     (destination/'deploy-runtime.env').write_text('MENTORA_AGENT_REVISION='+revision+'\nMENTORA_DEAL_REVISION='+deal+'\n')
+    run([environment/'bin/python','-c','import app.presentation'],cwd=destination)
     return destination
 
 def switch(target):
