@@ -64,6 +64,7 @@ def requirements_digest(root):
     digest=hashlib.sha256()
     paths=[root/'requirements.txt']
     for manifest in sorted(root.glob('*.lock.json')):
+        if manifest.name.startswith('.'):continue
         spec=json.loads(manifest.read_text())
         if 'checkout' in spec:paths.append(safe(root,spec['checkout'])/'requirements.txt')
     for path in paths:
@@ -78,6 +79,7 @@ def prepare(revision,cache):
     export(cache,revision,destination)
     locks=[]
     for path in sorted(destination.glob('*.lock.json')):
+        if path.name.startswith('.'):continue
         spec=json.loads(path.read_text())
         if not all(key in spec for key in ('repository','revision','checkout','links')):continue
         if not re.fullmatch('[a-f0-9]{40}',spec['revision']):raise ValueError('Dependencies must pin a commit')
