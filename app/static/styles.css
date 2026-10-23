@@ -2081,8 +2081,8 @@ p {
 .streamChartSlot{min-width:0;width:100%;margin:4px 0 16px}
 .streamChartSlot+.reportInterpretation{margin-top:4px}
 :is(.streamAnswerPreview,.mixedReport)>:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell,.streamvizArtifactHost)+.reportInterpretation{margin-top:4px}
-.streamChartPending{display:flex;align-items:center;gap:8px;min-height:96px;padding:16px;color:var(--muted);font-size:14px;box-sizing:border-box}
-.streamChartPending:before{content:"";width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:streamChartSpin .9s linear infinite}
+.streamChartPending{display:flex;align-items:center;min-height:32px;padding:6px 0;color:var(--muted);font-size:14px;line-height:1.5;opacity:.65;box-sizing:border-box}
+.streamChartPending:before{display:none}
 .streamvizToolThought{display:flex;flex-direction:column;gap:6px;padding:8px 0;color:var(--muted);font-size:14px;line-height:1.5}
 .streamvizToolThoughtText{color:var(--ink);font-size:var(--chat-body-font-size,16px);font-weight:400}
 .streamvizToolThoughtState{display:flex;align-items:center;gap:8px}
@@ -3935,44 +3935,22 @@ p {
 .reportFrameShell>.widgetChartActivation span{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);font-size:12px;opacity:0;transition:opacity .18s;pointer-events:none}
 .reportFrameShell>.widgetChartActivation:hover span,.reportFrameShell>.widgetChartActivation:focus-visible span{opacity:1}
 .reportFrameShell>.widgetChartActivation:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
-.reportFrameShell.is-chart-loading{min-height:180px}
-.reportFrameShell.is-chart-loading .reportDocumentFrame{visibility:hidden}
-.chartLoadingOverlay{position:absolute;inset:0}
-/* Artifact fetching/rendering only. Native tool-generation thoughts keep their
-   separate lifecycle and appearance. No simulated data or progress percentage. */
+.reportFrameShell.is-chart-loading{min-height:32px}
+.reportFrameShell.is-chart-loading .reportDocumentFrame{position:absolute;top:0;left:0;width:100%;visibility:hidden;pointer-events:none}
+/* Quiet status text only; keep the original answer typography untouched. */
 :is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline){
-  --chart-loading-grid:color-mix(in srgb,var(--muted) 9%,transparent);
-  display:flex;position:relative;isolation:isolate;width:100%;min-height:180px;
-  padding:20px;overflow:hidden;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--line) 65%,transparent);
-  border-radius:8px;background:color-mix(in srgb,var(--soft) 35%,var(--bg));
-  color:var(--muted);font:inherit;font-size:12px;line-height:1.5;
-}
-.chartLoadingOverlay{position:absolute}
-:is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::before{
-  content:"";position:absolute;inset:20px 20px 48px;border-left:1px solid var(--chart-loading-grid);border-bottom:1px solid var(--chart-loading-grid);
-  background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(33.333% - 1px),var(--chart-loading-grid) calc(33.333% - 1px),var(--chart-loading-grid) 33.333%);
-  pointer-events:none;
-}
-:is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::after{
-  content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 28%,color-mix(in srgb,var(--muted) 5%,transparent) 50%,transparent 72%);
-  transform:translateX(-100%);animation:artifactLoadingSheen 2.6s ease-in-out infinite;pointer-events:none;
+  display:flex;align-items:center;position:relative;width:100%;min-height:32px;
+  padding:6px 0;box-sizing:border-box;border:0;border-radius:0;background:transparent;
+  color:var(--muted);font:inherit;font-size:14px;line-height:1.5;
 }
 .streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-icon{display:none}
 :is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text){
-  display:flex;align-items:center;gap:8px;position:absolute;left:20px;right:20px;bottom:14px;
-  color:var(--muted);font-size:12px;font-weight:400;line-height:1.5;animation:none;
+  display:block;position:static;color:var(--muted);font-size:14px;font-weight:400;line-height:1.5;
+  opacity:.65;animation:artifactLoadingTextPulse 2.4s ease-in-out infinite;
 }
-:is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text)::before{
-  content:"";flex:none;width:11px;height:11px;box-sizing:border-box;border:1.25px solid color-mix(in srgb,var(--muted) 22%,transparent);border-top-color:var(--muted);border-radius:50%;animation:streamChartSpin 1.15s linear infinite;
-}
-@keyframes artifactLoadingSheen{to{transform:translateX(100%)}}
-@media(max-width:600px){
-  .reportFrameShell.is-chart-loading{min-height:148px}
-  :is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline){min-height:148px}
-}
+@keyframes artifactLoadingTextPulse{50%{opacity:.45}}
 @media(prefers-reduced-motion:reduce){
-  :is(.chartLoadingOverlay,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-inline)::after{animation:none;background:none}
-  :is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text)::before{animation:none}
+  :is(.chartLoadingLabel,.streamvizArtifactHost[data-loading-kind="artifact"] .visualize-widget-loading-text){animation:none}
 }
 
 .reportFrameShell.is-case-demo:not(.is-chart-loading) .reportDocumentFrame{animation:chartContentEnter .22s ease-out}

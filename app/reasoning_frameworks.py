@@ -1347,7 +1347,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             if not isinstance(result, dict):
                 return
             if result.get("ok") is not True:
-                for key in ("result", "output", "content", "message", "text"):
+                for key in ("result", "output", "content", "message", "text", "observation"):
                     nested = result.get(key)
                     if nested is not None:
                         visit(nested)
@@ -1365,7 +1365,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         "label": str(result.get("title") or path.stem),
                         "streamvizSource": "generated-html",
                     })
-            for key in ("result", "content", "message", "text"):
+            for key in ("result", "content", "message", "text", "observation"):
                 nested = result.get(key)
                 if nested is not None:
                     visit(nested)

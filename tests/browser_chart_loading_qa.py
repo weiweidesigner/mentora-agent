@@ -29,14 +29,15 @@ with sync_playwright() as p:
             loading=page.locator('#loading-qa .visualize-widget-loading-inline')
             loading.wait_for(state='visible')
             assert loading.inner_text().strip()=='正在加载图表…'
-            assert loading.evaluate("e=>getComputedStyle(e).borderRadius")=='8px'
+            assert loading.evaluate("e=>getComputedStyle(e).borderWidth")=='0px'
+            assert loading.evaluate("e=>getComputedStyle(e).backgroundColor")=='rgba(0, 0, 0, 0)'
             assert loading.locator('.visualize-widget-loading-icon').evaluate("e=>getComputedStyle(e).display")=='none'
-            assert loading.bounding_box()['height'] <= 181
+            assert loading.bounding_box()['height'] <= 40
+            assert loading.locator('.visualize-widget-loading-text').evaluate("e=>Number(getComputedStyle(e).opacity)<0.8")
             assert loading.evaluate("e=>e.scrollWidth<=e.clientWidth")
             page.locator('#loading-qa .chatArtifactShell').screenshot(path=str(Path(__file__).parent/f'loading-{width}-{theme}.png'))
             page.emulate_media(reduced_motion='reduce')
-            assert loading.evaluate("e=>getComputedStyle(e,'::after').animationName")=='none'
-            assert loading.locator('.visualize-widget-loading-text').evaluate("e=>getComputedStyle(e,'::before').animationName")=='none'
+            assert loading.locator('.visualize-widget-loading-text').evaluate("e=>getComputedStyle(e).animationName")=='none'
             page.emulate_media(reduced_motion='no-preference')
             assert len(pending)==1
             pending[0].fulfill(status=200,content_type='text/html',body='<html><body><svg width="300" height="150"><rect width="80" height="100" fill="#08745f"/></svg></body></html>')

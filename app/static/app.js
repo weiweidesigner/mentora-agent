@@ -1464,7 +1464,13 @@ function syncStreamAnswerPlacement(article, preview) {
         node.className = "streamingAnswer reportInterpretation";
         preview.streamAnswerNodes.set(key, node);
       }
-      if (node.streamText !== text) {node.innerHTML = formatInsight(text); node.streamText = text;}
+      if (node.streamText !== text) {
+        node.innerHTML = formatInsight(text);
+        node.streamText = text;
+        // Preserve the established provenance chips during streaming, not only
+        // at final settlement. Do not attach uncited tool inventory here.
+        if (node.querySelector('a.answer-citation-link')) attachInlineAnswerSources(node, article.activitySources || []);
+      }
       desired.push(node);
       continue;
     }
@@ -1506,7 +1512,9 @@ function syncStreamAnswerPlacement(article, preview) {
   }
   // Keep hosts connected across text snapshots: replacing preview.innerHTML
   // would reset iframe state and StreamViz roots on every token.
+  const lastText = desired.filter(node => node.classList.contains('streamingAnswer')).at(-1);
   desired.forEach((node, index) => {
+    if (node.classList.contains('streamingAnswer')) node.classList.toggle('is-streaming', !article.activityEnded && preview.dataset.blockId === article.activeAnswerBlockId && node === lastText);
     const before = preview.children[index] || null;
     if (before === node) return;
     if (node.isConnected && preview.moveBefore) preview.moveBefore(node, before);
@@ -1569,6 +1577,8 @@ function renderStreamAnswerText(article, data = {}) {
   preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
   const stick = isNearBottom();
   if (preview.streamText.trim()) {
+    article.activeAnswerBlockId = data.final ? '' : key;
+    article.querySelectorAll('.streamingAnswer.is-streaming').forEach(node => node.classList.remove('is-streaming'));
     article.answerTextStarted = true;
     article.dataset.activityPhase = 'answer';
     // Collapse once at the first actual answer, not at the end of generation.
@@ -3462,6 +3472,20 @@ function attachInlineAnswerSources(container, sources) {
       .map((item) => [normalizedUrl(item.url), item]),
   );
   const citedUrls = new Set();
+  container.querySelectorAll('.inline-answer-source[data-sources]').forEach(chip => {
+    try {
+      const items = JSON.parse(chip.dataset.sources || '[]');
+      if (Array.isArray(items)) {
+        items.forEach(source => { if (source?.url) citedUrls.add(normalizedUrl(source.url)); });
+        const enriched = items.map(source => sourceByUrl.get(normalizedUrl(source.url)) || source);
+        if (enriched.length && JSON.stringify(enriched) !== JSON.stringify(items)) {
+          chip.dataset.sources = JSON.stringify(enriched);
+          const index = Math.min(Number(chip.dataset.sourceIndex) || 0, enriched.length - 1);
+          renderModuleSource(chip, enriched[index], index, enriched.length);
+        }
+      }
+    } catch { /* Preserve an existing source chip without guessing metadata. */ }
+  });
   container.querySelectorAll("a.answer-citation-link[data-source-url]").forEach((link) => {
     const url = link.dataset.sourceUrl || link.href || "";
     const source = sourceByUrl.get(normalizedUrl(url)) || {
