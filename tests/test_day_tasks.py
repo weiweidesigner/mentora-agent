@@ -69,6 +69,57 @@ def test_cn_holiday_is_skipped():
     assert value.startswith('2026-10-08T01:00:00')
 
 
+@pytest.mark.parametrize('handled', [False, True])
+def test_run_handlers_dispatch_in_order_and_fall_back_only_if_unhandled(service, handled):
+    calls = []
+    task = service.save('alice', TaskInput(**config(enabled=False)))
+    with service.db() as db:
+        service.enqueue(db, service.owned(db, 'alice', task['id']))
+    run = service.claim()
+    service.runner = lambda values, run_id: (calls.append('runner') or {'interpretation': 'fallback'})
+    def first(actual_run, values):
+        assert actual_run['id'] == run['id']
+        assert values['_owner'] == 'alice'
+        assert callable(values['_emit_event'])
+        calls.append('first')
+    def second(actual_run, values):
+        calls.append('second')
+        return {'interpretation': 'handled'} if handled else None
+    service.run_handlers.extend([first, second, lambda *args: calls.append('third')])
+    service.execute(run)
+    assert calls == (['first', 'second'] if handled else ['first', 'second', 'third', 'runner'])
+    with service.db() as db:
+        saved = db.execute('SELECT status,answer FROM runs WHERE id=?', (run['id'],)).fetchone()
+    assert saved['status'] == 'success'
+    assert json.loads(saved['answer'])['interpretation'] == ('handled' if handled else 'fallback')
+
+
+@pytest.mark.parametrize('invalid_result', [False, True])
+def test_handler_failure_does_not_run_fallback_or_save_success(service, invalid_result):
+    task = service.save('alice', TaskInput(**config(enabled=False)))
+    with service.db() as db:
+        service.enqueue(db, service.owned(db, 'alice', task['id']))
+    run = service.claim()
+    def fail(*args):
+        if invalid_result:
+            return {}
+        raise RuntimeError('handler failed')
+    service.run_handlers.append(fail)
+    service.runner = lambda *args: pytest.fail('A handled failure must not run generic research')
+    service.execute(run)
+    with service.db() as db:
+        saved = db.execute('SELECT status FROM runs WHERE id=?', (run['id'],)).fetchone()
+        pending = db.execute('SELECT active_run FROM tasks WHERE id=?', (task['id'],)).fetchone()
+    assert saved['status'] == 'failed'
+    assert pending['active_run'] is None
+
+
+def test_run_handler_registry_is_instance_local(service, tmp_path):
+    service.run_handlers.append(lambda *args: None)
+    other = DayTasks(tmp_path / 'other', service.runner)
+    assert other.run_handlers == []
+
+
 def test_replayed_task_events_carry_original_start_and_final_elapsed(client,service):
     task=create(client,enabled=False).json()
     run=client.post('/api/day/tasks/'+task['id']+'/run',headers={'X-Veya-Day':'1'}).json()['runId']

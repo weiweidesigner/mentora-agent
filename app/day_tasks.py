@@ -294,6 +294,7 @@ def private_file(path, content):
 class DayTasks:
     def __init__(self, directory: Path, runner: Callable):
         self.directory, self.runner = directory, runner
+        self.run_handlers = []
         directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.db_path = directory / 'tasks.sqlite3'
         self.cipher = Fernet(private_file(directory / 'channel.key', Fernet.generate_key()))
@@ -628,7 +629,13 @@ class DayTasks:
                     ]
             from app.reasoning_preferences import reasoning_effort_scope
             with reasoning_effort_scope(config['reasoningEffort']):
-                answer = self.runner(run_config, run['id'])
+                answer = None
+                for handler in self.run_handlers:
+                    answer = handler(run, run_config)
+                    if answer is not None:
+                        break
+                if answer is None:
+                    answer = self.runner(run_config, run['id'])
             if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
                 raise ValueError('empty result')
             with self.db() as db:
