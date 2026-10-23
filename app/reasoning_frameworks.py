@@ -115,7 +115,7 @@ class LocalAgentFrameworks:
             except (OSError, subprocess.TimeoutExpired):
                 pass
         self._add_deepseek_sdk_path()
-        deepseek_ready = importlib.util.find_spec("deepseek_harness") is not None or bool(self._dsh_bin())
+        deepseek_ready = importlib.util.find_spec("deepseek_harness") is not None
         return {
             "deepseek": {
                 "label": FRAMEWORKS["deepseek"],
@@ -1766,7 +1766,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             codex_env["BASH_ENV"] = str(command_guard / "shell-env.sh")
             codex_env["PATH"] = f"{command_guard}{os.pathsep}{codex_env.get('PATH', '')}"
         process = subprocess.Popen(
-            command,
+            ([sys.executable, str(Path(__file__).with_name('codex_stream_bridge.py')), *command]
+             if os.getenv('AICHART_CODEX_TRANSPORT','app-server')!='exec' else command),
             cwd=self.project_root,
             env=codex_env,
             stdin=subprocess.PIPE,
@@ -1784,6 +1785,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         process.stdin.close()
         thread_id = engine_session_id
         public_items = {}
+        codex_tool_indexes = {}
         answer = ""
         started = time.monotonic()
         run_timeout_seconds = self._codex_run_timeout_seconds()
@@ -1797,16 +1799,36 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             except json.JSONDecodeError:
                 continue
             event_type = str(event.get("type") or "")
+            if event_type=='model_activity':
+                yield 'model_activity',{'phase':event.get('phase')}
+                continue
+            if event_type=='agent_message.delta':
+                public_item=event.get('item') or {}
+                item_id=str(public_item.get('id') or 'codex-live')
+                delta=str(public_item.get('delta') or '')
+                if delta:
+                    public_items[item_id]=public_items.get(item_id,'')+delta
+                    yield 'answer_text',dict(blockId=item_id,delta=delta,live=True,final=False)
+                continue
             if event_type == "thread.started":
                 thread_id = str(event.get("thread_id") or thread_id)
                 self._write_codex_trace(f"Codex 线程已启动: {thread_id}")
             item = event.get("item") if isinstance(event.get("item"), dict) else {}
             if event_type in {"item.started", "item.completed"}:
                 self._trace_codex_event(event_type, item, show_local_reasoning=is_local_glm)
+            if event_type=='item.started' and item.get('type') not in {'agent_message','reasoning','error'}:
+                key=str(item.get('id') or f'tool-{tool_index+1}')
+                tool_index+=1;codex_tool_indexes[key]=tool_index
+                started_tool=self._codex_tool_event(item,tool_index,self.project_root)
+                started_tool['phase']='started'
+                yield 'tool_step',started_tool
             if event_type == "item.completed" and item.get("type") not in {"agent_message", "reasoning", "error"}:
                 completed_tools.append(item)
-                tool_index += 1
-                tool_event = self._codex_tool_event(item, tool_index, self.project_root)
+                key=str(item.get('id') or f'tool-{tool_index+1}')
+                if key not in codex_tool_indexes:
+                    tool_index+=1;codex_tool_indexes[key]=tool_index
+                tool_event = self._codex_tool_event(item, codex_tool_indexes[key], self.project_root)
+                if item.get('status') in {'failed','declined'}:tool_event['phase']='failed'
                 if not tool_event.get("thoughtSummary"):
                     tool_event["thoughtSummary"] = self._jev_tool_thought_summary(
                         str(tool_event.get("script") or ""), item.get("command") or tool_event.get("params") or []
@@ -1909,6 +1931,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     )
                     return
                 raise ReasoningFrameworkError(f"本地模型未完成可信的工具执行：{issue}。请重试或切换模型。")
+        if public_items and os.getenv('AICHART_CODEX_TRANSPORT','app-server')!='exec':
+            answer='\n\n'.join(public_items.values())
         if observed_skills:
             answer = re.sub(r"(?m)^\s*\[\[AIME_SKILLS:[^\]\n]+\]\]\s*$", "", answer).rstrip()
             answer += f"\n\n[[AIME_SKILLS:{','.join(observed_skills)}]]"
@@ -2014,13 +2038,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         runtime_cwd = (dsh_home / "runtime").resolve()
         runtime_cwd.mkdir(parents=True, exist_ok=True)
         if DeepSeekHarness is None:
-            if selected_model == local_model:
-                raise ReasoningFrameworkError("本地 GLM 模型需要 DeepSeek Harness Python SDK，headless 回退模式不支持切换模型")
-            yield from self._stream_deepseek_headless(
-                prompt, question, session_key, dsh_home,
-                lightweight=selected_reasoning_effort == "low",
-            )
-            return
+            raise ReasoningFrameworkConfigurationError('真实流式输出需要 DeepSeek Harness Python SDK；当前未安装，已停止执行，不回退为整段缓冲输出。')
         options: dict[str, Any] = {
             "provider": os.getenv("AICHART_DEEPSEEK_PROVIDER", "deepseek-official"),
             "model": selected_model,
@@ -2362,52 +2380,3 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 harness.close()
             except Exception:
                 pass
-
-    def _stream_deepseek_headless(
-        self, prompt: str, question: str, session_key: str, dsh_home: Path,
-        *, lightweight: bool = False,
-    ) -> Iterator[tuple[str, dict[str, Any]]]:
-        dsh_bin = self._dsh_bin()
-        if not dsh_bin:
-            raise ReasoningFrameworkError(
-                "DeepSeek Harness 不可用：请安装官方 SDK/Runtime，或通过 DSH_BIN 指定 dsh 可执行文件。"
-            )
-        yield "status", {"message": "正在连接 DeepSeek Harness", "phase": "deepseek-connect", "lang": "zh-CN"}
-        yield "agent_event", {
-            "engine": FRAMEWORKS["deepseek"], "agent": "Headless Agent", "phase": "run", "status": "started",
-            "runId": session_key, "message": "DeepSeek Harness 开始处理用户请求", "lang": "zh-CN",
-        }
-        environment = os.environ.copy()
-        environment["DSH_HOME"] = str(dsh_home)
-        environment["MENTORA_PROJECT_ROOT"] = str(self.project_root)
-        environment["MENTORA_TOOL_ENV_KEYS"] = os.getenv("AICHART_TOOL_ENV_KEYS", "")
-        launch = [dsh_bin, "--profile", "headless"]
-        launch.extend(["--patch", str(self.project_root / "app" / "dsh_tool_environment.cordis.yml")])
-        launch.extend(["--patch", str(self.project_root / "app" / "dsh_lightweight.cordis.yml")])
-        launch.append(prompt)
-        try:
-            completed = subprocess.run(
-                launch,
-                cwd=self.project_root,
-                env=environment,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                capture_output=True,
-                timeout=self._deepseek_timeout_seconds(),
-                check=False,
-            )
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            raise ReasoningFrameworkError(f"DeepSeek Harness 调用失败：{exc}") from exc
-        if completed.returncode != 0:
-            detail = completed.stderr.strip().splitlines()[-1] if completed.stderr.strip() else "运行时异常退出"
-            raise ReasoningFrameworkError(f"DeepSeek Harness 调用失败：{detail}")
-        answer = completed.stdout.strip()
-        if not answer:
-            raise ReasoningFrameworkError("DeepSeek Harness 未返回最终回答")
-        run_id = f"deepseek-{session_key}"
-        yield "agent_event", {
-            "engine": FRAMEWORKS["deepseek"], "agent": "Headless Agent", "phase": "run", "status": "completed",
-            "runId": run_id, "message": "DeepSeek Harness 已完成", "lang": "zh-CN",
-        }
-        yield "final", self._artifact_payload("deepseek", question, answer, run_id, session_key)

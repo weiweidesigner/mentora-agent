@@ -55,6 +55,41 @@ def test_failed_stream_is_terminal_and_has_no_fabricated_final(tmp_path):
     assert 'provider error' not in text
 
 
+def test_live_deltas_preview_and_ordered_history_include_actual_final_receipt(tmp_path):
+    def runner(config,run_id):
+        emit=config['_emit_event']
+        emit('answer_text',{'blockId':'a','delta':'First','live':True})
+        emit('module',{'htmlUrl':'/generated/fixture.html'})
+        emit('tool_step',{'callId':'read','tool':'read','phase':'completed'})
+        emit('answer_text',{'blockId':'b','delta':'Sec','live':True})
+        emit('answer_text',{'blockId':'b','delta':'ond','live':True})
+        assert service.scene_tasks()[0]['livePreview']=='Second'
+        return {'interpretation':'Second\n\nActual receipt: no trade','reportArtifacts':[]}
+    service,task,run,run_id,client=scheduled(tmp_path,runner)
+    service.execute(run)
+    with service.db() as db:
+        answer=json.loads(db.execute('SELECT answer FROM runs WHERE id=?',(run_id,)).fetchone()['answer'])
+    blocks=answer['streamBlocks']
+    assert [block['kind'] for block in blocks]==['text','visualization','tool_step','text','text']
+    assert blocks[0]['text']=='First' and blocks[3]['text']=='Second'
+    assert blocks[-1]['text']=='Actual receipt: no trade'
+    assert answer['interpretation']=='First\n\nSecond\n\nActual receipt: no trade'
+
+
+def test_scheduled_error_preserves_public_blocks_but_retracts_invalid_attempt(tmp_path):
+    def runner(config,run_id):
+        emit=config['_emit_event']
+        emit('answer_text',{'blockId':'a','delta':'Kept','live':True})
+        emit('answer_text',{'blockId':'bad','delta':'Invalid draft','live':True})
+        emit('answer_text',{'blockId':'bad','discard':True})
+        raise RuntimeError('fixture failure')
+    service,task,run,run_id,client=scheduled(tmp_path,runner)
+    service.execute(run)
+    with service.db() as db:
+        error=json.loads(db.execute("SELECT payload FROM run_events WHERE run_id=? AND event='error'",(run_id,)).fetchone()['payload'])
+    assert error['streamBlocks']==[{'kind':'text','id':'a','text':'Kept'}]
+
+
 def test_daily_research_uses_existing_framework_stream(monkeypatch):
     from app import presentation
     seen=[];calls=[]

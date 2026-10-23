@@ -69,6 +69,9 @@ def reduce_stream_block(blocks,event,data):
     if event=='answer_text':
         key=str(data.get('blockId') or 'legacy-answer')
         block=next((b for b in blocks if b['kind']=='text' and b['id']==key),None)
+        if data.get('discard'):
+            if block:blocks.remove(block)
+            return
         if block is None:block=dict(kind='text',id=key,text='');blocks.append(block)
         if 'delta' in data:block['text']+=str(data['delta'])
         else:block['text']=str(data.get('text') or '')

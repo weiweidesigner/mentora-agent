@@ -112,3 +112,18 @@ test('native argument deltas increment one live host and final URL settles in pl
  assert.equal(f.article.querySelector('.interleavedFlow').lastChild.textContent,'B');
  }finally{f.close();}
 });
+
+test('invalid attempt is retracted without erasing prior prose or tool rows',()=>{
+ const f=fixture();try{
+ f.w.renderStreamAnswerText(f.article,{blockId:'a',delta:'Validated earlier text'});
+ f.w.renderOrderedTool(f.article,{callId:'read',tool:'read',phase:'completed'});
+ f.w.renderStreamAnswerText(f.article,{blockId:'bad',delta:'Malformed draft'});
+ f.w.renderStreamAnswerText(f.article,{blockId:'bad',discard:true});
+ f.w.renderStreamAnswerText(f.article,{blockId:'good',delta:'Corrected text\n[[AIME_SKILLS:private]]\n[[AIME_FILE:/private/path]]'});
+ assert.equal(f.article.querySelectorAll('.streamAnswerPreview').length,2);
+ assert.ok(!f.article.textContent.includes('Malformed'));
+ assert.ok(!f.article.textContent.includes('AIME_'));
+ assert.ok(f.article.textContent.includes('Validated earlier text'));
+ assert.equal(f.article.querySelectorAll('.orderedTool').length,1);
+ }finally{f.close();}
+});

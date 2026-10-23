@@ -1435,6 +1435,10 @@ function renderStreamAnswerText(article, data = {}) {
   const flow = orderedStreamFlow(article);
   const key = String(data.blockId || 'legacy-answer');
   let preview = Array.from(flow.querySelectorAll('.streamAnswerPreview')).find(node => node.dataset.blockId === key);
+  if (data.discard) {
+    preview?.remove();
+    return;
+  }
   if (!preview) {
     preview = document.createElement('div');
     preview.className = 'streamAnswerPreview streamingAnswer reportInterpretation';
@@ -1443,7 +1447,7 @@ function renderStreamAnswerText(article, data = {}) {
   }
   preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
   const raw = preview.streamText;
-  const text = sanitizeUserFacingInsight(raw.replace(/\[\[AIME_CHART:[\s\S]*?(?:\]\]|$)/g, ""));
+  const text = sanitizeUserFacingInsight(raw.replace(/\[\[AIME_(?:CHART|SKILLS|FILE):[\s\S]*?(?:\]\]|$)/g, ""));
   if (!text.trim()) return;
   const stick = isNearBottom();
   preview.innerHTML = formatInsight(text);

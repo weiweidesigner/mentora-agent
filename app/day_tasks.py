@@ -405,8 +405,14 @@ class DayTasks:
         summary = re.sub(r'\[\[AIME_[^\n]+?\]\]', '', answer.get('interpretation', ''))
         preview=''
         if row['active_run']:
-            recent=db.execute("SELECT event,payload FROM run_events WHERE run_id=? AND event IN ('status','agent_event','tool_step','progress','answer_text') ORDER BY id DESC LIMIT 8",(row['active_run'],)).fetchall()
+            recent=db.execute("SELECT event,payload FROM run_events WHERE run_id=? AND event IN ('status','agent_event','tool_step','progress','answer_text') ORDER BY id DESC LIMIT 128",(row['active_run'],)).fetchall()
+            from app.public_stream import reduce_stream_block
+            live_blocks=[]
+            for record in reversed(recent):reduce_stream_block(live_blocks,record['event'],json.loads(record['payload']))
+            latest_text=next((block.get('text','') for block in reversed(live_blocks) if block['kind']=='text' and block.get('text','').strip()),'')
+            if latest_text:preview=re.sub(r'[*_`#]','',latest_text).strip()[-300:]
             for event in recent:
+                if preview:break
                 data=json.loads(event['payload'])
                 value=next((data.get(k) for k in ('detail','message','text','content','title') if isinstance(data.get(k),str) and data.get(k).strip()),'')
                 if value:
@@ -598,8 +604,32 @@ class DayTasks:
         return None
 
     def record_event(self,run_id,event,data):
-        if event not in {'status','route','agent_event','tool_step','progress','answer_text','module','visualization','visualize_widget','vision_asset','module_error','final','error'}:return
+        if event not in {'status','route','agent_event','tool_step','progress','answer_text','model_activity','module','visualization','visualize_widget','vision_asset','module_error','final','error'}:return
         if not isinstance(data,dict):return
+        if event in {'final','error'}:
+            from app.public_stream import reduce_stream_block
+            from app.public_json import PublicAnswerLedger
+            with self.db() as db:
+                prior=list(db.execute('SELECT event,payload FROM run_events WHERE run_id=? ORDER BY id',(run_id,)))
+            blocks=[];ledger=PublicAnswerLedger();live=False
+            for record in prior:
+                value=json.loads(record['payload'])
+                reduce_stream_block(blocks,record['event'],value);ledger.accept(record['event'],value)
+                live=live or (record['event']=='answer_text' and value.get('live') is True)
+            if event=='final':
+                if live:
+                    body=str(data.get('interpretation') or '')
+                    missing=ledger.remaining(body)
+                    data['interpretation']=ledger.transcript(body)
+                    if missing:
+                        suffix=dict(blockId='task-final-'+run_id,text=missing,replace=True,final=True)
+                        self.record_event(run_id,'answer_text',suffix)
+                        reduce_stream_block(blocks,'answer_text',suffix)
+                shown={b.get('data',{}).get('htmlUrl') or b.get('data',{}).get('url') for b in blocks if b['kind']=='visualization'}
+                for artifact in data.get('reportArtifacts') or []:
+                    if artifact.get('url') and artifact['url'] not in shown:
+                        reduce_stream_block(blocks,'module',artifact);shown.add(artifact['url'])
+            data['streamBlocks']=blocks
         def clean(value):
             if isinstance(value,dict):return {k:('[redacted]' if re.search(r'api.?key|authorization|password|cookie|secret',k,re.I) else clean(v)) for k,v in value.items()}
             if isinstance(value,list):return [clean(v) for v in value]
@@ -607,6 +637,12 @@ class DayTasks:
         payload=json.dumps(clean(data),ensure_ascii=False,default=str)
         with self.db() as db:
             db.execute('INSERT INTO run_events(run_id,event,payload,created) VALUES(?,?,?,?)',(run_id,event,payload,stamp(now_utc())))
+        if event=='tool_step' and isinstance(data.get('output'),dict):
+            artifact=data['output'].get('chartArtifact')
+            if isinstance(artifact,dict) and artifact.get('url'):
+                with self.db() as db:
+                    exists=db.execute("SELECT 1 FROM run_events WHERE run_id=? AND event='module' AND json_extract(payload,'$.htmlUrl')=?",(run_id,artifact['url'])).fetchone()
+                if not exists:self.record_event(run_id,'module',dict(htmlUrl=artifact['url'],label=artifact.get('title') or artifact.get('label') or ''))
 
     def execute(self, run):
         config = self.unpack(run['config'])

@@ -10,6 +10,13 @@ from app.reasoning_frameworks import LocalAgentFrameworks, ReasoningFrameworkErr
 from app.jev_visualization_router import JevVisualizationDecision
 
 
+@pytest.fixture(autouse=True)
+def legacy_exec_fixtures(monkeypatch):
+    # These historical fixtures emulate exec JSONL. App-server has independent
+    # protocol/streaming tests and is the production default.
+    monkeypatch.setenv('AICHART_CODEX_TRANSPORT','exec')
+
+
 def test_deepseek_native_web_tools_are_disabled_by_environment_patch() -> None:
     patch = (Path(__file__).parents[1] / "app" / "dsh_tool_environment.cordis.yml").read_text(encoding="utf-8")
     assert "- id: tool-web" in patch
