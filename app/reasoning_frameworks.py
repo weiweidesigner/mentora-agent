@@ -472,6 +472,7 @@ class LocalAgentFrameworks:
             f"- 可视化编码：{decision.visual_encoding} — {encoding}",
             f"- 证据编排：{decision.evidence_strategy} — {evidence}",
             f"- 标记策略：{decision.mark_strategy} — {mark_strategy}",
+            "- 金融方向配色必须从用户问题和数据源市场传递到每个图表 payload 的 financialMarket：A股=CN、港股=HK、美股=US；即使图名只写全市场或日期，也不能省略。CN/HK 红涨绿跌，US 绿涨红跌。市场不明或混合时不得猜测，应保留中性/系列配色。",
             "- 只有在真实数据能唯一解析标记目标时才生成 marks；无法解析的日期、系列、分类、阈值或范围必须跳过，禁止猜测。",
             "- 自动模式通常保留 1–3 个关键标记并以 5 个为软默认上限；用户明确指定数量或要求全部事件时必须完整保留，并通过标签密度或交互处理拥挤。",
             "- 美股/美国上市标的优先保留业务图表的内置取数、指标口径、交互与展示逻辑；端内新闻和视频用于补充催化剂、市场叙事与观点，不得替代结构化业务证据。",
@@ -491,14 +492,14 @@ class LocalAgentFrameworks:
             ])
         if decision.mark_strategy == "signed-direction":
             lines.extend([
-                "- 强制执行：柱状图、分组柱状图或柱折图的每个有符号柱值必须按数值方向着色，正值 #00b899、负值 #ff2f57、零值 #94a3b8；不得仅使用系列默认色。",
-                "- 必须把该规则写入可执行 schema：visualStyle.markStrategy=signed-direction，并提供 >0、<0、=0 三条 colorRules；调用通用图表 CLI 时必须通过 --style-json 传入，不能只在文字中描述。",
+                "- 单系列柱状图或柱折图按方向着色：正值 var(--sv-price-up)、负值 var(--sv-price-down)、零值 #94a3b8；禁止把正负硬编码为固定红绿。",
+                "- 必须在图表 payload 中传 financialMarket，并写入 visualStyle.markStrategy=signed-direction 及 >0、<0、=0 三条语义 colorRules；遵守所选脚本 schema 的 payload/style 参数，不传不存在的 CLI 参数。",
                 "- 如果最终数据包含多个并列系列，停止正负重着色并保留系列色与图例映射；以零轴位置表达正负。用户明确指定的颜色规则优先。",
             ])
         elif decision.mark_strategy == "distribution-polarity":
             lines.extend([
                 "- 强制执行：分布图按 X 轴区间判断正负，而不是按柱高判断；单系列可按正负着色，多系列分组分布必须保留系列颜色，并用 0 分界线表达极性。",
-                "- 调用通用图表 CLI 时必须通过 --style-json 传入该可执行规则，不能只在文字中描述。",
+                "- 必须在图表 payload 中传 financialMarket，并通过 visualStyle.distributionColor 传递极性规则；正区间使用 var(--sv-price-up)，负区间使用 var(--sv-price-down)，平盘使用中性色。遵守所选脚本 schema 的 payload/style 参数，不传不存在的 CLI 参数。",
             ])
         return "\n".join(lines)
 
