@@ -34,3 +34,6 @@ The runner is installed at
 `/home/ubuntu/.local/lib/mentora-deploy/auto_deploy.py`; the checked-in service,
 timer and `mentora-release.conf` are the installation templates. The SSH key
 and application `.env` stay on the server and are never included in Git.
+Private dependency repositories use separate read-only GitHub deploy keys in
+`/home/ubuntu/.ssh/mentora-auto/<repository-name>`. Public repositories use the
+existing server GitHub SSH identity. No GitHub account token is stored by the runner.

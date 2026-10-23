@@ -18,7 +18,8 @@ import urllib.request
 LEGACY=Path('/home/ubuntu/veya-agent')
 BASE=Path('/home/ubuntu/mentora-releases')
 SSH='ssh -i /home/ubuntu/.ssh/portfolio_github -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/home/ubuntu/.ssh/github_known_hosts'
-ENV={**os.environ,'GIT_TERMINAL_PROMPT':'0','GIT_SSH_COMMAND':SSH}
+ENV={**os.environ,'GIT_TERMINAL_PROMPT':'0'}
+ENV.pop('GIT_SSH_COMMAND',None)
 
 def run(args,**kwargs):
     return subprocess.run([str(x) for x in args],check=True,env=ENV,timeout=900,**kwargs)
@@ -30,12 +31,15 @@ def mirror(name,repository,seed=None,revision=None):
     if not re.fullmatch(r'https://github.com/weiweidesigner/[A-Za-z0-9_.-]+\.git',repository):
         raise ValueError('Unexpected dependency repository')
     remote='git@github.com:'+repository.split('github.com/',1)[1]
+    key=Path('/home/ubuntu/.ssh/mentora-auto')/repository.rsplit('/',1)[1][:-4]
+    ssh=SSH.replace('/home/ubuntu/.ssh/portfolio_github',str(key)) if key.is_file() else SSH
     cache=BASE/'mirrors'/(name+'.git')
     if not cache.exists():
         if seed and (seed/'.git').exists():
             run(['git','clone','--quiet','--bare','--shared',seed,cache])
         else:
-            run(['git','clone','--quiet','--bare',remote,cache])
+            run(['git','-c','core.sshCommand='+ssh,'clone','--quiet','--bare',remote,cache])
+    run(['git','-C',cache,'config','core.sshCommand',ssh])
     run(['git','-C',cache,'remote','set-url','origin',remote])
     if revision:
         exists=subprocess.run(['git','-C',str(cache),'cat-file','-e',revision+'^{commit}'],env=ENV,stderr=subprocess.DEVNULL).returncode==0
