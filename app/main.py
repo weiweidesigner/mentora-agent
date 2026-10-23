@@ -2046,17 +2046,15 @@ TEXT_ONLY_SCRIPTS = {NEWS_SEARCH_SCRIPT, EXTERNAL_INFO_SEARCH_SCRIPT, URL_CONTEN
 MAX_ROUTE_STEPS = 13
 CHART_RECALL_TOOL = "chart_recall"
 MULTIMODAL_UNDERSTANDING_TOOL = "multimodal_understanding"
-ADVISOR_TEXT_GENERATION_TOOL = "advisor_text_generation"
 SEARCH_TOOL = "search"
 AGENT_ONLY_TOOLS = {
     CHART_RECALL_TOOL,
     MULTIMODAL_UNDERSTANDING_TOOL,
     SEARCH_TOOL,
-    ADVISOR_TEXT_GENERATION_TOOL,
+    "advisor_text_generation",  # Reject legacy tool names as executable CLI steps.
 }
 STRUCTURED_DATA_SKILLS_LABEL = "app/skills/business-chart-recall + app/skills/generic-chart + app/skills/code-interpreter"
 SEARCH_SKILLS_LABEL = "app/skills/internal-search + app/skills/external-search + app/skills/video-search"
-ADVISOR_TEXT_GENERATION_SKILL_LABEL = "app/skills/advisor-text-generation/SKILL.md"
 CORE_FINANCIAL_SCRIPTS = (
     "income_statement.py",
     "balance_sheet.py",
@@ -2557,14 +2555,6 @@ AGENT_TOOL_METADATA = (
         when_to_use="用户问题涉及消息面、舆情、市场热点、最新事件、监管、新闻、催化剂，或正常投资分析需要结合最新资讯时调用；用户明确要求 Google/谷歌/全网/外部站点/site 搜索时调用外部信息搜索。",
         input_contract="用户问句、标的代码、搜索语义参数、时间/数量限制。",
         output_contract="搜索结果 JSON/HTML、新闻摘要上下文、来源 URL 与站点信息。",
-    ),
-    AgentToolMetadata(
-        name=ADVISOR_TEXT_GENERATION_TOOL,
-        skill=ADVISOR_TEXT_GENERATION_SKILL_LABEL,
-        description="最终文本生成工具：在所有数据、搜索、图表和图像理解 observation 之后，基于用户问题生成投资分析的专业、详细、综合解读。",
-        when_to_use="每次可执行行动计划完成后自动调用；尤其适用于需要把结构化数据、新闻搜索、视频资源、图表趋势和多模态读图结果合成最终回答时。该工具不应作为 steps[].script 出现。",
-        input_contract="原始用户问题、前序模块 payload/html 文本、搜索/视频/网页 observation、图像/图表理解内容、模块执行原因和可溯源来源。",
-        output_contract="包含 title、overview 和 modules 的 JSON；overview 是面向用户的主总结，modules 是每个组件的简短证据说明。",
     ),
 )
 
@@ -3319,9 +3309,8 @@ def fallback_relevant_skill_names(question: str) -> list[str]:
         add("video-search")
     for action_skill in ainvest_action_skills_for_question(question):
         add(action_skill)
-    add("advisor-text-generation")
     names = enforce_data_query_search_scope(question, names)
-    return names or ["external-search", "advisor-text-generation"]
+    return names or ["external-search"]
 
 
 def fallback_skill_selection_plan(skills: list[str], question: str) -> list[dict[str, Any]]:
@@ -3503,7 +3492,7 @@ def infer_relevant_skill_names(
         "新闻/资讯选 internal-search 或 external-search；端内视频选 video-search；"
         "用户要求通用可视化或结构图选 generic-chart；需要通用结构化数据且 Yahoo 能覆盖标的与字段时选 yahoo-data，"
         "包括全球 Yahoo 支持标的的行情、财务时间序列、宏观指标、事件窗口和派生序列；"
-        "需要清洗聚合转换选 code-interpreter；最终文字综合通常保留 advisor-text-generation。\n\n"
+        "需要清洗聚合转换选 code-interpreter；最终回答由当前 Agent 根据实际证据直接撰写，不选择额外文本生成 Skill。\n\n"
         f"用户问题：{question}\n"
         f"已解析 chart_intent：{json.dumps(chart_intent, ensure_ascii=False)}\n"
         f"Yahoo 证券身份候选：{json.dumps(security_identity_context, ensure_ascii=False)}\n"
@@ -3523,7 +3512,7 @@ def infer_relevant_skill_names(
         "但明确的 ETF K线任务可以选择 business-chart-recall 的 kline.py。"
         "涉及股票时必须先判断具体证券的上市地区和交易所，再决定是否属于美国上市标的；不得仅凭裸 ticker 默认选择美股 Skill。"
         "非美股新闻、资讯、消息、报道和事件检索必须选择 external-search。"
-        "advisor-text-generation 是后端自动执行的最终文本阶段，不得放入 skills 或 plan。"
+        "最终回答不是工具步骤，不得为撰写回答额外选择 Skill。"
         "你必须只输出 JSON object，不要 Markdown，不要解释。"
         "JSON schema: "
         '{"skills":["skill-name"],"plan":[{"skill":"skill-name",'
@@ -3927,21 +3916,6 @@ def build_agent_plan(question: str, route: dict[str, Any]) -> AgentPlan:
                 "skill": SEARCH_SKILLS_LABEL,
                 "stepCount": len(search_steps),
                 "reason": "需要结合消息面、舆情、市场热点或最新资讯补充回答。",
-            }
-        )
-    if steps:
-        upstream_tools = [
-            item["tool"]
-            for item in calls
-            if item.get("tool") != ADVISOR_TEXT_GENERATION_TOOL
-        ]
-        calls.append(
-            {
-                "tool": ADVISOR_TEXT_GENERATION_TOOL,
-                "skill": ADVISOR_TEXT_GENERATION_SKILL_LABEL,
-                "stepCount": 1,
-                "reason": "综合用户问题、前序数据/搜索/图表 observation 和图像理解内容，生成投资分析的专业详细解读。",
-                **({"dependsOn": upstream_tools} if upstream_tools else {}),
             }
         )
     if not calls:
@@ -6064,8 +6038,7 @@ def normalize_route_skill_file_fields(route: dict[str, Any]) -> dict[str, Any]:
     updated = dict(route)
     updated["steps"] = normalized
     if selected_skills:
-        if "advisor-text-generation" in selected_skills:
-            selected_skills = [skill for skill in selected_skills if skill != "advisor-text-generation"] + ["advisor-text-generation"]
+        selected_skills = [skill for skill in selected_skills if skill != "advisor-text-generation"]
         updated["_selected_skills"] = selected_skills
     return updated
 
@@ -6933,7 +6906,7 @@ def build_schema_driven_route_prompt(
         "不要输出 Markdown，不要解释，只返回 JSON。\n\n"
         "硬约束："
         "script 必须来自 scoped modules metadata；cli_args 不得包含 --output、--payload-output、--code、--symbol；"
-        "advisor-text-generation 由后端自动执行，不得写入 steps；"
+        "最终回答由当前 Agent 撰写，不得规划文本生成步骤；"
         "若图表脚本依赖前序 payload，不要传 --payload/--data-json，执行器会注入；"
         "若需要把取数结果改造成目标图表 payload，加入 code_interpreter.py 并设置 --chart-type。"
         "但多个 Yahoo 标的使用同一个原始 metric 做折线比较时，直接按标的分别调用 yahoo_data.py，再调用 group_line.py；"
@@ -7273,7 +7246,7 @@ def legacy_route_with_model(question: str) -> dict[str, Any]:
         "输出 JSON schema:\n"
         '{"steps":[{"skill":"business-chart-recall","skill_file":"business-chart-recall/SKILL.md","script":"income_statement.py","script_file":"business-chart-recall/scripts/income_statement.py","schema_file":"business-chart-recall/schemas/income_statement.schema.json","label":"Income Statement","code":"CRCL","cli_args":["--period-type","quarterly","--limit","8"],"thought":"这一步先判断/获取/计算什么，必须基于用户问题语义","reason":"为什么调用此 Skill 的这个文件；它会产出什么 observation；下一步如何使用","expected_observation":"预期从该工具看到什么结果","next_thought":"拿到 observation 后下一步要做什么"}],"reason":"整体 ReAct 计划，使用用户语言"}\n\n'
         "要求：\n"
-        "- Agent 工具定义只用于理解系统能力边界，不是 steps[].script 的候选值。不要把 chart_recall、search、multimodal_understanding、advisor_text_generation 写入 script、tool、action 或 skill 字段作为执行步骤。\n"
+        "- Agent 工具定义只用于理解系统能力边界，不是 steps[].script 的候选值。不要把 chart_recall、search、multimodal_understanding 写入 script、tool、action 或 skill 字段作为执行步骤。\n"
         "- steps 只能包含可执行 SKILL CLI 脚本；script 必须是 modules metadata 中的 .py 文件名。文本搜索要使用 ainvest_news_search.py 或 external_info_search.py；视频搜索要使用 ainvest_video_search.py；图表/数据要使用对应 .py；所有图表/可视化 HTML 生成后都会由后端自动触发 vision-chart-analyst 多模态读图，不要把读图/多模态理解规划为脚本步骤。\n"
         "- 这是通用工具调用计划：每个 step 都等价于一次 call_skill_cli(script, code, cli_args)，后端会逐步执行、保存 payload/html，再把 observation 传给后续步骤。\n"
         "- code_interpreter.py 只做非可视化的数据清洗、筛选、聚合、计算和结构转换，自身绝不绘图，也不能作为图表渲染器或图表预览使用。不要为了把已有指标或时间序列自动画成图而调用它；需要可见图表时，steps 中必须另外出现明确的图表组件脚本。\n"
@@ -7311,7 +7284,7 @@ def legacy_route_with_model(question: str) -> dict[str, Any]:
         "- 当用户要求“总结/梳理/方便理解/可视化/思维导图/要点提炼/结构化呈现”某个新闻主题、文章、视频主题或检索结果时，计划应先用端内、端外、视频或 URL 读取工具获取 observation，再追加 mind_map.py，把信息归纳成层级化要点；mind_map.py 负责辅助可视化和要点提炼，不替代前面的信息检索。\n"
         "- 思维导图必须作为独立 mind_map.py 组件出现在搜索/视频/URL 组件之后，不要把导图内容写进搜索脚本、视频脚本或其 HTML 输出中；导图内容应由模型基于用户问题与前序检索结果总结生成。\n"
         "- 对信息检索后的最终回答，要先综合端内新闻、端外网页和视频资源的共同点与差异，再给出面向用户问题的要点总结；若同时生成思维导图，正文仍需保留简短结论，导图用于结构化展开。\n"
-        "- 最终文本生成由 advisor-text-generation SKILL 在后端自动完成：它会基于用户问题、前序数据、搜索结果、视频/网页 observation、图表 payload、可见图表文本和图像理解内容，生成投资分析角度的专业详细解读。模型路由阶段只需要规划前序可执行 CLI steps，不要把最终文本生成规划成脚本步骤。\n"
+        "- 当前 Agent 基于用户问题和实际 observation 直接撰写最终回答。模型路由只规划必要的数据、搜索或可视化 CLI steps，不要增加文本生成工具或脚本步骤。\n"
         "- ainvest_news_search.py 是 AInvest 站内辅助文本新闻搜索工具，不搜索视频，不生成图表；它可以与一个或多个结构化/图表模块同时选择，不要用它替代图表或财务模块。\n"
         "- ainvest_video_search.py 是 AInvest 端内视频搜索工具，专门搜索 Videos、Featured YouTube Videos 和 Shorts，返回视频标题、封面、video_url、时长和来源 URL；它可以与新闻搜索、财务图表和行情图同时选择，用于在正文中展示视频资源卡片。\n"
         "- external_info_search.py 是 Kimi 联网搜索答案工具，用于 AInvest 之外的网页事实、公告、媒体报道和全网资料。它按 Kimi K3 推荐的 Formula API 官方 web_search 工具通道执行联网检索，并把 Kimi 最终 finish_reason=stop 的 message.content 作为 payload.answer 主 observation；articles 仅是可用引用元数据。下游必须直接使用 answer，不要把 tool_calls/arguments 当搜索结果，不要再调用旧搜索引擎、抓取网页或重建 Kimi 答案。用户明确要求 Google/谷歌/全网/外部站点/site 搜索、或需要非 AInvest 来源时选择它。cli_args 可使用 --query、--site、--source、--limit、--max-details；--source 使用 kimi。\n"

@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/mentora-deal.git",
-  "revision": "de56fa6c5a95c8f900e4764ed67c5dc960b10f02",
+  "revision": "9732fdd86ad61d748982f86f1075adde01cc90ab",
   "checkout": ".dependencies/mentora-deal",
   "links": {
     ".agents/skills/portfolio-account": ".agents/skills/portfolio-account",
