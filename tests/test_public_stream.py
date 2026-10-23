@@ -15,7 +15,7 @@ def test_public_deltas_private_reasoning_and_settlement_dedup():
     first = stream.chunk({'type':'text-delta','index':1,'text':'first'})
     assert first[0][1]['delta'] == 'first'
     assert stream.message({'content':[{'type':'reasoning','text':'private'},{'type':'text','text':'first'}]}) == []
-    assert stream.finish('first') == []
+    assert stream.finish('first')[0][1]['final'] is True
     second = stream.chunk({'type':'text-delta','index':0,'text':'second'})
     assert second[0][1]['blockId'] != first[0][1]['blockId']
 
@@ -58,7 +58,7 @@ def test_model_delta_arrives_before_harness_finishes(tmp_path,monkeypatch,bridge
         assert first['delta']=='first' and not finished.is_set()
         release.set()
         rest=list(events)
-        assert [event for event,data in rest if event in {'answer_text','tool_step'} and not data.get('discard')]==['tool_step','answer_text']
+        assert [event for event,data in rest if event in {'answer_text','tool_step'} and not data.get('discard') and not data.get('final')]==['tool_step','answer_text']
         assert 'private' not in str(first)+str(rest)
     finally:release.set();client._drop_deepseek_harness('real-delta')
 

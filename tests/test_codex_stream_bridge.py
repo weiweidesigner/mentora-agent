@@ -65,12 +65,13 @@ def test_codex_adapter_uses_app_server_deltas_and_keeps_interleaving(tmp_path,mo
     monkeypatch.setenv('AICHART_CODEX_BIN',str(binary));monkeypatch.setenv('AICHART_CODEX_PROVIDER','deepseek');monkeypatch.setenv('DEEPSEEK_API_KEY','fixture')
     monkeypatch.delenv('AICHART_CODEX_TRANSPORT',raising=False)
     events=list(LocalAgentFrameworks(project_root=tmp_path,generated_dir=tmp_path/'outputs/generated').stream('codex','fixture',[],session_key='test-codex'))
-    visible=[(kind,data) for kind,data in events if kind in {'answer_text','tool_step'}]
-    assert [kind for kind,data in visible]==['answer_text','tool_step','tool_step','answer_text']
-    assert visible[0][1]['delta']=='First' and visible[-1][1]['delta']=='Second'
+    visible=[(kind,data) for kind,data in events if kind in {'answer_text','tool_step'} and not data.get('provisional')]
+    assert [kind for kind,data in visible]==['tool_step','tool_step','answer_text']
+    assert visible[-1][1]['text']=='Second'
+    assert any(kind=='progress' and data.get('text')=='First' for kind,data in events)
     assert [data['phase'] for kind,data in visible if kind=='tool_step']==['started','completed']
     final=next(data for kind,data in events if kind=='final')
-    assert final['interpretation']=='First\n\nSecond'
+    assert final['interpretation']=='Second'
 
 
 @pytest.mark.parametrize('status',['failed','interrupted'])

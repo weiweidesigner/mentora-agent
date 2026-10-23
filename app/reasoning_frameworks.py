@@ -1785,6 +1785,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         process.stdin.close()
         thread_id = engine_session_id
         public_items = {}
+        public_item_channels = {}
         codex_tool_indexes = {}
         answer = ""
         started = time.monotonic()
@@ -1808,7 +1809,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 delta=str(public_item.get('delta') or '')
                 if delta:
                     public_items[item_id]=public_items.get(item_id,'')+delta
-                    yield 'answer_text',dict(blockId=item_id,delta=delta,live=True,final=False)
+                    yield 'answer_text',dict(blockId=item_id,delta=delta,live=True,final=False,provisional=public_item_channels.get(item_id)!='final')
                 continue
             if event_type == "thread.started":
                 thread_id = str(event.get("thread_id") or thread_id)
@@ -1850,13 +1851,15 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             if event_type in {"item.started", "item.updated", "item.completed"} and item.get("type") == "agent_message" and item.get("channel") not in {"analysis", "reasoning"}:
                 item_id = str(item.get("id") or f"codex-message-{len(public_items)}")
                 text = str(item.get("text") or "")
-                if text and text != public_items.get(item_id):
+                channel = 'final' if item.get('channel') in {'final','final_answer'} else str(item.get('channel') or '')
+                if text and (text != public_items.get(item_id) or channel != public_item_channels.get(item_id)):
                     public_items[item_id] = text
-                    if item.get('channel') == 'commentary':
-                        yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary'}
+                    public_item_channels[item_id] = channel
+                    if channel != 'final':
+                        yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary','provisional':channel != 'commentary'}
                     else:
                         yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
-                if item.get("channel") != "commentary":answer = text or answer
+                if channel != "commentary":answer = text or answer
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}
                 message = str(error.get("message") or "Codex 执行失败")
@@ -1935,12 +1938,16 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     return
                 raise ReasoningFrameworkError(f"本地模型未完成可信的工具执行：{issue}。请重试或切换模型。")
         if public_items and os.getenv('AICHART_CODEX_TRANSPORT','app-server')!='exec':
-            answer='\n\n'.join(public_items.values())
+            final_items=[text for key,text in public_items.items() if public_item_channels.get(key)=='final']
+            if final_items:answer='\n\n'.join(final_items)
         if observed_skills:
             answer = re.sub(r"(?m)^\s*\[\[AIME_SKILLS:[^\]\n]+\]\]\s*$", "", answer).rstrip()
             answer += f"\n\n[[AIME_SKILLS:{','.join(observed_skills)}]]"
         if not public_items:
             yield from self._answer_text_events(answer)
+        elif not any(channel=='final' for channel in public_item_channels.values()):
+            key=next((key for key in reversed(public_items) if public_item_channels.get(key)!='commentary'),'codex-final')
+            yield 'answer_text',{'blockId':key,'text':answer,'replace':True,'live':True,'final':True,'provisional':False}
         run_id = f"codex-{thread_id or session_key}"
         self._write_codex_trace(f"===== 运行完成 | runId: {run_id} =====")
         yield "agent_event", {

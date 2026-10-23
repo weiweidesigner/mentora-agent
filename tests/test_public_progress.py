@@ -10,6 +10,22 @@ spec=importlib.util.spec_from_file_location('public_stream_fixture',source)
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 
 class Progress(unittest.TestCase):
+    def test_unknown_channel_stays_provisional_until_final_confirmation(self):
+        stream=module.PublicStream();blocks=[]
+        first=stream.chunk({'type':'text-delta','text':'指数历史数据可用。'})
+        self.assertTrue(first[0][1]['provisional'])
+        for event,data in first:module.reduce_stream_block(blocks,event,data)
+        self.assertEqual([block['kind'] for block in blocks],['progress'])
+        stream.message({'content':[{'type':'text','text':'指数历史数据可用。'}]})
+        for event,data in stream.settle_progress():module.reduce_stream_block(blocks,event,data)
+        final_text='本周市场表现如下。'
+        for event,data in stream.chunk({'type':'text-delta','text':final_text}):module.reduce_stream_block(blocks,event,data)
+        confirmed=stream.finish(final_text)
+        self.assertFalse(confirmed[0][1]['provisional'])
+        for event,data in confirmed:module.reduce_stream_block(blocks,event,data)
+        self.assertEqual([block['kind'] for block in blocks],['progress','text'])
+        self.assertEqual(blocks[-1]['text'],final_text)
+
     def test_tool_boundary_moves_public_prelude_out_of_answer(self):
         stream=module.PublicStream()
         events=stream.chunk({'type':'text-delta','text':'我先确认交易日。'})

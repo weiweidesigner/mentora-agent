@@ -15,6 +15,7 @@ class PublicStream:
         seen=self.public_blocks.get(key,'')
         self.public_blocks[key]=text
         self.texts[index]=text
+        confirming=channel=='final' and key not in self.final_keys
         if channel=='final':self.final_keys.add(key)
         if channel=='commentary':
             was_answer=key in self.pending_keys and key not in self.progress_keys
@@ -25,10 +26,10 @@ class PublicStream:
         if key in self.progress_keys:
             return [('progress',dict(blockId=key,text=text,kind='commentary'))] if text!=seen else []
         if key not in self.pending_keys:self.pending_keys.append(key)
-        if not text or text==seen:return []
+        if not text or (text==seen and not confirming):return []
         self.has_text=True
-        data=dict(blockId=key,live=True,final=False)
-        if text.startswith(seen):data['delta']=text[len(seen):]
+        data=dict(blockId=key,live=True,final=False,provisional=key not in self.final_keys)
+        if text.startswith(seen) and not confirming:data['delta']=text[len(seen):]
         else:data.update(text=text,replace=True)
         return [('answer_text',data)]
 
@@ -87,8 +88,16 @@ class PublicStream:
 
     def finish(self,answer):
         text=str(answer or '')
-        if not text or any(value.strip()==text.strip() for key,value in self.public_blocks.items() if key not in self.progress_keys):return []
-        return self._text('final',text,'final')
+        if not text:return []
+        matching=[key for key,value in self.public_blocks.items() if key not in self.progress_keys and value.strip()==text.strip()]
+        if matching:
+            key=matching[-1]
+            if key in self.final_keys:return []
+            self.final_keys.add(key)
+            return [('answer_text',dict(blockId=key,text=text,replace=True,live=True,final=True,provisional=False))]
+        events=self._text('final',text,'final')
+        for _,data in events:data['final']=True
+        return events
 
     def transcript(self, answer):
         parts=[text for key,text in self.public_blocks.items() if key not in self.progress_keys and text.strip()]
@@ -100,6 +109,13 @@ def reduce_stream_block(blocks,event,data):
     """Compact chronological blocks for durable final/error responses and replay."""
     if event=='answer_text':
         key=str(data.get('blockId') or 'legacy-answer')
+        progress=next((b for b in blocks if b['kind']=='progress' and b['id']==key),None)
+        if data.get('provisional') and not data.get('discard'):
+            if progress is None:progress=dict(kind='progress',id=key,data={'text':''});blocks.append(progress)
+            old=progress['data'].get('text','')
+            progress['data']={'text':old+str(data['delta']) if 'delta' in data else str(data.get('text') or ''),'provisional':True}
+            return
+        if progress and progress['data'].get('provisional') and not data.get('discard'):blocks.remove(progress)
         block=next((b for b in blocks if b['kind']=='text' and b['id']==key),None)
         if data.get('discard'):
             if block:blocks.remove(block)
@@ -111,7 +127,7 @@ def reduce_stream_block(blocks,event,data):
         key=str(data.get('blockId') or data.get('callId') or f'{event}:{len(blocks)}')
         block=next((b for b in blocks if b['kind']==event and b['id']==key),None)
         if block is None:block=dict(kind=event,id=key);blocks.append(block)
-        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId') if k in data}
+        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId','provisional') if k in data}
     elif event in {'visualization','visualize_widget','module'}:
         key=str(data.get('id') or data.get('callId') or data.get('htmlUrl') or data.get('url') or '')
         if not key:return

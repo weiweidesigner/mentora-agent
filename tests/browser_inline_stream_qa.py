@@ -88,6 +88,14 @@ with sync_playwright() as p:
             renderPublicProgress(article,{blockId:'prelude',text:'我先读取组件契约'});
             renderPublicProgress(article,{blockId:'prelude',text:'我先读取组件契约并核对数据'});
             if(thoughtList.children.length!==1||!thoughtList.textContent.includes('核对数据')||document.querySelector('.finalAnswer').textContent.includes('组件契约'))throw Error('commentary belongs in thinking, exactly once');
+            const beforeProgress=document.querySelector('.finalAnswer').innerHTML;
+            renderStreamAnswerText(article,{blockId:'next-progress',delta:'指数历史数据可用，',provisional:true});
+            renderStreamAnswerText(article,{blockId:'next-progress',delta:'我并行拉取数据。',provisional:true});
+            if(document.querySelector('.finalAnswer').innerHTML!==beforeProgress||article.dataset.publicThoughtText!=='指数历史数据可用，我并行拉取数据。')throw Error('provisional update created a second answer row');
+            renderStreamAnswerText(article,{blockId:'final-confirm',delta:'正式回答',provisional:true});
+            renderStreamAnswerText(article,{blockId:'final-confirm',text:'正式回答',provisional:false,final:true});
+            if(!document.querySelector('.finalAnswer').textContent.includes('正式回答')||thoughtList.querySelector('[data-public-block-id="final-confirm"]'))throw Error('confirmed final answer not promoted exactly once');
+            document.querySelector('.finalAnswer').replaceChildren();
             renderStreamAnswerText(article,{blockId:'one',delta:'Part one',final:false});
             renderStreamAnswerText(article,{blockId:'two',delta:'Part two',final:false});
             renderStreamAnswerText(article,{blockId:'one',delta:' continued',final:false});
