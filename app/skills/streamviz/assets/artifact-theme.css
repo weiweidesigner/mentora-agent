@@ -258,3 +258,10 @@ html{-webkit-tap-highlight-color:transparent}
 @media(prefers-reduced-motion:reduce){
   :root[data-theme="dark"] .double-ring-component :is(.ring-arc,.ring-track,.ring-highlight,.ring-tooltip){transition:none}
 }
+
+/* Neutral dark report tables, including saved StreamViz artifacts. */
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) :is(.sv-table-wrap,.table-wrap){background:transparent!important;border:1px solid #2c2c2c!important;border-radius:10px!important}
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) table{background:transparent!important;color:#d4d4d4}
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) th{background:#1c1c1c!important;color:#e4e4e4!important}
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) :is(th,td){border-color:#2c2c2c!important}
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) :is(tbody,tr,td){background:transparent!important}

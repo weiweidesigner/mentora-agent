@@ -579,7 +579,7 @@ function segmentHitsBox(a,b,r) {
   return true;
 }
 function eventLabelNaturalWidth(overlay,dateText,titleText,availableWidth) {
-  const fontSize=toNumber(overlay.fontSize,11),dateFontSize=toNumber(overlay.dateFontSize,Math.max(9,fontSize-1));
+  const fontSize=toNumber(overlay.fontSize,14),dateFontSize=toNumber(overlay.dateFontSize,Math.max(13,fontSize-1));
   const weight=toNumber(overlay.titleFontWeight,600),dateWeight=toNumber(overlay.dateFontWeight,500);
   const padding=toNumber(overlay.labelPaddingX,8);
   const cap=Math.max(40,Math.min(toNumber(overlay.labelMaxWidth,210),availableWidth));
@@ -587,7 +587,7 @@ function eventLabelNaturalWidth(overlay,dateText,titleText,availableWidth) {
   return Math.min(cap,Math.max(Math.min(toNumber(overlay.labelMinWidth,108),cap),2*padding+Math.max(...lines.map(t=>eventTextWidth(t,fontSize,weight)),...dates.map(t=>eventTextWidth(t,dateFontSize,dateWeight)))));
 }
 function eventLabelNaturalHeight(overlay,dateText,titleText,width) {
-  const fontSize=toNumber(overlay.fontSize,11),dateFontSize=toNumber(overlay.dateFontSize,Math.max(9,fontSize-1));
+  const fontSize=toNumber(overlay.fontSize,14),dateFontSize=toNumber(overlay.dateFontSize,Math.max(13,fontSize-1));
   const weight=toNumber(overlay.titleFontWeight,600),dateWeight=toNumber(overlay.dateFontWeight,500);
   const textWidth=width-2*toNumber(overlay.labelPaddingX,8);
   return 2*toNumber(overlay.labelPaddingY,6)+toNumber(overlay.labelLineGap,4)+eventTextLines(dateText,textWidth,dateFontSize,dateWeight).length*dateFontSize*1.3+eventTextLines(titleText,textWidth,fontSize,weight).length*fontSize*1.3;
@@ -595,7 +595,7 @@ function eventLabelNaturalHeight(overlay,dateText,titleText,width) {
 function drawEventLabel(parent,x,y,overlay,color,dateText,titleText,bounds) {
   const inset=overlay.mobileGrid?8:12;
   bounds={left:bounds.left+inset,right:bounds.right-inset,top:bounds.top+inset,bottom:bounds.bottom-inset};
-  const fontSize=toNumber(overlay.fontSize,11),dateFontSize=toNumber(overlay.dateFontSize,Math.max(9,fontSize-1));
+  const fontSize=toNumber(overlay.fontSize,14),dateFontSize=toNumber(overlay.dateFontSize,Math.max(13,fontSize-1));
   const weight=toNumber(overlay.titleFontWeight,600),dateWeight=toNumber(overlay.dateFontWeight,500);
   const px=toNumber(overlay.labelPaddingX,8),py=toNumber(overlay.labelPaddingY,6),lineGap=toNumber(overlay.labelLineGap,4);
   const cap=Math.max(40,Math.min(toNumber(overlay.timelineWidth,toNumber(overlay.labelMaxWidth,210)),bounds.right-bounds.left));
@@ -664,7 +664,7 @@ function drawMobileEventLabels(events,svg) {
     const selected=chosen.map(i=>{
       const args=[...ordered[i]];args[0]=labels;
       const labelWidth=Math.min(136,(args[7].right-args[7].left-24)/2);
-      args[3]={...args[3],mobileGrid:true,timelineWidth:labelWidth,labelMinWidth:labelWidth,labelMaxWidth:labelWidth,fontSize:11,dateFontSize:10,borderColor:i===index?args[4]:undefined};
+      args[3]={...args[3],mobileGrid:true,timelineWidth:labelWidth,labelMinWidth:labelWidth,labelMaxWidth:labelWidth,fontSize:14,dateFontSize:13,borderColor:i===index?args[4]:undefined};
       return args;
     }).sort((a,b)=>a[1]-b[1]);
     const rowHeight=Math.max(...selected.map(args=>eventLabelNaturalHeight(args[3],args[5],args[6],args[3].timelineWidth)));
@@ -820,7 +820,7 @@ function render() {
     const xAxisFontSize = toNumber(visual.xAxis.fontSize, 10);
     const legendFontSize = toNumber(visual.legend.fontSize, 10);
     const legendRowGap = Math.max(isMobile ? 15 : 18, legendFontSize + (isMobile ? 5 : 7));
-    margin.bottom = Math.max(margin.bottom, xAxisFontSize + 6 + legendFontSize + Math.max(0, estimatedLegendRows - 1) * legendRowGap + 8);
+    margin.bottom = Math.max(margin.bottom, xAxisFontSize + 16 + legendFontSize + Math.max(0, estimatedLegendRows - 1) * legendRowGap + 8);
   }
   const plotW = Math.max(isMobile ? 96 : 140, width - margin.left - margin.right);
   const plotH = Math.max(isMobile ? 96 : 110, height - margin.top - margin.bottom);
@@ -893,7 +893,7 @@ function render() {
     });
   }
   const legendTopY = visual.xAxis.visible !== false
-    ? margin.top + plotH + toNumber(visual.xAxis.fontSize, 10) + 12
+    ? margin.top + plotH + toNumber(visual.xAxis.fontSize, 10) + 22
     : margin.top + plotH + 6;
   (Array.isArray(visual.overlays) ? visual.overlays : []).filter(item => isObject(item) && item.type === 'selectedBand').forEach(overlay => {
     const fromX = Number.isFinite(Number(overlay.fromIndex)) ? centerX(Number(overlay.fromIndex)) : xByValue(overlay.from ?? overlay.start);
