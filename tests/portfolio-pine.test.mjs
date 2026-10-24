@@ -75,3 +75,16 @@ test('metadata stays draft until generation; choices and deletion persist withou
   assert.equal(s.calls.some(([u,o])=>/\/(orders|execute|plans)(\/|$)/.test(u)&&o?.method==='POST'),false);
  }finally{s.w.close();}
 });
+test('copy code shows success only after clipboard write succeeds',async()=>{
+ for(const fails of [false,true]){
+  const s=await setup();try{
+   let copied='';
+   Object.defineProperty(s.w.navigator,'clipboard',{value:{writeText:async text=>{if(fails)throw Error('denied');copied=text;}}});
+   s.d.querySelector('[data-pf-strategy=copy]').click();await tick();
+   const toast=s.d.querySelector('.pfToast');
+   assert.equal(toast.hidden,false);
+   assert.equal(toast.textContent,fails?'复制失败，请展开代码后手动复制':'复制成功');
+   assert.equal(copied,fails?'':old);
+  }finally{s.w.close();}
+ }
+});

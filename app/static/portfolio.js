@@ -250,7 +250,7 @@
     if(action==='cancel'){cancelStrategyStream();render();return;}
     if(strategyStream||strategySaving)return;
     captureStrategies();const cfg=strategyConfig(),selected=cfg.customStrategies.find(s=>s.id===strategySelected);
-    if(action==='copy'&&selected){try{await navigator.clipboard.writeText(selected.code);}catch{message('复制失败，请展开代码后手动复制');}return;}
+    if(action==='copy'&&selected){try{await navigator.clipboard.writeText(selected.code);message('复制成功');}catch{message('复制失败，请展开代码后手动复制');}return;}
     if(action==='show-code'&&selected){strategyExpanded.add(selected.id);render();return;}
     if(action==='add'){
       if(cfg.customStrategies.length>=20)return;
