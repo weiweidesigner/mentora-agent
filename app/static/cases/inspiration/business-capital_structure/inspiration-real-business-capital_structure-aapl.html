@@ -244,9 +244,9 @@ function showTooltip(group, index, centerX) {
   tooltip.innerHTML = group.items.map(item => `<div class="tooltip-row"><span class="tooltip-label"><i class="tooltip-dot" style="background:${item.legendColor}"></i>${item.label}</span><span>${item.tooltipValue || item.displayValue}</span></div>`).join('');
   tooltip.classList.add('active');
   const desiredLeft = centerX - tooltip.offsetWidth / 2;
-  const left = Math.min(stage.clientWidth - tooltip.offsetWidth - 8, Math.max(8, desiredLeft));
+  const left = Math.max(0, Math.min(stage.clientWidth - tooltip.offsetWidth - 8, Math.max(8, desiredLeft)));
   tooltip.style.left = `${left}px`;
-  tooltip.style.top = `${-(tooltip.offsetHeight + 10)}px`;
+  tooltip.style.top = '12px';
   tooltip.style.setProperty('--arrow-left', `${Math.min(tooltip.offsetWidth - 14, Math.max(14, centerX - left))}px`);
 }
 function hideTooltip() {

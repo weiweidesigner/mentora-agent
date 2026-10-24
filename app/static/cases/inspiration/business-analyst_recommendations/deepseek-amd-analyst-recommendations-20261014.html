@@ -57,11 +57,11 @@ body{padding:0}
   color:var(--business-text-697181);
   font-size:13px;
   line-height:1.2;
-  margin:-6px auto 0;
+  margin:12px auto 0;
 }
 .legend-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .swatch{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
-.chart-wrap{position:relative;height:auto;margin-top:0;overflow:visible}
+.chart-wrap{position:relative;height:auto;margin-top:16px;overflow:visible}
 svg{display:block;width:100%;height:280px;overflow:visible}
 .grid line{stroke:var(--business-border-ececec);stroke-width:1}
 .axis{stroke:var(--business-border-777);stroke-width:1.15;font-size:13px;}
@@ -137,7 +137,7 @@ td:nth-child(3),td:nth-child(5),td:nth-child(6){white-space:nowrap}
   .subtitle{font-size:12px;margin-bottom:0}
   .tabs{width:max-content;max-width:100%;overflow:auto;display:inline-flex;gap:2px;padding:2px;height:auto;min-height:34px;border:1px solid var(--ui-control-border);border-radius:9px;background:var(--ui-control-bg);}
   .tab{min-width:44px;height:28px;font-size:13px;background:transparent;color:var(--ui-control-text);border:0;padding:4px 13px;min-height:28px;border-radius:6px;line-height:20px;font-weight:500;box-shadow:none;}
-  .legend{justify-content:center;gap:6px 12px;margin:-8px auto 0}
+  .legend{justify-content:center;gap:6px 12px;margin:12px auto 0}
   .chart-wrap{height:auto}
   svg{height:240px}
   .axis-label,.x-label{font-size:12px;}
@@ -271,7 +271,7 @@ function drawChart(rows) {
   const tip = document.getElementById('tip');
   const wrap = svg.closest('.chart-wrap');
   const W = Math.max(360, Math.round(wrap.clientWidth || 900));
-  const H = Math.max(220, Math.round(wrap.clientHeight || 280));
+  const H = Math.max(220, Math.round(svg.clientHeight || 280));
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = '';
 

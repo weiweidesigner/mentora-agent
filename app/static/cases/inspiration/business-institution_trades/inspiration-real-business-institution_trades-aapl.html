@@ -20,7 +20,7 @@ body{padding:0}
 .legend{height:26px;display:flex;align-items:center;gap:28px;color:var(--business-text-70757d);font-size:15px;font-weight:500;margin-bottom:4px}
 .legend-item{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
-.chart{width:100%;height:auto;aspect-ratio:5 / 2;position:relative;overflow:visible}
+.chart{width:100%;height:220px;position:relative;overflow:visible}
 svg{display:block;width:100%;height:100%;overflow:visible}
 .axis{fill:var(--business-text-767b82);font-size:13px;font-weight:500;dominant-baseline:middle}
 .grid{stroke:var(--business-border-e9edf2);stroke-width:1}
@@ -56,7 +56,7 @@ td:first-child{text-align:left;font-size:13px;font-weight:400}
   .legend{height:16px;gap:12px;font-size:12px;margin-bottom:0}
   .legend-item{gap:4px}
   .dot{width:8px;height:8px}
-  .chart{aspect-ratio:5 / 2}
+  .chart{aspect-ratio:auto}
   .axis{font-size:12px;}
   .brush{--handle-size:20px;--track-pad:10px;--track-height:2px;height:var(--handle-size);margin:0}
   .handle::before{height:8px;box-shadow:-3px 0 0 var(--business-border-8a8a8a),3px 0 0 #8a8a8a}
@@ -176,7 +176,7 @@ function drawChart(){
   if(!allActivity.length && !prices.length){el.innerHTML='<div class="empty">暂无机构交易活动。</div><div class="tooltip" id="tooltip"></div>'; return;}
   const panel=document.querySelector('.chart-panel');
   const W=Math.max(320, Math.round((panel && panel.getBoundingClientRect().width) || el.getBoundingClientRect().width || el.clientWidth || 980));
-  const H=Math.max(160, Math.round(W * 0.4));
+  const H=window.innerWidth<=720?190:Math.max(220, Math.min(320, Math.round(W * 0.25)));
   el.style.height=`${H}px`;
   state.lastChartWidth=W;
   const p=chartPadding();

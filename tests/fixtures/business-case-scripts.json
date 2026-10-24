@@ -17,7 +17,7 @@
   },
   {
     "path": "app/static/cases/inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html",
-    "scriptsSha256": "ce2dd59624f3a78d7bb44bb39d50761bef44ecc054a923a64196027b577481a4"
+    "scriptsSha256": "15948a6f541b6b8d04112dbc880c83012971ed1fdb2d9aa42727e0f67d5a30ec"
   },
   {
     "path": "app/static/cases/inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html",
@@ -29,7 +29,7 @@
   },
   {
     "path": "app/static/cases/inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html",
-    "scriptsSha256": "80a0d0583d2a8ca7dd2b15ca90d3f6eee78471a615ae264373e7f717d0926b1f"
+    "scriptsSha256": "b03a10a2ea2871adc9c93856f491d7c56fbd74e20b1d6ed42a06fcc210225331"
   },
   {
     "path": "app/static/cases/inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html",
@@ -61,11 +61,11 @@
   },
   {
     "path": "app/static/cases/inspiration/business-insider_trades/inspiration-real-business-insider_trades-aapl-live.html",
-    "scriptsSha256": "994f68817a584f29efd45d119f67866c7089ba94da5cbed47ddd495ec306dc03"
+    "scriptsSha256": "32446ed4c3de5a05af9acec5d1e7ee3cc540ae864e91d2a46713e242a1da029a"
   },
   {
     "path": "app/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",
-    "scriptsSha256": "a70ba1612c670420573a40e9caae968e7d546f317e8e5df7f402b07d6b94d9a1"
+    "scriptsSha256": "eb869c5b550b74a144e1921fbd457025d03a8a9708ce78cff4f14022eeabfa56"
   },
   {
     "path": "app/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html",
