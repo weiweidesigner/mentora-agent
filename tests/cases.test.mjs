@@ -174,6 +174,18 @@ test('revenue geography case uses the enlarged desktop pie renderer without a du
  assert.equal(cached.answer.interpretation.match(/数据更新日期：2026-10-14/g)?.length,1);
 });
 
+test('balance sheet case stays aligned with the source controls and dark timeline palette',()=>{
+ const report=readFileSync(new URL('../app/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html',import.meta.url),'utf8');
+ assert.match(report,/<script src="\/static\/cases\/theme\.js"><\/script>/);
+ assert.match(report,/\.page-title\[data-business-title\] \{ margin: 0 0 14px !important; \}/);
+ assert.match(report,/--control-active-bg:#2a384b;/);
+ assert.match(report,/\.metric-tab\.active \{[\s\S]*background: var\(--control-active-bg\) !important;/);
+ assert.match(report,/\.segment\.active \{[\s\S]*background:var\(--control-active-bg\) !important;/);
+ assert.match(report,/--range-track:#273243;/);
+ assert.match(report,/--range-selection:#5376a8;/);
+ assert.match(report,/--range-handle-bg:#182230;/);
+});
+
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();

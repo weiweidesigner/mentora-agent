@@ -33,6 +33,7 @@ test('conversation visualization gets the requested add-to-widget control and em
   const button=w.document.querySelector('h2 > button');assert(button);let detail;parent.postMessage=data=>detail=data;button.click();
   const actionStyle=w.document.querySelector('[data-widget-title-action-style]').textContent;
   assert.match(actionStyle,/margin:0 0 0 6px!important/);assert.match(actionStyle,/padding:5px 10px 5px 0!important/);
+  assert.match(actionStyle,/position:static!important/);assert.match(actionStyle,/flex-shrink:0/);
   assert.deepEqual(JSON.parse(JSON.stringify(detail)),{type:'mentora:add-widget',title:'涨跌幅分布'});dom.window.close();
 });
 
