@@ -110,3 +110,9 @@
 .pfStrategyEmpty{padding:26px 24px;border:1px dashed var(--line);border-radius:10px;background:color-mix(in srgb,var(--ink) 2%,var(--bg))}.pfStrategyEmpty strong{display:block;font-size:13px;font-weight:500}.pfStrategyEmpty p{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.7}.pfStrategySaveBar{padding-top:18px;border-top:1px solid var(--line)}.pfStrategySaveBar .pfMuted{font-size:12px}.pfStrategyForm #pfStrategyStatus[hidden]{display:none}.pfStrategyForm h3 small{margin-left:6px;font-size:12px;font-weight:400}@media(max-width:520px){.pfStrategyEmpty{padding:20px}.pfStrategySaveBar{align-items:center;gap:12px}}
 :root[data-theme="dark"] .portfolioWorkspace .pfCardHead>.pfPrimary[form="pfStrategyForm"]{background:#f1f1f1;border-color:#f1f1f1;color:#101010;opacity:1}:root[data-theme="dark"] .portfolioWorkspace .pfCardHead>.pfPrimary[form="pfStrategyForm"]:hover{background:#fff;border-color:#fff;color:#101010}:root[data-theme="dark"] .portfolioWorkspace .pfCardHead>.pfPrimary[form="pfStrategyForm"]:disabled{background:#343434;border-color:#484848;color:#c8c8c8;opacity:1}
 .pfStrategyEditor{align-content:start}.pfStrategyBottom{padding-top:4px}.pfPineCode>span{font-size:11px;letter-spacing:.02em}.pfStrategySectionHead .pfActions{gap:8px}
+
+/* Shared checkbox geometry and accent for built-in, custom and preference choices. */
+:is(.portfolioWorkspace,.pfDialog) input[type="checkbox"]{appearance:auto;box-sizing:border-box;flex:0 0 16px;width:16px;height:16px;min-width:16px;margin:0;padding:0;border-radius:3px;accent-color:#6cba9c;vertical-align:middle;cursor:pointer}
+:is(.portfolioWorkspace,.pfDialog) input[type="checkbox"]:disabled{cursor:default;opacity:.5}
+.pfStrategyOption{align-items:center}
+.pfStrategyForm input[type="checkbox"]:focus-visible{outline:2px solid var(--muted);outline-offset:3px}

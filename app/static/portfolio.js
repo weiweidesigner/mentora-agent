@@ -210,6 +210,9 @@
   function decisions(){const all=flow?.decisions||[],records=all.filter(d=>filter==='all'||d.kind===filter);const tasks=(flow?.tasks||[]).filter(t=>['analysis','risk'].includes(t._portfolioKind));return`${sopGraph()}<div class="pfActions" style="justify-content:space-between;margin-bottom:16px"><div class="pfMuted">${all.filter(d=>d.kind==='entry').length} 条机会判断 · ${all.filter(d=>d.kind==='risk').length} 条风险判断</div></div><div class="pfAnalysisStatus">${tasks.map(t=>`<span>${t._portfolioKind==='analysis'?'机会分析':'风险监控'} · ${t.activeRun?'更新中':t.lastRun?.status==='failed'?'执行失败':t.successAt?date(t.successAt):'等待首次结果'}</span>`).join('')}<span>${flow?.executionMode==='automatic'?'JEV 决策后自动执行':'JEV 决策后逐笔确认'}</span></div><div class="pfFilter"><select id="pfDecisionFilter" aria-label="筛选决策"><option value="all">全部决策</option><option value="entry" ${filter==='entry'?'selected':''}>买入机会</option><option value="risk" ${filter==='risk'?'selected':''}>持仓风险</option></select></div>${records.length?card('机会判断列表',decisionList(records)):card('机会分析与 JEV 决策',empty('定时任务正在汇集候选与证据','事件任务和量化回测任务的标的进入候选池后，JEV 才会形成买入判断。持仓建立后将自动加入风险监控。'))}`;}
   let strategyDraft=null,strategySelected='',strategyStream=null,strategySaving=false,strategyStatus='',strategyPreview='';
   const strategyExpanded=new Set(),strategyCompleted=new Set();
+  let strategySaveTimer=null,strategySavePending=false;
+  function strategySaveStatus(text){strategyStatus=text;const el=$('pfStrategyStatus');if(el){el.textContent=text;el.hidden=!text;}}
+  function scheduleStrategySave(){captureStrategies();strategySavePending=true;clearTimeout(strategySaveTimer);strategySaveStatus('正在自动保存…');strategySaveTimer=setTimeout(()=>void saveStrategies({quiet:true}),500);}
   function strategyConfig(){
     if(!strategyDraft){const cfg=flow?.strategies||{enabled:['trend','reversion']};
       strategyDraft={enabled:[...(cfg.enabled||[])],customStrategies:JSON.parse(JSON.stringify(cfg.customStrategies??(cfg.customCode||cfg.enabled?.includes('custom')?[{id:'custom',name:cfg.customName||'自定义策略',code:cfg.customCode||'',description:''}]:[])))};
@@ -224,12 +227,12 @@
       <h3>内置策略</h3><div class="pfStrategyChoices">${choices.map(([id,title])=>`<label class="pfStrategyOption"><input type="checkbox" name="enabled" value="${id}" ${cfg.enabled.includes(id)?'checked':''} ${locked?'disabled':''}><span><strong>${esc(title)}</strong></span></label>`).join('')}</div>
       <div class="pfStrategySectionHead"><h3>自定义策略 <small class="pfMuted">${cfg.customStrategies.length} / 20</small></h3><div class="pfActions"><button type="button" data-pf-strategy="add" ${locked||cfg.customStrategies.length>=20?'disabled':''}>＋ 添加策略</button><button type="button" data-pf-strategy="remove" ${locked||!selected?'disabled':''}>删除策略</button></div></div>
       ${cfg.customStrategies.length?`<div class="pfStrategyWorkspace">
-        <div class="pfStrategyList" aria-label="自定义策略列表">${cfg.customStrategies.length?cfg.customStrategies.map(s=>`<div class="pfStrategyListRow ${s.id===strategySelected?'is-selected':''}"><input type="checkbox" name="enabled" value="${esc(s.id)}" aria-label="启用 ${esc(s.name)}" ${cfg.enabled.includes(s.id)?'checked':''} ${locked?'disabled':''}><button type="button" data-pf-strategy-select="${esc(s.id)}" aria-pressed="${s.id===strategySelected}" ${locked?'disabled':''}>${esc(s.name||'未命名策略')}</button></div>`).join(''):'<p class="pfSubtle">还没有自定义策略。点击添加，用自然语言描述你的交易规则。</p>'}</div>
+        <div class="pfStrategyList" aria-label="自定义策略列表">${cfg.customStrategies.length?cfg.customStrategies.map(s=>`<div class="pfStrategyListRow ${s.id===strategySelected?'is-selected':''}"><input type="checkbox" name="enabled" value="${esc(s.id)}" aria-label="启用 ${esc(s.name)}" ${cfg.enabled.includes(s.id)?'checked':''} ${locked||!s.code?'disabled':''}><button type="button" data-pf-strategy-select="${esc(s.id)}" aria-pressed="${s.id===strategySelected}" ${locked?'disabled':''}>${esc(s.name||'未命名策略')}</button></div>`).join(''):'<p class="pfSubtle">还没有自定义策略。点击添加，用自然语言描述你的交易规则。</p>'}</div>
         <div class="pfStrategyEditor">${selected?`
           <label class="pfCodeField"><span>策略名称</span><input name="strategyName" maxlength="60" required value="${esc(selected.name)}" ${locked?'disabled':''}></label>
           <label class="pfCodeField"><span>策略逻辑</span><textarea name="strategyDescription" maxlength="4000" rows="${strategyExpanded.has(selected.id)?2:4}" placeholder="描述你的策略逻辑，比如“目前处于筑底，有望回升”" ${locked?'disabled':''}>${esc(selected.description||'')}</textarea></label>
           ${strategyExpanded.has(selected.id)?`<label class="pfCodeField pfPineCode"><span>${selected.code?.startsWith('//@version=5')||strategyStream?'Pine Script v5':'策略代码'}</span><textarea name="customCode" aria-label="策略编辑器" maxlength="12000" rows="16" spellcheck="false" readonly placeholder="生成的代码将在这里逐步显示。">${esc(strategyStream?strategyPreview:selected.code||'')}</textarea></label>`:''}
-          <div class="pfActions pfStrategyBottom"><button type="button" class="pfPrimary" data-pf-strategy="generate" ${locked?'disabled':''}>${strategyStream?'正在生成…':strategyCompleted.has(selected.id)?'重新生成':'生成 PineScript'}</button>${strategyStream?'<button type="button" data-pf-strategy="cancel">停止生成</button>':''}${selected.code&&!strategyStream?`<button type="button" data-pf-strategy="copy">复制代码</button>${!strategyExpanded.has(selected.id)?'<button type="button" data-pf-strategy="show-code">查看代码</button>':''}`:''}</div>
+          <div class="pfActions pfStrategyBottom"><button type="button" class="pfPrimary" data-pf-strategy="generate" ${locked?'disabled':''}>${strategyStream?'正在生成…':selected.code?'重新生成':'生成 PineScript'}</button>${strategyStream?'<button type="button" data-pf-strategy="cancel">停止生成</button>':''}${selected.code&&!strategyStream?`<button type="button" data-pf-strategy="copy">复制代码</button>${!strategyExpanded.has(selected.id)?'<button type="button" data-pf-strategy="show-code">查看代码</button>':''}`:''}</div>
         `:'<div class="pfEmpty"><strong>创建你的策略</strong>添加多个策略，分别编辑并选择是否启用。</div>'}</div>
       </div>`:'<div class="pfStrategyEmpty"><strong>还没有自定义策略</strong><p>可以使用上方内置策略，也可以点击“添加策略”，创建自己的交易规则。</p></div>'}
       <p id="pfStrategyStatus" ${strategyStatus?'':'hidden'} class="pfSubtle" role="status" aria-live="polite">${esc(strategyStatus)}</p>
@@ -237,7 +240,7 @@
   }
   function captureStrategies(){
     if(!strategyDraft)return;
-    const form=$('pfStrategyForm');if(!form||strategyStream||strategySaving)return;
+    const form=$('pfStrategyForm');if(!form||strategyStream)return;
     strategyDraft.enabled=[...form.querySelectorAll('[name=enabled]:checked')].map(el=>el.value);
     const selected=strategyDraft.customStrategies.find(s=>s.id===strategySelected);
     if(selected&&form.dataset.strategyId===selected.id&&form.elements.strategyName){selected.name=form.elements.strategyName.value;selected.description=form.elements.strategyDescription.value;}
@@ -254,7 +257,7 @@
     if(action==='show-code'&&selected){strategyExpanded.add(selected.id);render();return;}
     if(action==='add'){
       if(cfg.customStrategies.length>=20)return;
-      const id='custom:'+crypto.randomUUID();cfg.customStrategies.push({id,name:'自定义策略 '+(cfg.customStrategies.length+1),description:'',code:''});cfg.enabled.push(id);strategySelected=id;strategyStatus='';render();$('pfStrategyForm')?.elements.strategyDescription?.focus();
+      const id='custom:'+crypto.randomUUID();cfg.customStrategies.push({id,name:'自定义策略 '+(cfg.customStrategies.length+1),description:'',code:''});strategySelected=id;strategyStatus='';render();void saveStrategies({quiet:true});$('pfStrategyForm')?.elements.strategyDescription?.focus();
     }else if(action==='remove'&&selected){
       if(!window.confirm('删除此策略？不会删除已有回测和交易记录。'))return;
       const payload=strategyPayload();payload.customStrategies=payload.customStrategies.filter(s=>s.id!==selected.id);payload.enabled=payload.enabled.filter(id=>id!==selected.id);
@@ -268,10 +271,12 @@
   async function generateStrategy(selected){
     if((selected.description||'').trim().length<2){message('请先用自然语言描述策略规则');return;}
     if(!selected.name.trim()){message('请填写策略名称');return;}
+    clearTimeout(strategySaveTimer);await saveStrategies({quiet:true});
+    if(strategySavePending){message('策略方案尚未保存，请重试后生成');return;}
     const controller=new AbortController();strategyStream=controller;strategyPreview='';strategyExpanded.add(selected.id);strategyStatus='正在连接模型…';render();
     let reader,complete=false;
     try{
-      const response=await fetch('/api/portfolio/strategies/generate',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Portfolio':'1'},body:JSON.stringify({id:selected.id,name:selected.name.trim(),description:selected.description,code:selected.code,enabled:strategyConfig().enabled.includes(selected.id)}),signal:controller.signal});
+      const response=await fetch('/api/portfolio/strategies/generate',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Portfolio':'1'},body:JSON.stringify({id:selected.id,name:selected.name.trim(),description:selected.description,code:selected.code,enabled:!selected.code||strategyConfig().enabled.includes(selected.id)}),signal:controller.signal});
       if(!response.ok){const error=await response.json();throw Error(typeof error.detail==='string'?error.detail:'生成请求失败，请重试');}
       if(!response.body)throw Error('浏览器不支持流式响应');
       reader=response.body.getReader();const decoder=new TextDecoder();let buffer='';
@@ -285,12 +290,12 @@
           const event=JSON.parse(line);
           if(event.type==='error')throw Error(event.message);
           if(event.type==='delta'){strategyPreview+=event.text;if(strategyPreview.length>12000)throw Error('生成代码超出长度限制');const editor=$('pfStrategyForm')?.elements.customCode;if(editor){editor.value=strategyPreview;editor.scrollTop=editor.scrollHeight;window.MentoraCodeEditor?.sync(editor);}strategyStatus='正在生成策略代码…';if($('pfStrategyStatus'))$('pfStrategyStatus').textContent=strategyStatus;}
-          if(event.type==='complete'){if(!event.settings)throw Error('生成结果缺少保存确认');selected.code=event.code;flow.strategies=event.settings;strategyCompleted.add(selected.id);complete=true;}
+          if(event.type==='complete'){if(!event.settings)throw Error('生成结果缺少保存确认');selected.code=event.code;flow.strategies=event.settings;const saved=event.settings.customStrategies?.find(s=>s.id===selected.id);if(saved)Object.assign(selected,saved);const enabled=strategyConfig().enabled;strategyConfig().enabled=enabled.filter(id=>id!==selected.id);if(event.settings.enabled.includes(selected.id))strategyConfig().enabled.push(selected.id);strategyCompleted.add(selected.id);complete=true;}
         }
         if(complete||chunk.done)break;
       }
       if(!complete)throw Error('连接中断，代码未通过完整校验，请重新生成或编辑');
-      strategyStatus='';
+      strategyStatus='已自动保存';
     }catch(error){if(strategyStream===controller)strategyStatus=error.name==='AbortError'?'已停止接收生成结果。':error.message+'；请重试，未收到保存确认。';}
     finally{
       try{await reader?.cancel();}catch{}
@@ -373,21 +378,28 @@
 
   workspace.addEventListener('change',e=>{if(e.target.id==='pfDecisionFilter'){filter=e.target.value;render();}if(e.target.closest('#pfStrategyForm')&&e.target.name==='enabled')void saveStrategies();});
   function strategyPayload(){
-    const cfg=strategyConfig(),saved=flow?.strategies||{enabled:['trend','reversion'],customStrategies:[]};
-    const custom=JSON.parse(JSON.stringify(saved.customStrategies??(saved.customCode?[{id:'custom',name:saved.customName||'自定义策略',code:saved.customCode,description:''}]:[])));
-    const valid=new Set([...Object.keys(names),...custom.map(s=>s.id)]);
-    const drafts=new Set(cfg.customStrategies.filter(s=>!custom.some(x=>x.id===s.id)).map(s=>s.id));
-    return {enabled:cfg.enabled.filter(id=>valid.has(id)&&!drafts.has(id)),customStrategies:custom};
+    const cfg=strategyConfig(),custom=JSON.parse(JSON.stringify(cfg.customStrategies));
+    const valid=new Set([...Object.keys(names).filter(id=>!['custom','event','manual','jev-entry','jev-risk'].includes(id)),...custom.filter(s=>s.code?.trim()).map(s=>s.id)]);
+    return {enabled:cfg.enabled.filter(id=>valid.has(id)),customStrategies:custom};
   }
-  async function saveStrategies(){
-    if(strategyStream||strategySaving)return;
+  async function saveStrategies({quiet=false}={}){
+    clearTimeout(strategySaveTimer);
+    if(strategyStream||strategySaving){strategySavePending=true;return;}
     captureStrategies();const cfg=strategyConfig(),payload=strategyPayload();
-    if(!payload.enabled.length){cfg.enabled=[...(flow?.strategies?.enabled||[])];strategyStatus='至少保留一个启用的已保存策略';render();return;}
-    strategySaving=true;strategyStatus='';render();
-    try{flow.strategies=await api('/strategies','PUT',payload);}
-    catch(error){cfg.enabled=[...(flow?.strategies?.enabled||[])];strategyStatus=error.message;}
-    finally{strategySaving=false;render();}
+    if(!payload.enabled.length){strategySavePending=true;strategySaveStatus('至少保留一个启用的已生成策略');return;}
+    if(payload.customStrategies.some(s=>!s.name.trim())){strategySavePending=true;strategySaveStatus('请填写策略名称，填写后将自动保存');return;}
+    strategySaving=true;strategySavePending=false;strategySaveStatus('正在自动保存…');if(!quiet)render();
+    let succeeded=false;
+    try{flow.strategies=await api('/strategies','PUT',payload);succeeded=true;strategySaveStatus('已自动保存');}
+    catch(error){strategySavePending=true;strategySaveStatus('自动保存失败：'+error.message+'；请重试');}
+    finally{
+      strategySaving=false;
+      if(!quiet)render();
+      if(succeeded&&strategySavePending)void saveStrategies({quiet:true});
+    }
   }
+  workspace.addEventListener('input',e=>{if(e.target.closest('#pfStrategyForm')&&['strategyName','strategyDescription'].includes(e.target.name))scheduleStrategySave();});
+  workspace.addEventListener('focusout',e=>{if(strategySavePending&&e.target.closest('#pfStrategyForm'))void saveStrategies({quiet:true});});
   async function submit(e){if(e.target.id==='pfIdeaForm'){e.preventDefault();const input=e.target.elements.question,question=input.value.trim();if(question.length<2)return;input.value='';$('railHome')?.click();window.dispatchEvent(new CustomEvent('aime:streamviz-followup',{detail:{prompt:question,agent:'mentora-deal'}}));return;}if(e.target.id==='pfStrategyForm'){e.preventDefault();await saveStrategies(e.target);return;}if(e.target.id==='pfProfileForm'){e.preventDefault();if(profileSaving)return;profileSaving=true;const form=e.target,button=form.querySelector('[type=submit]');button.disabled=true;try{const saved=await api('/workflow/profile','PUT',(()=>{const f=new FormData(form),number=k=>f.get(k)===''?null:Number(f.get(k));return {profile:f.get('profile')||'',investment:{markets:f.getAll('markets'),styles:f.getAll('styles'),horizon:f.get('horizon')||'',targetReturnPct:number('targetReturnPct'),maxDrawdownPct:number('maxDrawdownPct'),confidenceThresholdPct:number('confidenceThresholdPct')}};})());flow.preferences={...flow.preferences,...saved};if(dialog.open)dialog.close();await load();message('交易偏好已保存，下一轮 JEV 决策将使用新置信度门槛');}catch(error){message(error.message);}finally{profileSaving=false;button.disabled=false;render();}return;}if(e.target.id==='pfSettingsForm'){e.preventDefault();const f=new FormData(e.target),settings={};for(const key of ['maxPositionPct','riskPct','reservePct','stopPct','slippageBps','fee'])settings[key]=Number(f.get(key));settings.automatic=f.get('automatic')==='on';const b=e.target.querySelector('[type=submit]');b.disabled=true;try{await api('/settings','PUT',settings);dialog.close();await load();message('账户设置已保存');}catch(error){message(error.message);b.disabled=false;}}}
   workspace.addEventListener('submit',e=>void submit(e));dialog.addEventListener('submit',e=>void submit(e));
   function profileFormState(form){const f=new FormData(form),number=k=>f.get(k)===''?null:Number(f.get(k));return{markets:f.getAll('markets'),styles:f.getAll('styles'),horizon:f.get('horizon')||'',targetReturnPct:number('targetReturnPct'),maxDrawdownPct:number('maxDrawdownPct'),confidenceThresholdPct:number('confidenceThresholdPct')};}

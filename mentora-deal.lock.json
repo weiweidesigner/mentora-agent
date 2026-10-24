@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/mentora-deal.git",
-  "revision": "a130f6fcb4c17aff51b8bc161fc2adc56e8c9685",
+  "revision": "b16fe3c976b60d4937e733da2a6793c404a66d42",
   "checkout": ".dependencies/mentora-deal",
   "links": {
     "app/pine_skill.py": "app/pine_skill.py",
