@@ -2657,24 +2657,6 @@ p {
   box-decoration-break: clone;
 }
 
-.streamingAnswer.is-streaming::after {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 1.1em;
-  margin-left: 3px;
-  border-radius: 999px;
-  background: currentColor;
-  vertical-align: -0.16em;
-  animation: caretBlink 0.8s steps(1) infinite;
-}
-
-@keyframes caretBlink {
-  50% {
-    opacity: 0;
-  }
-}
-
 .composer {
   position: relative;
   flex: 0 0 auto;
