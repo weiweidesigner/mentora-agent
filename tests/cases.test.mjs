@@ -97,6 +97,20 @@ test('case replay formats a loose ordered list as one narrative segment', async 
   assert.ok(h.formatted.includes(text));
 });
 
+test('case replay reveals the table border only when its first row starts', async () => {
+  const h=setup('https://example.com/','正文与表格',null,{
+    formatInsight:()=>`<p>${'正文'.repeat(48)}</p><div class="markdownTableWrap"><table><tbody><tr><td>评级</td></tr></tbody></table></div>`,
+  });
+  await tick();h.w.document.querySelector('.caseCard').click();await tick();
+  const wrap=h.messages.querySelector('.markdownTableWrap');
+  assert.equal(wrap.hidden,true,'unreached table must not expose its empty border');
+  await new Promise(resolve=>setTimeout(resolve,360));
+  assert.equal(wrap.hidden,false);
+  assert.equal(wrap.querySelector('tr').hidden,false);
+  assert.equal(wrap.textContent,'评级');
+  h.w.close();
+});
+
 test('published home cases have complete answers and portable cached charts', () => {
   const rows=JSON.parse(readFileSync(new URL('../app/static/cases/manifest.json',import.meta.url),'utf8'));
   assert.equal(rows.length,8);
@@ -119,6 +133,16 @@ test('published home cases have complete answers and portable cached charts', ()
     for (const artifact of cached.answer.reportArtifacts) assert.ok(existsSync(new URL('../app'+artifact.url,import.meta.url)));
     assert.doesNotMatch(JSON.stringify(cached),/\/home\/ubuntu|\/Users\//);
   }
+});
+
+test('rating history case keeps its AMD snapshot aligned with the saved payload',()=>{
+  const root=new URL('../app/static/cases/inspiration/business-average_rating_history/',import.meta.url);
+  const html=readFileSync(new URL('inspiration-real-business-average_rating_history.html',root),'utf8');
+  const embedded=JSON.parse(html.match(/const payload = (.*?);\n/)[1]);
+  const saved=JSON.parse(readFileSync(new URL('payload.json',root),'utf8'));
+  assert.equal(embedded.code,'AMD');
+  assert.deepEqual(embedded.views,saved.views);
+  assert.equal(embedded.views['1Y'].at(-1).averageRating,3.95652174);
 });
 
 test('ask button hides while scrolling down and returns on idle or upward scroll', async () => {

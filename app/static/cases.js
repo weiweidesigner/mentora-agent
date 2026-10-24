@@ -254,7 +254,7 @@
       // Format the complete narrative segment so loose Markdown lists remain
       // one list instead of restarting at 1 after every blank line.
       block.innerHTML = formatInsight(part.trim());
-      block.querySelectorAll("li,tr,p,h1,h2,h3,h4").forEach((element) => { element.hidden = true; });
+      block.querySelectorAll("li,tr,p,h1,h2,h3,h4,h5,h6,.markdownTableWrap").forEach((element) => { element.hidden = true; });
       const walker = document.createTreeWalker(block, window.NodeFilter.SHOW_TEXT);
       const texts = [];
       while (walker.nextNode()) {

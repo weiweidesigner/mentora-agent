@@ -1,166 +1,166 @@
 {
   "type": "average-rating-history",
   "name": "Average Rating History",
-  "title": "AMD近一年分析师评级V型修复与高位横盘",
-  "code": "NVDA",
+  "title": "Average Rating History",
+  "code": "AMD",
   "market": "185",
   "defaultPeriod": "6M",
   "views": {
     "1M": [
       {
+        "date": "2026-09-25",
+        "averageRating": 3.95652174,
+        "timestamp": "2026-09-25T00:00:00.000Z"
+      },
+      {
         "date": "2026-09-29",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-09-29T00:00:00.000Z"
       },
       {
-        "date": "2026-10-02",
-        "averageRating": 4.04761905,
-        "timestamp": "2026-10-02T00:00:00.000Z"
+        "date": "2026-10-04",
+        "averageRating": 3.95652174,
+        "timestamp": "2026-10-04T00:00:00.000Z"
       },
       {
-        "date": "2026-10-06",
-        "averageRating": 4.04761905,
-        "timestamp": "2026-10-06T00:00:00.000Z"
-      },
-      {
-        "date": "2026-10-10",
-        "averageRating": 4.04761905,
-        "timestamp": "2026-10-10T00:00:00.000Z"
+        "date": "2026-10-09",
+        "averageRating": 3.95652174,
+        "timestamp": "2026-10-09T00:00:00.000Z"
       },
       {
         "date": "2026-10-14",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-10-14T00:00:00.000Z"
       }
     ],
     "3M": [
       {
         "date": "2026-07-14",
-        "averageRating": 4.04545455,
+        "averageRating": 3.8,
         "timestamp": "2026-07-14T00:00:00.000Z"
       },
       {
         "date": "2026-08-06",
-        "averageRating": 4.04545455,
+        "averageRating": 3.88888889,
         "timestamp": "2026-08-06T00:00:00.000Z"
       },
       {
         "date": "2026-08-29",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95833333,
         "timestamp": "2026-08-29T00:00:00.000Z"
       },
       {
         "date": "2026-09-21",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-09-21T00:00:00.000Z"
       },
       {
         "date": "2026-10-14",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-10-14T00:00:00.000Z"
       }
     ],
     "6M": [
       {
-        "date": "2026-04-16",
-        "averageRating": 4.10526316,
-        "timestamp": "2026-04-16T00:00:00.000Z"
+        "date": "2026-04-14",
+        "averageRating": 3.6,
+        "timestamp": "2026-04-14T00:00:00.000Z"
       },
       {
-        "date": "2026-05-16",
-        "averageRating": 4.05,
-        "timestamp": "2026-05-16T00:00:00.000Z"
+        "date": "2026-05-14",
+        "averageRating": 3.70833333,
+        "timestamp": "2026-05-14T00:00:00.000Z"
       },
       {
-        "date": "2026-06-15",
-        "averageRating": 4.04545455,
-        "timestamp": "2026-06-15T00:00:00.000Z"
+        "date": "2026-06-14",
+        "averageRating": 3.76,
+        "timestamp": "2026-06-14T00:00:00.000Z"
       },
       {
-        "date": "2026-07-15",
-        "averageRating": 4.04545455,
-        "timestamp": "2026-07-15T00:00:00.000Z"
+        "date": "2026-07-14",
+        "averageRating": 3.8,
+        "timestamp": "2026-07-14T00:00:00.000Z"
       },
       {
         "date": "2026-08-14",
-        "averageRating": 4.04545455,
+        "averageRating": 3.91304348,
         "timestamp": "2026-08-14T00:00:00.000Z"
       },
       {
         "date": "2026-09-13",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-09-13T00:00:00.000Z"
       },
       {
         "date": "2026-10-14",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-10-14T00:00:00.000Z"
       }
     ],
     "1Y": [
       {
-        "date": "2025-10-15",
-        "averageRating": 4.0,
-        "timestamp": "2025-10-15T00:00:00.000Z"
+        "date": "2025-10-14",
+        "averageRating": 3.77272727,
+        "timestamp": "2025-10-14T00:00:00.000Z"
       },
       {
-        "date": "2025-11-14",
-        "averageRating": 4.0,
-        "timestamp": "2025-11-14T00:00:00.000Z"
+        "date": "2025-11-13",
+        "averageRating": 3.80952381,
+        "timestamp": "2025-11-13T00:00:00.000Z"
       },
       {
-        "date": "2025-12-14",
-        "averageRating": 3.96551724,
-        "timestamp": "2025-12-14T00:00:00.000Z"
+        "date": "2025-12-13",
+        "averageRating": 3.80952381,
+        "timestamp": "2025-12-13T00:00:00.000Z"
       },
       {
-        "date": "2026-01-14",
-        "averageRating": 4.0,
-        "timestamp": "2026-01-14T00:00:00.000Z"
+        "date": "2026-01-13",
+        "averageRating": 3.84210526,
+        "timestamp": "2026-01-13T00:00:00.000Z"
       },
       {
-        "date": "2026-02-13",
-        "averageRating": 4.0,
-        "timestamp": "2026-02-13T00:00:00.000Z"
+        "date": "2026-02-12",
+        "averageRating": 3.8,
+        "timestamp": "2026-02-12T00:00:00.000Z"
       },
       {
         "date": "2026-03-15",
-        "averageRating": 4.04545455,
+        "averageRating": 3.66666667,
         "timestamp": "2026-03-15T00:00:00.000Z"
       },
       {
-        "date": "2026-04-15",
-        "averageRating": 4.10526316,
-        "timestamp": "2026-04-15T00:00:00.000Z"
+        "date": "2026-04-14",
+        "averageRating": 3.6,
+        "timestamp": "2026-04-14T00:00:00.000Z"
       },
       {
-        "date": "2026-05-15",
-        "averageRating": 4.05,
-        "timestamp": "2026-05-15T00:00:00.000Z"
+        "date": "2026-05-14",
+        "averageRating": 3.70833333,
+        "timestamp": "2026-05-14T00:00:00.000Z"
       },
       {
         "date": "2026-06-14",
-        "averageRating": 4.04545455,
+        "averageRating": 3.76,
         "timestamp": "2026-06-14T00:00:00.000Z"
       },
       {
-        "date": "2026-07-15",
-        "averageRating": 4.04545455,
-        "timestamp": "2026-07-15T00:00:00.000Z"
+        "date": "2026-07-14",
+        "averageRating": 3.8,
+        "timestamp": "2026-07-14T00:00:00.000Z"
       },
       {
         "date": "2026-08-14",
-        "averageRating": 4.04545455,
+        "averageRating": 3.91304348,
         "timestamp": "2026-08-14T00:00:00.000Z"
       },
       {
         "date": "2026-09-13",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-09-13T00:00:00.000Z"
       },
       {
         "date": "2026-10-14",
-        "averageRating": 4.04761905,
+        "averageRating": 3.95652174,
         "timestamp": "2026-10-14T00:00:00.000Z"
       }
     ]
@@ -189,6 +189,5 @@
     "Strong Sell": "强烈卖出",
     "Age": "年龄"
   },
-  "theme": "light",
-  "customTitle": "AMD近一年分析师评级V型修复与高位横盘"
+  "theme": "light"
 }
