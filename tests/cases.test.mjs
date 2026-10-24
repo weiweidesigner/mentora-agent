@@ -227,6 +227,17 @@ test('balance sheet case stays aligned with the source controls and dark timelin
  assert.match(report,/\.balance-sheet \.range-track::before \{ background:var\(--ui-range-track\)!important; \}/);
 });
 
+test('key statistics snapshot keeps a populated data-time and financial-basis section',()=>{
+ const cached=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/business-key_statistics/conversation.json',import.meta.url),'utf8'));
+ const section=cached.answer.interpretation.split('## 数据时间与口径')[1];
+ assert.ok(section.trim().length>100);
+ assert.match(section,/2026-10-14/);
+ assert.match(section,/2026-07-29/);
+ assert.match(section,/TTM/);
+ assert.match(section,/FY2025/);
+ assert.match(section,/不是实时行情/);
+});
+
 test('business case style refresh preserves every snapshot script and financial payload',()=>{
  const records=JSON.parse(readFileSync(new URL('fixtures/business-case-scripts.json',import.meta.url),'utf8'));
  assert.ok(records.length>=40);
