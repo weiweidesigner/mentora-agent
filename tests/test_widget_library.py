@@ -35,6 +35,23 @@ def test_selected_market_group_shapes_and_content_reuse(tmp_path):
     assert file.stat().st_mtime_ns == before
 
 
+def test_advanced_chart_accepts_and_normalizes_supported_studies(tmp_path):
+    result = lib.build_widget(lib.TradingViewInput(
+        widget='advanced-chart', symbols=['NASDAQ:AAPL'], studies=['MACD', 'sma', 'MACD']
+    ), tmp_path)
+    assert result['config']['studies'] == ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies']
+    document = (tmp_path/Path(result['url']).name).read_text()
+    spec = json.loads(document.split('<script id="tv-config" type="application/json">')[1].split('</script>')[0])
+    assert spec['config']['studies'] == ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies']
+
+
+def test_studies_are_rejected_for_other_widgets_and_unknown_indicators(tmp_path):
+    with pytest.raises(ValueError, match='只有 TradingView 高级图表'):
+        lib.build_widget(lib.TradingViewInput(widget='technical-analysis', symbols=['NASDAQ:AAPL'], studies=['MACD']), tmp_path)
+    with pytest.raises(ValueError, match='暂不支持'):
+        lib.build_widget(lib.TradingViewInput(widget='advanced-chart', symbols=['NASDAQ:AAPL'], studies=['unknown']), tmp_path)
+
+
 @pytest.mark.parametrize('data',[
     {'widget':'not-a-widget'},
     {'widget':'single-ticker','symbols':[]},

@@ -28,6 +28,7 @@ class TradingViewInput(BaseModel):
     theme: Literal['dark', 'light'] = 'dark'
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
     interval: str | None = Field(default=None, max_length=10)
+    studies: list[str] | None = Field(default=None, max_length=8)
 
 
 @lru_cache(maxsize=1)
@@ -46,6 +47,31 @@ REGIONS = {'default', 'us', 'cn', 'eu', 'gb', 'jp'}
 STOCK_MARKETS = {'default', 'america', 'china', 'hongkong', 'japan', 'uk', 'germany','forex','crypto'}
 CURRENCY_WIDGETS = {'forex-cross-rates','forex-heatmap','forex-table'}
 BROKER_WIDGETS = {'broker-rating','broker-reviews'}
+STUDY_ALIASES = {
+    'macd': 'MACD@tv-basicstudies',
+    'moving average convergence divergence': 'MACD@tv-basicstudies',
+    'rsi': 'RSI@tv-basicstudies',
+    'relative strength index': 'RSI@tv-basicstudies',
+    'roc': 'ROC@tv-basicstudies',
+    'rate of change': 'ROC@tv-basicstudies',
+    'stochastic rsi': 'StochasticRSI@tv-basicstudies',
+    'stochasticrsi': 'StochasticRSI@tv-basicstudies',
+    'sma': 'MASimple@tv-basicstudies',
+    'simple moving average': 'MASimple@tv-basicstudies',
+}
+SUPPORTED_STUDIES = frozenset(STUDY_ALIASES.values())
+
+
+def normalize_studies(values: list[str] | None) -> list[str]:
+    normalized = []
+    for raw in values or []:
+        value = raw.strip()
+        canonical = STUDY_ALIASES.get(value.lower(), value)
+        if canonical not in SUPPORTED_STUDIES:
+            raise ValueError('暂不支持该 TradingView 指标；当前支持 MACD、RSI、ROC、Stochastic RSI 和 SMA。')
+        if canonical not in normalized:
+            normalized.append(canonical)
+    return normalized
 
 def allowed_markets(widget):
     if widget == 'screener': return STOCK_MARKETS
@@ -65,6 +91,11 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
         raise ValueError('该组件需要且只支持一个标的。')
     symbols = values if payload.widget in MARKETS|CURRENCY_WIDGETS|BROKER_WIDGETS else list(dict.fromkeys(resolve_symbol(s, payload.symbolMarket) for s in values))
     config = {}
+    studies = normalize_studies(payload.studies)
+    if payload.studies is not None and payload.widget != 'advanced-chart':
+        raise ValueError('只有 TradingView 高级图表支持预设技术指标。')
+    if payload.widget == 'advanced-chart':
+        config['studies'] = studies
     symbol = None
     if payload.widget in MARKETS:
         if symbols:

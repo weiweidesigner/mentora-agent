@@ -157,7 +157,7 @@
       save();return;
     }
     if(!symbols?.length)return;
-    const parameters={...card.parameters,symbols,...(cfg.interval?{interval:cfg.interval}:{})};
+    const parameters={...card.parameters,symbols,...(cfg.interval?{interval:cfg.interval}:{}),...(spec.widget==='advanced-chart'?{studies:cfg.studies||[]}:{})};
     const component=spec.preset==='intraday'?'tv-intraday':'tv-'+spec.widget;
     if(card.component!==component||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component=component;card.parameters=parameters;save();}
     const frame=node?.querySelector('iframe');if(frame&&ashareMinuteSymbol(card)&&!frame.src.includes('/api/widgets/ashare-chart?'))frame.src=frameUrl(card);
@@ -340,11 +340,11 @@
     if(card){delete card.symbolInput;Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market,symbolMarket});}
     else {card={id:uid(),title:component.title,w:component.width||6,h:component.height||18,status:'loading',loadingText:'正在加载 TradingView…',url:'',request:message,component:component.id,market,symbolMarket};place(board,card);board.cards.push(card);}
     delete card.contentHeight;
-    card.request=message;card.component=component.id;card.parameters={symbols,market,...(options.interval?{interval:options.interval}:{})};
+    card.request=message;card.component=component.id;card.parameters={symbols,market,...(options.interval?{interval:options.interval}:{}),...(Array.isArray(options.studies)?{studies:options.studies}:{})};
     save();if(activeId===board.id)render();
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000),onAbort=()=>controller.abort();options.signal?.addEventListener('abort',onAbort,{once:true});
     try {
-      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,preset:component.preset||null,symbols,market,interval:options.interval||null,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
+      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,preset:component.preset||null,symbols,market,interval:options.interval||null,studies:Array.isArray(options.studies)?options.studies:null,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
       const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'组件添加失败，请重试。');
       const url=safeUrl(result.url);if(!url)throw Error('组件没有返回可用的地址。');
       if(!boards.includes(board)||!board.cards.includes(card))return;
@@ -364,7 +364,7 @@
     const previous=pending?JSON.parse(JSON.stringify(pending)):null;
     if(pending)Object.assign(pending,{status:'loading',error:'',url:'',request:message,component:component?.id||pending.component});
     else {pending={id:uid(),title:component?`${component.title} · ${message}`:'正在构建看板',w:component?.width||6,h:component?.height||18,status:'loading',url:'',request:message,component:component?.id||''};place(board,pending);board.cards.push(pending);}
-    pending.parameters={...(pending.parameters||{}),...Object.fromEntries(Object.entries(parameters).filter(([key])=>['symbols','market','interval'].includes(key)))};
+    pending.parameters={...(pending.parameters||{}),...Object.fromEntries(Object.entries(parameters).filter(([key])=>['symbols','market','interval','studies'].includes(key)))};
     pending.market=market;
     const pendingId=pending.id;
     board.messages.push({role:'user',content:message});board.messages=board.messages.slice(-12);
@@ -614,9 +614,10 @@
       if(raw!==$('widgetSymbol').value.trim()||editingCardId!==card.id||!$('widgetConfig').open)return;
       const text=component.provider==='TradingView'?resolved:resolved.split(/[,，、;；]+/).map(symbol=>symbol.trim().split(':').at(-1)).join('、');
       const market=component.inputMode==='market'?$('widgetMarket').value:'default',symbols=component.inputMode==='market'?[]:text.split(/[,，、;；\s]+/).filter(Boolean);
-      const parameters={symbols,market,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{})};
+      const previous=card.parameters||{};
+      const parameters={symbols,market,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{}),...(Array.isArray(previous.studies)?{studies:previous.studies}:{})};
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
-      const previous=card.parameters||{},same=JSON.stringify(previous.symbols||[])===JSON.stringify(symbols)&& (previous.market||'default')===market&&(previous.interval||'')===(parameters.interval||'');
+      const same=JSON.stringify(previous.symbols||[])===JSON.stringify(symbols)&& (previous.market||'default')===market&&(previous.interval||'')===(parameters.interval||'');
       undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));
       if(!same){
         if(component.provider==='TradingView'){

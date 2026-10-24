@@ -69,6 +69,38 @@ def test_selected_parameter_changes_preserve_symbol_and_route_to_same_component(
     assert action['parameters']=={'symbols':['NASDAQ:AAPL'],'interval':'W'}
 
 
+def test_existing_advanced_chart_indicator_request_updates_studies_instead_of_adding_card(monkeypatch):
+    calls=[]
+    def model(context):
+        calls.append(dict(context))
+        if len(calls) == 1:
+            return {'reply':'新增 MACD 图表。','actions':[{'type':'add','componentId':'tv-advanced-chart','parameters':{'symbols':['NASDAQ:AAPL'],'studies':['MACD']}}]}
+        return {'reply':'已给现有高级图表添加 MACD。','actions':[{'type':'update','cardId':'one','parameters':{'studies':['MACD']}}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    p=payload();p.message='给高级图表添加 MACD 技术指标'
+    result=planner.plan_widgets(p)
+    assert len(calls)==2
+    assert 'update 该卡片的 studies' in calls[1]['validationError']
+    assert result['actions']==[{
+        'type':'update','cardId':'one','componentId':'tv-advanced-chart',
+        'parameters':{'symbols':['NASDAQ:AAPL'],'interval':'D','studies':['MACD@tv-basicstudies']},
+    }]
+
+
+def test_new_advanced_chart_with_indicator_is_still_allowed():
+    p=planner.PlanningInput(message='新建一个带 MACD 的 TradingView 高级图表',board={'id':'b','title':'看板','cards':[]})
+    result=planner.validate_plan({'reply':'已新增。','actions':[{'type':'add','componentId':'tv-advanced-chart','parameters':{'symbols':['NASDAQ:AAPL'],'studies':['MACD']}}]},p,[])
+    assert result['actions'][0]['parameters']['studies']==['MACD@tv-basicstudies']
+
+
+def test_adding_an_indicator_preserves_existing_advanced_chart_studies():
+    p=payload();p.message='给当前 TradingView 高级图表加上 RSI 指标'
+    p.board.cards[0].parameters.studies=['MACD@tv-basicstudies']
+    cards=[planner.enrich_card(c) for c in p.board.cards]
+    result=planner.validate_plan({'reply':'已添加 RSI。','actions':[{'type':'update','cardId':'one','parameters':{'studies':['RSI']}}]},p,cards)
+    assert result['actions'][0]['parameters']['studies']==['MACD@tv-basicstudies','RSI@tv-basicstudies']
+
+
 def test_invalid_model_response_is_repaired_once(monkeypatch):
     calls=[]
     def model(context):

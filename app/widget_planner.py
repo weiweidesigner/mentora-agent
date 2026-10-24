@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException
 from openai import OpenAI
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.widget_library import ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS, CURRENCY_WIDGETS, BROKER_WIDGETS, allowed_markets
+from app.widget_library import ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS, CURRENCY_WIDGETS, BROKER_WIDGETS, allowed_markets, normalize_studies
 from app.widget_capabilities import generation_catalogue
 
 router = APIRouter()
@@ -24,6 +24,7 @@ class Parameters(BaseModel):
     symbols: list[str] | None = Field(default=None, max_length=30)
     market: str | None = Field(default=None, max_length=30)
     interval: str | None = Field(default=None, max_length=10)
+    studies: list[str] | None = Field(default=None, max_length=8)
 
 
 class Geometry(BaseModel):
@@ -109,7 +110,7 @@ def enrich_card(card: Card) -> dict:
                         symbols = [entry['proName'] for entry in cfg.get('symbols', [])]
                     elif widget == 'market-data':
                         symbols = [entry['name'] for group in cfg.get('symbolsGroups', []) for entry in group['symbols']]
-                    data['parameters'] = {'symbols': symbols, 'market': cfg.get('market', cfg.get('countryFilter', 'default')), 'interval': cfg.get('interval')}
+                    data['parameters'] = {'symbols': symbols, 'market': cfg.get('market', cfg.get('countryFilter', 'default')), 'interval': cfg.get('interval'), **({'studies': cfg.get('studies', [])} if widget == 'advanced-chart' else {})}
                 except (ValueError, KeyError, TypeError, IndexError):
                     pass
     if not data['parameters'].get('symbols') and card.request and re.fullmatch(r'[A-Za-z0-9_:.,!\-\s]+', card.request):
@@ -131,7 +132,7 @@ remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_bo
 当 board.title 为「自定义」且 cards 为空，用户正在首次创建看板：根据本次需求概括一个简洁、具体的中文看板标题（建议8到18字，体现市场、标的或分析目的），在添加组件时必须同时输出 rename_board；不要使用「自定义」「我的看板」等占位标题，也不要把整句需求照抄为标题。仅询问澄清且没有 add 时保持原名称。用户已命名的看板保留原名，除非用户明确要求更名。
 布局为12列网格，x=0..11，w=3..12，x+w<=12；y以24px为单位，普通图表h=10..40，滚动行情条tv-ticker-tape默认h=6、最低6。左右各半用x=0/6,w=6；整行w=12；上下用不同y。不要让卡片重叠。只调整用户要求的对象，未提及的参数沿用原值。
 选中卡片时 update/remove 只能操作该id；若要调整整个看板，请让用户先取消选择。允许围绕当前卡片新增组件。未选择时，按标题、序号及组件类型定位对象；确实歧义才提问，不能猜一个不存在的id。必要信息不足时actions为空，reply自然询问。不要声称已读取价格或数据。
-TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
+TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart周期仅D/W/M/60；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。advanced-chart还支持studies，指标值使用 MACD@tv-basicstudies、RSI@tv-basicstudies、ROC@tv-basicstudies、StochasticRSI@tv-basicstudies、MASimple@tv-basicstudies；用户说MACD、RSI、ROC、Stochastic RSI或SMA时写入对应值。用户明确说“给高级图表添加/加上指标”是在修改已有高级图表：看板中只有一张高级图表时必须update该卡片并合并原有studies，不能add新的K线、通用图表或另一张高级图表。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 看板支持国内K线（ashare-kline，a-share-data/historical_kline.py，只支持单只A股日线，不支持指数或ETF）、AInvest原生行情和业务组件（business-chart-recall）、通用图表（generic-前缀）和 StreamVis/StreamViz（streamviz）。优先遵循用户明确指定的组件，不要擅自换成TradingView。原生kline、多K线、多股分时已可用；按各自资产/周期契约选择，公司财报、估值和评级只用于支持的美股公司。A股日线只用ashare-kline，interval为1d；原生kline支持1m/5m/15m/30m/1h/2h/4h/1d/1w/1M/3M，multi_intraday只支持1m，multi_kline不支持1m。国内交易日历不需要股票代码，日期范围通过request传达。
 requiresDataSource=true的组件没有内置数据源，不在手动组件库展示，但可通过对话添加。必须在add/update的request中完整保留用户要看的业务问题、数据来源（用户提供的数据也可）、指标、时间范围、筛选和变换要求，交给通用执行agent选择真实数据源、必要计算并渲染；最终只交付该组件，不把上游数据源或研究报告作为额外卡片。不能因为它没有symbols而要求用户填写股票代码；只有实际缺少必要数据定义或可用来源时才澄清，不虚构数据。用户说StreamVis或streamvis也指streamviz。不要在这里生成数据或执行取数。
 非TradingView生成动作必须带request，不能把原需求缩减为股票代码。更新时合并原卡片request和本次修改，保留未更改的数据来源、日期及计算口径。只改标题/布局时不要重新生成。禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
@@ -141,10 +142,24 @@ requiresDataSource=true的组件没有内置数据源，不在手动组件库展
     return json.loads(response.choices[0].message.content or '{}')
 
 
+def existing_study_target(payload: PlanningInput, cards: list[dict]) -> str:
+    """Resolve an explicit edit of the sole existing TradingView advanced chart."""
+    text = payload.message.strip()
+    if re.search(r'新建|创建|生成|另(?:外)?加|再加|new\b|create\b', text, re.I):
+        return ''
+    if not re.search(r'MACD|RSI|ROC|Stochastic\s*RSI|SMA|技术指标|indicator|study', text, re.I):
+        return ''
+    if not re.search(r'高级图表|TradingView|现有|当前', text, re.I):
+        return ''
+    matches = [card['id'] for card in cards if card.get('component') == 'tv-advanced-chart']
+    return matches[0] if len(matches) == 1 else ''
+
+
 def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> dict:
     plan = Plan.model_validate(result)
     existing = {c['id']: c for c in cards}
     components = {c['id']: c for c in catalogue()}
+    study_target = existing_study_target(payload, cards)
     if payload.selectedCardId and payload.selectedCardId not in existing:
         raise ValueError('选中的卡片已不存在，请重新选择。')
     actions = []
@@ -162,6 +177,10 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
         if action.type in {'add','update'}:
             component_id = action.componentId or (card['component'] if card else '')
             params = action.parameters.model_dump(exclude_none=True) if action.parameters else {}
+            if 'studies' in params:
+                params['studies'] = normalize_studies(params['studies'])
+                if card and re.search(r'添加|增加|加上|叠加|加入|add\b', payload.message, re.I) and not re.search(r'替换|只保留|删除|移除|清空|replace|remove|clear', payload.message, re.I):
+                    params['studies'] = normalize_studies([*(card.get('parameters', {}).get('studies') or []), *params['studies']])
             if not params:
                 clean.pop('parameters', None)
             if action.type == 'add' or params or action.componentId or action.request:
@@ -171,6 +190,8 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
                 merged.update(params)
                 meta = components[component_id]
                 widget = meta.get('widget')
+                if 'studies' in merged and widget != 'advanced-chart':
+                    raise ValueError('只有 TradingView 高级图表支持预设技术指标。')
                 if widget in BROKER_WIDGETS and not merged.get('symbols'):
                     merged['symbols']=meta.get('defaultSymbols',['easymarkets'])
                 if widget in MARKETS:
@@ -209,6 +230,10 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
         if action.type=='remove':
             existing.pop(action.cardId)
         actions.append(clean)
+    if study_target:
+        matching = [action for action in actions if action.get('type') == 'update' and action.get('cardId') == study_target and 'studies' in action.get('parameters', {})]
+        if any(action.get('type') == 'add' for action in actions) or not matching:
+            raise ValueError('这是对现有 TradingView 高级图表的指标修改；请 update 该卡片的 studies，不要新增组件。')
     if payload.board.title == '自定义' and not cards and any(a['type'] == 'add' for a in actions):
         if not any(a['type'] == 'rename_board' and a.get('title', '').strip() not in {'', '自定义', '我的看板'} for a in actions):
             raise ValueError('首次创建看板时，请根据用户需求生成具体标题，并添加 rename_board 动作。')
