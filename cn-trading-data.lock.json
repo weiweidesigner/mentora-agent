@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/cn-trading-data.git",
-  "revision": "24ac8c46f15f1ef8584c1b0d71a26ed4bc0dc390",
+  "revision": "f2200351eef581d308aac720842a5422ef28dead",
   "checkout": ".dependencies/cn-trading-data",
   "links": {
     "app/skills/a-share-data": "app/skills/a-share-data"

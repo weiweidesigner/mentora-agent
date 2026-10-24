@@ -3619,7 +3619,7 @@ function openVideoPlayer(video) {
   if (isFile) {
     media.controls = true;
     media.autoplay = true;
-    media.poster = String(video?.coverUrl || "");
+    media.poster = videoCoverThumbnailUrl(video?.coverUrl, 768);
   } else {
     media.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
     media.allowFullscreen = true;
@@ -3628,6 +3628,15 @@ function openVideoPlayer(video) {
   sourceLink.href = String(video?.url || url);
   sourceLink.textContent = String(video?.title || "在来源页面打开");
   overlay.classList.add("is-open");
+}
+
+function videoCoverThumbnailUrl(coverUrl, width = 384) {
+  try {
+    const cover = new URL(String(coverUrl || ""));
+    const prefixes = {"resources.ainvest.com": "/iwcprod-crawl-downloader-hub-pod.media/", "cdn.ainvest.com": "/discovery-video/"};
+    if (cover.protocol !== "https:" || cover.username || cover.password || cover.port || cover.hash || !prefixes[cover.hostname] || !cover.pathname.startsWith(prefixes[cover.hostname])) return String(coverUrl || "");
+    return `/api/video-thumbnail?width=${width}&url=${encodeURIComponent(cover.href)}`;
+  } catch { return ""; }
 }
 
 function buildVideoLane(videos, options = {}) {
@@ -3642,7 +3651,7 @@ function buildVideoLane(videos, options = {}) {
     return `
       <article class="relatedVideoCard" data-video-index="${index}">
         <button class="relatedVideoMedia" type="button" aria-label="播放 ${escapeHtml(video.title || "视频")}">
-          ${video.coverUrl ? `<img src="${escapeHtml(video.coverUrl)}" alt="" loading="lazy">` : `<span class="relatedVideoPosterFallback"></span>`}
+          ${video.coverUrl ? `<img src="${escapeHtml(videoCoverThumbnailUrl(video.coverUrl))}" srcset="${escapeHtml(videoCoverThumbnailUrl(video.coverUrl))} 384w, ${escapeHtml(videoCoverThumbnailUrl(video.coverUrl, 768))} 768w" sizes="(max-width:760px) 88vw, 390px" width="768" height="432" alt="" loading="lazy" decoding="async">` : `<span class="relatedVideoPosterFallback"></span>`}
           <span class="relatedVideoPlay" aria-hidden="true"></span>
           ${duration ? `<span class="relatedVideoDuration">${escapeHtml(duration)}</span>` : ""}
         </button>
@@ -3654,6 +3663,7 @@ function buildVideoLane(videos, options = {}) {
       </article>`;
   }).join("")}</div>`;
   section.querySelectorAll(".relatedVideoMedia").forEach((button, index) => {
+    button.querySelector("img")?.addEventListener("error", () => button.classList.add("is-cover-unavailable"), { once:true });
     button.addEventListener("click", () => openVideoPlayer(videos[index]));
   });
   return section;

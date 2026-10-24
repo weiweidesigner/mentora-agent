@@ -11,7 +11,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section>${catalog ? '<section id="inspirationSquare"><div id="inspirationTabs"></div><div id="inspirationPanel"></div></section>' : ''}<header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
   const w = dom.window;
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
-  const rows = [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
+  const rows = options.homeCases || [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
   const requests = [], sent = [], formatted = [];
   const conversation = w.document.querySelector('main'), input = w.document.querySelector('input'), messages = w.document.querySelector('#messages'), form = w.document.querySelector('form');
   form.requestSubmit = () => sent.push(input.value);
@@ -468,6 +468,23 @@ test('gallery icons match chart types and report artwork regardless of ordering'
  }
  assert.deepEqual(snapshots[0],snapshots[1]);
  assert.equal(new Set(Object.entries(snapshots[0]).filter(([id])=>id.startsWith('analysis-')).map(([,svg])=>svg)).size,17);
+});
+
+test('media galleries and horizontal home lanes use semantic icons',async()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
+ const homeCases=JSON.parse(readFileSync(new URL('../app/static/cases/manifest.json',import.meta.url),'utf8'));
+ const h=setup('https://example.com/','案例',catalog,{homeCases});await tick();
+ for(const row of catalog.cases.filter(row=>['videos','art'].includes(row.category))){
+  const icon=h.w.document.querySelector(`#inspirationPanel [data-case="${row.id}"] [data-icon]`);
+  assert.equal(icon.dataset.icon,row.category==='videos'?'video':'image');
+ }
+ const expected={'sse-kdj-backtest':'backtest','midterm-election-1902-2026':'report','amd-ratings':'ratings','presidents-sp500':'dynamic_line','ths-dividends':'timeline','us-catalysts':'mind_map','jpm-technical':'kline','sse-events':'event'};
+ for(const row of homeCases){
+  const icons=h.w.document.querySelectorAll(`#caseGrid [data-case="${row.id}"] [data-icon]`);
+  assert.ok(icons.length>0,row.id);
+  assert.ok([...icons].every(icon=>icon.dataset.icon===expected[row.id]),row.id);
+ }
+ h.w.close();
 });
 
 test('financial gallery renders official TradingView groups with native research separate',async()=>{

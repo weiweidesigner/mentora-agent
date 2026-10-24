@@ -2137,7 +2137,7 @@ p {
   overflow: hidden;
   padding: 0;
   border: 0;
-  background: #111827;
+  background: var(--soft-2);
   cursor: pointer;
 }
 
@@ -2149,7 +2149,20 @@ p {
   object-fit: cover;
 }
 
-.relatedVideoPosterFallback { background: linear-gradient(135deg, #334155, #0f172a); }
+.relatedVideoPosterFallback { background: linear-gradient(135deg, var(--soft), var(--soft-2)); }
+.relatedVideoMedia.is-cover-unavailable img { display:none; }
+.relatedVideoMedia.is-cover-unavailable { background:var(--soft-2); }
+
+/* Board and trading refresh actions use the same quiet, borderless control. */
+.widgetWorkspace .pageRefreshButton,.portfolioWorkspace .pageRefreshButton {
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border:0;border-radius:4px;background:transparent;padding:4px 0;
+  color:var(--muted);font:inherit;font-size:13px;line-height:20px;white-space:nowrap;cursor:pointer;
+}
+.pageRefreshButton svg { display:block;width:16px;height:16px;flex:none; }
+.widgetWorkspace .pageRefreshButton:hover,.portfolioWorkspace .pageRefreshButton:hover { background:transparent;color:var(--ink); }
+.pageRefreshButton:focus-visible { outline:2px solid var(--accent);outline-offset:4px; }
+.pageRefreshButton:disabled { opacity:.45;cursor:wait; }
 
 .relatedVideoPlay {
   position: absolute;
@@ -2159,7 +2172,7 @@ p {
   height: 48px;
   border: 2px solid rgba(255,255,255,.92);
   border-radius: 999px;
-  background: rgba(15,23,42,.7);
+  background: rgba(0,0,0,.65);
   transform: translate(-50%, -50%);
 }
 
@@ -2179,7 +2192,7 @@ p {
   bottom: 9px;
   padding: 4px 7px;
   border-radius: 6px;
-  background: rgba(15,23,42,.82);
+  background: rgba(0,0,0,.78);
   color: #fff;
   font-size: 12px;
   font-weight: 750;

@@ -134,15 +134,6 @@
     updateCaseTitle(true);
   }
   window.addEventListener("resize", syncCaseOverlay);
-  const icons = [
-    '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>',
-    '<path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>',
-    '<path d="M3 19h18M5 15l5-7 4 4 5-8M5 9l5 4 4-7 5 9"/>',
-    '<path d="M6 3v18M10 5h9M10 12h7M10 19h9"/><circle cx="6" cy="5" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="6" cy="19" r="1"/>',
-    '<rect x="3" y="9" width="6" height="6" rx="1"/><path d="M9 12h5V5h6M14 12h6M14 12v7h6"/>',
-    '<path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="6" width="4" height="7" rx="1"/><rect x="10" y="10" width="4" height="6" rx="1"/><rect x="16" y="5" width="4" height="9" rx="1"/>',
-  ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
-
   // Lucide icon geometry (ISC), with chart-specific group/ring/waterfall/bubble
   // adaptations and play badges; see assets/brands/lucide-LICENSE.txt.
   // Match stable chart IDs, never their position in the gallery.
@@ -166,8 +157,27 @@
     kline: '<path d="M9 5v4"/><rect width="4" height="6" x="7" y="9" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect width="4" height="8" x="15" y="5" rx="1"/><path d="M17 13v3"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/>',
   };
   const reportIcon = '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M972.0832 537.6h-255.488c-3.6864 183.808-46.08 342.0672-107.1616 424.9088a461.056 461.056 0 0 0 362.6496-424.9088z m0-51.2a461.056 461.056 0 0 0-362.6496-424.9088c61.1328 82.8416 103.4752 241.152 107.1104 424.9088h255.5392z m-920.1664 0h255.488c3.6864-183.808 46.08-342.0672 107.1616-424.9088A461.056 461.056 0 0 0 51.9168 486.4z m0 51.2a461.056 461.056 0 0 0 362.6496 424.9088c-61.1328-82.8416-103.4752-241.152-107.1104-424.9088H51.9168z m613.376 0H358.7072C363.8272 782.2336 442.4192 972.8 512 972.8c69.632 0 148.1728-190.5664 153.344-435.2z m0-51.2C660.224 241.7664 581.632 51.2 512 51.2 442.368 51.2 363.8272 241.7664 358.656 486.4h306.688zM512 1024C229.2224 1024 0 794.7776 0 512S229.2224 0 512 0s512 229.2224 512 512-229.2224 512-512 512z"/></svg>';
+  const contentIcons = {
+    video: '<path d="m12.296 3.464 3.02 3.956"/><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m6.18 5.276 3.1 3.899"/>',
+    image: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+    backtest: '<path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/>',
+    ratings: '<path d="M11 13H7"/><path d="M19 9h-4"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="15" y="5" width="4" height="12" rx="1"/><rect x="7" y="8" width="4" height="9" rx="1"/>',
+    event: '<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>',
+    document: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+  };
+  const homeCaseIcons = {
+    "sse-kdj-backtest": "backtest", "midterm-election-1902-2026": "report",
+    "amd-ratings": "ratings", "presidents-sp500": "dynamic_line",
+    "ths-dividends": "timeline", "us-catalysts": "mind_map",
+    "jpm-technical": "kline", "sse-events": "event",
+  };
   const cardIcon = (row, index) => {
-    if (row.category === "reports") {
+    const contentType = row.category === "videos" ? "video" : row.category === "art" ? "image" : homeCaseIcons[row.id];
+    if (contentType && contentType !== "report") {
+      const path = contentIcons[contentType] || visualizationIcons[contentType];
+      return `<span class="caseCardIcon" data-icon="${contentType}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg></span>`;
+    }
+    if (row.category === "reports" || contentType === "report") {
       return `<span class="caseCardIcon" data-icon="report">${reportIcon}</span>`;
     }
     const chartType = row.category === "analysis" ? row.id.replace(/^analysis-/, "") : "";
@@ -180,7 +190,7 @@
     if (row.category === "charts" && row.id.startsWith("business-")) {
       return '<span class="caseCardIcon caseCardBrandIcon" aria-hidden="true"><img src="/static/assets/brands/ainvest.png" alt=""></span>';
     }
-    return `<span class="caseCardIcon">${icons[index % icons.length]}</span>`;
+    return `<span class="caseCardIcon" data-icon="document"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${contentIcons.document}</svg></span>`;
   };
 
   const cardHtml = (row, index) => `

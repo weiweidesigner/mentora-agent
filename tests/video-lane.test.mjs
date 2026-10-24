@@ -1,0 +1,24 @@
+import {readFileSync} from 'node:fs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+const code=source.slice(source.indexOf('function formatVideoDuration('),source.indexOf('function isGeneratedImageArtifact('));
+const cover='https://resources.ainvest.com/iwcprod-crawl-downloader-hub-pod.media/minor-languages-youtube/sample.jpg';
+test('video covers use responsive, lazy WebP thumbnails without changing playback links',()=>{
+ const dom=new JSDOM('<body></body>',{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;
+ w.escapeHtml=value=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;');w.eval(code);
+ const lane=w.buildVideoLane([{title:'Market',coverUrl:cover,videoUrl:'https://cdn.ainvest.com/discovery-video/aigc/123.mp4',url:'https://www.ainvest.com/news/video-test',durationSeconds:64}]);
+ const img=lane.querySelector('img');
+ assert.equal(new URL(img.src).searchParams.get('url'),cover);
+ assert.equal(new URL(img.src).searchParams.get('width'),'384');
+ assert.match(img.srcset,/width=768/);assert.equal(img.getAttribute('loading'),'lazy');assert.equal(img.getAttribute('decoding'),'async');
+ assert.equal(img.getAttribute('width'),'768');assert.equal(img.getAttribute('height'),'432');
+ img.dispatchEvent(new w.Event('error'));assert.ok(img.parentElement.classList.contains('is-cover-unavailable'));
+ lane.querySelector('.relatedVideoMedia').click();
+ const video=w.document.querySelector('video');
+ assert.equal(video.src,'https://cdn.ainvest.com/discovery-video/aigc/123.mp4');assert.match(video.poster,/video-thumbnail/);
+ assert.equal(w.videoCoverThumbnailUrl('https://example.com/cover.jpg'),'https://example.com/cover.jpg');
+ assert.equal(w.videoCoverThumbnailUrl('not a URL'),'');
+ w.close();
+});

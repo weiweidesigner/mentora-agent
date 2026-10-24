@@ -4,6 +4,15 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 
 const source=readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8');
+test('trading and board refresh controls share their glyph and borderless style',()=>{
+ const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
+ const board=html.match(/<button id="widgetRefresh"[^>]*>(<svg[\s\S]*?<\/svg>)/)[1];
+ const portfolio=source.match(/data-pf-action="refresh" class="pageRefreshButton"[^>]*>(<svg[\s\S]*?<\/svg>)/)[1];
+ assert.equal(portfolio,board);
+ assert.match(css,/\.widgetWorkspace \.pageRefreshButton,\.portfolioWorkspace \.pageRefreshButton/);
+ assert.match(css,/border:0;border-radius:4px;background:transparent;padding:4px 0/);
+});
 test('deployed trading UI preserves the latest navigation and strategy save scopes',async()=>{
   const dom=new JSDOM('<main class="shell"><button id="railHome"></button><button id="railWidgets"></button><button id="navWidgets"></button><section id="taskWorkspace"></section><section id="widgetWorkspace"></section></main>',{url:'https://example.com/mentora/?tab=portfolio',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;

@@ -34,6 +34,7 @@ from app.autogen_reasoning import AutoGenPlanningError, complete_text_with_autog
 from app.jev_visualization_router import JevVisualizationRouter, JevVisualizationRouterError
 from app.jev_kline_annotations import normalize_kline_annotations, kline_annotation_style, requested_annotation_type, drawing_style
 from app.business_chart_dependency import load_registry_data
+from app.video_thumbnails import router as video_thumbnail_router
 
 from app.agent_runtime import (
     AgentRun,
@@ -2507,6 +2508,7 @@ PREFERRED_FINANCIAL_VIEWS = ("quarterly", "cumulative", "annual")
 
 
 app = FastAPI(title="Analysis Page Planner Chat")
+app.include_router(video_thumbnail_router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
