@@ -293,7 +293,14 @@ function renderRadar() {
     const hit = el('circle', {cx:x, cy:y, r:14, class:'radar-hit', 'data-axis':axis.key});
     svg.appendChild(point);
     svg.appendChild(hit);
-    const value = el('text', {x, y:y-12, 'text-anchor':'middle', class:'radar-value', 'data-axis':axis.key, 'aria-hidden':'true'});
+    const below = dy > .5;
+    const value = el('text', {
+      x:below ? lx : x,
+      y:below ? Math.max(ly + 22, cy + r * .94 + 12) : y - 12,
+      'text-anchor':below ? (dx > 0 ? 'start' : 'end') : 'middle',
+      'dominant-baseline':below ? 'hanging' : 'auto',
+      class:'radar-value', 'data-axis':axis.key, 'aria-hidden':'true'
+    });
     value.textContent = fmtScore(scores[axis.key]) + ' / 10';
     svg.appendChild(value);
     label.addEventListener('pointerenter', () => activate(index));
