@@ -174,7 +174,7 @@
     const panel=$('dayPanel'),template=document.createElement('template');template.innerHTML=markup;
     if(panel.getAttribute('aria-busy')==='true')panel.classList.add('homeContentReady');
     panel.setAttribute('aria-busy','false');
-    const nextGrid=template.content.querySelector('.daySceneGrid'),grid=panel.querySelector('.daySceneGrid');
+    const nextGrid=template.content.querySelector('.daySceneGrid'),grid=panel.querySelector('.daySceneGrid:not(.homeSkeleton)');
     if(!nextGrid||!grid){panel.replaceChildren(template.content);return;}
     // Keep running card elements mounted so polling cannot restart their edge animations.
     const existing=new Map(Array.from(grid.children).map(card=>[card.dataset.taskOpen,card]));

@@ -26,7 +26,7 @@ for(const fails of [false,true])test(`task skeleton survives header ticks and cl
   const dom=new JSDOM(html,{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;
   w.matchMedia=()=>({matches:false});
   const intervals=[];w.setInterval=fn=>{intervals.push(fn);return intervals.length;};
-  let settle;w.fetch=()=>new Promise((resolve,reject)=>{settle=()=>fails?reject(new Error('offline')):resolve({ok:true,json:async()=>({tasks:[],sceneTasks:[],markets:[{market:'CN',stage:'rest',closed:true}],serverTime:new Date().toISOString()})});});
+  let settle;w.fetch=()=>new Promise((resolve,reject)=>{settle=()=>fails?reject(new Error('offline')):resolve({ok:true,json:async()=>({tasks:[],sceneTasks:[{id:'rest-task',market:'CN',scene:'rest',title:'休市观察',question:'观察市场',enabled:true}],markets:[{market:'CN',stage:'rest',closed:true}],serverTime:new Date().toISOString()})});});
   w.eval(source);
   intervals[0]();
   const panel=w.document.getElementById('dayPanel');
@@ -34,6 +34,7 @@ for(const fails of [false,true])test(`task skeleton survives header ticks and cl
   settle();await tick();
   assert.equal(panel.getAttribute('aria-busy'),'false');
   assert.equal(panel.querySelector('.homeSkeleton'),null);
-  assert.match(panel.textContent,fails?/自动重试/:/暂无任务/);
+  assert.match(panel.textContent,fails?/自动重试/:/休市观察/);
+  assert.equal(panel.querySelectorAll('.homeSkeletonCard').length,0);
   dom.window.close();
 });
