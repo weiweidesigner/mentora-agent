@@ -28,9 +28,9 @@
 * { box-sizing: border-box; }
 html, body {
   width: 100%;
-  height: 100%;
-  min-height: 100%;
-  overflow: hidden;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
 }
 body {
   margin: 0;
@@ -41,12 +41,12 @@ body {
 
 .wrap {
   width: 100%;
-  height: 100vh;
+  height: auto;
   min-height: 0;
   padding: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) 42px;
-  gap: 2px;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
   background: transparent;
   overflow: hidden;
 }
@@ -141,7 +141,8 @@ body {
 
 .chart {
   position: relative;
-  min-height: 0;
+  height: clamp(320px, 32vw, 480px);
+  min-height: 320px;
   background:transparent;
   overflow: visible;
 }
@@ -345,7 +346,8 @@ body {
 .tooltip .t-yoy { font-size:13px; margin-top: 3px; font-weight: 700;line-height:1.5;}
 
 @media (max-width: 860px) {
-  .wrap { padding: 0; grid-template-rows: auto minmax(0, 1fr) 40px; }
+  .wrap { padding: 0; grid-template-rows: auto auto auto; }
+  .chart { height:300px; min-height:300px; }
   .toolbar { min-height: 28px; align-items: flex-start; flex-wrap: wrap; gap: 6px; }
   .legend { order: 3; width: 100%; gap: 10px; font-size:12px; }
   .actions { margin-left: 0; }
