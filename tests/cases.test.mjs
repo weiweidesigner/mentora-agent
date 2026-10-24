@@ -12,7 +12,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   const w = dom.window;
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
   const rows = [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
-  const requests = [], sent = [];
+  const requests = [], sent = [], formatted = [];
   const conversation = w.document.querySelector('main'), input = w.document.querySelector('input'), messages = w.document.querySelector('#messages'), form = w.document.querySelector('form');
   form.requestSubmit = () => sent.push(input.value);
   const context = vm.createContext({window:w, document:w.document, history:w.history, location:w.location, URL, URLSearchParams, structuredClone, performance,
@@ -21,7 +21,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     startNewChat: () => {w.dispatchEvent(new w.Event('veya:chat-navigate')); messages.innerHTML=''; conversation.classList.add('is-empty'); input.value=''; conversation.scrollTop=0;},
     addUserMessage: question => {const el=w.document.createElement('p');el.textContent=question;messages.append(el);},
     createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
-    sanitizeUserFacingInsight: value => value, formatInsight: value => `<p>${value}</p>`,
+    sanitizeUserFacingInsight: value => value, formatInsight: value => {formatted.push(value);return options.formatInsight?.(value) || `<p>${value}</p>`;},
     renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
     fetch: async url => {
       requests.push(url);
@@ -34,7 +34,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     },
   });
   vm.runInContext(source,context);
-  return {w, requests, sent, conversation, messages, startNewChat: context.startNewChat};
+  return {w, requests, sent, formatted, conversation, messages, startNewChat: context.startNewChat};
 }
 test('case replay loads cached conversation without inference; ask fills an editable draft', async () => {
   const h=setup();await tick();
@@ -88,6 +88,13 @@ test('reduced motion shows the complete cached answer immediately', async () => 
   h.w.document.querySelector('.caseCard').click();await tick();
   assert.ok(h.messages.textContent.includes(text));
   assert.equal(h.messages.querySelector('.cachedReplay'),null);
+});
+
+test('case replay formats a loose ordered list as one narrative segment', async () => {
+  const text='1. 第一点\n\n2. 第二点\n\n3. 第三点';
+  const h=setup('https://example.com/',text);await tick();
+  h.w.document.querySelector('.caseCard').click();await tick();
+  assert.ok(h.formatted.includes(text));
 });
 
 test('published home cases have complete answers and portable cached charts', () => {

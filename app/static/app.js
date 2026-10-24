@@ -3865,7 +3865,10 @@ async function renderMixedReportFlow(article, data, container, onDone) {
     container.querySelectorAll(".streamvizFinalSlot").forEach((slot) => {
       const host = slot.streamvizHost;
       // Atomic moves keep the iframe browsing context alive in modern Chrome.
-      if (slot.parentElement.moveBefore) slot.parentElement.moveBefore(host, slot);
+      // A widget shell created during the final handoff is detached even when
+      // the iframe it wraps was previously connected. moveBefore() rejects
+      // that cross-hierarchy insertion, so only use it for connected hosts.
+      if (host.isConnected && slot.parentElement.moveBefore) slot.parentElement.moveBefore(host, slot);
       else slot.parentElement.insertBefore(host, slot);
       slot.remove();
     });
@@ -6134,7 +6137,14 @@ function formatInsight(value) {
       continue;
     }
     if (!line) {
-      flushTextBlocks();
+      flushParagraph();
+      if (listItems.length) {
+        const nextNonEmpty = lines.slice(lineIndex + 1).find((candidate) => String(candidate).trim());
+        const nextLine = String(nextNonEmpty || "").trim();
+        const continuesOrdered = listType === "ol" && /^\d+[.)]\s+/.test(nextLine);
+        const continuesUnordered = listType === "ul" && /^[-*+]\s+/.test(nextLine);
+        if (!continuesOrdered && !continuesUnordered) flushList();
+      }
       continue;
     }
     const nextLine = String(lines[lineIndex + 1] || "").trim();

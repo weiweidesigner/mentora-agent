@@ -247,29 +247,30 @@
         }
         continue;
       }
-      for (const paragraph of part.split(/\n\s*\n/).filter((text) => text.trim())) {
-        if (signal.aborted) return;
-        const block = document.createElement("div");
-        block.className = "streamingAnswer reportInterpretation";
-        block.innerHTML = formatInsight(paragraph);
-        block.querySelectorAll("li,tr,p,h1,h2,h3,h4").forEach((element) => { element.hidden = true; });
-        const walker = document.createTreeWalker(block, window.NodeFilter.SHOW_TEXT);
-        const texts = [];
-        while (walker.nextNode()) {
-          texts.push({ node: walker.currentNode, value: walker.currentNode.textContent });
-          walker.currentNode.textContent = "";
+      if (!part.trim()) continue;
+      if (signal.aborted) return;
+      const block = document.createElement("div");
+      block.className = "streamingAnswer reportInterpretation";
+      // Format the complete narrative segment so loose Markdown lists remain
+      // one list instead of restarting at 1 after every blank line.
+      block.innerHTML = formatInsight(part.trim());
+      block.querySelectorAll("li,tr,p,h1,h2,h3,h4").forEach((element) => { element.hidden = true; });
+      const walker = document.createTreeWalker(block, window.NodeFilter.SHOW_TEXT);
+      const texts = [];
+      while (walker.nextNode()) {
+        texts.push({ node: walker.currentNode, value: walker.currentNode.textContent });
+        walker.currentNode.textContent = "";
+      }
+      flow.append(block);
+      // Reveal the rendered text, preserving links, lists and table markup.
+      for (const { node, value } of texts) {
+        if (value.trim()) {
+          for (let parent = node.parentElement; parent && parent !== block; parent = parent.parentElement) parent.hidden = false;
         }
-        flow.append(block);
-        // Reveal the rendered text, preserving links, lists and table markup.
-        for (const { node, value } of texts) {
-          if (value.trim()) {
-            for (let parent = node.parentElement; parent && parent !== block; parent = parent.parentElement) parent.hidden = false;
-          }
-          for (let end = 12; end < value.length + 12; end += 12) {
-            if (signal.aborted) return;
-            node.textContent = value.slice(0, end);
-            if (!await replayPause(36, signal)) return;
-          }
+        for (let end = 12; end < value.length + 12; end += 12) {
+          if (signal.aborted) return;
+          node.textContent = value.slice(0, end);
+          if (!await replayPause(36, signal)) return;
         }
       }
     }

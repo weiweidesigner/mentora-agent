@@ -4,15 +4,16 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const code=source.slice(source.indexOf('async function renderMixedReportFlow('),source.indexOf('\nfunction sanitizeUserFacingInsight('));
-async function render(data){
+async function render(data,{strictMoveBefore=false}={}){
  const dom=new JSDOM('<article><div class="mixedReport"></div></article>',{url:'https://example.com/mentora/',runScripts:'outside-only'}),w=dom.window;
+ if(strictMoveBefore)w.Element.prototype.moveBefore=function(node,before){if(!node.isConnected)throw new w.DOMException('invalid hierarchy','HierarchyRequestError');this.insertBefore(node,before);};
  w.sanitizeUserFacingInsight=value=>value;w.stripSourceInventoryFromInsight=value=>value;w.prepareInsightForVideos=text=>({text,hadMarker:false});w.buildVideoLane=()=>null;w.attachInlineAnswerSources=()=>{};w.formatInsight=value=>value;w.isGeneratedImageArtifact=()=>false;
  const make=item=>{const frame=w.document.createElement('iframe');frame.dataset.chart=item.url;return frame;};
  w.createStreamVisualizationArtifact=make;w.createArtifactFallbackFrame=make;
  w.eval(source.slice(source.indexOf("const addToWidgetIcon"),source.indexOf("function createArtifactFallbackFrame")));
- w.eval(code);const article=w.document.querySelector('article'),report=article.firstElementChild;
- await w.renderMixedReportFlow(article,data,report);
- return {dom,report};
+ w.eval(code);const article=w.document.querySelector('article'),report=article.firstElementChild;let done=false;
+ await w.renderMixedReportFlow(article,data,report,()=>{done=true;});
+ return {dom,report,done};
 }
 test('deployment prefix mismatch renders adjacent chart markers instead of exposing raw paths',async()=>{
  const s=await render({interpretation:'结论\n[[AIME_CHART:/generated/deal-TLT.html]] [[AIME_CHART:/generated/deal-600018.SH.html]]',reportArtifacts:[{url:'/mentora/generated/deal-TLT.html'},{url:'/mentora/generated/deal-600018.SH.html'}]});
@@ -33,4 +34,8 @@ test('untrusted and unresolved references are not mounted and expose no filesyst
 test('inventory is not automatically mounted without a narrative marker',async()=>{
  const s=await render({interpretation:'只有结论',reportArtifacts:[{url:'/mentora/generated/unused.html'}]});
  assert.equal(s.report.querySelectorAll('iframe').length,0);assert.match(s.report.textContent,/只有结论/);s.dom.window.close();
+});
+test('detached widget shells use normal insertion instead of an invalid atomic move',async()=>{
+ const s=await render({interpretation:'结论\n[[AIME_CHART:/generated/case.html]]',reportArtifacts:[{url:'/generated/case.html'}]},{strictMoveBefore:true});
+ assert.equal(s.report.querySelectorAll('iframe').length,1);assert.equal(s.done,true);s.dom.window.close();
 });
