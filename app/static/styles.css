@@ -3724,8 +3724,9 @@ p {
 :root[data-theme="dark"] .streamingAnswer pre { background: #090c12; color: #e6edf7; }
 :root[data-theme="dark"] .streamingAnswer hr,
 :root[data-theme="dark"] .streamingAnswer .markdownTableWrap,
-:root[data-theme="dark"] .streamingAnswer :is(th, td) { border-color: #334052; }
-:root[data-theme="dark"] .streamingAnswer th { background: #202733; color: #d5ddea; }
+:root[data-theme="dark"] .streamingAnswer :is(th, td) { border-color: #2c2c2c; }
+:root[data-theme="dark"] .streamingAnswer table { color: #d4d4d4; }
+:root[data-theme="dark"] .streamingAnswer th { background: #1c1c1c; color: #e4e4e4; }
 :root[data-theme="dark"] mark { background: #315d52; color: #f5fffc; }
 
 /* Inline source citations live in the chat shell, outside StreamViz reports. */
