@@ -32,7 +32,7 @@ test('conversation visualization gets the requested add-to-widget control and em
   await new Promise(resolve=>w.setTimeout(resolve,0));
   const button=w.document.querySelector('h2 > button');assert(button);let detail;parent.postMessage=data=>detail=data;button.click();
   const actionStyle=w.document.querySelector('[data-widget-title-action-style]').textContent;
-  assert.match(actionStyle,/margin:0 0 0 2px!important/);assert.match(actionStyle,/padding:5px 10px 5px 0!important/);
+  assert.match(actionStyle,/margin:0 0 0 6px!important/);assert.match(actionStyle,/padding:5px 10px 5px 0!important/);
   assert.deepEqual(JSON.parse(JSON.stringify(detail)),{type:'mentora:add-widget',title:'涨跌幅分布'});dom.window.close();
 });
 
@@ -43,7 +43,7 @@ test('presentation runtime replaces the legacy gap without starving the event lo
   w.dispatchEvent(new w.MessageEvent('message',{source:parent,data:{type:'mentora:widget-control'}}));
   await new Promise(resolve=>w.setTimeout(resolve,0));
   const style=w.document.querySelector('[data-widget-title-action-style]'),actionStyle=style.textContent;
-  assert.match(actionStyle,/margin:0 0 0 2px!important/);assert.match(actionStyle,/justify-content:flex-start!important/);dom.window.close();
+  assert.match(actionStyle,/margin:0 0 0 6px!important/);assert.match(actionStyle,/justify-content:flex-start!important/);dom.window.close();
 });
 
  test('fallback replacement still enables the current frame and opens the picker',()=>{
