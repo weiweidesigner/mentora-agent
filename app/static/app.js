@@ -1589,6 +1589,7 @@ function renderStreamAnswerText(article, data = {}) {
       article.dataset.activityInlineExpanded = 'false';
       article.querySelector('.thinkingTrigger')?.setAttribute('aria-expanded', 'false');
       if (typeof activeActivityArticle !== 'undefined' && activeActivityArticle === article) closeActivityDrawer();
+      updateThinkingSummary(article, '', {live:!article.activityEnded});
     }
     syncInlineActivity(article);
   }
@@ -4164,7 +4165,9 @@ function updateThinkingSummary(article, prefix, options = {}) {
     liveElapsed.hidden = !options.live;
     if (options.live) liveElapsed.textContent = `${chinese ? "已处理" : "Worked for"} ${duration}`;
   }
-  target.textContent = options.live
+  // Tool/sidecar events may arrive after the first answer delta. They must
+  // update the activity history, not turn the collapsed header into a live title.
+  target.textContent = options.live && !article.answerTextStarted
     ? String(article.dataset.publicThoughtText || article.dataset.currentThinking || prefix || copyFor(lang, "thinking")).trim()
     : article.dataset.elapsedUnrecorded === "true" ? (chinese ? "查看执行记录" : "View activity")
       : `${chinese ? "已处理" : "Worked for"} ${duration}`;

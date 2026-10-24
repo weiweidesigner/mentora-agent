@@ -31,7 +31,11 @@ with sync_playwright() as p:
                 if(expanded()||a.querySelector('.thinkingTrigger').getAttribute('aria-expanded')!=='false')throw Error('first answer did not collapse immediately');
                 if(!a.querySelector('.thinkingCurrentTool').hidden)throw Error('tool row still visible during answer');
                 if(a.activityEnded)throw Error('collapse prematurely ended run');
+                if(!a.querySelector('.thinkingSummaryText').textContent.startsWith('已处理'))throw Error('first answer retained a live activity title');
                 if(!a.querySelector('.finalAnswer').textContent.includes('已核实结论'))throw Error('answer delayed');
+                const semantics={provider:'local-laya',status:'classified',stage:'inspect-contract'};
+                appendToolStep(a,{tool:'bash',callId:'b',phase:'started',thoughtSummary:'正在确认组件规范与数据契约',activitySemantics:semantics,semanticUpdate:true,params:['true']});
+                if(!a.querySelector('.thinkingSummaryText').textContent.startsWith('已处理'))throw Error('late semantics replaced collapsed duration with a live title');
                 setModelActivity(a,'completed');
                 appendToolStep(a,{tool:'bash',callId:'b',phase:'completed',thoughtSummary:'核对数据',params:['true']});
                 renderPublicProgress(a,{blockId:'p',text:'检查图表'});

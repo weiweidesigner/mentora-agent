@@ -1124,12 +1124,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         if semantics.get('status')=='classified':
             labels=JevToolActivityRouter.SUMMARIES if chinese else JevToolActivityRouter.EN_SUMMARIES
             return labels.get(semantics.get('stage'),'')
-        if semantics.get('status')=='pending':
-            return '正在识别步骤语义' if chinese else 'Identifying the activity'
-        if fallback:
-            if semantics.get('reason')=='laya-not-configured':return fallback
-            return ('工具说明：' if chinese else 'Tool description: ')+fallback
-        return '步骤语义暂不可用' if chinese else 'Activity semantics unavailable'
+        # Classification is an invisible sidecar, not a user-visible activity.
+        # Keep the tool's existing public description until a decision arrives.
+        # Provenance/failure state remains explicit in activitySemantics.
+        return fallback or ''
 
     @staticmethod
     def _compact_codex_tool_observation(value: Any) -> str:
@@ -2044,6 +2042,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "\n\n本 Harness 没有 commentary/final 文本通道，普通 assistant text 会立即作为答案显示。"
             "公开执行进度必须使用原生 report_progress(summary=一句用户语言的行动摘要) 工具，"
             "不得把‘我先确认…’等计划或工具间进度写在普通 assistant text 中，也不要把摘要重复到答案。"
+            "例如告知‘我先确认取数口径’时应调用 report_progress，而不是先输出一句普通文本再调用工具。"
             "已有工具的 description/title 可以说明当前动作，无需为每次工具调用额外调用 report_progress。"
             "只有确有独立进度需要告知时才使用；不包含内部推理、分析结论、命令、路径或原始工具结果。"
             "有依据的结论和解读直接作为普通答案文本输出；图文可以交错，之后调用工具也不会把正文移到思考区。"

@@ -132,6 +132,14 @@ def test_slow_activity_never_delays_final_answer_or_invents_a_laya_result(tmp_pa
         step=[data for kind,data in events if kind=='tool_step'][-1]
         assert step['activitySemantics']['status']=='fallback'
         assert step['activitySemantics']['reason']=='classification-not-ready'
-        assert step['thoughtSummary'].startswith('工具说明：')
+        assert step['thoughtSummary']=='工具本身说明'
         assert any(kind=='final' for kind,data in events)
     finally:gate.set()
+
+
+def test_sidecar_waiting_and_failure_are_not_user_visible_activities():
+    summary=LocalAgentFrameworks._tool_activity_summary
+    for semantics in ({'status':'pending'}, {'status':'fallback','reason':'laya-uncertain'},
+                      {'status':'fallback','reason':'laya-unavailable'}):
+        assert summary(semantics,'检查数据','读取行情契约')=='读取行情契约'
+        assert summary(semantics,'检查数据','')==''
