@@ -69,9 +69,9 @@
     .hover-band.active { opacity: 1; }
     .hover-zone { fill: rgba(0,0,0,.001); pointer-events: all; cursor: pointer; }
     .range-shell {
-      --handle-size: 32px;
+      --handle-size: 24px;
       height: var(--handle-size);
-      margin: 2px 0 0;
+      margin: 8px 0 0;
       padding: 0 calc(var(--handle-size) / 2);
       position: relative;
       touch-action: none;
@@ -105,7 +105,7 @@
       border-radius: 50%;
       border: 1px solid var(--business-border-ddd);
       background:var(--ui-range-handle);
-      box-shadow:0 1px 4px #0003;
+      box-shadow:0 1px 2px #0002;
       display: grid;
       place-items: center;
       cursor: ew-resize;
@@ -115,17 +115,18 @@
       content: "";
       display: block;
       width: 2px;
-      height: 12px;
+      height: 10px;
       background:var(--ui-range-grip);
       border-radius: 2px;
-      box-shadow:-5px 0 0 var(--ui-range-grip),5px 0 0 var(--ui-range-grip);
+      box-shadow:-4px 0 0 var(--ui-range-grip),4px 0 0 var(--ui-range-grip);
     }
     .tooltip {
       --arrow-x: 50%;
       position: fixed;
       pointer-events: none;
       z-index: 50;
-      min-width: 210px;
+      min-width: 200px;
+      max-width: min(280px, calc(100vw - 20px));
       border-radius:6px;
       background:var(--ui-tooltip);
       color:var(--ui-tooltip-text);
@@ -135,7 +136,7 @@
       opacity: 0;
       transition: opacity .08s ease;
       white-space: nowrap;border:0;box-shadow:none;}
-    .tooltip::after {
+    .tooltip::after { display: none;
       content: "";
       position: absolute;
       left: var(--arrow-x);
@@ -147,7 +148,8 @@
       clip-path: polygon(50% 0, 0 100%, 100% 100%);
     }
     .tooltip.visible { opacity: 1; }
-    .tip-title { color:var(--ui-tooltip-text); font-weight: 800; margin-bottom:6px;font-size:13px;line-height:1.5;}
+    .tip-title { color:var(--ui-tooltip-text); font-weight: 500; margin-bottom:6px;font-size:13px;line-height:1.5;}
+    .tip-row + .tip-row { margin-top: 4px; }
     .tip-row { display: flex; justify-content: space-between; align-items: center; gap: 18px;min-height:22px;line-height:1.5;}
     .tip-label { display: inline-flex; align-items: center; gap: 7px; color:var(--ui-tooltip-muted);font-size:13px;line-height:1.5;}
     .tip-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
@@ -159,6 +161,9 @@
       .legend-item { gap: 5px; }
       .dot { width: 8px; height: 8px; }
       .stage { height: 240px; }
+      .range-shell { --handle-size: 20px; }
+      .range-track::before,.range-selection { height: 2px; }
+      .range-handle::before { height: 8px;box-shadow:-3px 0 0 var(--ui-range-grip),3px 0 0 var(--ui-range-grip); }
     }
   </style>
 <script data-business-theme-runtime>
@@ -179,7 +184,7 @@
         <button class="range-handle" id="rightHandle" aria-label="结束周期"></button>
       </div>
     </div>
-    <div class="tooltip" id="tooltip"></div>
+    <div class="tooltip" id="tooltip" data-tooltip-arrow="none"></div>
   </main>
   <script id="payload" type="application/json">{"type": "payout-ratio", "name": "分红率", "title": "苹果分红率创13年新低：利润快增稀释派息", "code": "AAPL", "series": [{"key": "parent_holder_net_profit", "label": "归母净利润", "type": "bar", "color": "#2863f4"}, {"key": "dividend_cash_total", "label": "现金分红总额", "type": "bar", "color": "#39c2e6"}, {"key": "pay_out_ratio", "label": "派息率", "type": "line", "color": "#ff6845"}], "records": [{"label": "2012", "year": "2012", "parent_holder_net_profit": 41.733, "dividend_cash_total": 2.4841259, "pay_out_ratio": 0.05952425897970431}, {"label": "2013", "year": "2013", "parent_holder_net_profit": 37.037, "dividend_cash_total": 10.6151328, "pay_out_ratio": 0.2866088722088722}, {"label": "2014", "year": "2014", "parent_holder_net_profit": 39.51, "dividend_cash_total": 11.11300833, "pay_out_ratio": 0.28127077524677296}, {"label": "2015", "year": "2015", "parent_holder_net_profit": 53.394, "dividend_cash_total": 11.4552574, "pay_out_ratio": 0.2145420346855452}, {"label": "2016", "year": "2016", "parent_holder_net_profit": 45.687, "dividend_cash_total": 11.97590004, "pay_out_ratio": 0.2621292717840961}, {"label": "2017", "year": "2017", "parent_holder_net_profit": 48.351, "dividend_cash_total": 12.56875905, "pay_out_ratio": 0.2599482751132345}, {"label": "2018", "year": "2018", "parent_holder_net_profit": 59.531, "dividend_cash_total": 13.54514147, "pay_out_ratio": 0.2275308909643715}, {"label": "2019", "year": "2019", "parent_holder_net_profit": 55.256, "dividend_cash_total": 13.92889129, "pay_out_ratio": 0.2520792545605907}, {"label": "2020", "year": "2020", "parent_holder_net_profit": 57.411, "dividend_cash_total": 13.85060823, "pay_out_ratio": 0.24125356168678477}, {"label": "2021", "year": "2021", "parent_holder_net_profit": 94.68, "dividend_cash_total": 14.23484443, "pay_out_ratio": 0.15034689934516265}, {"label": "2022", "year": "2022", "parent_holder_net_profit": 99.803, "dividend_cash_total": 14.61854895, "pay_out_ratio": 0.1464740433654299}, {"label": "2023", "year": "2023", "parent_holder_net_profit": 96.995, "dividend_cash_total": 14.82501888, "pay_out_ratio": 0.15284312469714934}, {"label": "2024", "year": "2024", "parent_holder_net_profit": 93.736, "dividend_cash_total": 15.07326667, "pay_out_ratio": 0.16080552477169924}, {"label": "2025", "year": "2025", "parent_holder_net_profit": 112.01, "dividend_cash_total": 15.27629016, "pay_out_ratio": 0.1363832707793947}], "source": {"provider": "AInvest abroad/finance/v2/dividend_programme", "symbol": "AAPL", "unit": {"money": "B USD", "ratio": "ratio"}, "rawExtends": {"market": "185", "sec_id": "S000007526", "code": "AAPL", "org_id": "T000038499", "trade_target": null, "code_hq": "AAPL", "ths_code": "AAPL.O", "category": "usa"}}, "language": "zh-CN", "labels": {"title": "派息率", "series": {"parent_holder_net_profit": "归母净利润", "dividend_cash_total": "现金分红总额", "pay_out_ratio": "派息率"}}, "componentUi": {"Business": "主营业务", "Type": "类型", "Stock": "股票", "Value": "价值", "Dividend": "分红", "Ratio": "占比", "Total": "合计", "range start": "起始周期", "range end": "结束周期", "Payout Ratio": "分红率"}, "theme": "light", "customTitle": "苹果分红率创13年新低：利润快增稀释派息"}</script>
   <script>
@@ -244,26 +249,30 @@
     }
     function rangeIndexFromClientX(clientX) {
       const rect = els.rangeTrack.getBoundingClientRect();
-      const innerLeft = rect.left + 16;
-      const innerWidth = Math.max(1, rect.width - 32);
+      const innerLeft = rect.left;
+      const innerWidth = Math.max(1, rect.width);
       const ratio = Math.max(0, Math.min(1, (clientX - innerLeft) / innerWidth));
       return Math.round(ratio * Math.max(0, records.length - 1));
     }
     function setTooltipPosition(clientX, anchorY) {
-      const margin = 10;
-      const gap = 8;
+      const margin = 10, gap = 16;
       const box = els.tooltip.getBoundingClientRect();
-      const width = box.width || 220;
-      const height = box.height || 90;
-      const left = Math.max(
-        margin,
-        Math.min(window.innerWidth - margin - width, clientX - width / 2)
-      );
-      const top = Math.max(margin, Math.min(window.innerHeight - height - margin, anchorY + gap));
-      const arrowX = Math.max(12, Math.min(width - 12, clientX - left));
+      const stage = els.stage.getBoundingClientRect();
+      const width = box.width || 220, height = box.height || 120;
+      const minLeft = Math.max(margin, stage.left);
+      const maxRight = Math.min(window.innerWidth - margin, stage.right);
+      const rightFits = clientX + gap + width <= maxRight;
+      const leftFits = clientX - gap - width >= minLeft;
+      let left = rightFits ? clientX + gap : leftFits ? clientX - gap - width : clientX - width / 2;
+      left = Math.max(minLeft, Math.min(maxRight - width, left));
+      const minTop = Math.max(margin, stage.top + 8);
+      const maxBottom = Math.min(window.innerHeight - margin, stage.bottom);
+      // Keep the selected point visible. Narrow layouts use the space above/below it.
+      let top = minTop;
+      if (!rightFits && !leftFits) top = anchorY - gap - height >= minTop ? anchorY - gap - height : anchorY + gap;
+      top = Math.max(minTop, Math.min(maxBottom - height, top));
       els.tooltip.style.left = left + 'px';
       els.tooltip.style.top = top + 'px';
-      els.tooltip.style.setProperty('--arrow-x', arrowX + 'px');
     }
     function showTooltip(clientX, anchorY, record) {
       const rows = [`<div class="tip-title">${record.label}</div>`];
@@ -275,6 +284,7 @@
     }
     function hideTooltip() { els.tooltip.classList.remove('visible'); }
     function render() {
+      hideTooltip();
       clear(els.chart);
       const data = visibleRecords();
       const width = Math.max(1, Math.round(els.stage.clientWidth || 900));
@@ -369,8 +379,8 @@
           clearBands();
           hoverBand.classList.add('active');
           const rect = els.chart.getBoundingClientRect();
-          const firstGridY = rect.top + (margin.top / height) * rect.height;
-          showTooltip(rect.left + (cx / width) * rect.width, firstGridY, record);
+          const pointY = line && record[line.key] != null ? ratioY(record[line.key]) : margin.top;
+          showTooltip(rect.left + (cx / width) * rect.width, rect.top + (pointY / height) * rect.height, record);
         };
         zone.addEventListener('pointerenter', activate);
         zone.addEventListener('pointermove', activate);
@@ -399,6 +409,7 @@
         render();
       });
       window.addEventListener('pointerup', () => { state.dragging = null; });
+      window.addEventListener('pointercancel', () => { state.dragging = null; hideTooltip(); });
       els.rangeTrack.addEventListener('pointerdown', event => {
         if (event.target.closest('.range-handle')) return;
         const idx = rangeIndexFromClientX(event.clientX);

@@ -238,6 +238,16 @@ test('key statistics snapshot keeps a populated data-time and financial-basis se
  assert.match(section,/不是实时行情/);
 });
 
+test('payout replay keeps one date note and separates evidence from data limitations',()=>{
+ const cached=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/business-payout_ratio/conversation.json',import.meta.url),'utf8'));
+ const text=cached.answer.interpretation;
+ assert.equal((text.match(/数据日期：2026-10-14/g)||[]).length,1);
+ assert.match(text,/\n## 数据时间与口径\n/);
+ assert.match(text,/\n## 数据范围与限制\n/);
+ assert.ok(text.indexOf('## 数据范围与限制')>text.indexOf('## 数据时间与口径'));
+ assert.ok(!text.startsWith('---'));
+});
+
 test('business case style refresh preserves every snapshot script and financial payload',()=>{
  const records=JSON.parse(readFileSync(new URL('fixtures/business-case-scripts.json',import.meta.url),'utf8'));
  assert.ok(records.length>=40);

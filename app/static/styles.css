@@ -3980,6 +3980,7 @@ p {
 
 .reportTooltipPortal{position:fixed;z-index:2147483647;box-sizing:border-box;pointer-events:none;background:var(--report-tooltip-bg);max-width:calc(100vw - 16px);box-shadow:none}
 .reportTooltipPortal[hidden]{display:none}
+.reportTooltipPortal[data-arrow="none"]::after{display:none}
 .reportTooltipPortal::after{content:"";position:absolute;left:var(--report-tooltip-arrow-x,50%);bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid var(--report-tooltip-bg)}
 .mobileBrand{display:none}
 @media(max-width:760px){
