@@ -30,7 +30,18 @@ test('conversation visualization gets the requested add-to-widget control and em
   assert.equal(w.document.querySelector('button'),null);
   w.dispatchEvent(new w.MessageEvent('message',{source:parent,data:{type:'mentora:widget-control'}}));
   const button=w.document.querySelector('h2 > button');assert(button);let detail;parent.postMessage=data=>detail=data;button.click();
+  const actionStyle=w.document.querySelector('[data-widget-title-action-style]').textContent;
+  assert.match(actionStyle,/margin:0 0 0 2px!important/);assert.match(actionStyle,/padding:5px 10px 5px 0!important/);
   assert.deepEqual(JSON.parse(JSON.stringify(detail)),{type:'mentora:add-widget',title:'涨跌幅分布'});dom.window.close();
+});
+
+test('presentation runtime replaces the legacy wide title-action gap',()=>{
+  const dom=new JSDOM('<head><style data-widget-title-action-style>[data-widget-title-action]{margin-left:10px}</style></head><body><h2>指数表现<button data-widget-title-action></button></h2></body>',{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;
+  const parent={postMessage(){}};Object.defineProperty(w,'parent',{value:parent});
+  w.eval(readFileSync(new URL('../app/static/artifact-presentation.js',import.meta.url),'utf8'));
+  w.dispatchEvent(new w.MessageEvent('message',{source:parent,data:{type:'mentora:widget-control'}}));
+  const actionStyle=w.document.querySelector('[data-widget-title-action-style]').textContent;
+  assert.match(actionStyle,/margin:0 0 0 2px!important/);assert.match(actionStyle,/justify-content:flex-start!important/);dom.window.close();
 });
 
  test('fallback replacement still enables the current frame and opens the picker',()=>{
