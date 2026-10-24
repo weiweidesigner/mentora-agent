@@ -5,52 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A股交易日历</title>
 <style>
+:root{color-scheme:light;--cal-text:#242424;--cal-muted:#777;--cal-faint:#999;--cal-line:#e7e7e7;--cal-control:#f3f3f3;--cal-border:#dedede;--cal-hover:#e9e9e9;--cal-accent:#d94b58}
+:root[data-theme="dark"]{color-scheme:dark;--cal-text:#ececec;--cal-muted:#a0a0a0;--cal-faint:#707070;--cal-line:#2b2b2b;--cal-control:#191919;--cal-border:#383838;--cal-hover:#303030;--cal-accent:#ed6470}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--cal-text:#ececec;--cal-muted:#a0a0a0;--cal-faint:#707070;--cal-line:#2b2b2b;--cal-control:#191919;--cal-border:#383838;--cal-hover:#303030;--cal-accent:#ed6470}}
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:transparent;color:#202938;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+html,body{margin:0;min-height:100%;background:transparent;color:var(--cal-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
 body{padding:0}
 .calendar{width:100%;margin:0;border:0;border-radius:0;box-shadow:none}
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 18px;border-bottom:1px solid #e5e9ef}
+.header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 16px;border-bottom:1px solid var(--cal-line)}
 .heading{min-width:0}
-.eyebrow{margin:0 0 4px;color:#8b95a4;font-size:12px;font-weight:700;letter-spacing:.08em}
-h1{margin:0;font-size:clamp(21px,3vw,28px);line-height:1.25;white-space:nowrap}
-.nav{display:flex;gap:8px}
-.nav button{width:38px;height:38px;border:1px solid #dce2e9;border-radius:10px;background:#fff;color:#2d3745;font-size:25px;line-height:1;cursor:pointer}
-.nav button:hover:not(:disabled){background:#f4f6f9}
-.nav button:focus-visible{outline:3px solid #f5a5ad;outline-offset:2px}
+.eyebrow{margin:0 0 6px;color:var(--cal-muted);font-size:12px;font-weight:400}
+h1{margin:0;color:var(--cal-text);font-size:18px;font-weight:700;line-height:1.4;white-space:nowrap}
+.nav{display:flex;flex:none;gap:8px}
+.nav button{display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid var(--cal-border);border-radius:6px;background:var(--cal-control);color:var(--cal-text);cursor:pointer}
+.nav button svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button:hover:not(:disabled){background:var(--cal-hover)}
+.nav button:focus-visible{outline:2px solid var(--cal-muted);outline-offset:3px}
 .nav button:disabled{opacity:.35;cursor:default}
 .weekdays,.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
-.weekdays{background:transparent;border-bottom:1px solid #e8ecf2}
-.weekdays span{padding:11px 4px;text-align:center;color:#697688;font-size:13px;font-weight:650}
-.days{gap:0;background:transparent}
-.day,.blank{min-height:94px;background:transparent;padding:12px 11px;border-bottom:1px solid #eef0f4}
-.day{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-.number{font-size:23px;line-height:1;font-variant-numeric:tabular-nums;font-weight:600}
-.status{font-size:12px;line-height:1.35;color:#87919e}
-.day.trading .status{color:#d94b58;font-weight:650}
-.day.trading .number{color:#243042}
-.day.closed{background:transparent}
-.day.closed .number{color:#969eaa}
-.day.outside{background:transparent}
-.day.outside .number,.day.outside .status{color:#c2c8d0}
-.day.today .number{display:grid;place-items:center;width:34px;height:34px;margin:-6px 0 -5px -6px;border-radius:10px;background:#d94b58;color:#fff}
-.footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 0;color:#778393;font-size:12px}
-.legend{display:flex;align-items:center;flex-wrap:wrap;gap:14px}
+.weekdays{border-bottom:1px solid var(--cal-line)}
+.weekdays span{padding:12px 4px;text-align:center;color:var(--cal-muted);font-size:13px;font-weight:400}
+.days{gap:0}
+.day,.blank{min-width:0;min-height:82px;padding:12px 4px;border-bottom:1px solid var(--cal-line)}
+.day{display:flex;flex-direction:column;align-items:center;gap:6px}
+.number{display:grid;place-items:center;width:32px;height:32px;color:var(--cal-text);font-size:18px;line-height:1;font-variant-numeric:tabular-nums;font-weight:500}
+.status{font-size:11px;line-height:1.4;color:var(--cal-muted);white-space:nowrap}
+.day.trading .status{color:var(--cal-accent);font-weight:400}
+.day.closed .number{color:var(--cal-muted)}
+.day.outside .number,.day.future .number,.day.future .status{color:var(--cal-faint)}
+.day.today .number{border-radius:6px;background:var(--cal-accent);color:#fff}
+.footer{padding:12px 0 0;color:var(--cal-muted);font-size:11px;line-height:1.5}
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.dot{width:8px;height:8px;border-radius:50%;background:#d94b58}
-.dot.closed-dot{background:#b8c0ca}
-.dot.outside-dot{background:#e2e5e9}
-@media(max-width:600px){.header{padding:0 0 14px}.day,.blank{min-height:72px;padding:9px 5px}.number{font-size:18px}.status{font-size:10px}.weekdays span{font-size:12px}.footer{padding:13px 0}}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--cal-accent)}
+.dot.closed-dot{background:var(--cal-muted)}
+@media(max-width:600px){.header{padding-bottom:14px}h1{font-size:16px}.day,.blank{min-height:68px;padding:8px 2px}.number{font-size:16px;width:28px;height:28px}.status{font-size:10px}.weekdays span{font-size:12px}.footer{font-size:10px}}
 </style>
 </head>
 <body>
 <main class="calendar" aria-label="A股交易日历">
   <div class="header">
     <div class="heading"><p class="eyebrow">A 股市场</p><h1 id="monthTitle" aria-live="polite"></h1></div>
-    <div class="nav"><button id="previous" type="button" aria-label="上一个月">‹</button><button id="next" type="button" aria-label="下一个月">›</button></div>
+    <div class="nav"><button id="previous" type="button" aria-label="上一个月"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button><button id="next" type="button" aria-label="下一个月"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div>
   </div>
   <div class="weekdays" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
   <div id="days" class="days" role="grid" aria-label="交易日历"></div>
-  <div class="footer"><div class="legend"><span><i class="dot"></i>交易日</span><span><i class="dot closed-dot"></i>休市</span><span><i class="dot outside-dot"></i>无数据</span></div><span>接口覆盖：2025-10-14 至 2026-10-14</span></div>
+  <div class="footer"><div class="legend"><span><i class="dot"></i>交易日</span><span><i class="dot closed-dot"></i>休市</span></div></div>
 </main>
 <script>
 (() => {
@@ -81,14 +81,14 @@ h1{margin:0;font-size:clamp(21px,3vw,28px);line-height:1.25;white-space:nowrap}
       const outside = key < first || key > last;
       const trade = !outside && trading.has(key);
       const weekend = new Date(year, month, day).getDay() % 6 === 0;
-      const status = outside ? '无数据' : trade ? '交易日' : weekend ? '周末休市' : '休市';
+      const status = outside ? '' : trade ? '交易日' : weekend ? '周末休市' : '休市';
       const cell = document.createElement('div');
-      cell.className = `day ${outside ? 'outside' : trade ? 'trading' : 'closed'}${key === today ? ' today' : ''}`;
+      cell.className = `day ${outside ? 'outside' : trade ? 'trading' : 'closed'}${key === today ? ' today' : ''}${key > today ? ' future' : ''}`;
       cell.setAttribute('role', 'gridcell');
       cell.setAttribute('aria-label', `${key} ${status}`);
       const number = document.createElement('span'); number.className = 'number'; number.textContent = String(day);
       const label = document.createElement('span'); label.className = 'status'; label.textContent = status;
-      cell.append(number, label); cells.append(cell);
+      cell.append(number); if (status) cell.append(label); cells.append(cell);
     }
     const trailing = (7 - ((leading + count) % 7)) % 7;
     for (let i = 0; i < trailing; i++) {
