@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:pine": "esbuild node_modules/@nullarch/resin/src/index.ts --bundle --platform=node --format=esm --minify --outfile=.dependencies/mentora-deal/app/skills/pine-script/runtime/resin.bundle.mjs",
+    "build:pine": "npm --prefix .dependencies/pine-script-skill run build:runtime",
     "build:streamviz": "vite build --config vite.streamviz.config.js"
   },
   "dependencies": {
@@ -13,7 +13,6 @@
     "streamviz-react": "https://codeload.github.com/weiweidesigner/streamviz/tar.gz/e3a0c79741b3b26510b72e4ec1159237e77ccde0"
   },
   "devDependencies": {
-    "@nullarch/resin": "0.2.2",
     "@vitejs/plugin-react": "^6.1.1",
     "esbuild": "0.28.2",
     "jsdom": "^28.1.0",

@@ -55,6 +55,7 @@ HTML 修复和流式参数归一化由仓库导出的 `normalizeStreamVisualizat
 ```bash
 # 首次安装需要拥有该私有仓库读取权限的 GitHub 凭据
 python3 scripts/sync_business_charts.py
+python3 scripts/sync_pine_script.py
 python3 scripts/sync_data_vis_charts.py
 python3 scripts/sync_data_code_interpreter.py
 python3 scripts/sync_jev_vis_router.py
@@ -292,6 +293,24 @@ python3 scripts/sync_us_market_vedio.py --check
 # 更新锁文件后同步并重启服务
 python3 scripts/sync_us_market_vedio.py --update
 ```
+
+## 独立 Pine Script Skill
+
+Pine 由独立私有仓库 [weiweidesigner/pine-script-skill](https://github.com/weiweidesigner/pine-script-skill)
+维护，`pine-script.lock.json` 固定完整提交；交易仓库不再保存实现副本。
+`app/skills/pine-script` 指向仓库根目录，兼容路径 `app/pine_runtime` 指向其 runtime。
+K线、代码导出与策略适配器继续复用同一实现，不需要账户数据或数据库。
+
+```bash
+python3 scripts/sync_pine_script.py
+python3 scripts/sync_pine_script.py --check
+# 升级必须先提交独立仓库，再更新锁文件：
+python3 scripts/sync_pine_script.py --update
+```
+
+运行时已随独立仓库发布，线上不需要 npm。开发时重建运行时请在依赖仓库运行
+`npm ci && npm run build:runtime`；主项目 `npm run build:pine` 仅转发构建。
+自动部署按所有 lock 文件安装精确版本，新私有仓库需要配置只读拉取权限。
 
 ## 验证
 

@@ -1,0 +1,9 @@
+{
+  "repository":"https://github.com/weiweidesigner/pine-script-skill.git",
+  "revision":"7d438baf9305276118bb118bc40a60ca571ca9db",
+  "checkout":".dependencies/pine-script-skill",
+  "links":{
+    "app/skills/pine-script":".",
+    "app/pine_runtime":"runtime"
+  }
+}

@@ -11,6 +11,19 @@ CODE='//@version=5\nindicator("Skill",overlay=true)\nplot(ta.sma(close,2),title=
 ROWS=[dict(time=1735689600000+i*86400000,open=10+i,high=12+i,low=9+i,close=11+i,volume=1000) for i in range(5)]
 
 
+def test_pine_implementation_is_owned_by_independent_repository():
+    source=Path(capability().__file__).resolve()
+    standalone=ROOT/'.dependencies/pine-script-skill'
+    assert source==standalone/'scripts/pine_script.py'
+    manifest=json.loads((ROOT/'pine-script.lock.json').read_text())
+    assert manifest['repository']=='https://github.com/weiweidesigner/pine-script-skill.git'
+    revision=subprocess.check_output(['git','-C',str(standalone),'rev-parse','HEAD'],text=True).strip()
+    assert manifest['revision']==revision
+    deal=json.loads((ROOT/'mentora-deal.lock.json').read_text())
+    assert 'app/skills/pine-script' not in deal['links'] and 'app/pine_runtime' not in deal['links']
+    assert not (ROOT/'.dependencies/mentora-deal/app/skills/pine-script').exists()
+
+
 def test_agent_registered_execution_and_kline_consumer(tmp_path):
     # User-independent fixtures, never market evidence. Registered output stays
     # under outputs/ per the host runner contract.
