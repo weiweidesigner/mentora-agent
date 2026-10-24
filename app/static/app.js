@@ -67,7 +67,7 @@ generatedImageDialog?.addEventListener("close", () => {
 });
 
 let activeController = null;
-let autoFollow = true;
+let scrollHintFrame = 0;
 let activityAutoFollow = true;
 let activeActivityArticle = null;
 let currentSession = null;
@@ -280,15 +280,24 @@ document.addEventListener("selectstart", (event) => {
   if (!isEditableTarget(event.target)) event.preventDefault();
 });
 
-["wheel", "touchstart"].forEach((eventName) => {
-  messages.addEventListener(
-    eventName,
-    () => {
-      autoFollow = isNearBottom();
-    },
-    { passive: true },
-  );
+messages.addEventListener('scroll', scheduleScrollHint, {passive:true});
+document.querySelector('#scrollToBottomButton')?.addEventListener('click', () => {
+  scrollToLatestContent(matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 });
+// Content growth and artifact resizing update the affordance, never the reader's scroll.
+if (typeof ResizeObserver !== 'undefined') {
+  const observed = new Set();
+  const resize = new ResizeObserver(scheduleScrollHint);
+  resize.observe(messages);
+  const watch = () => {
+    for (const node of observed) if (node.parentElement !== messages) { resize.unobserve(node); observed.delete(node); }
+    for (const node of messages.children) if (!observed.has(node)) { observed.add(node); resize.observe(node); }
+    scheduleScrollHint();
+  };
+  new MutationObserver(watch).observe(messages, {subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','data-thinking-state']});
+  watch();
+}
+window.addEventListener('resize', scheduleScrollHint, {passive:true});
 
 activityBody?.addEventListener(
   "scroll",
@@ -452,9 +461,8 @@ async function submitQuestion(question, options = {}) {
   if (options.userArticle) {
     renderUserMessage(userArticle, question);
     removeMessagesAfter(userArticle);
-    keepScrollPosition(true);
+    scrollToLatestContent('auto');
   }
-  autoFollow = true;
   button.disabled = true;
 
   const assistant = createAssistantMessage(question);
@@ -507,7 +515,7 @@ async function submitQuestion(question, options = {}) {
       activeController = null;
       button.disabled = false;
       updateComposerState();
-      input.focus();
+      input.focus({preventScroll:true});
     }
   }
 }
@@ -1148,9 +1156,11 @@ function withArtifactWidgetControl(node,item={}){
     if(title?.textContent.trim()&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==title){
       if(!doc.querySelector('[data-widget-title-button-style]')){
         const style=doc.createElement('style');style.dataset.widgetTitleButtonStyle='true';
-        style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:center;width:28px;height:28px;margin:0 0 0 4px;padding:5px;border:0;border-radius:6px;background:transparent;color:inherit;opacity:.65;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
+        style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 2px;padding:5px 10px 5px 0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:.65;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
         doc.head.append(style);
       }
+      const tail=title.lastChild;
+      if(tail?.nodeType===Node.TEXT_NODE)tail.textContent=tail.textContent.trimEnd();
       title.style.overflow='visible';title.style.maxHeight='none';title.append(button);
       shell.dataset.artifactTitle=title.textContent.trim();
     }
@@ -1979,10 +1989,10 @@ function setUserBubbleSelection(article, active) {
 }
 
 function appendMessage(article, forceScroll = false) {
-  const shouldStick = forceScroll || isNearBottom();
   conversation.classList.remove("is-empty");
   messages.appendChild(article);
-  keepScrollPosition(shouldStick);
+  if (forceScroll) scrollToLatestContent('auto');
+  else scheduleScrollHint();
 }
 
 function setModelActivity(article, phase) {
@@ -3345,7 +3355,7 @@ function renderFinalAnswer(article, data) {
   renderMixedReportFlow(article, data, finalShell.querySelector(".mixedReport"), revealActions);
   if (!article.taskContext) recordAssistantResult(data);
   syncActivityDrawer(article);
-  if (!article.taskContext) scrollToMessageStart(article);
+  scheduleScrollHint();
 }
 
 function buildShareSessionForArticle(article, data = {}) {
@@ -4899,7 +4909,6 @@ function startNewChat(createSession = false, focusInput = false) {
   clearPendingImages();
   updateComposerState();
   button.disabled = false;
-  autoFollow = true;
   if (focusInput) input.focus();
   else input.blur();
   if (createSession) ensureCurrentSession("");
@@ -6050,24 +6059,36 @@ window.addEventListener("message", (event) => {
   if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${Math.ceil(height)}px`;
 });
 
-function scrollToMessageStart(article) {
-  requestAnimationFrame(() => {
-    messages.scrollTo({
-      top: Math.max(0, article.offsetTop - 14),
-      behavior: "auto",
-    });
-  });
-}
-
 function isNearBottom() {
   return messages.scrollHeight - messages.scrollTop - messages.clientHeight < 140;
 }
 
-function keepScrollPosition(shouldStick) {
-  if (!shouldStick && !autoFollow) return;
-  requestAnimationFrame(() => {
-    messages.scrollTo({ top: messages.scrollHeight, behavior: "auto" });
-  });
+function keepScrollPosition() {
+  scheduleScrollHint();
+}
+
+function scrollToLatestContent(behavior='auto') {
+  requestAnimationFrame(() => { messages.scrollTo({top:messages.scrollHeight,behavior}); scheduleScrollHint(); });
+}
+
+function scheduleScrollHint() {
+  if (scrollHintFrame) return;
+  scrollHintFrame=requestAnimationFrame(() => { scrollHintFrame=0; updateScrollHint(); });
+}
+
+function updateScrollHint() {
+  const hint=document.querySelector('#scrollToBottomButton');
+  if (!hint) return;
+  const unseen=messages.scrollHeight-messages.scrollTop-messages.clientHeight>16;
+  const active=Array.from(messages.querySelectorAll('.message.assistant')).some(article => !article.activityEnded && article.dataset.thinkingState==='active');
+  const chinese=/^zh/.test(normalizeLang(messages.querySelector('.message.assistant:last-child')?.dataset.lang || 'zh-CN'));
+  const label=active ? (chinese?'生成中，点击查看最新内容':'Generating — view latest content') : (chinese?'查看最新内容':'View latest content');
+  hint.hidden=!unseen;
+  hint.classList.toggle('is-loading',active);
+  hint.setAttribute('aria-label',label);
+  hint.title=label;
+  const state=hint.querySelector('.scrollToBottomState');
+  if(state)state.textContent=active?(chinese?'生成中':'Generating'):'';
 }
 
 function formatInsight(value) {
