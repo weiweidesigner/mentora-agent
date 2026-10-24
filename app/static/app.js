@@ -1143,7 +1143,7 @@ function withArtifactWidgetControl(node,item={}){
   shell.dataset.artifactTitle=String(item.title||item.label||'');
   const button=document.createElement('button');button.type='button';button.className='artifactAddToWidget';button.title='添加到 Widget';button.setAttribute('aria-label','添加到 Widget');button.innerHTML=addToWidgetIcon;
   const add=(title,trigger=button)=>window.dispatchEvent(new CustomEvent('mentora:add-artifact-to-widget',{detail:{url:shell.dataset.artifactUrl,title:title||shell.dataset.artifactTitle||'可视化组件',trigger}}));
-  button.addEventListener('click',event=>{event.stopPropagation();add(button.parentElement?.textContent.trim());});
+  button.addEventListener('click',event=>{event.stopPropagation();add(shell.dataset.artifactTitle||button.parentElement?.textContent.trim());});
   shell.append(node);
   const observed=new WeakSet();
   const attachToTitle=(root=shell)=>{
@@ -1153,7 +1153,8 @@ function withArtifactWidgetControl(node,item={}){
     }
     const doc=root.ownerDocument||root;
     const title=root.querySelector('.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
-    if(title?.textContent.trim()&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==title){
+    const actionHost=title?.closest('header')?.querySelector('[data-widget-title-action-anchor]')||title;
+    if(title?.textContent.trim()&&!actionHost.querySelector('[data-widget-title-action]')&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==actionHost){
       if(!doc.querySelector('[data-widget-title-button-style]')){
         const style=doc.createElement('style');style.dataset.widgetTitleButtonStyle='true';
         style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px;padding:5px 10px 5px 0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:.65;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
@@ -1161,7 +1162,7 @@ function withArtifactWidgetControl(node,item={}){
       }
       const tail=title.lastChild;
       if(tail?.nodeType===Node.TEXT_NODE)tail.textContent=tail.textContent.trimEnd();
-      title.style.overflow='visible';title.style.maxHeight='none';title.append(button);
+      title.style.overflow='visible';title.style.maxHeight='none';actionHost.append(button);
       shell.dataset.artifactTitle=title.textContent.trim();
     }
     for(const frame of root.querySelectorAll('iframe')){

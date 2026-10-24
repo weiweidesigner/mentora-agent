@@ -6,6 +6,46 @@ import {JSDOM} from 'jsdom';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const helper=source.slice(source.indexOf('const addToWidgetIcon'),source.indexOf('function createArtifactFallbackFrame'));
 
+test('inline score keeps the host Widget action after the score and preserves its chart title',async()=>{
+  const dom=new JSDOM('<main></main>',{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;w.eval(helper);
+  const chart=w.document.createElement('div');
+  chart.innerHTML='<header><h1 id="title">多维投资评级</h1><span data-widget-title-action-anchor><span>6.46 / 10</span></span></header>';
+  const shell=w.withArtifactWidgetControl(chart,{url:'/generated/radar.html'});w.document.body.append(shell);
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(chart.querySelectorAll('button').length,1);
+  const anchor=chart.querySelector('[data-widget-title-action-anchor]'),button=anchor.lastElementChild;
+  assert(button.matches('button.artifactAddToWidget'));
+  assert.equal(chart.querySelector('h1 button'),null);
+  let detail;w.addEventListener('mentora:add-artifact-to-widget',event=>detail=event.detail);button.click();
+  assert.equal(detail.title,'多维投资评级');assert.equal(detail.url,'/generated/radar.html');
+  dom.window.close();
+});
+
+for(const runtime of ['artifact-widget-control.js','artifact-presentation.js']){
+ test(runtime+' moves an existing action after the inline score without duplicates',async()=>{
+  const dom=new JSDOM('<header><h1 id="title">多维投资评级<button data-widget-title-action></button></h1><span data-widget-title-action-anchor><span>6.46 / 10</span></span></header>',{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;
+  const parent={postMessage(){}};Object.defineProperty(w,'parent',{value:parent});
+  w.eval(readFileSync(new URL('../app/static/'+runtime,import.meta.url),'utf8'));
+  w.dispatchEvent(new w.MessageEvent('message',{source:parent,data:{type:'mentora:widget-control'}}));
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(w.document.querySelectorAll('button').length,1);
+  assert.equal(w.document.querySelector('h1 button'),null);
+  assert(w.document.querySelector('[data-widget-title-action-anchor] > button:last-child'));
+  dom.window.close();
+ });
+ test(runtime+' creates the action after the inline score and keeps the original title',async()=>{
+  const dom=new JSDOM('<header><h1 id="title">多维投资评级</h1><span data-widget-title-action-anchor><span>6.46 / 10</span></span></header>',{url:'https://example.com/',runScripts:'outside-only'}),w=dom.window;
+  const parent={postMessage(){}};Object.defineProperty(w,'parent',{value:parent});
+  w.eval(readFileSync(new URL('../app/static/'+runtime,import.meta.url),'utf8'));
+  w.dispatchEvent(new w.MessageEvent('message',{source:parent,data:{type:'mentora:widget-control'}}));
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  const button=w.document.querySelector('[data-widget-title-action-anchor] > button:last-child');assert(button);
+  let detail;parent.postMessage=data=>detail=data;button.click();
+  assert.equal(detail.title,'多维投资评级');assert.equal(w.document.querySelectorAll('button').length,1);
+  dom.window.close();
+ });
+}
+
 test('conversation visualization gets the requested add-to-widget control and emits its artifact',()=>{
   const dom=new JSDOM('<main></main>',{url:'https://example.com/mentora/',runScripts:'outside-only'}),w=dom.window;
   w.eval(helper);let detail;

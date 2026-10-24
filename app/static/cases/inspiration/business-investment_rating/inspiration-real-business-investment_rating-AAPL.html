@@ -123,8 +123,6 @@ html, body {
 	  .sections { grid-template-columns:1fr; gap:18px; padding-top:14px; }
 }
 .module{width:100%;max-width:none;min-height:0}.header{align-items:center;flex-wrap:wrap;gap:8px 16px}.header>.title,.header>div:first-child:not(.summary){flex:1;min-width:0}.summary{display:flex;align-items:baseline;gap:12px;flex:none}.rating{margin:0;font-size:14px;line-height:1.4}.score strong{font-size:24px}.radar-wrap{width:min(480px,100%);margin:8px auto;aspect-ratio:420/350}.sections{padding-top:12px}.sections::before{display:none}.radar path{stroke-width:4!important}.radar circle[fill="none"]{stroke-width:1.6!important}@media(max-width:720px){.header{flex-direction:row}.header>.title,.header>div:first-child:not(.summary){flex-basis:100%}.summary{gap:12px}.radar-wrap{width:min(400px,100%);margin:4px auto}.sections{padding-top:8px}}
-:root{--ui-tooltip:#3b3b3b;--ui-tooltip-text:#f5f5f5}
-:root[data-theme="dark"]{--ui-tooltip:#303030}
 .header{justify-content:flex-start;align-items:center;gap:8px 12px}
 .header>.title{flex:0 1 auto;min-width:0}
 .header>.score{display:inline-flex;flex:none;gap:5px;margin:0 0 8px;color:var(--business-text-11151c);font-size:18px;font-weight:700;line-height:1.4}
@@ -136,10 +134,8 @@ html, body {
 .radar-point{opacity:0;pointer-events:none}
 .radar-point.is-active{opacity:1}
 .radar-hit{cursor:pointer;fill:transparent;stroke:none}
-.radar-tooltip{position:absolute;z-index:10;pointer-events:none;padding:10px 12px;border-radius:6px;background:var(--ui-tooltip);color:var(--ui-tooltip-text);font-size:13px;line-height:1.5;white-space:nowrap}
-.radar-tooltip[hidden]{display:none}
-.radar-tooltip-row{display:flex;align-items:center;gap:18px;min-height:22px}
-.radar-tooltip strong{font-size:14px;line-height:1.5}
+.radar-value{opacity:0;pointer-events:none;fill:var(--accent);font-size:14px;font-weight:700}
+.radar-value.is-active{opacity:1}
 @media(max-width:720px){.header>.title{flex-basis:auto}.header>.score{font-size:16px}.radar-wrap{margin-top:16px}}
 @media(prefers-reduced-motion:reduce){.radar-label{transition:none}}
 </style>
@@ -153,11 +149,10 @@ html, body {
 <main class="module" data-rating-layout="2">
   <header class="header">
     <h1 class="title" id="title"></h1>
-    <span class="score"><span id="score"></span><span>/ 10</span></span>
+    <span class="score" data-widget-title-action-anchor><span id="score"></span><span>/ 10</span></span>
   </header>
   <div class="radar-wrap">
     <svg id="radar" class="radar" viewBox="0 0 420 350" role="group" aria-label="Investment rating radar"></svg>
-    <aside class="radar-tooltip" id="radar-tip" role="status" hidden></aside>
   </div>
   <section class="sections">
     <div class="section">
@@ -270,25 +265,15 @@ function renderRadar() {
   });
   const path = smoothClosedPath(pts);
   svg.appendChild(el('path', {d:path, fill:'var(--accent-fill)', stroke:'var(--accent)', 'stroke-width':4, 'vector-effect':'non-scaling-stroke', 'stroke-linejoin':'round'}));
-  const tip = $('radar-tip');
-  const wrap = svg.closest('.radar-wrap');
   function reset() {
     svg.querySelectorAll('.radar-label').forEach(node => node.classList.remove('is-muted'));
     svg.querySelectorAll('.radar-point').forEach(node => node.classList.remove('is-active'));
-    tip.hidden = true;
+    svg.querySelectorAll('.radar-value').forEach(node => { node.classList.remove('is-active'); node.setAttribute('aria-hidden','true'); });
   }
   function activate(index) {
-    const axis = axes[index];
     svg.querySelectorAll('.radar-label').forEach((node, i) => node.classList.toggle('is-muted', i !== index));
     svg.querySelectorAll('.radar-point').forEach((node, i) => node.classList.toggle('is-active', i === index));
-    tip.innerHTML = `<div class="radar-tooltip-row"><span>${esc(axis.label)}</span><strong>${esc(fmtScore(scores[axis.key]))} / 10</strong></div>`;
-    tip.hidden = false;
-    const bounds = svg.getBoundingClientRect();
-    const [x, y] = pts[index];
-    const left = x * bounds.width / 420 - tip.offsetWidth / 2;
-    const top = y * bounds.height / 350 - tip.offsetHeight - 12;
-    tip.style.left = `${Math.max(8, Math.min(wrap.clientWidth - tip.offsetWidth - 8, left))}px`;
-    tip.style.top = `${Math.max(8, Math.min(wrap.clientHeight - tip.offsetHeight - 8, top))}px`;
+    svg.querySelectorAll('.radar-value').forEach((node, i) => { node.classList.toggle('is-active', i === index); node.setAttribute('aria-hidden', String(i !== index)); });
   }
   axes.forEach((axis, index) => {
     const [dx, dy] = polar(0, 0, 1, axis.angle);
@@ -308,6 +293,9 @@ function renderRadar() {
     const hit = el('circle', {cx:x, cy:y, r:14, class:'radar-hit', 'data-axis':axis.key});
     svg.appendChild(point);
     svg.appendChild(hit);
+    const value = el('text', {x, y:y-12, 'text-anchor':'middle', class:'radar-value', 'data-axis':axis.key, 'aria-hidden':'true'});
+    value.textContent = fmtScore(scores[axis.key]);
+    svg.appendChild(value);
     label.addEventListener('pointerenter', () => activate(index));
     label.addEventListener('pointerleave', reset);
     label.addEventListener('focus', () => activate(index));
