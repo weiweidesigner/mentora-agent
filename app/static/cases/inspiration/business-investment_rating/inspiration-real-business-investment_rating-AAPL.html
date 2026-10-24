@@ -294,7 +294,7 @@ function renderRadar() {
     svg.appendChild(point);
     svg.appendChild(hit);
     const value = el('text', {x, y:y-12, 'text-anchor':'middle', class:'radar-value', 'data-axis':axis.key, 'aria-hidden':'true'});
-    value.textContent = fmtScore(scores[axis.key]);
+    value.textContent = fmtScore(scores[axis.key]) + ' / 10';
     svg.appendChild(value);
     label.addEventListener('pointerenter', () => activate(index));
     label.addEventListener('pointerleave', reset);
