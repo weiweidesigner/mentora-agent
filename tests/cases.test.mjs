@@ -178,12 +178,13 @@ test('balance sheet case stays aligned with the source controls and dark timelin
  const report=readFileSync(new URL('../app/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html',import.meta.url),'utf8');
  assert.match(report,/<script src="\/static\/cases\/theme\.js"><\/script>/);
  assert.match(report,/\.page-title\[data-business-title\] \{ margin: 0 0 14px !important; \}/);
- assert.match(report,/--control-active-bg:#2a384b;/);
+ assert.match(report,/--control-active-bg:#343434;/);
  assert.match(report,/\.balance-sheet \.metric-tab\.active \{[\s\S]*background: var\(--control-active-bg\) !important;/);
  assert.match(report,/\.balance-sheet \.segment\.active \{[\s\S]*background:var\(--control-active-bg\) !important;/);
- assert.match(report,/--range-track:#273243;/);
- assert.match(report,/--range-selection:#5376a8;/);
- assert.match(report,/--range-handle-bg:#182230;/);
+ assert.match(report,/--range-track:#2b2b2b;/);
+ assert.match(report,/--range-selection:#686868;/);
+ assert.match(report,/--range-handle-bg:#202020;/);
+ assert.match(report,/--range-ring:rgba\(255,255,255,\.06\);/);
  assert.match(report,/\.balance-sheet \.range-track::before \{ background: var\(--range-track\) !important; \}/);
 });
 
