@@ -61,7 +61,7 @@
   },
   {
     "path": "app/static/cases/inspiration/business-insider_trades/inspiration-real-business-insider_trades-aapl-live.html",
-    "scriptsSha256": "32446ed4c3de5a05af9acec5d1e7ee3cc540ae864e91d2a46713e242a1da029a"
+    "scriptsSha256": "6f7f004b204e365f72c185bbe86ea26ba83fda35c0b1e44c73d69d2694fa4b4d"
   },
   {
     "path": "app/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",

@@ -28,14 +28,15 @@ h1{margin:0;color:var(--cal-text);font-size:18px;font-weight:700;line-height:1.4
 .days{gap:0}
 .day,.blank{min-width:0;min-height:82px;padding:12px 4px;border-bottom:1px solid var(--cal-line)}
 .day{display:flex;flex-direction:column;align-items:center;gap:6px}
-.number{display:grid;place-items:center;width:32px;height:32px;color:var(--cal-text);font-size:18px;line-height:1;font-variant-numeric:tabular-nums;font-weight:500}
+.number{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:0;text-align:center;text-indent:0;letter-spacing:0;color:var(--cal-text);font-size:18px;line-height:1;font-weight:500}
+.numberText{display:block;text-align:center;line-height:1;letter-spacing:0}
 .status{font-size:11px;line-height:1.4;color:var(--cal-muted);white-space:nowrap}
 .day.trading .status{color:var(--cal-accent);font-weight:400}
 .day.closed .number{color:var(--cal-muted)}
 .day.outside .number,.day.future .number,.day.future .status{color:var(--cal-faint)}
 .day.today .number{border-radius:6px;background:var(--cal-accent);color:#fff}
 .footer{padding:12px 0 0;color:var(--cal-muted);font-size:11px;line-height:1.5}
-.legend{display:flex;align-items:center;flex-wrap:wrap;gap:16px}
+.legend{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:16px}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--cal-accent)}
 .dot.closed-dot{background:var(--cal-muted)}
@@ -86,7 +87,8 @@ h1{margin:0;color:var(--cal-text);font-size:18px;font-weight:700;line-height:1.4
       cell.className = `day ${outside ? 'outside' : trade ? 'trading' : 'closed'}${key === today ? ' today' : ''}${key > today ? ' future' : ''}`;
       cell.setAttribute('role', 'gridcell');
       cell.setAttribute('aria-label', `${key} ${status}`);
-      const number = document.createElement('span'); number.className = 'number'; number.textContent = String(day);
+      const number = document.createElement('span'); number.className = 'number';
+      const numberText = document.createElement('span'); numberText.className = 'numberText'; numberText.textContent = String(day); number.append(numberText);
       const label = document.createElement('span'); label.className = 'status'; label.textContent = status;
       cell.append(number); if (status) cell.append(label); cells.append(cell);
     }
