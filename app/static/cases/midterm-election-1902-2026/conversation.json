@@ -16,11 +16,11 @@
   },
   "activity": {
     "label": "执行记录",
-    "elapsedMs": 1189020,
+    "elapsedMs": 1189019,
     "steps": [
       {
         "title": "生成中期选举历史研究 HTML 报告",
-        "detail": "结果：完成 1902–2026 年中期选举统计研究，并生成包含 4 张图与 31 次选举附录的 HTML 报告。\n耗时：1189.02 秒",
+        "detail": "调用：custom-html-widget\n结果：完成 1902–2026 年中期选举统计研究，并生成包含 4 张图与 31 次选举附录的 HTML 报告。\n耗时：1189.02 秒",
         "state": "done",
         "elapsedMs": 1189020,
         "durationMs": 1189020,
@@ -30,6 +30,17 @@
     "startedAt": 1792570675821,
     "endedAt": 1792571864840,
     "durationSource": "harness-session-timestamps",
-    "detailSource": "cached-tool-results"
+    "detailSource": "cached-tool-results",
+    "stages": [
+      {
+        "startedAt": 1792570675821,
+        "endedAt": 1792571864840
+      }
+    ]
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "renderer": "custom-html-widget",
+    "sample": false
   }
 }

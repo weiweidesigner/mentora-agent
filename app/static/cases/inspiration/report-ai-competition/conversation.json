@@ -1,0 +1,47 @@
+{
+  "question": "可视化中美大模型的竞争情况",
+  "cachedAt": "2026-10-23T10:41:02.326969+08:00",
+  "answer": {
+    "question": "可视化中美大模型的竞争情况",
+    "interpretation": "**核心判断：中美大模型已进入“同代竞争”，但优势结构并不对称——美国仍握有最强闭源模型和资本投入，中国则在开放权重、成本效率和开发者采用上更强。**\n\n关键证据：\n\n- **能力差距明显收窄。** 斯坦福 HAI《2026 AI Index》显示，截至 2026 年 3 月，美国顶尖模型相对中国的领先幅度仅 **2.7%**；2023 年 5 月这一差距还为 **17.5%–31.6%**。2025 年初以来，中美顶尖模型多次互换领先。\n- **资本差距远大于模型产出差距。** 2025 年美国私人 AI 投资 **2,859 亿美元**，中国 **124 亿美元**，美国约为中国的 **23.1 倍**；但当年“值得注意的模型”数量为美国 **50 个**、中国 **30 个**，仅 **1.7 倍**。\n- **开发者采用出现反向信号。** 截至 2026 年 8 月，中国模型占开发者生成式模型下载的 **41.4%**，美国为 **36.4%**，中国领先 **5.0 个百分点**。开放权重与低价 API 正在把“能力接近”转化为使用量。\n\n[[AIME_CHART:case:inspiration/report-ai-competition/report.html]]\n\n图中最值得关注的是“剪刀差”：**能力差距已压缩到个位数，但资本投入差距仍有 20 多倍**。这说明竞争不再是“美国有、中国没有”，而是两种不同增长方式的较量——美国靠前沿闭源模型、资本和算力堆叠；中国靠开放权重、工程效率和快速迭代，在算力约束下换取开发者采用。\n\n因此，下一阶段更应关注三个指标：**企业付费与收入转化、agentic 任务的可靠性、先进芯片与推理成本约束**，而不是只看单次榜单排名。\n\n**数据时间与口径：** 能力数据截至 2026 年 3 月；投资与模型数为 2025 全年；“值得注意的模型”为 Epoch AI 统计并经 Stanford AI Index 引用；下载份额截至 2026 年 8 月 14 日。不同指标口径不同，不可直接相加；下载份额不等于收入份额或企业生产环境采用率；私人 AI 投资为全 AI 口径，不限于大模型。",
+    "reportArtifacts": [
+      {
+        "path": "case:inspiration/report-ai-competition/report.html",
+        "url": "/static/cases/inspiration/report-ai-competition/report.html"
+      }
+    ],
+    "reportUrl": "/static/cases/inspiration/report-ai-competition/report.html",
+    "sources": [],
+    "videos": [],
+    "actionLinks": [],
+    "lang": "zh-CN",
+    "thinkingElapsed": 205531.170129776
+  },
+  "provenance": {
+    "generation": "actual-veya-chat-stream",
+    "renderer": "render_streamviz.py",
+    "sample": false
+  },
+  "activity": {
+    "label": "执行记录",
+    "elapsedMs": 205531,
+    "startedAt": 1792723056796,
+    "endedAt": 1792723262327,
+    "durationSource": "server-session-timestamps",
+    "detailSource": "cached-conversation",
+    "stages": [
+      {
+        "startedAt": 1792723056796,
+        "endedAt": 1792723262327
+      }
+    ],
+    "steps": [
+      {
+        "title": "生成中美大模型竞争可视化报告",
+        "detail": "调用：bash\n任务：修正口径并重新渲染看板\n结果：回放原始对话中的完整结论与可视化报告。",
+        "state": "done",
+        "elapsedMs": 205531
+      }
+    ]
+  }
+}

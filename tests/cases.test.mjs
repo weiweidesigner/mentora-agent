@@ -273,6 +273,21 @@ test('inspiration categories switch by click and keyboard and replay without inf
   assert.equal(h.w.document.querySelectorAll('main > #inspirationSquare').length,1);
 });
 
+test('report gallery features the requested AI competition and midterm election replays',()=>{
+  const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
+  const reports=catalog.cases.filter(row=>row.category==='reports');
+  assert.deepEqual(reports.map(row=>row.id),['report-ashare','report-ai-competition','midterm-election-1902-2026']);
+  const ai=reports.find(row=>row.id==='report-ai-competition');
+  const cached=JSON.parse(readFileSync(new URL('../app'+ai.conversationUrl,import.meta.url),'utf8'));
+  assert.equal(cached.question,'可视化中美大模型的竞争情况');
+  assert.match(cached.answer.interpretation,/同代竞争/);
+  assert.match(cached.answer.interpretation,/41\.4%/);
+  const report=readFileSync(new URL('../app'+cached.answer.reportUrl,import.meta.url),'utf8');
+  assert.match(report,/能力在收敛/);
+  assert.match(report,/投入与生态在分化/);
+  assert.ok(!JSON.stringify(cached).includes('/home/ubuntu/'));
+});
+
 test('all inspiration cards have portable, non-empty caches and complete component coverage', () => {
   const root=new URL('../app/static/cases/inspiration/',import.meta.url);
   const catalog=JSON.parse(readFileSync(new URL('manifest.json',root),'utf8'));
@@ -323,7 +338,7 @@ test('gallery summaries and replay questions are readable product copy',()=>{
     assert.notEqual(row.tag,'实际生成');
     assert.doesNotMatch(row.question,/\.py|--query|--output|outputs\/|buildVideoLane|不要|真实数据|实际生成/);
     assert.ok(row.question.length<100,row.id);
-    const cached=JSON.parse(readFileSync(new URL(row.id+'/conversation.json',root),'utf8'));
+    const cached=JSON.parse(readFileSync(new URL('../app'+row.conversationUrl,import.meta.url),'utf8'));
     assert.equal(cached.question,row.question);
     assert.equal(cached.answer.question,row.question);
     assert.doesNotMatch(cached.answer.interpretation,/outputs\/|payload\.json|执行说明|实际生成产物|--sample|组件字段|financial_reports_visual\/|All charts render/);

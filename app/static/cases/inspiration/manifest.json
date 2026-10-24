@@ -1233,30 +1233,30 @@
       "mobileTitle": "A股市场报告"
     },
     {
-      "id": "report-amd",
-      "title": "AMD 分析师共识报告",
-      "tag": "公司研究",
-      "question": "帮我梳理 AMD 的业绩、分析师共识和目标价分歧，做成一页报告。",
-      "preview": "结合财报、分析师预期与股价走势，梳理 AMD 的增长动力和估值风险。",
-      "cachedDate": "2026-10-14",
-      "conversationUrl": "/static/cases/inspiration/report-amd/conversation.json",
+      "id": "report-ai-competition",
+      "title": "中美大模型竞争格局",
+      "tag": "AI 研究",
+      "question": "可视化中美大模型的竞争情况",
+      "preview": "对比模型能力、资本投入与开发者采用，观察中美大模型的竞争优势与生态分化。",
+      "cachedDate": "2026-10-23",
+      "conversationUrl": "/static/cases/inspiration/report-ai-competition/conversation.json",
       "category": "reports",
       "featured": true,
       "generation": "actual-veya-chat-stream",
-      "mobileTitle": "AMD 共识报告"
+      "mobileTitle": "中美大模型竞争"
     },
     {
-      "id": "report-us-premarket",
-      "title": "美股盘前速览",
-      "tag": "盘前观察",
-      "question": "帮我看看今天美股盘前有什么值得关注的",
-      "preview": "汇总宏观数据、银行财报与 AI 芯片动态，对照盘前定价和开盘后表现，梳理观察重点。",
-      "cachedDate": "2026-10-14",
-      "conversationUrl": "/static/cases/inspiration/report-us-premarket/conversation.json",
+      "id": "midterm-election-1902-2026",
+      "title": "中期选举与美股走势",
+      "tag": "历史研究",
+      "question": "从1900年到现在，每次中期选举前，最低点出现在几月，选举后行情如何，选举结果对行情走势是否有显著影响，分析完写一个html报告",
+      "preview": "回看 31 次中期选举，检验低点月份、选举后收益与选举结果对美股走势的影响。",
+      "cachedDate": "2026-10-21",
+      "conversationUrl": "/static/cases/midterm-election-1902-2026/conversation.json",
       "category": "reports",
       "featured": true,
       "generation": "actual-veya-chat-stream",
-      "mobileTitle": "美股盘前速览"
+      "mobileTitle": "中期选举与美股"
     },
     {
       "id": "video-ai",
