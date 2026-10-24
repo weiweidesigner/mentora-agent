@@ -208,7 +208,8 @@
   function taskControl(kind,action){const task=sopTask(kind);if(!task)return;if(action==='toggle'&&sopControlPending.has(kind))return;if(action==='toggle')sopControlPending.add(kind);window.dispatchEvent(new CustomEvent('veya:day-task-control',{detail:{taskId:task.id,action,complete:async result=>{sopControlPending.delete(kind);if(action==='toggle')message(result?.enabled?'任务已开始，后续会按计划执行':'任务已暂停，当前排队或执行已取消');else message('定时任务设置已保存');await load();},fail:error=>{sopControlPending.delete(kind);message(error?.message||'定时任务操作失败');render();}}}));}
   function decisionList(records){return `<div class="pfTableWrap"><table class="pfTable pfDecisionTable"><thead><tr><th>标的</th><th>类型 / 判断</th><th>判断依据</th><th>置信度</th><th>分析时间</th><th>执行状态</th><th></th></tr></thead><tbody>${records.map(d=>`<tr><td><b>${esc(d.symbol)}</b><small>${esc(d.name||d.evidence?.quote?.name||'')}</small></td><td>${d.kind==='risk'?'持仓风险':'买入机会'}<small>${esc(actionLabel(d))}</small></td><td class="pfDecisionReason">${esc(d.reason||'等待证据')}</td><td>${d.confidence==null?'—':num(d.confidence*100,1)+'%'}</td><td>${d.sourceTaskId?`<a class="pfLink" href="${esc(taskHref({id:d.sourceTaskId,runId:d.sourceRunId}))}">${date(d.created)}</a>`:date(d.created)}</td><td>${esc(executionLabel(d))}</td><td><button data-pf-detail="${esc(d.id)}">查看详情</button></td></tr>`).join('')}</tbody></table></div>`;}
   function decisions(){const all=flow?.decisions||[],records=all.filter(d=>filter==='all'||d.kind===filter);const tasks=(flow?.tasks||[]).filter(t=>['analysis','risk'].includes(t._portfolioKind));return`${sopGraph()}<div class="pfActions" style="justify-content:space-between;margin-bottom:16px"><div class="pfMuted">${all.filter(d=>d.kind==='entry').length} 条机会判断 · ${all.filter(d=>d.kind==='risk').length} 条风险判断</div></div><div class="pfAnalysisStatus">${tasks.map(t=>`<span>${t._portfolioKind==='analysis'?'机会分析':'风险监控'} · ${t.activeRun?'更新中':t.lastRun?.status==='failed'?'执行失败':t.successAt?date(t.successAt):'等待首次结果'}</span>`).join('')}<span>${flow?.executionMode==='automatic'?'JEV 决策后自动执行':'JEV 决策后逐笔确认'}</span></div><div class="pfFilter"><select id="pfDecisionFilter" aria-label="筛选决策"><option value="all">全部决策</option><option value="entry" ${filter==='entry'?'selected':''}>买入机会</option><option value="risk" ${filter==='risk'?'selected':''}>持仓风险</option></select></div>${records.length?card('机会判断列表',decisionList(records)):card('机会分析与 JEV 决策',empty('定时任务正在汇集候选与证据','事件任务和量化回测任务的标的进入候选池后，JEV 才会形成买入判断。持仓建立后将自动加入风险监控。'))}`;}
-  let strategyDraft=null,strategySelected='',strategyStream=null,strategySaving=false,strategyStatus='';
+  let strategyDraft=null,strategySelected='',strategyStream=null,strategySaving=false,strategyStatus='',strategyPreview='';
+  const strategyExpanded=new Set(),strategyCompleted=new Set();
   function strategyConfig(){
     if(!strategyDraft){const cfg=flow?.strategies||{enabled:['trend','reversion']};
       strategyDraft={enabled:[...(cfg.enabled||[])],customStrategies:JSON.parse(JSON.stringify(cfg.customStrategies??(cfg.customCode||cfg.enabled?.includes('custom')?[{id:'custom',name:cfg.customName||'自定义策略',code:cfg.customCode||'',description:''}]:[])))};
@@ -221,50 +222,56 @@
     const choices=Object.entries(names).filter(([id])=>['trend','reversion','momentum','breakout','ma_cross','rsi_reversal','volume_breakout','pullback'].includes(id));
     return card('策略配置',`<form id="pfStrategyForm" class="pfStrategyForm" data-strategy-id="${esc(strategySelected)}">
       <h3>内置策略</h3><div class="pfStrategyChoices">${choices.map(([id,title])=>`<label class="pfStrategyOption"><input type="checkbox" name="enabled" value="${id}" ${cfg.enabled.includes(id)?'checked':''} ${locked?'disabled':''}><span><strong>${esc(title)}</strong></span></label>`).join('')}</div>
-      <div class="pfStrategySectionHead"><h3>自定义策略 <small class="pfMuted">${cfg.customStrategies.length} / 20</small></h3><button type="button" data-pf-strategy="add" ${locked||cfg.customStrategies.length>=20?'disabled':''}>＋ 添加策略</button></div>
+      <div class="pfStrategySectionHead"><h3>自定义策略 <small class="pfMuted">${cfg.customStrategies.length} / 20</small></h3><div class="pfActions"><button type="button" data-pf-strategy="add" ${locked||cfg.customStrategies.length>=20?'disabled':''}>＋ 添加策略</button><button type="button" data-pf-strategy="remove" ${locked||!selected?'disabled':''}>删除策略</button></div></div>
       ${cfg.customStrategies.length?`<div class="pfStrategyWorkspace">
         <div class="pfStrategyList" aria-label="自定义策略列表">${cfg.customStrategies.length?cfg.customStrategies.map(s=>`<div class="pfStrategyListRow ${s.id===strategySelected?'is-selected':''}"><input type="checkbox" name="enabled" value="${esc(s.id)}" aria-label="启用 ${esc(s.name)}" ${cfg.enabled.includes(s.id)?'checked':''} ${locked?'disabled':''}><button type="button" data-pf-strategy-select="${esc(s.id)}" aria-pressed="${s.id===strategySelected}" ${locked?'disabled':''}>${esc(s.name||'未命名策略')}</button></div>`).join(''):'<p class="pfSubtle">还没有自定义策略。点击添加，用自然语言描述你的交易规则。</p>'}</div>
         <div class="pfStrategyEditor">${selected?`
           <label class="pfCodeField"><span>策略名称</span><input name="strategyName" maxlength="60" required value="${esc(selected.name)}" ${locked?'disabled':''}></label>
-          <label class="pfCodeField"><span>用自然语言描述策略</span><textarea name="strategyDescription" maxlength="4000" rows="4" placeholder="例如：收盘价站上20日均线且RSI低于70时买入，跌破20日均线时卖出。" ${locked?'disabled':''}>${esc(selected.description||'')}</textarea></label>
-          <div class="pfActions"><button type="button" class="pfPrimary" data-pf-strategy="generate" ${locked?'disabled':''}>${strategyStream?'正在生成…':selected.code?'按描述重新生成':'生成策略代码'}</button>${strategyStream?'<button type="button" data-pf-strategy="cancel">停止生成</button>':''}</div>
-          <label class="pfCodeField"><textarea name="customCode" aria-label="策略编辑器" maxlength="12000" rows="15" spellcheck="false" placeholder="生成的代码将在这里逐步显示。" ${locked?'readonly':''}>${esc(selected.code||'')}</textarea></label>
-          <div class="pfActions"><button type="button" data-pf-strategy="remove" ${locked?'disabled':''}>删除此策略</button><button class="pfPrimary" type="button" data-pf-strategy="save-custom" ${locked?'disabled':''}>${strategySaving?'正在保存…':'保存配置'}</button></div>
+          <label class="pfCodeField"><span>策略逻辑</span><textarea name="strategyDescription" maxlength="4000" rows="${strategyExpanded.has(selected.id)?2:4}" placeholder="描述你的策略逻辑，比如“目前处于筑底，有望回升”" ${locked?'disabled':''}>${esc(selected.description||'')}</textarea></label>
+          ${strategyExpanded.has(selected.id)?`<label class="pfCodeField pfPineCode"><span>${selected.code?.startsWith('//@version=5')||strategyStream?'Pine Script v5':'策略代码'}</span><textarea name="customCode" aria-label="策略编辑器" maxlength="12000" rows="16" spellcheck="false" readonly placeholder="生成的代码将在这里逐步显示。">${esc(strategyStream?strategyPreview:selected.code||'')}</textarea></label>`:''}
+          <div class="pfActions pfStrategyBottom"><button type="button" class="pfPrimary" data-pf-strategy="generate" ${locked?'disabled':''}>${strategyStream?'正在生成…':strategyCompleted.has(selected.id)?'重新生成':'生成 PineScript'}</button>${strategyStream?'<button type="button" data-pf-strategy="cancel">停止生成</button>':''}${selected.code&&!strategyStream?`<button type="button" data-pf-strategy="copy">复制代码</button>${!strategyExpanded.has(selected.id)?'<button type="button" data-pf-strategy="show-code">查看代码</button>':''}`:''}</div>
         `:'<div class="pfEmpty"><strong>创建你的策略</strong>添加多个策略，分别编辑并选择是否启用。</div>'}</div>
       </div>`:'<div class="pfStrategyEmpty"><strong>还没有自定义策略</strong><p>可以使用上方内置策略，也可以点击“添加策略”，创建自己的交易规则。</p></div>'}
       <p id="pfStrategyStatus" ${strategyStatus?'':'hidden'} class="pfSubtle" role="status" aria-live="polite">${esc(strategyStatus)}</p>
-    </form>`,'',`<button class="pfPrimary" type="submit" form="pfStrategyForm" ${locked?'disabled':''}>${strategySaving?'正在保存…':'保存方案'}</button>`);
+    </form>`);
   }
   function captureStrategies(){
     if(!strategyDraft)return;
     const form=$('pfStrategyForm');if(!form||strategyStream||strategySaving)return;
     strategyDraft.enabled=[...form.querySelectorAll('[name=enabled]:checked')].map(el=>el.value);
     const selected=strategyDraft.customStrategies.find(s=>s.id===strategySelected);
-    if(selected&&form.dataset.strategyId===selected.id&&form.elements.strategyName){selected.name=form.elements.strategyName.value;selected.description=form.elements.strategyDescription.value;selected.code=form.elements.customCode.value;}
+    if(selected&&form.dataset.strategyId===selected.id&&form.elements.strategyName){selected.name=form.elements.strategyName.value;selected.description=form.elements.strategyDescription.value;}
   }
   function cancelStrategyStream(){
     if(!strategyStream)return;
-    strategyStream.abort();strategyStream=null;strategyStatus='生成已停止，草稿未保存；可继续编辑或重新生成。';
+    strategyStream.abort();strategyStream=null;strategyPreview='';strategyStatus='已停止接收生成结果。';
   }
   async function strategyAction(action){
     if(action==='cancel'){cancelStrategyStream();render();return;}
-    if(action==='save-custom'){await saveCustomStrategy();return;}
     if(strategyStream||strategySaving)return;
     captureStrategies();const cfg=strategyConfig(),selected=cfg.customStrategies.find(s=>s.id===strategySelected);
+    if(action==='copy'&&selected){try{await navigator.clipboard.writeText(selected.code);}catch{message('复制失败，请展开代码后手动复制');}return;}
+    if(action==='show-code'&&selected){strategyExpanded.add(selected.id);render();return;}
     if(action==='add'){
       if(cfg.customStrategies.length>=20)return;
       const id='custom:'+crypto.randomUUID();cfg.customStrategies.push({id,name:'自定义策略 '+(cfg.customStrategies.length+1),description:'',code:''});cfg.enabled.push(id);strategySelected=id;strategyStatus='';render();$('pfStrategyForm')?.elements.strategyDescription?.focus();
     }else if(action==='remove'&&selected){
-      if(!window.confirm('删除此策略？保存配置后生效，不会删除已有回测和交易记录。'))return;
-      cfg.customStrategies=cfg.customStrategies.filter(s=>s.id!==selected.id);cfg.enabled=cfg.enabled.filter(id=>id!==selected.id);strategySelected=cfg.customStrategies[0]?.id||'';strategyStatus='已从配置中移除“'+(selected.name||'未命名策略')+'”，点击“保存配置”后生效。';render();
+      if(!window.confirm('删除此策略？不会删除已有回测和交易记录。'))return;
+      const payload=strategyPayload();payload.customStrategies=payload.customStrategies.filter(s=>s.id!==selected.id);payload.enabled=payload.enabled.filter(id=>id!==selected.id);
+      if(!payload.enabled.length){message('至少保留一个启用的策略');return;}
+      strategySaving=true;render();
+      try{flow.strategies=await api('/strategies','PUT',payload);cfg.customStrategies=cfg.customStrategies.filter(s=>s.id!==selected.id);cfg.enabled=cfg.enabled.filter(id=>id!==selected.id);strategySelected=cfg.customStrategies[0]?.id||'';strategyStatus='';}
+      catch(error){strategyStatus=error.message;}
+      finally{strategySaving=false;render();}
     }else if(action==='generate'&&selected){await generateStrategy(selected);}
   }
   async function generateStrategy(selected){
     if((selected.description||'').trim().length<2){message('请先用自然语言描述策略规则');return;}
-    const controller=new AbortController();strategyStream=controller;strategyStatus='正在连接模型，代码将流式显示…';render();
-    let reader,received=false,complete=false;
+    if(!selected.name.trim()){message('请填写策略名称');return;}
+    const controller=new AbortController();strategyStream=controller;strategyPreview='';strategyExpanded.add(selected.id);strategyStatus='正在连接模型…';render();
+    let reader,complete=false;
     try{
-      const response=await fetch('/api/portfolio/strategies/generate',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Portfolio':'1'},body:JSON.stringify({description:selected.description,code:selected.code}),signal:controller.signal});
+      const response=await fetch('/api/portfolio/strategies/generate',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Portfolio':'1'},body:JSON.stringify({id:selected.id,name:selected.name.trim(),description:selected.description,code:selected.code,enabled:strategyConfig().enabled.includes(selected.id)}),signal:controller.signal});
       if(!response.ok){const error=await response.json();throw Error(typeof error.detail==='string'?error.detail:'生成请求失败，请重试');}
       if(!response.body)throw Error('浏览器不支持流式响应');
       reader=response.body.getReader();const decoder=new TextDecoder();let buffer='';
@@ -277,17 +284,17 @@
           const line=frame.split('\n').filter(l=>l.startsWith('data:')).map(l=>l.slice(5).trimStart()).join('\n');if(!line)continue;
           const event=JSON.parse(line);
           if(event.type==='error')throw Error(event.message);
-          if(event.type==='delta'){if(!received){selected.code='';received=true;}selected.code+=event.text;if(selected.code.length>12000)throw Error('生成代码超出长度限制');const editor=$('pfStrategyForm')?.elements.customCode;if(editor){editor.value=selected.code;editor.scrollTop=editor.scrollHeight;window.MentoraCodeEditor?.sync(editor);}strategyStatus='正在生成策略代码…';if($('pfStrategyStatus'))$('pfStrategyStatus').textContent=strategyStatus;}
-          if(event.type==='complete'){selected.code=event.code;complete=true;}
+          if(event.type==='delta'){strategyPreview+=event.text;if(strategyPreview.length>12000)throw Error('生成代码超出长度限制');const editor=$('pfStrategyForm')?.elements.customCode;if(editor){editor.value=strategyPreview;editor.scrollTop=editor.scrollHeight;window.MentoraCodeEditor?.sync(editor);}strategyStatus='正在生成策略代码…';if($('pfStrategyStatus'))$('pfStrategyStatus').textContent=strategyStatus;}
+          if(event.type==='complete'){if(!event.settings)throw Error('生成结果缺少保存确认');selected.code=event.code;flow.strategies=event.settings;strategyCompleted.add(selected.id);complete=true;}
         }
-        if(chunk.done)break;
+        if(complete||chunk.done)break;
       }
       if(!complete)throw Error('连接中断，代码未通过完整校验，请重新生成或编辑');
-      strategyStatus='生成完成，已通过代码语法与受限规则校验；请检查并保存。';
-    }catch(error){if(strategyStream===controller)strategyStatus=error.name==='AbortError'?'生成已停止，草稿未保存':error.message+'（草稿未保存）';}
+      strategyStatus='';
+    }catch(error){if(strategyStream===controller)strategyStatus=error.name==='AbortError'?'已停止接收生成结果。':error.message+'；请重试，未收到保存确认。';}
     finally{
       try{await reader?.cancel();}catch{}
-      if(strategyStream===controller){strategyStream=null;render();}
+      if(strategyStream===controller){strategyStream=null;strategyPreview='';render();}
     }
   }
   function favoritesView(){const items=flow?.favorites||[];return card('自选股票',`<form id="pfFavoriteForm" class="pfFavoriteForm"><div class="pfFavoriteAdd"><label id="pfFavoriteField" class="pfFavoriteField"><span class="srOnly">公司名称或代码</span><input id="pfFavoriteSymbol" name="symbol" maxlength="80" autocomplete="off" placeholder="输入公司名称或代码" required></label><button type="button" data-pf-action="refresh">刷新行情</button><button class="pfPrimary" type="submit">添加自选</button></div></form>${items.length?`<div class="pfTableWrap"><table class="pfTable pfFavoriteTable"><thead><tr><th>标的</th><th>最新价</th><th>涨跌幅</th><th>行情时间</th><th></th></tr></thead><tbody>${items.map(item=>{const q=item.quote,localNameFirst=/\.(SH|SZ|BJ|HK)$/.test(item.symbol),asset=localNameFirst?`<b>${esc(item.name||item.symbol)}</b><small>${esc(item.symbol)}</small>`:`<b>${esc(item.symbol)}</b><small>${esc(item.name||item.symbol)}</small>`,price=q?`${esc(q.nativeCurrency||q.currency||'USD')} ${num(q.nativePrice??q.price,4)}`:'—',change=q?.changePct==null?'—':`${num(q.changePct,2)}%`,time=q?(q.dateOnly?esc(q.priceDate)+' 收盘':date(q.priceAt)):'—';return`<tr><td class="pfFavoriteAsset"><a class="pfLink pfFavoriteLink" href="${esc(item.tradingViewUrl)}" target="_blank" rel="noopener noreferrer">${asset}<span class="srOnly">TradingView</span></a></td><td>${price}</td><td class="${tone(q?.changePct)}">${change}</td><td>${time}</td><td><button type="button" data-pf-favorite-remove="${esc(item.symbol)}">移除</button></td></tr>`;}).join('')}</tbody></table></div>`:empty('还没有自选股','添加后会在下一轮 Mentora Deal 中优先进入量化回测和 JEV 决策。')}`)}
@@ -364,28 +371,21 @@
   workspace.addEventListener('click',e=>void click(e));dialog.addEventListener('click',e=>void click(e));
   workspace.querySelector('.pfTabs').addEventListener('keydown',e=>{const tabs=[...workspace.querySelectorAll('.pfTabs button')],i=tabs.indexOf(document.activeElement);if(i<0||!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();tabs[next].click();});
 
-  workspace.addEventListener('change',e=>{if(e.target.id==='pfDecisionFilter'){filter=e.target.value;render();}});
-  async function saveCustomStrategy(){
+  workspace.addEventListener('change',e=>{if(e.target.id==='pfDecisionFilter'){filter=e.target.value;render();}if(e.target.closest('#pfStrategyForm')&&e.target.name==='enabled')void saveStrategies();});
+  function strategyPayload(){
+    const cfg=strategyConfig(),saved=flow?.strategies||{enabled:['trend','reversion'],customStrategies:[]};
+    const custom=JSON.parse(JSON.stringify(saved.customStrategies??(saved.customCode?[{id:'custom',name:saved.customName||'自定义策略',code:saved.customCode,description:''}]:[])));
+    const valid=new Set([...Object.keys(names),...custom.map(s=>s.id)]);
+    const drafts=new Set(cfg.customStrategies.filter(s=>!custom.some(x=>x.id===s.id)).map(s=>s.id));
+    return {enabled:cfg.enabled.filter(id=>valid.has(id)&&!drafts.has(id)),customStrategies:custom};
+  }
+  async function saveStrategies(){
     if(strategyStream||strategySaving)return;
-    captureStrategies();const cfg=strategyConfig(),selected=cfg.customStrategies.find(item=>item.id===strategySelected);
-    if(!selected)return;
-    if(!selected.name.trim()||!selected.code.trim()){message('请填写当前策略的名称与代码');return;}
-    const payload=JSON.parse(JSON.stringify(flow?.strategies||{enabled:['trend','reversion'],customStrategies:[]}));
-    payload.customStrategies=Array.isArray(payload.customStrategies)?payload.customStrategies:[];
-    const index=payload.customStrategies.findIndex(item=>item.id===selected.id);
-    if(index<0)payload.customStrategies.push({...selected});else payload.customStrategies[index]={...selected};
+    captureStrategies();const cfg=strategyConfig(),payload=strategyPayload();
+    if(!payload.enabled.length){cfg.enabled=[...(flow?.strategies?.enabled||[])];strategyStatus='至少保留一个启用的已保存策略';render();return;}
     strategySaving=true;strategyStatus='';render();
     try{flow.strategies=await api('/strategies','PUT',payload);}
-    catch(error){strategyStatus=error.message;message(error.message);}
-    finally{strategySaving=false;render();}
-  }
-  async function saveStrategies(form){
-    if(strategyStream||strategySaving)return;captureStrategies();const cfg=strategyConfig();
-    if(!cfg.enabled.length){message('至少选择一个回测策略');return;}
-    if(cfg.customStrategies.some(s=>!s.name.trim()||!s.code.trim())){message('请为每个自定义策略填写名称与代码，或删除空白草稿');return;}
-    strategySaving=true;render();
-    try{const saved=await api('/strategies','PUT',cfg);flow.strategies=saved;strategyDraft=null;strategyStatus='';}
-    catch(error){strategyStatus=error.message;message(error.message);}
+    catch(error){cfg.enabled=[...(flow?.strategies?.enabled||[])];strategyStatus=error.message;}
     finally{strategySaving=false;render();}
   }
   async function submit(e){if(e.target.id==='pfIdeaForm'){e.preventDefault();const input=e.target.elements.question,question=input.value.trim();if(question.length<2)return;input.value='';$('railHome')?.click();window.dispatchEvent(new CustomEvent('aime:streamviz-followup',{detail:{prompt:question,agent:'mentora-deal'}}));return;}if(e.target.id==='pfStrategyForm'){e.preventDefault();await saveStrategies(e.target);return;}if(e.target.id==='pfProfileForm'){e.preventDefault();if(profileSaving)return;profileSaving=true;const form=e.target,button=form.querySelector('[type=submit]');button.disabled=true;try{const saved=await api('/workflow/profile','PUT',(()=>{const f=new FormData(form),number=k=>f.get(k)===''?null:Number(f.get(k));return {profile:f.get('profile')||'',investment:{markets:f.getAll('markets'),styles:f.getAll('styles'),horizon:f.get('horizon')||'',targetReturnPct:number('targetReturnPct'),maxDrawdownPct:number('maxDrawdownPct'),confidenceThresholdPct:number('confidenceThresholdPct')}};})());flow.preferences={...flow.preferences,...saved};if(dialog.open)dialog.close();await load();message('交易偏好已保存，下一轮 JEV 决策将使用新置信度门槛');}catch(error){message(error.message);}finally{profileSaving=false;button.disabled=false;render();}return;}if(e.target.id==='pfSettingsForm'){e.preventDefault();const f=new FormData(e.target),settings={};for(const key of ['maxPositionPct','riskPct','reservePct','stopPct','slippageBps','fee'])settings[key]=Number(f.get(key));settings.automatic=f.get('automatic')==='on';const b=e.target.querySelector('[type=submit]');b.disabled=true;try{await api('/settings','PUT',settings);dialog.close();await load();message('账户设置已保存');}catch(error){message(error.message);b.disabled=false;}}}

@@ -247,6 +247,9 @@ class CustomStrategyInput(BaseModel):
 
 
 class StrategyGenerationInput(BaseModel):
+    id: str = Field(pattern=r'^custom(?::[A-Za-z0-9_-]{1,64})?$')
+    name: str = Field(min_length=1,max_length=60)
+    enabled: bool = True
     description: str = Field(min_length=2,max_length=4000)
     code: str = Field(default='',max_length=12000)
 
@@ -840,13 +843,15 @@ def create_router(service):
 
     @router.post('/strategies/generate')
     def generate_strategy(payload:StrategyGenerationInput,request:Request,response:Response):
-        owner(request,response,True)
+        owner_id=owner(request,response,True)
         if len(payload.description.strip())<2:raise HTTPException(422,'请描述你的策略规则')
         def events():
             from app.portfolio_strategies import stream_strategy
             try:
                 yield 'data: '+json.dumps(dict(type='start'))+'\n\n'
                 for event in stream_strategy(payload.description.strip(),payload.code):
+                    if event.get('type')=='complete':
+                        event=dict(event,settings=service.workflow.save_generated_strategy(owner_id,payload.model_dump(),event['code']))
                     yield 'data: '+json.dumps(event,ensure_ascii=False)+'\n\n'
             except ValueError as error:
                 yield 'data: '+json.dumps(dict(type='error',message=str(error)),ensure_ascii=False)+'\n\n'

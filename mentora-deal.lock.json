@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/mentora-deal.git",
-  "revision": "16c397ae424bcb948551b1e27bfdf1a01197ce5a",
+  "revision": "0613ce9b0c5883301c764f2116966252e8600420",
   "checkout": ".dependencies/mentora-deal",
   "links": {
     ".agents/skills/portfolio-account": ".agents/skills/portfolio-account",
@@ -12,6 +12,8 @@
     ".agents/skills/portfolio-technical": ".agents/skills/portfolio-technical",
     "app/portfolio.py": "app/portfolio.py",
     "app/portfolio_backtest.py": "app/portfolio_backtest.py",
+    "app/portfolio_pine.py": "app/portfolio_pine.py",
+    "app/pine_runtime": "app/pine_runtime",
     "app/portfolio_data.py": "app/portfolio_data.py",
     "app/portfolio_jev.py": "app/portfolio_jev.py",
     "app/portfolio_laya.py": "app/portfolio_laya.py",
@@ -31,6 +33,9 @@
     "app/static/portfolio.js": "app/static/portfolio.js",
     "docs/portfolio.md": "docs/portfolio.md",
     "tests/portfolio.test.mjs": "tests/portfolio.test.mjs",
+    "tests/portfolio-pine.test.mjs": "tests/portfolio-pine.test.mjs",
+    "tests/test_portfolio_pine.py": "tests/test_portfolio_pine.py",
+    "tests/test_portfolio_strategies.py": "tests/test_portfolio_strategies.py",
     "tests/test_portfolio.py": "tests/test_portfolio.py",
     "tests/test_portfolio_laya.py": "tests/test_portfolio_laya.py",
     "tests/test_portfolio_research.py": "tests/test_portfolio_research.py",

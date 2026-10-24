@@ -31,11 +31,12 @@ test('deployed trading UI preserves the latest navigation and strategy save scop
     assert.equal(d.querySelector('[data-pf-view=decisions]'),null);
     d.querySelector('[data-pf-view=strategies]').click();
     const savePlan=d.querySelector('.pfCardHead button[form=pfStrategyForm]');
-    assert.equal(savePlan?.textContent,'保存方案');
+    assert.equal(savePlan,null);
     const saveCustom=d.querySelector('[data-pf-strategy=save-custom]');
-    assert.equal(saveCustom?.textContent,'保存配置');
-    assert.equal(saveCustom.previousElementSibling?.textContent,'删除此策略');
-    assert.equal(saveCustom.type,'button');
+    assert.equal(saveCustom,null);
+    assert.equal(d.querySelector('textarea[name=customCode]'),null);
+    assert.equal(d.querySelector('[data-pf-strategy=add]').nextElementSibling.textContent,'删除策略');
+    d.querySelector('[data-pf-strategy=show-code]').click();
     assert.equal(d.querySelector('textarea[name=customCode]').getAttribute('aria-label'),'策略编辑器');
     assert.doesNotMatch(d.querySelector('#pfPanel').textContent,/新策略尚未保存|修改将在保存后生效|全部策略已保存/);
     d.querySelector('[data-pf-view=profile]').click();
