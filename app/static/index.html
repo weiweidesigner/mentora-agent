@@ -194,7 +194,7 @@
       </section>
       <section id="widgetWorkspace" class="widgetWorkspace" aria-label="Widget 看板" hidden>
         <header class="widgetTopbar"><div id="widgetTabs" class="widgetBoardTabs" role="tablist" aria-label="Widget 页签"></div><button id="widgetNew" type="button" aria-label="新建 Widget" title="新建 Widget">＋</button><div id="widgetBoardTitle" hidden>我的 Widget</div><div class="widgetTopActions">
-          <div class="widgetRefreshControl"><time id="widgetLastRefresh" aria-live="polite">进入看板时间</time><button id="widgetRefresh" type="button" aria-label="刷新当前看板" title="重新获取当前看板组件的数据"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.1A8 8 0 0 1 19.6 10M4.4 14a8 8 0 0 0 13.5 3.9"/></svg><span>刷新</span></button></div>
+          <div class="widgetRefreshControl"><time id="widgetLastRefresh" aria-live="polite">上次刷新 --</time><button id="widgetRefresh" type="button" aria-label="刷新当前看板" title="重新获取当前看板组件的数据"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.1A8 8 0 0 1 19.6 10M4.4 14a8 8 0 0 0 13.5 3.9"/></svg><span>刷新</span></button></div>
           <button id="widgetSidebarLibrary" type="button">组件库</button><button id="widgetManageOpen" type="button">我的 Widget</button></div><button id="widgetChatToggle" hidden></button><button id="widgetLibraryOpen" hidden></button><button id="widgetRename" hidden></button><button id="widgetDelete" hidden></button></header>
         <div id="widgetScroll" class="widgetScroll"><div id="widgetCanvas" class="widgetCanvas"></div><div id="widgetEmpty" class="widgetEmpty" hidden><div class="widgetWelcome"><img class="widgetWelcomeLogo" src="/static/assets/mentora-logo.svg?v=20261015-neutral" alt="Mentora" width="72" height="72"><h2>我是 Mentora Widget</h2><p>可以帮你创建你的分析看板</p><div class="widgetSuggestions" aria-label="创建看盘推荐问句"><button type="button" data-widget-prompt="帮我创建一个 A 股看盘看板，跟踪贵州茅台、宁德时代和比亚迪。把行情列表、K 线趋势和技术分析放在一起，用于比较个股涨跌是否共振，以及趋势强弱是否分化。">A 股涨跌是否共振？创建行情与趋势对比看板</button><button type="button" data-widget-prompt="帮我创建一个美股科技对比看板，关注苹果、微软和英伟达。组合行情列表、K 线图、技术分析与基本面数据，从价格趋势、技术强弱和财务表现三个角度进行跟踪。">美股科技谁更强？对比走势、技术信号与财报</button><button type="button" data-widget-prompt="帮我创建一个港股看盘看板，关注腾讯、阿里巴巴和美团。组合行情列表、K 线图、技术分析和新闻，跟踪价格反弹是否延续，以及消息面与技术走势是否一致。">港股反弹能否持续？跟踪趋势与最新消息</button><button type="button" data-widget-prompt="帮我创建一个加密货币看盘看板，关注比特币和以太坊。组合行情走势、技术分析、加密货币热力图和市场列表，用来跟踪两者强弱轮动及整体市场热度。">比特币与以太坊谁更强？观察轮动与市场热度</button></div></div></div></div>
 
@@ -304,7 +304,7 @@
     <script src="/static/widget-symbol-picker.js?v=20261016-keyword-names"></script>
     <script src="/static/chart-activation.js?v=20261016-click-activate"></script>
     <script src="/static/widget-recommendations.js?v=20261016-click-send"></script>
-    <script src="/static/widgets.js?v=20261023-compact-board-picker"></script>
+    <script src="/static/widgets.js?v=20261024-page-refresh-time"></script>
     <script src="/static/day-tasks.js?v=20261022-paused-run-now"></script>
     <script src="/static/strategy-code-editor.js?v=20261023-syntax"></script>
     <script src="/static/portfolio.js?v=20261024-backtest-stats-history-v1"></script>

@@ -105,14 +105,14 @@ test('refresh reruns all sources, keeps layout and records a persistent all-succ
   assert.match(JSON.parse(requests[0].options.body).question,/用户提供的2026年Q1收入100/);
   assert.match(JSON.parse(requests[0].options.body).question,/使用原数据重渲染/);
   const board=s.board();assert.equal(board.cards.length,2);assert.equal(board.cards[1].id,'c');assert.equal(board.cards[1].title,'收入对比');assert.equal(board.cards[1].x,6);
-  assert(board.lastRefreshedAt);assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/最近刷新/);
+  assert(board.lastRefreshedAt);assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^上次刷新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   const stored=s.stored();s.dom.window.close();
-  const next=setup({boards:stored.boards});assert.equal(next.board().lastRefreshedAt,board.lastRefreshedAt);assert.match(next.d.querySelector('#widgetLastRefresh').textContent,/最近刷新/);next.dom.window.close();
+  const next=setup({boards:stored.boards});assert.equal(next.board().lastRefreshedAt,board.lastRefreshedAt);assert.match(next.d.querySelector('#widgetLastRefresh').textContent,/^上次刷新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);next.dom.window.close();
 });
 
-test('an unrefreshed board shows this visit time and generic charts suppress only their inner title',()=>{
+test('an unrefreshed board shows the page refresh time and generic charts suppress only their inner title',()=>{
   const s=setup({cards:[card(),card('streamviz','sv')]});
-  assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^进入看板 \d{2}:\d{2}:\d{2}$/);
+  assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^上次刷新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
   const frames=[...s.d.querySelectorAll('.widgetCard iframe')];
   assert.equal(new URL(frames[0].src).searchParams.get('widgetTitle'),'0');
   assert.equal(new URL(frames[1].src).searchParams.has('widgetTitle'),false);
@@ -166,5 +166,5 @@ test('switching boards during refresh never attaches results or timestamp to the
   s.d.querySelector('#widgetRefresh').click();await tick();
   s.d.querySelector('#widgetManageOpen').click();s.d.querySelector('[data-manage-open="other"]').click();release();await tick();await tick();
   assert.equal(s.stored().activeId,'other');assert.equal(s.stored().boards.find(b=>b.id==='other').cards.length,0);
-  assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^进入看板 \d{2}:\d{2}:\d{2}$/);assert(s.board().lastRefreshedAt);s.dom.window.close();
+  assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^上次刷新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);assert(s.board().lastRefreshedAt);s.dom.window.close();
 });

@@ -19,8 +19,8 @@
   let selectedCardId="", openIds=[], editingCardId='', draggingTab='', pendingArtifact=null;
   let defaultsVersion=0,defaultsLoading=false,initialEmptyId='';
   let generationCatalog=[],generationCatalogLoaded=false;
-  const refreshingBoards=new Set(), enteredAtByBoard=new Map();
-  const markBoardEntered=id=>{if(id)enteredAtByBoard.set(id,new Date());};
+  const refreshingBoards=new Set(), pageRefreshedAt=new Date();
+  const refreshTime=value=>`${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')} ${String(value.getHours()).padStart(2,'0')}:${String(value.getMinutes()).padStart(2,'0')}`;
   const componentFor=id=>generationCatalog.find(c=>c.id===id)||catalog.find(c=>c.id===id);
   async function ensureGenerationCatalog(){await ensureCatalog();if(!generationCatalogLoaded){const response=await fetch('/api/widgets/generation-catalog');if(!response.ok)throw Error('组件能力暂不可用，请重试。');generationCatalog=await response.json();generationCatalogLoaded=true;}}
   function renderRefresh(){
@@ -29,11 +29,10 @@
     button.disabled=!board?.cards.length||busy;button.classList.toggle('is-refreshing',refreshingBoards.has(board?.id));
     button.setAttribute('aria-busy',String(refreshingBoards.has(board?.id)));
     button.querySelector('span').textContent=refreshingBoards.has(board?.id)?'刷新中':'刷新';
-    const refreshed=new Date(board?.lastRefreshedAt||'');let entered=enteredAtByBoard.get(board?.id);
-    if(!entered){entered=new Date();if(board)enteredAtByBoard.set(board.id,entered);}
-    const hasRefresh=!Number.isNaN(refreshed.getTime()),shown=hasRefresh?refreshed:entered;
-    time.textContent=(hasRefresh?'最近刷新 ':'进入看板 ')+shown.toLocaleTimeString('zh-CN',{hour12:false});
-    time.title=hasRefresh?'最近一次全量刷新成功：'+shown.toLocaleString('zh-CN',{hour12:false}):'本次进入看板：'+shown.toLocaleString('zh-CN',{hour12:false});
+    const refreshed=new Date(board?.lastRefreshedAt||'');
+    const shown=Number.isNaN(refreshed.getTime())?pageRefreshedAt:refreshed;
+    time.textContent='上次刷新 '+refreshTime(shown);
+    time.title='上次页面刷新：'+refreshTime(shown);
     time.dateTime=shown.toISOString();
   }
   const trashIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M966.128 181.12H840.96c-0.168 0-0.32-0.096-0.488-0.096-0.16 0-0.312 0.096-0.48 0.096H184.064c-0.176 0-0.32-0.096-0.48-0.096-0.16 0-0.304 0.096-0.48 0.096H57.872a32.6 32.6 0 1 0 0 65.208h93.104v651.928c0 69.32 56.392 125.744 125.712 125.744h470.688c69.32 0 125.712-56.424 125.712-125.744V246.328h93.04a32.6 32.6 0 1 0 0-65.208z m-158.256 717.136c0 33.376-27.136 60.528-60.504 60.528H276.688c-33.352 0-60.496-27.16-60.496-60.528V246.328h591.68v651.928z"/><path d="M346.488 814.744a32.608 32.608 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24a32.6 32.6 0 0 0 32.608 32.616zM512 814.744a32.6 32.6 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24A32.6 32.6 0 0 0 512 814.744zM677.544 814.744a32.584 32.584 0 0 0 32.6-32.608V422.888c0-18.008-14.576-32.6-32.6-32.6s-32.608 14.592-32.608 32.6v359.24a32.592 32.592 0 0 0 32.608 32.616zM318.848 157.6a32.608 32.608 0 0 0 32.608-32.6c0-23.808 64.048-59.792 160.576-59.792 96.512 0 160.544 35.984 160.544 59.792a32.6 32.6 0 0 0 32.608 32.6 32.592 32.592 0 0 0 32.6-32.6C737.792 53.736 640.736 0 512.032 0 383.312 0 286.24 53.736 286.24 125a32.608 32.608 0 0 0 32.608 32.6z"/></svg>`;
@@ -265,7 +264,7 @@
     for(const id of ['navHome','navTasks','railHome','railTasks']){$(id)?.classList.remove('is-selected','is-active');$(id)?.removeAttribute('aria-current');}
     for(const id of ['navWidgets','railWidgets']){$(id)?.classList.add(id==='navWidgets'?'is-selected':'is-active');$(id)?.setAttribute('aria-current','page');}
     if(typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
-    markBoardEntered(activeId);route(push);render();void ensureDefaultBoards();
+    route(push);render();void ensureDefaultBoards();
   }
   function leave() {workspace.hidden=true;$('widgetSidebar').hidden=true;shell.classList.remove('widgets-view');for(const id of ['navWidgets','railWidgets']){$(id)?.classList.remove('is-selected','is-active');$(id)?.removeAttribute('aria-current');}}
   async function ensureCatalog(){if(!catalog.length){const response=await fetch('/static/widget-catalog.json');if(!response.ok)throw Error('金融图表库暂不可用。');catalog=await response.json();}}
@@ -585,7 +584,7 @@
     selectedCardId='';if(nameAction==='new'){const board={id:uid(),title,cards:[],messages:[]};boards.push(board);openIds.push(board.id);activeId=board.id;}else if(current())current().title=title;
     save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
   });
-  function activateBoard(id){if(!boards.some(b=>b.id===id))return;if(!openIds.includes(id))openIds.push(id);activeId=id;markBoardEntered(id);selectedCardId='';save();route();render();}
+  function activateBoard(id){if(!boards.some(b=>b.id===id))return;if(!openIds.includes(id))openIds.push(id);activeId=id;selectedCardId='';save();route();render();}
   function closeTab(id){const index=openIds.indexOf(id);openIds=openIds.filter(value=>value!==id);if(activeId===id)activeId=openIds[Math.min(index,openIds.length-1)]||'';selectedCardId='';save();route();render();}
   function deleteBoard(id){const board=boards.find(b=>b.id===id);if(!board||isSystemBoard(board))return;if(!confirm(`删除「${board.title}」及其中的图表？`))return;jobs.get(id)?.abort();commandControllers.get(id)?.abort();boards=boards.filter(b=>b.id!==id);closeTab(id);renderManager();}
   function renderManager(){$('widgetManagerList').innerHTML=boards.length?boards.map(board=>`<div class="widgetManagerRow"><button type="button" data-manage-open="${esc(board.id)}"><strong>${esc(board.title)}${isSystemBoard(board)?'（系统看板）':''}</strong><small>${board.cards.length} 张图表${openIds.includes(board.id)?' · 已打开':''}</small></button>${isSystemBoard(board)?'':`<button type="button" data-manage-delete="${esc(board.id)}" aria-label="删除 ${esc(board.title)}" title="删除">${trashIcon}</button>`}</div>`).join(''):'<p>还没有保存的 Widget</p>';}
