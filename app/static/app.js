@@ -1107,7 +1107,7 @@ function installReportTooltipPortal(frame) {
     const dx = Math.abs(event.clientX - gesture.x), dy = Math.abs(event.clientY - gesture.y);
     if(gesture.direction==="pending"&&Math.max(dx,dy)>6)gesture.direction=dx>=dy?"horizontal":"vertical";
     gesture.currentX=event.clientX;
-    if(gesture.direction==="horizontal"&&activeReportTooltip?.frame===frame&&reportTooltipPortal){
+    if(gesture.direction==="horizontal"&&activeReportTooltip?.frame===frame&&reportTooltipPortal&&reportTooltipPortal.dataset.arrow!=="none"){
       const anchor=frame.getBoundingClientRect().left+event.clientX,width=reportTooltipPortal.offsetWidth;
       const left=Math.max(8,Math.min(window.innerWidth-width-8,anchor-width/2));
       reportTooltipPortal.style.left=left+"px";

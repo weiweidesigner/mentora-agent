@@ -11,5 +11,10 @@ for(const arrow of ['bottom','none'])test(`lifted multi-series tooltip preserves
  w.eval(runtime);w.installReportTooltipPortal(frame);tip.classList.add('visible');await new Promise(resolve=>setTimeout(resolve,50));
  const portal=w.document.querySelector('.reportTooltipPortal');assert.ok(portal&&!portal.hidden);const rows=portal.children[1];assert.equal(rows.style.flexDirection,'column');assert.equal(rows.children.length,6);assert.equal(rows.children[0].style.gridTemplateColumns,'minmax(48px,1fr) max-content');assert.ok(parseFloat(portal.style.top)>=168);assert.equal(tip.style.visibility,'hidden');
  assert.equal(portal.dataset.arrow,arrow);assert.equal(rows.children[0].style.minHeight,'22px');assert.equal(portal.firstElementChild.style.fontWeight,'500');
+ if(arrow==='none'){
+  const left=portal.style.left;
+  for(const [type,x] of [['pointerdown',80],['pointermove',140]]){const event=new w.Event(type,{bubbles:true});Object.assign(event,{pointerType:'touch',clientX:x,clientY:50});doc.dispatchEvent(event);}
+  assert.equal(portal.style.left,left,'side-positioned tooltips must not recenter over the touch target');
+ }
  w.dismissReportTooltip();assert.equal(portal.hidden,true);frame.reportTooltipCleanup();dom.window.close();
 });
