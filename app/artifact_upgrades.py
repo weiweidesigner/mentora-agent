@@ -225,6 +225,33 @@ def upgrade_native_chart_scroll(artifact: str) -> str:
     return artifact.replace(old, new).replace(html.escape(old, quote=True), html.escape(new, quote=True))
 
 
+def upgrade_native_kline_pine(artifact: str, depth: int = 0) -> str:
+    """Add the native Pine bridge to old saved charts, without touching their data.
+
+    Only known native Canvas hooks are patched, all-or-nothing. Third-party charts
+    and unmatched versions stay intact. Nested srcdocs keep their original markup.
+    """
+    import html
+    if depth>4:return artifact
+    def child(match):
+        original=html.unescape(match.group(2))
+        updated=upgrade_native_kline_pine(original,depth+1)
+        return match.group(0) if updated==original else match.group(1)+html.escape(updated,quote=True)+match.group(3)
+    artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
+    if 'id="kline-canvas"' not in artifact:return artifact
+    bridge=(Path(__file__).parent/'skills/business-chart-recall/assets/kline-pine-bridge.js').read_text(encoding='utf-8')
+    def script(match):
+        body=match.group(0)
+        if "root.dataset.pineBridge = '1'" in body or "getElementById('kline-canvas')" not in body:return body
+        hooks=[("  const tooltip = document.getElementById('kline-tooltip');", "  const tooltip = document.getElementById('kline-tooltip');\n"+bridge),
+               ('    const priceScale = scale(minP, maxP, main.y + 16, main.h - 20);', '    pineRange(slice.start,slice.end).forEach(value=>{minP=Math.min(minP,value);maxP=Math.max(maxP,value);});\n    const priceScale = scale(minP, maxP, main.y + 16, main.h - 20);'),
+               ('    lastRenderState = { layout, all, slice, main, xOf, priceScale };', '    lastRenderState = { layout, all, slice, main, xOf, priceScale };\n    drawPineLayer(lastRenderState);')]
+        if not all(old in body for old,_ in hooks):return body
+        for old,new in hooks:body=body.replace(old,new,1)
+        return body
+    return re.sub(r'<script\b[^>]*>.*?</script\s*>',script,artifact,flags=re.S|re.I)
+
+
 def upgrade_legacy_mobile_charts(artifact: str, theme: str) -> str:
     """Repair saved native layouts without changing their data or custom marks."""
     if 'class="payout-ratio"' in artifact and 'data-mobile-layout="2"' not in artifact:

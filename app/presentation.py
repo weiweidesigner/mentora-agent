@@ -32,7 +32,7 @@ try:
 except ModuleNotFoundError as exc:
     if exc.name != 'app.cost_monitor':raise
     create_cost_router=None
-from app.artifact_upgrades import upgrade_widget_generic_chart, upgrade_widget_tradingview
+from app.artifact_upgrades import upgrade_widget_generic_chart, upgrade_widget_tradingview, upgrade_native_kline_pine
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
 
@@ -640,7 +640,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = sync_native_kline_theme(artifact, theme)
     artifact = upgrade_widget_generic_chart(artifact)
     artifact = upgrade_widget_tradingview(artifact)
+    artifact=upgrade_native_kline_pine(artifact)
     presentation_script=(STATIC_DIR/'artifact-presentation.js').read_text(encoding='utf-8')
+    presentation_script+='\n'+(STATIC_DIR/'kline-pine.js').read_text(encoding='utf-8')
     host_controls=f'<script data-artifact-host-theme="{theme}">{presentation_script}</script>'
     artifact=re.sub(r'</body\s*>',lambda _:host_controls+'</body>',artifact,count=1,flags=re.I) if re.search(r'</body\s*>',artifact,re.I) else artifact+host_controls
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'

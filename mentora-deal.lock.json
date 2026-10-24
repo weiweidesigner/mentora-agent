@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/mentora-deal.git",
-  "revision": "e5c4856e5ccb25846e68b14f04c5aa7b5a903499",
+  "revision": "89641d05f77773cf4fc209fa86c637869c60bffe",
   "checkout": ".dependencies/mentora-deal",
   "links": {
     ".agents/skills/portfolio-account": ".agents/skills/portfolio-account",
@@ -35,6 +35,7 @@
     "tests/portfolio.test.mjs": "tests/portfolio.test.mjs",
     "tests/portfolio-pine.test.mjs": "tests/portfolio-pine.test.mjs",
     "tests/test_portfolio_pine.py": "tests/test_portfolio_pine.py",
+    "tests/test_pine_plot.py": "tests/test_pine_plot.py",
     "tests/test_portfolio_strategies.py": "tests/test_portfolio_strategies.py",
     "tests/test_portfolio.py": "tests/test_portfolio.py",
     "tests/test_portfolio_laya.py": "tests/test_portfolio_laya.py",

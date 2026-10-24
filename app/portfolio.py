@@ -246,6 +246,26 @@ class CustomStrategyInput(BaseModel):
     description: str = Field(default='',max_length=4000)
 
 
+class PineBarInput(BaseModel):
+    time: float = Field(gt=0,allow_inf_nan=False,strict=True)
+    open: float = Field(gt=0,allow_inf_nan=False,strict=True)
+    high: float = Field(gt=0,allow_inf_nan=False,strict=True)
+    low: float = Field(gt=0,allow_inf_nan=False,strict=True)
+    close: float = Field(gt=0,allow_inf_nan=False,strict=True)
+    volume: float = Field(ge=0,allow_inf_nan=False,strict=True)
+
+
+class PinePlotInput(BaseModel):
+    code: str = Field(min_length=1,max_length=12000)
+    rows: list[PineBarInput] = Field(min_length=2,max_length=10000)
+    period: str = Field(default="1d",pattern=r"^(1m|5m|15m|30m|1h|2h|4h|1d|1w|1M|3M)$")
+
+
+class PineDrawGenerationInput(BaseModel):
+    description: str = Field(min_length=2,max_length=4000)
+    code: str = Field(default="",max_length=12000)
+
+
 class StrategyGenerationInput(BaseModel):
     id: str = Field(pattern=r'^custom(?::[A-Za-z0-9_-]{1,64})?$')
     name: str = Field(min_length=1,max_length=60)
@@ -859,6 +879,27 @@ def create_router(service):
                 logging.getLogger(__name__).exception('Strategy generation failed')
                 yield 'data: '+json.dumps(dict(type='error',message='策略生成服务暂不可用，请重试；当前草稿未保存'),ensure_ascii=False)+'\n\n'
         return StreamingResponse(events(),media_type='text/event-stream',headers={'Cache-Control':'no-cache','X-Accel-Buffering':'no',**dict(response.headers)})
+
+    @router.post("/pine/plot")
+    def pine_lines(payload:PinePlotInput,request:Request,response:Response):
+        owner(request,response,True)
+        from app.portfolio_pine import pine_plot
+        return call(pine_plot,payload.code,[r.model_dump() for r in payload.rows],payload.period)
+
+    @router.post("/pine/generate")
+    def pine_generate(payload:PineDrawGenerationInput,request:Request,response:Response):
+        owner(request,response,True)
+        def events():
+            from app.portfolio_strategies import stream_strategy
+            try:
+                for event in stream_strategy(payload.description,payload.code,purpose="plot"):
+                    yield "data: "+json.dumps(event,ensure_ascii=False)+"\n\n"
+            except ValueError as error:
+                yield "data: "+json.dumps(dict(type="error",message=str(error)),ensure_ascii=False)+"\n\n"
+            except Exception:
+                logging.getLogger(__name__).exception("Pine drawing generation failed")
+                yield "data: "+json.dumps(dict(type="error",message="Pine生成服务暂不可用，请重试"),ensure_ascii=False)+"\n\n"
+        return StreamingResponse(events(),media_type="text/event-stream",headers={"Cache-Control":"no-cache","X-Accel-Buffering":"no",**dict(response.headers)})
 
     @router.get('/favorites')
     def favorites(request:Request,response:Response):
