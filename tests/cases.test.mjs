@@ -161,6 +161,14 @@ test('midterm election case removes the standalone reader gutter when embedded',
  assert.match(report,/<script src="\/static\/artifact-presentation\.js"><\/script>/);
 });
 
+test('revenue geography case uses the enlarged desktop pie renderer',()=>{
+ const report=readFileSync(new URL('../app/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html',import.meta.url),'utf8');
+ assert.match(report,/data-renderer-version="pie-spacing-v3"/);
+ assert.match(report,/\.pie-component\.legend-bottom \.pie-stage\{width:min\(100%,460px\);height:280px/);
+ assert.match(report,/Math\.min\(128, Math\.min\(width, height\) \/ 2 - safe\)/);
+ assert.match(report,/@media\(max-width:759px\)[\s\S]*\.pie-component\.legend-bottom \.pie-stage\{width:min\(100%,260px\);height:178px\}/);
+});
+
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();
