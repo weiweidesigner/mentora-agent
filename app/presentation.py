@@ -68,7 +68,8 @@ def portfolio_styles():
     return FileResponse(STATIC_DIR / 'portfolio.css', media_type='text/css')
 
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+from app.native_pine_artifacts import NativePineStaticFiles
+app.mount("/static", NativePineStaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
 WORKSPACE_PREVIEW_SUFFIXES = {

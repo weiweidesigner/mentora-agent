@@ -8,7 +8,7 @@
       try{if(/^https?:/.test(w.location.protocol)){path=w.location.pathname;break;}if(w.parent===w)break;w=w.parent;}catch{break;}
     }
     if(!path)throw Error('请在本站打开图表后运行 Pine');
-    return path.split(/\/(?:share-artifact|generated|api|share|s)\//)[0].replace(/\/$/,'')+'/'+'api/portfolio';
+    return path.split(/\/(?:share-artifact|generated|static|api|share|s)\//)[0].replace(/\/$/,'')+'/'+'api/portfolio';
   }
   function mount(doc){
     const win=doc.defaultView;if(!win)return;
