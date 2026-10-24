@@ -815,7 +815,6 @@ def create_router(service):
     def workflow(request:Request,response:Response):
         user=owner(request,response)
         result=service.workflow.view(user)
-        service.workflow.request_missing_backtests(user,result.get('watchlist',[]))
         service.workflow.request_missing_direction_confidences(user)
         return result
 

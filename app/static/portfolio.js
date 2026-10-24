@@ -68,9 +68,7 @@
     return `<span>${status==='unavailable'?'决策未完成':'待模型分析'}</span>`;
   }
   function watchlistTests(item){
-    const available=item.backtests||[],enabled=flow?.strategies?.enabled;
-    if(!Array.isArray(enabled))return available;
-    return enabled.map(strategy=>available.find(t=>t.strategy===strategy)||{strategy,status:'pending',reason:'当前策略尚未回测，等待下次研究评估'});
+    return (item.backtests||[]).filter(test=>test.status==='computed');
   }
   function watchlist(){
     const rows=(flow?.watchlist||[]).filter(item=>[item.hasPosition?item.directionAssessment?.confidence:undefined,item.buyConfidence,item.sellConfidence,item.confidence].some(value=>value!==null&&value!==undefined&&Number.isFinite(Number(value))));
@@ -83,7 +81,7 @@
       const pending=['queued','running'].includes(assessment.status);
       const missingText=pending?'正在评估':item.decisionStatus==='unavailable'||assessment.status==='failed'?'等待重试':`未生成${direction==='sell'?'卖出':'买入'}置信度`;
       const confidenceText=value!==null&&value!==undefined&&Number.isFinite(Number(value))?num(Number(value)*100,1)+'%':missingText;
-      const backtestTrades=t=>t.trades>0?`${t.trades} 次 / ${t.winRate!=null?num(t.winRate)+'%':'—'}${t.openPosition?' · 持仓中':''}`:t.openPosition?'已回测 · 持仓中':'已回测 · 无成交';
+      const backtestTrades=t=>`${num(t.trades??0,0)} 次 / ${num(t.winRate??0,1)}%`;
       return`<tr><td class="pfWatchAsset">${asset}</td><td class="pfWatchReasonCell">${esc(reason)}</td><td class="pfWatchCatalyst" title="事件对当前投资逻辑的正向催化强度，0–100分；非盈利概率">${typeof item.catalystImpactScore==='number'&&Number.isFinite(item.catalystImpactScore)&&item.catalystImpactScore>=0&&item.catalystImpactScore<=100?num(item.catalystImpactScore,0)+' / 100':item.catalystImpactStatus==='no-event'?'无事件催化':item.catalystImpactStatus==='insufficient-evidence'?'证据不足':'—'}</td><td class="pfWatchMarket">${market}</td><td>${stack(t=>`<span title="回测结果不代表当前已触发买入信号">${esc((flow?.strategies?.customStrategies||[]).find(s=>s.id===t.strategy)?.name||t.strategyName||(t.strategy==='custom'?(flow?.strategies?.customName||names.custom):(names[t.strategy]||t.strategy)))}</span>`,Array.isArray(flow?.strategies?.enabled)?'未启用策略':'未完成有效回测')}</td><td>${metric(t=>`<span class="${tone(t.totalReturn)}">${num(t.totalReturn)}%</span>`)}</td><td>${metric(t=>`<span>${num(t.maxDrawdown)}%</span>`)}</td><td>${metric(t=>`<span>${backtestTrades(t)}</span>`)}</td><td class="pfWatchAction">${direction==='sell'?'卖出':'买入'}</td><td class="pfWatchJev" title="基于当前证据对该买卖方向的模型置信度；不代表已成交或盈利概率">${confidenceText}</td><td class="pfWatchTrade">${trade}</td><td class="pfWatchTime">${actionTime?date(actionTime):'—'}</td></tr>`;
     }).join('')}</tbody></table></div>`:empty('观察列表为空','定时任务或底部交易想法完成标的提取后，会在这里展示纳入原因、行情、回测和 JEV 决策。'))
   }
