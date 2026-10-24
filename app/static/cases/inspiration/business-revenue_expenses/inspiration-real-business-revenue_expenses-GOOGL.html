@@ -40,6 +40,8 @@ body {
 }
 
 .wrap {
+  container-type: inline-size;
+  min-width: 0;
   width: 100%;
   height: auto;
   min-height: 0;
@@ -52,6 +54,7 @@ body {
 }
 
 .toolbar {
+  flex-wrap: wrap;
   min-height: 28px;
   display: flex;
   align-items: center;
@@ -59,6 +62,8 @@ body {
   gap: 10px;
 }
 .title-block {
+  max-width: 100%;
+  flex-wrap: wrap;
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -141,7 +146,7 @@ body {
 
 .chart {
   position: relative;
-  height: clamp(320px, 32vw, 480px);
+  height: clamp(320px, 32cqw, 640px);
   min-height: 320px;
   background:transparent;
   overflow: visible;
@@ -347,7 +352,6 @@ body {
 
 @media (max-width: 860px) {
   .wrap { padding: 0; grid-template-rows: auto auto auto; }
-  .chart { height:300px; min-height:300px; }
   .toolbar { min-height: 28px; align-items: flex-start; flex-wrap: wrap; gap: 6px; }
   .legend { order: 3; width: 100%; gap: 10px; font-size:12px; }
   .actions { margin-left: 0; }
@@ -361,6 +365,10 @@ body {
   .label-value { font-size: 12px; }
 }
 .segmented{height:auto;padding:2px;border-radius:9px;gap:2px;display:inline-flex;min-height:34px;border:1px solid var(--ui-control-border);background:var(--ui-control-bg);max-width:100%;width:max-content;}.seg-btn,.yoy-btn{height:28px;padding:4px 13px;font-size:13px;line-height:20px;border-radius:6px;font-weight:500;background:transparent;color:var(--ui-control-text);border:0;min-height:28px;min-width:44px;box-shadow:none;}.yoy-btn{height:28px;line-height:20px;background:transparent;color:var(--ui-control-text);border:0;padding:4px 13px;min-height:28px;min-width:44px;border-radius:6px;font-size:13px;font-weight:500;box-shadow:none;}.bottom{grid-template-columns:28px max-content minmax(80px,1fr) max-content;gap:8px;padding:6px 8px;min-height:40px}.play{width:28px;height:28px;background:var(--ui-control-active);color:var(--ui-control-ink);border:0;box-shadow:none}.play svg{display:none}.play::before{content:"";border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--ui-control-ink);transform:translateX(1px)}.play.is-playing::before{width:8px;height:10px;border:0;transform:none;background:linear-gradient(90deg,var(--ui-control-ink) 0 36%,transparent 36% 64%,var(--ui-control-ink) 64%);}.axis-date{font-size:13px;font-weight:500}.timeline{height:28px;touch-action:pan-y}.track{top:12px;height:4px;border-radius:999px;background:var(--ui-range-track);}.tick{top:11px;height:6px;width:1px;background:var(--muted);opacity:.35}.thumb{top:8px;width:12px;height:12px;border:0;border-radius:50%;background:var(--ui-range-selection);box-shadow:0 0 0 4px #8882;border-color:var(--ui-range-border);}.thumb i{display:none}@media(max-width:720px){.toolbar{flex-wrap:wrap;gap:8px}.actions{gap:8px}.seg-btn,.yoy-btn{font-size:13px;background:transparent;color:var(--ui-control-text);border:0;padding:4px 13px;height:28px;min-height:28px;min-width:44px;border-radius:6px;line-height:20px;font-weight:500;box-shadow:none;}.bottom{gap:6px;padding-inline:0}.axis-date{font-size:12px;}}
+.bottom { padding-inline:0; }
+@container (max-width:860px) {
+  .chart { height:clamp(300px,40cqw,360px); min-height:300px; }
+}
 </style>
 <script data-business-theme-runtime>
     (() => {
@@ -685,12 +693,26 @@ function computeModel(item, width, height) {
 
   const compact = width < 980;
   const tiny = width < 720;
-  // Move the whole Sankey slightly right, but push the last layer closer to the edge
-  // so the chart uses the available screen instead of leaving a blank right column.
-  const leftPad = tiny ? 58 : compact ? 82 : 116;
-  const rightPad = tiny ? 16 : compact ? 22 : 28;
-  const chartW = Math.max(260, width - leftPad - rightPad);
-  const ratios = tiny ? [0, .19, .36, .53, .70, .88] : compact ? [0, .19, .36, .53, .70, .90] : [0, .18, .35, .53, .70, .91];
+  // Reserve the actual text widths, not percentage gutters. The outer labels
+  // share the report's left/right edges without scaling any text.
+  const measure = document.createElement('canvas').getContext('2d');
+  const family = getComputedStyle(chart).fontFamily;
+  const textWidth = (text, size, weight) => {
+    measure.font = `${weight} ${size}px ${family}`;
+    return measure.measureText(String(text)).width;
+  };
+  const nameChars = Math.min(18, charsForWidth(Math.min(180, Math.max(58, width * .18)), 10));
+  const labelWidth = (name, value) => Math.max(
+    ...splitLabelIntoLines(name, nameChars, 2).map(line => textWidth(line, 10, 690)),
+    textWidth(money(value), width < 860 ? 12 : 12.5, 760)
+  );
+  const leftPad = Math.ceil(Math.max(50, ...projects.map(p => labelWidth(p.name || '', p.value))) + 9);
+  const rightPad = Math.ceil(Math.max(
+    labelWidth(t('netProfit'), net), labelWidth(t('otherItems'), other),
+    labelWidth(t('tax'), tax), labelWidth('SG&A', sga), labelWidth('R&D', rd)
+  ) + NODE_W + 9);
+  const chartW = Math.max(120, width - leftPad - rightPad);
+  const ratios = tiny || compact ? [0, .19, .36, .53, .70, 1] : [0, .18, .35, .53, .70, 1];
   const cols = ratios.map((t) => leftPad + chartW * t);
   const top = 12;
   const bottom = height - 10;
@@ -1291,10 +1313,12 @@ document.getElementById('playBtn').addEventListener('click', () => {
   else startPlay();
 });
 
-window.addEventListener('resize', () => {
+function scheduleSankeyResize() {
   window.clearTimeout(window.__sankeyResizeTimer);
   window.__sankeyResizeTimer = window.setTimeout(render, 80);
-});
+}
+window.addEventListener('resize', scheduleSankeyResize);
+new ResizeObserver(scheduleSankeyResize).observe(chart);
 
 render();
 </script>
