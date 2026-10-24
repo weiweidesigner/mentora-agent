@@ -143,7 +143,37 @@
     '<path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="6" width="4" height="7" rx="1"/><rect x="10" y="10" width="4" height="6" rx="1"/><rect x="16" y="5" width="4" height="9" rx="1"/>',
   ].map(path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`);
 
+  // Lucide icon geometry (ISC), with chart-specific group/ring/waterfall/bubble
+  // adaptations and play badges; see assets/brands/lucide-LICENSE.txt.
+  // Match stable chart IDs, never their position in the gallery.
+  const visualizationIcons = {
+    bar_chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+    line_chart: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>',
+    group_line: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7"/><path d="m7 8 3-2 4 3 5-5"/>',
+    grouped_bar: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 10v7m3-11v11m6-5v5m3-9v9"/>',
+    bar_line: '<path d="M12 16v5"/><path d="M16 14.639V21"/><path d="M20 10.656V21"/><path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"/><path d="M4 18.463V21"/><path d="M8 14.656V21"/>',
+    pie: '<path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>',
+    double_ring_pie: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 3v4m5 5h4"/>',
+    treemap: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+    waterfall: '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 8h2m3 4h2" stroke-dasharray="1 2"/><rect x="5" y="4" width="3" height="4" rx=".5"/><rect x="10" y="8" width="3" height="4" rx=".5"/><rect x="15" y="12" width="3" height="5" rx=".5"/>',
+    dynamic_line: '<g transform="translate(0 3) scale(.85)"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></g><path d="m17 2 5 3-5 3Z" fill="currentColor" stroke="none"/>',
+    dynamic_bar: '<g transform="translate(0 3) scale(.85)"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 11h8"/><path d="M7 16h12"/><path d="M7 6h3"/></g><path d="m17 2 5 3-5 3Z" fill="currentColor" stroke="none"/>',
+    dynamic_bubble: '<g transform="translate(0 3) scale(.85)"><circle cx="8" cy="8" r="2"/><circle cx="17" cy="7" r="1"/><circle cx="15" cy="15" r="3"/><circle cx="7" cy="17" r="1"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/></g><path d="m17 2 5 3-5 3Z" fill="currentColor" stroke="none"/>',
+    mind_map: '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>',
+    flowchart: '<rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/>',
+    journey: '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+    timeline: '<path d="M10 6h8"/><path d="M12 16h6"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 11h7"/>',
+    kline: '<path d="M9 5v4"/><rect width="4" height="6" x="7" y="9" rx="1"/><path d="M9 15v2"/><path d="M17 3v2"/><rect width="4" height="8" x="15" y="5" rx="1"/><path d="M17 13v3"/><path d="M3 3v16a2 2 0 0 0 2 2h16"/>',
+  };
+  const reportIcon = '<svg viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true"><path d="M972.0832 537.6h-255.488c-3.6864 183.808-46.08 342.0672-107.1616 424.9088a461.056 461.056 0 0 0 362.6496-424.9088z m0-51.2a461.056 461.056 0 0 0-362.6496-424.9088c61.1328 82.8416 103.4752 241.152 107.1104 424.9088h255.5392z m-920.1664 0h255.488c3.6864-183.808 46.08-342.0672 107.1616-424.9088A461.056 461.056 0 0 0 51.9168 486.4z m0 51.2a461.056 461.056 0 0 0 362.6496 424.9088c-61.1328-82.8416-103.4752-241.152-107.1104-424.9088H51.9168z m613.376 0H358.7072C363.8272 782.2336 442.4192 972.8 512 972.8c69.632 0 148.1728-190.5664 153.344-435.2z m0-51.2C660.224 241.7664 581.632 51.2 512 51.2 442.368 51.2 363.8272 241.7664 358.656 486.4h306.688zM512 1024C229.2224 1024 0 794.7776 0 512S229.2224 0 512 0s512 229.2224 512 512-229.2224 512-512 512z"/></svg>';
   const cardIcon = (row, index) => {
+    if (row.category === "reports") {
+      return `<span class="caseCardIcon" data-icon="report">${reportIcon}</span>`;
+    }
+    const chartType = row.category === "analysis" ? row.id.replace(/^analysis-/, "") : "";
+    if (visualizationIcons[chartType]) {
+      return `<span class="caseCardIcon" data-icon="${chartType}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${visualizationIcons[chartType]}</svg></span>`;
+    }
     if (row.category === "charts" && row.tool === "TradingViewChart") {
       return '<span class="caseCardIcon caseCardBrandIcon caseCardBrandIcon--tradingview" aria-hidden="true"><img class="brandLogoLight" src="/static/assets/brands/tradingview-black.png" alt=""><img class="brandLogoDark" src="/static/assets/brands/tradingview-white.png" alt=""></span>';
     }

@@ -441,6 +441,35 @@ test('closing a case restores the previous home scroll; new chat still starts at
 });
 
 
+test('gallery icons match chart types and report artwork regardless of ordering',async()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
+ const snapshots=[];
+ for(const rows of [catalog.cases,[...catalog.cases].reverse()]){
+  const h=setup('https://example.com/','组件案例',{...catalog,cases:rows});await tick();
+  const found={};
+  for(const row of rows.filter(row=>['reports','analysis'].includes(row.category))){
+   const icon=h.w.document.querySelector(`[data-case="${row.id}"] .caseCardIcon`);
+   assert.ok(icon, row.id);
+   const svg=icon.querySelector('svg');
+   assert.equal(icon.dataset.icon,row.category==='reports'?'report':row.id.replace(/^analysis-/,''));
+   assert.equal(svg.getAttribute('aria-hidden'),'true');
+   if(row.category==='reports'){
+    assert.equal(svg.getAttribute('viewBox'),'0 0 1024 1024');
+    assert.equal(svg.getAttribute('fill'),'currentColor');
+    assert.match(svg.querySelector('path').getAttribute('d'),/^M972\.0832 537\.6/);
+   }else{
+    assert.equal(svg.getAttribute('stroke'),'currentColor');
+    assert.equal(svg.getAttribute('viewBox'),'0 0 24 24');
+   }
+   found[row.id]=svg.outerHTML;
+  }
+  assert.equal(Object.keys(found).length,20);
+  snapshots.push(found);h.w.close();
+ }
+ assert.deepEqual(snapshots[0],snapshots[1]);
+ assert.equal(new Set(Object.entries(snapshots[0]).filter(([id])=>id.startsWith('analysis-')).map(([,svg])=>svg)).size,17);
+});
+
 test('financial gallery renders official TradingView groups with native research separate',async()=>{
  const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
  const h=setup('https://example.com/','组件案例',catalog);await tick();
