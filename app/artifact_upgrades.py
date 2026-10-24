@@ -126,6 +126,28 @@ def upgrade_legacy_grouped_bar(artifact: str, theme: str) -> str:
         return artifact
 
 
+def upgrade_generic_chart_typography(artifact: str) -> str:
+    """Keep saved bar charts readable without changing their data or layout."""
+    if 'data-cartesian-typography="2"' in artifact or 'class="chart-component"' not in artifact:
+        return artifact
+    try:
+        chart_type = _constant(artifact, "config").get("type")
+    except (ValueError, KeyError, TypeError):
+        return artifact
+    if chart_type not in {"bar", "grouped-bar"}:
+        return artifact
+    styles = '''<style data-cartesian-typography="2">
+.axis-label,.x-label{font-size:12px!important}
+.chart-tooltip{max-width:min(260px,calc(100vw - 24px))!important;padding:10px 12px!important;font-size:12px!important;line-height:1.5!important;row-gap:2px!important}
+.chart-tooltip>strong{display:block;color:#d8d8d8;margin-bottom:3px;font-size:11px!important;font-weight:500;line-height:1.4!important}
+.tooltip-row{min-height:22px!important;column-gap:14px!important}
+.tooltip-label{gap:6px!important}
+.tooltip-dot{width:8px!important;height:8px!important}
+@media(max-width:680px){.axis-label,.x-label{font-size:11px!important}.chart-tooltip{max-width:240px!important;padding:8px 10px!important;font-size:11px!important}}
+</style>'''
+    return re.sub(r'</head\s*>', lambda _: styles + '</head>', artifact, count=1, flags=re.I)
+
+
 @lru_cache(maxsize=1)
 def _native_payout_ratio():
     script = Path(__file__).parent / "skills/business-chart-recall/scripts/payout_ratio.py"

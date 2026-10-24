@@ -78,6 +78,24 @@ def test_old_grouped_bar_is_rebuilt_with_same_saved_values():
     assert _constant(new, "config")["themeMode"] == "dark"
 
 
+def test_saved_bar_receives_readable_typography_once():
+    from app.artifact_upgrades import upgrade_generic_chart_typography
+
+    source = '<html><head></head><body><section class="chart-component"></section><script>const config = {"type":"bar"};</script></body></html>'
+    upgraded = upgrade_generic_chart_typography(source)
+    assert 'data-cartesian-typography="2"' in upgraded
+    assert '.axis-label,.x-label{font-size:12px!important}' in upgraded
+    assert 'font-size:12px!important;line-height:1.5!important' in upgraded
+    assert upgrade_generic_chart_typography(upgraded) == upgraded
+
+
+def test_non_bar_chart_typography_is_unchanged():
+    from app.artifact_upgrades import upgrade_generic_chart_typography
+
+    source = '<html><head></head><body><section class="chart-component"></section><script>const config = {"type":"bar-line"};</script></body></html>'
+    assert upgrade_generic_chart_typography(source) == source
+
+
 def test_mobile_payout_upgrade_preserves_model_title_and_financial_records():
     from pathlib import Path
     from app.artifact_upgrades import upgrade_legacy_mobile_charts
