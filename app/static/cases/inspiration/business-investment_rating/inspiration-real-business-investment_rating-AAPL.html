@@ -295,14 +295,32 @@ function renderRadar() {
     svg.appendChild(hit);
     const below = dy > .5;
     const value = el('text', {
-      x:below ? lx : x,
-      y:below ? Math.max(ly + 22, cy + r * .94 + 12) : y - 12,
-      'text-anchor':below ? (dx > 0 ? 'start' : 'end') : 'middle',
+      x:below ? x + Math.sign(dx) * 12 : x,
+      y:below ? y + 16 : y - 12,
+      'text-anchor':'middle',
       'dominant-baseline':below ? 'hanging' : 'auto',
       class:'radar-value', 'data-axis':axis.key, 'aria-hidden':'true'
     });
     value.textContent = fmtScore(scores[axis.key]) + ' / 10';
     svg.appendChild(value);
+    if (below) {
+      const shape = svg.querySelector('path');
+      // Keep the point-adjacent value clear of the smoothed fill, including
+      // mobile font metrics, without moving it down to the category label.
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const box = value.getBBox();
+        let overlaps = false;
+        for (let ix = 0; ix <= 8; ix++) for (let iy = 0; iy <= 4; iy++) {
+          const p = svg.createSVGPoint();
+          p.x = box.x + box.width * ix / 8;
+          p.y = box.y + box.height * iy / 4;
+          if (shape.isPointInFill(p) || shape.isPointInStroke(p)) overlaps = true;
+        }
+        if (!overlaps) break;
+        value.setAttribute('x', Number(value.getAttribute('x')) + Math.sign(dx) * 2);
+        value.setAttribute('y', Number(value.getAttribute('y')) + 2);
+      }
+    }
     label.addEventListener('pointerenter', () => activate(index));
     label.addEventListener('pointerleave', reset);
     label.addEventListener('focus', () => activate(index));
