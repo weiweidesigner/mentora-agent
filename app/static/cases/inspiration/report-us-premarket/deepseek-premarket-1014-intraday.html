@@ -22,6 +22,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
  .multi-intraday[data-mobile-columns] .intraday-card{min-width:0!important;width:100%;border-radius:8px}
  .multi-intraday[data-mobile-columns] .intraday-tabs{display:none!important}
 }
+.kline-component .kline-title strong[data-business-title]{margin:0!important}
 </style>
 </head>
 <body>
@@ -36,11 +37,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,sans-serif;letter-spacing:0;color:#18202a}
 .kline-component{width:100%;min-height:430px;background:transparent;overflow:visible;--chart-height:360px}
-.kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
-.kline-title strong{font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:nowrap;letter-spacing:.2px}
+.kline-title{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;padding:0 0 12px;border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
+.kline-title strong{flex:0 0 100%;min-width:0;font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:normal;overflow-wrap:anywhere;letter-spacing:.2px}
 .kline-component .kline-title strong[data-business-title]{margin:0!important}
 .kline-component .period-button{display:inline-flex;align-items:center;justify-content:center;line-height:1;margin:0}
-.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:0 1 auto;width:max-content;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
 .period-tabs::-webkit-scrollbar{display:none}
 .period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
 .period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
@@ -73,9 +74,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 @media(max-width:760px){
   html,body{height:auto;min-height:0;overflow:auto}
   .kline-component{min-height:auto;height:auto}
-  .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .kline-title{height:auto;gap:10px 8px;padding:0 0 12px}
   .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
-  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
+  .period-tabs{gap:8px;flex:0 1 auto;width:max-content;padding-right:18px;scroll-padding-inline:18px}
   .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
   .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
   .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
@@ -89,9 +90,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 
 .kline-mobile-legend,.kline-mobile-levels{display:none}
 @media(max-width:760px){
-  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:16px!important}
+  .kline-title strong{flex:0 0 100%;white-space:normal!important;font-size:16px!important}
   .kline-title{gap:10px;padding-right:8px}
-  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:0 1 auto;width:max-content;min-width:0}
   .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
   .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
   .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
@@ -486,6 +487,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
     return { dif, dea, hist };
   }
 
+  // Wilder RSI(14): seed with 14 complete close-to-close changes, then smooth.
+  // Warm-up stays null (not zero); a flat window is neutral, not overbought.
+  function rsi(list, period = 14) {
+    const values = new Array(list.length).fill(null);
+    let gain = 0, loss = 0;
+    for (let i = 1; i < list.length; i++) {
+      const change = list[i].close - list[i - 1].close;
+      const up = Math.max(change, 0), down = Math.max(-change, 0);
+      if (i <= period) { gain += up / period; loss += down / period; }
+      else { gain = (gain * (period - 1) + up) / period; loss = (loss * (period - 1) + down) / period; }
+      if (i >= period) values[i] = gain + loss === 0 ? 50 : 100 * gain / (gain + loss);
+    }
+    return values;
+  }
+
+  // KDJ(9,3,3), seeded at K=D=50. J may legitimately exceed 0..100.
+  function kdj(list, period = 9) {
+    const k = new Array(list.length).fill(null), d = [...k], j = [...k];
+    let previousK = 50, previousD = 50;
+    for (let i = period - 1; i < list.length; i++) {
+      const window = list.slice(i - period + 1, i + 1);
+      const low = Math.min(...window.map(bar => bar.low));
+      const high = Math.max(...window.map(bar => bar.high));
+      const rsv = high === low ? 50 : 100 * (list[i].close - low) / (high - low);
+      k[i] = previousK = (2 * previousK + rsv) / 3;
+      d[i] = previousD = (2 * previousD + previousK) / 3;
+      j[i] = 3 * k[i] - 2 * d[i];
+    }
+    return { k, d, j };
+  }
+
   function measuredTextWidth(text, size = 12, weight = 500) {
     ctx.font = `${weight} ${size}px -apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,sans-serif`;
     return ctx.measureText(String(text || &#x27;&#x27;)).width;
@@ -702,19 +734,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
     }
   }
 
-  function drawValueAxis(pane, minValue, maxValue, formatter = fmtIndicator) {
+  function indicatorPlot(pane, minValue, maxValue) {
+    const top = pane.y + (pane.w < 300 ? 40 : 24);
+    const bottom = pane.y + pane.h - 8;
+    return { top, bottom, y: value => top + (maxValue - value) / Math.max(1e-12, maxValue - minValue) * (bottom - top) };
+  }
+
+  function drawValueAxis(pane, minValue, maxValue, formatter = fmtIndicator, plot = null) {
     if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return;
     ctx.strokeStyle = theme.gridStrong;
     ctx.beginPath(); ctx.moveTo(pane.x + pane.w, pane.y); ctx.lineTo(pane.x + pane.w, pane.y + pane.h); ctx.stroke();
     const lo = minValue;
     const hi = maxValue;
-    const axisFontSize = window.innerWidth &lt;= 760 ? 11 : 12;
+    const axisFontSize = window.innerWidth <= 760 ? 12 : 13;
     const labelSafePad = 10;
     for (const i of [0, 1]) {
       const val = i === 0 ? hi : lo;
-      const y = i === 0 ? pane.y : pane.y + pane.h;
+      const y = plot ? plot.y(val) : i === 0 ? pane.y : pane.y + pane.h;
       const labelY = Math.max(pane.y + labelSafePad, Math.min(pane.y + pane.h - labelSafePad, y));
-      drawText(formatter(val), pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, &#x27;left&#x27;);
+      drawText(formatter(val), pane.x + pane.w + 7, labelY, theme.axis, axisFontSize, 500, 'left');
     }
   }
 
@@ -1547,27 +1585,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
     }
 
     const mc = macd(all);
-    layout.panes.slice(1).forEach(pane =&gt; {
+    const rsiValues = (config.subIndicators || []).includes('RSI') ? rsi(all) : [];
+    const kdjValues = (config.subIndicators || []).includes('KDJ') ? kdj(all) : null;
+    layout.panes.slice(1).forEach(pane => {
       drawGrid(pane, 2);
       ctx.strokeStyle = theme.gridStrong;
       ctx.beginPath(); ctx.moveTo(pane.x, pane.y); ctx.lineTo(pane.x + pane.w + pane.rightPad, pane.y); ctx.stroke();
-      if (pane.type === &#x27;VOL&#x27;) {
-        const vmax = Math.max(...visible.map(b =&gt; b.volume || 0), 1);
-        drawValueAxis(pane, 0, vmax, fmtVolume, 2);
-        const legendIndex = activeIndex &gt;= slice.start &amp;&amp; activeIndex &lt;= slice.end ? activeIndex : slice.end;
+      if (pane.type === 'VOL') {
+        const vmax = Math.max(...visible.map(b => b.volume || 0), 1);
+        drawValueAxis(pane, 0, vmax, fmtVolume);
+        const legendIndex = activeIndex >= slice.start && activeIndex <= slice.end ? activeIndex : slice.end;
         const volText = `${labels.vol} ${fmtVolume(all[legendIndex]?.volume)}`;
         drawText(volText, pane.x + 4, pane.y + 15, theme.muted, legendFontSize, 600);
-        visible.forEach((bar, j) =&gt; {
+        visible.forEach((bar, j) => {
           const i = slice.start + j;
           const x = xOf(i);
           const h = (bar.volume || 0) / vmax * (pane.h - 20);
-          ctx.fillStyle = bar.close &gt;= bar.open ? upColor : downColor;
+          ctx.fillStyle = bar.close >= bar.open ? upColor : downColor;
           ctx.globalAlpha = 0.8;
           ctx.fillRect(x - candleW / 2, pane.y + pane.h - h - 4, candleW, Math.max(1, h));
           ctx.globalAlpha = 1;
         });
       }
-      if (pane.type === &#x27;MACD&#x27;) {
+      if (pane.type === 'MACD') {
         const vals = [
           ...mc.hist.slice(slice.start, slice.end + 1),
           ...mc.dif.slice(slice.start, slice.end + 1),
@@ -1584,11 +1624,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
         const padM = spanM * 0.12;
         minM -= padM;
         maxM += padM;
-        drawValueAxis(pane, minM, maxM, fmtMacdIndicator, 2);
-        const plotTop = pane.y + 24;
-        const plotBottom = pane.y + pane.h - 6;
-        const plotH = Math.max(12, plotBottom - plotTop);
-        const macdY = v =&gt; plotTop + (maxM - Number(v || 0)) / Math.max(1e-12, maxM - minM) * plotH;
+        const plot = indicatorPlot(pane, minM, maxM);
+        drawValueAxis(pane, minM, maxM, fmtMacdIndicator, plot);
+        const macdY = plot.y;
         const y0 = macdY(0);
 
         // 0 轴
@@ -1599,20 +1637,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
         ctx.lineTo(pane.x + pane.w, y0);
         ctx.stroke();
 
-        const legendIndex = activeIndex &gt;= slice.start &amp;&amp; activeIndex &lt;= slice.end ? activeIndex : slice.end;
+        const legendIndex = activeIndex >= slice.start && activeIndex <= slice.end ? activeIndex : slice.end;
         let lx = pane.x + 4;
         let ly = pane.y + 15;
         const legendMaxX = pane.x + pane.w - 8;
         const legendGap = 16;
         const legendLineGap = 16;
         [
-          [labels.dif, mc.dif[legendIndex], &#x27;#f59e0b&#x27;],
-          [labels.dea, mc.dea[legendIndex], &#x27;#8b5cf6&#x27;],
-          [labels.macd, mc.hist[legendIndex], mc.hist[legendIndex] &gt;= 0 ? upColor : downColor],
-        ].forEach(([label, value, color]) =&gt; {
+          [labels.dif, mc.dif[legendIndex], '#f59e0b'],
+          [labels.dea, mc.dea[legendIndex], '#8b5cf6'],
+          [labels.macd, mc.hist[legendIndex], mc.hist[legendIndex] >= 0 ? upColor : downColor],
+        ].forEach(([label, value, color]) => {
           const text = `${label} ${fmtMacdIndicator(value, true)}`;
           const textW = ctx.measureText(text).width;
-          if (lx &gt; pane.x + 4 &amp;&amp; lx + textW &gt; legendMaxX) {
+          if (lx > pane.x + 4 && lx + textW > legendMaxX) {
             lx = pane.x + 4;
             ly += legendLineGap;
           }
@@ -1620,26 +1658,53 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
           lx += textW + legendGap;
         });
 
-        visible.forEach((_, j) =&gt; {
+        visible.forEach((_, j) => {
           const i = slice.start + j;
           const x = xOf(i);
           const v = Number(mc.hist[i] || 0);
           const y = macdY(v);
-          ctx.fillStyle = v &gt;= 0 ? upColor : downColor;
+          ctx.fillStyle = v >= 0 ? upColor : downColor;
           ctx.globalAlpha = 0.82;
           ctx.fillRect(x - candleW / 2, Math.min(y0, y), candleW, Math.max(1, Math.abs(y - y0)));
           ctx.globalAlpha = 1;
         });
 
-        drawLine(mc.dif.slice(slice.start, slice.end + 1).map((v, j) =&gt; ({
+        drawLine(mc.dif.slice(slice.start, slice.end + 1).map((v, j) => ({
           x: xOf(slice.start + j),
           y: macdY(v)
-        })), &#x27;#f59e0b&#x27;, 1.4);
+        })), '#f59e0b', 1.4);
 
-        drawLine(mc.dea.slice(slice.start, slice.end + 1).map((v, j) =&gt; ({
+        drawLine(mc.dea.slice(slice.start, slice.end + 1).map((v, j) => ({
           x: xOf(slice.start + j),
           y: macdY(v)
-        })), &#x27;#8b5cf6&#x27;, 1.4);
+        })), '#8b5cf6', 1.4);
+      }
+      if (pane.type === 'RSI' || pane.type === 'KDJ') {
+        const series = pane.type === 'RSI'
+          ? [['RSI(14)', rsiValues, '#8b5cf6']]
+          : [['K', kdjValues.k, '#f59e0b'], ['D', kdjValues.d, '#8b5cf6'], ['J', kdjValues.j, '#22b8ef']];
+        const values = series.flatMap(([, data]) => data.slice(slice.start, slice.end + 1)).filter(Number.isFinite);
+        const low = Math.min(0, ...values), high = Math.max(100, ...values);
+        const plot = indicatorPlot(pane, low, high);
+        const format = value => Number.isFinite(value) ? Number(value).toFixed(2) : '--';
+        drawValueAxis(pane, low, high, format, plot);
+        const thresholds = pane.type === 'RSI' ? [30, 70] : [20, 80];
+        thresholds.forEach(value => drawDashedLine(pane.x, plot.y(value), pane.x + pane.w, plot.y(value), theme.gridStrong));
+        const index = activeIndex >= slice.start && activeIndex <= slice.end ? activeIndex : slice.end;
+        let legendX = pane.x + 4, legendY = pane.y + 15;
+        series.forEach(([label, data, color]) => {
+          const text = `${label} ${format(data[index])}`;
+          const width = measuredTextWidth(text, legendFontSize, 700);
+          if (legendX > pane.x + 4 && legendX + width > pane.x + pane.w - 8) {
+            legendX = pane.x + 4; legendY += 16;
+          }
+          drawText(text, legendX, legendY, color, legendFontSize, 700);
+          legendX += width + 16;
+          // Null warm-up values must break the line instead of becoming RSI=0.
+          drawLine(data.slice(slice.start, slice.end + 1).map((value, offset) => ({
+            x: xOf(slice.start + offset), y: Number.isFinite(value) ? plot.y(value) : NaN
+          })), color, 1.4);
+        });
       }
     });
 
@@ -2039,11 +2104,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,sans-serif;letter-spacing:0;color:#18202a}
 .kline-component{width:100%;min-height:430px;background:transparent;overflow:visible;--chart-height:360px}
-.kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
-.kline-title strong{font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:nowrap;letter-spacing:.2px}
+.kline-title{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;padding:0 0 12px;border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
+.kline-title strong{flex:0 0 100%;min-width:0;font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:normal;overflow-wrap:anywhere;letter-spacing:.2px}
 .kline-component .kline-title strong[data-business-title]{margin:0!important}
 .kline-component .period-button{display:inline-flex;align-items:center;justify-content:center;line-height:1;margin:0}
-.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:0 1 auto;width:max-content;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
 .period-tabs::-webkit-scrollbar{display:none}
 .period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
 .period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
@@ -2076,9 +2141,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 @media(max-width:760px){
   html,body{height:auto;min-height:0;overflow:auto}
   .kline-component{min-height:auto;height:auto}
-  .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .kline-title{height:auto;gap:10px 8px;padding:0 0 12px}
   .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
-  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
+  .period-tabs{gap:8px;flex:0 1 auto;width:max-content;padding-right:18px;scroll-padding-inline:18px}
   .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
   .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
   .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
@@ -2092,9 +2157,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 
 .kline-mobile-legend,.kline-mobile-levels{display:none}
 @media(max-width:760px){
-  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:16px!important}
+  .kline-title strong{flex:0 0 100%;white-space:normal!important;font-size:16px!important}
   .kline-title{gap:10px;padding-right:8px}
-  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:0 1 auto;width:max-content;min-width:0}
   .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
   .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
   .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
@@ -4042,11 +4107,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,sans-serif;letter-spacing:0;color:#18202a}
 .kline-component{width:100%;min-height:430px;background:transparent;overflow:visible;--chart-height:360px}
-.kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
-.kline-title strong{font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:nowrap;letter-spacing:.2px}
+.kline-title{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;padding:0 0 12px;border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
+.kline-title strong{flex:0 0 100%;min-width:0;font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:normal;overflow-wrap:anywhere;letter-spacing:.2px}
 .kline-component .kline-title strong[data-business-title]{margin:0!important}
 .kline-component .period-button{display:inline-flex;align-items:center;justify-content:center;line-height:1;margin:0}
-.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:0 1 auto;width:max-content;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
 .period-tabs::-webkit-scrollbar{display:none}
 .period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
 .period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
@@ -4079,9 +4144,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 @media(max-width:760px){
   html,body{height:auto;min-height:0;overflow:auto}
   .kline-component{min-height:auto;height:auto}
-  .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .kline-title{height:auto;gap:10px 8px;padding:0 0 12px}
   .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
-  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
+  .period-tabs{gap:8px;flex:0 1 auto;width:max-content;padding-right:18px;scroll-padding-inline:18px}
   .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
   .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
   .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
@@ -4095,9 +4160,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 
 .kline-mobile-legend,.kline-mobile-levels{display:none}
 @media(max-width:760px){
-  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:16px!important}
+  .kline-title strong{flex:0 0 100%;white-space:normal!important;font-size:16px!important}
   .kline-title{gap:10px;padding-right:8px}
-  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:0 1 auto;width:max-content;min-width:0}
   .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
   .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
   .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
@@ -6045,11 +6110,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,sans-serif;letter-spacing:0;color:#18202a}
 .kline-component{width:100%;min-height:430px;background:transparent;overflow:visible;--chart-height:360px}
-.kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
-.kline-title strong{font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:nowrap;letter-spacing:.2px}
+.kline-title{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;padding:0 0 12px;border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
+.kline-title strong{flex:0 0 100%;min-width:0;font-size:18px;line-height:1.4;font-weight:700;color:#18202a;white-space:normal;overflow-wrap:anywhere;letter-spacing:.2px}
 .kline-component .kline-title strong[data-business-title]{margin:0!important}
 .kline-component .period-button{display:inline-flex;align-items:center;justify-content:center;line-height:1;margin:0}
-.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:0 1 auto;width:max-content;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
 .period-tabs::-webkit-scrollbar{display:none}
 .period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
 .period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
@@ -6082,9 +6147,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 @media(max-width:760px){
   html,body{height:auto;min-height:0;overflow:auto}
   .kline-component{min-height:auto;height:auto}
-  .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .kline-title{height:auto;gap:10px 8px;padding:0 0 12px}
   .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
-  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
+  .period-tabs{gap:8px;flex:0 1 auto;width:max-content;padding-right:18px;scroll-padding-inline:18px}
   .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
   .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
   .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
@@ -6098,9 +6163,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Pin
 
 .kline-mobile-legend,.kline-mobile-levels{display:none}
 @media(max-width:760px){
-  .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:16px!important}
+  .kline-title strong{flex:0 0 100%;white-space:normal!important;font-size:16px!important}
   .kline-title{gap:10px;padding-right:8px}
-  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:0 1 auto;width:max-content;min-width:0}
   .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
   .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
   .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}

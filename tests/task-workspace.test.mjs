@@ -289,11 +289,12 @@ test('My Day removes market picker and subtitle, shows a scene clock and only to
  for(const scene of ['pre','live','post','rest']){const h=setup({tasks:[],scene,sceneTasks:[...presets,{...presets[0],id:'old',scene:'pre',resultScene:scene,resultDate:'2026-10-14'}]});await tick();const d=h.w.document;assert.equal(d.querySelector('#dayMarketSelect'),null);assert.equal(d.querySelector('.dayHeader p'),null);assert.match(d.querySelector('#dayClock').textContent,/2026年10月15日.*\d{2}:\d{2}:\d{2}/);assert.equal(d.querySelector('#daySceneArt').dataset.scene,scene);const cards=d.querySelectorAll('#dayPanel .caseCard');assert.equal(cards.length,scene==='pre'?2:1);if(scene==='pre'){assert.equal(cards[1].dataset.taskRun,'');assert.match(cards[1].textContent,/等待执行/);assert.doesNotMatch(cards[1].textContent,/执行所得标题/);}assert.equal(cards[0].dataset.taskOpen,'preset-'+scene);assert.match(cards[0].querySelector('h2').textContent,/执行所得标题/);assert.match(cards[0].querySelector('p').textContent,/执行所得正文/);assert.match(cards[0].querySelector('.caseCardTag').textContent,/场景任务/);h.dom.window.close();}
 });
 
-test('paused My Day card runs once without enabling its schedule',async()=>{
+test('paused My Day cards have no start action and open without executing',async()=>{
  const paused={...base,id:'paused-scene',systemPreset:true,enabled:false,lastRun:null,resultVersion:null,scene:'live'};
- const h=setup({tasks:[],sceneTasks:[paused]});await tick();const d=h.w.document,button=d.querySelector('[data-task-run-now="paused-scene"]');
- assert.ok(button);assert.equal(button.getAttribute('aria-label'),'立即执行：'+base.title);assert.ok(button.querySelector('svg path'));
- button.click();await tick();assert.ok(h.requests.some(r=>r.method==='POST'&&r.path.endsWith('/paused-scene/run')));assert.equal(h.requests.some(r=>r.method==='PUT'),false);
+ const h=setup({tasks:[],sceneTasks:[paused]});await tick();const d=h.w.document;
+ assert.equal(d.querySelector('[data-task-run-now]'),null);
+ const card=d.querySelector('[data-task-open="paused-scene"]');assert.ok(card);assert.equal(card.querySelector('button'),null);
+ card.click();await tick();assert.equal(h.requests.some(r=>r.method==='POST'&&r.path.endsWith('/paused-scene/run')),false);assert.equal(h.requests.some(r=>r.method==='PUT'),false);
  assert.equal(paused.enabled,false);assert.equal(new URL(h.w.location).searchParams.get('task'),'paused-scene');assert.doesNotMatch(d.body.textContent,/任务已开启/);h.dom.window.close();
 });
 

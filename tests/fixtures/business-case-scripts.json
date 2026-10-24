@@ -85,7 +85,7 @@
   },
   {
     "path": "app/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
-    "scriptsSha256": "4604f09dcb62f751fe1c85cbe2ff3ccaf8f4f6294231e3c2607d75bc0bfdf179"
+    "scriptsSha256": "14bcd7d98f2b6dbfcb311995785d7226c65b950fde8c4e1f93b9ae2a06c8ff28"
   },
   {
     "path": "app/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
@@ -153,7 +153,7 @@
   },
   {
     "path": "app/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html",
-    "scriptsSha256": "76b98989aff1dc319fd300389b762989c550c959f55bfa0c231665f23fe3da8e"
+    "scriptsSha256": "b3d1f60cbab0813c78e95981f22b9f4da167470c74a65a70990bfa5995cc0bfe"
   },
   {
     "path": "app/static/cases/inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html",
@@ -161,6 +161,6 @@
   },
   {
     "path": "app/static/cases/jpm-technical/case-jpm-technical-deepseek-kline-daily.html",
-    "scriptsSha256": "73aa25f153d3e244d0abbd64280c87aa6855b5b0ec218a7b4be5a33e6c8c8b91"
+    "scriptsSha256": "ced3cabd0490e233c00b777717387359ace18d49e15648d6f0c2a6befb4aa1ba"
   }
 ]

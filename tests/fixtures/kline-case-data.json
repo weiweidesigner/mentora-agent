@@ -1,0 +1,46 @@
+[
+  {
+    "path": "app/static/cases/inspiration/analysis-flowchart/inspiration-real-analysis-flowchart-aapl-kline-context.html",
+    "dataSha256": "4429583fd92401ab39c94b2bcf3cbc67a799a693179a7a6920abfe9b7f55155c"
+  },
+  {
+    "path": "app/static/cases/inspiration/analysis-journey/inspiration-real-analysis-journey-aapl-kline.html",
+    "dataSha256": "5fed325256d8936f4cc2bf93bfd19f814d71e465099283adf2cd9ba0ba533ebe"
+  },
+  {
+    "path": "app/static/cases/inspiration/analysis-kline/inspiration-real-analysis-kline-spy-1d.html",
+    "dataSha256": "73ea013cd420595d10a1f90850b1a7d6e0b05c4909bc2cca2e9021691502a12e"
+  },
+  {
+    "path": "app/static/cases/inspiration/analysis-timeline/inspiration-real-analysis-timeline-aapl-2026-kline.html",
+    "dataSha256": "748174799972f4e204d6298f48374c5ec3a80b6c8c052fe1296acb5293521596"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
+    "dataSha256": "94eed75b96243d278f1fedff283d85cdb5bea7bb8dd3f0d647477283da029516"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
+    "dataSha256": "724009643369a9de8e91dd10d4ac46675cd4cb44e1b5e29e3a0292ff84393dab"
+  },
+  {
+    "path": "app/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html",
+    "dataSha256": "46f0dbb8601512f21b69f6029cbf6372c5c85bafe02973dbca1b4bc5deea3a82"
+  },
+  {
+    "path": "app/static/cases/inspiration/report-us-premarket/deepseek-premarket-1014-intraday.html",
+    "dataSha256": "31464ee0866b013d802997bc602ba204b9f9da2ce41ac49379857e175e619402"
+  },
+  {
+    "path": "app/static/cases/inspiration/tradingview-mini-chart/deepseek-tsla-kline-1y.html",
+    "dataSha256": "e194759570ea2828addff685b52574b713e1238b7826c96988987e1a6b447376"
+  },
+  {
+    "path": "app/static/cases/inspiration/tradingview-technical-analysis/deepseek-amd-kline-daily.html",
+    "dataSha256": "6001118f966e2f7e18bc655caf9ce79deae25b9105c6268f5d0cafd68890dd66"
+  },
+  {
+    "path": "app/static/cases/jpm-technical/case-jpm-technical-deepseek-kline-daily.html",
+    "dataSha256": "8fdb6b90639c344c58cc336dafce1641f6f5488c0beded86ee0ebbef717fd8ff"
+  }
+]
