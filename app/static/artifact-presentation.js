@@ -214,9 +214,9 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   const style=document.createElement('style');
   style.dataset.genericChartTypography='20261024';
   style.textContent=`
-.axis-label,.x-label{font-size:13px!important;font-weight:400!important}
+.axis-label,.x-label,.waterfall-component svg text{font-size:13px!important;font-weight:400!important}
 :is(.chart-legend,.pie-legend,.ring-legend,.treemap-legend,.waterfall-legend),
-#legend .legendItem{font-size:13px!important;line-height:1.4!important}
+#legend .legendItem,.mobileDynamicLegend button{font-size:13px!important;line-height:1.4!important}
 :is(.chart-legend,.pie-legend,.ring-legend,.treemap-legend),#legend{background:transparent!important;box-shadow:none!important}
 :is(.chart-tooltip,.generic-canvas-tooltip,.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip){
  font-size:14px!important;line-height:1.55!important;padding:11px 14px!important;border-radius:6px!important;

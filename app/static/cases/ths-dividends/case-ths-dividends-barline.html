@@ -22,8 +22,8 @@ body.theme-dark .chart-tab[aria-selected="true"]{background:#202838;color:#f4f7f
 svg{display:block;width:100%;height:100%;overflow:visible}
 .grid-line{stroke:#e8e8e8;stroke-width:1}
 .axis-line{stroke:#a3a8b0;stroke-width:1}
-.axis-label{fill:#777;font-size:10px;font-weight:400}
-.x-label{fill:#666;font-size:10px;font-weight:400;text-anchor:middle}
+.axis-label{fill:#777;font-size:13px;font-weight:400}
+.x-label{fill:#666;font-size:13px;font-weight:400;text-anchor:middle}
 .bar{rx:0;cursor:crosshair}
 .bar-label{fill:#2863f4;font-size:11px;font-weight:700;text-anchor:middle}
 .line-path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -31,14 +31,14 @@ svg{display:block;width:100%;height:100%;overflow:visible}
 body.theme-dark .point{fill:#111827}
 .hover-zone{fill:transparent;cursor:crosshair}
 .highlight{fill:#8a8a8a;pointer-events:none}
-.chart-legend{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 18px;position:absolute;left:8px;right:8px;bottom:4px;min-height:24px;color:#858585;font-size:10px;line-height:1.2;text-align:center;pointer-events:none}
+.chart-legend{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px 18px;position:absolute;left:8px;right:8px;bottom:4px;min-height:24px;color:#858585;font-size:13px;line-height:1.2;text-align:center;pointer-events:none}
 body.theme-dark .chart-legend{color:#aab4c5}
 .legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
 .legend-dot{width:8px;height:8px;border-radius:50%;flex:none}
-.chart-tooltip{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:6px 8px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font-size:10px;line-height:1.35;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:nowrap;transition:opacity .08s ease}
+.chart-tooltip{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:11px 14px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font-size:14px;line-height:1.35;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:nowrap;transition:opacity .08s ease}
 .chart-tooltip::after{content:"";display:var(--tooltip-arrow-display,block);position:absolute;left:var(--arrow-left,50%);bottom:-5px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid var(--tooltip-bg,rgba(59,59,59,.96))}
 .chart-tooltip.active{opacity:1;visibility:visible}
-.tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:9px;font-weight:400;line-height:1.2}
+.tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:13px;font-weight:400;line-height:1.2}
 .tooltip-row{display:flex;align-items:center;gap:8px;min-height:17px}
 .tooltip-label{display:flex;align-items:center;gap:5px;color:#f5f5f5;min-width:0}
 .tooltip-dot{width:7px;height:7px;border-radius:50%;flex:none}
@@ -57,7 +57,7 @@ body.theme-dark .range-selection{background:#8d97a8}
 body.theme-dark .range-handle{border-color:#4b5870;background:#192130;box-shadow:0 1px 5px rgba(0,0,0,.35)}
 body.theme-dark .range-handle::before{background:#a9b3c3;box-shadow:-5px 0 0 #a9b3c3,5px 0 0 #a9b3c3}
 @media(min-width:1200px){.chart-component{height:420px}}
-@media(max-width:680px){.chart-component{height:clamp(248px,calc(100cqw / 2.8),320px);padding:0}.chart-component.has-range{height:clamp(286px,calc((100cqw / 2.8) + 38px),358px)}.chart-title{min-height:18px;max-height:38px;font-size:14px;line-height:1.28;padding:0}.chart-tabs{top:4px;right:0;gap:2px}.chart-tab{height:30px;min-width:44px;padding:0 8px;border-radius:8px;font-size:12px}.chart-stage{height:calc(100% - 50px);margin-top:6px}.chart-component.has-range .chart-stage{height:calc(100% - 88px)}.axis-label,.x-label{font-size:10px}.bar-label{display:none}.chart-legend{left:0;right:0;bottom:0;gap:8px 12px;min-height:30px;font-size:10px;align-content:center}.legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}.legend-dot{width:8px;height:8px}.chart-tooltip{min-width:0;max-width:220px;font-size:10px;padding:6px 8px;white-space:normal}.tooltip-label{min-width:0}.range-shell{--handle-size:24px;margin-top:4px;padding:0 calc(var(--handle-size) / 2)}.range-handle::before{height:11px;box-shadow:-4px 0 0 #8a8a8a,4px 0 0 #8a8a8a}}
+@media(max-width:680px){.chart-component{height:clamp(248px,calc(100cqw / 2.8),320px);padding:0}.chart-component.has-range{height:clamp(286px,calc((100cqw / 2.8) + 38px),358px)}.chart-title{min-height:18px;max-height:38px;font-size:14px;line-height:1.28;padding:0}.chart-tabs{top:4px;right:0;gap:2px}.chart-tab{height:30px;min-width:44px;padding:0 8px;border-radius:8px;font-size:12px}.chart-stage{height:calc(100% - 50px);margin-top:6px}.chart-component.has-range .chart-stage{height:calc(100% - 88px)}.axis-label,.x-label{font-size:13px}.bar-label{display:none}.chart-legend{left:0;right:0;bottom:0;gap:8px 12px;min-height:30px;font-size:13px;align-content:center}.legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}.legend-dot{width:8px;height:8px}.chart-tooltip{min-width:0;max-width:220px;font-size:14px;padding:11px 14px;white-space:normal}.tooltip-label{min-width:0}.range-shell{--handle-size:24px;margin-top:4px;padding:0 calc(var(--handle-size) / 2)}.range-handle::before{height:11px;box-shadow:-4px 0 0 #8a8a8a,4px 0 0 #8a8a8a}}
 .chart-component{display:flex;flex-direction:column}.chart-title{flex:none}.chart-stage,.chart-component.has-range .chart-stage{flex:1;min-height:0;height:auto!important}.range-shell{flex:none;order:2;margin-top:10px}.chart-legend{position:static;flex:none;order:3;margin-top:12px;padding:0 4px 4px;min-height:24px}.legend-item{white-space:normal;max-width:100%!important;overflow:visible;line-height:1.4}
 </style>
 <link rel="stylesheet" href="/static/cases/theme.css?v=20261013-1">
@@ -103,13 +103,13 @@ const toNumber = (value, fallback) => Number.isFinite(Number(value)) ? Number(va
 const DEFAULT_STYLE = {
   margin: {top: 28, right: 0, bottom: 46, left: 0},
   grid: {visible: true, count: 5, color: '#e8e8e8', width: 1, dasharray: '', opacity: 1},
-  xAxis: {visible: true, color: '#666', fontSize: 10, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1},
-  yAxis: {position: 'both', labelPlacement: 'reserved', paddingRatio: 0.08, color: '#747474', fontSize: 10, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1, digits: 0},
+  xAxis: {visible: true, color: '#666', fontSize: 13, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1},
+  yAxis: {position: 'both', labelPlacement: 'reserved', paddingRatio: 0.08, color: '#747474', fontSize: 13, fontWeight: 400, lineColor: '#a3a8b0', lineWidth: 1, digits: 0},
   bar: {borderRadius: 0, opacity: 1, maxWidth: 42, gap: 10, showLabels: true},
   line: {showPoints: 'auto', strokeWidth: 2, opacity: 1, strokeLinecap: 'round', strokeLinejoin: 'round'},
   point: {visible: true, radius: 3.2, outerRadius: 0, fill: 'background', strokeWidth: 1.6},
-  legend: {visible: true, gap: 18, color: '#858585', fontSize: 10, markerSize: 8, markerShape: 'circle'},
-  tooltip: {visible: true, placement: 'aboveFirstGrid', offsetY: 0, gap: 8, background: 'rgba(59,59,59,.96)', color: '#fff', borderRadius: 6, padding: '6px 8px', fontSize: 10, maxWidth: 220, arrow: true},
+  legend: {visible: true, gap: 18, color: '#858585', fontSize: 13, markerSize: 8, markerShape: 'circle'},
+  tooltip: {visible: true, placement: 'aboveFirstGrid', offsetY: 0, gap: 8, background: 'rgba(59,59,59,.96)', color: '#fff', borderRadius: 6, padding: '6px 8px', fontSize: 14, maxWidth: 220, arrow: true},
   hover: {bandColor: '#8a8a8a', bandOpacity: 0.08},
   range: {threshold: 10, count: 10},
   seriesStyle: [],
@@ -196,9 +196,9 @@ function ensureParentTooltipStyle(doc) {
   const style = doc.createElement('style');
   style.id = 'bar-line-tooltip-portal-style';
   style.textContent = `
-    .bar-line-tooltip-portal{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:6px 8px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font:10px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:normal;transition:opacity .08s ease}
+    .bar-line-tooltip-portal{position:fixed;z-index:2147483647;display:inline-grid;min-width:0;width:fit-content;max-width:220px;padding:11px 14px;background:rgba(59,59,59,.96);color:#fff;border-radius:6px;font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;white-space:normal;transition:opacity .08s ease;background:#3b3b3b!important}
     .bar-line-tooltip-portal.active{opacity:1;visibility:visible}
-    .bar-line-tooltip-portal .tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:9px;font-weight:400;line-height:1.2}
+    .bar-line-tooltip-portal .tooltip-title{color:#d8d8d8;margin-bottom:3px;font-size:13px;font-weight:400;line-height:1.2}
     .bar-line-tooltip-portal .tooltip-row{display:flex;align-items:center;gap:8px;min-height:17px}
     .bar-line-tooltip-portal .tooltip-label{display:flex;align-items:center;gap:5px;color:#f5f5f5;min-width:0}
     .bar-line-tooltip-portal .tooltip-dot{width:7px;height:7px;border-radius:50%;flex:none}
