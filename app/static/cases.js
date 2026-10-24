@@ -630,9 +630,15 @@
         if (card) showCase(card.dataset.case);
       });
       render();
+      tabs.setAttribute('aria-busy', 'false');
+      panel.setAttribute('aria-busy', 'false');
+      panel.classList.add('homeContentReady');
       const id = new URLSearchParams(location.search).get("case");
       if (catalog.cases.some(row => row.id === id)) showCase(id, false);
     } catch {
+      tabs.replaceChildren();
+      tabs.setAttribute('aria-busy', 'false');
+      panel.setAttribute('aria-busy', 'false');
       panel.innerHTML = '<p role="alert">灵感案例暂时无法加载，请刷新页面重试。</p>';
     }
   }

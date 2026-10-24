@@ -4037,6 +4037,23 @@ p {
 @media(prefers-reduced-motion:reduce){.caseOverlayPanel{transition:none}}
 
 /* Desktop case gallery: two continuous, draggable swimlanes. */
+/* First-paint placeholders mirror the real home card grids; no blocking overlay. */
+.homeSkeleton { pointer-events:none; }
+.homeSkeletonCard { min-width:0;height:128px;padding:16px;border:1px solid var(--line);border-radius:8px;background:color-mix(in srgb,var(--bg) 90%,transparent); }
+.daySceneGrid>.homeSkeletonCard { height:116px;padding:12px; }
+.skeletonLine { display:block;height:10px;width:100%;margin:0 0 10px;border-radius:4px;background:color-mix(in srgb,var(--ink) 9%,var(--bg));animation:homeSkeletonPulse 1.8s ease-in-out infinite; }
+.skeletonLine.is-short { width:30%;height:12px; }
+.skeletonLine.is-title { width:78%;height:16px;margin-bottom:14px; }
+.skeletonLine.is-medium { width:62%; }
+.homeSkeletonCard>.skeletonLine:last-child { margin-bottom:0; }
+.homeSkeletonTabs { display:flex;flex:0 0 100%;width:100%;gap:12px;max-width:100%;overflow:hidden; }
+.homeSkeletonTabs .skeletonLine { flex:0 0 72px;height:34px;margin:0;border-radius:999px; }
+.homeSkeletonHeading { max-width:300px;margin-bottom:20px; }
+.homeContentReady { animation:homeContentEnter .2s ease-out; }
+@keyframes homeSkeletonPulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+@keyframes homeContentEnter { from { opacity:.65; } to { opacity:1; } }
+@media(max-width:760px) { .daySceneGrid>.homeSkeletonCard { height:112px; }.homeSkeletonCard { padding:12px; }.homeSkeletonTabs { gap:8px; }.homeSkeletonTabs .skeletonLine { flex-basis:60px;height:32px; } }
+@media(prefers-reduced-motion:reduce) { .skeletonLine,.homeContentReady { animation:none; } }
 .inspirationSquare { display:none; }
 .conversation.is-empty .inspirationSquare { display:block; flex:0 0 auto; width:min(calc(100% - 48px),1100px); margin:8px auto 0; padding:0 0 64px; }
 .inspirationHeader h2 { margin:0 0 8px; font-size:26px; letter-spacing:-.5px; }

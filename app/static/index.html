@@ -7,7 +7,7 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
-    <link rel="stylesheet" href="/static/styles.css?v=20261024-chart-typography-v2" />
+    <link rel="stylesheet" href="/static/styles.css?v=20261024-home-skeleton" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-full-column" />
     <link rel="stylesheet" href="/static/widgets.css?v=20261023-compact-board-picker" />
     <link rel="stylesheet" href="/static/portfolio.css?v=20261024-sticky-header-v1" />
@@ -175,7 +175,14 @@
             <time id="dayClock"></time>
             <button id="dayCustomizeTasks" class="dayCustomizeTasks" type="button"><span>定制我的任务</span><svg viewBox="200 140 450 780" aria-hidden="true"><path d="M624.788992 204.047974 585.205965 164.464026 219.560038 530.185011 585.205965 895.864013 624.788992 856.280986 298.663014 530.16105Z" fill="currentColor"/></svg></button>
           </header>
-          <div id="dayPanel" class="dayPanel"><p class="dayEmpty" role="status">正在加载已生成的结果…</p></div>
+          <div id="dayPanel" class="dayPanel" aria-busy="true">
+            <span class="srOnly" role="status">正在加载任务结果</span>
+            <div class="daySceneGrid homeSkeleton" aria-hidden="true">
+              <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+              <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+              <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+            </div>
+          </div>
           <p id="dayMessage" class="dayMessage" role="status" aria-live="polite"></p>
         </section>
         <section id="inspirationSquare" class="inspirationSquare" aria-labelledby="inspirationTitle">
@@ -183,9 +190,17 @@
             <h2 id="inspirationTitle">灵感广场</h2>
             <p>探索金融分析的更多可能</p>
           </header>
-          <div id="inspirationTabs" class="inspirationTabs" role="tablist" aria-label="灵感分类"></div>
-          <div id="inspirationPanel" class="inspirationPanel" role="tabpanel" tabindex="0">
-            <p role="status">正在加载精选案例…</p>
+          <div id="inspirationTabs" class="inspirationTabs" role="tablist" aria-label="灵感分类" aria-busy="true"><div class="homeSkeletonTabs homeSkeleton" aria-hidden="true"><i class="skeletonLine"></i><i class="skeletonLine"></i><i class="skeletonLine"></i><i class="skeletonLine"></i></div></div>
+          <div id="inspirationPanel" class="inspirationPanel" role="tabpanel" tabindex="0" aria-busy="true">
+            <span class="srOnly" role="status">正在加载精选案例</span>
+            <div class="homeSkeleton" aria-hidden="true">
+              <div class="homeSkeletonHeading"><i class="skeletonLine is-title"></i><i class="skeletonLine is-medium"></i></div>
+              <div class="inspirationGrid">
+                <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+                <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+                <div class="homeSkeletonCard"><i class="skeletonLine is-short"></i><i class="skeletonLine is-title"></i><i class="skeletonLine"></i><i class="skeletonLine is-medium"></i></div>
+              </div>
+            </div>
           </div>
         </section>
         <div id="caseActionBar" class="caseActionBar" hidden>
@@ -299,13 +314,13 @@
     <script src="/static/tradingview-surface.js?v=20261016-click-activate"></script>
     <script src="/static/app.js?v=20261024-chart-title-gap"></script>
     <script src="/static/home-background.js?v=light-blue-video-20261014-card-short-titles"></script>
-    <script src="/static/cases.js?v=20261022-case-load-retry"></script>
+    <script src="/static/cases.js?v=20261024-home-skeleton"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
     <script src="/static/widget-symbol-picker.js?v=20261016-keyword-names"></script>
     <script src="/static/chart-activation.js?v=20261016-click-activate"></script>
     <script src="/static/widget-recommendations.js?v=20261016-click-send"></script>
     <script src="/static/widgets.js?v=20261024-page-refresh-time"></script>
-    <script src="/static/day-tasks.js?v=20261022-paused-run-now"></script>
+    <script src="/static/day-tasks.js?v=20261024-home-skeleton"></script>
     <script src="/static/strategy-code-editor.js?v=20261023-syntax"></script>
     <script src="/static/portfolio.js?v=20261024-backtest-stats-history-v1"></script>
   </body>

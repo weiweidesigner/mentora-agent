@@ -25,6 +25,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
     fetch: async url => {
       requests.push(url);
+      if(url.includes('/inspiration/manifest.json') && options.failCatalog)throw new Error('offline');
       const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0];
       if (!url.endsWith('manifest.json') && options.failConversationAttempts > 0) {
         options.failConversationAttempts -= 1;
@@ -237,6 +238,18 @@ test('business case style refresh preserves every snapshot script and financial 
  }
 });
 
+test('inspiration skeleton clears on catalog failure', async () => {
+  const h=setup('https://example.com/','',{categories:[],cases:[]},{failCatalog:true});
+  const panel=h.w.document.querySelector('#inspirationPanel');
+  panel.setAttribute('aria-busy','true');panel.innerHTML='<div class="homeSkeleton"></div>';
+  await tick();
+  assert.equal(panel.getAttribute('aria-busy'),'false');
+  assert.equal(panel.querySelector('.homeSkeleton'),null);
+  assert.ok(panel.querySelector('[role="alert"]'));
+  assert.equal(h.w.document.querySelector('#inspirationTabs').getAttribute('aria-busy'),'false');
+  h.w.close();
+});
+
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
   const catalog={categories:[{id:'charts',title:'金融图表',subtitle:'原生业务组件'},{id:'art',title:'艺术绘图',subtitle:'金融主题'}],cases:[{id:'chart-demo',category:'charts',featured:true,title:'图表',tag:'财报',preview:'利润',question:'查看财报',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/chart-demo/conversation.json'},{id:'art-demo',category:'art',featured:false,title:'插画',tag:'艺术',preview:'牛熊',question:'画牛熊',cachedDate:'2026-10-14',conversationUrl:'/static/cases/inspiration/art-demo/conversation.json'}]};
   const h=setup('https://example.com/','缓存案例',catalog);await tick();
@@ -246,6 +259,7 @@ test('inspiration categories switch by click and keyboard and replay without inf
   assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'all');
   assert.equal(tabs.querySelector('[data-category="all"]').textContent,'全部');
   assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,2);
+  assert.equal(h.w.document.querySelector('#inspirationPanel').getAttribute('aria-busy'),'false');
   tabs.querySelector('[data-category="art"]').click();
   assert.match(h.w.document.querySelector('#inspirationPanel h3').textContent,/艺术绘图/);
   tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));

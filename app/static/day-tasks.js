@@ -167,11 +167,13 @@
   function homeScene(){const info=markets.find(m=>m.market==='CN');if(!info||info.calendarError)return null;if(info.closed||info.stage==='rest')return 'rest';if(info.openAt&&info.closeAt){const now=Date.now()+serverDelta;return now<new Date(info.openAt).getTime()?'pre':now<new Date(info.closeAt).getTime()?'live':'post';}return info.stage;}
   function dayDate(value){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));}
   function sceneArt(scene){if(scene==='rest')return '<svg viewBox="0 0 48 48" aria-hidden="true"><g class="dayTravel"><path d="m8 28 14-5 1-13 5-2 3 13 9-2 3 4-12 4-8 12-4 1 3-11-10 3z" fill="currentColor"/></g><path d="M4 39h11m20-28h9" stroke="currentColor" opacity=".3"/></svg>';return '<svg viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="daySunClip"><path d="M0 0h48v34H0z"/></clipPath></defs><g clip-path="url(#daySunClip)"><g class="daySun"><circle cx="24" cy="24" r="8" fill="currentColor"/><g class="daySunRays" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M24 8v-3m0 38v-3M8 24H5m38 0h-3M13 13l-2-2m26 26-2-2M13 35l-2 2m26-26-2 2"/></g></g></g><path class="dayHorizon" d="M5 35h38M13 40h22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';}
-  let displayedDayScene='';
+  let displayedDayScene='',homeLoaded=false;
   function updateDayHeader(){const scene=homeScene(),copy=sceneCopy[scene];$('myDayTitle').textContent=copy?.title||'陪你等一个清晰的方向';const now=new Date(Date.now()+serverDelta),parts=Object.fromEntries(new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).map(p=>[p.type,p.value]));$('dayClock').dateTime=now.toISOString();$('dayClock').textContent=`${parts.year}年${parts.month}月${parts.day}日 ${parts.hour}:${parts.minute}:${parts.second}`;if(displayedDayScene!==scene){displayedDayScene=scene;$('daySceneArt').dataset.scene=scene||'';$('daySceneArt').setAttribute('aria-label',copy?.label||'同步市场时间');$('daySceneArt').innerHTML=sceneArt(scene||'pre');return true;}return false;}
   function resultScene(t){if(t.resultScene)return t.resultScene;if(t.stage==='rest')return 'rest';if(t.timeMode==='open')return t.offset>0?'live':'pre';if(t.timeMode==='close')return t.offset<0?'live':'post';if(t.time){const close=t.market==='CN'?'15:00':'16:00';return t.time<'09:30'?'pre':t.time<close?'live':'post';}return t.stage;}
   function updateHomePanel(markup){
     const panel=$('dayPanel'),template=document.createElement('template');template.innerHTML=markup;
+    if(panel.getAttribute('aria-busy')==='true')panel.classList.add('homeContentReady');
+    panel.setAttribute('aria-busy','false');
     const nextGrid=template.content.querySelector('.daySceneGrid'),grid=panel.querySelector('.daySceneGrid');
     if(!nextGrid||!grid){panel.replaceChildren(template.content);return;}
     // Keep running card elements mounted so polling cannot restart their edge animations.
@@ -190,7 +192,7 @@
   }
   const runningNowTasks=new Set();
   const runNowTaskIcon='<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M512 12c276.142 0 500 223.858 500 500s-223.858 500-500 500S12 788.142 12 512 235.858 12 512 12zm0 71.429C275.307 83.429 83.429 275.307 83.429 512S275.307 940.571 512 940.571 940.571 748.693 940.571 512 748.693 83.429 512 83.429zm-71.429 245.285a35.714 35.714 0 0 1 19.786 6l221.357 147.572a35.714 35.714 0 0 1 0 59.428L460.357 689.286a35.714 35.714 0 0 1-55.5-29.715V364.43c0-19.725 15.99-35.715 35.714-35.715z"/></svg>';
-  function renderHome(){updateDayHeader();const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
+  function renderHome(){updateDayHeader();if(!homeLoaded)return;const scene=homeScene(),date=dayDate(Date.now()+serverDelta);
     const ready=t=>t.resultVersion&&(t.resultDate||dayDate(t.successAt))===date&&resultScene(t)===scene;
     const rows=[...sceneTasks.filter(t=>t.market==='CN'&&(t.scene||resultScene(t))===scene),...tasks.filter(t=>(t.resultMarket||t.market)==='CN'&&((t.activeRun&&(t.scene||resultScene(t))===scene)||ready(t)))];
     const rank=t=>t.activeRun?0:ready(t)?1:2;
@@ -414,7 +416,7 @@
     if(busy||!taskMenu.hidden)return;busy=true;
     try {
       const data=await api('tasks');tasks=data.tasks;sceneTasks=data.sceneTasks||[];markets=data.markets;publicKey=data.pushPublicKey;serverDelta=new Date(data.serverTime).getTime()-Date.now();lastRefresh=Date.now();
-      renderHome();renderLists();
+      homeLoaded=true;renderHome();renderLists();
       if(initialTask){const id=initialTask;initialTask=null;await selectTask(id,{updateUrl:false,runId:initialRun});}
       else if(!workspace.hidden && selectedId) {
         const task=selected();
@@ -422,7 +424,7 @@
           if(!chatController&&!runController&&detailState(task)!==lastDetailState) await selectTask(task.id,{updateUrl:false,runId:pinnedRun?selectedRun:''});
         }
       }
-    } catch(error){message(error.message);} finally{busy=false;}
+    } catch(error){if(!homeLoaded){updateHomePanel('<p class="dayHomeEmpty" role="alert">任务结果暂时无法加载，稍后将自动重试。</p>');}message(error.message);} finally{busy=false;}
   }
   function setWindowInterval(minutes,unit='minutes') {
     el('windowInterval').value=String(minutes);
