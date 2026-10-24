@@ -14,25 +14,25 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:transparent;color:var(--business-text-1f2329);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
 body{padding:0}
-.wrap{max-width:1750px;margin:0;background:transparent}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.72fr);gap:46px;align-items:start}
+.wrap{width:100%;max-width:none;margin:0;background:transparent}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
 .chart-panel{min-width:0}
-.legend{height:26px;display:flex;align-items:center;gap:28px;color:var(--business-text-70757d);font-size:15px;font-weight:500;margin-bottom:4px}
+.legend{min-height:20px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 18px;color:var(--business-text-70757d);font-size:13px;font-weight:400;line-height:1.5;margin:12px 0 0}
 .legend-item{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
-.dot{width:13px;height:13px;border-radius:50%;display:inline-block}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
 .chart{width:100%;height:220px;position:relative;overflow:visible}
 svg{display:block;width:100%;height:100%;overflow:visible}
-.axis{fill:var(--business-text-767b82);font-size:13px;font-weight:500;dominant-baseline:middle}
+.axis{fill:var(--business-text-767b82);font-size:13px;font-weight:400;dominant-baseline:middle}
 .grid{stroke:var(--business-border-e9edf2);stroke-width:1}
 .price-line{fill:none;stroke:#2f64f6;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
 .buy{fill:#079b67}
 .sell{fill:#ff3b25}
-.brush{--handle-size:32px;--track-pad:16px;--track-height:3px;height:var(--handle-size);margin:6px 0 0;position:relative;touch-action:none;user-select:none}
-.rail{position:absolute;left:var(--track-pad);right:var(--track-pad);top:calc(var(--handle-size) / 2);height:var(--track-height);border-radius:999px;background:var(--business-bg-f1f1f1);transform:translateY(-50%)}
-.selected-rail{position:absolute;top:calc(var(--handle-size) / 2);height:var(--track-height);border-radius:999px;background:var(--business-bg-5f5f5f);transform:translateY(-50%)}
-.handle{appearance:none;position:absolute;top:calc(var(--handle-size) / 2);width:var(--handle-size);height:var(--handle-size);border-radius:50%;background:var(--business-bg-fff);border:1px solid var(--business-border-d5d5d5);box-shadow:0 1px 4px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;cursor:grab;z-index:2;transform:translate(-50%,-50%);padding:0}
+.brush{--handle-size:24px;--track-pad:12px;--track-height:3px;height:var(--handle-size);margin:8px 0 0;position:relative;touch-action:none;user-select:none}
+.rail{position:absolute;left:var(--track-pad);right:var(--track-pad);top:calc(var(--handle-size) / 2);height:var(--track-height);border-radius:999px;background:var(--ui-range-track);transform:translateY(-50%)}
+.selected-rail{position:absolute;top:calc(var(--handle-size) / 2);height:var(--track-height);border-radius:999px;background:var(--ui-range-selection);transform:translateY(-50%)}
+.handle{appearance:none;position:absolute;top:calc(var(--handle-size) / 2);width:var(--handle-size);height:var(--handle-size);border-radius:50%;background:var(--ui-range-handle);border:1px solid var(--ui-range-border);box-shadow:0 1px 2px #0002;display:flex;align-items:center;justify-content:center;cursor:grab;z-index:2;transform:translate(-50%,-50%);padding:0}
 .handle:active{cursor:grabbing}
-.handle::before{content:"";width:2px;height:13px;border-radius:999px;background:var(--business-bg-8a8a8a);box-shadow:-5px 0 0 var(--business-border-8a8a8a),5px 0 0 #8a8a8a;opacity:.9}
+.handle::before{content:"";width:2px;height:10px;border-radius:999px;background:var(--ui-range-grip);box-shadow:-4px 0 0 var(--ui-range-grip),4px 0 0 var(--ui-range-grip);opacity:.9}
 .table-wrap{min-width:0}
 table{width:100%;border-collapse:collapse;table-layout:fixed}
 th{height:30px;padding:0 10px 8px;text-align:right;color:var(--business-text-565d68);font-size:12px;font-weight:720;border-bottom:1px solid var(--business-border-edf0f4)}
@@ -52,14 +52,14 @@ td:first-child{text-align:left;font-size:13px;font-weight:400}
 .tip-value{color:var(--ui-tooltip-text);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.5;}
 @media(max-width:980px){
   body{padding:0}
-  .layout{display:block}
-  .legend{height:16px;gap:12px;font-size:12px;margin-bottom:0}
+  .layout{display:grid}
+  .legend{min-height:20px;gap:8px 14px;font-size:13px;margin:12px 0 0}
   .legend-item{gap:4px}
   .dot{width:8px;height:8px}
   .chart{aspect-ratio:auto}
   .axis{font-size:12px;}
-  .brush{--handle-size:20px;--track-pad:10px;--track-height:2px;height:var(--handle-size);margin:0}
-  .handle::before{height:8px;box-shadow:-3px 0 0 var(--business-border-8a8a8a),3px 0 0 #8a8a8a}
+  .brush{--handle-size:20px;--track-pad:10px;--track-height:2px;height:var(--handle-size);margin:8px 0 0}
+  .handle::before{height:8px;box-shadow:-3px 0 0 var(--ui-range-grip),3px 0 0 var(--ui-range-grip)}
   .table-wrap{margin-top:0;overflow:auto}
   th{height:24px;padding:0 8px 5px;font-size:11px}
   td{padding:6px 8px;font-size:12px;line-height:1.14}
@@ -89,8 +89,8 @@ const state = { start: 0, end: 1, dragging: null, lastChartWidth: 0 };
 function render(){
   document.getElementById('app').innerHTML = `<section class="layout">
     <div class="chart-panel">
-      <div class="legend"><span class="legend-item"><i class="dot" style="background:#356cff"></i>${esc(payload.code || 'Stock')}</span><span class="legend-item"><i class="dot" style="background:#079b67"></i>买入</span><span class="legend-item"><i class="dot" style="background:#ff3b25"></i>卖出</span></div>
       <div class="chart" id="chart"></div>
+      <div class="legend"><span class="legend-item"><i class="dot" style="background:#356cff"></i>${esc(payload.code || 'Stock')}</span><span class="legend-item"><i class="dot" style="background:#079b67"></i>买入</span><span class="legend-item"><i class="dot" style="background:#ff3b25"></i>卖出</span></div>
       <div class="brush" id="brush"><div class="rail"></div><div class="selected-rail"></div><div class="handle left" data-side="left"></div><div class="handle right" data-side="right"></div></div>
     </div>
     <div class="table-wrap">${renderTable(payload.trades || [])}</div>
@@ -218,13 +218,13 @@ function drawChart(){
   const shareTicks=tickSlots.map(t=>shareMax*(1-t));
   const grid=tickSlots.map((t,i)=>{
     const y=p.t+plotH*t;
-    return `<line class="grid" x1="${p.l}" y1="${y}" x2="${W-p.r}" y2="${y}"></line><text class="axis" x="${p.l-8}" y="${y}" text-anchor="end">${compact(priceTicks[i],0)}</text><text class="axis" x="${W-p.r+10}" y="${y}" text-anchor="start">${compact(shareTicks[i],2)}</text>`;
+    return `<line class="grid" x1="${p.l}" y1="${y}" x2="${W-p.r}" y2="${y}"></line><text class="axis y-label" x="${p.l-8}" y="${y}" text-anchor="end">${compact(priceTicks[i],0)}</text><text class="axis y-label" x="${W-p.r+10}" y="${y}" text-anchor="start">${compact(shareTicks[i],2)}</text>`;
   }).join('');
   const xLabelIndexes=sampleXAxisIndexes(activity, groupWidth+groupGap);
   const bars=activity.map((d,i)=>{
     const bw=barWidth, base=yShares(0), bx=groupStart(i), sx=bx+bw+barGap;
     const by=yShares(Number(d.buyShares||0)), sy=yShares(Number(d.sellShares||0));
-    const label=xLabelIndexes.has(i) ? `<text class="axis" x="${x(i)}" y="${xLabelY}" text-anchor="middle">${esc(d.quarter)}</text>` : '';
+    const label=xLabelIndexes.has(i) ? `<text class="axis x-label" x="${x(i)}" y="${xLabelY}" text-anchor="middle">${esc(d.quarter)}</text>` : '';
     return `<rect class="buy" x="${bx}" y="${by}" width="${bw}" height="${Math.max(1,base-by)}"></rect><rect class="sell" x="${sx}" y="${sy}" width="${bw}" height="${Math.max(1,base-sy)}"></rect>${label}`;
   }).join('');
   const plotPrices=visiblePrices.length ? visiblePrices : prices;
