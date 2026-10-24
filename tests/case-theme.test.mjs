@@ -34,8 +34,8 @@ test('cached iframe themes follow the host initially and after toggling, includi
   for(const path of ['/static/cases/amd/chart.html','/veya/static/cases/jpm/chart.html']) {
     context.item={url:path};const shell=vm.runInContext('createArtifactFallbackFrame(item,0)',context);
     dom.window.document.body.append(shell);const frame=shell.querySelector('iframe');
-    assert.equal(shell.querySelector('[role="status"]'),null);
-    assert.equal(shell.classList.contains('is-chart-loading'),false);
+    assert.ok(shell.querySelector('[role="status"]'));
+    assert.equal(shell.classList.contains('is-chart-loading'),true);
     assert.equal(new URL(frame.src).searchParams.get('theme'),'dark');
   }
   const other=dom.window.document.createElement('iframe');other.src='https://other.example/chart.html';other.className='reportDocumentFrame';dom.window.document.body.append(other);
@@ -69,4 +69,17 @@ test('cached dark palettes override light title and SVG class colors',()=>{
   assert.equal(w.getComputedStyle(w.document.querySelector('.axis-label')).fill,theme==='dark'?'rgb(193, 202, 215)':'rgb(119, 119, 119)');
   w.close();
  }
+});
+
+test('native business documents keep their own palette while receiving the host theme',async()=>{
+ const dom=new JSDOM('<html data-business-ui="neutral-v1"><head></head><body><div class="segmented"><button class="active">季度</button></div></body></html>',{url:'https://example.com/chart?theme=dark',runScripts:'outside-only'});
+ const w=dom.window;
+ const context=vm.createContext({window:w,document:w.document,location:w.location,parent:w,URLSearchParams,MutationObserver:w.MutationObserver,requestAnimationFrame:fn=>w.setTimeout(fn,0)});
+ vm.runInContext(readFileSync(new URL('../app/static/cases/theme.js',import.meta.url),'utf8'),context);
+ vm.runInContext(readFileSync(new URL('../app/static/artifact-presentation.js',import.meta.url),'utf8'),context);
+ assert.equal(w.document.documentElement.dataset.theme,'dark');
+ assert.equal(w.document.querySelector('[data-case-palette]'),null);
+ assert.equal(w.document.querySelector('[data-artifact-segments]'),null);
+ await new Promise(resolve=>w.setTimeout(resolve,0));
+ w.close();
 });

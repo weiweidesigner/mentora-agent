@@ -1,10 +1,13 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN" data-theme="dark" data-business-ui="neutral-v1">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>股东回报</title>
-<style>:root{--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;}:root[data-theme="dark"]{--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;}
+<style>
+:root{--ui-control-bg:#f3f3f3;--ui-control-border:#e7e7e7;--ui-control-text:#777;--ui-control-hover:#e9e9e9;--ui-control-active:#fff;--ui-control-ink:#242424;--ui-tooltip:#3b3b3b;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#e5e5e5;--ui-range-selection:#777;--ui-range-handle:#fff;--ui-range-border:#bdbdbd;--ui-range-grip:#777}
+:root[data-theme="dark"]{--ui-control-bg:#191919;--ui-control-border:#303030;--ui-control-text:#a0a0a0;--ui-control-hover:#262626;--ui-control-active:#343434;--ui-control-ink:#f3f3f3;--ui-tooltip:#303030;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#2b2b2b;--ui-range-selection:#686868;--ui-range-handle:#202020;--ui-range-border:#4b4b4b;--ui-range-grip:#a0a0a0}
+:root{--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;}:root[data-theme="dark"]{--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;}
 :root{--business-text-111827:#111827;}:root[data-theme="dark"]{--business-text-111827:#e8edf5;}
 
 :root{color-scheme:light;--business-text-171717:#171717;--business-border-ececec:#ececec;--business-border-767b84:#767b84;--business-text-747474:#747474;--business-text-666:#666;--business-text-8a8a8a:#8a8a8a;--business-text-858585:#858585;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-text-d0d0d0:#d0d0d0;--business-text-777:#777;}
@@ -21,22 +24,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 svg{display:block;width:100%;height:100%;overflow:visible}
 .grid-line{stroke:var(--business-border-ececec);stroke-width:1}
 .axis-line{stroke:var(--business-border-767b84);stroke-width:1.2}
-.axis-label{fill:var(--business-text-747474);font-size:12px;font-weight:400}
-.x-label{fill:var(--business-text-666);font-size:12px;font-weight:400;text-anchor:middle}
+.axis-label{fill:var(--business-text-747474);font-size:13px;font-weight:400}
+.x-label{fill:var(--business-text-666);font-size:13px;font-weight:400;text-anchor:middle}
 .bar{rx:0;cursor:crosshair}
 .hover-zone{fill:transparent;cursor:crosshair}
 .highlight{fill:var(--business-text-8a8a8a);pointer-events:none}
 .chart-legend{position:static;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:18px;color:var(--business-text-858585);font-size:13px;line-height:1.2;text-align:center;margin-top:12px;pointer-events:auto}
 .legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
-.chart-tooltip{position:fixed;z-index:2147483647;min-width:190px;max-width:min(340px,calc(100vw - 24px));padding:10px 12px;background:rgba(59,59,59,.96);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .08s ease;box-shadow:none;filter:none;white-space:nowrap}
-.chart-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid rgba(59,59,59,.96)}
+.chart-tooltip{position:fixed;z-index:2147483647;min-width:190px;max-width:min(340px,calc(100vw - 24px));padding:10px 12px;background:var(--ui-tooltip);color:var(--ui-tooltip-text);border-radius:6px;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .08s ease;box-shadow:none;filter:none;white-space:nowrap;border:0;}
+.chart-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--ui-tooltip);}
 .chart-tooltip.active{opacity:1;visibility:visible}
-.tooltip-title{display:block;color:var(--business-text-d8d8d8);margin-bottom:6px;font-size:12px;font-weight:400}
-.tooltip-row{display:flex;justify-content:space-between;align-items:center;gap:18px;white-space:nowrap;min-height:22px}
-.tooltip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-d0d0d0)}
+.tooltip-title{display:block;color:var(--ui-tooltip-text);margin-bottom:6px;font-size:13px;font-weight:400;line-height:1.5;}
+.tooltip-row{display:flex;justify-content:space-between;align-items:center;gap:18px;white-space:nowrap;min-height:22px;line-height:1.5;}
+.tooltip-label{display:flex;align-items:center;gap:7px;color:var(--ui-tooltip-muted);font-size:13px;line-height:1.5;}
 .tooltip-dot{width:8px;height:8px;border-radius:50%;flex:none}
-.tooltip-value{color:var(--business-text-fff);font-weight:700;font-variant-numeric:tabular-nums}
+.tooltip-value{color:var(--ui-tooltip-text);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.5;}
 .empty {
   min-height:48px;
   display:flex;
@@ -50,11 +53,11 @@ svg{display:block;width:100%;height:100%;overflow:visible}
   .chart-head{margin-bottom:12px}
   .chart-title{font-size:16px}
   .chart-stage{height:280px;min-height:280px}
-  .axis-label,.x-label{font-size:10.5px}
-  .chart-legend{gap:8px 12px;min-height:30px;font-size:11px;align-content:center;margin-top:10px}
+  .axis-label,.x-label{font-size:12px;}
+  .chart-legend{gap:8px 12px;min-height:30px;font-size:12px;align-content:center;margin-top:10px}
   .legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}
   .legend-dot{width:8px;height:8px}
-  .chart-tooltip{min-width:168px;max-width:calc(100vw - 24px);font-size:11px;padding:8px 10px;white-space:normal}
+  .chart-tooltip{min-width:168px;max-width:calc(100vw - 24px);font-size:13px;padding:10px 12px;white-space:normal;background:var(--ui-tooltip);color:var(--ui-tooltip-text);border:0;border-radius:6px;line-height:1.5;box-shadow:none;}
 }
 </style>
 <script data-business-theme-runtime>

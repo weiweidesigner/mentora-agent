@@ -63,7 +63,7 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   const headings = new WeakSet();
   const repair = doc => {
     if (!doc?.documentElement) return;
-    if (!doc.querySelector('style[data-artifact-segments]')) {
+    if (!doc.documentElement.dataset.businessUi && !doc.querySelector('style[data-artifact-segments]')) {
       const style=doc.createElement('style');
       style.dataset.artifactSegments='true';
       style.textContent=`

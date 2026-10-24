@@ -1,0 +1,166 @@
+[
+  {
+    "path": "app/static/cases/amd-ratings/deepseek-case-amd-ratings-consensus.html",
+    "scriptsSha256": "aa1f4116e9428869e26b2ae742a241393a09911c042b5a6be5a432f76ff0529e"
+  },
+  {
+    "path": "app/static/cases/amd-ratings/deepseek-case-amd-ratings-recommendations.html",
+    "scriptsSha256": "cbd575795d60954b76b4a7ac67dd6f02bd961cde240c07f8720f11316c05a345"
+  },
+  {
+    "path": "app/static/cases/amd-ratings/deepseek-case-amd-ratings-target-vs-price.html",
+    "scriptsSha256": "ea8553664fa407801aa79966ca7c5c9cea613cae8666d8a34fdc618e18e1c194"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-about_company/inspiration-real-business-about_company-NVDA.html",
+    "scriptsSha256": "e8916a00cad421f0424733224fac791a8ce72f8a6b80f06aecbd1ab3ae95eb3f"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-analyst_recommendations/deepseek-amd-analyst-recommendations-20261014.html",
+    "scriptsSha256": "ce2dd59624f3a78d7bb44bb39d50761bef44ecc054a923a64196027b577481a4"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-average_rating_history/inspiration-real-business-average_rating_history.html",
+    "scriptsSha256": "b174cd3b90686ba0f161c6ac0040e53e00fb2fc29ca637344857310a8a942dff"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-balance_sheet/inspiration-real-business-balance_sheet-aapl.html",
+    "scriptsSha256": "518e4015181315d20ac71110ee43fdd6bff45823147489537c1440bafd343bc5"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-capital_structure/inspiration-real-business-capital_structure-aapl.html",
+    "scriptsSha256": "80a0d0583d2a8ca7dd2b15ca90d3f6eee78471a615ae264373e7f717d0926b1f"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-cash_flow/inspiration-real-business-cash_flow-aapl.html",
+    "scriptsSha256": "74929067b1ec563c9c5e9ef61face11b30379ab97918ffb1f4b3d77ba845c5ba"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-congress_trades/inspiration-real-business-congress_trades_aapl.html",
+    "scriptsSha256": "a8e31e1c49fa2338bf4b5acb875697c1493d8ce09f2be04a79cd6f7b401d88b5"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-dividend_yield/inspiration-real-business-dividend_yield-AAPL.html",
+    "scriptsSha256": "115ef2ff1d7812a2c51ab66307c6b41565e5de2c0c79eebbd6c2d202c3ca0c01"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-eps_estimate/inspiration-real-business-eps_estimate-amd-2026-10-14.html",
+    "scriptsSha256": "3d7511a1eaa37a0bd66f9b2ad1eab48f2cc5c731973d259fa32458117000d901"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-executive_profile/inspiration-real-business-executive_profile-aapl.html",
+    "scriptsSha256": "2084169a5768cf45b9ac6a08f6907de738ac3b85d7dc8461b2139b5d79b38088"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-fundamental_investment_rating/inspiration-real-business-fundamental_investment_rating-NVDA.html",
+    "scriptsSha256": "066b1c5ea64a524bd5dafbe1769203d24addd2ed534987a2b7944d6909ab490d"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-income_statement/inspiration-real-business-income_statement-aapl-q3-fy2026.html",
+    "scriptsSha256": "53041d222f977b0a02099ab45b47eaf2a080b183affac6d0797d9538f350fda2"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-insider_trades/inspiration-real-business-insider_trades-aapl-live.html",
+    "scriptsSha256": "994f68817a584f29efd45d119f67866c7089ba94da5cbed47ddd495ec306dc03"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-institution_trades/inspiration-real-business-institution_trades-aapl.html",
+    "scriptsSha256": "a70ba1612c670420573a40e9caae968e7d546f317e8e5df7f402b07d6b94d9a1"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-investment_rating/inspiration-real-business-investment_rating-AAPL.html",
+    "scriptsSha256": "7b3d91c2280a5b492f939ef2e69bf4710b5b7e5e3dafa4d2dd15c525f9f22ac6"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-key_financial_indicators/inspiration-real-business-key_financial_indicators-aapl-2026-10-14.html",
+    "scriptsSha256": "64443c96f7a65e58680456628d4e668c3bbb074938a6878c69375f71f28b7e5e"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-key_statistics/inspiration-real-business-key_statistics-aapl.html",
+    "scriptsSha256": "fbe412c1538c288f5f2c7134b76c68ab34fd96741ab71cb4d2076a31514b35f2"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-key_stats/inspiration-real-business-key_stats-nvda-live.html",
+    "scriptsSha256": "7e7183092bb33eb08e82c09af0352c1177c4b374ede1538ce79b2c66f4e9f345"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-kline/inspiration-real-business-kline-jpm-1d.html",
+    "scriptsSha256": "4604f09dcb62f751fe1c85cbe2ff3ccaf8f4f6294231e3c2607d75bc0bfdf179"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-multi_intraday/inspiration-real-business-multi_intraday.html",
+    "scriptsSha256": "be014536645a94febd17e125b0c58ad2568e374e4259bb9e73223aa8deef8913"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-payout_ratio/inspiration-real-business-payout_ratio-aapl-live.html",
+    "scriptsSha256": "0007cca48df34884b4405abde556e551739cb1f9a3c053dab44de975bc5e640b"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-price_target_vs_actual/inspiration-real-business-price_target_vs_actual-amd-2026-10-14.html",
+    "scriptsSha256": "a8174963bb850f987a2a20cc3a934b48dc8a7b20c7493f45455e2543ae9756f6"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-related_section/inspiration-real-business-related_section-AAPL.html",
+    "scriptsSha256": "279a18001be600234b8fe85fd9dedd67521e2ffd49692a901701625081469087"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-revenue_estimate/inspiration-real-business-revenue_estimate-amd-2026-10-14.html",
+    "scriptsSha256": "797364a4e399833c901a58826cfc350b296f19184354eca67450cd7f9d94eb33"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-revenue_expenses/inspiration-real-business-revenue_expenses-GOOGL.html",
+    "scriptsSha256": "a676098cb4a118566dc2e11aaecabad92e41aa69d99049ee33dfa129bcc3184a"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html",
+    "scriptsSha256": "6412f2853db7917575b557aaea116a03dd13a49d587c9d8c35a031150db0a181"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-revenue_sources/inspiration-real-business-revenue_sources-aapl-quarterly.html",
+    "scriptsSha256": "58cd5d4b9b30b5c8c452ca256bf16e874b39d4105dfbd48a7ba8724720826c14"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-seasonals/inspiration-real-business-seasonals-aapl.html",
+    "scriptsSha256": "e0725a622c67b182818481c6c7c183089474c7de42738aa7330b095b11198628"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-dark-frame.html",
+    "scriptsSha256": "781c833580a30c1917b998b839c288215c2f39bef7da4f6a156bb7122f4d7913"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns-view.html",
+    "scriptsSha256": "b1afaf5cde087b38f18177335ebf713a527d2b553e67126a271b4d1a33741cfc"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-shareholder_returns/inspiration-real-business-shareholder_returns.html",
+    "scriptsSha256": "53f73cd4ca24d4ab00641c4c2712598147d43fce19ad8772017b4d87bce9b4cc"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-trade_flow/inspiration-real-business-trade_flow-nvda.html",
+    "scriptsSha256": "a6fc2a50925bcd0faf5bce861660628a6ca527e206ad5071138336281d8dbdd1"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-valuation/inspiration-real-business-valuation-aapl.html",
+    "scriptsSha256": "3fb6bbcb18d7ed56d5f12db37193571ea969f15af5a7f003bc5f70ae2560fc97"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-volume_profile/inspiration-real-business-volume_profile-nvda-zh-CN.html",
+    "scriptsSha256": "fd6b6c3c2aa7d6d7d92764c14d32b51d2697bf6dc1dc3639fd684d969f360282"
+  },
+  {
+    "path": "app/static/cases/inspiration/business-wall_street_consensus/inspiration-real-business-wall_street_consensus-amd-zh.html",
+    "scriptsSha256": "a75e6c1730fff14f29909d331309a25a56d9bae1323ea7d172518a6a31857545"
+  },
+  {
+    "path": "app/static/cases/inspiration/report-amd/inspiration-real-report-amd-kline.html",
+    "scriptsSha256": "76b98989aff1dc319fd300389b762989c550c959f55bfa0c231665f23fe3da8e"
+  },
+  {
+    "path": "app/static/cases/inspiration/report-amd/inspiration-real-report-amd-revenue-estimate.html",
+    "scriptsSha256": "aefae1c5e86035fce04592145b1574dac21ad60f79ab18dfa1d88bd055308631"
+  },
+  {
+    "path": "app/static/cases/jpm-technical/case-jpm-technical-deepseek-kline-daily.html",
+    "scriptsSha256": "73aa25f153d3e244d0abbd64280c87aa6855b5b0ec218a7b4be5a33e6c8c8b91"
+  }
+]

@@ -1,20 +1,23 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="light" data-business-ui="neutral-v1">
 <head><script src="/static/cases/theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>AMD 日K线（近一年，含成交量与 MACD）</title>
 <style>
+:root{--ui-control-bg:#f3f3f3;--ui-control-border:#e7e7e7;--ui-control-text:#777;--ui-control-hover:#e9e9e9;--ui-control-active:#fff;--ui-control-ink:#242424;--ui-tooltip:#3b3b3b;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#e5e5e5;--ui-range-selection:#777;--ui-range-handle:#fff;--ui-range-border:#bdbdbd;--ui-range-grip:#777}
+:root[data-theme="dark"]{--ui-control-bg:#191919;--ui-control-border:#303030;--ui-control-text:#a0a0a0;--ui-control-hover:#262626;--ui-control-active:#343434;--ui-control-ink:#f3f3f3;--ui-tooltip:#303030;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#2b2b2b;--ui-range-selection:#686868;--ui-range-handle:#202020;--ui-range-border:#4b4b4b;--ui-range-grip:#a0a0a0}
+
 *{box-sizing:border-box}
 html,body{width:100%;height:auto;min-height:0;margin:0;background:transparent;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:#18202a}
 .kline-component{width:100%;min-height:768px;background:transparent;overflow:visible;--chart-height:360px}
 .kline-title{position:relative;height:58px;display:flex;align-items:center;gap:22px;padding:0 14px 0 max(4px,env(safe-area-inset-left));border-bottom:1px solid #e1e6eb;color:#18202a;background:transparent;z-index:60}
 .kline-title strong{font-size:16px;line-height:1;font-weight:850;color:#18202a;white-space:nowrap;letter-spacing:.2px}
-.period-tabs{display:flex;align-items:center;gap:14px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px}
+.period-tabs{display:inline-flex;align-items:center;gap:2px;min-width:0;flex:1;padding-right:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-padding-inline:18px;padding:2px;height:auto;min-height:34px;border:1px solid var(--ui-control-border);border-radius:9px;background:var(--ui-control-bg);max-width:100%;}
 .period-tabs::-webkit-scrollbar{display:none}
-.period-button{height:36px;min-width:52px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:#687383;font:inherit;font-size:16px;font-weight:760;cursor:pointer;white-space:nowrap}
-.period-button.active{color:#18202a;background:#edf2f7;font-weight:850}
+.period-button{height:28px;min-width:44px;padding:4px 13px;border:0;border-radius:6px;background:transparent;color:var(--ui-control-text);font:inherit;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;min-height:28px;line-height:20px;box-shadow:none;}
+.period-button.active{color:var(--ui-control-ink);background:var(--ui-control-active);font-weight:600;border-color:transparent;box-shadow:0 1px 3px #0002;}
 .annotation-controls{position:relative;flex:0 0 auto}
 .annotation-toggle{height:34px;padding:0 12px;border:1px solid #e1e6eb;border-radius:8px;background:#edf2f7;color:#18202a;font:inherit;font-size:13px;font-weight:780;cursor:pointer;white-space:nowrap}
 .annotation-toggle.active{background:#2563eb;border-color:#2563eb;color:#fff}
@@ -26,12 +29,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .annotation-separator{width:1px;height:20px;background:#e1e6eb;flex:0 0 auto}
 .chart-host{position:relative;width:100%;height:var(--chart-height);background:transparent;touch-action:pan-y;overflow:visible}
 #kline-canvas{display:block;width:100%;height:var(--chart-height);background:transparent;touch-action:pan-y}
-#kline-tooltip{position:absolute;z-index:40;top:10px;left:10px;width:240px;padding:8px 14px 8px 12px;box-sizing:border-box;background:rgba(37,43,52,.94);border:1px solid rgba(124,139,160,.55);border-radius:7px;color:#d9e0eb;box-shadow:none;font-size:11px;line-height:1.28;pointer-events:none;opacity:0;transform:translateY(-2px);transition:opacity .08s ease,transform .08s ease;overflow:hidden;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+#kline-tooltip{position:absolute;z-index:40;top:10px;left:10px;width:240px;padding:10px 12px;box-sizing:border-box;background:var(--ui-tooltip);border:0;border-radius:6px;color:var(--ui-tooltip-text);box-shadow:none;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;transform:translateY(-2px);transition:opacity .08s ease,transform .08s ease;overflow:hidden;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 #kline-tooltip.is-visible{opacity:1;transform:translateY(0)}
-#kline-tooltip .tip-time{margin-bottom:6px;color:#e1e7f0;font-weight:850;font-size:12px;white-space:nowrap;overflow:visible}
+#kline-tooltip .tip-time{margin-bottom:6px;color:var(--ui-tooltip-text);font-weight:850;font-size:13px;white-space:nowrap;overflow:visible;line-height:1.5;}
 #kline-tooltip .tip-row{display:grid;grid-template-columns:minmax(0,1fr) 76px;align-items:center;column-gap:5px;margin:2px 0;white-space:nowrap}
-#kline-tooltip span{color:#aab4c2;font-size:11px;white-space:nowrap;min-width:0}
-#kline-tooltip b{color:#eef3fb;font-size:12px;font-weight:850;white-space:nowrap;width:76px;text-align:right;justify-self:end;overflow:hidden;text-overflow:clip;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+#kline-tooltip span{color:var(--ui-tooltip-muted);font-size:12px;white-space:nowrap;min-width:0}
+#kline-tooltip b{color:var(--ui-tooltip-text);font-size:14px;font-weight:700;white-space:nowrap;width:76px;text-align:right;justify-self:end;overflow:hidden;text-overflow:clip;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;line-height:1.5;}
 #kline-tooltip .is-up{color:#00b899!important}
 #kline-tooltip .is-down{color:#ff2f57!important}
 #kline-tooltip .is-flat{color:#a0a8b5!important}
@@ -46,24 +49,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
   .kline-component{min-height:auto;height:auto}
   .kline-title{height:54px;gap:14px;padding-left:max(4px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
   .kline-title strong{font-size:16px;max-width:100%;overflow:visible;white-space:normal;overflow-wrap:anywhere}
-  .period-tabs{gap:8px;flex:1;padding-right:18px;scroll-padding-inline:18px}
-  .period-button{height:34px;min-width:44px;padding:0 10px;border-radius:7px;font-size:15px}
+  .period-tabs{gap:2px;flex:1;padding-right:18px;scroll-padding-inline:18px;display:inline-flex;padding:2px;height:auto;min-height:34px;border:1px solid var(--ui-control-border);border-radius:9px;background:var(--ui-control-bg);max-width:100%;}
+  .period-button{height:28px;min-width:44px;padding:4px 13px;border-radius:6px;font-size:13px;background:transparent;color:var(--ui-control-text);border:0;min-height:28px;line-height:20px;font-weight:500;box-shadow:none;}
   .annotation-toggle{height:32px;padding:0 9px;font-size:12px}
   .annotation-toolbar{position:fixed;left:8px;right:8px;top:auto;bottom:max(8px,env(safe-area-inset-bottom));max-width:none;width:auto}
-  #kline-tooltip{width:min(156px,40%);padding:7px 9px 7px 8px;font-size:11px}
-  #kline-tooltip .tip-time{font-size:12px}
+  #kline-tooltip{width:min(210px,60%);padding:10px 12px;font-size:13px;background:var(--ui-tooltip);color:var(--ui-tooltip-text);border:0;border-radius:6px;line-height:1.5;box-shadow:none;}
+  #kline-tooltip .tip-time{font-size:13px;color:var(--ui-tooltip-text);line-height:1.5;margin-bottom:6px;}
   #kline-tooltip .tip-row{grid-template-columns:minmax(0,1fr) 58px;column-gap:4px}
-  #kline-tooltip b{width:58px;font-size:11px}
+  #kline-tooltip b{width:58px;font-size:14px;color:var(--ui-tooltip-text);line-height:1.5;font-weight:700;}
   #annotation-editor{left:8px!important;right:8px!important;width:auto}
 }
-@media(max-width:380px){.period-button{min-width:40px;padding:0 8px;font-size:14px}#kline-tooltip{width:min(148px,40%)}}
+@media(max-width:380px){.period-button{min-width:44px;padding:4px 13px;font-size:13px;background:transparent;color:var(--ui-control-text);border:0;height:28px;min-height:28px;border-radius:6px;line-height:20px;font-weight:500;box-shadow:none;}#kline-tooltip{width:min(210px,60%);background:var(--ui-tooltip);color:var(--ui-tooltip-text);padding:10px 12px;border:0;border-radius:6px;font-size:13px;line-height:1.5;box-shadow:none;}}
 
 .kline-mobile-legend,.kline-mobile-levels{display:none}
 @media(max-width:760px){
   .kline-title strong{flex:0 0 auto;white-space:nowrap!important;font-size:15px!important}
   .kline-title{gap:10px;padding-right:8px}
-  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:4px;padding-right:8px;flex:1;min-width:0}
-  .period-button{flex:0 0 auto;min-width:40px;height:32px;padding:0 8px;font-size:14px;-webkit-tap-highlight-color:transparent}
+  .period-tabs{touch-action:pan-x;overscroll-behavior-x:contain;gap:2px;padding-right:8px;flex:1;min-width:0;display:inline-flex;padding:2px;height:auto;min-height:34px;border:1px solid var(--ui-control-border);border-radius:9px;background:var(--ui-control-bg);max-width:100%;}
+  .period-button{flex:0 0 auto;min-width:44px;height:28px;padding:4px 13px;font-size:13px;-webkit-tap-highlight-color:transparent;background:transparent;color:var(--ui-control-text);border:0;min-height:28px;border-radius:6px;line-height:20px;font-weight:500;box-shadow:none;}
   .kline-mobile-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 4px;color:var(--kl-text);font-size:11px;line-height:1.4;font-variant-numeric:tabular-nums}
   .kline-mobile-levels{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
   .kline-mobile-levels:empty,.kline-mobile-legend:empty{display:none}
@@ -73,7 +76,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 }
 
 </style>
-<style data-kline-theme="dual">/* Native K-line palettes, shared by standalone and previously saved charts. */
+<style data-kline-theme="dual">
+:root{--ui-control-bg:#f3f3f3;--ui-control-border:#e7e7e7;--ui-control-text:#777;--ui-control-hover:#e9e9e9;--ui-control-active:#fff;--ui-control-ink:#242424;--ui-tooltip:#3b3b3b;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#e5e5e5;--ui-range-selection:#777;--ui-range-handle:#fff;--ui-range-border:#bdbdbd;--ui-range-grip:#777}
+:root[data-theme="dark"]{--ui-control-bg:#191919;--ui-control-border:#303030;--ui-control-text:#a0a0a0;--ui-control-hover:#262626;--ui-control-active:#343434;--ui-control-ink:#f3f3f3;--ui-tooltip:#303030;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#2b2b2b;--ui-range-selection:#686868;--ui-range-handle:#202020;--ui-range-border:#4b4b4b;--ui-range-grip:#a0a0a0}
+/* Native K-line palettes, shared by standalone and previously saved charts. */
 :root[data-theme="light"] {
   --kl-bg:transparent;--kl-title-bg:transparent;--kl-text:#18202a;
   --kl-muted:#687383;--kl-border:#e1e6eb;--kl-active-bg:#edf2f7;--kl-active-text:#18202a;
@@ -94,15 +100,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 @media(max-width:760px) {
   :root[data-theme] .kline-title {min-height:54px}
 }
-:root[data-theme] .period-button {color:var(--kl-muted)}
-:root[data-theme] .period-button.active {background:var(--kl-active-bg);color:var(--kl-active-text)}
+:root[data-theme] .period-button {color:var(--ui-control-text);background:transparent;border:0;padding:4px 13px;height:28px;min-height:28px;min-width:44px;border-radius:6px;font-size:13px;line-height:20px;font-weight:500;box-shadow:none;}
+:root[data-theme] .period-button.active {background:var(--ui-control-active);color:var(--ui-control-ink);border-color:transparent;box-shadow:0 1px 3px #0002;font-weight:600;}
 :root[data-theme] :is(.annotation-toggle,.annotation-toolbar,#annotation-editor) {background:var(--kl-title-bg);color:var(--kl-text);border-color:var(--kl-border)}
 :root[data-theme] :is(.annotation-toolbar,#annotation-editor) :is(button,input) {background:var(--kl-bg);color:var(--kl-text);border-color:var(--kl-border)}
 :root[data-theme] .annotation-separator {background:var(--kl-border)}
 :root[data-theme] :is(.annotation-toggle.active,.annotation-toolbar button.active,#annotation-editor button[data-editor-action="confirm"]) {background:#2563eb;border-color:#2563eb;color:#fff}
-:root[data-theme="dark"] #kline-tooltip {background:rgba(12,18,27,.96);border-color:#303746;color:#d8e0ec}
+:root[data-theme="dark"] #kline-tooltip {background:var(--ui-tooltip);border-color:#303746;color:var(--ui-tooltip-text);padding:10px 12px;border:0;border-radius:6px;font-size:13px;line-height:1.5;box-shadow:none;}
 :root[data-theme="dark"] #kline-tooltip .tip-time {color:#e6edf3}
-:root[data-theme="dark"] #kline-tooltip span {color:#8b949e}
+:root[data-theme="dark"] #kline-tooltip span {color:var(--ui-tooltip-muted);font-size:12px;}
 :root[data-theme="dark"] #kline-tooltip b {color:#d8e0ec}
 </style>
 </head>

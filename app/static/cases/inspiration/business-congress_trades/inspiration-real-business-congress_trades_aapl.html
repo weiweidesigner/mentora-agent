@@ -1,10 +1,13 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="light" data-business-ui="neutral-v1">
 <head><script src="/static/cases/theme.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>议员交易</title>
 <style>
+:root{--ui-control-bg:#f3f3f3;--ui-control-border:#e7e7e7;--ui-control-text:#777;--ui-control-hover:#e9e9e9;--ui-control-active:#fff;--ui-control-ink:#242424;--ui-tooltip:#3b3b3b;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#e5e5e5;--ui-range-selection:#777;--ui-range-handle:#fff;--ui-range-border:#bdbdbd;--ui-range-grip:#777}
+:root[data-theme="dark"]{--ui-control-bg:#191919;--ui-control-border:#303030;--ui-control-text:#a0a0a0;--ui-control-hover:#262626;--ui-control-active:#343434;--ui-control-ink:#f3f3f3;--ui-tooltip:#303030;--ui-tooltip-text:#f5f5f5;--ui-tooltip-muted:#d0d0d0;--ui-range-track:#2b2b2b;--ui-range-selection:#686868;--ui-range-handle:#202020;--ui-range-border:#4b4b4b;--ui-range-grip:#a0a0a0}
+
 :root{color-scheme:light;--business-text-111827:#111827;--business-text-70757d:#70757d;--business-text-767b82:#767b82;--business-border-e9edf2:#e9edf2;--business-bg-f1f1f1:#f1f1f1;--business-bg-5f5f5f:#5f5f5f;--business-bg-fff:#fff;--business-bg-8a8a8a:#8a8a8a;--business-text-565d68:#565d68;--business-text-242830:#242830;--business-bg-eef1f5:#eef1f5;--business-text-a6abb3:#a6abb3;--business-text-8a9099:#8a9099;--business-bg-3b3b3b:#3b3b3b;--business-text-fff:#fff;--business-text-d8d8d8:#d8d8d8;--business-text-d0d0d0:#d0d0d0;--business-border-d5d5d5:#d5d5d5;--business-border-8a8a8a:#8a8a8a;--business-border-edf0f4:#edf0f4;--business-border-3b3b3b:#3b3b3b;}
 :root[data-theme="dark"]{color-scheme:dark;--business-text-111827:#e8edf5;--business-text-70757d:#a8b3c4;--business-text-767b82:#a8b3c4;--business-border-e9edf2:#293646;--business-bg-f1f1f1:#202b3a;--business-bg-5f5f5f:#263242;--business-bg-fff:#202b3a;--business-bg-8a8a8a:#516078;--business-text-565d68:#a8b3c4;--business-text-242830:#e8edf5;--business-bg-eef1f5:#202b3a;--business-text-a6abb3:#a8b3c4;--business-text-8a9099:#a8b3c4;--business-bg-3b3b3b:#263242;--business-text-fff:#f5f7fb;--business-text-d8d8d8:#a8b3c4;--business-text-d0d0d0:#a8b3c4;--business-border-d5d5d5:#293646;--business-border-8a8a8a:#566477;--business-border-edf0f4:#293646;--business-border-3b3b3b:#566477;}
 
@@ -19,7 +22,7 @@ body{padding:0}
 .dot{width:13px;height:13px;border-radius:50%;display:inline-block}
 .chart{width:100%;height:auto;aspect-ratio:5 / 2;position:relative;overflow:visible}
 svg{display:block;width:100%;height:100%;overflow:visible}
-.axis{fill:var(--business-text-767b82);font-size:12px;font-weight:500;dominant-baseline:middle}
+.axis{fill:var(--business-text-767b82);font-size:13px;font-weight:500;dominant-baseline:middle}
 .grid{stroke:var(--business-border-e9edf2);stroke-width:1}
 .price-line{fill:none;stroke:#3c73ff;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
 .buy{fill:#0aa06e}
@@ -45,22 +48,22 @@ td:first-child{text-align:left;font-size:13px;font-weight:400}
 .sell-text{color:#ff3b25}
 .flat-text{color:var(--business-text-111827)}
 .empty{height:260px;display:flex;align-items:center;justify-content:center;color:var(--business-text-8a9099);font-size:15px}
-.tooltip{position:absolute;z-index:20;min-width:178px;padding:10px 12px;background:var(--business-bg-3b3b3b);color:var(--business-text-fff);border-radius:6px;font-size:12px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none}
+.tooltip{position:absolute;z-index:20;min-width:178px;padding:10px 12px;background:var(--ui-tooltip);color:var(--ui-tooltip-text);border-radius:6px;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden;box-shadow:none;filter:none;border:0;}
 .tooltip.show{opacity:1;visibility:visible}
-.tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--business-border-3b3b3b)}
-.tip-title{display:block;color:var(--business-text-d8d8d8);margin-bottom:6px;font-size:12px;font-weight:500}
-.tip-row{display:flex;align-items:center;justify-content:space-between;gap:20px;white-space:nowrap;min-height:21px}
-.tip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-d0d0d0)}
+.tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-7px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid var(--ui-tooltip);}
+.tip-title{display:block;color:var(--ui-tooltip-text);margin-bottom:6px;font-size:13px;font-weight:500;line-height:1.5;}
+.tip-row{display:flex;align-items:center;justify-content:space-between;gap:20px;white-space:nowrap;min-height:22px;line-height:1.5;}
+.tip-label{display:flex;align-items:center;gap:7px;color:var(--ui-tooltip-muted);font-size:13px;line-height:1.5;}
 .tip-dot{width:8px;height:8px;border-radius:50%;flex:none}
-.tip-value{color:var(--business-text-fff);font-weight:750;font-variant-numeric:tabular-nums}
+.tip-value{color:var(--ui-tooltip-text);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;line-height:1.5;}
 @media(max-width:1280px){
   body{padding:0}
   .layout{display:block}
-  .legend{height:16px;gap:12px;font-size:11px;margin-bottom:0}
+  .legend{height:16px;gap:12px;font-size:12px;margin-bottom:0}
   .legend-item{gap:4px}
   .dot{width:8px;height:8px}
   .chart{aspect-ratio:5 / 2}
-  .axis{font-size:10px}
+  .axis{font-size:12px;}
   .brush{--handle-size:20px;--track-pad:10px;--track-height:2px;height:var(--handle-size);margin:0}
   .handle::before{height:8px;box-shadow:-3px 0 0 var(--business-border-8a8a8a),3px 0 0 #8a8a8a}
   .table-wrap{margin-top:0;overflow:auto}

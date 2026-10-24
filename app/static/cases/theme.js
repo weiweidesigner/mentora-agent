@@ -71,7 +71,8 @@ svg circle:focus,svg [role="button"]:focus{outline:none!important;-webkit-tap-hi
 .segmented>:is(button,.segment):focus-visible{outline:2px solid var(--mtr-segment-text)!important;outline-offset:2px!important}
 @media(prefers-reduced-motion:reduce){.segmented>:is(button,.segment){transition:none!important}}
 `;
-  document.documentElement.appendChild(palette);
+  // Updated business documents own their native controls and palette.
+  if (!document.documentElement.dataset.businessUi) document.documentElement.appendChild(palette);
 
   const syncBody = () => {
     if (!document.body) return;
