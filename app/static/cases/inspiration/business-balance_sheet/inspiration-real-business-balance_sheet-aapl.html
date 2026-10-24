@@ -135,7 +135,7 @@
       transition: background .14s ease, border-color .14s ease, color .14s ease, box-shadow .14s ease;
     }
     .metric-tab:hover { background: var(--control-hover); color: var(--control-active-text); }
-    .metric-tab.active {
+    .balance-sheet .metric-tab.active {
       background: var(--control-active-bg) !important;
       border-color: var(--control-active-border) !important;
       color: var(--control-active-text) !important;
@@ -162,6 +162,13 @@
       border-radius: 10px;
       background:var(--control-bg);
     }
+    .balance-sheet .segmented {
+      gap: 3px !important;
+      padding: 3px !important;
+      border-color: var(--control-border) !important;
+      border-radius: 10px !important;
+      background: var(--control-bg) !important;
+    }
     .segment {
       border: 1px solid transparent;
       background: transparent;
@@ -176,12 +183,39 @@
       transition: background .14s ease, border-color .14s ease, color .14s ease, box-shadow .14s ease;
     }
     .segment:hover { background: var(--control-hover); color: var(--control-active-text); }
-    .segment.active {
+    .balance-sheet .segment {
+      min-height: 32px !important;
+      padding: 6px 15px !important;
+      border: 1px solid transparent !important;
+      border-radius: 7px !important;
+      background: transparent !important;
+      color: var(--control-text) !important;
+      font-size: 13px !important;
+      line-height: 18px !important;
+      font-weight: 600 !important;
+    }
+    .balance-sheet .segment:hover { background: var(--control-hover) !important; color: var(--control-active-text) !important; }
+    .balance-sheet .segment.active {
       background:var(--control-active-bg) !important;
       border-color:var(--control-active-border) !important;
       color:var(--control-active-text) !important;
       box-shadow:var(--control-shadow) !important;
       font-weight:700;
+    }
+    #balanceSheet .segmented > .segment {
+      border-radius: 7px !important;
+      background: transparent !important;
+      color: var(--control-text) !important;
+    }
+    #balanceSheet .segmented > .segment:hover {
+      background: var(--control-hover) !important;
+      color: var(--control-active-text) !important;
+    }
+    #balanceSheet .segmented > .segment.active {
+      background: var(--control-active-bg) !important;
+      border-color: var(--control-active-border) !important;
+      color: var(--control-active-text) !important;
+      box-shadow: var(--control-shadow) !important;
     }
     .trend-stage {
       position: relative;
@@ -289,6 +323,17 @@
       background:var(--range-grip);
       box-shadow: -5px 0 0 var(--range-grip), 5px 0 0 var(--range-grip);
       opacity: 1;
+    }
+    .balance-sheet .range-track::before { background: var(--range-track) !important; }
+    .balance-sheet .range-selection { background: var(--range-selection) !important; }
+    .balance-sheet .range-handle {
+      border-color: var(--range-handle-border) !important;
+      background: var(--range-handle-bg) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,.24), 0 0 0 3px var(--range-ring) !important;
+    }
+    .balance-sheet .range-handle::before {
+      background: var(--range-grip) !important;
+      box-shadow: -5px 0 0 var(--range-grip), 5px 0 0 var(--range-grip) !important;
     }
     .range-shell[hidden] { display: none; }
     .tooltip {

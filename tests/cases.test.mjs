@@ -179,11 +179,12 @@ test('balance sheet case stays aligned with the source controls and dark timelin
  assert.match(report,/<script src="\/static\/cases\/theme\.js"><\/script>/);
  assert.match(report,/\.page-title\[data-business-title\] \{ margin: 0 0 14px !important; \}/);
  assert.match(report,/--control-active-bg:#2a384b;/);
- assert.match(report,/\.metric-tab\.active \{[\s\S]*background: var\(--control-active-bg\) !important;/);
- assert.match(report,/\.segment\.active \{[\s\S]*background:var\(--control-active-bg\) !important;/);
+ assert.match(report,/\.balance-sheet \.metric-tab\.active \{[\s\S]*background: var\(--control-active-bg\) !important;/);
+ assert.match(report,/\.balance-sheet \.segment\.active \{[\s\S]*background:var\(--control-active-bg\) !important;/);
  assert.match(report,/--range-track:#273243;/);
  assert.match(report,/--range-selection:#5376a8;/);
  assert.match(report,/--range-handle-bg:#182230;/);
+ assert.match(report,/\.balance-sheet \.range-track::before \{ background: var\(--range-track\) !important; \}/);
 });
 
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
