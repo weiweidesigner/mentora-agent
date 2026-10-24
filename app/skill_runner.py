@@ -82,7 +82,7 @@ def _registered_script(script_name: str, project_root: Path) -> tuple[Path, dict
 def _artifact_paths(arguments: list[str], project_root: Path) -> list[Path]:
     paths: list[Path] = []
     for index, value in enumerate(arguments[:-1]):
-        if value not in {"--output", "--payload-output"}:
+        if value not in {"--output", "--payload-output", "--code-output"}:
             continue
         path = Path(arguments[index + 1]).expanduser()
         if not path.is_absolute():

@@ -1,5 +1,11 @@
 [
   {
+    "name":"pine_script",
+    "script":"pine_script.py",
+    "label":"Pine Script",
+    "description":"独立原生Pine v5 Skill：自然语言生成指标/策略代码、兼容校验、对给定完整OHLCV计算plot/hline主图线条。导出.pine与版本化JSON供K线或其他组件复用，不取行情、不下单。CLI --operation generate|validate|evaluate、--kind indicator|strategy、--description、--code-file、--data-file、--period、--payload、--output、--code-output、--schema。模型已有代码时可直接校验/计算，不强制再次调用生成模型。"
+  },
+  {
     "name": "read_market_data",
     "script": "read_market_data.py",
     "label": "Batch Market Data",

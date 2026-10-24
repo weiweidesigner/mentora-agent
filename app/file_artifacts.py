@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote,unquote,urlsplit
 
-FILE_SUFFIXES={'.html','.pdf','.docx','.xlsx','.pptx','.csv','.txt','.md','.json','.png','.jpg','.jpeg','.webp','.svg','.zip'}
+FILE_SUFFIXES={'.html','.pdf','.docx','.xlsx','.pptx','.csv','.txt','.md','.json','.png','.jpg','.jpeg','.webp','.svg','.zip','.pine'}
 
 def collect_file_artifacts(question,answer,artifacts,generated_dir,project_root,*,allow_html=False):
     root=Path(generated_dir).resolve();files=[];seen=set()

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:pine": "esbuild node_modules/@nullarch/resin/src/index.ts --bundle --platform=node --format=esm --minify --outfile=.dependencies/mentora-deal/app/pine_runtime/resin.bundle.mjs",
+    "build:pine": "esbuild node_modules/@nullarch/resin/src/index.ts --bundle --platform=node --format=esm --minify --outfile=.dependencies/mentora-deal/app/skills/pine-script/runtime/resin.bundle.mjs",
     "build:streamviz": "vite build --config vite.streamviz.config.js"
   },
   "dependencies": {

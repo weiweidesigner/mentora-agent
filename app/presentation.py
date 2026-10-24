@@ -73,7 +73,7 @@ app.mount("/static", NativePineStaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
 WORKSPACE_PREVIEW_SUFFIXES = {
-    '.txt', '.md', '.json', '.csv', '.py', '.js', '.mjs', '.cjs', '.ts', '.tsx',
+    '.txt', '.md', '.json', '.csv', '.py', '.pine', '.js', '.mjs', '.cjs', '.ts', '.tsx',
     '.jsx', '.css', '.scss', '.html', '.xml', '.yaml', '.yml', '.toml', '.sh', '.sql',
 }
 

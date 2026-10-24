@@ -61,12 +61,16 @@ def test_download_endpoint_returns_attachment_and_host_theme_without_switches(mo
     monkeypatch.setattr(presentation,'GENERATED_DIR',tmp_path)
     (tmp_path/'report.html').write_text('<html><head></head><body><button id="theme-toggle">浅色</button><main>Report</main></body></html>')
     (tmp_path/'data.csv').write_text('a,b\n1,2')
+    (tmp_path/'indicator.pine').write_text('//@version=5\nindicator("Export")')
     client=TestClient(presentation.app)
     result=client.get('/api/artifacts/report.html/download?theme=dark')
     assert result.status_code==200 and result.headers['content-disposition'].startswith('attachment;')
     assert 'data-artifact-host-theme="dark"' in result.text
     assert 'Embedded reports inherit the host palette' in result.text
     assert client.get('/api/artifacts/data.csv/download').text=='a,b\n1,2'
+    exported=client.get('/api/artifacts/indicator.pine/download')
+    assert exported.status_code==200 and exported.text.startswith('//@version=5')
+    assert exported.headers['content-disposition'].startswith('attachment;')
     assert client.get('/api/artifacts/secret.env/download').status_code==400
 
 

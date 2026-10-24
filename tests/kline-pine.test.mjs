@@ -8,7 +8,7 @@ const tick=(ms=25)=>new Promise(resolve=>setTimeout(resolve,ms));
 function setup(path='/mentora/share-artifact/test.html'){
  const dom=new JSDOM('<div class="kline-component"><div class="kline-title">Test</div><div class="chart-host"></div></div>',{url:'https://example.com'+path,runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;
- w.eval(`const root=document.querySelector('.kline-component');const config={code:'TEST'};let activePeriod='1d',activeIndex=-1;const dataByPeriod={'1d':[{time:1000,open:10,high:12,low:9,close:11,volume:10},{time:2000,open:11,high:13,low:10,close:12,volume:20}],'1w':[{time:3000,open:10,high:13,low:9,close:12,volume:30},{time:4000,open:12,high:14,low:11,close:13,volume:40}]};function bars(){return dataByPeriod[activePeriod];}const strokes=[];let range=[];const ctx=new Proxy({strokeStyle:'',stroke(){strokes.push(this.strokeStyle);}},{get:(target,key)=>key in target?target[key]:()=>{}});function fmtPrice(n){return String(n);}function draw(){range=pineRange(0,1);drawPineLayer({main:{x:0,y:0,w:100,h:100},slice:{start:0,end:1},xOf:i=>i*50,priceScale:{y:v=>100-v}});}window.changePeriod=()=>{activePeriod='1w';draw();};window.inspect=()=>({range,strokes});${bridge}\ndraw();`);
+ w.eval(`const root=document.querySelector('.kline-component');const config={code:'TEST'};let activePeriod='1d',activeIndex=-1;const dataByPeriod={'1d':[{time:1000,open:10,high:12,low:9,close:11,volume:10},{time:2000,open:11,high:13,low:10,close:12,volume:20}],'1w':[{time:3000,open:10,high:13,low:9,close:12,volume:30},{time:4000,open:12,high:14,low:11,close:13,volume:40}]};function bars(){return dataByPeriod[activePeriod];}const strokes=[];let range=[];const ctx=new Proxy({strokeStyle:'',stroke(){strokes.push(this.strokeStyle);}},{get:(target,key)=>key in target?target[key]:()=>{}});function fmtPrice(n){return String(n);}function draw(){range=pineRange(0,1);drawPineLayer({main:{x:0,y:0,w:100,h:100},slice:{start:0,end:1},xOf:i=>i*50,priceScale:{y:v=>100-v}});}window.changePeriod=()=>{activePeriod='1w';draw();};window.inspect=()=>({range,strokes});${bridge}\nwindow.setEmbedded=outputs=>{config.pineOverlays=outputs;draw();};window.replaceBars=()=>{dataByPeriod[activePeriod]=dataByPeriod[activePeriod].map(row=>({...row,close:row.close+0.1}));draw();};draw();`);
  const root=w.document.querySelector('.kline-component');
  return {dom,w,root,close:()=>w.close()};
 }
@@ -63,5 +63,14 @@ test('static inspiration cases use the host API rather than a nested static path
   let called='';s.w.fetch=async url=>{called=url;return{ok:false,json:async()=>({detail:'fixture'})};};
   s.w.eval(adapter);s.root.querySelector('[data-action=run]').click();await tick();
   assert.equal(called,'/mentora/api/portfolio/pine/plot');
+ }finally{s.close();}
+});
+test('precomputed Skill outputs render offline, clear, and hide on live data replacement',()=>{
+ const s=setup();try{
+  s.w.setEmbedded([{period:'1d',plots:[{title:'Skill MA',values:[null,12],color:'#123456',style:'line'}],hlines:[]}]);
+  assert.equal(s.root.dataset.pineSeries,'1');assert.match(s.root.querySelector('.kline-pine-legend').textContent,/Skill MA 12/);
+  s.w.replaceBars();
+  assert.equal(s.root.dataset.pineSeries,'0');
+  s.root.klinePine.clear();assert.equal(s.root.dataset.pineSeries,'0');
  }finally{s.close();}
 });
