@@ -152,3 +152,58 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   parent.postMessage({type:'mentora:widget-ready'},'*');
   new MutationObserver(attach).observe(document.documentElement,{childList:true,subtree:true});
 })();
+
+/* Trade-flow distribution: names stay intact; amounts follow the bar ends. */
+(() => {
+  const root=document.documentElement;
+  if(root.dataset.mentoraFlowLabels)return;
+  root.dataset.mentoraFlowLabels='true';
+  const style=document.createElement('style');
+  style.dataset.flowBarLabels='true';
+  style.textContent=`
+.flow-summary .bars[data-flow-bar-labels]{
+  grid-template-columns:minmax(0,1fr) max-content minmax(0,1fr)!important;
+  column-gap:10px!important;padding-inline:64px;box-sizing:border-box;min-width:0
+}
+.flow-summary .bars[data-flow-bar-labels]>.size-label{white-space:nowrap!important;min-width:3em;line-height:1.4}
+.flow-summary .bars[data-flow-bar-labels]>.flowbar{position:relative;min-width:0}
+.flow-summary .bars[data-flow-bar-labels]>.flowbar>.bar-value{
+  position:absolute!important;top:50%;transform:translateY(-50%);
+  display:block;width:max-content!important;height:auto!important;min-width:0;
+  margin:0;padding:0;line-height:1.4;white-space:nowrap!important;
+  background:transparent!important;pointer-events:none
+}
+.flow-summary .bars[data-flow-bar-labels]>.in>.in-value{right:calc(var(--flow-bar-size) + 8px);text-align:right}
+.flow-summary .bars[data-flow-bar-labels]>.out>.out-value{left:calc(var(--flow-bar-size) + 8px);text-align:left}
+@media(max-width:520px){
+ .flow-summary .bars[data-flow-bar-labels]{padding-inline:56px;column-gap:8px!important}
+}
+`;
+  document.head.append(style);
+  const repair=()=>{
+    document.querySelectorAll('.flow-summary .bars').forEach(group=>{
+      const values=Array.from(group.querySelectorAll(':scope > .in-value,:scope > .out-value'));
+      if(!values.length)return;
+      for(const value of values){
+        const inward=value.classList.contains('in-value');
+        const bar=inward?value.nextElementSibling:value.previousElementSibling;
+        if(!bar?.matches(inward?'.flowbar.in':'.flowbar.out'))continue;
+        const fill=bar.querySelector(':scope > span:not(.bar-value)');
+        const size=Number.parseFloat(fill?.style.width);
+        if(!Number.isFinite(size))continue;
+        bar.style.setProperty('--flow-bar-size',Math.max(0,Math.min(100,size))+'%');
+        bar.append(value);
+        group.dataset.flowBarLabels='true';
+      }
+    });
+  };
+  const start=()=>{
+    repair();
+    let pending=false;
+    new MutationObserver(()=>{
+      if(pending)return;pending=true;
+      requestAnimationFrame(()=>{pending=false;repair();});
+    }).observe(document.body,{childList:true,subtree:true});
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
