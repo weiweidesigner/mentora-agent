@@ -81,11 +81,12 @@ def test_old_grouped_bar_is_rebuilt_with_same_saved_values():
 def test_saved_bar_receives_readable_typography_once():
     from app.artifact_upgrades import upgrade_generic_chart_typography
 
-    source = '<html><head></head><body><section class="chart-component"></section><script>const config = {"type":"bar"};</script></body></html>'
+    source = '<html><head><style data-cartesian-typography="2"></style></head><body><section class="chart-component"></section><script>const config = {"type":"bar"};</script></body></html>'
     upgraded = upgrade_generic_chart_typography(source)
-    assert 'data-cartesian-typography="2"' in upgraded
-    assert '.axis-label,.x-label{font-size:12px!important}' in upgraded
-    assert 'font-size:12px!important;line-height:1.5!important' in upgraded
+    assert 'data-cartesian-typography="3"' in upgraded
+    assert '.axis-label,.x-label{font-size:13px!important}' in upgraded
+    assert 'font-size:14px!important;line-height:1.55!important' in upgraded
+    assert '.tooltip-row{min-height:26px!important' in upgraded
     assert upgrade_generic_chart_typography(upgraded) == upgraded
 
 
