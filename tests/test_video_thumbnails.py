@@ -1,4 +1,6 @@
 from io import BytesIO
+import ast
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI, HTTPException
@@ -113,3 +115,14 @@ def test_source_redirects_are_not_followed(monkeypatch):
     with pytest.raises(HTTPException) as error:
         thumbnails.get_thumbnail(URL, 384)
     assert error.value.status_code == 404
+
+
+@pytest.mark.parametrize('entrypoint', ['main.py', 'presentation.py'])
+def test_each_deployed_entrypoint_mounts_the_thumbnail_router(entrypoint):
+    tree = ast.parse((Path(__file__).resolve().parents[1] / 'app' / entrypoint).read_text())
+    assert any(isinstance(node, ast.ImportFrom) and node.module == 'app.video_thumbnails'
+               and any(alias.name == 'router' and alias.asname == 'video_thumbnail_router' for alias in node.names)
+               for node in ast.walk(tree))
+    assert any(isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+               and node.func.attr == 'include_router' and any(isinstance(arg, ast.Name) and arg.id == 'video_thumbnail_router' for arg in node.args)
+               for node in ast.walk(tree))
