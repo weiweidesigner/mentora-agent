@@ -161,12 +161,17 @@ test('midterm election case removes the standalone reader gutter when embedded',
  assert.match(report,/<script src="\/static\/artifact-presentation\.js"><\/script>/);
 });
 
-test('revenue geography case uses the enlarged desktop pie renderer',()=>{
+test('revenue geography case uses the enlarged desktop pie renderer without a duplicate period badge',()=>{
  const report=readFileSync(new URL('../app/static/cases/inspiration/business-revenue_geography/inspiration-real-business-revenue_geography-AAPL.html',import.meta.url),'utf8');
- assert.match(report,/data-renderer-version="pie-spacing-v3"/);
+ assert.match(report,/data-renderer-version="pie-spacing-v4"/);
  assert.match(report,/\.pie-component\.legend-bottom \.pie-stage\{width:min\(100%,460px\);height:280px/);
+ assert.match(report,/\.pie-component\.legend-bottom \.pie-legend\{[^}]*font-size:13px/);
  assert.match(report,/Math\.min\(128, Math\.min\(width, height\) \/ 2 - safe\)/);
  assert.match(report,/@media\(max-width:759px\)[\s\S]*\.pie-component\.legend-bottom \.pie-stage\{width:min\(100%,260px\);height:178px\}/);
+ assert.match(report,/<div class="pie-badge"><\/div>/);
+ assert.match(report,/"badgeLabel": ""/);
+ const cached=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/business-revenue_geography/conversation.json',import.meta.url),'utf8'));
+ assert.equal(cached.answer.interpretation.match(/数据更新日期：2026-10-14/g)?.length,1);
 });
 
 test('inspiration categories switch by click and keyboard and replay without inference', async () => {
