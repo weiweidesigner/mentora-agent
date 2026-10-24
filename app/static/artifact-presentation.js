@@ -207,3 +207,31 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+
+/* Generic chart typography contract: axis/legend 13, tooltip 14/title 13. */
+(() => {
+  if(document.querySelector('[data-generic-chart-typography]'))return;
+  const style=document.createElement('style');
+  style.dataset.genericChartTypography='20261024';
+  style.textContent=`
+.axis-label,.x-label{font-size:13px!important;font-weight:400!important}
+:is(.chart-legend,.pie-legend,.ring-legend,.treemap-legend,.waterfall-legend),
+#legend .legendItem{font-size:13px!important;line-height:1.4!important}
+:is(.chart-legend,.pie-legend,.ring-legend,.treemap-legend),#legend{background:transparent!important;box-shadow:none!important}
+:is(.chart-tooltip,.generic-canvas-tooltip,.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip){
+ font-size:14px!important;line-height:1.55!important;padding:11px 14px!important;border-radius:6px!important;
+ max-width:min(280px,calc(100vw - 24px))!important;box-shadow:none!important;filter:none!important
+}
+.chart-tooltip .tooltip-title,.chart-tooltip>strong{font-size:13px!important;line-height:1.45!important;font-weight:500!important;margin-bottom:4px!important}
+.chart-tooltip .tooltip-body{column-gap:16px!important;row-gap:6px!important}
+.chart-tooltip :is(.tooltip-label,.tooltip-value,.tooltip-row b){font-size:14px!important}
+.chart-tooltip .tooltip-value{font-weight:650!important;font-variant-numeric:tabular-nums}
+.chart-tooltip .tooltip-dot{width:8px!important;height:8px!important;flex-shrink:0}
+:root[data-theme="dark"] :is(.chart-tooltip,.generic-canvas-tooltip,.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip){
+ --chart-tooltip-bg:#3b3b3b!important;--tooltip-bg:#3b3b3b!important;background:#3b3b3b!important;color:#fff!important;border-color:transparent!important
+}
+:root[data-theme="dark"] :is(.chart-tooltip,.waterfall-tooltip)::after{border-top-color:#3b3b3b!important}
+:root[data-theme="dark"] :is(.pie-tooltip,.ring-tooltip)::after{background:#3b3b3b!important}
+`;
+  (document.head||document.documentElement).append(style);
+})();

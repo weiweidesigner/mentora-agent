@@ -25,13 +25,13 @@ svg{display:block;width:100%;height:100%;overflow:visible}
 .bar{cursor:crosshair}
 .hit-area{cursor:crosshair}
 .highlight{fill:var(--business-text-f7f7f7);pointer-events:none}
-.waterfall-tooltip{position:absolute;z-index:5;min-width:160px;padding:7px 10px;background:var(--business-bg-3a3a3a);color:var(--business-text-fff);border-radius:5px;font-size:13px;line-height:1.5;pointer-events:none;opacity:0;visibility:hidden}
+.waterfall-tooltip{position:absolute;z-index:5;min-width:160px;padding:11px 14px;background:var(--business-bg-3a3a3a);color:var(--business-text-fff);border-radius:5px;font-size:14px;line-height:1.55;pointer-events:none;opacity:0;visibility:hidden}
 .waterfall-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-8px;transform:translateX(-50%);border-left:9px solid transparent;border-right:9px solid transparent;border-top:9px solid var(--business-bg-3a3a3a)}
 .waterfall-tooltip.active{opacity:1;visibility:visible}
 .tooltip-row{display:flex;justify-content:space-between;align-items:center;gap:18px;white-space:nowrap}
 .tooltip-label{display:flex;align-items:center;gap:7px;color:var(--business-text-fff)}
 .tooltip-dot,.legend-dot{width:9px;height:9px;border-radius:50%;flex:none}
-.waterfall-legend{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;margin-top:18px;padding-bottom:8px;color:var(--business-text-secondary);font-size:14px;line-height:1.2}
+.waterfall-legend{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;margin-top:18px;padding-bottom:8px;color:var(--business-text-secondary);font-size:13px;line-height:1.2}
 .waterfall-component.hide-legend .waterfall-layout{grid-template-columns:1fr}
 .waterfall-component.hide-legend .waterfall-legend{display:none}
 .legend-separator{grid-column:1/-1;height:1px;background:var(--business-bg-e8e8e8);margin:-2px 0 0}
@@ -40,7 +40,7 @@ svg{display:block;width:100%;height:100%;overflow:visible}
 .legend-value{font-weight:800;text-align:right;white-space:nowrap}
 .legend-label.is-total,.legend-value.is-total{font-weight:800}
 @media(min-width:900px){.waterfall-component{max-width:1040px;padding-left:36px;padding-right:36px}.waterfall-layout{grid-template-columns:minmax(520px,640px) 360px;justify-content:start;gap:18px}.waterfall-stage{height:180px}.waterfall-legend{width:100%;max-width:340px;margin-top:14px}}
-@media(max-width:640px){.waterfall-component{padding:12px 16px 12px}.waterfall-stage{height:168px}.waterfall-tooltip,.waterfall-legend{font-size:13px}.waterfall-legend{gap:9px 12px;margin-top:14px}}
+@media(max-width:640px){.waterfall-component{padding:12px 16px 12px}.waterfall-stage{height:168px}.waterfall-tooltip,.waterfall-legend{font-size:14px}.waterfall-legend{gap:9px 12px;margin-top:14px}}
 </style>
 <script>(() => { const theme = new URLSearchParams(location.search).get('theme'); if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme; })();</script></head>
 <body>

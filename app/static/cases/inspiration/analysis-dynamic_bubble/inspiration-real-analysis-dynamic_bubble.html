@@ -10,7 +10,7 @@ html,body{margin:0;width:100%;height:auto;min-height:0;background:transparent;co
 #header{position:absolute;left:0!important;right:12px;top:14px;z-index:6;margin:0!important;padding:0!important;transform:none!important}
 #title{position:relative!important;left:0!important;right:auto!important;top:auto!important;margin:0!important;padding:0!important;transform:none!important;font-family:"PingFang SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:22px;line-height:1.35;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#151922}
 #legend{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin:12px 0 0!important;padding:0!important;min-height:18px}
-.legendItem{display:inline-flex;align-items:center;gap:7px;margin:0;padding:0;color:#687386;font-size:12px;line-height:18px;white-space:nowrap}
+.legendItem{display:inline-flex;align-items:center;gap:7px;margin:0;padding:0;color:#687386;font-size:13px;line-height:18px;white-space:nowrap}
 .legendDot{width:9px;height:9px;flex:0 0 9px;border-radius:50%}
 #chart{position:absolute;inset:0;height:100%;min-height:100%}
 #empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#687386;font-size:14px;z-index:4}
@@ -39,7 +39,7 @@ html,body{margin:0;width:100%;height:auto;min-height:0;background:transparent;co
  #header{right:8px;top:10px}
  #title{font-size:17px;font-weight:700;letter-spacing:0}
  #legend{gap:6px 12px;margin-top:8px!important}
- .legendItem{font-size:11px;gap:6px}
+ .legendItem{font-size:13px;gap:6px}
  #timelineBar{left:0;right:0;bottom:12px;gap:7px;padding:5px 0 5px 8px;border-radius:999px}
  .timeLabel{min-width:42px;font-size:11px}
  #speedBtn{height:28px;min-height:28px;line-height:28px;min-width:38px;padding:0 9px}
@@ -215,9 +215,9 @@ function renderChart(){
   animationEasingUpdate:"cubicInOut",
   grid:{left:l.gridLeft,right:l.gridRight,top:l.top,bottom:l.bottom,containLabel:true},
   legend:{show:false},
-  tooltip:{className:"generic-canvas-tooltip",trigger:"item",confine:true,triggerOn:matchMedia("(pointer:coarse)").matches?"none":"mousemove|click",backgroundColor:darkMode ? "#202733" : "rgba(255,255,255,.98)",borderColor:chartBorder,extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:darkMode ? "#f1f5f9" : "#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
-  xAxis:{type:"value",min:xScale.min,max:xScale.max,interval:xScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),margin:10,hideOverlap:true,showMinLabel:false,showMaxLabel:false},axisLine:{lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
-  yAxis:{type:"value",min:yScale.min,max:yScale.max,interval:yScale.interval,splitNumber:4,name:"",axisLabel:{color:chartText,formatter:v=>compactNumber(v),inside:false,align:"right",padding:0,margin:3,hideOverlap:true},axisLine:{show:true,lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
+  tooltip:{className:"generic-canvas-tooltip",trigger:"item",confine:true,triggerOn:matchMedia("(pointer:coarse)").matches?"none":"mousemove|click",backgroundColor:darkMode ? "#3b3b3b" : "rgba(255,255,255,.98)",borderColor:chartBorder,extraCssText:"box-shadow:0 12px 28px rgba(17,24,39,.12);",textStyle:{color:darkMode ? "#f1f5f9" : "#151922"},formatter:p=>`<b>${p.value[3]}</b><br/>${labels.time||enc.time||"time"}: ${frame}<br/>${labels.x||enc.x}: ${compactNumber(p.value[0])}<br/>${labels.y||enc.y}: ${compactNumber(p.value[1])}<br/>${labels.size||enc.size}: ${compactNumber(p.value[2])}<br/>${p.value[4]||""}`},
+  xAxis:{type:"value",min:xScale.min,max:xScale.max,interval:xScale.interval,splitNumber:4,name:"",axisLabel:{fontSize:13,color:chartText,formatter:v=>compactNumber(v),margin:10,hideOverlap:true,showMinLabel:false,showMaxLabel:false},axisLine:{lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
+  yAxis:{type:"value",min:yScale.min,max:yScale.max,interval:yScale.interval,splitNumber:4,name:"",axisLabel:{fontSize:13,color:chartText,formatter:v=>compactNumber(v),inside:false,align:"right",padding:0,margin:3,hideOverlap:true},axisLine:{show:true,lineStyle:{color:chartBorder}},axisTick:{show:false},splitLine:{lineStyle:{color:chartGrid}}},
   graphic:[
    {type:"text",left:"center",top:"45%",silent:true,z:1,style:{text:frame,fill:darkMode ? "rgba(193,202,215,.25)" : "rgba(104,115,134,.13)",fontSize:compact()?42:64,fontWeight:800,textAlign:"center",textVerticalAlign:"middle"}},
    {type:"text",x:0,y:l.top-24,silent:true,z:4,style:{text:labels.y||enc.y,fill:chartText,fontSize:compact()?12:13,fontWeight:650,textAlign:"left",textVerticalAlign:"middle"}},

@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box}
 :root{--chart-text-primary:#171b22;--chart-text-secondary:#5f6876;--chart-tooltip-bg:#303030}
-:root[data-theme="dark"]{color-scheme:dark;--chart-text-primary:#f1f5f9;--chart-text-secondary:#c1cad7;--chart-tooltip-bg:#202733}
+:root[data-theme="dark"]{color-scheme:dark;--chart-text-primary:#f1f5f9;--chart-text-secondary:#c1cad7;--chart-tooltip-bg:#3b3b3b}
 html,body{width:100%;height:100%;margin:0;background:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;color:var(--chart-text-primary)}
 .treemap-component{position:relative;width:100%;min-height:460px;padding:18px 22px 16px;background:transparent;overflow:visible}
@@ -34,7 +34,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .treemap-cell.label-value-only .treemap-value{font-size:10px;line-height:1.1}
 .treemap-cell.label-name-only .treemap-value{display:none}
 .treemap-cell.label-name-only .treemap-label{-webkit-line-clamp:2}
-.treemap-tooltip{position:absolute;z-index:10;min-width:176px;padding:9px 11px;background:var(--chart-tooltip-bg);color:#ffffff;border:0;border-radius:6px;font-size:13px;line-height:1.45;pointer-events:none;opacity:0;visibility:hidden;box-shadow:0 10px 24px rgba(15,23,42,.18)}
+.treemap-tooltip{position:absolute;z-index:10;min-width:176px;padding:11px 14px;background:var(--chart-tooltip-bg);color:#ffffff;border:0;border-radius:6px;font-size:14px;line-height:1.55;pointer-events:none;opacity:0;visibility:hidden;box-shadow:0 10px 24px rgba(15,23,42,.18)}
 .treemap-tooltip.active{opacity:1;visibility:visible}
 .tooltip-title{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
 .tooltip-dot,.legend-dot{width:9px;height:9px;border-radius:2px;flex:none}
@@ -43,7 +43,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Micr
 .legend-item{display:flex;align-items:center;gap:7px;min-width:0}
 .legend-label{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .treemap-component.hide-legend .treemap-legend{display:none}
-@media(max-width:640px){.treemap-component{min-height:0;padding:12px 14px 10px}.treemap-title{min-height:18px;font-size:14px;line-height:1.2}.treemap-subtitle{margin:2px 0 6px;font-size:12px;line-height:1.3}.treemap-stage{height:auto;min-height:0;aspect-ratio:900/700}.treemap-cell{padding:9px;border-radius:0}.treemap-legend{gap:8px 12px;margin-top:8px;font-size:12px}.treemap-label,.treemap-tooltip{font-size:12px}}
+@media(max-width:640px){.treemap-component{min-height:0;padding:12px 14px 10px}.treemap-title{min-height:18px;font-size:14px;line-height:1.2}.treemap-subtitle{margin:2px 0 6px;font-size:12px;line-height:1.3}.treemap-stage{height:auto;min-height:0;aspect-ratio:900/700}.treemap-cell{padding:9px;border-radius:0}.treemap-legend{gap:8px 12px;margin-top:8px;font-size:13px}.treemap-label,.treemap-tooltip{font-size:14px}}
 </style>
 <style data-streamviz-theme="dual">/* StreamViz owns both artifact palettes and legacy compatibility. */
 /* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */

@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box}
 :root{--chart-text-primary:#171b22;--chart-text-secondary:#5f6876;--chart-text-muted:#8b94a2;--chart-border-subtle:#edf0f4;--chart-border-default:#a3a8b0;--chart-point-fill:#fff;--chart-highlight:#8a8a8a;--chart-tooltip-bg:rgba(59,59,59,.96)}
-:root[data-theme="dark"]{color-scheme:dark;--chart-text-primary:#f1f5f9;--chart-text-secondary:#c1cad7;--chart-text-muted:#93a0b3;--chart-border-subtle:#2b3544;--chart-border-default:#334052;--chart-point-fill:#181e28;--chart-highlight:#c1cad7;--chart-tooltip-bg:#202733}
+:root[data-theme="dark"]{color-scheme:dark;--chart-text-primary:#f1f5f9;--chart-text-secondary:#c1cad7;--chart-text-muted:#93a0b3;--chart-border-subtle:#2b3544;--chart-border-default:#334052;--chart-point-fill:#181e28;--chart-highlight:#c1cad7;--chart-tooltip-bg:#3b3b3b}
 html,body{width:100%;height:100%;margin:0;background:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;letter-spacing:0;background:transparent;color:var(--chart-text-primary)}
 .chart-component{position:relative;width:100%;container-type:inline-size;height:clamp(320px,calc(100cqw * .42),360px);padding:0;background:transparent;overflow:visible}
@@ -19,24 +19,24 @@ svg{display:block;width:100%;height:100%;overflow:visible}
 .axis-line{stroke:var(--chart-border-default);stroke-width:1}
 .distribution-zero-line{stroke:var(--chart-text-muted);stroke-width:1.25;stroke-dasharray:4 4;pointer-events:none}
 .distribution-zero-label{fill:var(--chart-text-muted);font-size:10px;font-weight:700;text-anchor:middle}
-.axis-label{fill:var(--chart-text-secondary);font-size:10px;font-weight:400}
-.x-label{fill:var(--chart-text-secondary);font-size:10px;font-weight:400;text-anchor:middle}
+.axis-label{fill:var(--chart-text-secondary);font-size:13px;font-weight:400}
+.x-label{fill:var(--chart-text-secondary);font-size:13px;font-weight:400;text-anchor:middle}
 .bar{rx:0;cursor:crosshair}
 .line-path{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .point{fill:var(--chart-point-fill);stroke-width:2;cursor:crosshair}
 .hover-zone{fill:transparent;cursor:crosshair}
 .highlight{fill:var(--chart-highlight);pointer-events:none}
-.chart-legend{position:absolute;left:8px;right:8px;bottom:4px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 18px;color:var(--chart-text-secondary);font-size:10px;line-height:1.2;text-align:center;pointer-events:none}
+.chart-legend{position:absolute;left:8px;right:8px;bottom:4px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 18px;color:var(--chart-text-secondary);font-size:13px;line-height:1.2;text-align:center;pointer-events:none}
 .legend-item{display:flex;align-items:center;gap:7px;white-space:nowrap}
 .legend-dot{width:8px;height:8px;border-radius:50%;flex:none}
-.chart-tooltip{position:fixed;z-index:2147483647;display:inline-grid;min-width:180px;width:max-content;max-width:min(220px,calc(100vw - 24px));padding:8px 10px;background:var(--chart-tooltip-bg);color:#fff;border-radius:6px;font-size:10px;line-height:1.35;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .08s ease;box-shadow:none;filter:none;white-space:normal}
+.chart-tooltip{position:fixed;z-index:2147483647;display:inline-grid;min-width:180px;width:max-content;max-width:min(220px,calc(100vw - 24px));padding:11px 14px;background:var(--chart-tooltip-bg);color:#fff;border-radius:6px;font-size:14px;line-height:1.55;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .08s ease;box-shadow:none;filter:none;white-space:normal}
 .chart-tooltip::after{content:"";position:absolute;left:var(--arrow-left,50%);bottom:-5px;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid var(--chart-tooltip-bg)}
 .chart-tooltip.active{opacity:1;visibility:visible}
 .tooltip-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:12px;min-height:17px;white-space:normal}
 .tooltip-row b{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .tooltip-label{display:grid;grid-template-columns:7px minmax(0,1fr);align-items:start;gap:5px;color:#f5f5f5;min-width:0;overflow-wrap:anywhere}
 .tooltip-dot{width:7px;height:7px;margin-top:.325em;border-radius:50%;flex:none}
-@media(max-width:680px){.chart-component{height:clamp(248px,calc(100cqw * .72),320px);padding:0}.chart-title{min-height:18px;max-height:38px;font-size:14px;line-height:1.28;padding:0}.chart-stage{height:calc(100% - 50px);margin-top:6px}.axis-label,.x-label{font-size:10px}.chart-legend{left:0;right:0;bottom:0;gap:8px 12px;min-height:30px;font-size:10px;align-content:center}.legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}.legend-dot{width:8px;height:8px}.chart-tooltip{min-width:0;max-width:220px;font-size:10px;padding:6px 8px;white-space:normal}}
+@media(max-width:680px){.chart-component{height:clamp(248px,calc(100cqw * .72),320px);padding:0}.chart-title{min-height:18px;max-height:38px;font-size:14px;line-height:1.28;padding:0}.chart-stage{height:calc(100% - 50px);margin-top:6px}.axis-label,.x-label{font-size:13px}.chart-legend{left:0;right:0;bottom:0;gap:8px 12px;min-height:30px;font-size:13px;align-content:center}.legend-item{gap:5px;max-width:42%;overflow:hidden;text-overflow:ellipsis}.legend-dot{width:8px;height:8px}.chart-tooltip{min-width:0;max-width:220px;font-size:14px;padding:11px 14px;white-space:normal}}
 </style>
 </head>
 <body>
