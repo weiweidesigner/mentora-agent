@@ -67,6 +67,19 @@ test('case replay recovers from a transient deployment gateway error', async () 
   assert.doesNotMatch(h.messages.textContent,/案例暂时无法打开/);
 });
 
+test('case loading uses an accessible animation until the answer arrives',async()=>{
+  const h=setup('https://example.com/','加载后的答案',null,{failConversationAttempts:1});
+  await tick();h.w.document.querySelector('.caseCard').click();await tick();
+  const status=h.messages.querySelector('[role="status"]');
+  assert.equal(status.getAttribute('aria-label'),'答案正在加载');
+  assert.equal(status.getAttribute('aria-busy'),'true');
+  assert.equal(status.textContent,'');
+  await new Promise(resolve=>setTimeout(resolve,340));
+  assert.equal(h.messages.querySelector('.caseAnswerLoading'),null);
+  assert.match(h.messages.textContent,/加载后的答案/);
+  h.w.close();
+});
+
 test('cached answers reveal progressively and stop when leaving the case', async () => {
   const h=setup('https://example.com/', '逐步显示的缓存分析。'.repeat(40));await tick();
   h.w.document.querySelector('.caseCard').click();await tick();

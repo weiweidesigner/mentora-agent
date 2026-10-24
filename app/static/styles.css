@@ -3863,6 +3863,13 @@ p {
 .caseAskButton:hover { background: #6554df; }
 .caseAskButton:disabled { opacity: .65; cursor: wait; }
 .caseLoading { padding: 28px 8px; text-align: center; color: var(--muted); font-size: 14px; }
+.caseAnswerLoading { display:flex;align-items:center;justify-content:center;min-height:clamp(180px,32vh,300px); }
+.caseLoadingDots { display:inline-flex;align-items:center;gap:7px;height:24px;color:var(--muted); }
+.caseLoadingDots i { width:7px;height:7px;border-radius:50%;background:currentColor;animation:caseAnswerPulse 1.2s ease-in-out infinite; }
+.caseLoadingDots i:nth-child(2) { animation-delay:.16s; }
+.caseLoadingDots i:nth-child(3) { animation-delay:.32s; }
+@keyframes caseAnswerPulse { 0%,70%,100% { opacity:.3;transform:translateY(0); } 35% { opacity:1;transform:translateY(-4px); } }
+@media(prefers-reduced-motion:reduce) { .caseLoadingDots i { animation:none;opacity:.65; } }
 :root[data-theme="dark"] .caseCard { background: #171d26; }
 @media (max-width: 760px) {
   .conversation.is-empty .homeCases { width: 100%; margin-top: 24px; padding: 0 12px 28px; }

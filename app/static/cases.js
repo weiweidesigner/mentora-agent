@@ -304,7 +304,7 @@
     url.searchParams.set("case", id);
     if (navigate) history.pushState({ case: id }, "", url);
     else history.replaceState({ case: id }, "", url);
-    messages.innerHTML = '<div class="caseLoading" role="status">正在打开缓存对话…</div>';
+    messages.innerHTML = '<div class="caseLoading caseAnswerLoading" role="status" aria-label="答案正在加载" aria-busy="true"><span class="caseLoadingDots" aria-hidden="true"><i></i><i></i><i></i></span></div>';
     try {
       if (!responseCache.has(id)) {
         responseCache.set(id, await fetchCasePayload(row.conversationUrl));
