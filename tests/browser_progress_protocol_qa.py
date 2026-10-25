@@ -24,15 +24,15 @@ with sync_playwright() as p:
                 const send=(event,data)=>handleStreamEvent(article,event,data);
                 const title=()=>article.querySelector('.thinkingSummaryText').textContent;
                 send('progress',{blockId:'p1',text:'核对日期与数据口径',kind:'commentary'});
-                if(title()!=='核对日期与数据口径')throw Error('progress title missing');
+                if(!title().startsWith('已处理'))throw Error('elapsed header missing');
                 send('tool_step',{tool:'bash',callId:'b',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
-                if(title()!=='加载市场数据')throw Error('new tool did not replace old progress');
+                if(!article.querySelector('.thinkingFlow').textContent.includes('加载市场数据'))throw Error('new tool missing from timeline');
                 send('progress',{blockId:'p2',text:'汇总本周表现',kind:'commentary'});
-                if(title()!=='汇总本周表现')throw Error('new progress did not replace title');
+                if(!article.querySelector('.thinkingFlow').textContent.includes('汇总本周表现'))throw Error('new progress missing from timeline');
                 send('tool_step',{tool:'bash',callId:'b',phase:'completed',thoughtSummary:'加载市场数据',params:['true']});
-                if(title()!=='汇总本周表现')throw Error('stale parallel completion overwrote title');
+                if(!title().startsWith('已处理'))throw Error('tool completion replaced elapsed header');
                 if(article.querySelector('.finalAnswer').textContent.trim())throw Error('progress leaked into answer');
-                if(article.querySelector('.thinkingFlow')?.hidden!==true)throw Error('history expanded automatically');
+                if(article.querySelector('.thinkingFlow')?.hidden!==false)throw Error('live history is not expanded');
                 send('answer_text',{blockId:'answer',delta:'**已核实结论**：结果为 2。'});
                 if(!article.querySelector('.finalAnswer').textContent.includes('结果为 2'))throw Error('answer not streamed immediately');
                 send('tool_step',{tool:'read',callId:'later',phase:'started',thoughtSummary:'核对组件',params:['/outputs/fixture.json']});
@@ -40,9 +40,7 @@ with sync_playwright() as p:
                 send('progress',{blockId:'p3',text:'验证组件展示',kind:'commentary'});
                 const body=article.querySelector('.finalAnswer').textContent;
                 if(body.includes('验证组件展示')||body.includes('核对日期'))throw Error('duplicate progress paragraph');
-                if(title()!=='验证组件展示')throw Error('latest title not current');
-                const trigger=article.querySelector('.thinkingTrigger');trigger.click();
-                if(article.querySelector('.thinkingFlow').hidden)throw Error('cannot inspect progress history');
+                if(!article.querySelector('.thinkingFlow').textContent.includes('验证组件展示'))throw Error('latest timeline item not current');
                 if(!article.querySelector('.thinkingFlow').textContent.includes('核对日期'))throw Error('lost history');
                 article.remove();return {width:innerWidth,theme,progressOnlyInThinking:true,latestStatus:true,answerImmediate:true,history:true};
             }''',theme)

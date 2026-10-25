@@ -19,23 +19,26 @@ test('public thought stays verbatim with its corresponding tool visible undernea
   const thought='我先确认 A 股全市场快照的口径和当前时间，再根据实际返回的数据判断上午市场宽度与结构';
   a.dataset.publicThoughtText=thought;
   w.appendToolStep(a,{callId:'snapshot',tool:'screener',phase:'started',thoughtSummary:'核对执行入口的必填参数'});
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent,thought);
-  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
-  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/screener/);
-  a.querySelector('.thinkingTrigger').click();
+  assert.match(a.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  assert.match(a.querySelector('.thinkingFlow').textContent,/核对执行入口的必填参数/);
   assert.match(a.querySelector('.thinkingFlow').textContent,/screener/);
+  a.querySelector('.thinkingTrigger').click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
   dom.window.close();
 });
 
-test('Deal tool names never replace the latest public streaming summary', () => {
+test('Deal tool names never replace the elapsed header or public timeline text', () => {
   const dom=fixture(),w=dom.window,a=w.article;
   const text='根据已取得的行情筛选符合条件的候选。';
   w.appendStep(a,text,'','loading','public-progress');
   w.appendToolStep(a,{callId:'deal-screen',tool:'screener',phase:'started'});
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent,text);
+  assert.match(a.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
+  assert.match(a.querySelector('.thinkingFlow').textContent,new RegExp(text));
   w.appendToolStep(a,{callId:'deal-screen',tool:'screener',phase:'completed',thoughtSummary:'screener'});
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent,text);
+  assert.match(a.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
+  assert.match(a.querySelector('.thinkingFlow').textContent,new RegExp(text));
   dom.window.close();
 });
 
@@ -44,13 +47,14 @@ test('expanded completed thinking control points its chevron down', () => {
   assert.match(styles,/\.thinkingTrigger\.is-thinking:hover \.thinkingChevron,[^}]*\.thinkingTrigger\.is-thinking\[aria-expanded="true"\] \.thinkingChevron\s*\{[^}]*opacity:\s*1/);
 });
 
-test('live progress shows elapsed time above the clickable flowing summary', () => {
+test('live progress shows one elapsed header and the expanded flow below it', () => {
   const dom = fixture(), a = dom.window.article;
-  assert.match(a.querySelector('.thinkingElapsedLive').textContent, /^\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2$/);
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent, 'thinking');
+  assert.equal(a.querySelector('.thinkingElapsedLive'), null);
+  assert.match(a.querySelector('.thinkingSummaryText').textContent, /^\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2$/);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
   dom.window.finish();
-  assert.equal(a.querySelector('.thinkingElapsedLive').hidden, true);
   assert.equal(a.querySelector('.thinkingSummaryText').textContent, '\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2');
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   dom.window.close();
 });
 
@@ -66,7 +70,7 @@ test('processed timer starts at one second without changing recorded timing', ()
     for (const [elapsed,expected] of [[0,'1秒'],[1,'1秒'],[999,'1秒'],[1000,'1秒'],[1999,'1秒'],[2000,'2秒'],[60000,'1分钟 0秒']]) {
       a.dataset.startedAt=String(100000-elapsed);
       w.updateThinkingSummary(a,'',{live:true,clockOnly:true});
-      assert.equal(a.querySelector('.thinkingElapsedLive').textContent,`已处理 ${expected}`);
+      assert.equal(a.querySelector('.thinkingSummaryText').textContent,`已处理 ${expected}`);
       assert.equal(a.dataset.startedAt,String(100000-elapsed));
     }
     a.dataset.cachedElapsedMs='120';
@@ -86,11 +90,8 @@ test('created file dot receives optical baseline correction beside diff stats', 
 test('live flow uses the latest model summary to disclose all reasoning inline', async () => {
   const dom = fixture(), w = dom.window, a = w.article;
   w.appendToolStep(a, started);
-  assert.equal(a.querySelector('.thinkingSummaryText').textContent, started.thoughtSummary);
+  assert.match(a.querySelector('.thinkingSummaryText').textContent, /^已处理 /);
   assert.equal(a.querySelector('.thinkingSteps').hidden, true);
-  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
-  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'false');
-  a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
   assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'true');
   assert.equal(a.querySelector('.activityReasoning'), null);
@@ -132,10 +133,10 @@ test('independent active tools do not complete each other and final flow collaps
   dom.window.close();
 });
 
-test('live dynamic text reveals progress only after the user expands it', () => {
+test('manual live collapse is preserved until the user expands it again', () => {
   const dom = fixture(), w = dom.window, a = w.article;
   const trigger = a.querySelector('.thinkingTrigger');
-  a.dataset.thinkingCollapsed = 'true';
+  a.dataset.activityInlineExpanded = 'false';
   w.updateThinkingSummary(a, '', {live:true});
   assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   assert.equal(trigger.disabled, false);
@@ -169,8 +170,6 @@ test('mobile active progress stays inline and file differences open only on requ
   w.appendToolStep(a, {callId:'progress-file', tool:'file_change', phase:'completed', fileChanges:[
     {name:'result.json', relativePath:'outputs/result.json', path:'/srv/outputs/result.json', kind:'created', added:1, removed:0, diff:'@@ -0,0 +1 @@\n+{}', previewable:true}
   ]});
-  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
-  a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
   assert.equal(a.querySelector('.thinkingFlow .activityFileInline').hidden, true);
   assert.equal(a.querySelector('.thinkingTrigger').disabled, false);
@@ -398,13 +397,11 @@ test('the latest live summary expands and collapses the complete reasoning histo
   w.appendToolStep(a,{...started,phase:'completed',observation:'first result'});
   w.appendStep(a,'现在开始核验第二阶段。','','loading','stage-2');
   const trigger=a.querySelector('.thinkingTrigger');
-  assert.equal(trigger.querySelector('.thinkingSummaryText').textContent,'现在开始核验第二阶段。');
-  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
-  trigger.click();
+  assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(a.querySelector('.thinkingFlow').hidden,false);
   assert.match(a.querySelector('.thinkingFlow').textContent,/我会使用现有数据计算|first result/);
   w.appendStep(a,'现在开始第三阶段。','','loading','stage-3');
-  assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/第三阶段/);
+  assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(a.querySelector('.thinkingFlow').hidden,false);
   assert.match(a.querySelector('.thinkingFlow').textContent,/第二阶段/);
   trigger.click();
@@ -419,7 +416,6 @@ test('an earlier parallel call stays visible while the newest stage advances', (
   const dom=fixture(),w=dom.window,a=w.article;
   w.appendToolStep(a,{...started,callId:'parallel-earlier',thoughtSummary:'先启动长任务。'});
   w.appendStep(a,'同时核对另一项证据。','','loading','parallel-next');
-  a.querySelector('.thinkingTrigger').click();
   assert.match(a.querySelector('.thinkingFlow').textContent,/正在运行 python3 analysis.py/);
   w.appendToolStep(a,{...started,callId:'parallel-earlier',thoughtSummary:'先启动长任务。',phase:'completed',observation:'finished'});
   assert.match(a.querySelector('.thinkingFlow').textContent,/已运行 python3 analysis.py/);

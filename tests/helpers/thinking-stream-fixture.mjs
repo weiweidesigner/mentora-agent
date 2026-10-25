@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 
 const source = readFileSync(process.env.MENTORA_APP_JS || new URL('../../app/static/app.js', import.meta.url), 'utf8');
-const names = ['isConnectionProgressText', 'appendStep', 'appendRichStep', 'appendToolStep', 'activityToolKind', 'activityFileChangesFromTool', 'activityFileDiffMarkup', 'activityFileChangesMarkup', 'bindActivityFileChangeButtons', 'activityToolVerb', 'activitySummaryKey', 'rememberActivityDisclosure', 'activityToolMarkup', 'buildActivityFlow', 'syncInlineActivity', 'activityActionIcon',
+const names = ['isConnectionProgressText', 'appendStep', 'appendRichStep', 'appendToolStep', 'activityToolKind', 'activityFileChangesFromTool', 'activityFileDiffMarkup', 'activityFileChangesMarkup', 'bindActivityFileChangeButtons', 'activityToolVerb', 'activitySummaryKey', 'rememberActivityDisclosure', 'activityToolMarkup', 'buildActivityFlow', 'isInlineActivityExpanded', 'syncInlineActivity', 'activityActionIcon',
   'publicToolObservation', 'compactReasoningTitle', 'modelActivitySummary', 'toolActivityTitle', 'refreshSavedToolStepTitles', 'toolBlockHtml',
   'formatShellCommand', 'shellQuote', 'skillOutputLabel', 'showError', 'showStopped', 'completeThinking', 'bindActivityCommandPanels',
   'updateThinkingSummary', 'setInlineActivityExpanded', 'setModelActivity', 'toggleActivityDrawer', 'openActivityDrawer', 'closeActivityDrawer',
@@ -12,7 +12,7 @@ const functions = names.map(name => {
   return source.slice(start, next < 0 ? undefined : start + 1 + next);
 }).join('\n');
 
-export const markup = `<main class="shell sidebar-collapsed"><div class="appSidebar"></div><section class="conversation"><div class="messages"><article class="message user"><div class="userBubble">分析现有数据，并生成一份报告</div></article><article class="message assistant" data-lang="zh-Hans" data-thinking-state="active"><div class="bubble assistantBubble"><div class="thinkingElapsedLive" role="timer" aria-live="off"></div><button class="thinkingTrigger is-thinking"><span class="thinkingSummaryText"></span><span class="thinkingChevron"></span></button><ol class="thinkingSteps"></ol><div class="finalAnswer"></div></div></article></div></section><aside id="activityDrawer" class="activityDrawer" aria-hidden="true"><header class="activityHeader"><span id="activityLabel"></span><span id="activityElapsed"></span><button id="activityClose" class="activityClose" aria-label="关闭"></button></header><div id="activityBody" class="activityBody"></div></aside></main>`;
+export const markup = `<main class="shell sidebar-collapsed"><div class="appSidebar"></div><section class="conversation"><div class="messages"><article class="message user"><div class="userBubble">分析现有数据，并生成一份报告</div></article><article class="message assistant" data-lang="zh-Hans" data-thinking-state="active"><div class="bubble assistantBubble"><button class="thinkingTrigger is-thinking"><span class="thinkingSummaryText"></span><span class="thinkingChevron"></span></button><ol class="thinkingSteps"></ol><div class="finalAnswer"></div></div></article></div></section><aside id="activityDrawer" class="activityDrawer" aria-hidden="true"><header class="activityHeader"><span id="activityLabel"></span><span id="activityElapsed"></span><button id="activityClose" class="activityClose" aria-label="关闭"></button></header><div id="activityBody" class="activityBody"></div></aside></main>`;
 
 export const bootstrap = `
 const shell = document.querySelector('.shell');

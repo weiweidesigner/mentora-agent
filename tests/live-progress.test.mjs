@@ -15,15 +15,16 @@ function setup(){
  w.eval(source.slice(start,end));
  return {dom,w,article:w.article};
 }
-test('public progress becomes the only live reasoning disclosure and leaves the answer untouched',()=>{
+test('public progress is appended to the expanded live timeline and leaves the answer untouched',()=>{
  const f=setup();
  try{
   const text='我先读取 TradingView 组件规范，再加载苹果日线。';
   f.w.handleStreamEvent(f.article,'progress',{text});
-  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,text);
+  assert.match(f.article.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(f.article.querySelector('.thinkingTrigger').disabled,false);
-  assert.equal(f.article.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'false');
+  assert.equal(f.article.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'true');
   assert.equal(f.article.querySelector('.thinkingSteps').textContent.trim(),text);
+  assert.match(f.article.querySelector('.thinkingFlow').textContent,new RegExp(text));
   assert.equal(f.article.querySelector('.finalAnswer').innerHTML,'');
   assert.ok(f.article.querySelector('.thinkingTrigger').classList.contains('is-thinking'));
   f.w.handleStreamEvent(f.article,'progress',{text:'<img src=x onerror=alert(1)>'});
@@ -45,16 +46,16 @@ test('first-person model progress keeps its natural wording in tool updates',()=
  }finally{f.dom.window.close();}
 });
 
-test('latest progress replaces the live title; tool completions cannot revive stale titles',()=>{
+test('latest progress appends to the live timeline; tool completions cannot remove it',()=>{
  const f=setup();
  try{
   f.w.handleStreamEvent(f.article,'progress',{blockId:'p1',text:'核对日期与数据口径'});
   f.w.handleStreamEvent(f.article,'tool_step',{tool:'bash',callId:'b1',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
-  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'加载市场数据');
+  assert.match(f.article.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   f.w.handleStreamEvent(f.article,'progress',{blockId:'p2',text:'汇总本周表现'});
-  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'汇总本周表现');
+  assert.match(f.article.querySelector('.thinkingFlow').textContent,/汇总本周表现/);
   f.w.handleStreamEvent(f.article,'tool_step',{tool:'bash',callId:'b1',phase:'completed',thoughtSummary:'加载市场数据',params:['true']});
-  assert.equal(f.article.querySelector('.thinkingSummaryText').textContent,'汇总本周表现');
+  assert.match(f.article.querySelector('.thinkingFlow').textContent,/汇总本周表现/);
   assert.equal(f.article.querySelectorAll('.thinkingSteps .is-model-summary.is-loading').length,1);
   assert.equal(f.article.querySelector('.finalAnswer').innerHTML,'');
  }finally{f.dom.window.close();}

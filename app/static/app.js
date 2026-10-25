@@ -699,7 +699,6 @@ function createAssistantMessage(question, options = {}) {
   article.activityStepKeys = new Set();
   article.innerHTML = `
     <div class="bubble assistantBubble">
-      <div class="thinkingElapsedLive" role="timer" aria-live="off"></div>
       <button class="thinkingTrigger is-thinking" type="button" aria-label="查看活动">
         <span class="thinkingSummaryText">${escapeHtml(copyFor(lang, "thinking"))}</span>
         <span class="thinkingChevron" aria-hidden="true"></span>
@@ -1594,15 +1593,6 @@ function renderStreamAnswerText(article, data = {}) {
     article.querySelectorAll('.streamingAnswer.is-streaming').forEach(node => node.classList.remove('is-streaming'));
     article.answerTextStarted = true;
     article.dataset.activityPhase = 'answer';
-    // Collapse once at the first actual answer, not at the end of generation.
-    // Later deltas must respect a user's deliberate reopening of the history.
-    if (article.dataset.answerActivityCollapsed !== 'true') {
-      article.dataset.answerActivityCollapsed = 'true';
-      article.dataset.activityInlineExpanded = 'false';
-      article.querySelector('.thinkingTrigger')?.setAttribute('aria-expanded', 'false');
-      if (typeof activeActivityArticle !== 'undefined' && activeActivityArticle === article) closeActivityDrawer();
-      updateThinkingSummary(article, '', {live:!article.activityEnded});
-    }
     syncInlineActivity(article);
   }
   syncStreamAnswerPlacement(article, preview);
@@ -2481,6 +2471,12 @@ function buildActivityFlow(article) {
   return `<ol class="activityFlowList">${tokens.map(renderToken).join("")}</ol>`;
 }
 
+function isInlineActivityExpanded(article) {
+  if (article.dataset.activityInlineExpanded === "true") return true;
+  if (article.dataset.activityInlineExpanded === "false") return false;
+  return !article.activityEnded && article.dataset.thinkingState === "active";
+}
+
 function syncInlineActivity(article) {
   const source = article.querySelector(".thinkingSteps");
   if (!source) return null;
@@ -2492,7 +2488,8 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const latestTool = Array.from(source.querySelectorAll("li.is-tool-step")).at(-1);
-  currentTool.hidden = article.activityEnded || article.answerTextStarted || article.dataset.thinkingState !== "active" || article.dataset.activityInlineExpanded === "true" || !latestTool;
+  const expanded = isInlineActivityExpanded(article);
+  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || expanded || !latestTool;
   if (!currentTool.hidden) {
     const toolSignature = latestTool.outerHTML;
     if (currentTool.dataset.signature !== toolSignature) {
@@ -2510,7 +2507,7 @@ function syncInlineActivity(article) {
     view.id = `thinking-${crypto.randomUUID()}`;
     source.before(view);
   }
-  view.hidden = article.dataset.activityInlineExpanded !== "true";
+  view.hidden = !expanded;
   const signature = `${article.activityEnded}:${article.dataset.activityPhase || ""}:${source.innerHTML}`;
   if (article.activityFlowSignature !== signature) {
     const focused = view.contains(document.activeElement) ? document.activeElement.closest("details")?.dataset.activityKey : "";
@@ -4185,17 +4182,9 @@ function updateThinkingSummary(article, prefix, options = {}) {
   const minutes = Math.floor(elapsed / 60000);
   const seconds = Math.floor(elapsed / 1000) % 60;
   const duration = chinese ? `${minutes ? `${minutes}分钟 ` : ""}${seconds}秒` : formatDuration(elapsed);
-  const liveElapsed = article.querySelector(".thinkingElapsedLive");
-  if (liveElapsed) {
-    liveElapsed.hidden = !options.live;
-    if (options.live) liveElapsed.textContent = `${chinese ? "已处理" : "Worked for"} ${duration}`;
-  }
-  // Tool/sidecar events may arrive after the first answer delta. They must
-  // update the activity history, not turn the collapsed header into a live title.
-  target.textContent = options.live && !article.answerTextStarted
-    ? String(article.dataset.publicThoughtText || article.dataset.currentThinking || prefix || copyFor(lang, "thinking")).trim()
-    : article.dataset.elapsedUnrecorded === "true" ? (chinese ? "查看执行记录" : "View activity")
-      : `${chinese ? "已处理" : "Worked for"} ${duration}`;
+  target.textContent = article.dataset.elapsedUnrecorded === "true"
+    ? (chinese ? "查看执行记录" : "View activity")
+    : `${chinese ? "已处理" : "Worked for"} ${duration}`;
   const list = article.querySelector(".thinkingSteps");
   if (list) {
     if (!options.live) {
@@ -4203,12 +4192,12 @@ function updateThinkingSummary(article, prefix, options = {}) {
       delete article.dataset.thinkingCollapsed;
       if (article.activityWasLive) {
         article.activityDisclosureState?.clear();
-        delete article.dataset.activityInlineExpanded;
+        article.dataset.activityInlineExpanded = "false";
       }
     }
   }
   const flow = options.clockOnly ? article.querySelector(".thinkingFlow") : syncInlineActivity(article);
-  if (flow) flow.hidden = article.dataset.activityInlineExpanded !== "true";
+  if (flow) flow.hidden = !isInlineActivityExpanded(article);
   article.activityWasLive = Boolean(options.live);
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
