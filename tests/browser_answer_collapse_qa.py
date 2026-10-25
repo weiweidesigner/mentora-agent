@@ -1,4 +1,4 @@
-"""The full live activity stays expanded until the running task completes."""
+"""First answer collapses thinking once; later events respect manual replay."""
 from pathlib import Path
 import json
 import sys
@@ -18,7 +18,7 @@ with sync_playwright() as p:
             page.wait_for_function("typeof renderStreamAnswerText==='function'")
             result=page.evaluate('''theme=>{
                 document.documentElement.dataset.theme=theme;
-                const a=createAssistantMessage('验证答案开始时保持展开',{target:document.body});
+                const a=createAssistantMessage('验证答案开始时自动收起',{target:document.body});
                 a.dataset.lang='zh-CN';a.dataset.thinkingState='active';
                 appendToolStep(a,{tool:'bash',callId:'b',phase:'started',thoughtSummary:'核对数据',params:['true']});
                 setInlineActivityExpanded(a,true);
@@ -28,8 +28,10 @@ with sync_playwright() as p:
                 renderStreamAnswerText(a,{blockId:'discard',discard:true});
                 if(!expanded())throw Error('empty/discard event collapsed activity');
                 renderStreamAnswerText(a,{blockId:'answer',delta:'**已核实结论**'});
-                if(!expanded()||a.querySelector('.thinkingTrigger').getAttribute('aria-expanded')!=='true')throw Error('first answer collapsed live activity');
+                if(expanded()||a.querySelector('.thinkingTrigger').getAttribute('aria-expanded')!=='false')throw Error('first answer did not collapse thinking');
                 if(!a.querySelector('.thinkingCurrentTool').hidden)throw Error('tool row still visible during answer');
+                if(a.querySelector('.thinkingTrigger').classList.contains('is-thinking'))throw Error('thinking style remains during answer');
+                if(!a.querySelector('.thinkingSteps li.is-loading'))throw Error('first answer falsely completed a running tool');
                 if(a.activityEnded)throw Error('collapse prematurely ended run');
                 if(!a.querySelector('.thinkingSummaryText').textContent.startsWith('已处理'))throw Error('elapsed header missing');
                 if(a.querySelectorAll('.thinkingElapsedLive').length)throw Error('duplicate elapsed label rendered');
@@ -40,19 +42,27 @@ with sync_playwright() as p:
                 setModelActivity(a,'completed');
                 appendToolStep(a,{tool:'bash',callId:'b',phase:'completed',thoughtSummary:'核对数据',params:['true']});
                 renderPublicProgress(a,{blockId:'p',text:'检查图表'});
-                if(!a.querySelector('.thinkingCurrentTool').hidden||!expanded())throw Error('later event hid live activity');
+                setModelActivity(a,'started');
+                if(a.dataset.activityPhase!=='answer'||!a.querySelector('.thinkingCurrentTool').hidden||expanded())throw Error('later event revived thinking during answer');
+                setInlineActivityExpanded(a,true);
                 renderStreamAnswerText(a,{blockId:'answer',delta:'：正文继续输出。'});
-                if(!expanded())throw Error('later delta collapsed live activity');
+                if(!expanded())throw Error('later delta overrode manual history reopening');
                 setInlineActivityExpanded(a,false);
                 renderStreamAnswerText(a,{blockId:'answer',delta:'仍在输出。'});
                 if(expanded())throw Error('later delta overrode manual collapse');
                 const b=createAssistantMessage('验证侧栏收起',{target:document.body});
                 b.dataset.thinkingState='active';openActivityDrawer(b);
                 renderStreamAnswerText(b,{blockId:'b-answer',delta:'正式答案'});
-                if(isMobileLayout()&&activeActivityArticle!==b)throw Error('answer closed live activity drawer');
-                if(!isMobileLayout()&&b.querySelector('.thinkingFlow').hidden)throw Error('answer collapsed desktop activity');
+                if(activeActivityArticle===b||!b.querySelector('.thinkingFlow').hidden)throw Error('answer left activity panel open');
+                renderStreamAnswerText(b,{blockId:'b-answer',discard:true});
+                if(b.answerTextStarted||b.dataset.activityPhase==='answer')throw Error('retracted commentary left answer mode active');
+                renderPublicProgress(b,{blockId:'b-answer',text:'已归类为执行进度'});
+                if(b.querySelector('.finalAnswer').textContent.trim())throw Error('retracted progress remains in answer');
+                if(!isMobileLayout()&&b.querySelector('.thinkingFlow').hidden)throw Error('retraction lost previous history state');
+                renderStreamAnswerText(b,{blockId:'real',delta:'真正的正式回答'});
+                if(!b.querySelector('.thinkingFlow').hidden||!b.querySelector('.thinkingCurrentTool').hidden)throw Error('real answer after retraction did not collapse');
                 closeActivityDrawer();
-                a.remove();b.remove();return {width:innerWidth,theme,firstDeltaStayedExpanded:true,runStillActive:true,manualCollapsePreserved:true,drawerStayedOpen:true};
+                a.remove();b.remove();return {width:innerWidth,theme,firstDeltaCollapsed:true,runStillActive:true,manualReplayPreserved:true,retractionRecovered:true};
             }''',theme)
             assert not errors,errors
             checks.append(result);page.close()

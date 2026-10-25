@@ -1562,7 +1562,7 @@ function renderPublicProgress(article, data = {}) {
   });
   article.dataset.publicThoughtText = text;
   article.dataset.currentThinking = text;
-  article.dataset.activityPhase = 'thinking';
+  article.dataset.activityPhase = article.answerTextStarted ? 'answer' : 'thinking';
   delete article.dataset.currentActivityCallId;
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
@@ -1581,10 +1581,13 @@ function renderStreamAnswerText(article, data = {}) {
     preview?.remove();
     const hasAnswerText = Array.from(flow.querySelectorAll('.streamAnswerPreview'))
       .some(node => String(node.streamText || node.textContent || '').trim());
-    if (!hasAnswerText) {
+    if (!hasAnswerText && article.answerTextStarted) {
       article.answerTextStarted = false;
       article.activeAnswerBlockId = '';
       article.dataset.activityPhase = 'thinking';
+      if (article.activityExpandedBeforeAnswer === undefined) delete article.dataset.activityInlineExpanded;
+      else article.dataset.activityInlineExpanded = article.activityExpandedBeforeAnswer;
+      delete article.activityExpandedBeforeAnswer;
       updateThinkingSummary(article, '', {live:!article.activityEnded});
     }
     return;
@@ -1598,11 +1601,18 @@ function renderStreamAnswerText(article, data = {}) {
   preview.streamText = Object.prototype.hasOwnProperty.call(data, 'delta') ? (preview.streamText || '') + String(data.delta || '') : String(data.text || '');
   const stick = isNearBottom();
   if (preview.streamText.trim()) {
+    const firstAnswer = !article.answerTextStarted;
+    if (firstAnswer) {
+      article.activityExpandedBeforeAnswer = article.dataset.activityInlineExpanded;
+      article.dataset.activityInlineExpanded = 'false';
+      if (typeof activeActivityArticle !== 'undefined' && activeActivityArticle === article) closeActivityDrawer();
+    }
     article.activeAnswerBlockId = data.final ? '' : key;
     article.querySelectorAll('.streamingAnswer.is-streaming').forEach(node => node.classList.remove('is-streaming'));
     article.answerTextStarted = true;
     article.dataset.activityPhase = 'answer';
-    syncInlineActivity(article);
+    if (firstAnswer) updateThinkingSummary(article, '', {live:true});
+    else syncInlineActivity(article);
   }
   syncStreamAnswerPlacement(article, preview);
   revealPendingVisualizations(article);
@@ -1999,7 +2009,7 @@ function appendMessage(article, forceScroll = false) {
 function setModelActivity(article, phase) {
   if (article.activityEnded || !["started", "completed"].includes(phase)) return;
   article.dataset.hasModelActivity = "true";
-  article.dataset.activityPhase = phase === "started" ? "thinking" : "idle";
+  article.dataset.activityPhase = article.answerTextStarted ? "answer" : phase === "started" ? "thinking" : "idle";
   syncActivityDrawer(article);
 }
 
@@ -2017,7 +2027,7 @@ function appendStep(article, text, detail = "", state = "loading", stepKey = "")
     return;
   }
   article.activityStepKeys.add(normalizedKey);
-  article.dataset.activityPhase = "summary";
+  article.dataset.activityPhase = article.answerTextStarted ? "answer" : "summary";
   const shouldStick = isNearBottom();
   list.querySelectorAll("li.is-loading:not(.is-tool-step)").forEach((item) => {
     item.classList.remove("is-loading");
@@ -2173,7 +2183,7 @@ function appendToolStep(article, data) {
       ${fileChangeMarkup}${fileChanges.length ? "" : toolDetails}`;
     item.classList.remove("is-loading", "is-done", "is-error");
     item.classList.add(phase === "failed" ? "is-error" : phase === "completed" ? "is-done" : "is-loading");
-    if (!data?.semanticUpdate) article.dataset.activityPhase = running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
+    if (!data?.semanticUpdate) article.dataset.activityPhase = article.answerTextStarted ? "answer" : running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
   };
   if ((["completed", "failed"].includes(phase) || data?.semanticUpdate) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
@@ -2494,7 +2504,7 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const expanded = isInlineActivityExpanded(article);
-  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || expanded;
+  currentTool.hidden = article.activityEnded || article.answerTextStarted || article.dataset.thinkingState !== "active" || expanded;
   if (article.activityEnded || article.dataset.thinkingState !== "active") {
     currentTool.replaceChildren();
     delete currentTool.dataset.signature;
@@ -4209,11 +4219,12 @@ function updateThinkingSummary(article, prefix, options = {}) {
   article.activityWasLive = Boolean(options.live);
   const trigger = article.querySelector(".thinkingTrigger");
   if (trigger) {
-    trigger.classList.toggle("is-thinking", Boolean(options.live));
+    const thinking = Boolean(options.live && !article.answerTextStarted);
+    trigger.classList.toggle("is-thinking", thinking);
     trigger.classList.toggle("is-complete", !options.live && article.dataset.thinkingState !== "error");
     trigger.classList.toggle("is-error", article.dataset.thinkingState === "error");
     trigger.disabled = false;
-    trigger.setAttribute("aria-label", options.live ? (chinese ? "展开或收起全部推理" : "Expand or collapse all reasoning") : (chinese ? "查看执行记录" : "View activity"));
+    trigger.setAttribute("aria-label", thinking ? (chinese ? "展开或收起全部推理" : "Expand or collapse all reasoning") : (chinese ? "查看执行记录" : "View activity"));
     trigger.setAttribute("aria-expanded", String(Boolean(flow && !flow.hidden)));
     trigger.setAttribute("aria-controls", flow?.id || "activityDrawer");
   }

@@ -42,7 +42,7 @@ with sync_playwright() as p:
                 renderStreamAnswerText(a,{blockId:'answer',delta:'**正式答案**不应被语义更新改动。'});
                 const before=a.querySelector('.finalAnswer').innerHTML;
                 step('c','completed','正在推进当前分析步骤',{activitySemantics:{...semantics,stage:'execute-step'},semanticUpdate:true});
-                if(a.querySelector('.finalAnswer').innerHTML!==before||a.querySelector('.thinkingFlow').hidden)throw Error('semantic update interfered with answer/activity');
+                if(a.querySelector('.finalAnswer').innerHTML!==before||!a.querySelector('.thinkingFlow').hidden||!a.querySelector('.thinkingCurrentTool').hidden)throw Error('semantic update interfered with answer/collapse');
                 a.remove();return {width:innerWidth,theme,singleTool:true,layaLabel:true,staleProtected:true,completedStatic:true,answerUnchanged:true};
             }''',theme)
             assert not errors,errors

@@ -30,7 +30,7 @@ with sync_playwright() as p:
                 if(!answer.contains(strong)||thinking.textContent.includes('核心结论'))throw Error('tool boundary reclassified the answer');
                 const tool=article.querySelector('.thinkingFlow .activityAction');
                 if(!tool)throw Error('live tool missing');
-                if(article.querySelector('.thinkingCurrentTool').hidden)throw Error('latest live stage hidden');
+                if(!article.querySelector('.thinkingCurrentTool').hidden || !article.querySelector('.thinkingFlow').hidden)throw Error('answer streaming revived thinking activity');
                 renderPublicProgress(article,{blockId:'next',text:'核对快照结果'});
                 if(!article.querySelector('.thinkingFlow').textContent.includes('核对快照结果'))throw Error('explicit progress does not update timeline');
                 const restored=createAssistantMessage('历史记录验证',{target:document.body});restored.activityEnded=true;

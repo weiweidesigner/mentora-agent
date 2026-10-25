@@ -53,7 +53,7 @@ with sync_playwright() as p:
                 if(!article.querySelector('.thinkingCurrentTool').hidden)throw Error('compact activity duplicated expanded history');
                 article.querySelector('.thinkingTrigger').click();
                 if(!article.querySelector('.thinkingFlow').hidden)throw Error('history did not collapse on click');
-                if(article.querySelector('.thinkingCurrentTool').hidden)throw Error('latest stage not restored');
+                if(!article.querySelector('.thinkingCurrentTool').hidden)throw Error('answer streaming revived compact thinking');
                 article.remove();return {width:innerWidth,theme,progressOnlyInThinking:true,latestStatus:true,answerImmediate:true,history:true};
             }''',theme)
             assert not errors, errors

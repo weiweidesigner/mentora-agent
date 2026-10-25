@@ -12,6 +12,7 @@ function fixture() {
   w.isNearBottom = () => false;
   w.keepScrollPosition = () => {};
   w.syncInlineActivity=()=>{};
+  w.updateThinkingSummary=()=>{};
   w.withArtifactWidgetControl=node=>node;
   w.createArtifactFallbackFrame=item=>{const node=w.document.createElement('iframe');node.dataset.artifactUrl=item.url;return node;};
   w.eval(source.slice(source.indexOf('function orderedStreamFlow('), source.indexOf('function upsertStreamVisualization(')));
