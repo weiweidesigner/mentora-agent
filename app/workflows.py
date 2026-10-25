@@ -13,7 +13,7 @@ import time
 import uuid
 from typing import Literal
 from fastapi import APIRouter, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from app.workflow_graph import WorkflowGraph, ordered_nodes
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 
@@ -73,13 +73,13 @@ class WorkflowService:
     def build(self,payload):
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
-                     nodeKinds=KINDS,tools=[{k:t[k] for k in ('id','label','description')} for t in tools])
+                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),tools=[{k:t[k] for k in ('id','label','description')} for t in tools])
         if self.builder:result=self.builder(context)
         else:
             from openai import OpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
-节点字段 id,kind,title,x,y,instruction,tool,arguments,path,operator,expected。
+严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,path,operator,expected。
 kind 仅可为 start/watchlist/profile/tool/model/condition/output。工具必须使用目录中的真实 id。
 每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。
 model 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
@@ -241,6 +241,7 @@ def create_router(service):
     def build(payload:BuildInput,request:Request,response:Response):
         identity(request,response,True)
         try:return service.build(payload)
+        except ValidationError as exc:raise HTTPException(422,'模型生成的流程格式不完整，请重试：'+ '; '.join('.'.join(map(str,e['loc']))+' '+e['msg'] for e in exc.errors())[:350]) from exc
         except (ValueError,KeyError) as exc:raise HTTPException(422,str(exc)[:500]) from exc
         except Exception as exc:raise HTTPException(502,'工作流构建暂时不可用，请重试') from exc
     @router.get('/tasks/{task_id}/latest')

@@ -46,6 +46,7 @@ $('wfViewport').addEventListener('pointermove',e=>{if(!drag)return;if(drag.pan){
 $('wfViewport').addEventListener('pointerup',()=>{drag=null;});$('wfViewport').addEventListener('pointercancel',()=>{drag=null;});
 canvas.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!['INPUT','TEXTAREA'].includes(e.target.tagName)&&undo.length&&!locked){e.preventDefault();state.workflow=undo.pop();selected='';dirty=true;render();}if(e.key==='Escape'){e.preventDefault();close();}});
 canvas.addEventListener('cancel',e=>{e.preventDefault();close();});
+$('wfBuildInput').addEventListener('input',()=>{const input=$('wfBuildInput');input.style.height='auto';input.style.height=Math.min(144,input.scrollHeight)+'px';});
 $('wfBuildForm').addEventListener('submit',async e=>{e.preventDefault();const message=$('wfBuildInput').value.trim();if(message.length<2||building||locked)return;building=true;flags();note('正在构建工作流…');try{const result=await api('/api/workflows/build','POST',{message,agent:state.agent,graph:state.workflow.nodes.length?state.workflow:null});if(!canvas.open)return;snapshot();state.workflow=result.graph;if(!state.id&&state.title==='我的 WorkFlow'){state.title=result.title;$('wfTitle').value=result.title;}selected='';$('wfBuildInput').value='';render();fit();note('工作流已构建，可调整节点、试运行或设置定时执行');}catch(error){note(error.message);}finally{building=false;if(canvas.open)flags();}});
 window.addEventListener('beforeunload',e=>{if(canvas.open&&dirty){e.preventDefault();e.returnValue='';}});
 })();
