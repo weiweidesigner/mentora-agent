@@ -83,3 +83,12 @@ test('node instructions and JSON persist on input before a run; invalid JSON blo
   assert.equal(body.graph.nodes[0].arguments.greeting,'你好');assert.equal(body.graph.nodes[1].instruction,'只回复收到');
  }finally{s.w.close();}
 });
+
+test('unsaved workflow closes through a nonblocking confirmation and cancel retains edits',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open();s.d.querySelector('[data-add=start]').click();
+  s.d.querySelector('[data-act=close]').click();assert(s.d.querySelector('.wfDiscard').open);
+  s.d.querySelector('[data-discard=cancel]').click();assert(s.d.querySelector('.wfCanvas').open);assert.equal(s.d.querySelectorAll('[data-node]').length,1);
+  s.d.querySelector('[data-act=close]').click();s.d.querySelector('[data-discard=close]').click();assert(!s.d.querySelector('.wfCanvas').open);
+ }finally{s.w.close();}
+});
