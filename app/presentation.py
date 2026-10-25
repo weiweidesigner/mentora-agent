@@ -450,7 +450,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
             raise ReasoningFrameworkError(f"{FRAMEWORKS[payload.reasoningFramework]} 未返回最终结果")
         return ChatResponse(**normalize_chat_result(final))
     except (StudioAgentError, ReasoningFrameworkError) as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(status_code=502, detail=getattr(exc, 'public_detail', '') or str(exc)) from exc
 
 
 @app.post("/api/chat/stream")

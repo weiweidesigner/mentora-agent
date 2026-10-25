@@ -1,6 +1,8 @@
 import importlib.util
 import base64
 import json
+import os
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -14,6 +16,13 @@ SPEC = importlib.util.spec_from_file_location("flux_image_skill", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
+
+
+def stamp_fresh(*paths):
+    # Explicit nanoseconds avoid coarse/delayed filesystem timestamps in mocks.
+    now=time.time_ns()
+    for path in paths:
+        os.utime(path,ns=(now,now))
 
 
 def test_size_and_output_validation(tmp_path, monkeypatch):
@@ -38,7 +47,9 @@ def test_generates_html_wrapper_for_fresh_png(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(MODULE, "GENERATED_DIR", generated)
 
     def fake_run(command, **_kwargs):
-        Path(command[command.index("--output") + 1]).write_bytes(b"\x89PNG\r\n\x1a\n")
+        image=Path(command[command.index("--output") + 1])
+        image.write_bytes(b"\x89PNG\r\n\x1a\n")
+        stamp_fresh(image)
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(MODULE.subprocess, "run", fake_run)
@@ -131,7 +142,9 @@ def test_flux2_runner_uses_reference_edit_without_legacy_strength(tmp_path, monk
 
     def fake_run(command, **_kwargs):
         commands.append(command)
-        Path(command[command.index("--output") + 1]).write_bytes(b"\x89PNG\r\n\x1a\n")
+        image=Path(command[command.index("--output") + 1])
+        image.write_bytes(b"\x89PNG\r\n\x1a\n")
+        stamp_fresh(image)
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr(MODULE.subprocess, "run", fake_run)
@@ -200,6 +213,7 @@ def test_framework_runs_flux_skill_and_requires_fresh_image(tmp_path, monkeypatc
         html = Path(command[-1])
         html.write_text("<html><img src='test.png'></html>", encoding="utf-8")
         html.with_suffix(".png").write_bytes(b"\x89PNG\r\n\x1a\nimage")
+        stamp_fresh(html,html.with_suffix('.png'))
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("app.reasoning_frameworks.subprocess.run", fake_run)
@@ -243,6 +257,7 @@ def test_uploaded_image_is_forwarded_to_flux_skill(tmp_path, monkeypatch):
         html = Path(command[command.index("--output") + 1])
         html.write_text("<html><img src='test.png'></html>", encoding="utf-8")
         html.with_suffix(".png").write_bytes(b"\x89PNG\r\n\x1a\nimage")
+        stamp_fresh(html,html.with_suffix('.png'))
         return SimpleNamespace(returncode=0, stdout="", stderr="")
 
     monkeypatch.setattr("app.reasoning_frameworks.subprocess.run", fake_run)

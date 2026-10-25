@@ -37,6 +37,27 @@ class ReasoningFrameworkError(RuntimeError):
     pass
 
 
+class FluxImageExecutionError(ReasoningFrameworkError):
+    """Keep runner diagnostics private while exposing an actionable image error."""
+
+    def __init__(self, detail: str, *, public_detail: str = "本地图片生成失败，请重试；如持续失败，请检查生图服务。会话和进度已保留。", error_code: str = "image_generation_failed"):
+        self.public_detail = public_detail
+        self.error_code = error_code
+        super().__init__(detail)
+
+    @classmethod
+    def from_runner(cls, detail: str):
+        if "output must be an HTML file in outputs/generated" in detail:
+            return cls(detail, public_detail="图片输出目录配置异常，本次尚未生成图片。请修复服务配置后重试。", error_code="image_output_configuration")
+        if "Local FLUX runner not found" in detail or "Local FLUX runner is not executable" in detail:
+            return cls(detail, public_detail="本地生图服务尚未就绪，请检查服务配置后重试。", error_code="image_service_unavailable")
+        if "中文提示词翻译失败" in detail:
+            return cls(detail, public_detail="图片提示词转换失败，请稍后重试。会话和进度已保留。", error_code="image_prompt_translation_failed")
+        if "timed out after 30 minutes" in detail:
+            return cls(detail, public_detail="本地图片生成超过 30 分钟，已停止。请稍后重试。", error_code="image_generation_timeout")
+        return cls(detail)
+
+
 class ReasoningFrameworkConfigurationError(ReasoningFrameworkError):
     error_code = "framework_configuration_error"
 
@@ -591,13 +612,16 @@ class LocalAgentFrameworks:
             raise ReasoningFrameworkError(f"不支持的推理框架：{framework}")
         script = self.project_root / "app/skills/flux-image/scripts/generate_image.py"
         if not script.is_file():
-            raise ReasoningFrameworkError("flux-image Skill 脚本不存在")
-        self.generated_dir.mkdir(parents=True, exist_ok=True)
+            raise FluxImageExecutionError("flux-image Skill 脚本不存在", public_detail="本地生图组件未安装完整，请修复服务配置后重试。", error_code="image_service_unavailable")
+        try:
+            self.generated_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise FluxImageExecutionError("无法准备 FLUX 输出目录", public_detail="无法准备图片输出目录，请检查服务存储配置后重试。", error_code="image_output_configuration") from exc
         output = self.generated_dir / f"flux-{uuid.uuid4().hex}.html"
         run_id = f"flux-{uuid.uuid4().hex}"
         input_paths = self._save_images(framework, run_id, images or []) if images else []
         if images and len(input_paths) != 1:
-            raise ReasoningFrameworkError("图生图需要一张有效的上传图片")
+            raise FluxImageExecutionError("图生图需要一张有效的上传图片", public_detail="图生图需要一张有效的上传图片，请检查附件后重试。", error_code="image_input_invalid")
         command = [sys.executable, str(script), "--prompt", question, "--output", str(output)]
         if input_paths:
             command.extend(["--input-image", str(input_paths[0])])
@@ -608,6 +632,9 @@ class LocalAgentFrameworks:
         }
         started_ns = time.time_ns()
         child_env = os.environ.copy()
+        # The deployment's .env may still name a former checkout. The caller
+        # owns this invocation's root; preserve all explicit runner settings.
+        child_env["AICHART_PROJECT_ROOT"] = str(self.project_root)
         if inference_model.strip():
             child_env["AICHART_FLUX_SELECTED_MODEL"] = inference_model.strip()
         try:
@@ -617,12 +644,12 @@ class LocalAgentFrameworks:
                 env=child_env,
             )
         except subprocess.TimeoutExpired as exc:
-            raise ReasoningFrameworkError("本地 FLUX 生图超过 30 分钟，已停止") from exc
+            raise FluxImageExecutionError.from_runner("Local FLUX generation timed out after 30 minutes") from exc
         except OSError as exc:
-            raise ReasoningFrameworkError(f"无法启动本地 FLUX 生图：{exc}") from exc
+            raise FluxImageExecutionError(f"无法启动本地 FLUX 生图：{exc}", public_detail="未能启动本地生图组件，请检查服务配置后重试。", error_code="image_service_unavailable") from exc
         if result.returncode != 0:
             detail = (result.stderr or result.stdout).strip()[-1200:] or "未返回错误详情"
-            raise ReasoningFrameworkError(f"本地 FLUX 生图失败：{detail}")
+            raise FluxImageExecutionError.from_runner(f"本地 FLUX 生图失败：{detail}")
         image = output.with_suffix(".png")
         fresh_files = all(
             path.is_file() and path.stat().st_size > 0 and path.stat().st_mtime_ns >= started_ns
@@ -632,7 +659,7 @@ class LocalAgentFrameworks:
             with image.open("rb") as handle:
                 fresh_files = handle.read(8) == b"\x89PNG\r\n\x1a\n"
         if not fresh_files:
-            raise ReasoningFrameworkError("flux-image 未生成本次请求的新 PNG 和 HTML，不能标记为完成")
+            raise FluxImageExecutionError("flux-image 未生成本次请求的新 PNG 和 HTML，不能标记为完成", public_detail="未收到本次生成的完整图片结果，不能标记为成功。请重试。", error_code="image_result_incomplete")
         answer = f"[[AIME_CHART:{output}]]\n[[AIME_SKILLS:flux-image]]"
         payload = self._artifact_payload(
             framework, question, answer, run_id, engine_session_id,
