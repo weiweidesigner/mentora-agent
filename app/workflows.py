@@ -74,8 +74,10 @@ def tool_catalog(agent):
     from app.portfolio_skills import catalog
     icons={'portfolio-account':'wallet','portfolio-backtest':'backtest','portfolio-jev':'scale','portfolio-order':'order','portfolio-data':'database','portfolio-symbols':'search','portfolio-technical':'line_chart'}
     for row in catalog():
-        result.append(dict(id=row['name'],label={'portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=row['instructions'][:1600],script=row['name'],group='交易能力',icon=icons.get(row['name'],'tool'),schema=row['inputSchema']))
-    return result
+        match=re.search(r'^description:\s*(.+)',row['instructions'],re.M)
+        description=match[1].strip() if match else row['name']
+        result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=row['inputSchema']))
+    return list({row['id']:row for row in result}.values())
 
 def execution_tools(agent):
     return list({row['id']:row for row in legacy_tool_catalog(agent)+tool_catalog(agent)}.values())
@@ -198,7 +200,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                         if event!='final':emit(event,data)
                     prompt=(node.instruction or '根据上游数据完成分析。')
                     if tool:
-                        prompt='\n'.join(['执行工作流工具节点：'+tool['label'],'目标工具标识：'+tool['id']+'；脚本或 Skill：'+tool['script'],tool['description'],prompt,'必须遵循对应 Skill 的规范执行真实工具调用，无法执行时明确报错，不得声称已完成。'])
+                        prompt='\n'.join(['执行工作流工具节点：'+tool['label'],'目标工具标识：'+tool['id']+'；脚本或 Skill：'+tool['script'],tool.get('instructions') or tool['description'],prompt,'必须遵循对应 Skill 的规范执行真实工具调用，无法执行时明确报错，不得声称已完成。'])
                     if node.arguments:prompt+='\n节点输入参数（按对应 Skill 的契约使用）：\n'+json.dumps(self.resolve(node.arguments,outputs),ensure_ascii=False)
                     if trial:prompt+='试运行只查询和分析，不提交订单，不修改账户，不发送外部消息。'
                     context=json.dumps(upstream,ensure_ascii=False)
