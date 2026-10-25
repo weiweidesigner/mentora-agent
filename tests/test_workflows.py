@@ -225,3 +225,106 @@ def test_empty_foreach_makes_no_tool_call(env,monkeypatch):
     states={}
     env.service.execute({'workflow':g,'agent':'mentora-deal','question':'研究','_owner':'owner'},'batch',lambda i,s:states.update({i:s}))
     assert states['data']['output']=={'items':[],'count':0}
+
+def test_legacy_trading_graph_migrates_without_mutating_input():
+    source=graph([dict(id='trade',kind='tool',title='执行模拟交易',tool='portfolio-order'),
+                  dict(id='out',kind='output',title='输出回测决策与交易报告')],[dict(source='trade',target='out')])
+    result=WorkflowGraph.model_validate(source)
+    assert result.nodes[0].title=='执行交易'
+    assert result.nodes[1].kind=='watchlist_update' and result.nodes[1].title=='更新观察列表'
+    assert source['nodes'][1]['kind']=='output'
+
+def observation_graph():
+    return graph([dict(id='test',kind='tool',title='回测',tool='portfolio-backtest',arguments={'symbol':'AAPL','strategy':'trend'}),
+                  dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='test',target='update')])
+
+def test_observation_node_persists_actual_results_per_owner_and_survives_reload(env,monkeypatch,tmp_path):
+    native_tools(monkeypatch)
+    from app.portfolio import Portfolio
+    from test_portfolio import Feed
+    portfolio=Portfolio(tmp_path/'portfolio',market=Feed())
+    env.service.portfolio=portfolio
+    result=dict(symbol='AAPL',status='computed',strategy='trend',totalReturn=12.3,maxDrawdown=-4,trades=3,winRate=66.7)
+    monkeypatch.setattr('app.portfolio_skills.call',lambda *_:result)
+    config=dict(workflow=observation_graph(),agent='mentora-deal',question='回测',title='我的研究',_owner='owner-a')
+    states={}
+    env.service.execute(config,'real-run',lambda i,s:states.update({i:s}))
+    assert states['update']['output']['updatedCount']==1
+    reloaded=Portfolio(tmp_path/'portfolio',market=Feed())
+    with reloaded.db() as db:
+        row=db.execute('SELECT payload FROM portfolio_candidates WHERE owner=? AND symbol=?',('owner-a','AAPL')).fetchone()
+        assert db.execute('SELECT count(*) FROM portfolio_candidates WHERE owner=?',('owner-b',)).fetchone()[0]==0
+    saved=json.loads(row['payload'])
+    assert saved['backtests']==[result] and saved['workflowExecution']['runId']=='real-run'
+    assert saved['workflowExecution']['title']=='我的研究'
+    rows=reloaded.workflow.watchlist([saved],[])
+    assert rows[0]['backtests'][0]['totalReturn']==12.3
+
+def test_observation_trial_previews_without_writing(env,monkeypatch):
+    native_tools(monkeypatch)
+    writes=[]
+    env.service.portfolio.workflow.merge=lambda *args:writes.append(args)
+    monkeypatch.setattr('app.portfolio_skills.call',lambda *_:dict(symbol='AAPL',status='computed',strategy='trend',totalReturn=2))
+    states={}
+    env.service.execute(dict(workflow=observation_graph(),agent='mentora-deal',question='回测',_owner='owner-a'),'preview',lambda i,s:states.update({i:s}),trial=True)
+    assert not writes and states['update']['output']['preview']
+    assert states['update']['output']['updatedCount']==0
+    assert states['update']['output']['symbols']==['AAPL']
+
+def test_observation_uses_only_connected_tool_receipts_not_model_claims(env,monkeypatch):
+    native_tools(monkeypatch)
+    writes=[]
+    env.service.portfolio.workflow.merge=lambda *args:writes.append(args)
+    def runner(config,rid):
+        config['_emit_event']('tool_step',dict(phase='completed',skillId='portfolio-jev',input={'operation':'decide'},output=[dict(symbol='AAPL',action='watch',confidence=.6)]))
+        return dict(interpretation='声称 MSFT 已买入',workflowToolResults=[dict(tool='portfolio-order',output={'symbol':'MSFT'})])
+    env.service.runner=runner
+    g=graph([dict(id='analysis',kind='model',title='分析'),dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='analysis',target='update')])
+    env.service.execute(dict(workflow=g,question='研究',_owner='actual-owner'),'receipts',lambda *_:None)
+    assert len(writes)==1 and writes[0][0:2]==('actual-owner','AAPL')
+    saved=writes[0][2]['workflowExecution']
+    assert saved['decision']['action']=='watch' and 'trade' not in saved
+
+def test_observation_rejects_unconnected_results_and_does_not_save_narrative(env):
+    from app.workflow_observations import update_observations
+    g=WorkflowGraph.model_validate(graph([dict(id='other',kind='model',title='无关'),dict(id='update',kind='watchlist_update',title='更新观察列表')],[]))
+    with pytest.raises(ValueError,match='没有可更新'):
+        update_observations(env.service.portfolio,'owner',g,'update',{'other':[dict(tool='portfolio-jev',input={},output=[dict(symbol='AAPL',action='buy')])]},'run','标题')
+
+def test_observation_jev_replaces_stale_failure_in_watchlist_without_creating_executable_decision(env,tmp_path):
+    from app.portfolio import Portfolio
+    from test_portfolio import Feed
+    from app.workflow_observations import update_observations
+    portfolio=Portfolio(tmp_path/'projection',market=Feed())
+    g=WorkflowGraph.model_validate(graph([dict(id='decision',kind='model',title='决策'),dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='decision',target='update')]))
+    decision=dict(symbol='AAPL',action='watch',modelAction='watch',status='decided',confidence=.62,actionConfidences={'watch':.62},factorLabel='需要价格确认')
+    update_observations(portfolio,'owner',g,'update',{'decision':[dict(tool='portfolio-jev',input={'operation':'decide'},output=[decision])]},'jev-run','最新研究')
+    with portfolio.db() as db:
+        saved=json.loads(db.execute('SELECT payload FROM portfolio_candidates WHERE owner=?',('owner',)).fetchone()['payload'])
+        # Observation evidence must not mint a decision ID that authorizes an order.
+        assert db.execute('SELECT count(*) FROM portfolio_decisions WHERE owner=?',('owner',)).fetchone()[0]==0
+    old=dict(symbol='AAPL',kind='entry',status='unavailable',reason='历史行情不足',created='2020-01-01')
+    rows=portfolio.workflow.watchlist([saved],[old])
+    assert len(rows)==1
+    assert rows[0]['observationAction']=='watch' and rows[0]['confidence']==.62
+    assert rows[0]['directionAssessment']['researchOnly']
+    assert '最新研究' in rows[0]['reason']
+    assert rows[0]['executionStatus']!='filled'
+
+def test_observation_preserves_plan_vs_executed_trade_and_newer_risk_decision(env,tmp_path):
+    from app.portfolio import Portfolio
+    from test_portfolio import Feed
+    from app.workflow_observations import update_observations
+    portfolio=Portfolio(tmp_path/'trade-evidence',market=Feed())
+    g=WorkflowGraph.model_validate(graph([dict(id='trade',kind='model',title='执行交易'),dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='trade',target='update')]))
+    plan=dict(symbol='AAPL',id='plan',status='planned')
+    result=update_observations(portfolio,'owner',g,'update',{'trade':[dict(tool='portfolio-order',input={'operation':'plan'},output=plan)]},'run','计划')
+    assert result['observations']['AAPL']['plan']==plan
+    assert 'trade' not in result['observations']['AAPL']
+    trade=dict(symbol='AAPL',id='fill',side='buy',quantity=2,price=200)
+    result=update_observations(portfolio,'owner',g,'update',{'trade':[dict(tool='portfolio-order',input={'operation':'execute'},output=trade)]},'run-2','执行交易')
+    assert result['observations']['AAPL']['trade']==trade
+    pool=[dict(symbol='AAPL',workflowExecution=dict(updated='2020-01-01',title='旧流程',decision=dict(action='buy',confidence=.9)))]
+    risk=dict(symbol='AAPL',kind='risk',action='sell',created='2030-01-01',confidence=.8,confidenceKind='direction-option-probability',actionConfidences={'sell':.8})
+    row=portfolio.workflow.watchlist(pool,[risk],positions=[dict(symbol='AAPL',quantity=2)])[0]
+    assert row['observationAction']=='sell' and row['directionAssessment']['confidence']==.8

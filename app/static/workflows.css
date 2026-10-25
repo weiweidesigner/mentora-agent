@@ -64,7 +64,7 @@
 
 .wfComposer textarea:focus-visible{outline:none!important;box-shadow:none}.wfNotice{bottom:calc(var(--wf-composer-height,90px) + 36px)}
 
-.wfViewport{overflow:hidden;cursor:grab;user-select:none}.wfWorld{transform-origin:0 0;will-change:transform}.wfViewport.is-panning,.wfViewport.is-space-pan,.wfViewport.is-space-pan *{cursor:grabbing!important}.wfNode{cursor:grab}.wfPort{cursor:crosshair}.wfNode p{user-select:none}
+.wfViewport{overflow:hidden;cursor:grab;user-select:none}.wfWorld{transform-origin:0 0}.wfViewport.is-panning,.wfViewport.is-space-pan,.wfViewport.is-space-pan *{cursor:grabbing!important}.wfNode{cursor:grab}.wfPort{cursor:crosshair}.wfNode p{user-select:none}
 .wfNotice{box-sizing:border-box;width:fit-content;max-width:min(740px,calc(100% - 48px));padding:9px 20px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:center;isolation:isolate;overflow:hidden}
 .wfNotice:empty{display:none}
 .wfNotice:is(.is-thinking,.is-success){border-color:#9c8aff66;box-shadow:0 0 18px #8c78ff24,inset 0 0 10px #81e8f407}
@@ -72,3 +72,17 @@
 @media(prefers-reduced-motion:reduce){.wfExecutionRing,.wfNotice.is-thinking::after{animation:none}.wfWorld{will-change:auto}}
 
 .wfHeaderActions{flex-wrap:wrap}.wfHeader .wfRepair{border-color:#9c8aff66;color:var(--ink)}
+
+/* Resize actual node layout and fonts instead of scaling a composited bitmap. */
+.wfWorld{--wf-node-scale:1}
+.wfNode{width:calc(260px * var(--wf-node-scale));min-height:calc(114px * var(--wf-node-scale));border-radius:calc(8px * var(--wf-node-scale))}
+.wfNode header{gap:calc(10px * var(--wf-node-scale));padding:calc(18px * var(--wf-node-scale)) calc(18px * var(--wf-node-scale)) calc(8px * var(--wf-node-scale))}
+.wfNode .wfNodeGlyph{width:calc(30px * var(--wf-node-scale));height:calc(30px * var(--wf-node-scale));border-radius:calc(7px * var(--wf-node-scale))}
+.wfNode .wfNodeGlyph svg{width:calc(18px * var(--wf-node-scale));height:calc(18px * var(--wf-node-scale))}
+.wfNode small{font-size:calc(10px * var(--wf-node-scale));margin-bottom:calc(3px * var(--wf-node-scale))}
+.wfNode strong{font-size:calc(13px * var(--wf-node-scale));max-width:calc(160px * var(--wf-node-scale))}
+.wfNodeState{font-size:calc(10px * var(--wf-node-scale))}
+.wfNode p{padding:0 calc(18px * var(--wf-node-scale)) calc(18px * var(--wf-node-scale));font-size:calc(11px * var(--wf-node-scale))}
+.wfNode .wfPort{box-sizing:border-box;top:calc(50px * var(--wf-node-scale) - 1px);width:calc(14px * var(--wf-node-scale));height:calc(14px * var(--wf-node-scale))}
+.wfNode .wfPortIn{left:calc(-7px * var(--wf-node-scale) - 1px)}
+.wfNode .wfPortOut{right:calc(-7px * var(--wf-node-scale) - 1px)}

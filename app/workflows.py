@@ -14,6 +14,7 @@ import uuid
 from typing import Literal
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, ValidationError
+from app.workflow_observations import update_observations
 from app.workflow_graph import WorkflowGraph, ordered_nodes
 from app.workflow_contracts import validate_contracts, argument_errors, node_error
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
@@ -25,6 +26,7 @@ KINDS=[
     dict(id='profile',label='投资者档案',description='读取当前用户的投资偏好与约束。'),
     dict(id='model',label='模型',description='使用当前默认模型分析上游输入，保留现有 Agent 能力。'),
     dict(id='condition',label='条件分支',description='按上游数据决定后续分支。'),
+    dict(id='watchlist_update',label='更新观察列表',description='将上游实际回测、JEV 决策与交易结果保存到当前用户的观察列表；试运行仅预览。'),
     dict(id='output',label='输出结果',description='汇总上游节点的真实输出。'),
 ]
 
@@ -80,7 +82,7 @@ def tool_catalog(agent):
         schema=json.loads(json.dumps(row['inputSchema']))
         if row['name']=='portfolio-data':
             schema.setdefault('allOf',[]).append({'if':{'properties':{'operation':{'enum':['quote','history','fundamentals','save_candidate']}},'required':['operation']},'then':{'required':['symbol'],'properties':{'symbol':{'type':'string','minLength':1}}}})
-        result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=schema))
+        result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'执行交易','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=schema))
     return list({row['id']:row for row in result}.values())
 
 def execution_tools(agent):
@@ -118,16 +120,16 @@ class WorkflowService:
     def build(self,payload):
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
-                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
+                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。试运行 preview=true 不写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
         if self.builder:result=self.builder(context)
         else:
             from openai import OpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
 严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,path,operator,expected。
-kind 仅可为 start/watchlist/profile/tool/model/condition/output。工具必须使用目录中的真实 id。
+kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_update。工具必须使用目录中的真实 id。
 每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。
-必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
+必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。"""
             with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
@@ -166,7 +168,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
 
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
-        outputs={};states={};artifacts=[];started=time.monotonic();owner=config['_owner']
+        outputs={};states={};receipts={};artifacts=[];started=time.monotonic();owner=config['_owner']
         emit=config.get('_emit_event',lambda *_:None)
         for node in ordered_nodes(graph):
             if cancelled():raise InterruptedError('试运行已停止')
@@ -179,6 +181,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             update(node.id,dict(status='running',started=stamp(now_utc())))
             emit('progress',dict(text='正在执行：'+node.title,workflowNode=node.id,lang='zh-CN'))
             tick=time.monotonic()
+            receipts[node.id]=[]
+            def capture(event,data):
+                if event=='tool_step' and data.get('phase')=='completed' and data.get('skillId','').startswith('portfolio-'):
+                    receipts[node.id].append(dict(tool=data['skillId'],input=data.get('input') or {},output=data.get('output')))
+                emit(event,data)
             try:
                 if trial and node.kind=='tool' and node.tool=='portfolio-order':raise RuntimeError('试运行不提交订单；请先验证研究和决策节点')
                 if node.kind=='start':value=dict(question=config['question'],instruction=node.instruction,**self.resolve(node.arguments,outputs))
@@ -193,6 +200,8 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     elif node.operator=='greater':passed=float(v)>float(node.expected)
                     else:passed=float(v)<float(node.expected)
                     value=dict(value=passed,actual=v)
+                elif node.kind=='watchlist_update':
+                    value=update_observations(self.portfolio,owner,graph,node.id,receipts,run_id,config.get('title','WorkFlow'),preview=trial)
                 elif node.kind=='output':
                     text='\n\n'.join(str(v.get('interpretation') or json.dumps(v,ensure_ascii=False)) if isinstance(v,dict) else json.dumps(v,ensure_ascii=False) for v in upstream.values())
                     value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False))
@@ -213,7 +222,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                         for index,args in enumerate(arguments):
                             if cancelled():raise InterruptedError('试运行已停止')
                             with skill_events(emit,cancelled):
-                                results.append(call(self.portfolio,owner,node.tool,args))
+                                result=call(self.portfolio,owner,node.tool,args)
+                                results.append(result)
+                                receipts[node.id].append(dict(tool=node.tool,input=args,output=result))
                             if node.foreach:update(node.id,dict(status='running',completed=index+1,total=len(arguments),output=dict(items=list(results),count=len(results))))
                     except Exception as error:
                         if node.foreach:error.partial_output=dict(items=results,count=len(results),failedIndex=len(results))
@@ -224,7 +235,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     seen=[]
                     def forward(event,data):
                         if event=='tool_step':seen.append(json.dumps(data,ensure_ascii=False))
-                        if event!='final':emit(event,data)
+                        if event!='final':capture(event,data)
                     prompt=(node.instruction or '根据上游数据完成分析。')
                     if tool:
                         prompt='\n'.join(['执行工作流工具节点：'+tool['label'],'目标工具标识：'+tool['id']+'；脚本或 Skill：'+tool['script'],tool.get('instructions') or tool['description'],prompt,'必须遵循对应 Skill 的规范执行真实工具调用，无法执行时明确报错，不得声称已完成。'])

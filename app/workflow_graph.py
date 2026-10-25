@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 
 class WorkflowNode(BaseModel):
     id: str = Field(pattern=r'^[A-Za-z][A-Za-z0-9_-]{0,63}$')
-    kind: Literal['start','watchlist','profile','tool','model','condition','output']
+    kind: Literal['start','watchlist','profile','tool','model','condition','output','watchlist_update']
     title: str = Field(min_length=1,max_length=100)
     x: float = Field(default=80,ge=-10000,le=10000,allow_inf_nan=False)
     y: float = Field(default=100,ge=-10000,le=10000,allow_inf_nan=False)
@@ -26,6 +26,22 @@ class WorkflowGraph(BaseModel):
     version: Literal[1] = 1
     nodes: list[WorkflowNode] = Field(min_length=1,max_length=48)
     edges: list[WorkflowEdge] = Field(default_factory=list,max_length=192)
+
+    @model_validator(mode='before')
+    @classmethod
+    def migrate_node_labels(cls,value):
+        if not isinstance(value,dict):return value
+        nodes=[]
+        for raw in value.get('nodes',[]):
+            if not isinstance(raw,dict):
+                nodes.append(raw);continue
+            node=dict(raw)
+            if node.get('kind')=='tool' and node.get('tool')=='portfolio-order' and node.get('title')=='执行模拟交易':
+                node['title']='执行交易'
+            if node.get('kind')=='output' and node.get('title')=='输出回测决策与交易报告':
+                node.update(kind='watchlist_update',title='更新观察列表',instruction='将上游真实回测、JEV 决策和交易回执更新到当前用户的观察列表。')
+            nodes.append(node)
+        return dict(value,nodes=nodes)
 
     @model_validator(mode='after')
     def validate_graph(self):

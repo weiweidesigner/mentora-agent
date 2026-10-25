@@ -6,7 +6,7 @@ const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf
 const code=readFileSync(new URL('../app/static/workflows.js',import.meta.url),'utf8');
 const day=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
 const tick=()=>new Promise(r=>setTimeout(r,30));
-const kinds=['start','watchlist','profile','model','condition','output'].map(id=>({id,label:id,description:id}));
+const kinds=['start','watchlist','profile','model','condition','output','watchlist_update'].map(id=>({id,label:id,description:id}));
 const graph={version:1,nodes:[{id:'input',kind:'start',title:'输入',x:90,y:140,arguments:{score:3}},{id:'out',kind:'output',title:'输出',x:440,y:140}],edges:[{source:'input',target:'out',when:'always'}]};
 async function setup(){
  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=tasks',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];let saved=null,buildError=false;
@@ -154,5 +154,33 @@ test('tool inspector preserves foreach and item references in the trial snapshot
   s.d.querySelector('[data-act=run]').click();await tick();
   const payload=JSON.parse(s.calls.find(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST')[1].body);
   assert.equal(payload.graph.nodes[0].foreach,'{{watch}}');assert.equal(payload.graph.nodes[0].arguments.symbol,'{{item.symbol}}');
+ }finally{s.w.close();}
+});
+
+test('zoom resizes node layout and vector connections while the background stays fixed',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});
+  const world=s.d.querySelector('#wfWorld'),viewport=s.d.querySelector('#wfViewport');
+  const before=s.d.querySelector('.wfEdgeLine').getAttribute('d');
+  s.d.querySelector('[data-act=zoom-in]').click();
+  const scale=Number(world.style.getPropertyValue('--wf-node-scale'));
+  assert(scale>0);assert(!world.style.transform.includes('scale'));
+  assert.equal(viewport.style.backgroundSize,'22px 22px');
+  assert.equal(parseFloat(s.d.querySelector('[data-node=input]').style.left),90*scale);
+  assert.notEqual(s.d.querySelector('.wfEdgeLine').getAttribute('d'),before);
+  const css=readFileSync(new URL('../app/static/workflows.css',import.meta.url),'utf8');
+  assert.match(css,/font-size:calc\(13px \* var\(--wf-node-scale\)\)/);
+ }finally{s.w.close();}
+});
+test('saved trading nodes migrate to execution and observation actions when reopened',async()=>{
+ const s=await setup();try{
+  const old={version:1,nodes:[{id:'trade',kind:'tool',tool:'portfolio-order',title:'执行模拟交易',x:90,y:140},{id:'out',kind:'output',title:'输出回测决策与交易报告',x:440,y:140}],edges:[{source:'trade',target:'out',when:'always'}]};
+  await s.w.MentoraWorkflow.open({workflow:old});
+  assert.equal(s.d.querySelector('[data-node=trade] strong').textContent,'执行交易');
+  assert.equal(s.d.querySelector('[data-node=out] strong').textContent,'更新观察列表');
+  assert(s.d.querySelector('[data-add=watchlist_update]'));
+  s.d.querySelector('[data-act=save]').click();await tick();
+  assert.equal(s.saved().workflow.nodes[1].kind,'watchlist_update');
+  assert.equal(old.nodes[1].kind,'output');
  }finally{s.w.close();}
 });
