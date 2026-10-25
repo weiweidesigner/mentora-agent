@@ -61,3 +61,5 @@
 @media(max-width:760px){.wfHeader{height:auto;min-height:112px;padding:14px 16px;flex-wrap:wrap}.wfHeading{flex:1;max-width:calc(100% - 56px)}.wfHeaderActions{width:100%;justify-content:flex-end}.wfHeader button{padding:7px 10px}.wfHeader .wfBack{right:10px}.wfCanvasTools{max-width:calc(100% - 32px);gap:0}.wfCanvasTools button{font-size:10px;padding:5px}.wfCanvasTools button svg{width:14px}.wfLibrary{top:64px;left:12px;bottom:144px;max-width:calc(100% - 24px);width:278px}.wfInspector{right:12px;top:64px;bottom:144px;width:285px;max-width:calc(100% - 24px)}.wfComposer{width:calc(100% - 24px);bottom:14px}.wfComposer textarea{font-size:13px}.wfEmpty{top:35%}.wfEmpty h2{font-size:18px}.wfNotice{left:50%;bottom:114px;max-width:calc(100% - 24px)}}
 
 .wfCanvas [hidden]{display:none!important}
+
+.wfComposer textarea:focus-visible{outline:none!important;box-shadow:none}.wfNotice{bottom:calc(var(--wf-composer-height,90px) + 36px)}
