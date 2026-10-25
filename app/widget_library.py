@@ -2,17 +2,18 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 import importlib.util
 import json
 import re
 import tempfile
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query
 from app.security_symbols import resolve_symbol, search_symbols
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 ROOT = Path(__file__).resolve().parents[1]
 GENERATED = ROOT / 'outputs' / 'generated'
@@ -20,6 +21,7 @@ router = APIRouter()
 
 
 class TradingViewInput(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     widget: str = Field(min_length=1, max_length=60)
     symbols: list[str] = Field(default_factory=list, max_length=30)
     market: str = Field(default='default', max_length=30)
@@ -28,7 +30,8 @@ class TradingViewInput(BaseModel):
     theme: Literal['dark', 'light'] = 'dark'
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
     interval: str | None = Field(default=None, max_length=10)
-    studies: list[str] | None = Field(default=None, max_length=8)
+    config: dict[str, Any] | None = None
+    studies: list[Any] | None = None
     style: str | None = Field(default=None, max_length=40)
     compareSymbols: list[str] | None = Field(default=None, max_length=8)
     watchlist: list[str] | None = Field(default=None, max_length=30)
@@ -73,7 +76,6 @@ STUDY_ALIASES = {
     'sma': 'MASimple@tv-basicstudies',
     'simple moving average': 'MASimple@tv-basicstudies',
 }
-SUPPORTED_STUDIES = frozenset(STUDY_ALIASES.values())
 ADVANCED_CHART_INTERVALS = frozenset({'1','5','15','30','60','120','240','D','W','M'})
 INTERVAL_ALIASES = {
     '1m':'1','5m':'5','15m':'15','30m':'30','60m':'60','1h':'60','2h':'120','4h':'240',
@@ -100,16 +102,52 @@ ADVANCED_CHART_OPTION_FIELDS = frozenset({
 })
 
 
-def normalize_studies(values: list[str] | None) -> list[str]:
+def normalize_studies(values: list[Any] | None) -> list[Any]:
     normalized = []
     for raw in values or []:
-        value = raw.strip()
-        canonical = STUDY_ALIASES.get(value.lower(), value)
-        if canonical not in SUPPORTED_STUDIES:
-            raise ValueError('暂不支持该 TradingView 指标；当前支持 MACD、RSI、ROC、Stochastic RSI 和 SMA。')
+        value = raw.strip() if isinstance(raw, str) else copy.deepcopy(raw)
+        canonical = STUDY_ALIASES.get(value.lower(), value) if isinstance(value, str) else value
         if canonical not in normalized:
             normalized.append(canonical)
     return normalized
+
+
+OPTION_KEYS = {
+    'symbols':'symbol', 'interval':'interval', 'studies':'studies', 'style':'style',
+    'compareSymbols':'compareSymbols', 'watchlist':'watchlist', 'timezone':'timezone',
+    'allowSymbolChange':'allow_symbol_change', 'showDetails':'details', 'showHotlist':'hotlist',
+    'showDateRanges':'withdateranges', 'showCalendar':'calendar', 'saveImage':'save_image',
+    'showDrawingToolbar':'hide_side_toolbar', 'showTopToolbar':'hide_top_toolbar',
+    'showLegend':'hide_legend', 'showVolume':'hide_volume',
+}
+
+
+def merge_tradingview_parameters(previous: dict, patch: dict) -> dict:
+    """Merge config patches without allowing a stale shorthand to undo an edit."""
+    merged = copy.deepcopy(previous)
+    merged.update(copy.deepcopy(patch))
+    if 'config' in previous or 'config' in patch:
+        config = {**copy.deepcopy(previous.get('config') or {}), **copy.deepcopy(patch.get('config') or {})}
+        raw_patch=patch.get('config') or {}
+        if 'symbols' in patch:
+            for key in ('symbol','symbols','symbolsGroups','currencies','broker'):
+                if key not in raw_patch:config.pop(key,None)
+        if 'market' in patch:
+            for key in ('market','exchange','countryFilter'):
+                if key not in raw_patch:config.pop(key,None)
+        for shorthand, key in OPTION_KEYS.items():
+            if shorthand in patch and key not in (patch.get('config') or {}):
+                config.pop(key, None)
+            elif key in (patch.get('config') or {}):
+                merged.pop(shorthand, None)
+        merged['config'] = config
+    return merged
+
+
+def validate_tradingview_config(widget: str, config: dict) -> dict:
+    """The Skill, not a host-maintained allowlist, owns supported config keys."""
+    renderer().build_config(widget, config=config)
+    return copy.deepcopy(config)
 
 
 def normalize_interval(value: str | None) -> str | None:
@@ -145,7 +183,13 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
         raise ValueError('不支持的 TradingView 组件')
     if payload.preset and ((payload.preset=='intraday' and payload.widget!='symbol-overview') or (payload.preset in {'forex','crypto-pairs'} and payload.widget!='screener')):
         raise ValueError('该组件不支持指定的预设。')
+    raw_config = validate_tradingview_config(payload.widget, payload.config or {})
     values = list(dict.fromkeys(s.strip() for s in payload.symbols if s.strip()))
+    if not values and isinstance(raw_config.get('symbol'), str):
+        values = [raw_config['symbol']]
+    if not values and payload.config is not None and payload.widget not in MARKETS|GROUPS|CURRENCY_WIDGETS|BROKER_WIDGETS:
+        default_symbol=tool.CATALOG[payload.widget]['defaults'].get('symbol')
+        if default_symbol:values=[default_symbol]
     if (payload.preset=='intraday' or (payload.widget not in MARKETS|GROUPS|CURRENCY_WIDGETS|BROKER_WIDGETS)) and len(values) != 1:
         raise ValueError('该组件需要且只支持一个标的。')
     symbols = values if payload.widget in MARKETS|CURRENCY_WIDGETS|BROKER_WIDGETS else list(dict.fromkeys(resolve_symbol(s, payload.symbolMarket) for s in values))
@@ -214,29 +258,34 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     elif payload.preset == 'intraday':
         config.update(symbols=[[symbols[0]+'|1']], dateRanges=['1d|1'], chartType='area')
     elif payload.widget in GROUPS:
-        if not symbols and payload.widget!='market-data':
+        if not symbols and payload.widget!='market-data' and payload.config is None:
             raise ValueError('请至少填写一个标的代码。')
-        if payload.widget == 'symbol-overview':
+        if payload.widget == 'symbol-overview' and symbols:
             config['symbols'] = [[s+'|1D'] for s in symbols]
         elif payload.widget == 'market-data' and symbols:
             config['symbolsGroups'] = [{'name': '关注标的' if payload.language.startswith('zh') else 'Watchlist',
                                         'symbols': [{'name': s} for s in symbols]}]
-        elif payload.widget!='market-data':
+        elif payload.widget!='market-data' and symbols:
             config['symbols'] = [{'proName': s} for s in symbols]
     else:
         if len(symbols) != 1:
             raise ValueError('该组件需要且只支持一个标的代码。')
         symbol = symbols[0]
+    # Raw Skill config is canonical; legacy convenience fields remain adapters.
+    config.update(raw_config)
+    symbol = config.get('symbol', symbol)
     interval = normalize_interval(payload.interval) if payload.interval and payload.widget == 'advanced-chart' else payload.interval
     if interval and interval not in {'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':{'1D','1W','1M','1h'}}.get(payload.widget,set()):
         raise ValueError('该组件不支持此周期。')
-    built = tool.build_config(payload.widget, symbol=symbol, interval=interval, theme=payload.theme,
+    built = tool.build_config(payload.widget, symbol=symbol, interval=config.get('interval', interval), theme=payload.theme,
                              language=payload.language, config=config)
     catalogue = json.loads((ROOT/'app/static/widget-catalog.json').read_text())
     item = next((c for c in catalogue if c.get('widget') == payload.widget and c.get('preset') == payload.preset), None)
     if item is None:
         raise ValueError('该组件已从看板库移除。')
     labels = {'america':'美股','china':'中国 A 股','hongkong':'港股','japan':'日本','uk':'英国','germany':'德国','us':'美国','cn':'中国','eu':'欧元区','gb':'英国','jp':'日本'}
+    if isinstance(built.get('symbol'),str):symbols=[built['symbol']]
+    elif payload.widget=='symbol-overview':symbols=[entry[-1].split('|')[0] for entry in built.get('symbols',[]) if isinstance(entry,list) and entry and isinstance(entry[-1],str)]
     suffix = ', '.join(symbols) if symbols else labels.get(payload.market, item.get('defaultScope', ''))
     title = item['title'] + (' · '+suffix if suffix else '')
     height = 160 if payload.widget in {'ticker-tape', 'single-ticker', 'tickers'} else 560

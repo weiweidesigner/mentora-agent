@@ -606,26 +606,8 @@ KLINE_THEME_PATH = Path(__file__).parent / "skills/business-chart-recall/assets/
 
 
 def sync_native_kline_theme(artifact: str, theme: str) -> str:
-    """Keep saved native Canvas charts in sync with the selected host theme."""
-    if 'data-kline-contract=' not in artifact or 'id="kline-canvas"' not in artifact:
-        return artifact
-
-    def update_script(match: re.Match) -> str:
-        script = match.group(0)
-        if "getElementById('kline-canvas')" not in script:
-            return script
-        # Older documents have a fixed config. Update only the native chart's
-        # config, leaving market data, annotations and other scripts untouched.
-        return re.sub(
-            r'(const config = \{[^\n]*?"themeMode"\s*:\s*)"(?:light|dark)"',
-            lambda config: config.group(1) + json.dumps(theme),
-            script, count=1,
-        )
-
-    artifact = re.sub(r'<script\b[^>]*>.*?</script\s*>', update_script, artifact, flags=re.S | re.I)
-    artifact = re.sub(r'<style data-kline-theme="dual">.*?</style>', '', artifact, flags=re.S)
-    css = '<style data-kline-theme="dual">' + KLINE_THEME_PATH.read_text(encoding="utf-8") + '</style>'
-    return re.sub(r'</head\s*>', lambda _: css + '</head>', artifact, count=1, flags=re.I)
+    from app.artifact_upgrades import sync_native_kline_theme as native_theme
+    return native_theme(artifact, theme)
 
 def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "light") -> HTMLResponse:
     """Serve a generated StreamViz artifact with the runtime theme frozen in."""

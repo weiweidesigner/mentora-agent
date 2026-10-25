@@ -9,7 +9,7 @@
   const shell = document.querySelector('.shell'), canvas = $('widgetCanvas');
   const KEY = 'mentora-widget-boards-v1', GAP = 20, ROW = 24;
   const systemBoardIds = new Set(['starter-stocks','starter-crypto','starter-forex']);
-  const advancedChartParameters = ['interval','studies','style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar','showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges','showCalendar','saveImage'];
+  const advancedChartParameters = ['config','interval','studies','style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar','showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges','showCalendar','saveImage'];
   const isSystemBoard = board => systemBoardIds.has(board.id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uid = () => crypto.randomUUID();
@@ -147,17 +147,20 @@
   }
   function hydrateTradingView(card,spec,node){
     if(!spec.widget||!spec.config)return;const cfg=spec.config;let symbols;
+    // Exclude host-added interaction switches; preserve the Skill-owned settings.
+    const config=Object.fromEntries(Object.entries(cfg).filter(([key])=>!['disabled_features','enabled_features'].includes(key)));
+    card.parameters={...card.parameters,config};
     if(spec.widget==='market-data')symbols=(cfg.symbolsGroups||[]).flatMap(g=>(g.symbols||[]).map(s=>s.name));
     else if(spec.preset==='intraday')symbols=(cfg.symbols||[]).map(s=>s[s.length-1].split('|')[0]);
     else if(typeof cfg.symbol==='string')symbols=[cfg.symbol];
     if(['stock-market','market-summary'].includes(spec.widget)&&cfg.exchange){
       const labels={US:'美国',SSE:'上海证券交易所',SZSE:'深圳证券交易所',HKEX:'香港交易所',TSE:'东京证券交易所',LSE:'伦敦证券交易所'};
       const title=(spec.widget==='stock-market'?'股票市场':'市场摘要')+' · '+(labels[cfg.exchange]||cfg.exchange);
-      card.component='tv-'+spec.widget;card.parameters={...card.parameters,symbols:[],market:cfg.exchange};
+      card.component='tv-'+spec.widget;card.parameters={...card.parameters,symbols:[],market:cfg.exchange,config};
       if(!card.customTitle||/^(股票市场|市场摘要)\s*·\s*(美国|US)$/.test(card.title)){card.title=title;if(node)node.querySelector('.widgetCardTitle').textContent=title;}
       save();return;
     }
-    if(!symbols?.length)return;
+    if(!symbols?.length){save();return;}
     const parameters={...card.parameters,symbols,...(cfg.interval?{interval:cfg.interval}:{}),...(spec.widget==='advanced-chart'?{studies:cfg.studies||[]}:{})};
     const component=spec.preset==='intraday'?'tv-intraday':'tv-'+spec.widget;
     if(card.component!==component||JSON.stringify(card.parameters)!==JSON.stringify(parameters)){card.component=component;card.parameters=parameters;save();}
@@ -350,6 +353,7 @@
       const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'组件添加失败，请重试。');
       const url=safeUrl(result.url);if(!url)throw Error('组件没有返回可用的地址。');
       if(!boards.includes(board)||!board.cards.includes(card))return;
+      if(result.config)card.parameters.config=result.config;
       Object.assign(card,{url,title:card.customTitle?card.title:(result.title||component.title),status:'ready',createdAt:card.createdAt||new Date().toISOString(),refreshedAt:new Date().toISOString()});delete card.refreshError;
     } catch(error){if(boards.includes(board)&&board.cards.includes(card)){const detail=error.name==='AbortError'?'组件加载已停止或超时，请重试。':error.message;if(options.preserveOnError&&previous?.url)Object.assign(card,previous,{refreshError:detail});else {card.status='error';card.error=detail;}}}
     finally{clearTimeout(timeout);options.signal?.removeEventListener('abort',onAbort);save();if(activeId===board.id)render();}
@@ -479,7 +483,8 @@
       if(prev.interval!==next.interval&&next.interval)details.push(`周期切换为${period(next.interval)}`);
       if(prev.market!==next.market&&next.market)details.push(`切换市场为${next.market}`);
       if(prev.style!==next.style&&next.style!==undefined)details.push(`图表样式改为${chartStyle(next.style)}`);
-      if(JSON.stringify(prev.studies||[])!==JSON.stringify(next.studies||[]))details.push(`技术指标更新为 ${(next.studies||[]).map(value=>value.split('@')[0]).join('、')||'无'}`);
+      if(JSON.stringify(prev.studies||[])!==JSON.stringify(next.studies||[]))details.push(`技术指标更新为 ${(next.studies||[]).map(value=>String(typeof value==='string'?value:value.id||'指标').split('@')[0]).join('、')||'无'}`);
+      if(JSON.stringify(prev.config||{})!==JSON.stringify(next.config||{}))details.push('TradingView 配置已更新');
       if(JSON.stringify(prev.compareSymbols||[])!==JSON.stringify(next.compareSymbols||[]))details.push(`对比标的更新为 ${(next.compareSymbols||[]).join('、')||'无'}`);
       if(JSON.stringify(prev.watchlist||[])!==JSON.stringify(next.watchlist||[]))details.push(`观察列表更新为 ${(next.watchlist||[]).join('、')||'空'}`);
       if(old.component!==card.component)details.push('替换了图表类型');
@@ -624,6 +629,7 @@
       const previous=card.parameters||{};
       const retained=Object.fromEntries(advancedChartParameters.filter(key=>previous[key]!==undefined&&key!=='interval').map(key=>[key,previous[key]]));
       const parameters={symbols,market,...retained,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{})};
+      if(parameters.config){parameters.config={...parameters.config};for(const key of ['symbol','symbols','symbolsGroups','interval','market','exchange','countryFilter','broker','currencies'])delete parameters.config[key];}
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
       const same=JSON.stringify(previous.symbols||[])===JSON.stringify(symbols)&& (previous.market||'default')===market&&(previous.interval||'')===(parameters.interval||'');
       undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));
@@ -631,6 +637,7 @@
         if(component.provider==='TradingView'){
           const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({widget:component.widget,preset:component.preset||null,...parameters,symbolMarket:symbolPicker?.enabled?symbolPicker.select.value:'auto',theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN'})});
           const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'保存失败，请重试。');const url=safeUrl(result.url);if(!url)throw Error('图表地址不可用。');if(!boards.includes(board)||!board.cards.includes(card))return;
+          if(result.config)parameters.config=result.config;
           Object.assign(card,{url,parameters,market,request:text,status:'ready'});delete card.contentHeight;
         }else{ $('widgetConfig').close();await generate(text,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true,symbolInput:raw});save();if(activeId===board.id)render();return; }
       }

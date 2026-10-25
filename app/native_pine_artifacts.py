@@ -6,7 +6,8 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
-from app.artifact_upgrades import upgrade_native_kline_pine
+from app.artifact_upgrades import upgrade_native_kline_pine, sync_native_kline_theme
+from urllib.parse import parse_qs
 
 
 class NativePineStaticFiles(StaticFiles):
@@ -17,6 +18,11 @@ class NativePineStaticFiles(StaticFiles):
             return response
         # StaticFiles has already checked traversal and resolved the allowed file.
         artifact = await run_in_threadpool(Path(response.path).read_text, encoding='utf-8')
+        theme=parse_qs(scope.get('query_string',b'').decode()).get('theme',[''])[0]
+        if theme not in {'dark','light'}:
+            match=re.search(r'<html\b[^>]*data-theme=["\'](dark|light)',artifact,re.I)
+            theme=match[1] if match else 'light'
+        artifact=sync_native_kline_theme(artifact,theme)
         artifact = upgrade_native_kline_pine(artifact)
         if 'root.dataset.pineBridge' not in artifact:
             return response

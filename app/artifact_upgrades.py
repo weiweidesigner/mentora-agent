@@ -9,6 +9,27 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 
+def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
+    """Refresh native presentation only, including historical encoded child charts."""
+    import html
+    if depth>4:return artifact
+    def child(match):
+        original=html.unescape(match[2])
+        updated=sync_native_kline_theme(original,theme,depth+1)
+        return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
+    artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
+    if 'id="kline-canvas"' not in artifact or 'class="kline-component"' not in artifact:return artifact
+    def update_script(match):
+        script=match[0]
+        if "getElementById('kline-canvas')" not in script:return script
+        return re.sub(r'(const config = \{[^\n]*?"themeMode"\s*:\s*)"(?:light|dark)"',lambda m:m[1]+json.dumps(theme),script,count=1)
+    artifact=re.sub(r'<script\b[^>]*>.*?</script\s*>',update_script,artifact,flags=re.S|re.I)
+    artifact=re.sub(r'<style data-kline-theme="dual">.*?</style>','',artifact,flags=re.S)
+    css=(Path(__file__).parent/'skills/business-chart-recall/assets/kline-theme.css').read_text(encoding='utf-8')
+    artifact=re.sub(r'<html\b([^>]*)>',lambda m:'<html'+re.sub(r'\sdata-theme\s*=\s*(["\']).*?\1','',m[1])+f' data-theme="{theme}">',artifact,count=1,flags=re.I)
+    return re.sub(r'</head\s*>',lambda _:'<style data-kline-theme="dual">'+css+'</style></head>',artifact,count=1,flags=re.I)
+
+
 class _IntradayDocument(HTMLParser):
     def __init__(self):
         super().__init__()

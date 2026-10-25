@@ -1,0 +1,27 @@
+import html
+import re
+from app.artifact_upgrades import sync_native_kline_theme
+
+
+def document():
+    return '''<html data-theme="dark"><head><style>.period-tabs{display:flex;gap:14px;flex:1}.period-button{font-size:16px;font-weight:760}.period-button.active{background:#5d6878}</style></head><body><div class="kline-component"><header class="kline-title"><strong>SPY</strong><nav class="period-tabs"><button class="period-button active" data-period="1d">日K</button></nav></header><canvas id="kline-canvas"></canvas></div><script>const config = {"themeMode":"dark","annotations":[{"price":781.62}]};
+const canvas=document.getElementById('kline-canvas');const dataByPeriod={"1d":[{"close":778.01}]};</script></body></html>'''
+
+
+def test_legacy_tabs_reuse_native_style_without_changing_data_or_scripts():
+    before=document();after=sync_native_kline_theme(before,'dark')
+    assert 'font:500 13px/20px' in after
+    assert 'gap:2px;padding:2px;border:1px solid var(--kl-border)' in after
+    assert re.findall(r'<script>.*?</script>',before,re.S)==re.findall(r'<script>.*?</script>',after,re.S)
+    assert sync_native_kline_theme(after,'dark')==after
+    assert sync_native_kline_theme('<p>Not a native chart</p>','dark')=='<p>Not a native chart</p>'
+
+
+def test_nested_tabs_and_theme_switch_preserve_periods_and_annotations():
+    nested='<html><head></head><body><iframe srcdoc="'+html.escape(document(),quote=True)+'"></iframe></body></html>'
+    updated=sync_native_kline_theme(nested,'light')
+    child=html.unescape(re.search(r'srcdoc="(.*?)"',updated,re.S)[1])
+    assert 'font:500 13px/20px' in child
+    assert 'data-theme="light"' in child
+    assert '"themeMode":"light"' in child
+    assert '"price":781.62' in child and '"close":778.01' in child

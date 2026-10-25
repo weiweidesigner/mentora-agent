@@ -22,6 +22,12 @@ def generation_catalogue() -> list[dict]:
     supplied scripts, paths, HTML or endpoint URLs are accepted as capabilities.
     """
     library = json.loads((ROOT / 'app/static/widget-catalog.json').read_text())
+    from app.widget_library import renderer
+    tradingview=renderer().CATALOG
+    for item in library:
+        if item.get('provider')=='TradingView' and item.get('widget') in tradingview:
+            item['configDefaults']=tradingview[item['widget']]['defaults']
+            item['configExtraKeys']=['width','height','locale','isTransparent']
     hidden = []
     for stem, title in GENERIC_TITLES.items():
         schema = ROOT / f'app/skills/generic-chart/schemas/{stem}.schema.json'

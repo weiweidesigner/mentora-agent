@@ -79,11 +79,35 @@ def test_advanced_chart_control_validation_rejects_wrong_component_or_value(tmp_
         lib.build_widget(lib.TradingViewInput(widget='advanced-chart',symbols=['NASDAQ:AAPL'],interval='7m'),tmp_path)
 
 
-def test_studies_are_rejected_for_other_widgets_and_unknown_indicators(tmp_path):
+def test_studies_use_skill_contract_without_host_indicator_whitelist(tmp_path):
     with pytest.raises(ValueError, match='只有 TradingView 高级图表'):
         lib.build_widget(lib.TradingViewInput(widget='technical-analysis', symbols=['NASDAQ:AAPL'], studies=['MACD']), tmp_path)
-    with pytest.raises(ValueError, match='暂不支持'):
-        lib.build_widget(lib.TradingViewInput(widget='advanced-chart', symbols=['NASDAQ:AAPL'], studies=['unknown']), tmp_path)
+    studies=['STD;EMA',{'id':'MASimple@tv-basicstudies','inputs':{'length':20}}]
+    result=lib.build_widget(lib.TradingViewInput(widget='advanced-chart',symbols=['NASDAQ:AAPL'],studies=studies),tmp_path)
+    assert result['config']['studies']==studies
+
+
+def test_every_widget_raw_config_matches_the_canonical_skill(tmp_path):
+    import copy
+    tool=lib.renderer()
+    for widget,spec in tool.CATALOG.items():
+        config=copy.deepcopy(spec['defaults'])
+        result=lib.build_widget(lib.TradingViewInput(widget=widget,config=config),tmp_path)
+        assert result['config']==tool.build_config(widget,theme='dark',language='zh-CN',config=config),widget
+        with pytest.raises(ValueError,match='Unsupported settings'):
+            lib.build_widget(lib.TradingViewInput(widget=widget,config={'not_a_skill_key':True}),tmp_path)
+
+
+def test_merge_config_retains_unmentioned_values_and_resolves_alias_conflicts():
+    old={'symbols':['NASDAQ:AAPL'],'style':'1','interval':'D','config':{'symbol':'NASDAQ:AAPL','style':'1','interval':'D','hide_volume':True}}
+    merged=lib.merge_tradingview_parameters(old,{'config':{'style':'2','interval':'30'}})
+    assert 'style' not in merged and 'interval' not in merged
+    assert merged['config']=={**old['config'],'style':'2','interval':'30'}
+    alias=lib.merge_tradingview_parameters(merged,{'style':'area','symbols':['NASDAQ:MSFT']})
+    assert 'symbol' not in alias['config'] and 'style' not in alias['config']
+    assert alias['config']['hide_volume'] is True
+    groups=lib.merge_tradingview_parameters({'config':{'symbols':[['NASDAQ:AAPL|1D']],'chartType':'line'}},{'symbols':['NASDAQ:MSFT']})
+    assert groups['config']=={'chartType':'line'}
 
 
 @pytest.mark.parametrize('data',[

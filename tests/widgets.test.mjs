@@ -68,6 +68,7 @@ test('advanced chart prompt forwards and persists every supported toolbar contro
   compareSymbols:['NASDAQ:NVDA'],watchlist:['NASDAQ:AAPL','NASDAQ:MSFT','NASDAQ:NVDA'],timezone:'Asia/Shanghai',
   allowSymbolChange:false,showDrawingToolbar:true,showTopToolbar:false,showLegend:false,showVolume:false,
   showDetails:true,showHotlist:true,showDateRanges:true,showCalendar:true,saveImage:false,
+  config:{style:'2',studies:['STD;EMA',{id:'MASimple@tv-basicstudies',inputs:{length:20}}],hide_volume:true},
  };
  const s=setup({storage:twoCards(),plan:{reply:'已更新高级图表。',actions:[{type:'update',cardId:'one',componentId:'tv-advanced-chart',parameters:controls}]}});
  s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'改成30分钟折线并把图表控制都调整好');await tick();await tick();
@@ -75,6 +76,16 @@ test('advanced chart prompt forwards and persists every supported toolbar contro
  for(const [key,value] of Object.entries(controls))assert.deepEqual(direct[key],value);
  const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.find(card=>card.id==='one');
  for(const [key,value] of Object.entries(controls))assert.deepEqual(card.parameters[key],value);
+ s.dom.window.close();
+});
+test('imported TradingView artifacts retain complete Skill config on hydration',async()=>{
+ const s=setup({storage:twoCards()}),frame=s.d.querySelector('[data-card="one"] iframe');
+ const config={symbol:'NASDAQ:AAPL',interval:'D',style:'2',studies:['STD;EMA'],hide_volume:true,compareSymbols:['NASDAQ:MSFT'],disabled_features:['mouse_wheel_scroll']};
+ frame.contentDocument.open();frame.contentDocument.write('<html><body><script id="tv-config" type="application/json">'+JSON.stringify({widget:'advanced-chart',config})+'</script></body></html>');frame.contentDocument.close();
+ frame.dispatchEvent(new s.w.Event('load'));await tick();
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.find(c=>c.id==='one');
+ const expected={...config};delete expected.disabled_features;
+ assert.deepEqual(card.parameters.config,expected);
  s.dom.window.close();
 });
 test('layout-only command preserves live iframe elements and the scope can return to the whole board',async()=>{

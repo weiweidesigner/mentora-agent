@@ -11,6 +11,31 @@ def payload(selected=''):
     ]})
 
 
+def test_raw_config_updates_merge_preserve_and_validate_against_skill():
+    p=payload('one');p.message='修改图表参数'
+    p.board.cards[0].parameters.config={'style':'1','hide_volume':True,'studies':['STD;SMA']}
+    result=planner.validate_plan({'reply':'已更新','actions':[{'type':'update','cardId':'one','parameters':{'config':{'style':'2','studies':['STD;EMA']}}}]},p,[planner.enrich_card(c) for c in p.board.cards])
+    config=result['actions'][0]['parameters']['config']
+    assert config=={'style':'2','hide_volume':True,'studies':['STD;EMA']}
+    with pytest.raises(ValueError,match='Unsupported settings'):
+        planner.validate_plan({'reply':'bad','actions':[{'type':'update','cardId':'one','parameters':{'config':{'pine_code':'not supported'}}}]},p,[planner.enrich_card(c) for c in p.board.cards])
+
+
+def test_raw_config_indicator_add_preserves_existing_and_accepts_structured_values():
+    p=payload('one');p.message='添加指标'
+    p.board.cards[0].parameters.config={'studies':['STD;SMA'],'hide_volume':True}
+    value={'id':'MASimple@tv-basicstudies','inputs':{'length':20}}
+    result=planner.validate_plan({'reply':'已更新','actions':[{'type':'update','cardId':'one','parameters':{'config':{'studies':[value]}}}]},p,[planner.enrich_card(c) for c in p.board.cards])
+    assert result['actions'][0]['parameters']['config']['studies']==['STD;SMA',value]
+
+
+def test_planner_catalogue_exposes_same_skill_config_defaults():
+    from app.widget_library import renderer
+    for item in planner.catalogue():
+        if item.get('provider')=='TradingView':
+            assert item['configDefaults']==renderer().CATALOG[item['widget']]['defaults']
+
+
 def test_layout_plan_is_model_generated_and_contains_only_validated_actions(monkeypatch):
     calls=[]
     def model(context):
