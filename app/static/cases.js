@@ -165,6 +165,7 @@
     event: '<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>',
     document: '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
   };
+  window.MentoraIconLibrary = Object.freeze({...visualizationIcons,...contentIcons});
   const homeCaseIcons = {
     "sse-kdj-backtest": "backtest", "midterm-election-1902-2026": "report",
     "amd-ratings": "ratings", "presidents-sp500": "dynamic_line",

@@ -120,3 +120,26 @@ def test_reference_resolution_is_data_only(env):
     assert env.service.resolve({'value':'{{input.items}}','message':'结果 {{input.score}}'},{'input':{'items':[1,2],'score':3}})=={'value':[1,2],'message':'结果 3'}
     with pytest.raises(ValueError):TaskInput(title='空流程',question='执行',taskMode='workflow')
     assert env.service.scheduled({},dict(taskMode='agent')) is None
+
+
+def test_catalog_exposes_skill_categories_instead_of_individual_components():
+    from app.workflows import tool_catalog,execution_tools
+    tools=tool_catalog('mentora')
+    ids={t['id'] for t in tools}
+    assert {'generic-chart','business-chart-recall','market-data','external-search','portfolio-backtest','portfolio-jev'}<=ids
+    assert not ids & {'bar_chart','line_chart','pie','income_statement'}
+    assert all(t.get('icon') and t.get('group') for t in tools)
+    assert ids=={t['id'] for t in tool_catalog('mentora-deal')}
+    assert 'bar_chart' in {t['id'] for t in execution_tools('mentora')}
+
+def test_grouped_skill_node_executes_with_arguments_and_real_receipt(env,monkeypatch):
+    import app.workflows as module
+    monkeypatch.setattr(module,'tool_catalog',lambda agent:[dict(id='generic-chart',label='通用图表',description='根据数据选择通用图表',script='app/skills/generic-chart/',schema=None)])
+    def runner(config,rid):
+        assert '"title": "测试图表"' in config['question']
+        config['_emit_event']('tool_step',{'command':'python app/skills/generic-chart/scripts/bar_chart.py --payload input.json','status':'success'})
+        return {'interpretation':'图表已生成','reportArtifacts':[]}
+    env.service.runner=runner
+    g=graph([dict(id='chart',kind='tool',title='通用图表',tool='generic-chart',arguments={'title':'测试图表'})],[])
+    result=env.service.execute({'workflow':g,'agent':'mentora','_owner':'test','question':'构建图表'},'grouped',lambda *_:None)
+    assert result['workflowNodes']['chart']=='success'

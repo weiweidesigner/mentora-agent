@@ -29,7 +29,7 @@ test('new task chooser preserves Agent editor and opens full-screen workflow can
   s.d.querySelector('#taskSidebarNew').click();assert(s.d.querySelector('.wfChooser').open);
   s.d.querySelector('[data-choice=agent]').click();assert(s.d.querySelector('#dayDialog').open);
   s.d.querySelector('#dayDialog').close();s.d.querySelector('#taskSidebarNew').click();s.d.querySelector('[data-choice=workflow]').click();await tick();
-  assert(s.d.querySelector('.wfCanvas').open);assert(s.d.querySelector('[data-add=watchlist]'));assert(s.d.querySelector('[data-add=profile]'));assert(s.d.querySelector('[data-add=tool]'));
+  assert(s.d.querySelector('.wfCanvas').open);assert.equal(s.d.querySelector('#wfAgent'),null);assert(s.d.querySelector('.wfCanvas svg'));assert(s.d.querySelector('[data-add=watchlist]'));assert(s.d.querySelector('[data-add=profile]'));assert(s.d.querySelector('[data-add=tool]'));
  }finally{s.w.close();}
 });
 test('nodes connect, reject cycles, retain structural parameters and submit a trial snapshot',async()=>{
@@ -90,5 +90,26 @@ test('unsaved workflow closes through a nonblocking confirmation and cancel reta
   s.d.querySelector('[data-act=close]').click();assert(s.d.querySelector('.wfDiscard').open);
   s.d.querySelector('[data-discard=cancel]').click();assert(s.d.querySelector('.wfCanvas').open);assert.equal(s.d.querySelectorAll('[data-node]').length,1);
   s.d.querySelector('[data-act=close]').click();s.d.querySelector('[data-discard=close]').click();assert(!s.d.querySelector('.wfCanvas').open);
+ }finally{s.w.close();}
+});
+
+test('workflow composer matches Widget keyboard, ready, multiline and stop states',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open();const input=s.d.querySelector('#wfBuildInput'),send=s.d.querySelector('.wfBuildSend');
+  assert(send.disabled);input.value='构建输入到输出';input.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert(!send.disabled);assert(send.classList.contains('is-ready'));
+  const shift=new s.w.KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true,cancelable:true});input.dispatchEvent(shift);assert(!shift.defaultPrevented);assert(!s.calls.some(([u])=>u.endsWith('/workflows/build')));
+  input.value='第一行\n第二行';input.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert(input.closest('.composerBox').classList.contains('is-multiline'));
+  input.dispatchEvent(new s.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await tick();
+  assert.equal(s.calls.filter(([u])=>u.endsWith('/workflows/build')).length,1);assert.equal(input.value,'');assert(!input.closest('.composerBox').classList.contains('is-multiline'));assert(s.d.querySelector('.wfBuildStop').hidden);
+  s.d.querySelector('[data-act=schedule]').click();assert(s.d.querySelector('#dayAgentLabel').hidden);
+ }finally{s.w.close();}
+});
+test('stopping a build preserves the original workflow',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});
+  const original=s.w.fetch;s.w.fetch=(url,options)=>url.endsWith('/workflows/build')?new Promise((_,reject)=>options.signal.addEventListener('abort',()=>reject(new s.w.DOMException('Stopped','AbortError')))):original(url,options);
+  const input=s.d.querySelector('#wfBuildInput');input.value='修改工作流';input.dispatchEvent(new s.w.Event('input',{bubbles:true}));s.d.querySelector('#wfBuildForm').requestSubmit();await tick();
+  assert(!s.d.querySelector('.wfBuildStop').hidden);assert(s.d.querySelector('.wfBuildSend').hidden);
+  s.d.querySelector('[data-act=build-stop]').click();await tick();assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.match(s.d.querySelector('#wfNotice').textContent,/已停止/);
  }finally{s.w.close();}
 });

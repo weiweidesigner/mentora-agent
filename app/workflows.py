@@ -28,7 +28,7 @@ KINDS=[
 ]
 
 @lru_cache(maxsize=2)
-def tool_catalog(agent):
+def legacy_tool_catalog(agent):
     from app.business_chart_dependency import load_registry_data
     rows=load_registry_data(ROOT/'app/module_registry.json')
     result=[]
@@ -40,6 +40,45 @@ def tool_catalog(agent):
         for row in catalog():
             result.append(dict(id=row['name'],label=row['name'],description=row['instructions'][:1600],script=row['name'],group='Mentora Deal',schema=row['inputSchema']))
     return list({r['id']:r for r in result}.values())
+
+
+# Workflow nodes follow Skill boundaries, while legacy component nodes remain executable.
+SKILL_NODES=[
+ ('generic-chart','通用图表','可视化','bar_chart'),
+ ('business-chart-recall','业务图表','可视化','kline'),
+ ('trading-view-chart','TradingView 图表','可视化','line_chart'),
+ ('chart-markup','图表标记','可视化','pen'),
+ ('custom-html-widget','自定义组件','可视化','layout'),
+ ('streamviz','报告与页面','可视化','document'),
+ ('market-data','行情数据','数据与搜索','database'),
+ ('a-share-data','A 股数据','数据与搜索','database'),
+ ('external-search','网页搜索','数据与搜索','globe'),
+ ('internal-search','资讯搜索','数据与搜索','news'),
+ ('video-search','视频搜索','数据与搜索','video'),
+ ('screener','股票筛选','数据与搜索','filter'),
+ ('code-interpreter','代码计算','计算与生成','code'),
+ ('pine-script','Pine Script','计算与生成','code'),
+ ('flux-image','图片生成','计算与生成','image'),
+ ('vision-chart-analyst','图表识别','计算与生成','scan'),
+]
+@lru_cache(maxsize=2)
+def tool_catalog(agent):
+    result=[]
+    for skill,label,group,icon in SKILL_NODES:
+        source=ROOT/'app'/'skills'/skill/'SKILL.md'
+        if not source.is_file():continue
+        content=source.read_text(encoding='utf-8')
+        match=re.search(r'^description:\s*(.+)',content,re.M)
+        description=match[1].strip().strip('"') if match else label+'，遵循对应 Skill 的输入和执行规范。'
+        result.append(dict(id=skill,label=label,description=description,script='app/skills/'+skill+'/',group=group,icon=icon,schema=None))
+    from app.portfolio_skills import catalog
+    icons={'portfolio-account':'wallet','portfolio-backtest':'backtest','portfolio-jev':'scale','portfolio-order':'order','portfolio-data':'database','portfolio-symbols':'search','portfolio-technical':'line_chart'}
+    for row in catalog():
+        result.append(dict(id=row['name'],label={'portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=row['instructions'][:1600],script=row['name'],group='交易能力',icon=icons.get(row['name'],'tool'),schema=row['inputSchema']))
+    return result
+
+def execution_tools(agent):
+    return list({row['id']:row for row in legacy_tool_catalog(agent)+tool_catalog(agent)}.values())
 
 class TrialInput(BaseModel):
     graph: WorkflowGraph
@@ -65,7 +104,7 @@ class WorkflowService:
 
     def validate(self,graph,agent):
         graph=WorkflowGraph.model_validate(graph)
-        allowed={t['id'] for t in tool_catalog(agent)}
+        allowed={t['id'] for t in execution_tools(agent)}
         for node in graph.nodes:
             if node.kind=='tool' and node.tool not in allowed:raise ValueError('请选择当前 Agent 支持的工具：'+node.title)
         return graph
@@ -152,7 +191,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     from app.portfolio_skills import call
                     value=call(self.portfolio,owner,node.tool,self.resolve(node.arguments,outputs))
                 else:
-                    tool=next((t for t in tool_catalog(config.get('agent','mentora')) if t['id']==node.tool),None)
+                    tool=next((t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool),None)
                     seen=[]
                     def forward(event,data):
                         if event=='tool_step':seen.append(json.dumps(data,ensure_ascii=False))
@@ -160,6 +199,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     prompt=(node.instruction or '根据上游数据完成分析。')
                     if tool:
                         prompt='\n'.join(['执行工作流工具节点：'+tool['label'],'目标工具标识：'+tool['id']+'；脚本或 Skill：'+tool['script'],tool['description'],prompt,'必须遵循对应 Skill 的规范执行真实工具调用，无法执行时明确报错，不得声称已完成。'])
+                    if node.arguments:prompt+='\n节点输入参数（按对应 Skill 的契约使用）：\n'+json.dumps(self.resolve(node.arguments,outputs),ensure_ascii=False)
                     if trial:prompt+='试运行只查询和分析，不提交订单，不修改账户，不发送外部消息。'
                     context=json.dumps(upstream,ensure_ascii=False)
                     if len(context)>64000:raise ValueError('上游输出过大，请先用数据处理节点精简或传递文件路径')

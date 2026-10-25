@@ -485,6 +485,7 @@
   let workflowScheduleSave=null;
   window.MentoraTaskScheduling={edit(task,onSave){workflowScheduleSave=onSave;edit(task,false,true);$('dayDialogTitle').textContent='WorkFlow 定时设置';$('daySave').textContent='保存设置';}};
   function edit(task, readOnly=false, scheduleOnly=false) {
+    $('dayAgentLabel').hidden=task?.taskMode==='workflow';
     if(task.taskMode==='workflow'&&!scheduleOnly&&window.MentoraWorkflow){window.MentoraWorkflow.open(task,readOnly);return;}
     editing=task.id || null;suggestedQuestion=task.question;suggestedTitle=task.title;
     form.reset();form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);
