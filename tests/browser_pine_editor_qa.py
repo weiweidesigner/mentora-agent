@@ -34,6 +34,8 @@ with sync_playwright() as p:
         editor.fill('//@version=5\nindicator("QA EMA", overlay=true)\nplot(ta.ema(close, 5), title="QA EMA", color=color.orange)')
         assert page.locator('.pine-token-function').count()>0
         assert not page.locator('.chart-host').is_visible()
+        for legend in page.locator('.kline-mobile-legend,.kline-mobile-levels').all():
+            assert not legend.is_visible(), 'Chart-only mobile labels leaked into the editor'
         bounds=page.locator('.kline-pine-surface').bounding_box()
         assert bounds['x']>=0 and bounds['x']+bounds['width']<=width+1,bounds
         page.locator('.kline-code-toggle').click();page.locator('.kline-code-toggle').click()
