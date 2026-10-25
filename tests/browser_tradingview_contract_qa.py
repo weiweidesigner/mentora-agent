@@ -1,5 +1,6 @@
 """Live Widget config roundtrip in an isolated browser context, without an agent run."""
 import json
+from urllib.parse import urljoin
 from playwright.sync_api import sync_playwright
 
 BASE='https://weiweidesigner.com/mentora'
@@ -35,15 +36,19 @@ with sync_playwright() as p:
         config=saved['parameters']['config']
         assert config['style']=='2' and config['interval']=='30' and config['hide_volume'] is True,config
         assert config['studies']==['STD;RSI','STD;EMA'],config
-        output=context.request.get(BASE+saved['url'].replace('/generated/','/share-artifact/'))
+        output=context.request.get(urljoin(BASE+'/',saved['url']).replace('/generated/','/share-artifact/'))
         assert output.ok
         assert 'STD;EMA' in output.text() and 'STD;RSI' in output.text()
         page.reload(wait_until='domcontentloaded')
         page.wait_for_selector('[data-card="chart"] iframe')
         persisted=page.evaluate("JSON.parse(localStorage.getItem('mentora-widget-boards-v1')).boards.find(b=>b.id==='qa-tv-contract').cards[0].parameters.config")
         assert persisted['style']=='2' and persisted['studies']==config['studies'],persisted
+        page.locator('#widgetRefresh').click()
+        page.wait_for_function("JSON.parse(localStorage.getItem('mentora-widget-boards-v1')).boards.find(b=>b.id==='qa-tv-contract').lastRefreshedAt")
+        refreshed=page.evaluate("JSON.parse(localStorage.getItem('mentora-widget-boards-v1')).boards.find(b=>b.id==='qa-tv-contract').cards[0].parameters.config")
+        assert refreshed['style']=='2' and refreshed['studies']==config['studies'] and refreshed['hide_volume'] is True,refreshed
         assert not errors,errors
-        checks.append({'width':width,'configForwarded':True,'existingSettingsRetained':True,'reloadPreserved':True})
+        checks.append({'width':width,'configForwarded':True,'existingSettingsRetained':True,'reloadPreserved':True,'refreshPreserved':True})
         context.close()
     browser.close()
 print(json.dumps(checks))
