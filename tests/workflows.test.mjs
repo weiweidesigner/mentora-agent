@@ -66,3 +66,20 @@ test('workflow reuses every schedule field and graph survives save and reopen',a
   assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.equal(s.d.querySelector('#wfTitle').value,'保存测试');
  }finally{s.w.close();}
 });
+
+test('node instructions and JSON persist on input before a run; invalid JSON blocks execution',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open();
+  s.d.querySelector('[data-add=start]').click();
+  const params=s.d.querySelector('[data-json]');params.value='{';params.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  s.d.querySelector('[data-act=run]').click();await tick();
+  assert.equal(s.calls.filter(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST').length,0);
+  params.value='{"greeting":"你好"}';params.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  s.d.querySelector('[data-add=model]').click();
+  const instruction=s.d.querySelector('[data-field=instruction]');instruction.value='只回复收到';
+  instruction.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  s.d.querySelector('[data-act=run]').click();await tick();
+  const body=JSON.parse(s.calls.find(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST')[1].body);
+  assert.equal(body.graph.nodes[0].arguments.greeting,'你好');assert.equal(body.graph.nodes[1].instruction,'只回复收到');
+ }finally{s.w.close();}
+});
