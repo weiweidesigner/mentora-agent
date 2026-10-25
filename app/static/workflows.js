@@ -134,7 +134,7 @@ $('wfBuildForm').addEventListener('submit',async e=>{
  try{const result=await api('/api/workflows/build','POST',{message,agent:state.agent,graph:state.workflow.nodes.length?state.workflow:null},buildController.signal);
  if(!canvas.open)return;snapshot();state.workflow=normalizeGraph(result.graph);if(!state.id&&state.title==='我的 WorkFlow'){state.title=result.title;$('wfTitle').value=result.title;}
  selected='';state.lastError='';$('wfBuildInput').value='';canvas.classList.add('wfHideLibrary');canvas.classList.remove('wfHasInspector');render();fit();note('工作流已构建，可调整节点、试运行或设置定时执行','success');
- }catch(error){note(error.name==='AbortError'?'已停止构建，原工作流已保留':error.message);}
+ }catch(error){if(error.name!=='AbortError')state.lastError=error.message;note(error.name==='AbortError'?'已停止构建，原工作流已保留':error.message);}
  finally{building=false;buildController=null;if(canvas.open)flags();}
 });
 window.addEventListener('beforeunload',e=>{if(canvas.open&&dirty){e.preventDefault();e.returnValue='';}});

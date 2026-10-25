@@ -121,7 +121,7 @@ class WorkflowService:
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
                      nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。试运行 preview=true 不写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
-        if self.builder:result=self.builder(context)
+        if self.builder:generate=self.builder
         else:
             from openai import OpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
@@ -132,11 +132,25 @@ kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_upd
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。"""
-            with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
-                response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
-                result=json.loads(response.choices[0].message.content or '{}')
-        graph=self.validate(result.get('graph',{}),payload.agent)
-        return dict(title=str(result.get('title') or '我的 WorkFlow')[:80],graph=graph.model_dump())
+            def generate(candidate_context):
+                with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
+                    response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
+                    return json.loads(response.choices[0].message.content or '{}')
+        # Validation feedback repairs the proposed graph, never runs it or guesses
+        # replacement arguments. Keep the user's original canvas until it validates.
+        for attempt in range(3):
+            result=None
+            try:
+                result=generate(context)
+                if not isinstance(result,dict):raise ValueError('构建结果必须为包含 graph 的 JSON 对象')
+                graph=self.validate(result.get('graph',{}),payload.agent)
+            except (ValueError,KeyError) as exc:
+                if attempt==2:raise
+                error=node_error('工作流构建',exc) if isinstance(exc,ValidationError) else str(exc)[:1000]
+                context={**context,'previousCandidate':result,'validationFeedback':error,
+                         'repairInstruction':'上一次候选流程未通过校验。根据真实 schema 和节点输出契约修正候选流程，检查所有节点的同类问题；保留用户原始目标，不新增下单或其他外部动作。仅返回修正后的完整 JSON，不执行工具或流程。'}
+                continue
+            return dict(title=str(result.get('title') or '我的 WorkFlow')[:80],graph=graph.model_dump())
 
     def scheduled(self,run,config):
         if config.get('taskMode')!='workflow':return None

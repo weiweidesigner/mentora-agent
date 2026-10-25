@@ -51,6 +51,11 @@ test('AI builds an editable graph and failed rebuilding keeps the previous graph
   assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.equal(s.d.querySelector('#wfTitle').value,'AI 流程');
   s.error();s.d.querySelector('#wfBuildInput').value='修改当前流程';s.d.querySelector('#wfBuildForm').requestSubmit();await tick();
   assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.match(s.d.querySelector('#wfNotice').textContent,/无效流程/);
+  assert.equal(s.d.querySelector('[data-act=repair]').hidden,false);
+  s.d.querySelector('[data-act=repair]').click();await tick();
+  const request=JSON.parse(s.calls.filter(([url])=>url.endsWith('/workflows/build')).at(-1)[1].body);
+  assert.match(request.message,/先前错误：模型返回了无效流程/);
+  assert.equal(request.graph.nodes.length,2);
  }finally{s.w.close();}
 });
 test('workflow reuses every schedule field and graph survives save and reopen',async()=>{

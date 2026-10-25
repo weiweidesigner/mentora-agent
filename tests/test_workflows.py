@@ -162,6 +162,57 @@ def test_builder_receives_real_schema_and_output_contracts(env,monkeypatch):
     assert seen['tools'][0]['instructions']
     assert '数组' in seen['nodeOutputs']['watchlist']
 
+def test_builder_repairs_watchlist_reference_with_validation_feedback(env,monkeypatch):
+    native_tools(monkeypatch)
+    bad=graph([dict(id='watch',kind='watchlist',title='读取自选股票'),dict(id='data',kind='tool',title='获取真实行情数据',tool='portfolio-data',arguments={'operation':'history','symbol':'{{watch.symbols}}'})],[dict(source='watch',target='data')])
+    original=json.loads(json.dumps(bad));contexts=[]
+    def build(context):
+        contexts.append(context)
+        if len(contexts)==1:return dict(title='修复流程',graph=bad)
+        assert '自选股票输出是列表' in context['validationFeedback']
+        assert context['previousCandidate']['graph']==bad
+        repaired=json.loads(json.dumps(bad))
+        repaired['nodes'][1].update(foreach='{{watch}}',arguments={'operation':'history','symbol':'{{item.symbol}}'})
+        return dict(title='修复流程',graph=repaired)
+    env.service.builder=build
+    result=env.service.build(BuildInput(message='修复当前流程，不执行',graph=bad))
+    assert len(contexts)==2
+    assert result['graph']['nodes'][1]['foreach']=='{{watch}}'
+    assert result['graph']['nodes'][1]['arguments']['symbol']=='{{item.symbol}}'
+    assert bad==original and not env.calls
+
+def test_builder_stops_after_three_invalid_candidates_without_execution(env):
+    contexts=[]
+    def build(context):
+        contexts.append(context)
+        return dict(graph=graph(edges=[dict(source='missing',target='out')]))
+    env.service.builder=build
+    response=env.client.post('/api/workflows/build',json={'message':'修复流程'},headers={'X-Veya-Day':'1'})
+    assert response.status_code==422
+    assert len(contexts)==3 and 'validationFeedback' in contexts[1]
+    assert not env.calls
+    with env.tasks.db() as db:
+        assert db.execute('SELECT count(*) FROM workflow_trials').fetchone()[0]==0
+        assert db.execute('SELECT count(*) FROM tasks').fetchone()[0]==0
+
+def test_valid_builder_candidate_is_not_regenerated(env):
+    contexts=[]
+    def build(context):
+        contexts.append(context);return dict(graph=graph())
+    env.service.builder=build
+    env.service.build(BuildInput(message='创建流程'))
+    assert len(contexts)==1 and not env.calls
+
+def test_builder_invalid_json_is_fed_back_before_retry(env):
+    contexts=[]
+    def build(context):
+        contexts.append(context)
+        if len(contexts)==1:return json.loads('not-json')
+        return dict(graph=graph())
+    env.service.builder=build
+    env.service.build(BuildInput(message='创建流程'))
+    assert len(contexts)==2 and contexts[1]['validationFeedback']
+
 def test_bad_action_symbols_and_missing_operation_are_rejected_before_calls(env,monkeypatch):
     native_tools(monkeypatch)
     bad=graph([dict(id='data',kind='tool',title='拉取历史行情',tool='portfolio-data',arguments={'action':'ohlcv','symbols':None})],[])
