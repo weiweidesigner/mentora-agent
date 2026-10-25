@@ -226,6 +226,23 @@ def test_builder_feedback_includes_all_invalid_nodes(env,monkeypatch):
     env.service.build(BuildInput(message='修复流程',graph=bad))
     assert len(contexts)==2 and not env.calls
 
+def test_structured_jev_output_is_a_list_not_a_decisions_wrapper(env,monkeypatch):
+    import app.workflows as module
+    tools=[dict(id='portfolio-jev',schema=None),dict(id='portfolio-order',schema=None)]
+    monkeypatch.setattr(module,'execution_tools',lambda agent:tools)
+    g=graph([dict(id='jev',kind='tool',title='JEV',tool='portfolio-jev',arguments={'evidence':[{'symbol':'AAPL'}]}),dict(id='gate',kind='condition',title='检查',path='jev.decisions')],[dict(source='jev',target='gate')])
+    with pytest.raises(ValueError,match='输出是列表'):env.service.validate(g,'mentora-deal')
+    g['nodes'][1]['path']='jev.0.action'
+    env.service.validate(g,'mentora-deal')
+
+def test_builder_exposes_jev_identity_and_execution_limits(env):
+    seen={}
+    def build(context):seen.update(context);return dict(graph=graph())
+    env.service.builder=build
+    env.service.build(BuildInput(message='构建流程'))
+    assert '不含' in seen['nodeOutputs']['portfolio-jev']
+    assert 'decisionId' in seen['nodeOutputs']['portfolio-order']
+
 def test_bad_action_symbols_and_missing_operation_are_rejected_before_calls(env,monkeypatch):
     native_tools(monkeypatch)
     bad=graph([dict(id='data',kind='tool',title='拉取历史行情',tool='portfolio-data',arguments={'action':'ohlcv','symbols':None})],[])

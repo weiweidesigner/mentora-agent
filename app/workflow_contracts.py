@@ -65,8 +65,10 @@ def validate_contracts(graph,tools,*,node_ids=None):
                 continue
             if source not in ancestors:raise ValueError('节点「'+node.title+'」引用 '+ref+'，但该节点不在它的上游连线中')
             parent=known[source]
-            if parent.kind=='watchlist' and len(parts)>1 and not parts[1].isdigit():
-                raise ValueError('节点「'+node.title+'」：自选股票输出是列表，没有 '+parts[1]+' 字段；逐项执行填 {{'+source+'}}，symbol 填 {{item.symbol}}')
+            list_output=parent.kind=='watchlist' or (parent.kind=='tool' and parent.tool=='portfolio-jev' and bool(parent.arguments) and not parent.foreach)
+            if list_output and len(parts)>1 and not parts[1].isdigit():
+                label='自选股票' if parent.kind=='watchlist' else '上游 '+parent.title
+                raise ValueError('节点「'+node.title+'」：'+label+'输出是列表，没有 '+parts[1]+' 字段；逐项执行填 {{'+source+'}}，symbol 填 {{item.symbol}}')
         if node.kind=='tool' and (node.arguments or node.foreach):
             errors=argument_errors(node.arguments,tool_map[node.tool].get('schema'),templates=True)
             if errors:raise ValueError('节点「'+node.title+'」参数不匹配：'+'；'.join(errors))

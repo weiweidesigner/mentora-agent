@@ -121,6 +121,12 @@ class WorkflowService:
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
                      nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。试运行 preview=true 不写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
+        context['nodeOutputs'].update({
+            'portfolio-data/history':'对象，含 symbol、rows 和实际数据源；不是 symbols/ohlcv 的批量对象。',
+            'portfolio-backtest':'单标的实际回测对象；批量执行时外层为 items/count，不存在自动汇总的 metrics。',
+            'portfolio-jev':'结构化调用直接返回决策数组，不是 {decisions:...}。每项含 symbol/action/confidence 等评估字段；该原始评估不会自动保存可执行决策，不含可用于下单的 id/decisionId。不得凭空添加或将序号当作决策 ID。',
+            'portfolio-order':'plan 返回真实计划对象（id）；execute 仅接受该计划的 planId。plan 必须使用当前用户已保存且有效的 JEV decisionId，不能把原始评估当成已保存决策。watch/skip/hold 不是合法 side，不能直接逐项映射全部决策下单；需要筛选/动作映射等推理时使用模型工具节点（留空 arguments/foreach），让 Agent 根据实际输出调用工具，缺少有效决策记录时明确无法下单，不伪造 ID 或成交。',
+        })
         if self.builder:generate=self.builder
         else:
             from openai import OpenAI
