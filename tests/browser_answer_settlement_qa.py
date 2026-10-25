@@ -22,10 +22,11 @@ with sync_playwright() as p:
             const running={id:'settlement-qa',question:'验证流式结果',title:'验证流式结果',requestId:'request-qa',activeRunId:'run-qa',status:'running',createdAt:now,updatedAt:now,messages:[{role:'user',text:'验证流式结果'}]};
             currentSession=structuredClone(running);storeSessions([currentSession]);
             window.fetch=async(url,options)=>{
-                if(String(url)==='/api/session-title') return await new Promise(resolve=>{resolveTitle=resolve;});
+                const path=new URL(String(url),location.href).pathname;
+                if(path.endsWith('/api/session-title')) return await new Promise(resolve=>{resolveTitle=resolve;});
                 // Deliberately newer clock time: run identity and terminal state
                 // must take precedence over a delayed running snapshot's timestamp.
-                if(String(url)==='/api/chat/sessions') return {ok:true,json:async()=>({sessions:[{...running,updatedAt:now+60000}]})};
+                if(path.endsWith('/api/chat/sessions')) return {ok:true,json:async()=>({sessions:[{...running,updatedAt:now+60000}]})};
                 return realFetch(url,options);
             };
             resumeChatRun=async()=>{resumeCount++;};
