@@ -29,7 +29,7 @@ test('bridge aligns exact timestamps, preserves NA and native annotations, rejec
 test('UI evaluates current bars, re-evaluates period changes, clears only overlays and copies code',async()=>{
  const s=setup(),calls=[];try{
   let clipboard='';Object.defineProperty(s.w.navigator,'clipboard',{value:{writeText:async value=>{clipboard=value;}}});
-  s.w.fetch=async(url,opts)=>{calls.push([url,opts]);const payload=JSON.parse(opts.body);return {ok:true,json:async()=>({period:payload.period,timestamps:payload.rows.map(r=>r.time),plots:[{title:'MA',values:[11,12],color:'#123456'}],hlines:[],barCount:2})};};
+  s.w.fetch=async(url,opts)=>{calls.push([url,opts]);const payload=JSON.parse(opts.body);return {ok:true,text:async()=>JSON.stringify({period:payload.period,timestamps:payload.rows.map(r=>r.time),plots:[{title:'MA',values:[11,12],color:'#123456'}],hlines:[],barCount:2})};};
   s.w.eval(adapter);s.w.eval(adapter);assert.equal(s.root.querySelectorAll('.kline-pine').length,1);
   s.root.querySelector('[data-action=run]').click();await tick();
   assert.equal(calls[0][0],'https://example.com/mentora/api/portfolio/pine/plot'.replace('https://example.com',''));
@@ -43,19 +43,20 @@ test('UI evaluates current bars, re-evaluates period changes, clears only overla
 });
 test('period switch during first calculation cancels stale result and retries new bars',async()=>{
  const s=setup(),calls=[];try{
-  s.w.fetch=async(url,opts)=>{calls.push(JSON.parse(opts.body));if(calls.length===1)return new Promise((_,reject)=>opts.signal.addEventListener('abort',()=>reject(new s.w.DOMException('abort','AbortError'))));const p=calls.at(-1);return{ok:true,json:async()=>({period:p.period,timestamps:p.rows.map(r=>r.time),plots:[],hlines:[{price:10}],barCount:2})};};
+  s.w.fetch=async(url,opts)=>{calls.push(JSON.parse(opts.body));if(calls.length===1)return new Promise((_,reject)=>opts.signal.addEventListener('abort',()=>reject(new s.w.DOMException('abort','AbortError'))));const p=calls.at(-1);return{ok:true,text:async()=>JSON.stringify({period:p.period,timestamps:p.rows.map(r=>r.time),plots:[],hlines:[{price:10}],barCount:2})};};
   s.w.eval(adapter);s.root.querySelector('[data-action=run]').click();s.w.changePeriod();await tick(300);
   assert.equal(calls.length,2);assert.equal(calls[1].period,'1w');assert.equal(s.root.dataset.pineSeries,'1');
  }finally{s.close();}
 });
-test('generation streams real deltas and does not run incomplete code or save settings',async()=>{
- const s=setup(),calls=[];try{
-  let controller;s.w.TextDecoder=TextDecoder;
-  s.w.fetch=async(url,opts)=>{calls.push(url);return{ok:true,body:new ReadableStream({start(c){controller=c;}})};};
-  s.w.eval(adapter);s.root.querySelector('[data-description]').value='画均线';s.root.querySelector('[data-action=generate]').click();await tick();
-  controller.enqueue(new TextEncoder().encode('data: '+JSON.stringify({type:'delta',text:'//@version=5\n'})+'\n\n'));await tick();
-  assert.equal(s.root.querySelector('[data-code]').value,'//@version=5\n');assert.equal(calls.length,1);
-  controller.close();await tick();assert.match(s.root.querySelector('[data-code]').value,/我的画线/);assert.match(s.root.textContent,/未完整生成/);
+test('code icon switches views, highlights editable source safely and retains errors',async()=>{
+ const s=setup();try{
+  s.w.eval(adapter);const toggle=s.root.querySelector('.kline-code-toggle'),editor=s.root.querySelector('[data-code]'),panel=s.root.querySelector('.kline-pine');
+  assert.equal(panel.hidden,true);assert.equal(s.root.querySelector('summary'),null);toggle.click();assert.equal(panel.hidden,false);assert.equal(s.root.dataset.pineView,'code');
+  editor.value='//@version=5\nindicator("<img src=x>", overlay=true)\nplot(ta.ema(close, 5))';editor.dispatchEvent(new s.w.Event('input'));
+  assert(s.root.querySelector('.pine-token-function'));assert.equal(panel.querySelector('img'),null);
+  toggle.click();toggle.click();assert.match(editor.value,/ta.ema/);
+  s.w.fetch=async()=>({ok:false,text:async()=>'<html>Error</html>'});s.root.querySelector('[data-action=run]').click();await tick();
+  assert.equal(panel.hidden,false);assert.match(panel.textContent,/返回格式异常/);assert.equal(s.root.querySelector('[data-action=run]').disabled,false);
  }finally{s.close();}
 });
 test('static inspiration cases use the host API rather than a nested static path',async()=>{

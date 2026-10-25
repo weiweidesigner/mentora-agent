@@ -642,6 +642,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_widget_generic_chart(artifact)
     artifact = upgrade_widget_tradingview(artifact)
     artifact=upgrade_native_kline_pine(artifact)
+    from app.artifact_upgrades import bind_pine_sources
+    artifact=bind_pine_sources(artifact,GENERATED_DIR.parent)
     presentation_script=(STATIC_DIR/'artifact-presentation.js').read_text(encoding='utf-8')
     presentation_script+='\n'+(STATIC_DIR/'kline-pine.js').read_text(encoding='utf-8')
     host_controls=f'<script data-artifact-host-theme="{theme}">{presentation_script}</script>'

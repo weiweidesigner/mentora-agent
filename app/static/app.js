@@ -1164,7 +1164,7 @@ function withArtifactWidgetControl(node,item={}){
       new MutationObserver(()=>attachToTitle(root)).observe(root,{childList:true,subtree:true});
     }
     const doc=root.ownerDocument||root;
-    const title=root.querySelector('.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
+    const title=root.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
     const actionHost=title?.closest('header')?.querySelector('[data-widget-title-action-anchor]')||title;
     if(title?.textContent.trim()&&!actionHost.querySelector('[data-widget-title-action]')&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==actionHost){
       if(!doc.querySelector('[data-widget-title-button-style]')){

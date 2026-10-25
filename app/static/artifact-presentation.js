@@ -96,7 +96,10 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
       const label = cn && name && name !== code ? name : us ? code : '';
       if (label) doc.querySelectorAll('.kline-title strong[data-business-title]').forEach(heading => {
         const update = () => {
-          if (heading.textContent !== label) heading.textContent = label;
+          if (heading.textContent !== label) {
+            const actions=Array.from(heading.querySelectorAll('button'));
+            heading.replaceChildren(doc.createTextNode(label),...actions);
+          }
           if (heading.dataset.tileTitle !== label) heading.dataset.tileTitle = label;
         };
         update();
@@ -125,7 +128,7 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   let enabled=Boolean(window.frameElement?.classList.contains("reportDocumentFrame"));
   const attach=()=>{
     if(!enabled||!document?.documentElement)return;
-    const title=document.querySelector('.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
+    const title=document.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
     if(!title?.textContent.trim())return;
     let style=document.querySelector('[data-widget-title-action-style]');
     if(!style){style=document.createElement('style');style.dataset.widgetTitleActionStyle='true';document.head.append(style);}

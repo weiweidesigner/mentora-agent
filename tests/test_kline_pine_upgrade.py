@@ -5,6 +5,23 @@ from pathlib import Path
 from app.artifact_upgrades import upgrade_native_kline_pine
 
 
+def test_bind_exact_source_by_hash_without_changing_saved_data(tmp_path):
+    import hashlib
+    from app.artifact_upgrades import bind_pine_sources
+    code='//@version=5\nindicator("<test>", overlay=true)\nplot(close)'
+    (tmp_path/'source.pine').write_text(code+'\n')
+    config={'pineOverlays':[{'codeHash':hashlib.sha256(code.encode()).hexdigest(),'plots':[1]}]}
+    document='<script>const config = '+json.dumps(config)+';</script>'
+    result=bind_pine_sources(document,tmp_path)
+    parsed=json.loads(re.search(r'const config = (.*);',result)[1])
+    assert parsed['pineOverlays'][0]['sourceCode']==code
+    assert parsed['pineOverlays'][0]['plots']==[1]
+    assert '<test>' not in result
+    assert bind_pine_sources(result,tmp_path)==result
+    nested='<iframe srcdoc="'+html.escape(document,quote=True)+'"></iframe>'
+    assert 'sourceCode' in bind_pine_sources(nested,tmp_path)
+
+
 def fixture():
     return '''<html><div id="kline-canvas"></div><script>
 const canvas = document.getElementById('kline-canvas');

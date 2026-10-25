@@ -225,6 +225,36 @@ def upgrade_native_chart_scroll(artifact: str) -> str:
     return artifact.replace(old, new).replace(html.escape(old, quote=True), html.escape(new, quote=True))
 
 
+def bind_pine_sources(artifact: str, outputs: Path) -> str:
+    """Recover exact saved source by SHA-256, never infer code from plot values."""
+    import hashlib
+    import html
+    hashes=set(re.findall(r'"codeHash"\s*:\s*"([a-f0-9]{64})"',html.unescape(artifact)))
+    if not hashes:return artifact
+    sources={}
+    base=outputs.resolve()
+    for path in outputs.rglob('*.pine'):
+        try:
+            if base not in path.resolve().parents or path.stat().st_size>48000:continue
+            code=path.read_text(encoding='utf-8').strip()
+            digest=hashlib.sha256(code.encode()).hexdigest()
+            if digest in hashes:sources[digest]=code
+        except (OSError,UnicodeError):continue
+        if hashes<=sources.keys():break
+    def document(text,depth=0):
+        if depth>4:return text
+        text=re.sub(r'(\bsrcdoc=")(.*?)(")',lambda m:m[1]+html.escape(document(html.unescape(m[2]),depth+1),quote=True)+m[3],text,flags=re.S)
+        def config(match):
+            try:
+                value=json.loads(match[2])
+                for overlay in value.get('pineOverlays',[]):
+                    if overlay.get('codeHash') in sources:overlay['sourceCode']=sources[overlay['codeHash']]
+                return match[1]+json.dumps(value,ensure_ascii=False).replace('<','\\u003c')+match[3]
+            except (ValueError,TypeError,AttributeError):return match[0]
+        return re.sub(r'(\bconst\s+config\s*=\s*)(\{[^\n]*\})(;)',config,text)
+    return document(artifact)
+
+
 def upgrade_native_kline_pine(artifact: str, depth: int = 0) -> str:
     """Add the native Pine bridge to old saved charts, without touching their data.
 

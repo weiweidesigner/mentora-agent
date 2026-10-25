@@ -3,7 +3,7 @@
   let enabled=Boolean(window.frameElement?.classList.contains("reportDocumentFrame"));
   const attach=()=>{
     if(!enabled||!document?.documentElement)return;
-    const title=document.querySelector('.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
+    const title=document.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
     if(!title?.textContent.trim())return;
     let style=document.querySelector('[data-widget-title-action-style]');
     if(!style){style=document.createElement('style');style.dataset.widgetTitleActionStyle='true';document.head.append(style);}
