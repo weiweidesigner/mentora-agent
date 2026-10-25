@@ -69,6 +69,48 @@ def test_selected_parameter_changes_preserve_symbol_and_route_to_same_component(
     assert action['parameters']=={'symbols':['NASDAQ:AAPL'],'interval':'W'}
 
 
+def test_existing_advanced_chart_style_period_and_panels_update_same_card():
+    p=payload();p.message='把高级图表改成30分钟折线，打开绘图工具栏，隐藏成交量'
+    cards=[planner.enrich_card(c) for c in p.board.cards]
+    result=planner.validate_plan({'reply':'已调整。','actions':[{'type':'update','cardId':'one','parameters':{
+        'interval':'30m','style':'line','showDrawingToolbar':True,'showVolume':False,
+    }}]},p,cards)
+    action=result['actions'][0]
+    assert action['componentId']=='tv-advanced-chart'
+    assert action['parameters']['symbols']==['NASDAQ:AAPL']
+    assert action['parameters']['interval']=='30'
+    assert action['parameters']['style']=='2'
+    assert action['parameters']['showDrawingToolbar'] is True
+    assert action['parameters']['showVolume'] is False
+
+
+def test_adding_compare_symbols_and_watchlist_preserves_existing_values():
+    p=payload();p.message='给高级图表添加 TSLA 对比，加入 NVDA 到观察列表'
+    p.board.cards[0].parameters.compareSymbols=['NASDAQ:MSFT']
+    p.board.cards[0].parameters.watchlist=['NASDAQ:AAPL']
+    cards=[planner.enrich_card(c) for c in p.board.cards]
+    result=planner.validate_plan({'reply':'已添加。','actions':[{'type':'update','cardId':'one','parameters':{
+        'compareSymbols':['NASDAQ:TSLA'],'watchlist':['NASDAQ:NVDA'],
+    }}]},p,cards)
+    params=result['actions'][0]['parameters']
+    assert params['compareSymbols']==['NASDAQ:MSFT','NASDAQ:TSLA']
+    assert params['watchlist']==['NASDAQ:AAPL','NASDAQ:NVDA']
+
+
+def test_existing_advanced_chart_control_request_retries_model_that_does_nothing(monkeypatch):
+    calls=[]
+    def model(context):
+        calls.append(dict(context))
+        if len(calls)==1:return {'reply':'不支持切换。','actions':[]}
+        return {'reply':'已改为折线。','actions':[{'type':'update','cardId':'one','parameters':{'style':'line'}}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    p=payload();p.message='把高级图表改成折线图'
+    result=planner.plan_widgets(p)
+    assert len(calls)==2
+    assert '高级图表的设置修改' in calls[1]['validationError']
+    assert result['actions'][0]['parameters']['style']=='2'
+
+
 def test_existing_advanced_chart_indicator_request_updates_studies_instead_of_adding_card(monkeypatch):
     calls=[]
     def model(context):
@@ -80,7 +122,7 @@ def test_existing_advanced_chart_indicator_request_updates_studies_instead_of_ad
     p=payload();p.message='给高级图表添加 MACD 技术指标'
     result=planner.plan_widgets(p)
     assert len(calls)==2
-    assert 'update 该卡片的 studies' in calls[1]['validationError']
+    assert '高级图表的设置修改' in calls[1]['validationError']
     assert result['actions']==[{
         'type':'update','cardId':'one','componentId':'tv-advanced-chart',
         'parameters':{'symbols':['NASDAQ:AAPL'],'interval':'D','studies':['MACD@tv-basicstudies']},

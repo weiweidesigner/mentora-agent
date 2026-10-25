@@ -9,6 +9,7 @@
   const shell = document.querySelector('.shell'), canvas = $('widgetCanvas');
   const KEY = 'mentora-widget-boards-v1', GAP = 20, ROW = 24;
   const systemBoardIds = new Set(['starter-stocks','starter-crypto','starter-forex']);
+  const advancedChartParameters = ['interval','studies','style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar','showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges','showCalendar','saveImage'];
   const isSystemBoard = board => systemBoardIds.has(board.id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uid = () => crypto.randomUUID();
@@ -302,7 +303,7 @@
     editingCardId=card.id;componentId=component.id;selectedCardId=card.id;updateSelection();
     renderConfig();if(symbolPicker?.enabled&&component.provider==='TradingView'){symbolPicker.select.value='auto';symbolPicker.placeholder();}$('widgetCardName').value=card.title;$('widgetSymbol').value=card.symbolInput||(card.parameters?.symbols||[]).join('、');
     if(component.inputMode==='market')$('widgetMarket').value=card.parameters?.market||'default';
-    const intervals=component.widget==='advanced-chart'?[['D','日线'],['W','周线'],['M','月线'],['60','1 小时']]:component.widget==='technical-analysis'?[['1D','日线'],['1W','周线'],['1M','月线'],['1h','1 小时']]:[];
+    const intervals=component.widget==='advanced-chart'?[['1','1 分钟'],['5','5 分钟'],['15','15 分钟'],['30','30 分钟'],['60','1 小时'],['120','2 小时'],['240','4 小时'],['D','日线'],['W','周线'],['M','月线']]:component.widget==='technical-analysis'?[['1D','日线'],['1W','周线'],['1M','月线'],['1h','1 小时']]:[];
     $('widgetIntervalField').hidden=!intervals.length;$('widgetInterval').innerHTML=intervals.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
     if(card.parameters?.interval)$('widgetInterval').value=card.parameters.interval;
     $('widgetConfigError').textContent='';$('widgetConfig').showModal();
@@ -340,11 +341,12 @@
     if(card){delete card.symbolInput;Object.assign(card,{status:'loading',error:'',url:'',loadingText:'正在加载 TradingView…',market,symbolMarket});}
     else {card={id:uid(),title:component.title,w:component.width||6,h:component.height||18,status:'loading',loadingText:'正在加载 TradingView…',url:'',request:message,component:component.id,market,symbolMarket};place(board,card);board.cards.push(card);}
     delete card.contentHeight;
-    card.request=message;card.component=component.id;card.parameters={symbols,market,...(options.interval?{interval:options.interval}:{}),...(Array.isArray(options.studies)?{studies:options.studies}:{})};
+    const chartParameters=Object.fromEntries(advancedChartParameters.filter(key=>options[key]!==undefined&&options[key]!==null).map(key=>[key,options[key]]));
+    card.request=message;card.component=component.id;card.parameters={symbols,market,...chartParameters};
     save();if(activeId===board.id)render();
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),20000),onAbort=()=>controller.abort();options.signal?.addEventListener('abort',onAbort,{once:true});
     try {
-      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,preset:component.preset||null,symbols,market,interval:options.interval||null,studies:Array.isArray(options.studies)?options.studies:null,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
+      const response=await fetch('/api/widgets/tradingview',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({widget,preset:component.preset||null,symbols,market,...chartParameters,theme:document.documentElement.dataset.theme==='light'?'light':'dark',language:'zh-CN',symbolMarket})});
       const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'组件添加失败，请重试。');
       const url=safeUrl(result.url);if(!url)throw Error('组件没有返回可用的地址。');
       if(!boards.includes(board)||!board.cards.includes(card))return;
@@ -462,7 +464,8 @@
   function modificationFeedback(before, board) {
     const changes=[],moved=[],oldCards=before.cards||[],oldById=new Map(oldCards.map(c=>[c.id,c]));
     const width=w=>w===12?'整行宽度':w===6?'半行宽度':`约占一行的 ${Math.round(w/12*100)}%`;
-    const period=value=>({'D':'日线','1D':'日线','W':'周线','1W':'周线','M':'月线','1M':'月线','60':'1小时','1h':'1小时'}[value]||value);
+    const period=value=>({'1':'1分钟','5':'5分钟','15':'15分钟','30':'30分钟','60':'1小时','120':'2小时','240':'4小时','D':'日线','1D':'日线','W':'周线','1W':'周线','M':'月线','1M':'月线','1h':'1小时'}[value]||value);
+    const chartStyle=value=>({'0':'美国线','1':'K线','2':'折线','3':'面积图','4':'砖型图','5':'卡吉图','6':'点数图','7':'新价线','8':'平均K线','9':'空心K线','10':'基准线'}[value]||value);
     for(const card of board.cards){
       const old=oldById.get(card.id),label=`「${card.title}」`;
       if(!old){changes.push(`新增${label}`);continue;}
@@ -475,6 +478,10 @@
       if(JSON.stringify(prev.symbols||[])!==JSON.stringify(next.symbols||[]))details.push(`标的改为 ${(next.symbols||[]).join('、')}`);
       if(prev.interval!==next.interval&&next.interval)details.push(`周期切换为${period(next.interval)}`);
       if(prev.market!==next.market&&next.market)details.push(`切换市场为${next.market}`);
+      if(prev.style!==next.style&&next.style!==undefined)details.push(`图表样式改为${chartStyle(next.style)}`);
+      if(JSON.stringify(prev.studies||[])!==JSON.stringify(next.studies||[]))details.push(`技术指标更新为 ${(next.studies||[]).map(value=>value.split('@')[0]).join('、')||'无'}`);
+      if(JSON.stringify(prev.compareSymbols||[])!==JSON.stringify(next.compareSymbols||[]))details.push(`对比标的更新为 ${(next.compareSymbols||[]).join('、')||'无'}`);
+      if(JSON.stringify(prev.watchlist||[])!==JSON.stringify(next.watchlist||[]))details.push(`观察列表更新为 ${(next.watchlist||[]).join('、')||'空'}`);
       if(old.component!==card.component)details.push('替换了图表类型');
       if(oldCards.findIndex(c=>c.id===card.id)!==board.cards.findIndex(c=>c.id===card.id))details.push(`移至第 ${board.cards.indexOf(card)+1} 位`);
       if(!details.length&&(old.x!==card.x||old.y!==card.y))moved.push(label);
@@ -615,7 +622,8 @@
       const text=component.provider==='TradingView'?resolved:resolved.split(/[,，、;；]+/).map(symbol=>symbol.trim().split(':').at(-1)).join('、');
       const market=component.inputMode==='market'?$('widgetMarket').value:'default',symbols=component.inputMode==='market'?[]:text.split(/[,，、;；\s]+/).filter(Boolean);
       const previous=card.parameters||{};
-      const parameters={symbols,market,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{}),...(Array.isArray(previous.studies)?{studies:previous.studies}:{})};
+      const retained=Object.fromEntries(advancedChartParameters.filter(key=>previous[key]!==undefined&&key!=='interval').map(key=>[key,previous[key]]));
+      const parameters={symbols,market,...retained,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{})};
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
       const same=JSON.stringify(previous.symbols||[])===JSON.stringify(symbols)&& (previous.market||'default')===market&&(previous.interval||'')===(parameters.interval||'');
       undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));

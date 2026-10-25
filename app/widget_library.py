@@ -29,6 +29,20 @@ class TradingViewInput(BaseModel):
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
     interval: str | None = Field(default=None, max_length=10)
     studies: list[str] | None = Field(default=None, max_length=8)
+    style: str | None = Field(default=None, max_length=40)
+    compareSymbols: list[str] | None = Field(default=None, max_length=8)
+    watchlist: list[str] | None = Field(default=None, max_length=30)
+    timezone: str | None = Field(default=None, max_length=64)
+    allowSymbolChange: bool | None = None
+    showDrawingToolbar: bool | None = None
+    showTopToolbar: bool | None = None
+    showLegend: bool | None = None
+    showVolume: bool | None = None
+    showDetails: bool | None = None
+    showHotlist: bool | None = None
+    showDateRanges: bool | None = None
+    showCalendar: bool | None = None
+    saveImage: bool | None = None
 
 
 @lru_cache(maxsize=1)
@@ -60,6 +74,30 @@ STUDY_ALIASES = {
     'simple moving average': 'MASimple@tv-basicstudies',
 }
 SUPPORTED_STUDIES = frozenset(STUDY_ALIASES.values())
+ADVANCED_CHART_INTERVALS = frozenset({'1','5','15','30','60','120','240','D','W','M'})
+INTERVAL_ALIASES = {
+    '1m':'1','5m':'5','15m':'15','30m':'30','60m':'60','1h':'60','2h':'120','4h':'240',
+    '1d':'D','day':'D','daily':'D','日线':'D','1w':'W','week':'W','weekly':'W','周线':'W',
+    '1mo':'M','month':'M','monthly':'M','月线':'M',
+}
+CHART_STYLE_ALIASES = {
+    '0':'0','bar':'0','bars':'0','美国线':'0','棒形图':'0',
+    '1':'1','candle':'1','candles':'1','candlestick':'1','candlesticks':'1','k线':'1','蜡烛图':'1',
+    '2':'2','line':'2','line chart':'2','折线':'2','折线图':'2',
+    '3':'3','area':'3','area chart':'3','面积':'3','面积图':'3',
+    '4':'4','renko':'4','砖型图':'4',
+    '5':'5','kagi':'5','卡吉图':'5',
+    '6':'6','point and figure':'6','point & figure':'6','pnf':'6','点数图':'6',
+    '7':'7','line break':'7','新价线':'7',
+    '8':'8','heikin ashi':'8','heikin-ashi':'8','平均k线':'8',
+    '9':'9','hollow candle':'9','hollow candles':'9','空心k线':'9',
+    '10':'10','baseline':'10','基准线':'10',
+}
+ADVANCED_CHART_OPTION_FIELDS = frozenset({
+    'style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar',
+    'showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges',
+    'showCalendar','saveImage',
+})
 
 
 def normalize_studies(values: list[str] | None) -> list[str]:
@@ -71,6 +109,27 @@ def normalize_studies(values: list[str] | None) -> list[str]:
             raise ValueError('暂不支持该 TradingView 指标；当前支持 MACD、RSI、ROC、Stochastic RSI 和 SMA。')
         if canonical not in normalized:
             normalized.append(canonical)
+    return normalized
+
+
+def normalize_interval(value: str | None) -> str | None:
+    if value is None:
+        return None
+    raw = value.strip()
+    if raw in ADVANCED_CHART_INTERVALS:
+        return raw
+    normalized = INTERVAL_ALIASES.get(raw.lower())
+    if normalized:
+        return normalized
+    raise ValueError('高级图表周期支持 1/5/15/30 分钟、1/2/4 小时、日线、周线和月线。')
+
+
+def normalize_chart_style(value: str | None) -> str | None:
+    if value is None:
+        return None
+    normalized = CHART_STYLE_ALIASES.get(value.strip().lower())
+    if not normalized:
+        raise ValueError('高级图表不支持该图表样式。')
     return normalized
 
 def allowed_markets(widget):
@@ -94,8 +153,38 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     studies = normalize_studies(payload.studies)
     if payload.studies is not None and payload.widget != 'advanced-chart':
         raise ValueError('只有 TradingView 高级图表支持预设技术指标。')
+    advanced_values = {field: getattr(payload, field) for field in ADVANCED_CHART_OPTION_FIELDS if getattr(payload, field) is not None}
+    if (advanced_values or payload.studies is not None) and payload.widget != 'advanced-chart':
+        raise ValueError('这些图表设置只支持 TradingView 高级图表。')
     if payload.widget == 'advanced-chart':
         config['studies'] = studies
+        if payload.style is not None:
+            config['style'] = normalize_chart_style(payload.style)
+        if payload.compareSymbols is not None:
+            config['compareSymbols'] = list(dict.fromkeys(resolve_symbol(value, payload.symbolMarket) for value in payload.compareSymbols if value.strip()))
+        if payload.watchlist is not None:
+            config['watchlist'] = list(dict.fromkeys(resolve_symbol(value, payload.symbolMarket) for value in payload.watchlist if value.strip()))
+        if payload.timezone is not None:
+            timezone = payload.timezone.strip()
+            if not re.fullmatch(r'(?:exchange|Etc/UTC|[A-Za-z_]+(?:/[A-Za-z0-9_+\-]+)+)', timezone):
+                raise ValueError('请使用 TradingView 支持的时区，例如 exchange、Etc/UTC 或 Asia/Shanghai。')
+            config['timezone'] = timezone
+        switches = {
+            'allowSymbolChange':'allow_symbol_change','showDetails':'details','showHotlist':'hotlist',
+            'showDateRanges':'withdateranges','showCalendar':'calendar','saveImage':'save_image',
+        }
+        for source, target in switches.items():
+            value = getattr(payload, source)
+            if value is not None:
+                config[target] = value
+        inverted = {
+            'showDrawingToolbar':'hide_side_toolbar','showTopToolbar':'hide_top_toolbar',
+            'showLegend':'hide_legend','showVolume':'hide_volume',
+        }
+        for source, target in inverted.items():
+            value = getattr(payload, source)
+            if value is not None:
+                config[target] = not value
     symbol = None
     if payload.widget in MARKETS:
         if symbols:
@@ -119,7 +208,6 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
         if not values or values in [['全球'],['default'],['经纪商评分'],['经纪商评论']]:
             values=[tool.CATALOG[payload.widget]['defaults']['broker']]
         symbols=values
-        import re
         if len(values)!=1 or not re.fullmatch(r'[a-z0-9][a-z0-9-]{1,49}',values[0].lower()):
             raise ValueError('请输入 TradingView 经纪商标识，例如 easymarkets。')
         config['broker']=values[0].lower()
@@ -139,9 +227,10 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
         if len(symbols) != 1:
             raise ValueError('该组件需要且只支持一个标的代码。')
         symbol = symbols[0]
-    if payload.interval and payload.interval not in {'advanced-chart':{'D','W','M','60'},'technical-analysis':{'1D','1W','1M','1h'}}.get(payload.widget,set()):
+    interval = normalize_interval(payload.interval) if payload.interval and payload.widget == 'advanced-chart' else payload.interval
+    if interval and interval not in {'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':{'1D','1W','1M','1h'}}.get(payload.widget,set()):
         raise ValueError('该组件不支持此周期。')
-    built = tool.build_config(payload.widget, symbol=symbol, interval=payload.interval, theme=payload.theme,
+    built = tool.build_config(payload.widget, symbol=symbol, interval=interval, theme=payload.theme,
                              language=payload.language, config=config)
     catalogue = json.loads((ROOT/'app/static/widget-catalog.json').read_text())
     item = next((c for c in catalogue if c.get('widget') == payload.widget and c.get('preset') == payload.preset), None)

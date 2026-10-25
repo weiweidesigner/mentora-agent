@@ -36,7 +36,7 @@ def component_capabilities(item: dict) -> dict:
     hosted = item.get('provider') == 'TradingView'
     mode = item.get('inputMode', 'symbol')
     maximum = 0 if widget in MARKETS else 30 if widget in GROUPS or widget in CURRENCY_WIDGETS else 1
-    intervals = {'advanced-chart': ['D', 'W', 'M', '60'], 'technical-analysis': ['1D', '1W', '1M', '1h']}.get(widget, [])
+    intervals = {'advanced-chart': ['1', '5', '15', '30', '60', '120', '240', 'D', 'W', 'M'], 'technical-analysis': ['1D', '1W', '1M', '1h']}.get(widget, [])
     if item.get('preset') == 'intraday':
         maximum, intervals = 1, []
     return {
@@ -47,6 +47,8 @@ def component_capabilities(item: dict) -> dict:
         'markets': sorted(allowed_markets(widget)) if widget in MARKETS else [],
         'intervals': intervals,
         'studies': ['MACD', 'RSI', 'ROC', 'Stochastic RSI', 'SMA'] if widget == 'advanced-chart' else [],
+        'chartStyles': ['bars','candles','line','area','renko','kagi','point-and-figure','line-break','heikin-ashi','hollow-candles','baseline'] if widget == 'advanced-chart' else [],
+        'advancedControls': ['compareSymbols','watchlist','timezone','symbol-change','drawing-toolbar','top-toolbar','legend','volume','details','hotlist','date-ranges','calendar','save-image'] if widget == 'advanced-chart' else [],
         'symbolKind': 'broker-slug' if widget in BROKER_WIDGETS else 'currency-code' if widget in CURRENCY_WIDGETS else 'exchange-qualified-ticker' if hosted else 'us-equity-ticker',
         'dataMode': '由组件加载行情；可用性与延迟取决于数据源' if hosted else '添加按钮使用预制缓存；自然语言新增或改参数进入业务图表研究生成链路',
         'canApplyCustomMarks': False,

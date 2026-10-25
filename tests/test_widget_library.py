@@ -45,6 +45,40 @@ def test_advanced_chart_accepts_and_normalizes_supported_studies(tmp_path):
     assert spec['config']['studies'] == ['MACD@tv-basicstudies', 'MASimple@tv-basicstudies']
 
 
+def test_advanced_chart_accepts_all_dashboard_controls(tmp_path):
+    result = lib.build_widget(lib.TradingViewInput(
+        widget='advanced-chart', symbols=['NASDAQ:AAPL'], interval='30m', style='line',
+        studies=['RSI'], compareSymbols=['NASDAQ:MSFT'], watchlist=['NASDAQ:NVDA','NASDAQ:TSLA'],
+        timezone='Asia/Shanghai', allowSymbolChange=False, showDrawingToolbar=True,
+        showTopToolbar=False, showLegend=False, showVolume=False, showDetails=True,
+        showHotlist=True, showDateRanges=True, showCalendar=True, saveImage=False,
+    ), tmp_path)
+    config = result['config']
+    assert config['interval'] == '30'
+    assert config['style'] == '2'
+    assert config['studies'] == ['RSI@tv-basicstudies']
+    assert config['compareSymbols'] == ['NASDAQ:MSFT']
+    assert config['watchlist'] == ['NASDAQ:NVDA','NASDAQ:TSLA']
+    assert config['timezone'] == 'Asia/Shanghai'
+    assert config['allow_symbol_change'] is False
+    assert config['hide_side_toolbar'] is False
+    assert config['hide_top_toolbar'] is True
+    assert config['hide_legend'] is True
+    assert config['hide_volume'] is True
+    assert config['details'] is True and config['hotlist'] is True
+    assert config['withdateranges'] is True and config['calendar'] is True
+    assert config['save_image'] is False
+
+
+def test_advanced_chart_control_validation_rejects_wrong_component_or_value(tmp_path):
+    with pytest.raises(ValueError, match='只支持 TradingView 高级图表'):
+        lib.build_widget(lib.TradingViewInput(widget='mini-chart',symbols=['NASDAQ:AAPL'],style='line'),tmp_path)
+    with pytest.raises(ValueError, match='不支持该图表样式'):
+        lib.build_widget(lib.TradingViewInput(widget='advanced-chart',symbols=['NASDAQ:AAPL'],style='pie'),tmp_path)
+    with pytest.raises(ValueError, match='周期支持'):
+        lib.build_widget(lib.TradingViewInput(widget='advanced-chart',symbols=['NASDAQ:AAPL'],interval='7m'),tmp_path)
+
+
 def test_studies_are_rejected_for_other_widgets_and_unknown_indicators(tmp_path):
     with pytest.raises(ValueError, match='只有 TradingView 高级图表'):
         lib.build_widget(lib.TradingViewInput(widget='technical-analysis', symbols=['NASDAQ:AAPL'], studies=['MACD']), tmp_path)

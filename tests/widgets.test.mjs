@@ -62,6 +62,21 @@ test('card selection scopes model edits, applies parameter changes directly, and
  assert.equal(s.d.querySelector('#widgetUndo').hidden,false);s.d.querySelector('#widgetUndo').click();
  const data=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));assert.equal(data.boards[0].cards[0].w,6);assert.equal(data.boards[0].cards[0].parameters.symbols[0],'NASDAQ:AAPL');s.dom.window.close();
 });
+test('advanced chart prompt forwards and persists every supported toolbar control',async()=>{
+ const controls={
+  symbols:['NASDAQ:MSFT'],interval:'30',style:'2',studies:['RSI@tv-basicstudies'],
+  compareSymbols:['NASDAQ:NVDA'],watchlist:['NASDAQ:AAPL','NASDAQ:MSFT','NASDAQ:NVDA'],timezone:'Asia/Shanghai',
+  allowSymbolChange:false,showDrawingToolbar:true,showTopToolbar:false,showLegend:false,showVolume:false,
+  showDetails:true,showHotlist:true,showDateRanges:true,showCalendar:true,saveImage:false,
+ };
+ const s=setup({storage:twoCards(),plan:{reply:'已更新高级图表。',actions:[{type:'update',cardId:'one',componentId:'tv-advanced-chart',parameters:controls}]}});
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'改成30分钟折线并把图表控制都调整好');await tick();await tick();
+ const direct=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
+ for(const [key,value] of Object.entries(controls))assert.deepEqual(direct[key],value);
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.find(card=>card.id==='one');
+ for(const [key,value] of Object.entries(controls))assert.deepEqual(card.parameters[key],value);
+ s.dom.window.close();
+});
 test('layout-only command preserves live iframe elements and the scope can return to the whole board',async()=>{
  const s=setup({storage:twoCards(),plan:{reply:'已改为上下排列。',actions:[{type:'update',cardId:'one',layout:{x:0,y:0,w:12}},{type:'update',cardId:'two',layout:{x:0,y:19,w:12}}]}});
  const detached=[];const observer=new s.w.MutationObserver(records=>records.forEach(r=>detached.push(...r.removedNodes)));observer.observe(s.d.querySelector('#widgetCanvas'),{childList:true});
