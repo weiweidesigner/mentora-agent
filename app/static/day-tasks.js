@@ -249,7 +249,7 @@
     return ['mentora','mentora-deal'].includes(task.agent) ? task.agent : task._agent || 'mentora';
   }
   function taskRows(rows, sidebar=false) {
-    return rows.map(t=>`<div class="taskListRow"><button type="button" class="taskListItem ${selectedId===t.id?'is-selected':''} ${completed(t)?'is-completed':!t.enabled?'is-paused':''}" data-task-open="${t.id}" ${selectedId===t.id?'aria-current="true"':''}><span class="taskListIcon" aria-hidden="true">◷</span><span><strong>${esc(t.title)}<em class="taskAgentBadge">${taskAgent(t)==='mentora-deal'?'Mentora Deal':'Mentora'}</em></strong><small>${esc(taskSubtitle(t))}</small></span>${completed(t)?'<span class="taskListComplete" aria-label="已完成"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>':'<span class="taskListArrow" aria-hidden="true">›</span>'}</button><button type="button" class="taskMoreButton" data-task-more="${esc(t.id)}" aria-label="更多：${esc(t.title)}" aria-haspopup="menu" aria-expanded="false" aria-controls="taskMoreMenu"><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M288 512a74.666667 74.666667 0 1 1-149.333333 0 74.666667 74.666667 0 0 1 149.333333 0zM512 437.333333a74.666667 74.666667 0 1 1 0 149.333334 74.666667 74.666667 0 0 1 0-149.333334zM885.333333 512a74.666667 74.666667 0 1 0-149.333333 0 74.666667 74.666667 0 0 0 149.333333 0z"/></svg></button></div>`).join('');
+    return rows.map(t=>`<div class="taskListRow"><button type="button" class="taskListItem ${selectedId===t.id?'is-selected':''} ${completed(t)?'is-completed':!t.enabled?'is-paused':''}" data-task-open="${t.id}" ${selectedId===t.id?'aria-current="true"':''}><span class="taskListIcon" aria-hidden="true">◷</span><span><strong>${esc(t.title)}<em class="taskAgentBadge">${t.taskMode==='workflow'?'WorkFlow':taskAgent(t)==='mentora-deal'?'Mentora Deal':'Mentora'}</em></strong><small>${esc(taskSubtitle(t))}</small></span>${completed(t)?'<span class="taskListComplete" aria-label="已完成"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>':'<span class="taskListArrow" aria-hidden="true">›</span>'}</button><button type="button" class="taskMoreButton" data-task-more="${esc(t.id)}" aria-label="更多：${esc(t.title)}" aria-haspopup="menu" aria-expanded="false" aria-controls="taskMoreMenu"><svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M288 512a74.666667 74.666667 0 1 1-149.333333 0 74.666667 74.666667 0 0 1 149.333333 0zM512 437.333333a74.666667 74.666667 0 1 1 0 149.333334 74.666667 74.666667 0 0 1 0-149.333334zM885.333333 512a74.666667 74.666667 0 1 0-149.333333 0 74.666667 74.666667 0 0 0 149.333333 0z"/></svg></button></div>`).join('');
   }
   function matchesScene(t){return ($('taskMarketFilter').value==='all'||$('taskMarketFilter').value===(t.market||market))&&($('taskStageFilter').value==='all'||$('taskStageFilter').value===t.stage);}
   function renderLists() {
@@ -378,6 +378,7 @@
   async function selectTask(id, {updateUrl=true, runId='', shared=false}={}) {
     const task=[...tasks,...sceneTasks].find(t=>t.id===id) || (sharedEntry?.task.id===id?sharedEntry.task:null);
     if(!task)throw new Error('任务不存在，或当前浏览器没有该任务的访问权限');
+    if(task.taskMode==='workflow'&&window.MentoraWorkflow){selectedId='';window.MentoraWorkflow.open(task,!editable(task));return;}
     resetFollowup();selectedId=id;selectedRun=runId;pinnedRun=!!runId;resultVersion='';const version=++viewVersion;
     workspace.dataset.taskView='loading';$('taskChatForm').hidden=true;
     prepareDetail(task,editable(task));lastDetailState=detailState(task);
@@ -481,7 +482,10 @@
     $('dayNextPreview').textContent=windowed?`${names[el('market').value]} · ${stages[el('stage').value]} · ${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（市场当地时间）`:`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
     window.VeyaTaskEditor?.sync();
   }
-  function edit(task, readOnly=false) {
+  let workflowScheduleSave=null;
+  window.MentoraTaskScheduling={edit(task,onSave){workflowScheduleSave=onSave;edit(task,false,true);$('dayDialogTitle').textContent='WorkFlow 定时设置';$('daySave').textContent='保存设置';}};
+  function edit(task, readOnly=false, scheduleOnly=false) {
+    if(task.taskMode==='workflow'&&!scheduleOnly&&window.MentoraWorkflow){window.MentoraWorkflow.open(task,readOnly);return;}
     editing=task.id || null;suggestedQuestion=task.question;suggestedTitle=task.title;
     form.reset();form.querySelectorAll('input,select,textarea').forEach(e=>e.disabled=false);
     for(const [name,value] of Object.entries(task)){const field=el(name);if(!field)continue;if(field.type==='checkbox')field.checked=!!value;else field.value=value??'';}
@@ -633,7 +637,8 @@
   $('taskDeleteCancel').onclick=()=>$('taskDeleteDialog').close();
   $('taskDeleteConfirm').onclick=async()=>{const task=[...tasks,...sceneTasks].find(t=>t.id===deleteTaskId);if(!task||task.activeRun)return;const button=$('taskDeleteConfirm');button.disabled=true;try{await api('tasks/'+task.id,'DELETE');tasks=tasks.filter(t=>t.id!==task.id);sceneTasks=sceneTasks.filter(t=>t.id!==task.id);$('taskDeleteDialog').close();if(selectedId===task.id)showLanding();else renderLists();renderHome();message('任务已删除。','taskMessage');}catch(error){$('taskDeleteMessage').textContent=error.message;}finally{button.disabled=false;}};
   async function toggleTask(task) {await api('tasks/'+task.id,'PUT',{...task,enabled:!task.enabled});await refresh();message(task.enabled?'已暂停后续执行，已有结果仍保留。':'任务已开启。','taskMessage');}
-  function newTask() {if(!$('taskWizard').hidden)showLanding();wizardDraft=null;edit({...template(),timeMode:'fixed'});}
+  window.addEventListener('mentora:workflow-saved',()=>{lastRefresh=0;void refresh();});
+  function newTask() {if(window.MentoraWorkflow){window.MentoraWorkflow.choose(()=>edit({...template(),timeMode:'fixed'}));return;}if(!$('taskWizard').hidden)showLanding();wizardDraft=null;edit({...template(),timeMode:'fixed'});}
   document.addEventListener('click',async event=>{
     const b=event.target.closest('button,[data-task-open]');if(!b)return;
 
@@ -691,9 +696,10 @@
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
-    try{const data=payload(),draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
+    try{const data=payload();if(workflowScheduleSave){const save=workflowScheduleSave;workflowScheduleSave=null;dialog.close();save(data);return;}const draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
+  dialog.addEventListener('close',()=>{workflowScheduleSave=null;});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   window.addEventListener('veya:chat-navigate',()=>{closeTaskMenu();if(internalNavigation)return;shellMode(false);viewVersion++;selectedId='';const url=new URL(location.href);['tab','task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);});
   window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search);if(p.get('dayShare'))openShared(p.get('dayShare')).catch(e=>message(e.message));else if(p.get('tab')==='tasks'){if(p.get('task'))selectTask(p.get('task'),{updateUrl:false,runId:p.get('run')||''}).catch(e=>message(e.message));else showLanding(false);}else shellMode(false);});

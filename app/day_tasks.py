@@ -110,6 +110,8 @@ class TaskInput(BaseModel):
     weekdays: list[int] = Field(default_factory=lambda: [0], min_length=1, max_length=7)
     monthDay: int = Field(default=1, ge=1, le=31)
     time: str = '09:00'
+    taskMode: Literal['agent','workflow'] = 'agent'
+    workflow: dict[str, Any] | None = None
     timeMode: Literal['fixed', 'open', 'close'] = 'fixed'
     triggerMode: Literal['once', 'window'] = 'once'
     windowStart: str = '09:30'
@@ -130,6 +132,15 @@ class TaskInput(BaseModel):
 
     @model_validator(mode='after')
     def validate_schedule(self):
+        if self.taskMode=='workflow':
+            from app.workflow_graph import WorkflowGraph
+            from app.workflows import tool_catalog
+            graph=WorkflowGraph.model_validate(self.workflow)
+            allowed={t['id'] for t in tool_catalog(self.agent)}
+            if any(n.kind=='tool' and n.tool not in allowed for n in graph.nodes):raise ValueError('工作流引用了当前 Agent 不支持的工具')
+            self.workflow=graph.model_dump()
+        elif self.workflow is not None:
+            self.workflow=None
         self.title, self.question = self.title.strip(), self.question.strip()
         if not self.title or not self.question:
             raise ValueError('任务名称和问句不能为空')

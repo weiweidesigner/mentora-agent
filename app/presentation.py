@@ -890,3 +890,9 @@ if (ROOT/'app/portfolio.py').is_file():
     @app.on_event('shutdown')
     def stop_portfolio():
         PORTFOLIO.stop()
+
+
+# Workflow tasks share the same owner, scheduler and Agent execution runtime.
+from app.workflows import WorkflowService, create_router as create_workflow_router
+WORKFLOWS=WorkflowService(DAY_TASKS,globals().get("PORTFOLIO"),run_daily_research)
+app.include_router(create_workflow_router(WORKFLOWS))
