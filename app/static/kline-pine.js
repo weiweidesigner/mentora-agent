@@ -5,7 +5,8 @@
   const icon='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6M14 4l-4 16"/></svg>';
   function endpoint(win){
     for(let w=win,i=0;i<8;i++){
-      try{if(/^https?:/.test(w.location.protocol))return w.location.pathname.split(/\/(?:share-artifact|generated|static|api|share|s)\//)[0].replace(/\/$/,'')+'/api/portfolio';if(w.parent===w)break;w=w.parent;}catch{break;}
+      // Keep the API suffix split: deployment rewrites literal /api/ URLs in HTML.
+      try{if(/^https?:/.test(w.location.protocol))return w.location.pathname.split(/\/(?:share-artifact|generated|static|api|share|s)\//)[0].replace(/\/$/,'')+'/'+'api/portfolio';if(w.parent===w)break;w=w.parent;}catch{break;}
     }
     throw Error('请在本站打开图表后运行 Pine');
   }

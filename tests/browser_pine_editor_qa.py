@@ -46,7 +46,8 @@ with sync_playwright() as p:
                 route.fulfill(content_type='application/json',body=json.dumps({'period':payload['period'],'timestamps':[r['time'] for r in payload['rows']],'plots':[{'title':'QA EMA','values':[r['close'] for r in payload['rows']],'color':'#f59e0b'}],'hlines':[],'barCount':len(payload['rows'])}))
             outer.route('**/api/portfolio/pine/plot',plot)
         page.locator('[data-action="run"]').click()
-        page.wait_for_function("document.querySelector('.kline-component').dataset.pineView==='chart'")
+        page.wait_for_function("!document.querySelector('[data-action=run]').disabled")
+        assert page.locator('.kline-component').get_attribute('data-pine-view')=='chart',page.locator('[data-status]').inner_text()
         assert 'QA EMA' in page.locator('.kline-pine-legend').inner_text()
         assert page.locator('.kline-title [data-widget-title-action]').count()==1
         page.locator('.kline-code-toggle').click()
