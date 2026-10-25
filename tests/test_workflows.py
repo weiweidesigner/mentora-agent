@@ -213,6 +213,19 @@ def test_builder_invalid_json_is_fed_back_before_retry(env):
     env.service.build(BuildInput(message='创建流程'))
     assert len(contexts)==2 and contexts[1]['validationFeedback']
 
+def test_builder_feedback_includes_all_invalid_nodes(env,monkeypatch):
+    native_tools(monkeypatch);contexts=[]
+    bad=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='行情',tool='portfolio-data',arguments={'operation':'history','symbol':'{{watch.symbols}}'}),dict(id='backtest',kind='tool',title='回测',tool='portfolio-backtest',arguments={'symbols':'{{watch.symbols}}','strategy':'sma_cross'})],[dict(source='watch',target='data'),dict(source='watch',target='backtest')])
+    def build(context):
+        contexts.append(context)
+        if len(contexts)==1:return dict(graph=bad)
+        assert '节点「行情」' in context['validationFeedback']
+        assert '节点「回测」' in context['validationFeedback']
+        return dict(graph=graph())
+    env.service.builder=build
+    env.service.build(BuildInput(message='修复流程',graph=bad))
+    assert len(contexts)==2 and not env.calls
+
 def test_bad_action_symbols_and_missing_operation_are_rejected_before_calls(env,monkeypatch):
     native_tools(monkeypatch)
     bad=graph([dict(id='data',kind='tool',title='拉取历史行情',tool='portfolio-data',arguments={'action':'ohlcv','symbols':None})],[])

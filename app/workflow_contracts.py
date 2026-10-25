@@ -41,9 +41,10 @@ def references(value):
         for child in value:yield from references(child)
     elif isinstance(value,str):yield from REFERENCE.findall(value)
 
-def validate_contracts(graph,tools):
+def validate_contracts(graph,tools,*,node_ids=None):
     known={n.id:n for n in graph.nodes};tool_map={t['id']:t for t in tools}
     for node in graph.nodes:
+        if node_ids is not None and node.id not in node_ids:continue
         ancestors=set();pending=[e.source for e in graph.edges if e.target==node.id]
         while pending:
             source=pending.pop()
@@ -70,3 +71,11 @@ def validate_contracts(graph,tools):
             errors=argument_errors(node.arguments,tool_map[node.tool].get('schema'),templates=True)
             if errors:raise ValueError('节点「'+node.title+'」参数不匹配：'+'；'.join(errors))
     return graph
+
+def contract_errors(graph,tools):
+    """Report independent node failures together for a build-only repair."""
+    errors=[]
+    for node in graph.nodes:
+        try:validate_contracts(graph,tools,node_ids={node.id})
+        except (ValueError,KeyError) as exc:errors.append(str(exc))
+    return errors

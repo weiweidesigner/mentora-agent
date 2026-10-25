@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, ValidationError
 from app.workflow_observations import update_observations
 from app.workflow_graph import WorkflowGraph, ordered_nodes
-from app.workflow_contracts import validate_contracts, argument_errors, node_error
+from app.workflow_contracts import validate_contracts, contract_errors, argument_errors, node_error
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -147,6 +147,12 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             except (ValueError,KeyError) as exc:
                 if attempt==2:raise
                 error=node_error('工作流构建',exc) if isinstance(exc,ValidationError) else str(exc)[:1000]
+                if isinstance(result,dict):
+                    try:
+                        candidate=WorkflowGraph.model_validate(result.get('graph',{}))
+                        errors=contract_errors(candidate,execution_tools(payload.agent))
+                        if errors:error='\n'.join(errors)[:12000]
+                    except ValueError:pass  # Structural errors already described above.
                 context={**context,'previousCandidate':result,'validationFeedback':error,
                          'repairInstruction':'上一次候选流程未通过校验。根据真实 schema 和节点输出契约修正候选流程，检查所有节点的同类问题；保留用户原始目标，不新增下单或其他外部动作。仅返回修正后的完整 JSON，不执行工具或流程。'}
                 continue
