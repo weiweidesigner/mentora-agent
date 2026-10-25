@@ -101,7 +101,7 @@ print(cached)
 
 
 @pytest.mark.parametrize('requests', [[], [{'symbol': 'a;cat'}], [{'symbol': 'AAPL', 'refresh': True}],
-    [{'symbol': '0700.HK'}], [{'symbol': 'AAPL', 'asset': 'guess'}]])
+    [{'symbol': 'ABC.HK'}], [{'symbol': 'AAPL', 'asset': 'guess'}]])
 def test_invalid_or_unsupported_requests_fail_before_io(requests):
     with pytest.raises(ValueError):
         read_batch(requests, reader=Reader())
@@ -122,6 +122,21 @@ def test_mixed_history_keeps_supported_rows_and_marks_indices_unsupported():
 def test_mainland_symbol_requires_exchange():
     with pytest.raises(ValueError):
         normalize_requests([{'symbol': '600519'}])
+
+def test_hk_normalization_and_duplicate_reads_keep_native_evidence():
+    reader=Reader()
+    result=read_batch([{'symbol':'HKEX:700'},{'symbol':'00700.HK'}],operation='history',reader=reader)
+    assert [r['symbol'] for r in result['results']]==['0700.HK','0700.HK']
+    assert reader.calls==[('history','0700.HK','stocks')]
+
+def test_hk_history_and_quote_share_hub_without_using_us_adapter():
+    from app.market_reads import MarketReader
+    from types import SimpleNamespace
+    calls=[];reader=MarketReader()
+    reader.adapters['HK']=SimpleNamespace(history=lambda s:calls.append(('history',s)) or {'currency':'HKD'},favorite_quote=lambda s,fresh:calls.append(('quote',s)) or {'currency':'HKD','tradable':False})
+    assert reader.read('history','0700.HK','stocks')['currency']=='HKD'
+    assert reader.read('quote','0700.HK','stocks')['tradable'] is False
+    assert calls==[('history','0700.HK'),('quote','0700.HK')]
 
 
 @pytest.mark.parametrize('max_age', [-1, float('nan'), float('inf')])

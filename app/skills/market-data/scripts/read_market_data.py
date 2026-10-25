@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read arbitrary US/mainland quote or daily-history batches, without an account."""
+"""Read US/mainland/Hong Kong quote or daily-history batches without an account."""
 import argparse
 import json
 import os

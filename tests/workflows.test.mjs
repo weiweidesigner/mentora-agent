@@ -178,6 +178,39 @@ test('partial nodes stay visibly partial and preserve the read-only error policy
  }finally{s.w.close();}
 });
 
+test('only active upstream-to-running-node edges animate and terminal records never animate',async()=>{
+ for(const status of ['running','stopping','success','failed','cancelled']){
+  const s=await setup();try{
+   await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status,nodes:{input:{status:'partial'},out:{status:'running'}}}});
+   assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,['running','stopping'].includes(status)?1:0);
+   if(['running','stopping'].includes(status)){
+    const edge=s.d.querySelector('.is-flowing');assert.equal(edge.dataset.edgeSource,'input');assert.equal(edge.dataset.edgeTarget,'out');
+   }
+  }finally{s.w.close();}
+ }
+});
+
+test('flow respects a condition result instead of animating both branches',async()=>{
+ const s=await setup();try{
+  const branching={version:1,nodes:[{id:'gate',kind:'condition',title:'判断',x:90,y:140},{id:'yes',kind:'output',title:'是',x:440,y:140},{id:'no',kind:'output',title:'否',x:440,y:330}],edges:[{source:'gate',target:'yes',when:'true'},{source:'gate',target:'no',when:'false'}]};
+  await s.w.MentoraWorkflow.open({workflow:branching,lastTrial:{status:'running',nodes:{gate:{status:'success',output:{value:true}},yes:{status:'running'},no:{status:'running'}}}});
+  assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,1);
+  assert.equal(s.d.querySelector('.is-flowing').dataset.edgeTarget,'yes');
+ }finally{s.w.close();}
+});
+
+test('saved scheduled progress is refreshed and stops edge motion when the run finishes',async()=>{
+ const s=await setup();try{
+  const fetch=s.w.fetch;let done=false;
+  s.w.fetch=async(url,options)=>url.endsWith('/workflows/tasks/saved/latest')?{ok:true,json:async()=>({id:'scheduled-run',status:done?'success':'running',nodes:{input:{status:'success'},out:{status:done?'success':'running'}}})}:fetch(url,options);
+  await s.w.MentoraWorkflow.open({id:'saved',workflow:graph});
+  assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,1);
+  done=true;await new Promise(r=>setTimeout(r,1500));
+  assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,0);
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeState').textContent,'✓');
+ }finally{s.w.close();}
+});
+
 test('zoom resizes node layout and vector connections while the background stays fixed',async()=>{
  const s=await setup();try{
   await s.w.MentoraWorkflow.open({workflow:graph});

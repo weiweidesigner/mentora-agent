@@ -1,6 +1,6 @@
 ---
 name: market-data
-description: Read-only batch quotes and completed daily OHLCV for arbitrary US-listed stocks/ETFs/indices and mainland stocks. Independent reads run concurrently; repeated reads can reuse timestamped cache. No account or trading service required.
+description: Read-only batch quotes and completed daily OHLCV for US listings, mainland stocks and explicit Hong Kong listings. Independent reads run concurrently with timestamped reuse. No account or trading service required.
 ---
 
 # Market data
@@ -15,7 +15,7 @@ python3 app/skill_runner.py execute --script read_market_data.py -- --operation 
 python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote --input outputs/data/requests.json --output outputs/data/snapshot.json
 ```
 
-`--input` is a UTF-8 JSON array, e.g. `[{"symbol":"SPY","asset":"etf"},{"symbol":"AAPL","asset":"stocks"},{"symbol":"COMP","asset":"index"}]`. `--symbols` uses one `--asset stocks|etf|index` (default stocks); never infer an ETF's asset class from its ticker. Mainland symbols require the exchange suffix, e.g. `600519.SH`, and use the stock adapter. Markets supported here are US listings and mainland China; do not use foreign listings or Yahoo. US index history is returned as a per-item unsupported error while supported stocks and ETFs in the same mixed batch still run. History is the existing adapter's recent completed daily bars (approximately 132 US sessions, at least 65), forward adjusted; it is not an arbitrary date/interval query. Use the original K-line skill for different history contracts.
+`--input` is a UTF-8 JSON array, e.g. `[{"symbol":"SPY","asset":"etf"},{"symbol":"AAPL","asset":"stocks"},{"symbol":"COMP","asset":"index"}]`. `--symbols` uses one `--asset stocks|etf|index` (default stocks); never infer an ETF's asset class from its ticker. Mainland symbols require the exchange suffix, e.g. `600519.SH`, and use the stock adapter. Markets supported here are US listings, mainland China and explicit Hong Kong listings described below; do not use other foreign listings or Yahoo. Index history and HK index quotes return per-item unsupported errors while supported stocks/ETFs still run. History is the existing adapter's recent completed daily bars (approximately 132 US sessions, at least 65; HK defaults to 132 but newer listings may have fewer), forward adjusted; it is not an arbitrary date/interval query. Use the original K-line skill for different history contracts.
 
 ## Concurrency, reuse and freshness
 
@@ -26,3 +26,25 @@ Default cache validity: quotes 60 seconds, history 1800 seconds. `--max-age <sec
 ## Output and errors
 
 `--output` is required. JSON: `{operation, startedAt, completedAt, results, errors}`. Each result keeps input order and includes `{symbol, asset, ok, cached, cacheAgeSeconds, data}` on success or `{symbol, asset, ok:false, error}` on failure. `data` retains the installed adapter's source, timestamps, freshness and adjustment metadata. Only a short file/count summary prints to stdout; read selected fields or calculate from the file instead of dumping full history to context. Exit 0 means the batch contains at least one usable observation, including a partial batch; inspect `errors` and every row's `ok` value. Exit 1 means every requested item failed, while exit 2 means invalid input or unavailable installation. Do not rerun an entire partial batch: reuse successful rows and make at most one narrower request only when the missing field is essential.
+
+## Hong Kong research
+
+The market scope above now also includes explicit HK stocks/ETFs, e.g. `0700.HK`,
+`00700.HK`, `HKEX:700` (canonical `0700.HK`). Bare numeric codes are not inferred.
+Use the same registered CLI, for example `--operation history --symbols 0700.HK 9988.HK`.
+HK index symbols are not supported. Do not replace a HK listing with its ADR.
+
+The shared `app.hk_market_data` adapter uses the documented Tencent HTTPS
+`hkfqkline/get` contract: exact provider identity `hkNNNNN`, daily `qfqday`, all
+OHLC forward-adjusted in native HKD, source volume units unchanged. The default
+is the latest 132 completed sessions (new/suspended listings may have fewer).
+It uses XHKG/Asia-Hong_Kong and a ten-minute post-close auction buffer, including
+half days; excludes unfinished/non-session bars, flags stale history, validates
+finite OHLCV and duplicate dates, and never fills missing prices. Results include
+source, `asOf`, `expectedAsOf`, `stale`, adjustment and currency. HK display quotes
+reuse the existing native-currency favorite quote adapter; they remain nontradable.
+
+HK history has `researchOnly=true`, `executionAuthorized=false`; only research
+and historical backtests are added. No FX conversion, trade permission, provider
+guessing or automatic source fallback is introduced. Errors fail that item with
+no retry. See `docs/hk-market-data.md` for source references and exact semantics.

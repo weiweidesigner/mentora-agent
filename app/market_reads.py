@@ -19,6 +19,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from app.hk_market_data import is_hk_symbol,normalize_hk_symbol
 
 
 def stamp():
@@ -71,19 +72,22 @@ class MarketReader:
     def prepare(self, requests):
         # Construct once before threads start; imports have side effects and the
         # CN adapter owns the upstream rate limiter shared by this batch.
-        if any(not re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) for row in requests):
+        if any(not re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) and not is_hk_symbol(row['symbol']) for row in requests):
             from app.portfolio import MarketData
             self.adapters['US'] = MarketData()
-        if any(re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) for row in requests):
+        if any(re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) or is_hk_symbol(row['symbol']) for row in requests):
             from app.portfolio_data import MarketDataHub
-            self.adapters['CN'] = MarketDataHub()
+            hub=MarketDataHub()
+            self.adapters['CN'] = hub
+            self.adapters['HK'] = hub
 
     def read(self, operation, symbol, asset):
-        market = 'CN' if re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', symbol) else 'US'
+        market = 'HK' if is_hk_symbol(symbol) else 'CN' if re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', symbol) else 'US'
         adapter = self.adapters[market]
         # Each uncached query reaches the adapter. Freshness checks and CN source
         # throttling remain in the original implementation.
         if operation == 'quote':
+            if market=='HK':return adapter.favorite_quote(symbol,fresh=True)
             return adapter.quote(symbol, asset=asset, fresh=True)
         return adapter.history(symbol)
 
@@ -94,15 +98,16 @@ def normalize_requests(requests):
         if not isinstance(item, dict) or set(item) - {'symbol', 'asset'}:
             raise ValueError('Each request must contain symbol and optional asset only')
         symbol = str(item.get('symbol', '')).strip().upper()
-        if not re.fullmatch(r'[A-Z][A-Z0-9.-]{0,9}|\d{6}\.(?:SH|SZ|BJ)', symbol):
+        if is_hk_symbol(symbol):symbol=normalize_hk_symbol(symbol)
+        if not is_hk_symbol(symbol) and not re.fullmatch(r'[A-Z][A-Z0-9.-]{0,9}|\d{6}\.(?:SH|SZ|BJ)', symbol):
             raise ValueError('Use a US ticker or fully qualified mainland symbol, e.g. 600519.SH')
         asset = item.get('asset', 'stocks')
         if asset not in {'stocks', 'etf', 'index'}:
             raise ValueError('asset must be stocks, etf or index')
         if re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', symbol) and asset != 'stocks':
             raise ValueError('Mainland symbols require asset=stocks')
-        if symbol.endswith(('.HK', '.T', '.L')):
-            raise ValueError('This adapter supports US listings and mainland China only')
+        if symbol.endswith(('.T', '.L')):
+            raise ValueError('This adapter supports US, mainland China and Hong Kong listings only')
         result.append({'symbol': symbol, 'asset': asset})
     if not result:
         raise ValueError('At least one symbol is required')
@@ -118,12 +123,12 @@ def read_batch(requests, *, operation='quote', workers=4, cache_dir=None,
     if not math.isfinite(max_age) or max_age < 0:
         raise ValueError('max_age must be finite and nonnegative')
     reader = reader or MarketReader()
-    supported = [row for row in requests if not (operation == 'history' and row['asset'] == 'index')]
+    supported = [row for row in requests if not (row['asset']=='index' and (operation=='history' or is_hk_symbol(row['symbol'])))]
     reader.prepare(supported)
     started = stamp()
 
     def one(item):
-        if operation == 'history' and item['asset'] == 'index':
+        if item['asset']=='index' and (operation=='history' or is_hk_symbol(item['symbol'])):
             return {**item, 'ok': False,
                     'error': 'Index history is not supported by the installed history adapter'}
         identity = {'adapter': 'mentora-market-v1', 'operation': operation, **item}

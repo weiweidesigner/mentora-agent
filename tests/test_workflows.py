@@ -310,13 +310,17 @@ def test_empty_foreach_makes_no_tool_call(env,monkeypatch):
 def mixed_market_graph():
     return graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='历史行情',tool='portfolio-data',foreach='{{watch}}',onItemError='continue',arguments={'operation':'history','symbol':'{{item.symbol}}'}),dict(id='backtest',kind='tool',title='回测',tool='portfolio-backtest',foreach='{{data.items}}',arguments={'symbol':'{{item.symbol}}','strategy':'ma_cross'})],[dict(source='watch',target='data'),dict(source='data',target='backtest')])
 
-def test_mixed_hk_us_batch_retains_market_errors_and_runs_supported_symbols(env,monkeypatch):
+def test_mixed_hk_us_batch_retains_provider_errors_and_runs_remaining_symbols(env,monkeypatch):
     native_tools(monkeypatch)
     from app.portfolio_skills import module as entry
     from app.portfolio import symbol_value
     symbols=['0700.HK','9988.HK','TLT','CRCL'];calls=[];histories=[]
     env.service.portfolio.workflow.favorites=lambda owner:[{'symbol':s} for s in symbols]
-    env.service.portfolio.market=SimpleNamespace(history=lambda symbol:histories.append(symbol) or dict(rows=[{'close':1}],source='unit-test'))
+    def history(symbol):
+        histories.append(symbol)
+        if symbol.endswith('.HK'):raise ValueError('港股行情源暂时不可用（fixture）')
+        return dict(rows=[{'close':1}],source='unit-test')
+    env.service.portfolio.market=SimpleNamespace(history=history)
     def call(service,owner,name,args):
         calls.append((name,args['symbol']))
         if name=='portfolio-data':return entry(name).execute(service,owner,args)
@@ -325,12 +329,12 @@ def test_mixed_hk_us_batch_retains_market_errors_and_runs_supported_symbols(env,
     states={}
     result=env.service.execute({'workflow':mixed_market_graph(),'agent':'mentora-deal','question':'验证','_owner':'owner'},'mixed',lambda i,s:states.update({i:s}))
     assert result['workflowNodes']=={'watch':'success','data':'partial','backtest':'success'}
-    assert histories==['TLT','CRCL']  # HK must never be routed to a US data source.
+    assert histories==symbols
     assert [s for name,s in calls if name=='portfolio-backtest']==['TLT','CRCL']
     value=states['data']['output']
     assert value['count']==2 and value['failedCount']==2
     assert [e['symbol'] for e in value['errors']]==symbols[:2]
-    assert all('未支持港股' in e['error'] for e in value['errors'])
+    assert all('港股行情源暂时不可用' in e['error'] for e in value['errors'])
     assert '0700.HK' in result['interpretation'] and result['workflowWarnings']
     assert symbol_value('600519.SH')=='600519.SH' and symbol_value('TLT')=='TLT'
 
@@ -409,6 +413,21 @@ def test_observation_trial_previews_without_writing(env,monkeypatch):
     assert not writes and states['update']['output']['preview']
     assert states['update']['output']['updatedCount']==0
     assert states['update']['output']['symbols']==['AAPL']
+
+def test_hk_workflow_receipts_remain_visible_research_without_trade_authority(env,monkeypatch):
+    native_tools(monkeypatch)
+    from app.portfolio import Portfolio
+    from test_portfolio import Feed
+    portfolio=Portfolio(env.tasks.db_path.parent/'hk-observations',market=Feed())
+    env.service.portfolio=portfolio
+    g=observation_graph();g['nodes'][0]['arguments']['symbol']='0700.HK'
+    monkeypatch.setattr('app.portfolio_skills.call',lambda *_:dict(symbol='0700.HK',status='computed',strategy='trend',totalReturn=2,currency='HKD',researchOnly=True,executionAuthorized=False))
+    states={}
+    env.service.execute(dict(workflow=g,agent='mentora-deal',question='研究',_owner='owner'),'hk-research',lambda i,s:states.update({i:s}))
+    assert states['update']['output']['symbols']==['0700.HK']
+    view=portfolio.workflow.view('owner')
+    assert view['watchlist'][0]['symbol']=='0700.HK'
+    assert view['candidates'][0]['researchOnly'] is True and view['candidates'][0]['executionAuthorized'] is False
 
 def test_observation_uses_only_connected_tool_receipts_not_model_claims(env,monkeypatch):
     native_tools(monkeypatch)

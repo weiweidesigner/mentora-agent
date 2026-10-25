@@ -9,7 +9,7 @@
     "name": "read_market_data",
     "script": "read_market_data.py",
     "label": "Batch Market Data",
-    "description": "批量读取美股、ETF、指数与A股报价或已完成日线历史。适合行情、价格、走势、市场表现、投资机会、股票研究；通过 --operation quote|history、--symbols 或 --input、--asset stocks|etf|index、--output 调用。同轮缓存和并发读取，完整数据存文件。指数历史不支持，混合批次保留成功行。"
+    "description": "批量读取美股、ETF、指数、A股及明确代码的港股报价或已完成日线历史。港股如0700.HK、9988.HK，保留HKD与前复权口径，仅研究/回测，不开放模拟成交。通过 --operation quote|history、--symbols 或 --input、--asset stocks|etf|index、--output 调用。同轮缓存和并发读取，完整数据存文件。指数历史和港股指数报价不支持，混合批次保留成功行。"
   },
   {
     "name": "ainvest_news_search",

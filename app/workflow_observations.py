@@ -11,10 +11,10 @@ def update_observations(portfolio,owner,graph,node_id,receipts,run_id,title,prev
                 ancestors.add(edge.source);visit(edge.source)
     visit(node_id)
     records={}
-    from app.portfolio import symbol_value
+    from app.hk_market_data import research_symbol,is_hk_symbol
     def record(symbol):
         if not isinstance(symbol,str) or not symbol.strip():return None
-        try:symbol=symbol_value(symbol)
+        try:symbol=research_symbol(symbol)
         except (ValueError,TypeError):return None
         return records.setdefault(symbol,dict(backtests=[],tools=[]))
     def rows(value):
@@ -56,6 +56,7 @@ def update_observations(portfolio,owner,graph,node_id,receipts,run_id,title,prev
         item.update(runId=run_id,title=title,updated=updated)
         if not preview:
             values=dict(sourceTypes=['workflow'],workflowExecution=item)
+            if is_hk_symbol(symbol):values.update(market='HK',nativeCurrency='HKD',researchOnly=True,executionAuthorized=False)
             if item['backtests']:values['backtests']=item['backtests']
             if item.get('quote'):values['quote']=item['quote']
             portfolio.workflow.merge(owner,symbol,values)

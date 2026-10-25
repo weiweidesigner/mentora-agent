@@ -42,6 +42,26 @@ def main():
             assert page.locator('[data-field=instruction]').input_value()==description
             assert page.locator('[data-field=onItemError]').input_value()=='continue'
             print(json.dumps(dict(width=width,zoomChecks=4,twoLines=True,fullDescriptionPreserved=True)))
+            flow_graph=dict(version=1,nodes=[dict(id='input',kind='start',title='已完成输入',x=90,y=140),dict(id='data',kind='tool',tool='portfolio-data',title='运行中真实查询',x=440,y=140)],edges=[dict(source='input',target='data',when='always')])
+            task=dict(workflow=flow_graph,lastTrial=dict(status='running',nodes=dict(input=dict(status='success'),data=dict(status='running'))))
+            page.evaluate('(task)=>{document.querySelector(".wfCanvas").close();return MentoraWorkflow.open(task)}',task)
+            flow=page.locator('.wfEdgeFlow');assert flow.count()==1
+            before=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
+            page.wait_for_timeout(180)
+            after=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
+            assert before!=after,(before,after)
+            page.screenshot(path=str(ROOT.parent/f'workflow-edge-flow-{width}.png'))
+            dark_stroke=flow.evaluate('el=>getComputedStyle(el).stroke')
+            page.evaluate('document.documentElement.dataset.theme="light"')
+            assert flow.evaluate('el=>getComputedStyle(el).stroke')!=dark_stroke
+            page.evaluate('document.documentElement.dataset.theme="dark"')
+            page.emulate_media(reduced_motion='reduce')
+            assert flow.evaluate('el=>getComputedStyle(el).animationName')=='none'
+            page.emulate_media(reduced_motion='no-preference')
+            task['lastTrial']['status']='success'
+            page.evaluate('(task)=>{document.querySelector(".wfCanvas").close();return MentoraWorkflow.open(task)}',task)
+            assert page.locator('.wfEdgeFlow').count()==0
+            print(json.dumps(dict(width=width,directionalFlow=True,reducedMotion=True,terminalMotionStopped=True)))
             page.close()
         browser.close()
 
