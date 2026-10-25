@@ -29,6 +29,12 @@ with sync_playwright() as p:
         page.wait_for_selector('.kline-title [data-widget-title-action]')
         page.locator('.kline-code-toggle').click()
         editor=page.locator('[data-code]')
+        assert page.locator('.kline-pine-bar,[data-code-state],[data-action=copy],[data-action=clear]').count()==0
+        assert page.locator('.kline-pine button').count()==1
+        assert not page.locator('[data-status]').is_visible()
+        surface=page.locator('.kline-pine-surface').bounding_box()
+        run_button=page.locator('[data-action=run]').bounding_box()
+        assert abs(run_button['x']-surface['x'])<2 and run_button['y']>=surface['y']+surface['height'],(surface,run_button)
         if live:
             assert 'EMA5' in editor.input_value(), 'Exact historical source was not restored'
         editor.fill('//@version=5\nindicator("QA EMA", overlay=true)\nplot(ta.ema(close, 5), title="QA EMA", color=color.orange)')
@@ -40,6 +46,7 @@ with sync_playwright() as p:
         assert bounds['x']>=0 and bounds['x']+bounds['width']<=width+1,bounds
         page.locator('.kline-code-toggle').click();page.locator('.kline-code-toggle').click()
         assert 'QA EMA' in editor.input_value()
+        assert not page.locator('[data-status]').is_visible()
         if not live:
             def plot(route):
                 payload=route.request.post_data_json
@@ -55,7 +62,16 @@ with sync_playwright() as p:
         if '--screenshots' in sys.argv:
             outer.screenshot(path=f'/tmp/mentora-pine-editor-{width}.png')
         assert not errors,errors
-        checks.append({'width':width,'toggle':True,'highlight':True,'editable':True,'runApplied':True,'widgetAction':True,'liveAPI':live})
+        # Reopen the same native chart without Pine receipts: no generic editor entry.
+        def remove_pine(match):
+            config=json.loads(match[2]);config['pineOverlays']=[]
+            return match[1]+json.dumps(config,ensure_ascii=False)+match[3]
+        plain=re.sub(r'(\bconst config = )(\{[^\n]*\})(;)',remove_pine,document)
+        outer.route('**/pine-editor-without-source.html',lambda route:route.fulfill(content_type='text/html',body=plain))
+        page.goto('https://weiweidesigner.com/mentora/pine-editor-without-source.html',wait_until='networkidle')
+        assert page.locator('.kline-code-toggle,.kline-pine').count()==0
+        assert page.locator('.chart-host').is_visible()
+        checks.append({'width':width,'toggle':True,'highlight':True,'editable':True,'runApplied':True,'widgetAction':True,'runBottomLeft':True,'noSourceNoIcon':True,'liveAPI':live})
         outer.close()
     browser.close()
 print(json.dumps(checks))
