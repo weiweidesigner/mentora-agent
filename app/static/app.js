@@ -535,6 +535,17 @@ function persistChatSession(session) {
   renderHistory();
 }
 
+function isStaleChatSessionSnapshot(local, remote) {
+  if (!local || !['completed', 'failed', 'interrupted'].includes(local.status)
+      || !['queued', 'running'].includes(remote.status)) return false;
+  // A delayed poll may have a newer wall-clock timestamp, but it cannot move
+  // the same run backwards from its terminal state into running again.
+  if (local.requestId && remote.requestId) return local.requestId === remote.requestId;
+  const localRun = local.activeRunId || local.lastRunId;
+  const remoteRun = remote.activeRunId || remote.lastRunId;
+  return Boolean(localRun && remoteRun && localRun === remoteRun);
+}
+
 async function syncServerSessions() {
   try {
     const response = await fetch("/api/chat/sessions", { cache: "no-store" });
@@ -543,6 +554,7 @@ async function syncServerSessions() {
     const sessions = new Map(loadSessions().map((session) => [session.id, session]));
     for (const remote of data.sessions || []) {
       const local = sessions.get(remote.id);
+      if (isStaleChatSessionSnapshot(local, remote)) continue;
       if (!local || Number(remote.updatedAt) >= Number(local.updatedAt) || (local.activeRunId && !remote.activeRunId)) sessions.set(remote.id, { ...local, ...remote });
     }
     storeSessions(Array.from(sessions.values()).sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt)).slice(0, 20));
@@ -5064,11 +5076,24 @@ async function recordAssistantResult(data) {
     thinkingElapsed: resultSession.thinkingElapsed,
     reasoningFramework: resultSession.reasoningFramework,
   });
-  if (!resultSession.customTitle) resultSession.title = await summarizeSessionTitle(resultSession.question, resultSession.interpretation);
-
   resultSession.agent = data.agent || assistantArticle?.dataset.agent || '';
   if (assistantArticle) assistantArticle.shareSession = resultSession;
+  // Persist the terminal result before any optional naming request. Otherwise
+  // a background session poll can replay the answer while naming is pending.
   persistChatSession(resultSession);
+  if (!resultSession.customTitle) {
+    const completedRequestId = resultSession.requestId;
+    const completedRunId = resultSession.lastRunId;
+    const title = await summarizeSessionTitle(resultSession.question, resultSession.interpretation);
+    const latest = loadSessions().find(session => session.id === resultSession.id);
+    // A follow-up, navigation or manual rename may have happened while waiting.
+    // Patch only the title of this result; never persist the old session again.
+    if (!latest || latest.customTitle || latest.requestId !== completedRequestId || latest.lastRunId !== completedRunId) return;
+    latest.title = title;
+    resultSession.title = title;
+    if (currentSession?.id === latest.id && currentSession.requestId === completedRequestId) currentSession.title = title;
+    persistChatSession(latest);
+  }
 }
 
 function recordAssistantError(article, message) {
