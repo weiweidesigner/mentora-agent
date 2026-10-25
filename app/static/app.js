@@ -1562,6 +1562,7 @@ function renderPublicProgress(article, data = {}) {
   });
   article.dataset.publicThoughtText = text;
   article.dataset.currentThinking = text;
+  article.dataset.activityPhase = 'thinking';
   delete article.dataset.currentActivityCallId;
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
@@ -1578,6 +1579,14 @@ function renderStreamAnswerText(article, data = {}) {
   let preview = Array.from(flow.querySelectorAll('.streamAnswerPreview')).find(node => node.dataset.blockId === key);
   if (data.discard) {
     preview?.remove();
+    const hasAnswerText = Array.from(flow.querySelectorAll('.streamAnswerPreview'))
+      .some(node => String(node.streamText || node.textContent || '').trim());
+    if (!hasAnswerText) {
+      article.answerTextStarted = false;
+      article.activeAnswerBlockId = '';
+      article.dataset.activityPhase = 'thinking';
+      updateThinkingSummary(article, '', {live:!article.activityEnded});
+    }
     return;
   }
   if (!preview) {
@@ -2480,6 +2489,7 @@ function isInlineActivityExpanded(article) {
 function syncInlineActivity(article) {
   const source = article.querySelector(".thinkingSteps");
   if (!source) return null;
+  article.querySelectorAll(".thinkingElapsedLive").forEach(node => node.remove());
   source.hidden = true;
   let currentTool = article.querySelector(".thinkingCurrentTool");
   if (!currentTool) {

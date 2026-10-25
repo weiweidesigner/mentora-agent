@@ -61,6 +61,7 @@ def run(argv,prompt,emit):
         process.stdin.write(json.dumps(value,ensure_ascii=False)+'\n');process.stdin.flush()
     def request(number,method,params):send(dict(id=number,method=method,params=params))
     thread_id=None
+    agent_channels={}
     try:
         request(1,'initialize',dict(clientInfo=dict(name='mentora',title='Mentora',version='1'),capabilities=dict(experimentalApi=True)))
         while True:
@@ -90,14 +91,20 @@ def run(argv,prompt,emit):
                 continue
             if params.get('threadId') not in {None,thread_id}:continue
             if method=='item/agentMessage/delta':
-                emit(dict(type='agent_message.delta',item=dict(id=params['itemId'],delta=params.get('delta',''))))
+                item_id=str(params['itemId'])
+                item=dict(id=item_id,delta=params.get('delta',''))
+                if agent_channels.get(item_id):item['channel']=agent_channels[item_id]
+                emit(dict(type='agent_message.delta',item=item))
             elif method in {'item/started','item/completed'}:
                 source=params.get('item') or {}
                 if source.get('type')=='reasoning':
                     emit(dict(type='model_activity',phase='started' if method=='item/started' else 'completed'))
                     continue
                 item=normalized_item(source)
-                if item:emit(dict(type=method.replace('/','.'),item=item))
+                if item:
+                    if item.get('type')=='agent_message' and item.get('id'):
+                        agent_channels[str(item['id'])]=str(item.get('channel') or '')
+                    emit(dict(type=method.replace('/','.'),item=item))
             elif method=='turn/started':emit(dict(type='model_activity',phase='started'))
             elif method=='turn/completed':
                 turn=params.get('turn') or {}

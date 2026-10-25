@@ -1840,6 +1840,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 public_item=event.get('item') or {}
                 item_id=str(public_item.get('id') or 'codex-live')
                 delta=str(public_item.get('delta') or '')
+                delta_channel = str(public_item.get('channel') or public_item.get('phase') or '')
+                if delta_channel:
+                    public_item_channels[item_id] = 'final' if delta_channel in {'final','final_answer'} else delta_channel
                 if delta:
                     public_items[item_id]=public_items.get(item_id,'')+delta
                     if public_item_channels.get(item_id)=='commentary':
@@ -1888,14 +1891,16 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 item_id = str(item.get("id") or f"codex-message-{len(public_items)}")
                 text = str(item.get("text") or "")
                 channel = 'final' if item.get('channel') in {'final','final_answer'} else str(item.get('channel') or '')
-                if text and (text != public_items.get(item_id) or channel != public_item_channels.get(item_id)):
+                previous_channel = public_item_channels.get(item_id, '')
+                if text and (text != public_items.get(item_id) or channel != previous_channel):
                     public_items[item_id] = text
-                    public_item_channels[item_id] = channel
                     if channel == 'commentary':
                         yield 'answer_text', {'blockId':item_id,'discard':True}
                         yield 'progress', {'blockId':item_id,'text':text,'kind':'commentary'}
                     else:
                         yield "answer_text", {"blockId": item_id, "text": text, "replace": True, "live": True, "final": False}
+                if channel:
+                    public_item_channels[item_id] = channel
                 if channel != "commentary":answer = text or answer
             if event_type == "turn.failed":
                 error = event.get("error") if isinstance(event.get("error"), dict) else {}

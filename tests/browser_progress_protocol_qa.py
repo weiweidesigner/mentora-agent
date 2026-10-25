@@ -23,8 +23,11 @@ with sync_playwright() as p:
                 article.dataset.lang='zh-CN';article.dataset.thinkingState='active';
                 const send=(event,data)=>handleStreamEvent(article,event,data);
                 const title=()=>article.querySelector('.thinkingSummaryText').textContent;
+                const legacyElapsed=document.createElement('div');legacyElapsed.className='thinkingElapsedLive';article.querySelector('.assistantBubble').prepend(legacyElapsed);
                 send('progress',{blockId:'p1',text:'核对日期与数据口径',kind:'commentary'});
                 if(!title().startsWith('已处理'))throw Error('elapsed header missing');
+                if(article.querySelector('.thinkingElapsedLive'))throw Error('legacy duplicate elapsed label remains');
+                if(!article.querySelector('.activityLiveThinking'))throw Error('active progress has no running indicator');
                 send('tool_step',{tool:'bash',callId:'b',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
                 if(!article.querySelector('.thinkingFlow').textContent.includes('加载市场数据'))throw Error('new tool missing from timeline');
                 send('progress',{blockId:'p2',text:'汇总本周表现',kind:'commentary'});

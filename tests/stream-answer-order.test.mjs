@@ -127,3 +127,15 @@ test('invalid attempt is retracted without erasing prior prose or tool rows',()=
  assert.equal(f.article.querySelectorAll('.orderedTool').length,1);
  }finally{f.close();}
 });
+
+test('retracted commentary does not leave the article in answer mode',()=>{
+ const f=fixture();try{
+ f.w.updateThinkingSummary=()=>{};
+ f.w.renderStreamAnswerText(f.article,{blockId:'commentary',delta:'正在计算指标。'});
+ assert.equal(f.article.answerTextStarted,true);
+ f.w.renderStreamAnswerText(f.article,{blockId:'commentary',discard:true});
+ assert.equal(f.article.answerTextStarted,false);
+ assert.equal(f.article.dataset.activityPhase,'thinking');
+ assert.equal(f.article.querySelector('.streamAnswerPreview'),null);
+ }finally{f.close();}
+});

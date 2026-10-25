@@ -31,6 +31,9 @@ for line in sys.stdin:
   deadline=time.monotonic()+5
   while release and not Path(release).exists() and time.monotonic()<deadline:time.sleep(.01)
   send({'method':'item/completed','params':{'threadId':'thread-fixture','item':{'type':'agentMessage','id':'a','text':'First','phase':'commentary'}}})
+  send({'method':'item/started','params':{'threadId':'thread-fixture','item':{'type':'agentMessage','id':'c','text':'','phase':'commentary'}}})
+  send({'method':'item/agentMessage/delta','params':{'threadId':'thread-fixture','itemId':'c','delta':'Planning'}})
+  send({'method':'item/completed','params':{'threadId':'thread-fixture','item':{'type':'agentMessage','id':'c','text':'Planning','phase':'commentary'}}})
   send({'method':'item/started','params':{'threadId':'thread-fixture','item':{'type':'commandExecution','id':'tool','command':'true','status':'inProgress'}}})
   send({'method':'item/completed','params':{'threadId':'thread-fixture','item':{'type':'commandExecution','id':'tool','command':'true','status':'completed','aggregatedOutput':'done','exitCode':0}}})
   send({'method':'item/agentMessage/delta','params':{'threadId':'thread-fixture','itemId':'b','delta':'Second'}})
@@ -57,7 +60,9 @@ def test_app_server_forwards_real_public_delta_before_turn_finishes(tmp_path,mon
     finally:release.write_text('continue');thread.join(5)
     assert not errors
     assert 'PRIVATE' not in str(events)
-    assert [event['item']['delta'] for event in events if event['type']=='agent_message.delta']==['First','Second']
+    deltas=[event['item'] for event in events if event['type']=='agent_message.delta']
+    assert [item['delta'] for item in deltas]==['First','Planning','Second']
+    assert next(item for item in deltas if item['delta']=='Planning')['channel']=='commentary'
 
 
 def test_codex_adapter_uses_app_server_deltas_and_keeps_interleaving(tmp_path,monkeypatch):
@@ -69,6 +74,8 @@ def test_codex_adapter_uses_app_server_deltas_and_keeps_interleaving(tmp_path,mo
     assert [data['delta'] for kind,data in visible if kind=='answer_text' and 'delta' in data]==['First','Second']
     assert visible[-1][1]['text']=='Second'
     assert any(kind=='progress' and data.get('text')=='First' for kind,data in events)
+    assert any(kind=='progress' and data.get('text')=='Planning' for kind,data in events)
+    assert not any(kind=='answer_text' and data.get('blockId')=='c' for kind,data in events)
     assert [data['phase'] for kind,data in visible if kind=='tool_step']==['started','completed']
     final=next(data for kind,data in events if kind=='final')
     assert final['interpretation']=='Second'
