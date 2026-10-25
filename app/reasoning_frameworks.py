@@ -55,6 +55,12 @@ class FluxImageExecutionError(ReasoningFrameworkError):
             return cls(detail, public_detail="图片提示词转换失败，请稍后重试。会话和进度已保留。", error_code="image_prompt_translation_failed")
         if "timed out after 30 minutes" in detail:
             return cls(detail, public_detail="本地图片生成超过 30 分钟，已停止。请稍后重试。", error_code="image_generation_timeout")
+        if 'Mac 生图节点' in detail and '正在处理其他图片' in detail:
+            return cls(detail, public_detail='本地生图节点正在处理其他图片，请稍后重试。', error_code='image_service_busy')
+        if 'Mac 生图节点' in detail and any(word in detail for word in ('离线','隧道','尚未就绪')):
+            return cls(detail, public_detail='无法连接 Mac 生图节点，请检查 Mac 和生图隧道后重试。', error_code='image_service_unavailable')
+        if '生图' in detail and '超时' in detail:
+            return cls(detail, public_detail='本地生图连接或生成超时，请稍后重试。', error_code='image_generation_timeout')
         return cls(detail)
 
 
@@ -598,6 +604,31 @@ class LocalAgentFrameworks:
         )
         return len(visual_cues) + len(chinese_visual_cues) >= 2
 
+    @staticmethod
+    def _flux_process(command, *, cwd, env):
+        """Keep the public stream alive without exposing subprocess diagnostics."""
+        process=subprocess.Popen(command,cwd=cwd,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
+        started=time.monotonic()
+        try:
+            while True:
+                remaining=1800-(time.monotonic()-started)
+                if remaining<=0:raise subprocess.TimeoutExpired(command,1800)
+                try:
+                    stdout,stderr=process.communicate(timeout=min(10,remaining))
+                    yield subprocess.CompletedProcess(command,process.returncode,stdout,stderr)
+                    return
+                except subprocess.TimeoutExpired:
+                    seconds=int(time.monotonic()-started)
+                    yield {'message':f'正在等待本地生图结果，已等待 {seconds} 秒','phase':'flux-wait','lang':'zh-CN'}
+        finally:
+            if process.poll() is None:
+                LocalAgentFrameworks._terminate_codex_process(process)
+                try:process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    try:os.killpg(process.pid,signal.SIGKILL)
+                    except ProcessLookupError:pass
+                    process.wait()
+
     def stream_flux_image(
         self,
         framework: str,
@@ -625,7 +656,7 @@ class LocalAgentFrameworks:
         command = [sys.executable, str(script), "--prompt", question, "--output", str(output)]
         if input_paths:
             command.extend(["--input-image", str(input_paths[0])])
-        yield "status", {"message": "正在使用本地 FLUX.2 [klein] 4B 生成图片", "phase": "flux-generate", "lang": "zh-CN"}
+        yield "status", {"message": "正在检查本地 FLUX.2 生图服务", "phase": "flux-connect", "lang": "zh-CN"}
         yield "agent_event", {
             "engine": FRAMEWORKS[framework], "agent": "FLUX.2 [klein] 4B", "phase": "run", "status": "started",
             "runId": run_id, "message": "本地绘画 Skill 开始生成图片", "lang": "zh-CN",
@@ -637,12 +668,21 @@ class LocalAgentFrameworks:
         child_env["AICHART_PROJECT_ROOT"] = str(self.project_root)
         if inference_model.strip():
             child_env["AICHART_FLUX_SELECTED_MODEL"] = inference_model.strip()
+        if Path(child_env.get('AICHART_FLUX_RUNNER','')).name=='flux_remote_runner.py':
+            endpoint=child_env.get('MENTORA_FLUX_URL','http://127.0.0.1:18766').rstrip('/')
+            try:
+                with urllib_request.urlopen(endpoint+'/health',timeout=5) as response:health=json.load(response)
+                if not isinstance(health,dict) or not health.get('ready'):raise FluxImageExecutionError.from_runner('Mac 生图节点尚未就绪')
+                if health.get('busy'):raise FluxImageExecutionError.from_runner('Mac 生图节点正在处理其他图片')
+            except (OSError,ValueError) as exc:
+                raise FluxImageExecutionError.from_runner('Mac 生图节点离线或隧道超时') from exc
+        yield 'status',{'message':'生图服务已连接，正在准备提示词并生成图片','phase':'flux-generate','lang':'zh-CN'}
         try:
-            result = subprocess.run(
-                command,
-                cwd=self.project_root, capture_output=True, text=True, timeout=1800, check=False,
-                env=child_env,
-            )
+            result=None
+            for event in self._flux_process(command,cwd=self.project_root,env=child_env):
+                if isinstance(event,dict):yield 'status',event
+                else:result=event
+            if result is None:raise OSError('FLUX process returned no result')
         except subprocess.TimeoutExpired as exc:
             raise FluxImageExecutionError.from_runner("Local FLUX generation timed out after 30 minutes") from exc
         except OSError as exc:

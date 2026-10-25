@@ -18,6 +18,14 @@ MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 
 
+@pytest.fixture(autouse=True)
+def artifact_boundary_transport(monkeypatch):
+    import subprocess
+    def run(command,**kwargs):
+        yield subprocess.run(command,**kwargs,capture_output=True,text=True,timeout=1800,check=False)
+    monkeypatch.setattr(LocalAgentFrameworks,'_flux_process',staticmethod(run))
+
+
 def stamp_fresh(*paths):
     # Explicit nanoseconds avoid coarse/delayed filesystem timestamps in mocks.
     now=time.time_ns()

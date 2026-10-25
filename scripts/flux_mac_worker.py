@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Loopback-only authenticated transport for the installed local FLUX runner."""
+import argparse
+import base64
+import hmac
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import tempfile
+import threading
+
+PNG=b'\x89PNG\r\n\x1a\n'
+LIMIT=12*1024*1024
+
+
+def stop(process):
+    if process.poll() is not None:return
+    try:os.killpg(process.pid,signal.SIGTERM)
+    except ProcessLookupError:return
+    try:process.wait(timeout=3)
+    except subprocess.TimeoutExpired:
+        try:os.killpg(process.pid,signal.SIGKILL)
+        except ProcessLookupError:pass
+        process.wait()
+
+
+class Worker(ThreadingHTTPServer):
+    daemon_threads=True
+    def __init__(self,address,runner,token,timeout=900):
+        self.runner=Path(runner).resolve();self.token=token;self.timeout=timeout
+        self.generation_lock=threading.Lock()
+        super().__init__(address,Handler)
+
+
+class Handler(BaseHTTPRequestHandler):
+    def reply(self,code,payload):
+        data=json.dumps(payload).encode()
+        self.send_response(code);self.send_header('Content-Type','application/json')
+        self.send_header('Content-Length',str(len(data)));self.end_headers()
+        try:self.wfile.write(data)
+        except (BrokenPipeError,ConnectionResetError):pass
+
+    def do_GET(self):
+        if self.path!='/health':return self.reply(404,{'error':'Not found'})
+        ready=self.server.runner.is_file() and os.access(self.server.runner,os.X_OK)
+        self.reply(200 if ready else 503,{'ready':ready,'busy':self.server.generation_lock.locked(),'model':'FLUX.2 [klein] 4B'})
+
+    def do_POST(self):
+        if self.path!='/generate':return self.reply(404,{'error':'Not found'})
+        if not hmac.compare_digest(self.headers.get('Authorization',''),'Bearer '+self.server.token):
+            return self.reply(401,{'error':'Unauthorized'})
+        try:
+            length=int(self.headers.get('Content-Length','0'))
+            if not 0<length<=LIMIT:raise ValueError()
+            self.connection.settimeout(15)
+            data=json.loads(self.rfile.read(length))
+            prompt=data['prompt'];height,width=map(int,data.get('size','512x512').split('x'))
+            steps=data.get('steps',4);seed=data.get('seed',42)
+            if not isinstance(prompt,str) or not prompt.strip() or len(prompt)>4000:raise ValueError()
+            if min(height,width)<256 or height%16 or width%16 or height*width>1024*1024:raise ValueError()
+            if type(steps) is not int or not 1<=steps<=4 or type(seed) is not int or not 0<=seed<2**31:raise ValueError()
+            reference=base64.b64decode(data['input_image'],validate=True) if data.get('input_image') else None
+        except (ValueError,TypeError,KeyError,AttributeError,TimeoutError):
+            return self.reply(400,{'error':'Invalid generation parameters'})
+        if not self.server.generation_lock.acquire(blocking=False):
+            return self.reply(409,{'error':'Image worker is busy; retry after the current generation'})
+        try:
+            with tempfile.TemporaryDirectory(prefix='mentora-flux-job-') as temp:
+                output=Path(temp)/'result.png'
+                command=[str(self.server.runner),prompt,'--size',f'{height}x{width}','--steps',str(steps),'--seed',str(seed),'--output',str(output)]
+                if reference:
+                    source=Path(temp)/'reference.png';source.write_bytes(reference)
+                    command+=['--input-image',str(source)]
+                process=subprocess.Popen(command,stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
+                try:
+                    _,stderr=process.communicate(timeout=self.server.timeout)
+                except subprocess.TimeoutExpired:
+                    stop(process);return self.reply(504,{'error':'Local generation timed out'})
+                finally:
+                    stop(process)
+                if process.returncode!=0 or not output.is_file():
+                    self.log_error('Local FLUX runtime exited with code %s',process.returncode)
+                    return self.reply(502,{'error':'Local FLUX runner failed; check worker logs'})
+                image=output.read_bytes()
+                if not image.startswith(PNG):return self.reply(502,{'error':'Runner did not return PNG'})
+                self.reply(200,{'image':base64.b64encode(image).decode()})
+        except OSError:
+            self.reply(503,{'error':'Local FLUX runtime unavailable'})
+        finally:self.server.generation_lock.release()
+
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--runner',type=Path,required=True)
+    parser.add_argument('--token-file',type=Path,required=True)
+    parser.add_argument('--port',type=int,default=8766)
+    args=parser.parse_args();token=args.token_file.read_text().strip()
+    if not token:parser.error('Token file must not be empty')
+    with Worker(('127.0.0.1',args.port),args.runner,token) as server:server.serve_forever()
+
+
+if __name__=='__main__':main()

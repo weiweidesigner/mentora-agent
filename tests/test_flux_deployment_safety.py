@@ -14,6 +14,15 @@ from app.reasoning_frameworks import FluxImageExecutionError, LocalAgentFramewor
 SCRIPT=Path(__file__).parents[1]/'app/skills/flux-image/scripts/generate_image.py'
 
 
+@pytest.fixture(autouse=True)
+def artifact_boundary_transport(monkeypatch):
+    # This module tests artifact/error boundaries; the process stream has its own tests.
+    import subprocess
+    def run(command,**kwargs):
+        yield subprocess.run(command,**kwargs,capture_output=True,text=True,timeout=1800,check=False)
+    monkeypatch.setattr(LocalAgentFrameworks,'_flux_process',staticmethod(run))
+
+
 def test_current_release_root_overrides_stale_env_without_changing_runner(tmp_path,monkeypatch):
     root=tmp_path/'release';root.mkdir()
     shared=tmp_path/'shared';shared.mkdir()
