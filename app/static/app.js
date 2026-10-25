@@ -2297,12 +2297,12 @@ function activitySummaryKey(text) {
 
 function rememberActivityDisclosure(event) {
   const detail = event.target;
-  if (!detail.isConnected || !detail.matches?.("details[data-activity-key]") || !detail.closest(".thinkingFlow, #activityBody")) return;
+  if (!detail.isConnected || !detail.matches?.("details[data-activity-key]") || !detail.closest(".thinkingFlow, .thinkingCurrentTool, #activityBody")) return;
   const article = detail.closest(".message.assistant") || activeActivityArticle;
   if (!article) return;
   if (!article.activityDisclosureState) article.activityDisclosureState = new Map();
   article.activityDisclosureState.set(detail.dataset.activityKey, detail.open);
-  const views = [article.querySelector(".thinkingFlow"), activeActivityArticle === article ? activityBody : null];
+  const views = [article.querySelector(".thinkingFlow"), article.querySelector(".thinkingCurrentTool"), activeActivityArticle === article ? activityBody : null];
   views.forEach((view) => view?.querySelectorAll("details[data-activity-key]").forEach((copy) => {
     if (copy !== detail && copy.dataset.activityKey === detail.dataset.activityKey && copy.open !== detail.open) copy.open = detail.open;
   }));
@@ -2412,7 +2412,7 @@ function activityToolMarkup(article, item, key) {
   return `<li class="${rowClass}">${clone.innerHTML}</li>`;
 }
 
-function buildActivityFlow(article) {
+function buildActivityFlow(article, options = {}) {
   const list = article.querySelector(".thinkingSteps");
   if (!list) return "";
   const chinese = /^zh/.test(article.dataset.lang || "zh");
@@ -2469,21 +2469,17 @@ function buildActivityFlow(article) {
       <ul class="activityGroupItems">${tools.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul></details>
       ${active.length ? `<ul class="activityCurrentAction">${active.map(({item,key}) => activityToolMarkup(article,item,key)).join("")}</ul>` : ""}</li>`;
   };
-  const live = !article.activityEnded && article.dataset.thinkingState === "active";
-  const thinking = !article.activityEnded && article.dataset.thinkingState === "active"
-    && article.dataset.activityPhase === "thinking" && !list.querySelector("li.is-tool-step.is-loading")
-    ? `<li class="activityLiveThinking" role="status">${chinese ? "正在思考" : "Thinking"}</li>` : "";
-  if (live) {
-    const fallbackThinking = thinking || (!tokens.length && !article.dataset.hasModelActivity ? `<li class="activityLiveThinking" role="status">${chinese ? "正在思考" : "Thinking"}</li>` : "");
-    return `<ol class="activityFlowList">${tokens.map(renderToken).join("")}${fallbackThinking}</ol>`;
-  }
-  return `<ol class="activityFlowList">${tokens.map(renderToken).join("")}</ol>`;
+  // Keep the newest public stage and its tool records in the compact view.
+  // The source list always retains the complete execution history.
+  const latestStage = tokens.findLastIndex(token => token.text);
+  const visible = options.latestOnly
+    ? tokens.slice(latestStage < 0 ? Math.max(0, tokens.length - 1) : latestStage)
+    : tokens;
+  return `<ol class="activityFlowList">${visible.map(renderToken).join("")}</ol>`;
 }
 
 function isInlineActivityExpanded(article) {
-  if (article.dataset.activityInlineExpanded === "true") return true;
-  if (article.dataset.activityInlineExpanded === "false") return false;
-  return !article.activityEnded && article.dataset.thinkingState === "active";
+  return article.dataset.activityInlineExpanded === "true";
 }
 
 function syncInlineActivity(article) {
@@ -2497,14 +2493,16 @@ function syncInlineActivity(article) {
     currentTool.className = "thinkingCurrentTool";
     source.before(currentTool);
   }
-  const latestTool = Array.from(source.querySelectorAll("li.is-tool-step")).at(-1);
   const expanded = isInlineActivityExpanded(article);
-  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || expanded || !latestTool;
+  currentTool.hidden = article.activityEnded || article.dataset.thinkingState !== "active" || expanded;
+  if (article.activityEnded || article.dataset.thinkingState !== "active") {
+    currentTool.replaceChildren();
+    delete currentTool.dataset.signature;
+  }
   if (!currentTool.hidden) {
-    const toolSignature = latestTool.outerHTML;
+    const toolSignature = source.innerHTML;
     if (currentTool.dataset.signature !== toolSignature) {
-      currentTool.innerHTML = '<ol class="activityFlowList">' + activityToolMarkup(article, latestTool, "current-tool") + '</ol>';
-      currentTool.querySelectorAll(".activityThoughtSummary").forEach(node => node.remove());
+      currentTool.innerHTML = buildActivityFlow(article, {latestOnly:true});
       bindActivityFileChangeButtons(currentTool);
       bindActivityCommandPanels(currentTool);
       currentTool.dataset.signature = toolSignature;

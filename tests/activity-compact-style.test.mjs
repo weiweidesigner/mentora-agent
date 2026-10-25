@@ -3,12 +3,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
-test('live summaries use body typography and theme color, not muted bold headings',()=>{
+test('elapsed activity header stays small and muted above the latest stage',()=>{
   const rule=css.match(/:root\[data-theme\] \.thinkingTrigger\.is-thinking\{([^}]+)\}/)?.[1]||'';
-  assert.match(rule,/font-size:var\(--chat-body-font-size\)/);
-  assert.match(rule,/font-weight:400/);
-  assert.match(rule,/color:var\(--ink\)/);
-  assert.match(rule,/margin:0 0 6px/);
+  assert.match(rule,/font-size:15px/);
+  assert.match(rule,/font-weight:430/);
+  assert.match(rule,/color:var\(--muted\)/);
+  assert.match(rule,/margin:0 0 10px/);
 });
 test('expanded activity has no top divider or extra top padding and uses compact gaps',()=>{
   const flow=css.match(/\.thinkingFlow\{([^}]+)\}/)?.[1]||'';

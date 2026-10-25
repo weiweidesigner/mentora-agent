@@ -15,14 +15,16 @@ function setup(){
  w.eval(source.slice(start,end));
  return {dom,w,article:w.article};
 }
-test('public progress is appended to the expanded live timeline and leaves the answer untouched',()=>{
+test('public progress appears in the compact latest stage and leaves the answer untouched',()=>{
  const f=setup();
  try{
   const text='我先读取 TradingView 组件规范，再加载苹果日线。';
   f.w.handleStreamEvent(f.article,'progress',{text});
   assert.match(f.article.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(f.article.querySelector('.thinkingTrigger').disabled,false);
-  assert.equal(f.article.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'true');
+  assert.equal(f.article.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'false');
+  assert.equal(f.article.querySelector('.thinkingCurrentTool').hidden,false);
+  assert.match(f.article.querySelector('.thinkingCurrentTool').textContent,new RegExp(text));
   assert.equal(f.article.querySelector('.thinkingSteps').textContent.trim(),text);
   assert.match(f.article.querySelector('.thinkingFlow').textContent,new RegExp(text));
   assert.equal(f.article.querySelector('.finalAnswer').innerHTML,'');

@@ -27,7 +27,8 @@ with sync_playwright() as p:
                 send('progress',{blockId:'p1',text:'核对日期与数据口径',kind:'commentary'});
                 if(!title().startsWith('已处理'))throw Error('elapsed header missing');
                 if(article.querySelector('.thinkingElapsedLive'))throw Error('legacy duplicate elapsed label remains');
-                if(!article.querySelector('.activityLiveThinking'))throw Error('active progress has no running indicator');
+                if(article.querySelector('.activityLiveThinking'))throw Error('synthetic thinking placeholder remains');
+                if(!article.querySelector('.thinkingCurrentTool').textContent.includes('核对日期与数据口径'))throw Error('current stage missing');
                 send('tool_step',{tool:'bash',callId:'b',phase:'started',thoughtSummary:'加载市场数据',params:['true']});
                 if(!article.querySelector('.thinkingFlow').textContent.includes('加载市场数据'))throw Error('new tool missing from timeline');
                 send('progress',{blockId:'p2',text:'汇总本周表现',kind:'commentary'});
@@ -35,7 +36,9 @@ with sync_playwright() as p:
                 send('tool_step',{tool:'bash',callId:'b',phase:'completed',thoughtSummary:'加载市场数据',params:['true']});
                 if(!title().startsWith('已处理'))throw Error('tool completion replaced elapsed header');
                 if(article.querySelector('.finalAnswer').textContent.trim())throw Error('progress leaked into answer');
-                if(article.querySelector('.thinkingFlow')?.hidden!==false)throw Error('live history is not expanded');
+                if(article.querySelector('.thinkingFlow')?.hidden!==true)throw Error('full history should start collapsed');
+                if(article.querySelector('.thinkingCurrentTool').textContent.includes('核对日期'))throw Error('old stage remains in compact view');
+                if(!article.querySelector('.thinkingCurrentTool').textContent.includes('汇总本周表现'))throw Error('latest stage missing from compact view');
                 send('answer_text',{blockId:'answer',delta:'**已核实结论**：结果为 2。'});
                 if(!article.querySelector('.finalAnswer').textContent.includes('结果为 2'))throw Error('answer not streamed immediately');
                 send('tool_step',{tool:'read',callId:'later',phase:'started',thoughtSummary:'核对组件',params:['/outputs/fixture.json']});
@@ -45,6 +48,12 @@ with sync_playwright() as p:
                 if(body.includes('验证组件展示')||body.includes('核对日期'))throw Error('duplicate progress paragraph');
                 if(!article.querySelector('.thinkingFlow').textContent.includes('验证组件展示'))throw Error('latest timeline item not current');
                 if(!article.querySelector('.thinkingFlow').textContent.includes('核对日期'))throw Error('lost history');
+                article.querySelector('.thinkingTrigger').click();
+                if(article.querySelector('.thinkingFlow').hidden)throw Error('history did not expand on click');
+                if(!article.querySelector('.thinkingCurrentTool').hidden)throw Error('compact activity duplicated expanded history');
+                article.querySelector('.thinkingTrigger').click();
+                if(!article.querySelector('.thinkingFlow').hidden)throw Error('history did not collapse on click');
+                if(article.querySelector('.thinkingCurrentTool').hidden)throw Error('latest stage not restored');
                 article.remove();return {width:innerWidth,theme,progressOnlyInThinking:true,latestStatus:true,answerImmediate:true,history:true};
             }''',theme)
             assert not errors, errors

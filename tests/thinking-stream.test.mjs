@@ -20,12 +20,12 @@ test('public thought stays verbatim with its corresponding tool visible undernea
   a.dataset.publicThoughtText=thought;
   w.appendToolStep(a,{callId:'snapshot',tool:'screener',phase:'started',thoughtSummary:'核对执行入口的必填参数'});
   assert.match(a.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
-  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
-  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
   assert.match(a.querySelector('.thinkingFlow').textContent,/核对执行入口的必填参数/);
   assert.match(a.querySelector('.thinkingFlow').textContent,/screener/);
   a.querySelector('.thinkingTrigger').click();
-  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
   dom.window.close();
 });
 
@@ -47,11 +47,11 @@ test('expanded completed thinking control points its chevron down', () => {
   assert.match(styles,/\.thinkingTrigger\.is-thinking:hover \.thinkingChevron,[^}]*\.thinkingTrigger\.is-thinking\[aria-expanded="true"\] \.thinkingChevron\s*\{[^}]*opacity:\s*1/);
 });
 
-test('live progress shows one elapsed header and the expanded flow below it', () => {
+test('live progress shows one elapsed header with the full history initially collapsed', () => {
   const dom = fixture(), a = dom.window.article;
   assert.equal(a.querySelector('.thinkingElapsedLive'), null);
   assert.match(a.querySelector('.thinkingSummaryText').textContent, /^\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2$/);
-  assert.equal(a.querySelector('.thinkingFlow').hidden, false);
+  assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   dom.window.finish();
   assert.equal(a.querySelector('.thinkingSummaryText').textContent, '\u5df2\u5904\u7406 4\u5206\u949f 29\u79d2');
   assert.equal(a.querySelector('.thinkingFlow').hidden, true);
@@ -92,6 +92,7 @@ test('live flow uses the latest model summary to disclose all reasoning inline',
   w.appendToolStep(a, started);
   assert.match(a.querySelector('.thinkingSummaryText').textContent, /^已处理 /);
   assert.equal(a.querySelector('.thinkingSteps').hidden, true);
+  a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
   assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'), 'true');
   assert.equal(a.querySelector('.activityReasoning'), null);
@@ -148,7 +149,7 @@ test('manual live collapse is preserved until the user expands it again', () => 
   w.appendToolStep(a, {...started, phase:'completed', observation:'computed'});
   assert.equal(a.querySelector('.thinkingFlow .activityNarrative').textContent, started.thoughtSummary);
   assert.equal(a.querySelector('.thinkingFlow .activityTool').open, false);
-  assert.equal(a.querySelector('.thinkingFlow .activityLiveThinking').textContent, '正在思考');
+  assert.equal(a.querySelector('.thinkingFlow .activityLiveThinking'), null);
   w.appendToolStep(a, {callId:'progress-read', tool:'read', phase:'completed', params:['{"file_path":"source.json"}'], observation:'source'});
   assert.equal(a.querySelector('.thinkingFlow .activityGroup').open, false);
   assert.equal(a.querySelectorAll('.thinkingFlow details[open]').length, 0);
@@ -170,6 +171,7 @@ test('mobile active progress stays inline and file differences open only on requ
   w.appendToolStep(a, {callId:'progress-file', tool:'file_change', phase:'completed', fileChanges:[
     {name:'result.json', relativePath:'outputs/result.json', path:'/srv/outputs/result.json', kind:'created', added:1, removed:0, diff:'@@ -0,0 +1 @@\n+{}', previewable:true}
   ]});
+  a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden, false);
   assert.equal(a.querySelector('.thinkingFlow .activityFileInline').hidden, true);
   assert.equal(a.querySelector('.thinkingTrigger').disabled, false);
@@ -180,11 +182,11 @@ test('mobile active progress stays inline and file differences open only on requ
   dom.window.close();
 });
 
-test('thinking alternates with real model requests, narrative summaries and tool execution', () => {
+test('model activity does not add placeholder text between public stages', () => {
   const dom=fixture(),w=dom.window,a=w.article;
   const thinking=()=>a.querySelector('.thinkingFlow .activityLiveThinking');
   w.setModelActivity(a,'started');
-  assert.ok(thinking());
+  assert.equal(thinking(),null);
   w.setModelActivity(a,'completed');
   assert.equal(thinking(),null);
   w.appendStep(a,'先核对原始来源，再决定下一步。','','loading','summary-1');
@@ -194,12 +196,12 @@ test('thinking alternates with real model requests, narrative summaries and tool
   w.appendToolStep(a,{...started,thoughtSummary:'',phase:'completed',observation:'data returned'});
   assert.equal(thinking(),null);
   w.setModelActivity(a,'started');
-  assert.ok(thinking());
+  assert.equal(thinking(),null);
   w.appendStep(a,'来源已核对，正在比较返回的证据。','','loading','summary-2');
   assert.equal(thinking(),null);
   assert.equal(a.querySelectorAll('.thinkingFlow .activityNarrative').length,2);
   w.setModelActivity(a,'started');
-  assert.ok(thinking());
+  assert.equal(thinking(),null);
   w.finish();
   assert.equal(thinking(),null);
   w.setModelActivity(a,'started');
@@ -398,6 +400,9 @@ test('the latest live summary expands and collapses the complete reasoning histo
   w.appendStep(a,'现在开始核验第二阶段。','','loading','stage-2');
   const trigger=a.querySelector('.thinkingTrigger');
   assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
+  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/第二阶段/);
+  trigger.click();
   assert.equal(a.querySelector('.thinkingFlow').hidden,false);
   assert.match(a.querySelector('.thinkingFlow').textContent,/我会使用现有数据计算|first result/);
   w.appendStep(a,'现在开始第三阶段。','','loading','stage-3');
@@ -495,7 +500,7 @@ test('connection states stay hidden before and after research starts', () => {
   w.appendStep(a, '连接模型', '', 'loading', 'connect-model');
   assert.equal(a.querySelector('.thinkingSteps').children.length, 0);
   assert.doesNotMatch(a.querySelector('.thinkingFlow').textContent, /正在连接Agent|连接模型/);
-  assert.match(a.querySelector('.thinkingFlow').textContent, /正在思考/);
+  assert.equal(a.querySelector('.thinkingFlow').textContent, '');
   w.appendToolStep(a, started);
   assert.doesNotMatch(a.querySelector('.thinkingFlow').textContent, /正在连接Agent|连接模型/);
   w.finish(); a.querySelector('.thinkingTrigger').click();
