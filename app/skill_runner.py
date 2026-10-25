@@ -222,6 +222,37 @@ def _persist_large_observation(
     return path.resolve()
 
 
+def _kline_annotation_receipt(arguments: list[str], project_root: Path) -> dict | None:
+    """Require the existing JEV handoff for authored CLI drawings."""
+    def option(flag):
+        for index,value in enumerate(arguments):
+            if value==flag and index+1<len(arguments):return arguments[index+1]
+            if value.startswith(flag+'='):return value[len(flag)+1:]
+        return ''
+    def document(raw):
+        if not raw:return {}
+        try:
+            path=Path(raw).expanduser()
+            if not path.is_absolute():path=project_root/path
+            if path.is_file():return json.loads(path.read_text(encoding='utf-8'))
+        except OSError:pass
+        return json.loads(raw)
+    payload=document(option('--payload'))
+    component=payload.get('component',payload) if isinstance(payload,dict) else {}
+    props=component.get('props',{}) if isinstance(component,dict) else {}
+    if not isinstance(props,dict):raise ValueError('K线 props 必须是对象')
+    override=document(option('--props-json'))
+    if isinstance(override,dict):props={**props,**override}
+    marks=props.get('annotations') or []
+    if not marks:return None
+    receipt=payload.get('jevAnnotationPlan') or {}
+    period=str(props.get('dataType') or props.get('period') or option('--period') or '1d')
+    if not (receipt.get('modelSelected') is True and receipt.get('selection')=='laya' and receipt.get('provider')=='local-laya' and receipt.get('model') and receipt.get('period')==period):
+        raise ValueError('K线标记缺少真实 JEV 选择回执。将真实 OHLCV 和有依据的候选放入同一个 payload，执行 python app/jev_kline_annotations.py --payload <输入.json> --question <用户原问句> --selection-mode user-specified --output <JEV输出.json>，再用 kline.py --payload <JEV输出.json> 渲染；不得直接用 --props-json 绕过。W/M 等形态使用 polyline/path 保留全部真实拐点。')
+    if any(not isinstance(mark,dict) or (str(mark.get('period') or period)==period and mark.get('source')!='jev-kline-plan') for mark in marks):
+        raise ValueError('当前周期的标记不是 JEV 输出，请使用未经修改的 JEV payload')
+    return receipt
+
 def _execute(args: argparse.Namespace, project_root: Path) -> int:
     started = time.monotonic()
     try:
@@ -230,6 +261,7 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
         if component_args[:1] == ["--"]:
             component_args = component_args[1:]
         component_args = _normalize_component_args(component_args, script, project_root)
+        annotation_receipt = _kline_annotation_receipt(component_args, project_root) if script.name=='kline.py' else None
         if script.name == "code_interpreter.py" and not any(
             flag in component_args for flag in ("--transform-file", "--transform-code")
         ):
@@ -311,6 +343,7 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
                 for path in artifacts if path.is_file() and path.stat().st_size > 0
             ],
         }
+        if annotation_receipt:receipt["jevAnnotationPlan"]=annotation_receipt
         if result.stderr.strip():
             receipt["stderr"] = result.stderr.strip()[-2000:]
         if missing:
@@ -354,6 +387,8 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
         conventions = []
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:
             conventions.append("JSON 文件路径传 --payload；--data-json 只传内联 JSON，不传文件路径。")
+        if script.name == "kline.py":
+            conventions.append("标题必须使用模型根据本次问题和证据生成的 --title 或 component.title，不用股票名称替代分析标题。带 annotations 的图表必须先运行 app/jev_kline_annotations.py 并通过 --payload 使用其真实输出；直接 --props-json 标记会被拒绝。W/M 等形态使用原生 polyline/path 的全部拐点，锚点须来自真实 OHLCV，不能只画水平线冒充形态。用户指定形态用 --selection-mode user-specified，保留完整结构；JEV 未选中或证据不足应如实说明，不得伪造回执。")
         if script.name == "code_interpreter.py":
             conventions.append(
                 "JSON 文件路径统一传 --payload；--data-json、--data、--raw-data 只传内联 JSON。"

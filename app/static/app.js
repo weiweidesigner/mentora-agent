@@ -3736,6 +3736,17 @@ function isGeneratedImageArtifact(item) {
   return /(?:^|\/)generated\/flux-[^/]+\.html$/i.test(new URL(item.url, window.location.origin).pathname);
 }
 
+function generatedImageUrl(value) {
+  const url=new URL(value,window.location.origin);
+  if(url.origin!==window.location.origin || !url.pathname.startsWith('/generated/'))return url.href;
+  const script=document.querySelector('script[src*="/static/app.js"]');
+  const asset=new URL(script?.src || document.baseURI,window.location.origin);
+  const at=asset.pathname.lastIndexOf('/static/');
+  const mount=at>=0?asset.pathname.slice(0,at):new URL('.',document.baseURI).pathname.replace(/\/$/,'');
+  if(mount)url.pathname=mount+url.pathname;
+  return url.href;
+}
+
 function createGeneratedImageArtifact(item) {
   const artifactUrl = new URL(item.url, window.location.origin);
   artifactUrl.pathname = artifactUrl.pathname.replace(/\.html$/i, ".png");
@@ -3744,7 +3755,7 @@ function createGeneratedImageArtifact(item) {
   image.alt = item.alt || "本地生成图片";
   image.loading = "lazy";
   image.decoding = "async";
-  image.src = new URL(item.imageUrl || artifactUrl.pathname, window.location.origin).href;
+  image.src = generatedImageUrl(item.imageUrl || artifactUrl.pathname);
   image.addEventListener("load", () => {
     if (image.naturalWidth % 16 === 8 && image.naturalHeight % 16 === 8) image.classList.add("reportGeneratedImageLegacyFrame");
   });

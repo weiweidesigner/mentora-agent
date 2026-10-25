@@ -439,3 +439,26 @@ def test_contract_returns_cli_and_schema_in_one_call(tmp_path, monkeypatch, caps
     assert receipt["schema"]["required"] == ["symbol"]
     assert receipt["capabilityDescription"] == "fixture"
     assert "skillInstructions" not in receipt
+
+def test_kline_authored_marks_require_real_jev_handoff_before_render(tmp_path,monkeypatch,capsys):
+    script=tmp_path/'app/skills/business-chart-recall/scripts/kline.py';script.parent.mkdir(parents=True);script.write_text('# fixture')
+    monkeypatch.setattr(skill_runner,'_registered_script',lambda *a:(script,{'name':'kline'}))
+    monkeypatch.setattr(skill_runner.subprocess,'run',lambda *a,**k: (_ for _ in ()).throw(AssertionError('Unreviewed drawings must not render')))
+    props=tmp_path/'manual.json';props.write_text(json.dumps({'annotations':[{'type':'polyline','points':[{'time':1,'price':2},{'time':2,'price':3}]}]}))
+    status=skill_runner.main(['execute','--script','kline.py','--','--props-json',str(props),'--output','outputs/chart.html'],project_root=tmp_path)
+    assert status==2
+    assert 'JEV' in json.loads(capsys.readouterr().out)['error']
+
+def test_jev_kline_receipt_is_bound_to_current_period_and_marks(tmp_path):
+    path=tmp_path/'selected.json'
+    value={'component':{'props':{'dataType':'1d','annotations':[{'type':'polyline','period':'1d','source':'jev-kline-plan'}]}},'jevAnnotationPlan':{'modelSelected':True,'selection':'laya','provider':'local-laya','model':'local-model','period':'1d'}}
+    path.write_text(json.dumps(value))
+    assert skill_runner._kline_annotation_receipt(['--payload',str(path)],tmp_path)['modelSelected']
+    value['component']['props']['dataType']='1w';path.write_text(json.dumps(value))
+    import pytest
+    with pytest.raises(ValueError,match='JEV'):skill_runner._kline_annotation_receipt(['--payload',str(path)],tmp_path)
+    value['component']['props']['dataType']='1d';value['component']['props']['annotations'][0]['source']='model';path.write_text(json.dumps(value))
+    with pytest.raises(ValueError,match='JEV'):skill_runner._kline_annotation_receipt(['--payload',str(path)],tmp_path)
+
+def test_plain_kline_without_annotations_does_not_require_selection(tmp_path):
+    assert skill_runner._kline_annotation_receipt(['--symbol','AAPL'],tmp_path) is None

@@ -93,14 +93,22 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
         || (/^\d{6}$/.test(code) && /^(?:CN|CHINA)$/i.test(String(config?.market || '')));
       const us = !cn && (/^(?:US|USA|NASDAQ|NYSE|AMEX)$/i.test(String(config?.market || ''))
         || /^[A-Z][A-Z0-9.-]{0,14}$/.test(code));
-      const label = cn && name && name !== code ? name : us ? code : '';
+      const marketLabel = cn && name && name !== code ? name : us ? code : '';
+      const defaults=new Set(['K线组件','K线','K-line',code+' K线',code+' K線',code+' K-line',name+' K线',name+' '+code+' K线']);
+      const documentTitle=String(doc.title || '').trim();
+      const title=String(config?.displayTitle || (!defaults.has(documentTitle)?documentTitle:'')).trim();
+      const label = title || marketLabel;
       if (label) doc.querySelectorAll('.kline-title strong[data-business-title]').forEach(heading => {
         const update = () => {
-          if (heading.textContent !== label) {
+          const current=Array.from(heading.childNodes).filter(node=>node.nodeType===3).map(node=>node.textContent).join('').trim() || heading.textContent.trim();
+          const identityOnly=[code,name,code+' · '+name,name+' · '+code,code+' '+name,name+' '+code].includes(current);
+          const display=title || (!identityOnly && current?current:marketLabel);
+          if (!display)return;
+          if (current !== display) {
             const actions=Array.from(heading.querySelectorAll('button'));
-            heading.replaceChildren(doc.createTextNode(label),...actions);
+            heading.replaceChildren(doc.createTextNode(display),...actions);
           }
-          if (heading.dataset.tileTitle !== label) heading.dataset.tileTitle = label;
+          if (heading.dataset.tileTitle !== display) heading.dataset.tileTitle = display;
         };
         update();
         if (!headings.has(heading)) {

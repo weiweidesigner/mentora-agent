@@ -537,6 +537,7 @@ class LocalAgentFrameworks:
                 "- 原生标记 v2：先读 kline.py --schema 的 annotationContract 或 python app/jev_kline_annotations.py --catalog；JEV 已知线/通道/干草叉/斐波那契/几何形状/测量/多空情景/笔记与表情的锚点和样式。严格按原生类型及线型、填充、levels 等白名单生成，不写外部覆盖层；未支持的江恩、模拟未来K线、分价成交量等不得伪装成已支持。",
                 "- 默认使用 native-v2-auto，不再沿用只生成旧水平线和气泡的候选集。普通走势/技术分析无需用户点名标记类型：将真实 OHLCV 交给 JEV 自动生成并评估适用的趋势线、通道、回撤和区间等原生候选；已有 props.annotations 只作补充，不能挡住新候选。允许 no-mark，不为凑类型强画；在结果中核对 candidateTypes/selectedTypes，不能把支持目录冒充实际选用。",
                 "- 标记集合由证据分析产生 props.annotations，再交 JEV 校验与选择；需要任意几何或仓位情景时必须先给出有证据的锚点。用户指定集合传 --selection-mode user-specified，要求全部传 --selection-mode all，不得按自动3点限额截断；必须说明 rejected/warning，缺失日期不能吸附到最近K线。",
+                "- 用户指定 W/M、双底等形态时，分析阶段识别真实拐点并构建有证据的原生 polyline/path 候选，将完整结构交 JEV 审选，不能用几条水平线冒充形态。带 annotations 的 kline.py 通过 skill_runner 执行时必须使用含真实 jevAnnotationPlan 回执的 --payload；标题使用模型生成的 --title 或 component.title。",
                 "- 使用 Laya 输出 payload 调用原生 kline.py 渲染；不得手写猜测价位、在正文模型中生成坐标，或用通用 mark 替换原生 annotations。Laya 负责证据校验、选点、周期绑定和配色；原生组件负责避碰、绘制和触摸交互。",
             ])
         if decision.mark_strategy == "signed-direction":
