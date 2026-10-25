@@ -13,6 +13,7 @@ class WorkflowNode(BaseModel):
     tool: str = Field(default='',max_length=120)
     arguments: dict[str,Any] = Field(default_factory=dict)
     foreach: str = Field(default='',max_length=300)
+    onItemError: Literal['stop','continue'] = 'stop'
     path: str = Field(default='',max_length=200)
     operator: Literal['truthy','equals','contains','greater','less'] = 'truthy'
     expected: str = Field(default='',max_length=1000)

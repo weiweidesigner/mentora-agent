@@ -54,6 +54,8 @@ def validate_contracts(graph,tools,*,node_ids=None):
             raise ValueError('节点「'+node.title+'」逐项执行需要工具节点和 {{上游节点ID}} 列表引用')
         if node.foreach and not node.tool.startswith('portfolio-'):
             raise ValueError('节点「'+node.title+'」逐项执行暂仅支持结构化交易工具，其他 Skill 请用模型节点自主调用')
+        if node.onItemError=='continue' and not (node.kind=='tool' and node.foreach and (node.tool=='portfolio-backtest' or node.tool=='portfolio-data' and node.arguments.get('operation') in ('quote','history','fundamentals'))):
+            raise ValueError('节点「'+node.title+'」仅逐项只读行情或回测可在单项失败后继续；交易与写入节点必须失败即停')
         refs=list(references(node.arguments))+list(references(node.foreach))
         if node.kind=='condition':
             if not node.path:raise ValueError('节点「'+node.title+'」需要设置判断字段')

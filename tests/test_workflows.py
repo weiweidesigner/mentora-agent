@@ -307,6 +307,64 @@ def test_empty_foreach_makes_no_tool_call(env,monkeypatch):
     env.service.execute({'workflow':g,'agent':'mentora-deal','question':'研究','_owner':'owner'},'batch',lambda i,s:states.update({i:s}))
     assert states['data']['output']=={'items':[],'count':0}
 
+def mixed_market_graph():
+    return graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='历史行情',tool='portfolio-data',foreach='{{watch}}',onItemError='continue',arguments={'operation':'history','symbol':'{{item.symbol}}'}),dict(id='backtest',kind='tool',title='回测',tool='portfolio-backtest',foreach='{{data.items}}',arguments={'symbol':'{{item.symbol}}','strategy':'ma_cross'})],[dict(source='watch',target='data'),dict(source='data',target='backtest')])
+
+def test_mixed_hk_us_batch_retains_market_errors_and_runs_supported_symbols(env,monkeypatch):
+    native_tools(monkeypatch)
+    from app.portfolio_skills import module as entry
+    from app.portfolio import symbol_value
+    symbols=['0700.HK','9988.HK','TLT','CRCL'];calls=[];histories=[]
+    env.service.portfolio.workflow.favorites=lambda owner:[{'symbol':s} for s in symbols]
+    env.service.portfolio.market=SimpleNamespace(history=lambda symbol:histories.append(symbol) or dict(rows=[{'close':1}],source='unit-test'))
+    def call(service,owner,name,args):
+        calls.append((name,args['symbol']))
+        if name=='portfolio-data':return entry(name).execute(service,owner,args)
+        return {'symbol':args['symbol'],'status':'computed','totalReturn':.1}
+    monkeypatch.setattr('app.portfolio_skills.call',call)
+    states={}
+    result=env.service.execute({'workflow':mixed_market_graph(),'agent':'mentora-deal','question':'验证','_owner':'owner'},'mixed',lambda i,s:states.update({i:s}))
+    assert result['workflowNodes']=={'watch':'success','data':'partial','backtest':'success'}
+    assert histories==['TLT','CRCL']  # HK must never be routed to a US data source.
+    assert [s for name,s in calls if name=='portfolio-backtest']==['TLT','CRCL']
+    value=states['data']['output']
+    assert value['count']==2 and value['failedCount']==2
+    assert [e['symbol'] for e in value['errors']]==symbols[:2]
+    assert all('未支持港股' in e['error'] for e in value['errors'])
+    assert '0700.HK' in result['interpretation'] and result['workflowWarnings']
+    assert symbol_value('600519.SH')=='600519.SH' and symbol_value('TLT')=='TLT'
+
+def test_continue_policy_fails_if_every_item_failed(env,monkeypatch):
+    native_tools(monkeypatch)
+    env.service.portfolio.workflow.favorites=lambda owner:[{'symbol':'0700.HK'},{'symbol':'9988.HK'}]
+    def call(*args):raise ValueError('未支持港股')
+    monkeypatch.setattr('app.portfolio_skills.call',call)
+    states={}
+    with pytest.raises(RuntimeError,match='全部 2 个标的执行失败'):
+        env.service.execute({'workflow':mixed_market_graph(),'agent':'mentora-deal','question':'验证','_owner':'owner'},'failed',lambda i,s:states.update({i:s}))
+    assert states['data']['output']['failedCount']==2 and states['data']['output']['items']==[]
+    assert 'backtest' not in states
+
+def test_continue_policy_never_swallows_cancellation(env,monkeypatch):
+    native_tools(monkeypatch)
+    def call(*args):raise InterruptedError('cancelled')
+    monkeypatch.setattr('app.portfolio_skills.call',call)
+    states={}
+    with pytest.raises(InterruptedError):
+        env.service.execute({'workflow':mixed_market_graph(),'agent':'mentora-deal','question':'验证','_owner':'owner'},'cancel',lambda i,s:states.update({i:s}))
+    assert states['data']['status']=='cancelled' and 'backtest' not in states
+
+@pytest.mark.parametrize('tool,arguments,foreach',[
+    ('portfolio-order',{'operation':'execute','planId':'real-id'},'{{watch}}'),
+    ('portfolio-data',{'operation':'save_candidate','symbol':'{{item.symbol}}'},'{{watch}}'),
+    ('portfolio-data',{'operation':'history','symbol':'AAPL'},''),
+])
+def test_continue_policy_is_only_available_for_foreach_reads(env,monkeypatch,tool,arguments,foreach):
+    import app.workflows as module
+    monkeypatch.setattr(module,'execution_tools',lambda agent:[dict(id=tool,schema=None)])
+    g=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='node',kind='tool',title='工具',tool=tool,foreach=foreach,onItemError='continue',arguments=arguments)],[dict(source='watch',target='node')])
+    with pytest.raises(ValueError,match='仅逐项只读行情或回测'):env.service.validate(g,'mentora-deal')
+
 def test_legacy_trading_graph_migrates_without_mutating_input():
     source=graph([dict(id='trade',kind='tool',title='执行模拟交易',tool='portfolio-order'),
                   dict(id='out',kind='output',title='输出回测决策与交易报告')],[dict(source='trade',target='out')])

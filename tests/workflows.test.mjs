@@ -162,6 +162,22 @@ test('tool inspector preserves foreach and item references in the trial snapshot
  }finally{s.w.close();}
 });
 
+test('partial nodes stay visibly partial and preserve the read-only error policy',async()=>{
+ const s=await setup();try{
+  const instruction='长节点描述，需要严格限制为两行，完整说明保留在节点详情中。'.repeat(12);
+  const workflow={version:1,nodes:[{id:'data',kind:'tool',title:'行情',tool:'portfolio-data',instruction,foreach:'{{watch}}',onItemError:'continue',arguments:{operation:'history',symbol:'{{item.symbol}}'}}],edges:[]};
+  await s.w.MentoraWorkflow.open({workflow,lastTrial:{nodes:{data:{status:'partial',output:{items:[{symbol:'TLT'}],errors:[{symbol:'0700.HK',error:'未支持港股'}]}}}}});
+  const card=s.d.querySelector('[data-node=data]');assert(card.classList.contains('is-partial'));
+  assert.equal(card.querySelector('.wfNodeState').textContent,'部分完成');
+  assert.equal(card.querySelector('p').title,instruction);assert.equal(card.querySelector('p').textContent,instruction);
+  card.click();const policy=s.d.querySelector('[data-field=onItemError]');assert.equal(policy.value,'continue');
+  policy.value='stop';policy.dispatchEvent(new s.w.Event('change',{bubbles:true}));
+  s.d.querySelector('[data-act=run]').click();await tick();
+  const request=JSON.parse(s.calls.find(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST')[1].body);
+  assert.equal(request.graph.nodes[0].onItemError,'stop');
+ }finally{s.w.close();}
+});
+
 test('zoom resizes node layout and vector connections while the background stays fixed',async()=>{
  const s=await setup();try{
   await s.w.MentoraWorkflow.open({workflow:graph});

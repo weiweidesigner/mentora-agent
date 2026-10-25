@@ -67,6 +67,8 @@ def number(value):
 
 def symbol_value(value):
     symbol = value.strip().upper()
+    if re.fullmatch(r'\d{1,5}\.HK',symbol) or re.fullmatch(r'HKEX:\d{1,5}',symbol):
+        raise ValueError('港股 '+symbol+' 是有效的自选标的，但当前交易行情/回测接口未支持港股；不能按美股取数或模拟成交')
     if re.fullmatch(r'[036]\d{5}', symbol):
         symbol += '.SH' if symbol.startswith('6') else '.SZ'
     if not re.fullmatch(r'[A-Z][A-Z0-9.-]{0,9}|\d{6}\.(?:SH|SZ|BJ)', symbol):

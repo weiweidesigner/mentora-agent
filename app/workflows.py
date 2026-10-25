@@ -132,12 +132,13 @@ class WorkflowService:
             from openai import OpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
-严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,path,operator,expected。
+严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,onItemError,path,operator,expected。
 kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_update。工具必须使用目录中的真实 id。
 每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
-节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。"""
+节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
+只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。当前交易行情/回测支持 A 股和美股，港股自选报价研究不意味着该入口支持港股历史或模拟成交。"""
             def generate(candidate_context):
                 with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
                     response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
@@ -194,13 +195,13 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
 
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
-        outputs={};states={};receipts={};artifacts=[];started=time.monotonic();owner=config['_owner']
+        outputs={};states={};receipts={};artifacts=[];warnings=[];started=time.monotonic();owner=config['_owner']
         emit=config.get('_emit_event',lambda *_:None)
         for node in ordered_nodes(graph):
             if cancelled():raise InterruptedError('试运行已停止')
             if time.monotonic()-started>1200:raise RuntimeError('工作流执行超时')
             incoming=[e for e in graph.edges if e.target==node.id]
-            active=[e for e in incoming if states.get(e.source)=='success' and (e.when=='always' or str(bool(outputs.get(e.source,{}).get('value'))).lower()==e.when)]
+            active=[e for e in incoming if states.get(e.source) in ('success','partial') and (e.when=='always' or str(bool(outputs.get(e.source,{}).get('value'))).lower()==e.when)]
             if incoming and not active:
                 states[node.id]='skipped';update(node.id,dict(status='skipped'));continue
             upstream={e.source:outputs[e.source] for e in active}
@@ -243,19 +244,30 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     for args in arguments:
                         errors=argument_errors(args,tool.get('schema'))
                         if errors:raise ValueError('参数不匹配：'+'；'.join(errors))
-                    results=[]
+                    results=[];item_errors=[]
+                    def batch_output():
+                        value=dict(items=list(results),count=len(results))
+                        if item_errors:value.update(errors=list(item_errors),failedCount=len(item_errors))
+                        return value
                     try:
                         for index,args in enumerate(arguments):
                             if cancelled():raise InterruptedError('试运行已停止')
-                            with skill_events(emit,cancelled):
-                                result=call(self.portfolio,owner,node.tool,args)
-                                results.append(result)
-                                receipts[node.id].append(dict(tool=node.tool,input=args,output=result))
-                            if node.foreach:update(node.id,dict(status='running',completed=index+1,total=len(arguments),output=dict(items=list(results),count=len(results))))
+                            try:
+                                with skill_events(emit,cancelled):
+                                    result=call(self.portfolio,owner,node.tool,args)
+                                    results.append(result)
+                                    receipts[node.id].append(dict(tool=node.tool,input=args,output=result))
+                            except InterruptedError:raise
+                            except Exception as error:
+                                if node.onItemError!='continue':raise
+                                item_errors.append(dict(index=index,symbol=str(args.get('symbol',''))[:100],error=node_error(node.title,error)))
+                                emit('progress',dict(text='单项失败，继续处理其余标的：'+str(args.get('symbol',''))[:100],workflowNode=node.id,lang='zh-CN'))
+                            if node.foreach:update(node.id,dict(status='running',completed=index+1,total=len(arguments),output=batch_output()))
+                        if item_errors and not results:raise ValueError('全部 '+str(len(item_errors))+' 个标的执行失败，请查看逐项错误；没有生成可供下游使用的数据')
                     except Exception as error:
-                        if node.foreach:error.partial_output=dict(items=results,count=len(results),failedIndex=len(results))
+                        if node.foreach:error.partial_output=dict(batch_output(),failedIndex=index if arguments else 0)
                         raise
-                    value=dict(items=results,count=len(results)) if node.foreach else results[0]
+                    value=batch_output() if node.foreach else results[0]
                 else:
                     tool=next((t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool),None)
                     seen=[]
@@ -273,9 +285,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     value=self.runner(child,run_id+'-'+node.id)
                     if tool and not any(tool['id'] in s or tool['script'] in s for s in seen):
                         raise RuntimeError('未收到 '+tool['label']+' 的真实工具调用回执，请检查节点指令')
-                outputs[node.id]=value;states[node.id]='success'
+                partial=node.kind=='tool' and node.onItemError=='continue' and bool(value.get('errors'))
+                outputs[node.id]=value;states[node.id]='partial' if partial else 'success'
+                if partial:warnings.append(dict(nodeId=node.id,title=node.title,errors=value['errors']))
                 if isinstance(value,dict):artifacts.extend(value.get('reportArtifacts',[]))
-                update(node.id,dict(status='success',output=value,durationMs=round((time.monotonic()-tick)*1000)))
+                update(node.id,dict(status=states[node.id],output=value,durationMs=round((time.monotonic()-tick)*1000)))
             except Exception as exc:
                 if isinstance(exc,InterruptedError):
                     update(node.id,dict(status='cancelled',error='试运行已停止'));raise
@@ -284,9 +298,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 if hasattr(exc,'partial_output'):state['output']=exc.partial_output
                 update(node.id,state)
                 raise RuntimeError(error) from exc
-        leaves=[n.id for n in graph.nodes if not any(e.source==n.id for e in graph.edges) and states.get(n.id)=='success']
+        leaves=[n.id for n in graph.nodes if not any(e.source==n.id for e in graph.edges) and states.get(n.id) in ('success','partial')]
         text='\n\n'.join(outputs[i].get('interpretation') or json.dumps(outputs[i],ensure_ascii=False) if isinstance(outputs[i],dict) else json.dumps(outputs[i],ensure_ascii=False) for i in leaves)
-        return dict(interpretation=text or '工作流已完成。',reportArtifacts=artifacts,workflowNodes=states)
+        if warnings:
+            text='部分标的未完成（未生成或替代这些标的的数据）：\n'+'\n'.join(item['symbol']+'：'+item['error'] for warning in warnings for item in warning['errors'])+'\n\n'+text
+        return dict(interpretation=text or '工作流已完成。',reportArtifacts=artifacts,workflowNodes=states,workflowWarnings=warnings)
 
     def start_trial(self,owner,payload):
         graph=self.validate(payload.graph,payload.agent);rid=str(uuid.uuid4());now=stamp(now_utc())
