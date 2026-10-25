@@ -160,8 +160,10 @@ class TaskInput(BaseModel):
             dt.date.fromisoformat(self.endDate)
         if self.cadence == 'once':
             dt.date.fromisoformat(self.date)
-        if self.timeMode != 'fixed' and self.cadence == 'daily':
-            raise ValueError('相对开收盘时间请选交易日触发')
+        # All newly saved schedules use a wall-clock time. Legacy stored relative
+        # schedules remain readable by next_occurrence until they are edited.
+        self.timeMode = 'fixed'
+        self.offset = 0
         if self.serverchanKey and not re.fullmatch(r'SCT[A-Za-z0-9]+', self.serverchanKey):
             raise ValueError('请填写 SCT 开头的 Server酱 Turbo SendKey')
         if self.feishuUrl:

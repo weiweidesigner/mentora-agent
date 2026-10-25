@@ -36,6 +36,7 @@ def model_plan(context: dict) -> dict:
 推荐草稿只是候选，不代表用户明确确认。用户问句中已经明确的信息直接提取，不要重复追问。不要固定问三题，不要给每个任务相同的市场/关注内容/频率/时间流程。问题数量与内容由实际缺失或歧义决定。
 只询问编辑面板可配置的 title（名称）、question（任务内容）、cadence（重复）、weekdays（周一0到周日6）、monthDay（每月几日）、time（HH:MM）、timezone（IANA或market）、date（单次日期）、endDate（结束重复日期，空字符串表示永不）。不要询问模型、强度、数据连接、推送密钥或面板未支持的参数。任务内容可通过多选偏好澄清，但最终合并成可执行的 question 文本。
 每题只对应一个字段。字段类型：time/timezone/date/endDate使用时间/时区/日期组件；cadence/weekday使用选项；title/question允许自由文字，question也可给出符合场景的多选项。自选列表assetType=watchlist但symbols为空时，通过question字段询问具体标的，并从回答提取到draft.symbols；不要返回symbols字段的独立问题。每周必须有weekdays，每月必须有monthDay，单次必须有date；triggerMode=window时保留已确认的windowStart、windowEnd和intervalMinutes，使用交易日和market时区，不再追问单个time；否则时间未明确时需要确认time，时区歧义时确认timezone。无需问不相关的结束日期，默认永不。
+按绝对时间只支持所选时区内的固定钟点，timeMode必须为fixed，offset为0，不提供相对开盘或收盘的时间基准。
 不要伪造已连接账户、已设置推送或已创建成功。不能假设能读取用户的银行、持仓和邮箱。只输出JSON：
 {"reply":"对用户的简短回应，说明需确认什么，或确认配置已就绪", "draft":{面板参数}, "questions":[{"field":"参数名","question":"自然语言问句","multiple":false,"options":[{"label":"显示文案","value":"字段实际值"}]}], "ready":false}
 questions最多6题。不需要选项的字段可省略options。options不超过12项，weekdays的值必须是整数。所有参数都已明确且有效时questions为空、ready为true。收到回答后更新草稿；不要重复询问已经答复的字段，不要覆盖用户选择。draft必须包含title和question，按完整taskSchema保留合法参数；推送和运行开关不在模型控制范围。
@@ -54,6 +55,7 @@ def plan_task(payload: PlanningInput) -> dict:
     result=model_plan(context)
     if not isinstance(result,dict) or not isinstance(result.get('draft'),dict):raise ValueError('模型未返回有效任务参数，请重试。')
     proposed={**draft,**{k:v for k,v in result['draft'].items() if k in DRAFT_FIELDS}}
+    proposed['timeMode']='fixed';proposed['offset']=0
     questions=result.get('questions',[])
     if not isinstance(questions,list) or len(questions)>6:raise ValueError('模型返回的澄清问题格式无效，请重试。')
     seen=set();clean=[]

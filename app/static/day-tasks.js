@@ -440,11 +440,10 @@
       if(el('question').value===suggestedQuestion){el('question').value=suggestion.question;suggestedQuestion=suggestion.question;}
       if(el('title').value===suggestedTitle){el('title').value=suggestion.title;suggestedTitle=suggestion.title;}
     }
-    if(event?.target===el('timezone')&&el('timezone').value!=='market')el('timeMode').value='fixed';
+    el('timeMode').value='fixed';el('offset').value='0';
     if(event?.target===el('repeat'))el('cadence').value=el('repeat').checked?'daily':'once';
     if(event?.target===el('cadence'))el('repeat').checked=el('cadence').value!=='once';
 
-    if(event?.target===el('timeMode') && el('timeMode').value!=='fixed' && el('cadence').value==='daily')el('cadence').value='trading';
     if(['stage','market'].includes(event?.target?.name)||(event?.target===el('triggerMode')&&el('triggerMode').value==='window')){
       const [start,end,interval]=windowDefaults(el('market').value,el('stage').value);
       el('windowStart').value=start;el('windowEnd').value=end;setWindowInterval(interval);
@@ -463,23 +462,23 @@
     $('dayWindowStartText').textContent=`开始时间（${sceneZoneLabel}）`;
     $('dayWindowEndText').textContent=`结束时间（${sceneZoneLabel}，不含）`;
     $('dayStageLabel').hidden=!windowed;
-    if(!windowed&&el('timezone').value==='market')el('timezone').value=zones[el('market').value]||'Asia/Shanghai';
+    if(!windowed&&el('timezone').value==='market'){const zone=zones[el('market').value]||'Asia/Shanghai';if(![...el('timezone').options].some(o=>o.value===zone))el('timezone').add(new Option(zone,zone));el('timezone').value=zone;}
     el('windowIntervalAmount').disabled=el('windowIntervalUnit').disabled=!windowed;
-    $('dayScheduleModeHelp').textContent=windowed?`按交易场景：在所选市场的每个交易日，仅于场景时段内按间隔时间执行。时间均为${sceneZoneLabel}${el('market').value==='US'?'，自动适配夏令时':''}。`:'按绝对时间：按指定时间或间隔执行，重复用于选择日期规则；交易场景不参与限制。';
+    $('dayScheduleModeHelp').textContent=windowed?`按交易场景：在所选市场的每个交易日，仅于场景时段内按间隔时间执行。时间均为${sceneZoneLabel}${el('market').value==='US'?'，自动适配夏令时':''}。`:'按绝对时间：按所选时区的固定时间执行，重复规则只决定执行日期。';
     if(windowed){el('cadence').value='trading';el('timezone').value='market';el('repeat').checked=true;}
     el('cadence').disabled=windowed;el('timezone').disabled=windowed;el('repeat').disabled=windowed;
-    $('dayWindowFields').hidden=!windowed;$('dayTimeModeLabel').hidden=windowed;
-    const cadence=el('cadence').value, relative=el('timeMode').value!=='fixed';
+    $('dayWindowFields').hidden=!windowed;
+    const cadence=el('cadence').value;
     $('dayRepeatLabel').hidden=windowed;
     $('dayCadenceLabel').hidden=windowed||!el('repeat').checked;
     $('dayDateLabel').hidden=el('repeat').checked;el('date').required=!el('repeat').checked;
     $('dayCustomLabel').hidden=cadence!=='custom';
     $('dayWeekLabel').hidden=cadence!=='weekly';$('dayMonthLabel').hidden=cadence!=='monthly';
-    $('dayTimeLabel').hidden=windowed||relative;$('dayOffsetLabel').hidden=windowed||!relative;
+    $('dayTimeLabel').hidden=windowed;
     $('dayEndModeLabel').hidden=windowed||cadence==='once';$('dayEndLabel').hidden=windowed||cadence==='once'||el('endMode').value!=='date';
     el('endDate').required=!$('dayEndLabel').hidden;
     for(const [channel,id] of [['serverchan','dayServerchanFields'],['feishu','dayFeishuFields'],['wecom','dayWecomFields']])$(id).hidden=!el(channel).checked;
-    $('dayNextPreview').textContent=windowed?`${names[el('market').value]} · ${stages[el('stage').value]} · ${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（市场当地时间）`:relative?'跟随市场实际开收盘时间，自动处理夏令时与提前收盘。':`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
+    $('dayNextPreview').textContent=windowed?`${names[el('market').value]} · ${stages[el('stage').value]} · ${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（市场当地时间）`:`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
     window.VeyaTaskEditor?.sync();
   }
   function edit(task, readOnly=false) {
@@ -490,6 +489,8 @@
     originalVisibleQuestion=String(task.question).replace(/\{\{market\}\}/g,names[task.market]||'所选市场').replace(/\{\{symbols\}\}/g,task.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');
     el('question').value=originalVisibleQuestion;
     el('triggerMode').value=task.triggerMode||'once';
+    if(task.timeMode&&task.timeMode!=='fixed'&&task.nextAt&&Number.isFinite(Date.parse(task.nextAt))){el('time').value=new Intl.DateTimeFormat('en-GB',{timeZone:zoneFor(task),hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(task.nextAt));}
+    el('timeMode').value='fixed';el('offset').value='0';
     {const minutes=Number(task.intervalMinutes)||30;setWindowInterval(minutes,minutes%60===0?'hours':'minutes');}
     el('date').value=task.date||today();
     for(const channel of ['serverchan','feishu','wecom'])el(channel).checked=false;
@@ -511,12 +512,11 @@
   function payload() {
     const data=Object.fromEntries(new FormData(form));
     for(const name of ['enabled','newChat','browser','serverchan','feishu','wecom'])data[name]=el(name).checked;
-    data.offset=Number(data.offset);data.monthDay=Number(data.monthDay)||1;data.weekdays=data.cadence==='custom'?(window.VeyaTaskEditor?.weekdays()||[0]):[Number(data.weekday)||0];
+    data.timeMode='fixed';data.offset=0;data.monthDay=Number(data.monthDay)||1;data.weekdays=data.cadence==='custom'?(window.VeyaTaskEditor?.weekdays()||[0]):[Number(data.weekday)||0];
     if(!data.weekdays.length)throw new Error('请至少选择一个重复日期');
     if(data.question===originalVisibleQuestion)data.question=originalQuestionTemplate;
     if(data.assetType==='watchlist'&&!data.symbols.trim())data.assetType='stocks';
     if(data.endMode==='never')data.endDate='';if(!el('repeat').checked)data.cadence='once';if(data.cadence==='once')data.endDate='';
-    if(data.timeMode!=='fixed')data.timezone='market';
     data.intervalMinutes=Number(data.intervalMinutes)||30;
     if(el('triggerMode').value==='window')data.intervalMinutes=Math.round(Number(el('windowIntervalAmount').value)*(el('windowIntervalUnit').value==='hours'?60:1));
     if(el('triggerMode').value==='window'){data.cadence='trading';data.timezone='market';data.timeMode='fixed';}
@@ -572,7 +572,7 @@
     if(d.ready)await saveDraft();
   }
   async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),activity:d.activity||[]};
-    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
+    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.timeMode='fixed';data.offset=0;data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
     d.activity.push({title:'保存任务',detail:schedule(d)});$('taskClarification').hidden=true;renderWizardTranscript(true);
     try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);await loadTaskConfirmation(task,viewVersion);}message('','taskMessage');}
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}

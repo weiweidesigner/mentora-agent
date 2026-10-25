@@ -140,7 +140,7 @@ def test_us_fixed_market_time_follows_dst():
 
 
 def test_us_early_close_relative_time():
-    c = config(market='US', timeMode='close', offset=15)
+    c = {**config(market='US'), 'timeMode':'close', 'offset':15}  # Legacy stored schedule
     assert next_occurrence(c, moment('2026-11-27T10:00:00Z')).startswith('2026-11-27T18:15:00')
 
 
@@ -196,7 +196,6 @@ def test_webhook_secrets_are_encrypted_and_not_returned(client, service):
     {'serverchan':True},
     {'serverchanKey':'https://evil.example/key'},
     {'title':' '},
-    {'cadence':'daily','timeMode':'open'},
 ])
 def test_invalid_configuration_rejected(client, changes):
     response=client.post('/api/day/tasks',json={**config(),**changes},headers={'X-Veya-Day':'1'})
@@ -466,3 +465,10 @@ def test_public_preset_delete_is_owner_scoped_and_persistent(client,service):
     restarted=DayTasks(service.directory,service.runner)
     assert source['id'] not in [t['id'] for t in restarted.scene_tasks(owner)]
     assert source['id'] in [t['id'] for t in restarted.scene_tasks('different-owner')]
+
+@pytest.mark.parametrize('mode',['fixed','open','close'])
+@pytest.mark.parametrize('cadence',['daily','trading'])
+def test_new_absolute_tasks_always_save_fixed_clock_time(mode,cadence):
+    task=TaskInput(title='固定时间研究',question='复盘市场',market='US',cadence=cadence,time='14:30',timezone='Asia/Shanghai',timeMode=mode,offset=15)
+    assert task.timeMode=='fixed' and task.offset==0
+    assert task.time=='14:30' and task.timezone=='Asia/Shanghai'

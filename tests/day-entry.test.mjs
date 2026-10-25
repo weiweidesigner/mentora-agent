@@ -71,3 +71,21 @@ test('waiting task opens directly without a landing flash or run fetch and stays
   assert(requests.every(url=>url==='/api/day/tasks'));
   w.close();
 });
+
+test('editing a legacy relative task uses its next clock time and submits fixed time without a basis picker',async()=>{
+ const dom=new JSDOM(html,{url:'https://example.com/mentora/?task=legacy-relative',runScripts:'outside-only',pretendToBeVisual:true});
+ const w=dom.window,d=w.document,calls=[];
+ w.matchMedia=()=>({matches:false});w.setInterval=()=>0;w.structuredClone=structuredClone;
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
+ const task={id:'legacy-relative',title:'盘后观察',question:'复盘市场',market:'US',stage:'post',assetType:'index',symbols:'',enabled:true,cadence:'trading',time:'09:00',timeMode:'close',offset:15,timezone:'market',nextAt:'2026-11-27T18:15:00Z',lastRun:null,activeRun:null};
+ w.fetch=async(url,options)=>{calls.push([url,options]);if(options?.method==='PUT')return{ok:true,json:async()=>({...task,...JSON.parse(options.body)})};return{ok:true,json:async()=>({tasks:[task],sceneTasks:[],markets:[],serverTime:new Date().toISOString()})};};
+ w.eval(daySource);await tick();d.querySelector('#taskSettings').click();await tick();
+ const form=d.querySelector('#dayForm');
+ assert.equal(d.querySelector('#dayTimeModeLabel'),null);assert.equal(d.querySelector('#dayOffsetLabel'),null);
+ assert.equal(form.elements.timeMode.type,'hidden');assert.equal(form.elements.timeMode.value,'fixed');
+ assert.equal(form.elements.time.value,'13:15');assert.equal(form.elements.timezone.value,'America/New_York');
+ form.requestSubmit();await tick();
+ const saved=JSON.parse(calls.find(([,o])=>o?.method==='PUT')[1].body);
+ assert.equal(saved.timeMode,'fixed');assert.equal(saved.offset,0);assert.equal(saved.time,'13:15');
+ assert.equal(saved.timezone,'America/New_York');assert.equal(saved.cadence,'trading');w.close();
+});
