@@ -109,7 +109,24 @@ test('stopping a build preserves the original workflow',async()=>{
   await s.w.MentoraWorkflow.open({workflow:graph});
   const original=s.w.fetch;s.w.fetch=(url,options)=>url.endsWith('/workflows/build')?new Promise((_,reject)=>options.signal.addEventListener('abort',()=>reject(new s.w.DOMException('Stopped','AbortError')))):original(url,options);
   const input=s.d.querySelector('#wfBuildInput');input.value='修改工作流';input.dispatchEvent(new s.w.Event('input',{bubbles:true}));s.d.querySelector('#wfBuildForm').requestSubmit();await tick();
-  assert(!s.d.querySelector('.wfBuildStop').hidden);assert(s.d.querySelector('.wfBuildSend').hidden);
+  assert(!s.d.querySelector('.wfBuildStop').hidden);assert(s.d.querySelector('.wfBuildSend').hidden);assert(s.d.querySelector('.wfBuildStop .wfExecutionRing'));assert(s.d.querySelector('.wfBuildStop .wfExecutionStop'));assert(s.d.querySelector('#wfNotice').classList.contains('is-thinking'));
   s.d.querySelector('[data-act=build-stop]').click();await tick();assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.match(s.d.querySelector('#wfNotice').textContent,/已停止/);
+ }finally{s.w.close();}
+});
+
+test('canvas pans in both directions from edge paths and drag does not move nodes',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});
+  const vp=s.d.querySelector('#wfViewport'),world=s.d.querySelector('#wfWorld'),node=s.d.querySelector('[data-node]'),initialLeft=node.style.left;
+  const pos=()=>world.style.transform.match(/translate\(([-\d.]+)px,([-\d.]+)px\)/).slice(1).map(Number);
+  const initial=pos();const fire=(target,type,x,y,extra={})=>target.dispatchEvent(new s.w.MouseEvent(type,{bubbles:true,cancelable:true,button:0,clientX:x,clientY:y,...extra}));
+  fire(s.d.querySelector('.wfEdgeLine'),'pointerdown',100,100);fire(vp,'pointermove',170,140);fire(vp,'pointerup',170,140);
+  assert.equal(pos()[0],initial[0]+70);assert.equal(pos()[1],initial[1]+40);assert.equal(node.style.left,initialLeft);
+  fire(vp,'pointerdown',100,100);fire(vp,'pointermove',-900,-900);fire(vp,'pointerup',-900,-900);
+  assert.equal(pos()[0],initial[0]-930);assert.equal(pos()[1],initial[1]-960);
+  const before=pos();fire(s.d.querySelector('.wfNode p'),'pointerdown',100,100);fire(vp,'pointermove',130,140);fire(vp,'pointerup',130,140);
+  assert.deepEqual(pos(),before);assert.notEqual(s.d.querySelector('[data-node]').style.left,initialLeft);
+  vp.dispatchEvent(new s.w.WheelEvent('wheel',{bubbles:true,cancelable:true,deltaX:30,deltaY:-40}));
+  assert.equal(pos()[0],before[0]-30);assert.equal(pos()[1],before[1]+40);
  }finally{s.w.close();}
 });

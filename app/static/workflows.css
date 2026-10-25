@@ -34,7 +34,7 @@
 .wfComposer .composerBox.is-multiline :is(.wfBuildSend,.wfBuildStop){grid-column:2;grid-row:2}
 .wfComposer :is(.wfBuildSend,.wfBuildStop){display:grid;place-items:center;grid-column:2;grid-row:1;position:relative;width:38px;height:38px;border:0;border-radius:50%;padding:0;background:var(--soft-2);color:var(--muted);cursor:default}
 .wfComposer .wfBuildSend.is-ready{background:var(--ink);color:var(--bg);cursor:pointer}.wfComposer .wfBuildSend.is-ready:hover{opacity:.85}.wfComposer .wfBuildSend:disabled{opacity:1}
-.wfBuildStop{cursor:pointer!important}.wfBuildStop .widgetExecutionRing{position:absolute;inset:0;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:wf-spin .9s linear infinite}.wfBuildStop .widgetExecutionStop{width:11px;height:11px;border-radius:2px;background:var(--ink)}
+.wfBuildStop{cursor:pointer!important}.wfBuildStop .wfExecutionRing{position:absolute;inset:0;margin:auto;box-sizing:border-box;width:24px;height:24px;border:2px solid color-mix(in srgb,currentColor 22%,transparent);border-top-color:currentColor;border-right-color:currentColor;border-radius:50%;animation:wf-spin 1s linear infinite}.wfBuildStop .wfExecutionStop{position:absolute;inset:0;margin:auto;width:8px;height:8px;border-radius:2px;background:currentColor}
 .wfComposer [hidden]{display:none!important}.wfComposer>p{text-align:center;font-size:10px;color:var(--muted);margin:7px 0 0}
 .wfNotice{position:absolute;left:50%;transform:translateX(-50%);bottom:118px;z-index:3;max-width:calc(100% - 48px);font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;line-height:1.7;padding:4px 8px;pointer-events:none}
 @keyframes wf-spin{to{transform:rotate(360deg)}}
@@ -63,3 +63,10 @@
 .wfCanvas [hidden]{display:none!important}
 
 .wfComposer textarea:focus-visible{outline:none!important;box-shadow:none}.wfNotice{bottom:calc(var(--wf-composer-height,90px) + 36px)}
+
+.wfViewport{overflow:hidden;cursor:grab;user-select:none}.wfWorld{transform-origin:0 0;will-change:transform}.wfViewport.is-panning,.wfViewport.is-space-pan,.wfViewport.is-space-pan *{cursor:grabbing!important}.wfNode{cursor:grab}.wfPort{cursor:crosshair}.wfNode p{user-select:none}
+.wfNotice{box-sizing:border-box;width:fit-content;max-width:min(740px,calc(100% - 48px));padding:9px 20px;border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:999px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:center;isolation:isolate;overflow:hidden}
+.wfNotice:empty{display:none}
+.wfNotice:is(.is-thinking,.is-success){border-color:#9c8aff66;box-shadow:0 0 18px #8c78ff24,inset 0 0 10px #81e8f407}
+.wfNotice.is-thinking::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;z-index:1;background:conic-gradient(from var(--day-edge-angle),transparent 0deg 205deg,#7c71ff55 240deg,#9c8aff 285deg,#7fe6f4 325deg,transparent 360deg);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:day-neon-edge 4s linear infinite}
+@media(prefers-reduced-motion:reduce){.wfExecutionRing,.wfNotice.is-thinking::after{animation:none}.wfWorld{will-change:auto}}
