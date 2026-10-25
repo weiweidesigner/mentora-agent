@@ -361,6 +361,7 @@
       updateCaseTitle(true);
       const article = createAssistantMessage(cached.question);
       article.classList.add("cachedCaseAnswer");
+      article.dataset.sessionPersistence = 'none';
       const cachedSteps = cached.activity?.steps || [];
       if (typeof restoreSavedActivity === 'function') {
         await restoreSavedActivity(article, cached.activity || {});

@@ -3314,6 +3314,8 @@ function renderRoute(article, steps) {
 }
 
 function renderFinalAnswer(article, data) {
+  const previewOnly = article.dataset.sessionPersistence === 'none' || article.classList.contains('cachedCaseAnswer');
+  const persistResult = !article.taskContext && !previewOnly;
   const target = article.querySelector(".finalAnswer");
   article.answerTextStarted = true;
   revealPendingVisualizations(article);
@@ -3354,7 +3356,7 @@ function renderFinalAnswer(article, data) {
     renderFileDeliverables(article,data);
     target.insertAdjacentHTML('beforeend', `${capabilityBarHtml}${actionsHtml}`);
     attachResultActionHandlers(article);
-    if (!article.taskContext) recordAssistantResult(data);
+    if (persistResult) recordAssistantResult(data);
     syncActivityDrawer(article);
     return;
   }
@@ -3383,13 +3385,22 @@ function renderFinalAnswer(article, data) {
     attachResultActionHandlers(article);
   };
   renderMixedReportFlow(article, data, finalShell.querySelector(".mixedReport"), revealActions);
-  if (!article.taskContext) recordAssistantResult(data);
+  if (persistResult) recordAssistantResult(data);
   syncActivityDrawer(article);
   scheduleScrollHint();
 }
 
 function buildShareSessionForArticle(article, data = {}) {
-  const session = currentSession || ensureCurrentSession(lastQuestion || "");
+  // Sharing builds a detached snapshot, never creates/changes a chat session.
+  const previewOnly = article?.dataset?.sessionPersistence === 'none' || article?.classList?.contains('cachedCaseAnswer');
+  const question = data.question || article?.dataset?.question || nearbyUserQuestionForArticle(article);
+  const base = previewOnly ? null : currentSession;
+  const session = base ? {...base, messages:[...(base.messages || [])]} : {
+    id:`share-${Date.now()}-${Math.random().toString(36).slice(2,9)}`,
+    title:String(question || 'Mentora').slice(0,28),question,
+    messages:question?[{role:'user',text:question,images:[]}]:[],
+    createdAt:Date.now(),
+  };
   if (Array.isArray(data.streamBlocks)) session.streamBlocks = data.streamBlocks;
   session.updatedAt = Date.now();
   session.reportUrl = data.reportUrl || session.reportUrl || "";
