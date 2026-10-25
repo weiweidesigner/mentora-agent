@@ -130,3 +130,29 @@ test('canvas pans in both directions from edge paths and drag does not move node
   assert.equal(pos()[0],before[0]-30);assert.equal(pos()[1],before[1]+40);
  }finally{s.w.close();}
 });
+
+test('failed validation offers a repair that rebuilds without running the workflow',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});
+  const original=s.w.fetch;let rejected=true;
+  s.w.fetch=async(url,options)=>url.endsWith('/workflows/runs')&&rejected?{ok:false,json:async()=>({detail:'节点「历史行情」参数不匹配：缺少 operation'})}:original(url,options);
+  s.d.querySelector('[data-act=run]').click();await tick();
+  assert(!s.d.querySelector('[data-act=repair]').hidden);
+  s.d.querySelector('[data-act=repair]').click();await tick();
+  const build=s.calls.find(([u])=>u.endsWith('/workflows/build'));assert(build);
+  const payload=JSON.parse(build[1].body);assert.match(payload.message,/缺少 operation/);assert.equal(payload.graph.nodes.length,2);
+  assert(s.d.querySelector('[data-act=repair]').hidden);
+  assert.equal(s.calls.filter(([u])=>u.endsWith('/workflows/runs')).length,0);
+ }finally{s.w.close();}
+});
+test('tool inspector preserves foreach and item references in the trial snapshot',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open();s.d.querySelector('[data-add=tool]').click();
+  const foreach=s.d.querySelector('[data-field=foreach]');assert(foreach);
+  foreach.value='{{watch}}';foreach.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  const args=s.d.querySelector('[data-json]');args.value='{"symbol":"{{item.symbol}}"}';args.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  s.d.querySelector('[data-act=run]').click();await tick();
+  const payload=JSON.parse(s.calls.find(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST')[1].body);
+  assert.equal(payload.graph.nodes[0].foreach,'{{watch}}');assert.equal(payload.graph.nodes[0].arguments.symbol,'{{item.symbol}}');
+ }finally{s.w.close();}
+});

@@ -70,3 +70,5 @@
 .wfNotice:is(.is-thinking,.is-success){border-color:#9c8aff66;box-shadow:0 0 18px #8c78ff24,inset 0 0 10px #81e8f407}
 .wfNotice.is-thinking::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;z-index:1;background:conic-gradient(from var(--day-edge-angle),transparent 0deg 205deg,#7c71ff55 240deg,#9c8aff 285deg,#7fe6f4 325deg,transparent 360deg);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:day-neon-edge 4s linear infinite}
 @media(prefers-reduced-motion:reduce){.wfExecutionRing,.wfNotice.is-thinking::after{animation:none}.wfWorld{will-change:auto}}
+
+.wfHeaderActions{flex-wrap:wrap}.wfHeader .wfRepair{border-color:#9c8aff66;color:var(--ink)}

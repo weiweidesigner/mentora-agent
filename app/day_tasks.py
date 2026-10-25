@@ -134,10 +134,12 @@ class TaskInput(BaseModel):
     def validate_schedule(self):
         if self.taskMode=='workflow':
             from app.workflow_graph import WorkflowGraph
-            from app.workflows import tool_catalog
+            from app.workflows import execution_tools
+            from app.workflow_contracts import validate_contracts
             graph=WorkflowGraph.model_validate(self.workflow)
-            allowed={t['id'] for t in tool_catalog(self.agent)}
+            allowed={t['id'] for t in execution_tools(self.agent)}
             if any(n.kind=='tool' and n.tool not in allowed for n in graph.nodes):raise ValueError('工作流引用了当前 Agent 不支持的工具')
+            validate_contracts(graph,execution_tools(self.agent))
             self.workflow=graph.model_dump()
         elif self.workflow is not None:
             self.workflow=None

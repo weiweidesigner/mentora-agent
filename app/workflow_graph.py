@@ -12,6 +12,7 @@ class WorkflowNode(BaseModel):
     instruction: str = Field(default='',max_length=8000)
     tool: str = Field(default='',max_length=120)
     arguments: dict[str,Any] = Field(default_factory=dict)
+    foreach: str = Field(default='',max_length=300)
     path: str = Field(default='',max_length=200)
     operator: Literal['truthy','equals','contains','greater','less'] = 'truthy'
     expected: str = Field(default='',max_length=1000)

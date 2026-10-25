@@ -15,6 +15,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, ValidationError
 from app.workflow_graph import WorkflowGraph, ordered_nodes
+from app.workflow_contracts import validate_contracts, argument_errors, node_error
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -76,7 +77,10 @@ def tool_catalog(agent):
     for row in catalog():
         match=re.search(r'^description:\s*(.+)',row['instructions'],re.M)
         description=match[1].strip() if match else row['name']
-        result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=row['inputSchema']))
+        schema=json.loads(json.dumps(row['inputSchema']))
+        if row['name']=='portfolio-data':
+            schema.setdefault('allOf',[]).append({'if':{'properties':{'operation':{'enum':['quote','history','fundamentals','save_candidate']}},'required':['operation']},'then':{'required':['symbol'],'properties':{'symbol':{'type':'string','minLength':1}}}})
+        result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'交易执行','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=schema))
     return list({row['id']:row for row in result}.values())
 
 def execution_tools(agent):
@@ -109,21 +113,21 @@ class WorkflowService:
         allowed={t['id'] for t in execution_tools(agent)}
         for node in graph.nodes:
             if node.kind=='tool' and node.tool not in allowed:raise ValueError('请选择当前 Agent 支持的工具：'+node.title)
-        return graph
+        return validate_contracts(graph,execution_tools(agent))
 
     def build(self,payload):
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
-                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),tools=[{k:t[k] for k in ('id','label','description')} for t in tools])
+                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
         if self.builder:result=self.builder(context)
         else:
             from openai import OpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
-严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,path,operator,expected。
+严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,path,operator,expected。
 kind 仅可为 start/watchlist/profile/tool/model/condition/output。工具必须使用目录中的真实 id。
 每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。
-model 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
+必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。"""
             with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
@@ -153,8 +157,12 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
         if isinstance(value,list):return [self.resolve(v,outputs) for v in value]
         if not isinstance(value,str):return value
         match=re.fullmatch(r'\{\{([\w.-]+)\}\}',value)
-        if match:return self.value_at(outputs,match[1])
-        return re.sub(r'\{\{([\w.-]+)\}\}',lambda m:json.dumps(self.value_at(outputs,m[1]),ensure_ascii=False),value)
+        def lookup(path):
+            result=self.value_at(outputs,path)
+            if result is None:raise ValueError('引用「'+path+'」没有有效输出，请检查上游字段；自选股票为列表，逐项执行使用 {{自选节点ID}} 和 {{item.symbol}}')
+            return result
+        if match:return lookup(match[1])
+        return re.sub(r'\{\{([\w.-]+)\}\}',lambda m:json.dumps(lookup(m[1]),ensure_ascii=False),value)
 
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
@@ -178,7 +186,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     if not self.portfolio:raise RuntimeError('个人信息服务暂不可用')
                     value=self.portfolio.workflow.favorites(owner) if node.kind=='watchlist' else self.portfolio.workflow.preferences(owner)
                 elif node.kind=='condition':
-                    v=self.value_at(outputs,node.path)
+                    v=self.resolve('{{'+node.path+'}}',outputs)
                     if node.operator=='truthy':passed=bool(v)
                     elif node.operator=='equals':passed=str(v)==node.expected
                     elif node.operator=='contains':passed=node.expected in str(v)
@@ -188,10 +196,29 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 elif node.kind=='output':
                     text='\n\n'.join(str(v.get('interpretation') or json.dumps(v,ensure_ascii=False)) if isinstance(v,dict) else json.dumps(v,ensure_ascii=False) for v in upstream.values())
                     value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False))
-                elif node.kind=='tool' and node.tool.startswith('portfolio-') and node.arguments:
+                elif node.kind=='tool' and node.tool.startswith('portfolio-') and (node.arguments or node.foreach):
                     if trial and node.tool=='portfolio-order':raise RuntimeError('试运行不提交订单；请先验证研究和决策节点')
                     from app.portfolio_skills import call
-                    value=call(self.portfolio,owner,node.tool,self.resolve(node.arguments,outputs))
+                    from app.skill_calls import skill_events
+                    tool=next(t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool)
+                    items=self.resolve(node.foreach,outputs) if node.foreach else None
+                    if node.foreach and not isinstance(items,list):raise ValueError('逐项执行引用必须是列表')
+                    contexts=[{**outputs,'item':item} for item in items] if node.foreach else [outputs]
+                    arguments=[self.resolve(node.arguments,context) for context in contexts]
+                    for args in arguments:
+                        errors=argument_errors(args,tool.get('schema'))
+                        if errors:raise ValueError('参数不匹配：'+'；'.join(errors))
+                    results=[]
+                    try:
+                        for index,args in enumerate(arguments):
+                            if cancelled():raise InterruptedError('试运行已停止')
+                            with skill_events(emit,cancelled):
+                                results.append(call(self.portfolio,owner,node.tool,args))
+                            if node.foreach:update(node.id,dict(status='running',completed=index+1,total=len(arguments),output=dict(items=list(results),count=len(results))))
+                    except Exception as error:
+                        if node.foreach:error.partial_output=dict(items=results,count=len(results),failedIndex=len(results))
+                        raise
+                    value=dict(items=results,count=len(results)) if node.foreach else results[0]
                 else:
                     tool=next((t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool),None)
                     seen=[]
@@ -213,8 +240,13 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 if isinstance(value,dict):artifacts.extend(value.get('reportArtifacts',[]))
                 update(node.id,dict(status='success',output=value,durationMs=round((time.monotonic()-tick)*1000)))
             except Exception as exc:
-                update(node.id,dict(status='failed',error=str(exc)[:500]))
-                raise
+                if isinstance(exc,InterruptedError):
+                    update(node.id,dict(status='cancelled',error='试运行已停止'));raise
+                error=node_error(node.title,exc)
+                state=dict(status='failed',error=error)
+                if hasattr(exc,'partial_output'):state['output']=exc.partial_output
+                update(node.id,state)
+                raise RuntimeError(error) from exc
         leaves=[n.id for n in graph.nodes if not any(e.source==n.id for e in graph.edges) and states.get(n.id)=='success']
         text='\n\n'.join(outputs[i].get('interpretation') or json.dumps(outputs[i],ensure_ascii=False) if isinstance(outputs[i],dict) else json.dumps(outputs[i],ensure_ascii=False) for i in leaves)
         return dict(interpretation=text or '工作流已完成。',reportArtifacts=artifacts,workflowNodes=states)

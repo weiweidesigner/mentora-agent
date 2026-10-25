@@ -84,7 +84,7 @@ def test_failure_stops_downstream_and_exposes_node_error(env):
     env.service.runner=fail
     r=env.client.post('/api/workflows/runs',json={'graph':g},headers={'X-Veya-Day':'1'}).json()
     result=env.client.get('/api/workflows/runs/'+r['id']).json()
-    assert result['status']=='failed' and result['nodes']['bad']['error']=='provider unavailable'
+    assert result['status']=='failed' and 'provider unavailable' in result['nodes']['bad']['error']
     assert 'next' not in result['nodes']
 
 def test_saved_graph_reloads_and_scheduled_run_executes_its_snapshot(env):
@@ -143,3 +143,85 @@ def test_grouped_skill_node_executes_with_arguments_and_real_receipt(env,monkeyp
     g=graph([dict(id='chart',kind='tool',title='通用图表',tool='generic-chart',arguments={'title':'测试图表'})],[])
     result=env.service.execute({'workflow':g,'agent':'mentora','_owner':'test','question':'构建图表'},'grouped',lambda *_:None)
     assert result['workflowNodes']['chart']=='success'
+
+
+def native_tools(monkeypatch):
+    import app.workflows as module
+    from app.portfolio_skills import module as entry
+    tools=[dict(id=name,label=name,description='真实结构化工具',script=name,schema=entry(name).agent_schema() if hasattr(entry(name),'agent_schema') else entry(name).Input.model_json_schema(),instructions='按 schema 执行') for name in ('portfolio-data','portfolio-backtest')]
+    monkeypatch.setattr(module,'tool_catalog',lambda agent:tools)
+    return tools
+
+def test_builder_receives_real_schema_and_output_contracts(env,monkeypatch):
+    tools=native_tools(monkeypatch);seen={}
+    def build(context):
+        seen.update(context);return dict(title='研究流程',graph=graph())
+    env.service.builder=build
+    env.service.build(BuildInput(message='读取自选股'))
+    assert seen['tools'][0]['schema']==tools[0]['schema']
+    assert seen['tools'][0]['instructions']
+    assert '数组' in seen['nodeOutputs']['watchlist']
+
+def test_bad_action_symbols_and_missing_operation_are_rejected_before_calls(env,monkeypatch):
+    native_tools(monkeypatch)
+    bad=graph([dict(id='data',kind='tool',title='拉取历史行情',tool='portfolio-data',arguments={'action':'ohlcv','symbols':None})],[])
+    r=env.client.post('/api/workflows/runs',json={'graph':bad},headers={'X-Veya-Day':'1'})
+    assert r.status_code==422 and 'operation' in r.json()['detail'] and 'action' in r.json()['detail']
+    assert 'pydantic.dev' not in r.text and not env.calls
+
+def test_watchlist_missing_property_and_unconnected_reference_are_rejected(env,monkeypatch):
+    native_tools(monkeypatch)
+    g=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='行情',tool='portfolio-data',arguments={'operation':'history','symbol':'{{watch.symbols}}'})],[dict(source='watch',target='data')])
+    with pytest.raises(ValueError,match='输出是列表'):env.service.validate(g,'mentora')
+    g['nodes'][1]['arguments']['symbol']='{{watch.0.symbol}}';g['edges']=[]
+    with pytest.raises(ValueError,match='上游连线'):env.service.validate(g,'mentora')
+
+def test_missing_reference_raises_instead_of_becoming_none(env):
+    with pytest.raises(ValueError,match='没有有效输出'):
+        env.service.resolve('{{watch.symbols}}',{'watch':[{'symbol':'600519.SH'}]})
+    with pytest.raises(ValueError,match='没有有效输出'):
+        env.service.resolve('代码 {{input.symbol}}',{'input':{}})
+
+def test_foreach_calls_history_then_backtest_for_each_real_upstream_symbol(env,monkeypatch):
+    native_tools(monkeypatch)
+    from app.portfolio_skills import module as entry
+    calls=[]
+    def call(service,owner,name,arguments):
+        entry(name).Input.model_validate(arguments)
+        calls.append((owner,name,arguments))
+        return {'symbol':arguments['symbol'],'rows':[[1,2,3,4,5]],'source':'test'} if name=='portfolio-data' else {'symbol':arguments['symbol'],'totalReturn':.12,'trades':2}
+    monkeypatch.setattr('app.portfolio_skills.call',call)
+    env.service.portfolio.workflow.favorites=lambda owner:[{'symbol':'600519.SH'},{'symbol':'AAPL'}]
+    g=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='历史行情',tool='portfolio-data',foreach='{{watch}}',arguments={'operation':'history','symbol':'{{item.symbol}}'}),dict(id='backtest',kind='tool',title='回测',tool='portfolio-backtest',foreach='{{data.items}}',arguments={'symbol':'{{item.symbol}}','strategy':'ma_cross'})],[dict(source='watch',target='data'),dict(source='data',target='backtest')])
+    states={}
+    result=env.service.execute({'workflow':g,'agent':'mentora-deal','question':'回测','_owner':'owner'},'batch',lambda i,s:states.update({i:s}))
+    assert result['workflowNodes']['backtest']=='success'
+    assert [(name,a['symbol']) for _,name,a in calls]==[('portfolio-data','600519.SH'),('portfolio-data','AAPL'),('portfolio-backtest','600519.SH'),('portfolio-backtest','AAPL')]
+    assert all(owner=='owner' for owner,_,_ in calls)
+    assert states['backtest']['output']['count']==2
+    assert states['backtest']['output']['items'][0]['totalReturn']==.12
+
+def test_failed_batch_retains_successful_results_and_stops_downstream(env,monkeypatch):
+    native_tools(monkeypatch);calls=[]
+    def call(service,owner,name,args):
+        calls.append(args['symbol'])
+        if args['symbol']=='FAIL':raise ValueError('数据不可用')
+        return {'symbol':args['symbol'],'rows':[1]}
+    monkeypatch.setattr('app.portfolio_skills.call',call)
+    env.service.portfolio.workflow.favorites=lambda owner:[{'symbol':'AAPL'},{'symbol':'FAIL'},{'symbol':'MSFT'}]
+    g=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='行情',tool='portfolio-data',foreach='{{watch}}',arguments={'operation':'history','symbol':'{{item.symbol}}'}),dict(id='next',kind='model',title='总结')],[dict(source='watch',target='data'),dict(source='data',target='next')])
+    states={}
+    with pytest.raises(RuntimeError,match='数据不可用'):
+        env.service.execute({'workflow':g,'agent':'mentora-deal','question':'研究','_owner':'owner'},'batch',lambda i,s:states.update({i:s}))
+    assert calls==['AAPL','FAIL'] and states['data']['status']=='failed'
+    assert states['data']['output']['items']==[{'symbol':'AAPL','rows':[1]}]
+    assert 'next' not in states and not env.calls
+
+def test_empty_foreach_makes_no_tool_call(env,monkeypatch):
+    native_tools(monkeypatch)
+    monkeypatch.setattr('app.portfolio_skills.call',lambda *_:pytest.fail('empty list must not call tool'))
+    env.service.portfolio.workflow.favorites=lambda owner:[]
+    g=graph([dict(id='watch',kind='watchlist',title='自选'),dict(id='data',kind='tool',title='行情',tool='portfolio-data',foreach='{{watch}}',arguments={'operation':'history','symbol':'{{item.symbol}}'})],[dict(source='watch',target='data')])
+    states={}
+    env.service.execute({'workflow':g,'agent':'mentora-deal','question':'研究','_owner':'owner'},'batch',lambda i,s:states.update({i:s}))
+    assert states['data']['output']=={'items':[],'count':0}
