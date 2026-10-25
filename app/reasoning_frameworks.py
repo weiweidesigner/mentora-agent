@@ -26,6 +26,7 @@ from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 
+from app.public_text_channel import PublicTextChannelSession
 from app.jev_tool_activity_router import JevToolActivityRouter, JevToolActivityRouterError, ToolActivitySession
 from app.jev_visualization_router import JevVisualizationDecision, JevVisualizationRouter, JevVisualizationRouterError
 from app.business_chart_dependency import load_registry_data
@@ -2248,8 +2249,11 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         pending_public_text = ""
         public_stream = PublicStream('deepseek')
         activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)
+        public_channels=PublicTextChannelSession()
 
         def activity_updates(*,final=False):
+            for key,text,semantics in public_channels.drain():
+                yield from public_stream.classify_progress(key,text,semantics)
             updates=dict(activity.drain())
             if final:
                 for call_id,context in tool_context_by_call_id.items():
@@ -2413,6 +2417,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     if not (message.get('channel') or message.get('phase')) and (data.get('channel') or data.get('phase')):
                         message={**message,'channel':data.get('channel') or data.get('phase')}
                     yield from public_stream.message(message)
+                    for key,text in public_stream.channel_candidates:
+                        public_channels.request(key,text)
+                    public_stream.channel_candidates.clear()
                 elif method in {"subagent.started", "subagent.finished"}:
                     yield "agent_event", {
                         "engine": FRAMEWORKS["deepseek"],
@@ -2426,6 +2433,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             yield from activity_updates(final=True)
         finally:
             activity.close()
+            public_channels.close()
         worker.join()
         with self._active_run_guard:
             if self._active_deepseek_runs.get(session_key)==harness_key:self._active_deepseek_runs.pop(session_key,None)

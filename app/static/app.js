@@ -1376,6 +1376,16 @@ function orderedStreamFlow(article) {
 }
 
 function replayOrderedStream(article, blocks, container) {
+  article.replayBlockOrder = new Map(blocks.map((block,index) => [block.kind === 'tool_step' ? 'tool:' + (block.data?.callId || block.id) : block.id,index + 1]));
+  article.nextActivityOrder = Math.max(article.nextActivityOrder || 0,blocks.length);
+  const history = article.querySelector('.thinkingSteps');
+  if (history) {
+    for (const item of history.children) {
+      const order = article.replayBlockOrder.get(item.dataset.publicBlockId || 'tool:' + item.dataset.toolCallId);
+      if (order) item.dataset.activityOrder = String(order);
+    }
+    [...history.children].filter(item=>item.dataset.activityOrder).sort((a,b)=>Number(a.dataset.activityOrder)-Number(b.dataset.activityOrder)).forEach(item=>history.append(item));
+  }
   article.streamVisualizationArtifacts ||= [];
   for (const block of blocks) {
     if (block.kind !== 'visualization') continue;
@@ -1562,21 +1572,25 @@ function renderPublicProgress(article, data = {}) {
     item.className = 'is-model-summary';
     item.dataset.publicBlockId = key;
     item.innerHTML = '<div class="activityStepTitle"></div>';
-    list.append(item);
+    item.dataset.activityOrder = String(article.replayBlockOrder?.get(key) || article.publicBlockOrder?.get(key) || (article.nextActivityOrder = (article.nextActivityOrder || 0) + 1));
+    const next = Array.from(list.children).find(row => Number(row.dataset.activityOrder) > Number(item.dataset.activityOrder));
+    list.insertBefore(item,next || null);
   }
   item.querySelector('.activityStepTitle').textContent = text;
-  item.classList.toggle('is-loading', !article.activityEnded);
-  item.classList.toggle('is-done', Boolean(article.activityEnded));
+  item.classList.toggle('is-loading', !article.activityEnded && !item.nextElementSibling);
+  item.classList.toggle('is-done', Boolean(article.activityEnded || item.nextElementSibling));
   list.querySelectorAll('li.is-model-summary').forEach(previous => {
     if (previous !== item) {
       previous.classList.remove('is-loading');
       previous.classList.add('is-done');
     }
   });
-  article.dataset.publicThoughtText = text;
-  article.dataset.currentThinking = text;
-  article.dataset.activityPhase = article.answerTextStarted ? 'answer' : 'thinking';
-  delete article.dataset.currentActivityCallId;
+  if (!item.nextElementSibling) {
+    article.dataset.publicThoughtText = text;
+    article.dataset.currentThinking = text;
+    article.dataset.activityPhase = 'thinking';
+    delete article.dataset.currentActivityCallId;
+  }
   if (article.taskContext && data.kind === 'analysis') article.dataset.hasAnalysisSummary = 'true';
   updateThinkingSummary(article, '', {live:!article.activityEnded});
   syncActivityDrawer(article);
@@ -1586,6 +1600,8 @@ function renderStreamAnswerText(article, data = {}) {
   const target = article.querySelector(".finalAnswer");
   if (!target || article.activityEnded) return;
   const key = String(data.blockId || 'legacy-answer');
+  article.publicBlockOrder ||= new Map();
+  if (!article.publicBlockOrder.has(key)) article.publicBlockOrder.set(key, article.nextActivityOrder = (article.nextActivityOrder || 0) + 1);
   // Public answer deltas render immediately, including unlabelled provider text.
   // Only explicit progress events belong in the live thinking summary.
   const flow = orderedStreamFlow(article);
@@ -2022,7 +2038,7 @@ function appendMessage(article, forceScroll = false) {
 function setModelActivity(article, phase) {
   if (article.activityEnded || !["started", "completed"].includes(phase)) return;
   article.dataset.hasModelActivity = "true";
-  article.dataset.activityPhase = article.answerTextStarted ? "answer" : phase === "started" ? "thinking" : "idle";
+  article.dataset.activityPhase = phase === "started" ? "thinking" : article.answerTextStarted ? "answer" : "idle";
   syncActivityDrawer(article);
 }
 
@@ -2182,6 +2198,11 @@ function appendToolStep(article, data) {
       ${observation ? `<pre class="toolStepOutputBlock"><code>${escapeHtml(observation)}</code></pre>` : ""}
       <div class="activityToolState" role="status" data-status="${running ? "running" : phase}">${statusIcon} ${escapeHtml(state)}</div></section>`;
     item.dataset.toolName = tool;
+    item.dataset.activityOrder ||= String(article.replayBlockOrder?.get('tool:' + callId) || (article.nextActivityOrder = (article.nextActivityOrder || 0) + 1));
+    if (article.replayBlockOrder && item.parentElement) {
+      const next = Array.from(item.parentElement.children).find(row => row !== item && Number(row.dataset.activityOrder) > Number(item.dataset.activityOrder));
+      if (next) item.parentElement.insertBefore(item,next);
+    }
     item.dataset.toolKind = kind;
     item.dataset.toolArgument = command;
     item.dataset.toolInput = inputText;
@@ -2196,7 +2217,7 @@ function appendToolStep(article, data) {
       ${fileChangeMarkup}${fileChanges.length ? "" : toolDetails}`;
     item.classList.remove("is-loading", "is-done", "is-error");
     item.classList.add(phase === "failed" ? "is-error" : phase === "completed" ? "is-done" : "is-loading");
-    if (!data?.semanticUpdate) article.dataset.activityPhase = article.answerTextStarted ? "answer" : running ? "tool" : article.dataset.hasModelActivity ? "idle" : "thinking";
+    if (!data?.semanticUpdate) article.dataset.activityPhase = running || article.dataset.activityPhase === "tool" ? "tool" : article.answerTextStarted ? "answer" : article.dataset.hasModelActivity ? "idle" : "thinking";
   };
   if ((["completed", "failed"].includes(phase) || data?.semanticUpdate) && callId) {
     const existingItem = Array.from(article.querySelectorAll(".thinkingSteps li.is-tool-step"))
@@ -2517,7 +2538,8 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const expanded = isInlineActivityExpanded(article);
-  currentTool.hidden = article.activityEnded || article.answerTextStarted || article.dataset.thinkingState !== "active" || expanded;
+  const hasActiveTool = Boolean(source.querySelector("li.is-tool-step.is-loading"));
+  currentTool.hidden = article.activityEnded || (article.answerTextStarted && article.dataset.activityPhase === "answer" && !hasActiveTool) || article.dataset.thinkingState !== "active" || expanded;
   if (article.activityEnded || article.dataset.thinkingState !== "active") {
     currentTool.replaceChildren();
     delete currentTool.dataset.signature;

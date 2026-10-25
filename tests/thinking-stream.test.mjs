@@ -559,3 +559,40 @@ test('desktop inline replay remains expanded after synchronization and direct op
   assert.equal(a.querySelector('.thinkingFlow').hidden, true);
   dom.window.close();
 });
+
+test('a later tool action is visible even after an earlier public answer block',()=>{
+ const dom=fixture(),w=dom.window,a=w.article;try{
+  a.answerTextStarted=true;a.dataset.activityPhase='answer';
+  w.appendToolStep(a,{callId:'later-tool',tool:'read',phase:'started',thoughtSummary:'核对下一张图的数据口径'});
+  assert.equal(a.dataset.activityPhase,'tool');
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+  w.appendToolStep(a,{callId:'later-tool',tool:'read',phase:'completed',thoughtSummary:'已核对下一张图的数据口径'});
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+ }finally{w.close();}
+});
+test('late progress classification is inserted before its actual downstream tool',()=>{
+ const dom=fixture(),w=dom.window,a=w.article;try{
+  const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+  w.eval(source.slice(source.indexOf('function renderPublicProgress('),source.indexOf('function renderStreamAnswerText(')));
+  a.publicBlockOrder=new w.Map([['status',1]]);a.nextActivityOrder=1;
+  w.appendToolStep(a,{callId:'read-data',tool:'read',phase:'started',thoughtSummary:'读取数据'});
+  w.renderPublicProgress(a,{blockId:'status',text:'我先核对数据口径。'});
+  const rows=[...a.querySelector('.thinkingSteps').children];
+  assert.equal(rows[0].dataset.publicBlockId,'status');
+  assert.equal(rows[1].dataset.toolCallId,'read-data');
+  assert.equal(rows[0].classList.contains('is-done'),true);
+ }finally{w.close();}
+});
+
+test('saved progress is placed between the same tool calls when history is restored',()=>{
+ const dom=fixture(),w=dom.window,a=w.article;try{
+  const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+  w.eval(source.slice(source.indexOf('function renderPublicProgress('),source.indexOf('function renderStreamAnswerText(')));
+  w.eval(source.slice(source.indexOf('function replayOrderedStream('),source.indexOf('function streamVisualizationLane(')));
+  w.appendToolStep(a,{callId:'one',tool:'read',phase:'completed'});
+  w.appendToolStep(a,{callId:'two',tool:'read',phase:'completed'});
+  a.activityEnded=true;
+  w.replayOrderedStream(a,[{kind:'progress',id:'p1',data:{text:'先核对输入'}},{kind:'tool_step',id:'one',data:{callId:'one'}},{kind:'progress',id:'p2',data:{text:'再检查字段'}},{kind:'tool_step',id:'two',data:{callId:'two'}}],a.querySelector('.finalAnswer'));
+  assert.deepEqual([...a.querySelector('.thinkingSteps').children].map(n=>n.dataset.publicBlockId||n.dataset.toolCallId),['p1','one','p2','two']);
+ }finally{w.close();}
+});

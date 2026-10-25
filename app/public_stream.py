@@ -10,7 +10,7 @@ class PublicStream:
         self.prefix=prefix;self.turn=0;self.texts={};self.last_text='';self.has_text=False
         self.calls={};self.artifacts=[];self.segments=[]
         self.public_blocks={};self.progress_keys=set();self.final_keys=set()
-        self.progress_calls=set()
+        self.progress_calls=set();self.channel_candidates=[]
 
     def progress_event(self, event_type, data):
         """Consume the explicit progress tool only; never classify ordinary prose."""
@@ -60,6 +60,12 @@ class PublicStream:
         else:data.update(text=text,replace=True)
         return [('answer_text',data)]
 
+    def classify_progress(self,key,text,semantics):
+        if semantics.get('channel')!='progress' or key in self.final_keys or key in self.progress_keys or self.public_blocks.get(key)!=text:return []
+        self.progress_keys.add(key)
+        return [('answer_text',dict(blockId=key,discard=True,channel='commentary')),
+                ('progress',dict(blockId=key,text=text,kind='commentary',channelSemantics=semantics))]
+
     def settle_progress(self):
         """Compatibility no-op: a tool boundary does not identify text semantics."""
         return []
@@ -97,6 +103,7 @@ class PublicStream:
                 if not isinstance(block,dict) or block.get('type')!='text':continue
                 text=str(block.get('text') or '')
                 events.extend(self._text(index,text,channel))
+                if not channel and text.strip():self.channel_candidates.append((f'{self.prefix}:{self.turn}:text:{index}',text))
             self.last_text=''.join(str(b.get('text') or '') for b in content if isinstance(b,dict) and b.get('type')=='text') if isinstance(content,list) else ''
             if self.last_text:self.segments.append(self.last_text)
         self.turn=f'{self.turn}:next';self.texts={}
@@ -108,6 +115,7 @@ class PublicStream:
         matching=[key for key,value in self.public_blocks.items() if key not in self.progress_keys and value.strip()==text.strip()]
         if matching:
             key=matching[-1]
+            self.final_keys.add(key)
             return []
         events=self._text('final',text,'final')
         for _,data in events:data['final']=True
@@ -127,7 +135,9 @@ def reduce_stream_block(blocks,event,data):
         if progress and progress['data'].get('provisional') and not data.get('discard'):blocks.remove(progress)
         block=next((b for b in blocks if b['kind']=='text' and b['id']==key),None)
         if data.get('discard'):
-            if block:blocks.remove(block)
+            if block:
+                if data.get('channel')=='commentary':block.update(kind='progress',data={'text':block.pop('text',''),'kind':'commentary'})
+                else:blocks.remove(block)
             return
         if block is None:block=dict(kind='text',id=key,text='');blocks.append(block)
         if 'delta' in data:block['text']+=str(data['delta'])
@@ -136,7 +146,7 @@ def reduce_stream_block(blocks,event,data):
         key=str(data.get('blockId') or data.get('callId') or f'{event}:{len(blocks)}')
         block=next((b for b in blocks if b['kind']==event and b['id']==key),None)
         if block is None:block=dict(kind=event,id=key);blocks.append(block)
-        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId','provisional','activitySemantics') if k in data}
+        block['data']={k:data[k] for k in ('tool','title','thoughtSummary','phase','text','detail','callId','provisional','activitySemantics','channelSemantics','kind') if k in data}
     elif event in {'visualization','visualize_widget','module'}:
         key=str(data.get('id') or data.get('callId') or data.get('htmlUrl') or data.get('url') or '')
         if not key:return
