@@ -99,3 +99,45 @@
 .wfNodeState:not(.wfNodeTime){font-size:0}
 .wfNodeProgress{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .wfResultSummary{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.8;color:var(--ink)}
+
+/* Node inspector: fixed actions, vertically stacked JSON, bounded code scrolling. */
+.wfHasInspector .wfInspector{display:flex;flex-direction:column}
+.wfInspector{width:440px;max-width:calc(100% - 32px);bottom:16px;padding:0;overflow:hidden}
+.wfInspector #wfNodeHeader{display:block;flex:none;padding:20px;border-bottom:1px solid var(--line)}
+.wfNodeHeadline{display:flex;align-items:center;gap:10px;position:relative;min-width:0}
+.wfNodeHeadline h3{flex:1;min-width:0}
+.wfInspector .wfNodeHeadline input{padding:3px 0;border:0;border-radius:0;background:transparent;font:600 15px/1.6 var(--font,system-ui);text-overflow:ellipsis}
+.wfInspector .wfNodeHeadline input:not([readonly]){border-bottom:1px solid #a68ada}
+.wfInspectorActions{display:flex;gap:4px;flex:none}
+.wfInspector .wfInspectorActions button,.wfJSONHeading button{display:grid;place-items:center;flex:none;width:30px;height:30px;padding:6px;border:0;border-radius:6px;background:transparent;color:var(--muted)}
+.wfInspectorActions svg,.wfJSONHeading svg{width:18px;height:18px}
+.wfInspectorActions button:hover:not(:disabled),.wfJSONHeading button:hover:not(:disabled){background:var(--soft-2);color:var(--ink)}
+.wfInspector .wfNodeDescription{display:block;width:100%;margin:12px 0 0;padding:0;border:0;border-radius:0;background:transparent;color:var(--muted);font:12px/1.7 var(--font,system-ui);resize:vertical;min-height:40px;max-height:120px;overflow:auto}
+.wfNodeMenu{position:absolute;right:32px;top:38px;z-index:6;min-width:124px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);box-shadow:0 8px 28px #0003}
+.wfNodeMenu[hidden]{display:none}
+.wfInspector .wfNodeMenu button{display:block;width:100%;padding:9px 12px;border:0;border-radius:4px;background:transparent;text-align:left;font-size:12px}
+.wfNodeMenu button:hover{background:var(--soft-2)}
+.wfInspectorBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 20px 20px;scrollbar-gutter:stable}
+.wfJSONSection,.wfRunResult{margin:0;padding:20px 0;border-top:1px solid var(--line)}
+.wfJSONSection:first-child{border-top:0}
+.wfJSONHeading{display:flex;align-items:center;gap:8px;min-height:30px;margin-bottom:10px}
+.wfInspector .wfJSONHeading h4{margin:0;color:var(--ink);font-size:13px;font-weight:600}
+.wfJSONHeading>span{font:10px ui-monospace,monospace;color:var(--muted)}
+.wfJSONHeading>small{margin-left:auto;font-size:11px;color:var(--muted)}
+.wfJSONHeading>button{margin-left:auto}.wfJSONHeading>small+button{margin-left:0}
+.wfJSONCode{position:relative;min-width:0;border:1px solid var(--line);border-radius:7px;background:var(--soft);overflow:hidden}
+.wfInspector .wfJSONCode pre,.wfInspector .wfJSONCode textarea{box-sizing:border-box;display:block;width:100%;margin:0;padding:14px;border:0;border-radius:0;white-space:pre;overflow-wrap:normal;word-break:normal;tab-size:2;font:12px/20px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:0;text-align:left;color:var(--ink);overflow:auto;max-height:320px;min-height:100px;background:transparent}
+.wfJSONCode.is-editable{height:220px}
+.wfInspector .wfJSONCode.is-editable pre,.wfInspector .wfJSONCode.is-editable textarea{position:absolute;inset:0;height:100%;min-height:0;max-height:none;resize:none}
+.wfInspector .wfJSONCode.is-editable pre{pointer-events:none;scrollbar-width:none}
+.wfInspector .wfJSONCode.is-editable pre::-webkit-scrollbar{display:none}
+.wfInspector .wfJSONCode.is-editable textarea{color:transparent;caret-color:var(--ink);-webkit-text-fill-color:transparent;outline-offset:-2px}
+.wfInspector .wfJSONCode.is-editable textarea::selection{background:#a78ade40}
+.wfJSON-key{color:light-dark(#6841aa,#c4a6ef)}.wfJSON-string{color:light-dark(#276a43,#97cda5)}.wfJSON-number{color:light-dark(#966017,#e6bd77)}.wfJSON-boolean{color:light-dark(#245caa,#8cbbea)}.wfJSON-null{color:var(--muted)}
+.wfJSONEmpty{display:grid;place-items:center;min-height:108px;padding:16px;border:1px dashed var(--line);border-radius:7px;font-size:12px;color:var(--muted);text-align:center}
+.wfInspector label.wfNewsLimit{margin:20px 0 0;grid-template-columns:1fr 112px;align-items:center;color:var(--ink);font-size:13px}
+.wfNewsLimit .wfSubtle{grid-column:1/-1}.wfNewsLimit input:invalid{border-color:#cc7777}
+.wfInspector details.wfAdvanced{margin:0;padding-top:18px;border-top:1px solid var(--line)}
+.wfAdvanced>summary{font-size:12px;user-select:none}.wfAdvanced .wfNodeId{margin-top:16px}
+@media(max-width:760px){.wfInspector{width:440px;max-width:calc(100% - 24px);top:64px;right:12px;bottom:116px}.wfInspector #wfNodeHeader{padding:20px}.wfNodeHeadline{gap:8px}.wfNodeHeadline .wfNodeGlyph{display:none}.wfInspector .wfNodeHeadline input{font-size:14px}.wfJSONCode.is-editable{height:180px}.wfInspector .wfJSONCode pre{max-height:240px}}
+@media(forced-colors:active){.wfInspector .wfJSONCode.is-editable pre{visibility:hidden}.wfInspector .wfJSONCode.is-editable textarea{color:CanvasText;-webkit-text-fill-color:CanvasText}}

@@ -23,6 +23,62 @@ def test_text_opportunity_node_is_discoverable_and_has_a_real_schema():
         assert row['schema']['required']==['text']
         assert row['defaultArguments']=={'text':''}
 
+
+def test_single_node_preview_reuses_owned_upstream_without_executing_ancestors_or_descendants(env):
+    client=env.client;headers={'X-Veya-Day':'1'}
+    first=client.post('/api/workflows/runs',json={'graph':graph()},headers=headers).json()
+    run=client.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'out','sourceRunId':first['id']},headers=headers)
+    assert run.status_code==200,run.text
+    result=client.get('/api/workflows/runs/'+run.json()['id']).json()
+    assert result['status']=='success',result
+    assert result['nodes']['input']['reused'] is True
+    assert result['nodes']['out'].get('reused') is None
+    assert result['nodes']['out']['input']['upstream']['input']['score']==3
+    assert '3' in result['result']['interpretation'] and not env.calls
+    other=TestClient(env.app)
+    assert other.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'out','sourceRunId':first['id']},headers=headers).status_code==422
+
+
+def test_node_preview_rejects_missing_or_stale_results_and_execute_mode(env):
+    client=env.client;headers={'X-Veya-Day':'1'}
+    assert client.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'out'},headers=headers).status_code==422
+    first=client.post('/api/workflows/runs',json={'graph':graph()},headers=headers).json()
+    changed=graph();changed['nodes'][0]['arguments']['score']=8
+    rejected=client.post('/api/workflows/runs',json={'graph':changed,'nodeId':'out','sourceRunId':first['id']},headers=headers)
+    assert rejected.status_code==422 and '上游配置已变更' in rejected.text
+    assert client.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'input','executionMode':'execute'},headers=headers).status_code==422
+    assert client.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'missing'},headers=headers).status_code==422
+    # A start node can run independently; the output node must not be executed.
+    single=client.post('/api/workflows/runs',json={'graph':graph(),'nodeId':'input'},headers=headers).json()
+    result=client.get('/api/workflows/runs/'+single['id']).json()
+    assert list(result['nodes'])==['input'] and result['status']=='success'
+    assert result['nodes']['input']['input']=={'score':3}
+
+
+def test_single_node_does_not_rerun_other_model_nodes(env):
+    headers={'X-Veya-Day':'1'};client=env.client
+    g=graph([dict(id='input',kind='start',title='输入'),dict(id='a',kind='model',title='分析 A'),dict(id='b',kind='model',title='分析 B')],[dict(source='input',target='a'),dict(source='a',target='b')])
+    first=client.post('/api/workflows/runs',json={'graph':g},headers=headers).json()
+    assert len(env.calls)==2
+    run=client.post('/api/workflows/runs',json={'graph':g,'nodeId':'a','sourceRunId':first['id']},headers=headers).json()
+    result=client.get('/api/workflows/runs/'+run['id']).json()
+    assert result['status']=='success' and set(result['nodes'])=={'input','a'}
+    assert len(env.calls)==3 and env.calls[-1][1].endswith('-a')
+    assert '只查询和分析' in env.calls[-1][0]['question']
+
+
+def test_single_node_can_reuse_scheduled_run_results(env):
+    client=env.client;headers={'X-Veya-Day':'1'}
+    task=client.post('/api/day/tasks',json=dict(title='节点测试',question='固定输入',taskMode='workflow',workflow=graph(),enabled=False),headers=headers).json()
+    owner=__import__('hashlib').sha256(client.cookies.get('veya_day_owner').encode()).hexdigest()
+    with env.tasks.db() as db:
+        rid=env.tasks.enqueue(db,env.tasks.owned(db,owner,task['id']))
+    env.tasks.execute(env.tasks.claim())
+    run=client.post('/api/workflows/runs',json=dict(graph=graph(),taskId=task['id'],nodeId='out',sourceRunId=rid,question='固定输入'),headers=headers)
+    assert run.status_code==200,run.text
+    result=client.get('/api/workflows/runs/'+run.json()['id']).json()
+    assert result['status']=='success' and result['nodes']['input']['reused'] is True
+
 @pytest.fixture
 def env(tmp_path,monkeypatch):
     import app.workflows as module

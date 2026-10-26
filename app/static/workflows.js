@@ -26,6 +26,8 @@ const flowIcons={
  scan:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M7 12h10"/>',
  plus:'<path d="M12 5v14M5 12h14"/>',
  close:'<path d="m6 6 12 12M6 18 18 6"/>',
+ more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+ copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V3H3v13h5"/>',
  workflow:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v9h9M9 6h9v9"/>',
  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  arrange:'<rect x="2" y="8" width="5" height="8" rx="1"/><rect x="17" y="2" width="5" height="8" rx="1"/><rect x="17" y="14" width="5" height="8" rx="1"/><path d="M7 12h5V6h5m-5 6v6h5"/>',
@@ -49,6 +51,11 @@ for(const [action,key,label] of [['close','close',''],['schedule','clock','定�
 canvas.querySelector('.wfBack').setAttribute('title','关闭工作流');
 for(const b of canvas.querySelectorAll('[data-act=library]')){if(b.closest('.wfLibrary'))b.innerHTML=icon('close');else b.innerHTML=icon('plus')+(b.closest('.wfCanvasTools')?'<span>添加节点</span>':'');}
 canvas.querySelector('[data-act=inspector]').innerHTML=icon('close');
+const inspector=canvas.querySelector('.wfInspector');
+inspector.querySelector('header').id='wfNodeHeader';
+const inspectorBody=document.createElement('div');inspectorBody.className='wfInspectorBody';
+inspectorBody.append($('wfNodeFields'),$('wfRunResult'));inspector.append(inspectorBody);
+const advanced=document.createElement('details');advanced.className='wfAdvanced';advanced.innerHTML='<summary>节点配置</summary><div id="wfNodeAdvanced"></div>';inspectorBody.append(advanced);
 const box=canvas.querySelector('#wfBuildForm .composerBox');box.classList.add('widgetComposerBox');box.querySelector('.attachButton').remove();
 const send=box.querySelector('.wfBuildSend');send.title='发送 · Enter';send.disabled=true;
 const stop=document.createElement('button');stop.type='button';stop.className='wfBuildStop';stop.dataset.act='build-stop';stop.setAttribute('aria-label','停止构建工作流');stop.title='停止构建';stop.hidden=true;stop.innerHTML='<span class="wfExecutionRing" aria-hidden="true"></span><span class="wfExecutionStop" aria-hidden="true"></span>';box.append(stop);
@@ -59,7 +66,7 @@ discard.innerHTML='<header><h2>关闭工作流？</h2></header><p id="wfDiscardM
 function finishClose(){clearTimeout(poll);clearTimeout(savedPoll);version++;canvas.close();trial=null;state=null;dirty=false;}
 discard.addEventListener('click',e=>{const action=e.target.closest('[data-discard]')?.dataset.discard;if(!action)return;discard.close();if(action==='close')finishClose();});
 
-let state=null,selected='',linkFrom='',catalog=null,trial=null,poll=null,savedPoll=null,dirty=false,building=false,locked=false,version=0,onAgent=null,undo=[],drag=null,buildController=null,camera={x:0,y:0},spacePan=false;
+let state=null,selected='',linkFrom='',catalog=null,trial=null,poll=null,savedPoll=null,dirty=false,building=false,locked=false,version=0,onAgent=null,undo=[],drag=null,buildController=null,camera={x:0,y:0},spacePan=false,nodeStarting=false;
 const api=async(path,method='GET',body,signal)=>{const r=await fetch(path,{method,signal,credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Day':'1'},...(body?{body:JSON.stringify(body)}:{})});const data=await r.json();if(!r.ok)throw Error(neutralWorkflowText(typeof data.detail==='string'?data.detail:'请求失败，请检查配置后重试'));return data;};
 function currentRun(){return trial||state?.lastTrial;}
 function durationText(ms){const seconds=Math.floor(Math.max(0,ms)/1000);return (seconds>=3600?String(Math.floor(seconds/3600)).padStart(2,'0')+':':'')+String(Math.floor(seconds/60)%60).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
@@ -102,19 +109,46 @@ function lines(){
 }
 function nodes(){const all=state.workflow.nodes,z=state.zoom,w=Math.max(1500,...all.map(n=>(n.x+400)*z)),h=Math.max(900,...all.map(n=>(n.y+300)*z));$('wfWorld').style.width=w+'px';$('wfWorld').style.height=h+'px';$('wfEdges').setAttribute('width',w);$('wfEdges').setAttribute('height',h);$('wfNodes').innerHTML=all.map(n=>{const r=trial?.nodes?.[n.id]||state.lastTrial?.nodes?.[n.id],status=r?.status,description=n.instruction||catalog?.tools.find(t=>t.id===n.tool)?.description||({watchlist:'运行时读取最新自选股票',profile:'运行时读取当前投资偏好',condition:n.path||'设置分支判断条件',start:'本次运行的输入',watchlist_update:'保存本轮真实回测、决策和交易结果到观察列表；手动运行也会保存',output:'汇总上游输出',model:'连接输入并描述分析目标'})[n.kind];return '<article class="wfNode '+(selected===n.id?'is-selected ':'')+(status?'is-'+status:'')+'" data-node="'+n.id+'" style="left:'+(n.x*z)+'px;top:'+(n.y*z)+'px" tabindex="0" aria-label="'+esc(n.title)+'"><button type="button" class="wfPort wfPortIn" data-in="'+n.id+'" aria-label="连接到 '+esc(n.title)+'"></button><header class="wfNodeDrag"><span class="wfNodeGlyph">'+nodeIcon(n)+'</span><span><small title="'+esc(nodeTypeLabel(n))+'">'+esc(nodeTypeLabel(n))+(n.kind==='model'?' · 默认模型':'')+'</small><strong>'+esc(n.title)+'</strong></span><span class="wfNodeState">'+(({running:'运行中',success:'✓',partial:'部分完成',failed:'失败',skipped:'跳过'})[status]||'⋮⋮')+'</span></header><p title="'+esc(description)+'">'+esc(description)+'</p><button type="button" class="wfPort wfPortOut '+(linkFrom===n.id?'is-linking':'')+'" data-out="'+n.id+'" aria-label="从 '+esc(n.title)+' 连接"></button></article>';}).join('');lines();}
 function field(label,key,value,area=false){return '<label>'+label+(area?'<textarea rows="5" data-field="'+key+'" '+(locked?'readonly':'')+'>'+esc(value)+'</textarea>':'<input data-field="'+key+'" value="'+esc(value)+'" '+(locked?'readonly':'')+'>')+'</label>';}
-function inspect(){const n=state.workflow.nodes.find(x=>x.id===selected),target=$('wfNodeFields');if(!n){target.innerHTML='<p class="wfInspectorEmpty">选择节点以配置输入和指令。拖动节点调整位置，使用圆点连接。</p>';$('wfRunResult').innerHTML='';return;}let html=field('节点名称','title',n.title)+'<div class="wfNodeId">节点 ID · '+esc(n.id)+'</div>';
-if(['model','tool','start','output','watchlist_update'].includes(n.kind))html+=field(n.kind==='model'?'分析指令':'任务说明','instruction',n.instruction,true);
+function highlightJSON(raw){let html='',offset=0;for(const match of raw.matchAll(/"(?:\\.|[^"\\])*"(?:\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g)){html+=esc(raw.slice(offset,match.index));const token=match[0],type=token.startsWith('"')?(token.endsWith(':')?'key':'string'):token==='null'?'null':/^(true|false)$/.test(token)?'boolean':'number';html+='<span class="wfJSON-'+type+'">'+esc(token)+'</span>';offset=match.index+token.length;}return html+esc(raw.slice(offset));}
+function codeBlock(value,editable=false){const raw=JSON.stringify(value,null,2);return '<div class="wfJSONCode'+(editable?' is-editable':'')+'"><pre tabindex="'+(editable?'-1':'0')+'" '+(editable?'aria-hidden="true"':'aria-label="JSON 数据"')+'>'+highlightJSON(raw)+'\n</pre>'+(editable?'<textarea data-json rows="8" wrap="off" spellcheck="false" aria-label="输入参数 JSON" '+(locked?'readonly':'')+'>'+esc(raw)+'</textarea>':'')+'</div>';}
+function syncJSONEditor(){const textarea=$('wfNodeFields').querySelector('[data-json]');if(!textarea)return;const pre=textarea.previousElementSibling;pre.innerHTML=highlightJSON(textarea.value)+'\n';pre.scrollTop=textarea.scrollTop;pre.scrollLeft=textarea.scrollLeft;}
+function inspect(){const n=state.workflow.nodes.find(x=>x.id===selected),target=$('wfNodeFields');if(!n){target.innerHTML='<p class="wfInspectorEmpty">选择节点以配置输入和指令。拖动节点调整位置，使用圆点连接。</p>';$('wfRunResult').innerHTML='';$('wfNodeAdvanced').innerHTML='';advanced.hidden=true;return;}
+const editing=inspector.contains(document.activeElement)&&document.activeElement.matches('input,textarea,select');
+if(inspector.dataset.selected===selected&&editing)return;
+inspector.dataset.selected=selected;advanced.hidden=false;
+const description=n.instruction||catalog?.tools.find(t=>t.id===n.tool)?.description||catalog?.kinds.find(k=>k.id===n.kind)?.description||'';
+$('wfNodeHeader').innerHTML='<div class="wfNodeHeadline"><span class="wfNodeGlyph">'+nodeIcon(n)+'</span><h3><input data-field="title" aria-label="节点名称" maxlength="120" readonly value="'+esc(n.title)+'"></h3><div class="wfInspectorActions"><button type="button" data-act="node-run" aria-label="运行当前节点（预览）" title="仅预览当前节点；复用上游结果，不执行其他节点" '+(locked||building||liveRun()?'disabled':'')+'>'+icon('start')+'</button><button type="button" data-act="node-more" aria-label="更多节点操作" aria-expanded="false" aria-controls="wfNodeMenu" '+(locked?'disabled':'')+'>'+icon('more')+'</button><button type="button" data-act="inspector" aria-label="关闭节点面板">'+icon('close')+'</button></div><div id="wfNodeMenu" class="wfNodeMenu" hidden><button type="button" data-act="node-rename">重命名</button><button type="button" data-act="delete" class="wfDelete">删除节点</button></div></div><textarea class="wfNodeDescription" data-field="instruction" aria-label="节点描述" rows="3" placeholder="添加节点描述" '+(locked?'readonly':'')+'>'+esc(description)+'</textarea>';
+let input='';
+if(n.kind==='tool'&&n.tool==='internal-search')input+='<label class="wfNewsLimit">资讯数量<input type="number" inputmode="numeric" data-news-limit min="1" step="1" placeholder="不限" aria-label="资讯数量" value="'+esc(n.arguments?.limit??'')+'" '+(locked?'readonly':'')+'><span class="wfSubtle">留空获取所选来源范围内全部资讯；填写正整数可限制条数。</span></label>';
+input+='<section class="wfJSONSection"><div class="wfJSONHeading"><h4>输入</h4><span>JSON</span></div>';
+if(['start','tool'].includes(n.kind))input+=codeBlock(n.arguments||{},true)+'<p class="wfSubtle">支持 {{节点ID.字段}} 引用上游输出。</p>';
+else{const r=currentRun()?.nodes?.[n.id];input+=codeBlock(r?.input||{instruction:n.instruction||'',...(n.kind==='condition'?{path:n.path,operator:n.operator,expected:n.expected}:{})});}
+target.innerHTML=input+'</section>';syncJSONEditor();
+const runtimeInput=currentRun()?.nodes?.[n.id]?.input;
+if(['start','tool'].includes(n.kind)&&runtimeInput!==undefined)target.insertAdjacentHTML('beforeend','<details class="wfResolvedInput"><summary>本次实际运行输入</summary>'+codeBlock(runtimeInput)+'</details>');
+let html='<div class="wfNodeId">节点 ID · '+esc(n.id)+'</div>';
 if(n.kind==='tool'&&n.tool==='text-opportunities')html+=field('给定文本','opportunityText',n.arguments?.text||'',true)+'<p class="wfSubtle">可直接粘贴文本，或填 {{上游节点.interpretation}}；需连接对应上游。</p>';
 if(n.kind==='tool'){if(n.tool!=='text-opportunities')html+=field('逐项执行列表（可选，如 {{自选节点ID}}）','foreach',n.foreach||'')+'<p class="wfSubtle">列表中的每项可通过 {{item.symbol}} 引用；留空则调用一次。</p>';html+='<label>工具<select data-field="tool" '+(locked?'disabled':'')+'>'+(catalog?.tools.map(t=>'<option value="'+esc(t.id)+'" '+(t.id===n.tool?'selected':'')+'>'+esc(t.label)+'</option>').join('')||'')+'</select></label>';}
 if(n.kind==='tool'&&['portfolio-data','portfolio-backtest'].includes(n.tool))html+='<label>逐项只读查询失败时<select data-field="onItemError" '+(locked?'disabled':'')+'><option value="stop" '+(n.onItemError!=='continue'?'selected':'')+'>停止流程</option><option value="continue" '+(n.onItemError==='continue'?'selected':'')+'>保留失败记录，继续其余标的</option></select></label><p class="wfSubtle">仅逐项行情查询和回测支持；全部失败仍停止，不适用于写入或下单。</p>';
-if(['start','tool'].includes(n.kind)){html+='<details '+(n.kind==='start'?'open':'')+'><summary>输入参数（JSON）</summary><p class="wfSubtle">使用 {{节点ID.字段}} 引用上游输出。</p><textarea data-json rows="6" spellcheck="false" '+(locked?'readonly':'')+'>'+esc(JSON.stringify(n.arguments||{},null,2))+'</textarea>';const schema=catalog?.tools.find(t=>t.id===n.tool)?.schema;if(schema)html+='<details><summary>参数格式</summary><pre>'+esc(JSON.stringify(schema,null,2))+'</pre></details>';html+='</details>';}
+const schema=catalog?.tools.find(t=>t.id===n.tool)?.schema;if(schema)html+='<details><summary>参数格式</summary>'+codeBlock(schema)+'</details>';
 if(n.kind==='condition'){html+=field('判断字段（上游节点ID.字段）','path',n.path||'')+'<label>比较方式<select data-field="operator">'+['truthy','equals','contains','greater','less'].map((v,i)=>'<option value="'+v+'" '+(n.operator===v?'selected':'')+'>'+['有值 / 为真','等于','包含','大于','小于'][i]+'</option>').join('')+'</select></label>'+field('比较值','expected',n.expected||'');}
-html+='<section class="wfConnections"><h4>上游连接</h4>'+state.workflow.edges.filter(e=>e.target===n.id).map(e=>{const source=state.workflow.nodes.find(x=>x.id===e.source);return '<div><span>'+esc(source?.title)+'</span>'+(source?.kind==='condition'?'<select data-branch="'+esc(e.source)+'">'+['always','true','false'].map(v=>'<option value="'+v+'" '+(e.when===v?'selected':'')+'>'+({always:'始终',true:'满足时',false:'不满足时'})[v]+'</option>').join('')+'</select>':'')+'<button type="button" data-disconnect="'+esc(e.source)+'" aria-label="移除上游连接" '+(locked?'disabled':'')+'>×</button></div>';}).join('')+'</section><button type="button" data-act="delete" class="wfDelete" '+(locked?'disabled':'')+'>删除节点</button>';target.innerHTML=html;const r=trial?.nodes?.[n.id]||state.lastTrial?.nodes?.[n.id];$('wfRunResult').innerHTML=r?'<h4>节点运行结果</h4><pre>'+esc(r.error?neutralWorkflowText(r.error):JSON.stringify(r.output??{status:r.status},null,2))+'</pre>':'<p class="wfSubtle">试运行后在这里查看节点的真实输出。</p>';}
+html+='<section class="wfConnections"><h4>上游连接</h4>'+state.workflow.edges.filter(e=>e.target===n.id).map(e=>{const source=state.workflow.nodes.find(x=>x.id===e.source);return '<div><span>'+esc(source?.title)+'</span>'+(source?.kind==='condition'?'<select data-branch="'+esc(e.source)+'">'+['always','true','false'].map(v=>'<option value="'+v+'" '+(e.when===v?'selected':'')+'>'+({always:'始终',true:'满足时',false:'不满足时'})[v]+'</option>').join('')+'</select>':'')+'<button type="button" data-disconnect="'+esc(e.source)+'" aria-label="移除上游连接" '+(locked?'disabled':'')+'>×</button></div>';}).join('')+'</section>';$('wfNodeAdvanced').innerHTML=html;}
+function nodeOutput(){const r=currentRun()?.nodes?.[selected];return r?.error?{status:r.status,error:neutralWorkflowText(r.error),...(r.output!==undefined?{output:r.output}:{})}:r?.output;}
 function renderRunSummary(){
- const r=currentRun()?.nodes?.[selected];if(!r?.output?.interpretation||r.error)return;
- $('wfRunResult').innerHTML='<h4>节点运行结果</h4><p class="wfResultSummary">'+esc(r.output.interpretation)+'</p><details><summary>完整执行数据</summary><pre>'+esc(JSON.stringify(r.output,null,2))+'</pre></details>';
+ if(!selected)return;const value=nodeOutput(),r=currentRun()?.nodes?.[selected],target=$('wfRunResult'),raw=JSON.stringify(value),key=selected+':'+r?.status+':'+raw;if(target.dataset.content===key)return;
+ const previous=target.querySelector('pre'),position={top:previous?.scrollTop||0,left:previous?.scrollLeft||0};target.dataset.content=key;
+ target.innerHTML='<div class="wfJSONHeading"><h4>输出</h4><span>JSON</span><small>'+esc(({queued:'等待运行',running:'运行中',success:'已完成',partial:'部分完成',failed:'运行失败',skipped:'已跳过',cancelled:'已停止'})[r?.status]||'尚未运行')+'</small><button type="button" data-act="copy-output" aria-label="复制输出 JSON" title="复制输出 JSON" '+(value===undefined?'disabled':'')+'>'+icon('copy')+'</button></div>'+(value===undefined?'<div class="wfJSONEmpty">'+esc(r?.skipReason||'运行后在这里查看真实输出')+'</div>':codeBlock(value));
+ const pre=target.querySelector('pre');if(pre){pre.scrollTop=position.top;pre.scrollLeft=position.left;}
 }
-function render(){nodes();inspect();renderRunSummary();flags();refreshTimings();canvas.querySelector('.wfEmpty').hidden=state.workflow.nodes.length>0;}
+function render(){nodes();inspect();renderRunSummary();flags();refreshTimings();const nodeRun=inspector.querySelector('[data-act=node-run]');if(nodeRun)nodeRun.disabled=locked||building||liveRun()||nodeStarting;canvas.querySelector('.wfEmpty').hidden=state.workflow.nodes.length>0;}
+async function runNode(){
+ if(locked||building||liveRun()||nodeStarting||!selected)return;
+ const json=inspector.querySelector('[data-json]');if(json&&!json.reportValidity())return;
+ const opened=state,id=selected,source=currentRun()?.id;nodeStarting=true;const button=inspector.querySelector('[data-act=node-run]');if(button)button.disabled=true;
+ try{const r=await api('/api/workflows/runs','POST',{graph:state.workflow,agent:state.agent,title:$('wfTitle').value,question:state.question||'',taskId:state.id||null,executionMode:'preview',nodeId:id,sourceRunId:source||null});
+  if(state!==opened||!canvas.open)return;trial={id:r.id,nodes:{[id]:{status:'queued'}},status:'queued'};state.lastTrial=null;state.lastError='';render();note('仅预览当前节点，复用已有上游结果；不运行其他节点、不提交订单或写入自选');pollTrial(r.id);
+ }finally{nodeStarting=false;if(state===opened){const button=inspector.querySelector('[data-act=node-run]');if(button)button.disabled=locked||building||liveRun();}}
+}
 function connect(target){if(!linkFrom||locked)return;if(target===linkFrom){linkFrom='';nodes();return;}const reach=(id,seen=new Set())=>{if(id===linkFrom)return true;if(seen.has(id))return false;seen.add(id);return state.workflow.edges.filter(e=>e.source===id).some(e=>reach(e.target,seen));};if(reach(target)){note('不能创建循环连线');return;}if(state.workflow.edges.some(e=>e.source===linkFrom&&e.target===target)){note('这两个节点已经连接');return;}snapshot();state.workflow.edges.push({source:linkFrom,target,when:'always'});linkFrom='';render();note('连线已添加');}
 
 function zoom(){$('wfViewport').style.backgroundPosition=camera.x+'px '+camera.y+'px';$('wfViewport').style.backgroundSize='22px 22px';$('wfWorld').style.transform='translate('+camera.x+'px,'+camera.y+'px)';$('wfWorld').style.setProperty('--wf-node-scale',state.zoom);for(const card of $('wfNodes').children){const n=state.workflow.nodes.find(n=>n.id===card.dataset.node);if(n){card.style.left=n.x*state.zoom+'px';card.style.top=n.y*state.zoom+'px';}}lines();$('wfZoom').textContent=Math.round(state.zoom*100)+'%';}
@@ -152,8 +186,47 @@ choice.addEventListener('click',e=>{const type=e.target.closest('[data-choice]')
 $('wfSearch').addEventListener('input',library);$('wfTitle').addEventListener('input',()=>{if(state){state.title=$('wfTitle').value;dirty=true;}});
 
 canvas.addEventListener('click',async e=>{const a=e.target.closest('[data-add]');if(a){add(a.dataset.add,a.dataset.tool);return;}const out=e.target.closest('[data-out]');if(out){if(locked)return;linkFrom=out.dataset.out;nodes();note('点击目标节点左侧圆点完成连接');return;}const input=e.target.closest('[data-in]');if(input){connect(input.dataset.in);return;}const drop=e.target.closest('[data-disconnect]');if(drop&&!locked){snapshot();state.workflow.edges=state.workflow.edges.filter(x=>!(x.source===drop.dataset.disconnect&&x.target===selected));render();return;}const node=e.target.closest('[data-node]');if(node){selected=node.dataset.node;canvas.classList.add('wfHasInspector');render();return;}const action=e.target.closest('[data-act]')?.dataset.act;try{if(action==='close')close();if(action==='build-stop')buildController?.abort();if(action==='repair'){if(locked||building||trial)return;$('wfBuildInput').value='修复当前工作流的参数与数据引用，保留原任务目标并依据真实工具 schema 和节点输出格式调整连线。不得下单或运行流程。先前错误：'+(state.lastError||'');syncBuildComposer();$('wfBuildForm').requestSubmit();}if(action==='library')canvas.classList.toggle('wfHideLibrary');if(action==='inspector')canvas.classList.remove('wfHasInspector');if(action==='delete'&&!locked){snapshot();state.workflow.nodes=state.workflow.nodes.filter(n=>n.id!==selected);state.workflow.edges=state.workflow.edges.filter(e=>e.source!==selected&&e.target!==selected);selected='';render();}if(action==='schedule')schedule();if(action==='save')await save();if(action==='run')await run();if(action==='stop'&&trial){await api('/api/workflows/runs/'+trial.id+'/cancel','POST',{});note('已请求停止，当前节点完成后停止');}if(action==='fit')fit();if(action==='layout')layout();if(action==='zoom-in'||action==='zoom-out'){zoomAt(state.zoom+(action==='zoom-in'?.1:-.1),$('wfViewport').clientWidth/2,$('wfViewport').clientHeight/2);}}catch(error){note(error.message);}});
-function editNode(e){if(!e.target.matches('[data-field],[data-json],[data-branch]'))return;if(e.type==='change'&&e.target.tagName!=='SELECT')return;if(e.type==='input'&&e.target.tagName==='SELECT')return;const n=state?.workflow.nodes.find(n=>n.id===selected);if(!n||locked)return;try{if(e.target.hasAttribute('data-json')){const obj=JSON.parse(e.target.value);if(!obj||Array.isArray(obj)||typeof obj!=='object')throw Error('参数需要是 JSON 对象');snapshot();n.arguments=obj;const text=$('wfNodeFields').querySelector('[data-field=opportunityText]');if(text)text.value=typeof obj.text==='string'?obj.text:'';e.target.setCustomValidity('');}if(e.target.dataset.field){snapshot();if(e.target.dataset.field==='opportunityText'&&n.tool==='text-opportunities'){n.arguments={...n.arguments,text:e.target.value};const json=$('wfNodeFields').querySelector('[data-json]');if(json){json.value=JSON.stringify(n.arguments,null,2);json.setCustomValidity('');}}else n[e.target.dataset.field]=e.target.value;}if(e.target.dataset.branch){snapshot();const edge=state.workflow.edges.find(x=>x.source===e.target.dataset.branch&&x.target===selected);if(edge)edge.when=e.target.value;}nodes();note('');}catch(error){if(e.target.hasAttribute('data-json'))e.target.setCustomValidity(error.message);note(error.message);}}
+function editNode(e){
+ if(!e.target.matches('[data-field],[data-json],[data-branch],[data-news-limit]'))return;
+ if(e.type==='change'&&e.target.tagName!=='SELECT')return;if(e.type==='input'&&e.target.tagName==='SELECT')return;
+ const n=state?.workflow.nodes.find(n=>n.id===selected);if(!n||locked)return;
+ const json=inspector.querySelector('[data-json]'),limit=inspector.querySelector('[data-news-limit]');
+ try{
+  if(e.target.hasAttribute('data-json')){
+   syncJSONEditor();const obj=JSON.parse(e.target.value);if(!obj||Array.isArray(obj)||typeof obj!=='object')throw Error('参数需要是 JSON 对象');
+   if(n.tool==='internal-search'&&obj.limit!=null&&(!Number.isSafeInteger(obj.limit)||obj.limit<1))throw Error('资讯数量需要是正整数，或留空不限');
+   snapshot();n.arguments=obj;const text=inspector.querySelector('[data-field=opportunityText]');if(text)text.value=typeof obj.text==='string'?obj.text:'';
+   if(limit){limit.value=obj.limit??'';limit.setCustomValidity('');}e.target.setCustomValidity('');
+  }
+  if(e.target.hasAttribute('data-news-limit')){
+   e.target.setCustomValidity('');
+   if(!e.target.validity.valid||e.target.value!==''&&(!Number.isSafeInteger(Number(e.target.value))||Number(e.target.value)<1))throw Error('资讯数量需要是正整数，或留空不限');
+   snapshot();n.arguments={...n.arguments};if(e.target.value==='')delete n.arguments.limit;else n.arguments.limit=Number(e.target.value);
+   e.target.setCustomValidity('');if(json){json.value=JSON.stringify(n.arguments,null,2);json.setCustomValidity('');syncJSONEditor();}
+  }
+  if(e.target.dataset.field){snapshot();if(e.target.dataset.field==='opportunityText'&&n.tool==='text-opportunities'){n.arguments={...n.arguments,text:e.target.value};if(json){json.value=JSON.stringify(n.arguments,null,2);json.setCustomValidity('');syncJSONEditor();}}else n[e.target.dataset.field]=e.target.value;
+   if(e.target.dataset.field==='tool'){inspector.dataset.selected='';inspect();renderRunSummary();}
+  }
+  if(e.target.dataset.branch){snapshot();const edge=state.workflow.edges.find(x=>x.source===e.target.dataset.branch&&x.target===selected);if(edge)edge.when=e.target.value;}
+  nodes();note('');
+ }catch(error){if(e.target.matches('[data-json],[data-news-limit]')){e.target.setCustomValidity(error.message);if(json)json.setCustomValidity(error.message);}note(error.message);}
+}
 canvas.addEventListener('input',editNode);canvas.addEventListener('change',editNode);
+inspector.addEventListener('scroll',e=>{if(e.target.matches('[data-json]'))syncJSONEditor();},true);
+inspector.addEventListener('click',async e=>{
+ const action=e.target.closest('[data-act]')?.dataset.act;
+ if(!['node-more','node-rename','node-run','copy-output','delete'].includes(action))return;e.stopPropagation();
+ try{
+  if(action==='node-more'){const menu=$('wfNodeMenu');menu.hidden=!menu.hidden;e.target.closest('button').setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)menu.querySelector('button').focus();}
+  if(action==='node-rename'&&!locked){$('wfNodeMenu').hidden=true;inspector.querySelector('[data-act=node-more]').setAttribute('aria-expanded','false');const input=inspector.querySelector('[data-field=title]');input.readOnly=false;input.focus();input.select();}
+  if(action==='copy-output'){const value=nodeOutput();if(value===undefined)return;await navigator.clipboard.writeText(JSON.stringify(value,null,2));note('输出 JSON 已复制');}
+  if(action==='node-run')await runNode();
+  if(action==='delete'&&!locked){snapshot();state.workflow.nodes=state.workflow.nodes.filter(n=>n.id!==selected);state.workflow.edges=state.workflow.edges.filter(e=>e.source!==selected&&e.target!==selected);selected='';canvas.classList.remove('wfHasInspector');render();}
+ }catch(error){note(action==='copy-output'?'复制失败，请选中 JSON 手动复制':error.message);}
+});
+inspector.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('wfNodeMenu')?.hidden){e.preventDefault();e.stopPropagation();$('wfNodeMenu').hidden=true;inspector.querySelector('[data-act=node-more]').setAttribute('aria-expanded','false');inspector.querySelector('[data-act=node-more]').focus();}if(e.target.matches('[data-field=title]')&&e.key==='Enter'){e.preventDefault();e.target.blur();}});
+canvas.addEventListener('pointerdown',e=>{const menu=$('wfNodeMenu');if(menu&&!menu.hidden&&!e.target.closest('#wfNodeMenu,[data-act=node-more]')){menu.hidden=true;inspector.querySelector('[data-act=node-more]').setAttribute('aria-expanded','false');}});
+inspector.addEventListener('focusout',e=>{if(e.target.matches('[data-field=title]')){if(!e.target.value.trim()){const n=state.workflow.nodes.find(n=>n.id===selected);n.title='未命名节点';e.target.value=n.title;nodes();}e.target.readOnly=true;}});
 
 const viewport=$('wfViewport');
 viewport.addEventListener('pointerdown',e=>{

@@ -122,6 +122,20 @@ class TrialInput(BaseModel):
     question: str=Field(default='',max_length=6000)
     taskId: str | None=Field(default=None,max_length=80)
     executionMode: Literal['preview','execute']='preview'
+    nodeId: str | None=Field(default=None,max_length=80)
+    sourceRunId: str | None=Field(default=None,max_length=80)
+
+
+def node_fingerprint(graph,node_id):
+    """Include upstream semantics, but not cosmetic renames or canvas positions."""
+    ids={node_id}
+    while True:
+        parents={e.source for e in graph.edges if e.target in ids}
+        if parents<=ids:break
+        ids.update(parents)
+    value=dict(nodes=sorted((n.model_dump(exclude={'title','x','y'}) for n in graph.nodes if n.id in ids),key=lambda n:n['id']),
+               edges=sorted((e.model_dump() for e in graph.edges if e.target in ids),key=lambda e:(e['source'],e['target'])))
+    return hashlib.sha256(json.dumps(value,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
 
 class BuildInput(BaseModel):
     message: str=Field(min_length=2,max_length=6000)
@@ -317,12 +331,19 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             publish(node,dict(node_states[node]))
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
         outputs={};states={};receipts={};artifacts=[];warnings=[];started=time.monotonic();owner=config['_owner']
+        target=config.get('_nodeTarget')
+        for key,cached in config.get('_nodeSeed',{}).items():
+            states[key]=cached['status']
+            if 'output' in cached:outputs[key]=cached['output']
+            receipts[key]=cached.get('toolReceipts',[])
+            update(key,{**cached,'reused':True})
         user_cancelled=cancelled
         def cancelled():
             if time.monotonic()-started>1200:raise TimeoutError('工作流执行超时，尚未评估的标的不视为无机会')
             return user_cancelled()
         emit=config.get('_emit_event',lambda *_:None)
         for node in ordered_nodes(graph):
+            if target and node.id!=target:continue
             if cancelled():raise InterruptedError('试运行已停止')
             if time.monotonic()-started>1200:raise RuntimeError('工作流执行超时')
             incoming=[e for e in graph.edges if e.target==node.id]
@@ -340,7 +361,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 reason='上游分支未执行'+('：'+', '.join(dependencies) if dependencies else '')
                 states[node.id]='skipped';update(node.id,dict(status='skipped',skipReason=reason));continue
             upstream={e.source:outputs[e.source] for e in active}
-            update(node.id,dict(status='running',started=stamp(now_utc())))
+            update(node.id,dict(status='running',started=stamp(now_utc()),fingerprint=node_fingerprint(graph,node.id)))
             emit('progress',dict(text='正在执行：'+node.title,workflowNode=node.id,lang='zh-CN'))
             tick=time.monotonic()
             receipts[node.id]=[]
@@ -349,6 +370,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     receipts[node.id].append(dict(tool=data['skillId'],input=data.get('input') or {},output=data.get('output')))
                 emit(event,data)
             try:
+                if node.kind=='condition':resolved_input=dict(path=node.path,actual=self.resolve('{{'+node.path+'}}',outputs),operator=node.operator,expected=node.expected)
+                elif node.foreach:resolved_input=dict(arguments=node.arguments,foreach=self.resolve(node.foreach,outputs))
+                elif node.kind in ('tool','start'):resolved_input=self.resolve(node.arguments,outputs)
+                else:resolved_input=dict(instruction=node.instruction,upstream=upstream)
+                update(node.id,dict(input=resolved_input))
                 if node.kind=='start':value=dict(question=config['question'],instruction=node.instruction,**self.resolve(node.arguments,outputs))
                 elif node.kind in ('watchlist','profile'):
                     if not self.portfolio:raise RuntimeError('个人信息服务暂不可用')
@@ -463,7 +489,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 outputs[node.id]=value;states[node.id]='partial' if partial else 'success'
                 if partial:warnings.append(dict(nodeId=node.id,title=node.title,errors=[*value.get('errors',[]),*(value.get('deferred',[]) if node.tool=='text-opportunities' else [])]))
                 if isinstance(value,dict):artifacts.extend(value.get('reportArtifacts',[]))
-                update(node.id,dict(status=states[node.id],output=value,durationMs=round((time.monotonic()-tick)*1000)))
+                update(node.id,dict(status=states[node.id],output=value,toolReceipts=receipts[node.id],durationMs=round((time.monotonic()-tick)*1000)))
             except Exception as exc:
                 if isinstance(exc,InterruptedError):
                     update(node.id,dict(status='cancelled',error='试运行已停止',durationMs=round((time.monotonic()-tick)*1000)));raise
@@ -472,7 +498,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 if hasattr(exc,'partial_output'):state['output']=exc.partial_output
                 update(node.id,state)
                 raise RuntimeError(error) from exc
-        leaves=[n.id for n in graph.nodes if not any(e.source==n.id for e in graph.edges) and states.get(n.id) in ('success','partial')]
+        leaves=[n.id for n in graph.nodes if (n.id==target if target else not any(e.source==n.id for e in graph.edges)) and states.get(n.id) in ('success','partial')]
         text='\n\n'.join(outputs[i].get('interpretation') or json.dumps(outputs[i],ensure_ascii=False) if isinstance(outputs[i],dict) else json.dumps(outputs[i],ensure_ascii=False) for i in leaves)
         if warnings:
             text='部分标的未完成（不能据此判定无机会）：\n'+'\n'.join(str(item.get('symbol') or '未确认标的')+'：'+str(item.get('error') or item.get('reason') or '未完成评估') for warning in warnings for item in warning['errors'])+'\n\n'+text
@@ -481,6 +507,38 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
     def start_trial(self,owner,payload):
         graph=self.validate(payload.graph,payload.agent);rid=str(uuid.uuid4());now=stamp(now_utc())
         config=dict(title=payload.title,question=payload.question,agent=payload.agent,workflow=graph.model_dump(),market='CN',symbols='',newChat=True,reasoningEffort=self.tasks.execution_preferences()['reasoningEffort'] or 'low',taskId=payload.taskId,executionMode=payload.executionMode)
+        if payload.nodeId:
+            if not any(n.id==payload.nodeId for n in graph.nodes):raise ValueError('节点不存在')
+            if payload.executionMode!='preview':raise ValueError('单节点运行仅支持预览，不执行账户写入或下单')
+            ancestors={payload.nodeId}
+            while True:
+                parents={e.source for e in graph.edges if e.target in ancestors}
+                if parents<=ancestors:break
+                ancestors.update(parents)
+            ancestors.remove(payload.nodeId)
+            seed={}
+            if ancestors:
+                with self.tasks.db() as db:
+                    source=db.execute('SELECT config,nodes FROM workflow_trials WHERE id=? AND owner=?',(payload.sourceRunId,owner)).fetchone()
+                    scheduled=None if source else db.execute('SELECT config,task_id FROM runs WHERE id=? AND owner=?',(payload.sourceRunId,owner)).fetchone()
+                    if source:previous=json.loads(source['config']);saved=json.loads(source['nodes'])
+                    elif scheduled and scheduled['task_id']==payload.taskId:
+                        self.tasks.owned(db,owner,payload.taskId)
+                        previous={**self.tasks.unpack(scheduled['config']),'taskId':scheduled['task_id']};saved={}
+                        for row in db.execute("SELECT payload FROM run_events WHERE run_id=? AND event='progress' ORDER BY rowid",(payload.sourceRunId,)):
+                            event=json.loads(row['payload'])
+                            if event.get('workflowNode') and event.get('workflowState'):
+                                key=event['workflowNode'];saved[key]={**saved.get(key,{}),**event['workflowState']}
+                    else:raise ValueError('缺少可复用的上游结果，请先试运行工作流')
+                if previous.get('agent')!=payload.agent or previous.get('taskId')!=payload.taskId:raise ValueError('上游结果不属于当前工作流，请重新试运行')
+                old_graph=WorkflowGraph.model_validate(previous['workflow'])
+                for key in ancestors:
+                    cached=saved.get(key,{})
+                    if cached.get('status') not in ('success','partial','skipped'):raise ValueError('请先运行上游节点：'+key)
+                    fingerprint=cached.get('fingerprint') or node_fingerprint(old_graph,key)
+                    if fingerprint!=node_fingerprint(graph,key) or previous.get('question')!=payload.question:raise ValueError('上游配置已变更，请重新试运行：'+key)
+                    seed[key]={**cached,'fingerprint':fingerprint}
+            config.update(_nodeTarget=payload.nodeId,_nodeSeed=seed)
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
             if payload.taskId:self.tasks.owned(db,owner,payload.taskId)

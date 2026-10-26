@@ -24,6 +24,50 @@ async function setup(extraTools=[]){
  w.eval(day);w.eval(code);await tick();
  return{dom,w,d:w.document,calls,error:()=>{buildError=true;},saved:()=>saved,tickTimers:()=>timers.filter(fn=>fn.name==='refreshTimings').forEach(fn=>fn())};
 }
+test('news count is optional, validates positive integers and round-trips with JSON and saved task',async()=>{
+ const s=await setup([{id:'internal-search',label:'资讯搜索',description:'直接获取新闻',defaultArguments:{source:'homepage'}}]);try{
+  await s.w.MentoraWorkflow.open({workflow:graph});s.d.querySelector('[data-add=tool][data-tool=internal-search]').click();
+  const id=s.d.querySelector('.wfNode.is-selected').dataset.node,limit=s.d.querySelector('[data-news-limit]'),json=s.d.querySelector('[data-json]');
+  assert.equal(limit.value,'');assert.equal(JSON.parse(json.value).limit,undefined);
+  limit.value='25';limit.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.equal(JSON.parse(json.value).limit,25);
+  limit.value='0';limit.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.equal(limit.checkValidity(),false);
+  s.d.querySelector('[data-act=save]').click();await tick();assert.equal(s.saved(),null);
+  limit.value='40';limit.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.equal(limit.checkValidity(),true);assert.equal(json.checkValidity(),true);
+  json.value='{"source":"homepage","limit":75,"workers":2}';json.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.equal(limit.value,'75');
+  limit.value='';limit.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.deepEqual(JSON.parse(json.value),{source:'homepage',workers:2});
+  limit.value='30';limit.dispatchEvent(new s.w.Event('input',{bubbles:true}));s.d.querySelector('[data-act=save]').click();await tick();
+  assert.equal(s.saved().workflow.nodes.find(n=>n.id===id).arguments.limit,30);
+  s.d.querySelector('.wfCanvas').close();await s.w.MentoraWorkflow.open(s.saved());s.d.querySelector('[data-node="'+id+'"]').click();assert.equal(s.d.querySelector('[data-news-limit]').value,'30');
+  assert(!s.calls.some(([url])=>url.endsWith('/workflows/runs')));
+ }finally{s.w.close();}
+});
+
+test('node panel highlights JSON safely, copies full output and renames through more menu',async()=>{
+ const s=await setup();try{
+  const output={items:[{title:'<img src=x onerror=alert(1)>',score:3,ok:true,missing:null}],interpretation:'真实结果'};let copied='';
+  Object.defineProperty(s.w.navigator,'clipboard',{value:{writeText:async value=>{copied=value;}}});
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{id:'source',status:'success',nodes:{input:{status:'success',output}}}});
+  s.d.querySelector('[data-node=input]').click();
+  assert.equal(s.d.querySelector('[data-field=title]').value,'输入');assert(s.d.querySelector('[data-act=node-run]'));
+  assert(s.d.querySelector('#wfRunResult .wfJSON-key'));assert(s.d.querySelector('#wfRunResult .wfJSON-string'));assert(s.d.querySelector('#wfRunResult .wfJSON-number'));assert(s.d.querySelector('#wfRunResult .wfJSON-boolean'));
+  assert.equal(s.d.querySelector('#wfRunResult img'),null);assert.deepEqual(JSON.parse(s.d.querySelector('#wfRunResult pre').textContent),output);
+  s.d.querySelector('[data-act=copy-output]').click();await tick();assert.equal(copied,JSON.stringify(output,null,2));
+  s.d.querySelector('[data-act=node-more]').click();assert.equal(s.d.querySelector('#wfNodeMenu').hidden,false);
+  s.d.querySelector('[data-act=node-rename]').click();const title=s.d.querySelector('[data-field=title]');assert.equal(title.readOnly,false);
+  title.value='新的输入';title.dispatchEvent(new s.w.Event('input',{bubbles:true}));title.blur();assert.equal(title.readOnly,true);assert.match(s.d.querySelector('[data-node=input]').textContent,/新的输入/);
+  s.d.querySelector('[data-act=inspector]').click();assert(!s.d.querySelector('.wfCanvas').classList.contains('wfHasInspector'));assert(s.d.querySelector('.wfCanvas').open);
+ }finally{s.w.close();}
+});
+
+test('node run sends an explicit isolated preview request, never a full-graph execution',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{id:'previous',status:'success',nodes:{input:{status:'success',output:{score:3}}}}});
+  s.d.querySelector('[data-node=out]').click();s.d.querySelector('[data-act=node-run]').click();await tick();
+  const requests=s.calls.filter(([url,o])=>url.endsWith('/workflows/runs')&&o.method==='POST');assert.equal(requests.length,1);
+  const body=JSON.parse(requests[0][1].body);assert.equal(body.nodeId,'out');assert.equal(body.sourceRunId,'previous');assert.equal(body.executionMode,'preview');
+ }finally{s.w.close();}
+});
+
 test('runtime ticks locally while completed durations stay frozen and progress stays hidden',async()=>{
  const s=await setup();try{
   const now=Date.parse('2026-10-26T05:00:00Z');let clock=now;s.w.Date.now=()=>clock;
