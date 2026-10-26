@@ -2,6 +2,7 @@
 from __future__ import annotations
 import math
 import os
+import inspect
 from typesafe_sdk import Choice, RetryPolicy
 from app.widget_visual_planner import dashboard_router
 from app.cost_monitor import COSTS
@@ -47,6 +48,14 @@ def execution_confidence_gate(action,confidence,agreed=True,preferences=None):
                 reason='execution-confidence' if applicable else 'non-trading-action')
 
 
+def decision_client(active,timeout=20):
+    """Open either the hosted TypeSafe SDK or the local Laya adapter."""
+    parameters=inspect.signature(active.client_factory).parameters
+    if 'endpoint' in parameters and 'api_key' not in parameters:
+        return active.client_factory(endpoint=active.endpoint,model=active.model,timeout=timeout)
+    return active.client_factory(api_key=active.api_key,model=active.model,timeout=timeout,retry=RetryPolicy(max_retries=0))
+
+
 class PortfolioJev:
     def __init__(self,router_factory=dashboard_router):self.router_factory=router_factory
 
@@ -75,7 +84,7 @@ class PortfolioJev:
             elif provider=='jev':
                 active=self.router_factory(20)
                 if not active.configured:raise RuntimeError('JEV 未配置')
-                with active.client_factory(api_key=active.api_key,model=active.model,timeout=20,retry=RetryPolicy(max_retries=0)) as client:
+                with decision_client(active) as client:
                     response=client.system_one(state=state,questions={'catalyst':Choice(instructions=CATALYST_INSTRUCTION,criteria=CATALYST_SCORES)})
                 COSTS.record_response(response,provider=getattr(active,'billing_provider','typesafe'),service='自动交易',operation='事件催化独立评分',model=str(getattr(response,'model',None) or active.model))
                 choice=str(getattr(response.answers.get('catalyst'),'choice',''));model=str(getattr(response,'model',None) or active.model)
@@ -111,7 +120,7 @@ class PortfolioJev:
         state['rules']+=' '+technical_rule
         for key,question in questions.items():
             if key.endswith(('_action','_factor','_size')):question.instructions+=' '+technical_rule
-        with active.client_factory(api_key=active.api_key,model=active.model,timeout=20,retry=RetryPolicy(max_retries=0)) as client:
+        with decision_client(active) as client:
             response=client.system_one(state=state,questions=questions)
         COSTS.record_response(response,provider=getattr(active,'billing_provider','typesafe'),service='自动交易',
                               operation='JEV 持仓与机会决策',model=str(getattr(response,'model',None) or active.model))
