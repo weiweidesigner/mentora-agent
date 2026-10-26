@@ -36,6 +36,44 @@ def test_planner_catalogue_exposes_same_skill_config_defaults():
             assert item['configDefaults']==renderer().CATALOG[item['widget']]['defaults']
 
 
+def test_technical_minute_edit_retries_false_refusal_and_retains_selected_card(monkeypatch):
+    seen=[]
+    def model(context):
+        seen.append(dict(context))
+        if len(seen)==1:return {'reply':'技术分析不支持1分钟，可另加高级图表','actions':[]}
+        return {'reply':'已切换为1分钟技术评级','actions':[{'type':'update','cardId':'ta','parameters':{'interval':'1m'}}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    p=planner.PlanningInput(message='调整为1分钟',selectedCardId='ta',history=[{'role':'assistant','content':'仅支持1小时、日、周、月'}],board={'id':'b','title':'看板','cards':[{'id':'ta','title':'技术分析','component':'tv-technical-analysis','parameters':{'symbols':['NASDAQ:AAPL'],'interval':'1D','config':{'interval':'1D','showIntervalTabs':True}}}]})
+    result=planner.plan_widgets(p)
+    assert len(seen)==2 and '支持周期 1m' in seen[1]['validationError']
+    assert '1m' in seen[0]['selectedCapabilities']['supportedIntervals']
+    action=result['actions'][0]
+    assert action['cardId']=='ta' and action['componentId']=='tv-technical-analysis'
+    assert action['parameters']['interval']=='1m'
+    assert action['parameters']['config']['showIntervalTabs'] is True
+    assert action['parameters']['config'].get('interval','1m')=='1m'
+
+
+@pytest.mark.parametrize('message',['双底在哪，帮我画出来','帮我识别并标出双底的两个低点和颈线','生成双底画线标记'])
+def test_native_pattern_requests_delegate_instead_of_refusing_or_enabling_manual_tools(monkeypatch,message):
+    seen=[]
+    def model(context):
+        seen.append(dict(context))
+        if len(seen)==1:return {'reply':'只能调整界面，请自己手动画线','actions':[]}
+        return {'reply':'正在分析双底并标记','actions':[{'type':'update','cardId':'chart','request':message,'parameters':{'drawingTools':True}}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    p=planner.PlanningInput(message=message,selectedCardId='chart',board={'id':'b','title':'看板','cards':[{'id':'chart','component':'kline','title':'AAPL','request':'AAPL 日线','parameters':{'symbols':['AAPL'],'interval':'1d','klineType':'line','ma':[5]}}]})
+    result=planner.plan_widgets(p);action=result['actions'][0]
+    assert len(seen)==2 and seen[0]['selectedCapabilities']['analysisRequestField']=='request'
+    assert action['requiresGeneration'] is True and action['cardId']=='chart'
+    assert action['parameters']['klineType']=='line' and action['parameters']['ma']==[5]
+    assert action['request']==message
+
+
+def test_existing_pattern_style_change_does_not_request_new_analysis():
+    assert not planner.native_kline_needs_data_work('把双底的颈线改为橙色虚线')
+
+
 def test_layout_plan_is_model_generated_and_contains_only_validated_actions(monkeypatch):
     calls=[]
     def model(context):

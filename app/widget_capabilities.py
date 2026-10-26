@@ -55,6 +55,8 @@ def _attach_settings(component: dict) -> dict:
     item = dict(component)
     if item.get('id') == 'kline':
         item['settingsSchema'] = _kline_settings_schema()
+        item['analysisCapabilities']=['识别技术形态（含双底、双顶、趋势、支撑压力）','基于真实行情的 JEV 自动画线和标记','新增 Pine 指标计算']
+        item['analysisRequestField']='request'
     return item
 
 
@@ -91,6 +93,7 @@ def generation_catalogue() -> list[dict]:
     """
     library = [_attach_settings(item) for item in json.loads((ROOT / 'app/static/widget-catalog.json').read_text())]
     from app.widget_library import renderer
+    from app.widget_library import ADVANCED_CHART_INTERVALS, TECHNICAL_ANALYSIS_INTERVALS
     tradingview=renderer().CATALOG
     for item in library:
         if item.get('provider')=='TradingView' and item.get('widget') in tradingview:
@@ -100,6 +103,9 @@ def generation_catalogue() -> list[dict]:
             item['configAdditionalProperties']=True
             item['configFields']=contract['fields']
             item['settingsSchema']=_tradingview_settings(item['widget'],contract)
+            periods={'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':TECHNICAL_ANALYSIS_INTERVALS}.get(item['widget'])
+            if periods and not item.get('preset'):
+                item['supportedIntervals']=sorted(periods)
     hidden = []
     for stem, title in GENERIC_TITLES.items():
         schema = ROOT / f'app/skills/generic-chart/schemas/{stem}.schema.json'

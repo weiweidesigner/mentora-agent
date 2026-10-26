@@ -629,7 +629,7 @@
           const component=componentFor(action.componentId||card?.component);if(!component)throw Error('组件能力暂不可用，请刷新页面重试。');
           const parameters=mergedKlineParameters(card,component,action.parameters||{}),text=component.provider==='TradingView'?(parameters.symbols?.join(',')||component.defaultScope||component.title):(action.request||message);
           const before=new Set(board.cards.map(c=>c.id));
-          if(isLiveKlineUpdate(card,component,parameters)){
+          if(!action.requiresGeneration&&isLiveKlineUpdate(card,component,parameters)){
             card.component=component.id;card.parameters=parameters;
             postKlineConfig(card);target=card;save();
           }else{

@@ -276,6 +276,15 @@ test('native kline visual settings patch the live iframe without regeneration',a
  const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
  assert.deepEqual(card.parameters.ma,[8,21,55]);assert.equal(card.url,'/generated/kline.html');s.dom.window.close();
 });
+test('new evidence-based drawing request reaches research even when drawingTools can update live',async()=>{
+ const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',url:'/generated/kline.html',request:'分析 AAPL 日线趋势',parameters:{symbols:['AAPL'],interval:'1d',klineType:'line',ma:[5],drawingTools:false}});
+ const s=setup({storage:data,plan:{reply:'正在识别双底并画线',actions:[{type:'update',cardId:'one',componentId:'kline',parameters:{symbols:['AAPL'],interval:'1d',klineType:'line',ma:[5],drawingTools:true},request:'基于原图行情识别双底，标记两个低点和颈线',requiresGeneration:true}]}});
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'画出双底');await tick();await tick();
+ const call=s.calls.find(c=>c.url==='/api/chat/stream');assert.ok(call);
+ const body=JSON.parse(call.options.body);assert.match(body.question,/双底/);assert.match(body.question,/klineType|line/);
+ assert.equal(JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.filter(c=>c.id==='one').length,1);
+ s.dom.window.close();
+});
 test('native kline exposes schema-driven parameters and persists them when regenerated',async()=>{
  const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',request:'分析 AAPL 日线趋势',parameters:{symbols:['AAPL'],market:'default',interval:'1d',ma:[5,10,20,60],subIndicators:['VOL','MACD']}});
  const settingsSchema={version:1,renderer:'business-chart-recall/kline.py',fields:[

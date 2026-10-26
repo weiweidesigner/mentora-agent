@@ -51,7 +51,9 @@ def component_capabilities(item: dict) -> dict:
         'advancedControls': ['compareSymbols','watchlist','timezone','symbol-change','drawing-toolbar','top-toolbar','legend','volume','details','hotlist','date-ranges','calendar','save-image'] if widget == 'advanced-chart' else [],
         'symbolKind': 'broker-slug' if widget in BROKER_WIDGETS else 'currency-code' if widget in CURRENCY_WIDGETS else 'exchange-qualified-ticker' if hosted else 'us-equity-ticker',
         'dataMode': '由组件加载行情；可用性与延迟取决于数据源' if hosted else '添加按钮使用预制缓存；自然语言新增或改参数进入业务图表研究生成链路',
-        'canApplyCustomMarks': False,
+        'canApplyCustomMarks': item.get('id')=='kline',
+        'analysisCapabilities': item.get('analysisCapabilities',[]),
+        'analysisRequestField': item.get('analysisRequestField'),
     }
 
 
