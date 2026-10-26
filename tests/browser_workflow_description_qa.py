@@ -49,13 +49,11 @@ def main():
             page.evaluate('(task)=>{document.querySelector(".wfCanvas").close();return MentoraWorkflow.open(task)}',task)
             assert '运行时间 01:' in page.locator('#wfElapsed').inner_text()
             assert page.locator('[data-node=input] .wfNodeTime').inner_text()=='耗时 00:01'
-            assert 'JEV' in page.locator('[data-node=data] .wfNodeProgress').inner_text()
+            assert page.locator('.wfNodeProgress').count()==0
             elapsed=page.locator('[data-node=data] .wfNodeTime').inner_text()
             page.wait_for_function('(before)=>document.querySelector("[data-node=data] .wfNodeTime").textContent!==before',arg=elapsed)
             assert page.locator('[data-node=input] .wfNodeTime').inner_text()=='耗时 00:01'
-            footer=page.locator('[data-node=data] .wfNodeRuntime').bounding_box()
-            card=page.locator('[data-node=data]').bounding_box()
-            assert footer['y']+footer['height']<=card['y']+card['height']+1
+            assert page.locator('.wfNodeRuntime').count()==0
             flow=page.locator('.wfEdgeFlow');assert flow.count()==1
             clearance=page.evaluate('''()=>{
                 const path=document.querySelector('.wfEdgeLine'),point=path.getPointAtLength(path.getTotalLength());
@@ -64,6 +62,11 @@ def main():
                 return port.left-tip.x;
             }''')
             assert clearance>=3,(width,clearance)
+            marker_before=float(page.locator('#wfArrow').get_attribute('markerWidth'))
+            page.locator('[data-act=zoom-out]').click()
+            marker_after=float(page.locator('#wfArrow').get_attribute('markerWidth'))
+            assert marker_after<marker_before,(marker_before,marker_after)
+            assert page.locator('#wfArrow').get_attribute('markerUnits')=='userSpaceOnUse'
             before=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
             page.wait_for_timeout(180)
             after=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')

@@ -250,6 +250,12 @@ test('zoom resizes node layout and vector connections while the background stays
   const before=s.d.querySelector('.wfEdgeLine').getAttribute('d');
   s.d.querySelector('[data-act=zoom-in]').click();
   const scale=Number(world.style.getPropertyValue('--wf-node-scale'));
+  const marker=s.d.querySelector('#wfArrow');
+  assert.equal(marker.getAttribute('markerUnits'),'userSpaceOnUse');
+  assert.equal(Number(marker.getAttribute('markerWidth')),12*scale);
+  s.d.querySelector('[data-act=zoom-out]').click();
+  assert(Number(s.d.querySelector('#wfArrow').getAttribute('markerWidth'))<12*scale);
+  s.d.querySelector('[data-act=zoom-in]').click();
   assert(scale>0);assert(!world.style.transform.includes('scale'));
   assert.equal(viewport.style.backgroundSize,'22px 22px');
   assert.equal(parseFloat(s.d.querySelector('[data-node=input]').style.left),90*scale);

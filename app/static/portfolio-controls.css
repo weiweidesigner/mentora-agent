@@ -5,7 +5,10 @@
 .pfFavoriteHeader .pfFavoriteField{width:clamp(130px,24vw,320px);min-width:0}
 .pfFavoriteHeader .pfFavoriteAdd button{flex:none;white-space:nowrap;width:auto}
 .pfFavoriteHeader .pfFavoriteAdd .pfFavoriteImage{width:36px;height:36px}
-.pfFavoriteImage{display:inline-grid;place-items:center;width:36px;height:36px;padding:8px!important;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--ink)}
+.pfFavoriteImage{display:inline-grid;place-items:center;width:36px;height:36px;padding:8px!important;background:transparent;border:0;border-radius:6px;color:var(--muted);cursor:pointer}
+.pfFavoriteField>input{padding-right:44px}
+.pfFavoriteField>.pfFavoriteImage{position:absolute;right:2px;top:50%;transform:translateY(-50%)}
+.pfFavoriteImage:hover{color:var(--ink);background:var(--soft)}
 .pfFavoriteImage svg{width:18px;height:18px}
 .pfFavoriteHeader [data-pf-action="refresh"] svg{display:none;width:18px;height:18px}
 .pfIdeaComposer textarea:placeholder-shown{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:24px!important;min-height:24px!important;max-height:24px!important;line-height:24px;padding:0;align-self:center}
@@ -15,9 +18,17 @@
 .pfOcrDialog h2{margin:0;font-size:18px}
 .pfOcrDialog button{padding:8px 12px;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;cursor:pointer}
 .pfOcrDialog button:disabled{opacity:.45;cursor:default}
+.pfOcrDialog button.pfOcrClose{display:grid;place-items:center;width:32px;height:32px;padding:6px;border:0;background:transparent;color:var(--muted)}
+.pfOcrClose svg{width:20px;height:20px}
+.pfOcrDialog button.pfOcrClose:hover{background:var(--soft);color:var(--ink)}
+.pfOcrDialog input[type="checkbox"]{appearance:auto;box-sizing:border-box;flex:0 0 16px;width:16px;height:16px;min-width:16px;margin:0;padding:0;border-radius:3px;accent-color:#6cba9c;cursor:pointer}
+.pfOcrDialog :is(button,input):focus-visible{outline:2px solid var(--muted);outline-offset:3px}
+.pfOcrSelectAll{display:flex;align-items:center;gap:12px;margin-top:20px;padding:10px;font-size:13px;cursor:pointer}
+.pfOcrDialog [hidden]{display:none!important}
 .pfOcrDialog [data-ocr-status]{white-space:pre-wrap;font-size:13px;line-height:1.6}
 .pfOcrCandidates{display:grid;gap:8px;margin:16px 0}
 .pfOcrCandidates label{display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--line);cursor:pointer}
+.pfOcrCandidates label:has(input:checked){background:color-mix(in srgb,#6cba9c 10%,var(--bg));border-radius:6px}
 .pfOcrCandidates small{display:block;color:var(--muted);margin-top:4px}
 .pfOcrCandidates .is-imported{opacity:.5}
 .pfOcrDialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;font-size:12px}

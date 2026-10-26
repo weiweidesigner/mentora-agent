@@ -14,6 +14,7 @@ test('favorites title and form share a header; image input recognizes but never 
  const s=setup();try{
   assert.equal(s.d.querySelector('#pfFavoriteForm').parentElement,s.d.querySelector('.pfCardHead'));
   assert.equal(s.d.querySelectorAll('[data-ocr-upload]').length,1);
+  assert(s.d.querySelector('#pfFavoriteField [data-ocr-upload]'));
   const upload=s.d.querySelector('input[type=file]');Object.defineProperty(upload,'files',{value:[new s.w.File(['image'],'watchlist.png',{type:'image/png'})]});upload.dispatchEvent(new s.w.Event('change'));await tick();await tick();
   assert.equal(s.calls.length,1);assert(s.calls[0].url.endsWith('/ocr'));
   assert.equal(s.d.querySelectorAll('.pfOcrCandidates input:checked').length,0);
@@ -21,6 +22,24 @@ test('favorites title and form share a header; image input recognizes but never 
   const checkbox=s.d.querySelector('.pfOcrCandidates input');checkbox.checked=true;checkbox.dispatchEvent(new s.w.Event('change',{bubbles:true}));s.d.querySelector('[data-ocr-add]').click();await tick();
   assert.equal(s.calls.length,2);assert.deepEqual(s.calls[1].body,{symbol:'AAPL',name:'AAPL'});
   assert.match(s.d.querySelector('[data-ocr-status]').textContent,/已加入 1 项/);
+  assert(!s.calls.some(c=>/chat|order|workflow/.test(c.url)));
+ }finally{s.w.close();}
+});
+test('pasted image opens OCR, select all supports partial selection and adds only confirmed codes',async()=>{
+ const s=setup();try{
+  const event=new s.w.Event('paste',{bubbles:true,cancelable:true});
+  Object.defineProperty(event,'clipboardData',{value:{items:[{kind:'file',type:'image/png',getAsFile:()=>new s.w.File(['image'],'paste.png',{type:'image/png'})}]}});
+  s.d.querySelector('#pfFavoriteField input').dispatchEvent(event);await tick();await tick();
+  assert(event.defaultPrevented);assert.equal(s.calls.length,1);
+  assert.equal(s.d.querySelector('.pfOcrDialog h2').textContent,'识别到 2 个代码');
+  assert.equal(s.d.querySelector('[data-ocr-status]').hidden,true);
+  assert.equal(s.d.querySelector('.pfOcrClose svg').getAttribute('viewBox'),'0 0 24 24');
+  const all=s.d.querySelector('[data-ocr-all]');all.click();
+  assert.equal(s.d.querySelectorAll('.pfOcrCandidates input:checked').length,2);
+  s.d.querySelector('.pfOcrCandidates input').click();assert(all.indeterminate);assert(!all.checked);
+  all.click();assert(all.checked);assert(!all.indeterminate);
+  s.d.querySelector('[data-ocr-add]').click();await tick();await tick();
+  assert.equal(s.calls.length,3);assert.equal(all.disabled,true);
   assert(!s.calls.some(c=>/chat|order|workflow/.test(c.url)));
  }finally{s.w.close();}
 });
