@@ -60,3 +60,17 @@ def test_survives_store_reopen(clients):
     app=FastAPI();app.include_router(create_router(reopened));client=TestClient(app);client.cookies.update(a.cookies)
     assert len(client.get('/api/case-favorites').json()['cases'])==1
     reopened.pool.shutdown(wait=True)
+
+
+def test_status_lookup_is_read_only_exact_and_owner_scoped(clients):
+    a,b,store=clients;headers={'X-Veya-Day':'1'}
+    value=data();value['answer']['reportArtifacts'][0]['value']=1e-7
+    snapshot={k:v for k,v in value.items() if k!='category'}
+    assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
+    a.post('/api/case-favorites',json=value,headers=headers)
+    assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()==dict(saved=True,categories=['reports'])
+    assert b.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
+    snapshot['answer']['interpretation']='同一问题的新回答'
+    assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
+    assert a.post('/api/case-favorites/status',json=snapshot).status_code==403
+    with store.db() as db:assert db.execute('SELECT count(*) FROM case_favorites').fetchone()[0]==1

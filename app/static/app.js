@@ -4461,6 +4461,12 @@ function buildActivitySources(article, lang) {
   `;
 }
 
+function favoriteHeartIcon(saved=false) {
+  const outer='M556.5 918.9c-24.6 25-64.4 25-89 0L149.4 595.8c-7.2-7.3-13.2-15.2-19.2-23.2l-4-5.4c-91-118.7-81-288.1 23.2-394C246.8 74.5 397.3 59 512 131.8 626.8 59 777.3 74.5 874.6 173.3c104.3 105.9 114.3 275.3 23.2 394l-3.9 5.2c-6 8.1-12.1 16-19.4 23.4l-318 323z';
+  const inner='M356.1 177.4c-52.2 0-104.1 20.3-143.4 60.2-72.3 73.5-79.2 191.1-15.9 273.7l4.7 6.3c3.5 4.7 6.9 9.5 11.1 13.8L512 835.3l299.2-303.9c4.3-4.4 7.7-9.2 11.2-13.9l4.6-6.1c63.4-82.6 56.5-200.3-15.8-273.8C738 163.3 621.4 157 539.9 223L512 245.7 484.1 223c-37.8-30.5-83-45.6-128-45.6z';
+  return '<svg viewBox="0 0 1024 1024" fill="currentColor" stroke="none" aria-hidden="true"><path d="'+outer+(saved?'':inner)+'"/></svg>';
+}
+
 function buildResultActions(article, lang) {
   const shareButton = `<button class="resultActionButton shareResultButton" type="button" aria-label="分享" data-tip="分享">
         <span class="resultActionIcon">${SHARE_ICON}</span>
@@ -4468,7 +4474,7 @@ function buildResultActions(article, lang) {
   return `
     <div class="resultActionsRow">
       ${shareButton}
-      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏为案例" data-tip="收藏"><span class="resultActionIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v15l-6-4-6 4Z"/></svg></span></button>
+      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏为案例" data-tip="收藏"><span class="resultActionIcon">${favoriteHeartIcon()}</span></button>
     </div>
   `;
 }
@@ -4519,6 +4525,7 @@ function buildSourceTrigger(article, lang) {
 
 function attachResultActionHandlers(article) {
   article.dataset.resultActionsReady = "true";
+  void window.MentoraCaseFavorites?.sync?.(article);
 }
 
 function uniqueSourcesBySite(sources) {

@@ -15,12 +15,26 @@ ANSWER_FIELDS = {'interpretation', 'reportUrl', 'reportArtifacts', 'fileArtifact
                  'streamBlocks', 'sources', 'videos', 'actionLinks', 'lang'}
 
 
-class FavoriteInput(BaseModel):
+class FavoriteSnapshot(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    category: Literal['lane', 'reports', 'charts', 'analysis', 'videos', 'art']
     question: str = Field(min_length=1, max_length=50000)
     title: str = Field(default='', max_length=160)
     answer: dict
+
+
+class FavoriteInput(FavoriteSnapshot):
+    category: Literal['lane', 'reports', 'charts', 'analysis', 'videos', 'art']
+
+
+def snapshot_content(payload):
+    question = payload.question.strip()
+    answer = {k: v for k, v in payload.answer.items() if k in ANSWER_FIELDS}
+    if not question or not any(answer.get(k) for k in ('interpretation', 'reportUrl', 'reportArtifacts', 'streamBlocks', 'videos')):
+        raise HTTPException(400, '暂无可收藏的完整内容')
+    content = json.dumps(dict(question=question, answer=answer), ensure_ascii=False, sort_keys=True)
+    if len(content.encode()) > 2_000_000:
+        raise HTTPException(413, '内容过大，无法收藏')
+    return content
 
 
 def create_router(store):
@@ -49,12 +63,7 @@ def create_router(store):
     def save(payload: FavoriteInput, request: Request, response: Response):
         user = owner(request, response, True)
         question = payload.question.strip()
-        answer = {k: v for k, v in payload.answer.items() if k in ANSWER_FIELDS}
-        if not question or not any(answer.get(k) for k in ('interpretation', 'reportUrl', 'reportArtifacts', 'streamBlocks', 'videos')):
-            raise HTTPException(400, '暂无可收藏的完整内容')
-        content = json.dumps(dict(question=question, answer=answer), ensure_ascii=False, sort_keys=True)
-        if len(content.encode()) > 2_000_000:
-            raise HTTPException(413, '内容过大，无法收藏')
+        content = snapshot_content(payload)
         fingerprint = hashlib.sha256(content.encode()).hexdigest()
         key = 'favorite-' + hashlib.sha256((user + payload.category + fingerprint).encode()).hexdigest()[:32]
         now = dt.datetime.now(dt.timezone.utc).isoformat()
@@ -70,6 +79,15 @@ def create_router(store):
             db.execute('INSERT INTO case_favorites VALUES(?,?,?,?,?,?)',
                        (user, key, payload.category, json.dumps(metadata, ensure_ascii=False), content, now))
         return metadata
+
+    @router.post('/status')
+    def status(payload: FavoriteSnapshot, request: Request, response: Response):
+        """Read-only lookup shares the save serializer, including numeric values."""
+        user = owner(request, response, True)
+        fingerprint = hashlib.sha256(snapshot_content(payload).encode()).hexdigest()
+        with store.db() as db:
+            rows = db.execute("SELECT category FROM case_favorites WHERE owner=? AND json_extract(metadata,'$.fingerprint')=?", (user, fingerprint)).fetchall()
+        return dict(saved=bool(rows), categories=[row['category'] for row in rows])
 
     @router.get('/{case_id}')
     def read(case_id: str, request: Request, response: Response):

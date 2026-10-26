@@ -1,5 +1,6 @@
 """Offline browser QA: real app controls and galleries, fixture-only persistence."""
 import json
+import hashlib
 import re
 from pathlib import Path
 from urllib.parse import urlparse
@@ -18,10 +19,15 @@ def route(r):
         if r.request.method=='POST':
             value=r.request.post_data_json;key='favorite-'+value['category'];writes.append(path)
             row=dict(id=key,category=value['category'],question=value['question'],title=value['title'],
-                     preview='离线测试案例',tag='收藏',cachedDate='2026-10-26',conversationUrl='/api/case-favorites/'+key)
+                     preview='离线测试案例',tag='收藏',cachedDate='2026-10-26',conversationUrl='/api/case-favorites/'+key,
+                     fingerprint=hashlib.sha256(json.dumps(dict(question=value['question'],answer=value['answer']),ensure_ascii=False,sort_keys=True).encode()).hexdigest())
             saved[key]=row;snapshots[key]=dict(question=value['question'],answer=value['answer'])
             return r.fulfill(json=row)
         return r.fulfill(json=dict(cases=list(saved.values())))
+    if path=='/api/case-favorites/status':
+        value=r.request.post_data_json
+        fingerprint=hashlib.sha256(json.dumps(dict(question=value['question'],answer=value['answer']),ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+        return r.fulfill(json=dict(saved=any(row['fingerprint']==fingerprint for row in saved.values())))
     if path.startswith('/api/case-favorites/'):return r.fulfill(json=snapshots[path.rsplit('/',1)[1]])
     if path=='/static/cases/manifest.json':return r.fulfill(json=[])
     if path=='/static/cases/inspiration/manifest.json':return r.fulfill(json=catalog)
@@ -55,10 +61,15 @@ with sync_playwright() as runtime:
             page.locator('.favoriteResultButton').click()
             dialog=page.locator('.caseFavoriteDialog');box=dialog.bounding_box()
             assert box['x']>=0 and box['x']+box['width']<=width and box['height']<=900
-            assert page.locator('[data-favorite-category]').count()==6
+            assert page.locator('#caseFavoriteCategory option').count()==6
             for category in categories:
-                page.locator('[data-favorite-category='+category+']').click()
-                page.wait_for_function('(category)=>document.querySelector("[data-favorite-category="+category+"]").classList.contains("is-saved")',arg=category)
+                previous=len(writes)
+                page.locator('#caseFavoriteCategory').select_option(category)
+                assert len(writes)==previous,'Changing the selection must not save'
+                page.locator('.caseFavoriteSubmit').click()
+                page.wait_for_function('document.querySelector(".caseFavoriteStatus").textContent.startsWith("已收藏到")')
+                assert len(writes)==previous+1
+                assert 'M356.1 177.4' not in page.locator('.favoriteResultButton path').get_attribute('d')
             page.keyboard.press('Escape');assert not dialog.is_visible()
             assert len(saved)==6 and all(p=='/api/case-favorites' for p in writes)
             load()
@@ -67,6 +78,7 @@ with sync_playwright() as runtime:
             page.locator('[data-case=favorite-analysis]').click()
             page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton")')
             assert '离线收藏测试答案' in page.locator('#messages').inner_text()
+            page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
             page.locator('.cachedCaseAnswer .favoriteResultButton').click();page.keyboard.press('Escape')
             assert page.locator('.caseOverlay').count()==1,'Escape must close only the favorite dialog'
             assert not errors,errors
