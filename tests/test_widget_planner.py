@@ -67,11 +67,39 @@ def test_native_pattern_requests_delegate_instead_of_refusing_or_enabling_manual
     assert len(seen)==2 and seen[0]['selectedCapabilities']['analysisRequestField']=='request'
     assert action['requiresGeneration'] is True and action['cardId']=='chart'
     assert action['parameters']['klineType']=='line' and action['parameters']['ma']==[5]
-    assert action['request']==message
+    assert action['request']=='AAPL 日线\n本次要求：'+message
 
 
 def test_existing_pattern_style_change_does_not_request_new_analysis():
     assert not planner.native_kline_needs_data_work('把双底的颈线改为橙色虚线')
+
+
+def test_saved_live_settings_win_over_original_artifact_on_every_followup(monkeypatch,tmp_path):
+    monkeypatch.setattr(planner,'ROOT',tmp_path)
+    directory=tmp_path/'outputs/generated';directory.mkdir(parents=True)
+    old={'code':'AAPL','dataType':'1d','ma':[5,10,20,60],'klineType':'candle-solid','candleUpColor':'#00ff00','volumeBarStyle':'solid'}
+    (directory/'chart.html').write_text('<div class="kline-component"></div><script>const config = '+json.dumps(old)+';</script>')
+    card=planner.Card(id='c',component='kline',url='/generated/chart.html',parameters={'symbols':['AAPL'],'ma':[],'klineType':'candle-hollow','candleUpColor':'#abcdef','volumeBarStyle':'hollow','annotationStyles':[{'text':'颈线','color':'#123456','lineWidth':2}]})
+    first=planner.enrich_card(card)
+    assert first['parameters']['ma']==[]
+    assert first['parameters']['klineType']=='candle-hollow'
+    assert first['parameters']['candleUpColor']=='#abcdef'
+    p=planner.PlanningInput(message='颈线改粗为4，MACD柱空心',selectedCardId='c',board={'id':'b','title':'看板','cards':[card.model_dump()]})
+    result=planner.validate_plan({'reply':'已调整','actions':[{'type':'update','cardId':'c','parameters':{'macdBarStyle':'hollow','annotationStyles':[{'text':'颈线','lineWidth':4}]}}]},p,[first])
+    params=result['actions'][0]['parameters']
+    assert params['volumeBarStyle']=='hollow' and params['macdBarStyle']=='hollow'
+    assert params['annotationStyles']==[{'text':'颈线','color':'#123456','lineWidth':4}]
+    reopened=planner.enrich_card(planner.Card(**{**card.model_dump(),'parameters':params}))
+    assert reopened['parameters']==params
+
+
+def test_tradingview_saved_config_wins_over_stale_artifact(monkeypatch,tmp_path):
+    monkeypatch.setattr(planner,'ROOT',tmp_path)
+    directory=tmp_path/'outputs/generated';directory.mkdir(parents=True)
+    (directory/'chart.html').write_text('<script id="tv-config" type="application/json">'+json.dumps({'widget':'technical-analysis','config':{'symbol':'NASDAQ:AAPL','interval':'1D','showIntervalTabs':True}})+'</script>')
+    card=planner.Card(id='c',component='tv-technical-analysis',url='/generated/chart.html',parameters={'interval':'1m','config':{'interval':'1m','showIntervalTabs':False}})
+    result=planner.enrich_card(card)['parameters']
+    assert result['config']['interval']=='1m' and result['config']['showIntervalTabs'] is False
 
 
 def test_layout_plan_is_model_generated_and_contains_only_validated_actions(monkeypatch):

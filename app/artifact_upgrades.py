@@ -82,7 +82,7 @@ def _native_kline():
 
 def upgrade_native_kline_runtime(artifact: str) -> str:
     """Move saved native K-lines to the current runtime using embedded OHLCV only."""
-    if 'class="kline-component"' not in artifact or 'data-kline-drawings="2"' in artifact:
+    if 'class="kline-component"' not in artifact or ('data-kline-drawings="2"' in artifact and 'data-kline-bars="2"' in artifact):
         return artifact
     try:
         config = _constant(artifact, "config")

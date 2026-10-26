@@ -64,6 +64,17 @@ test('new task chooser preserves Agent editor and opens full-screen workflow can
   assert(s.d.querySelector('.wfCanvas').open);assert.equal(s.d.querySelector('#wfAgent'),null);assert(s.d.querySelector('.wfCanvas svg'));assert(s.d.querySelector('[data-add=watchlist]'));assert(s.d.querySelector('[data-add=profile]'));assert(s.d.querySelector('[data-add=tool]'));
  }finally{s.w.close();}
 });
+
+test('top backdrop closes like X and preserves the unsaved-change guard',async()=>{
+ const s=await setup();try{
+  const clickBackdrop=()=>{const c=s.d.querySelector('.wfCanvas');c.dispatchEvent(new s.w.MouseEvent('pointerdown',{clientX:120,clientY:20,bubbles:true}));c.dispatchEvent(new s.w.MouseEvent('click',{clientX:120,clientY:20,bubbles:true}));};
+  await s.w.MentoraWorkflow.open({title:'已保存',workflow:graph});clickBackdrop();assert.equal(s.d.querySelector('.wfCanvas').open,false);
+  await s.w.MentoraWorkflow.open({title:'已保存',workflow:graph});
+  s.d.querySelector('#wfTitle').value='未保存';s.d.querySelector('#wfTitle').dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  clickBackdrop();assert.equal(s.d.querySelector('.wfCanvas').open,true);assert.equal(s.d.querySelector('.wfDiscard').open,true);
+  s.d.querySelector('[data-discard=cancel]').click();assert.equal(s.d.querySelector('.wfCanvas').open,true);
+ }finally{s.w.close();}
+});
 test('nodes connect, reject cycles, retain structural parameters and submit a trial snapshot',async()=>{
  const s=await setup();try{
   await s.w.MentoraWorkflow.open();s.d.querySelector('[data-add=start]').click();s.d.querySelector('[data-add=output]').click();

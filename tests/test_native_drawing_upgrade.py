@@ -20,3 +20,15 @@ def test_saved_v1_chart_upgrades_without_losing_line_ma_or_marks(monkeypatch):
     assert '<nav class="period-tabs"' not in upgraded
     assert upgrade_native_kline_runtime(upgraded)==upgraded
     assert '"close":101' in upgraded.replace(' ','')
+
+
+def test_saved_drawing_v2_gains_subchart_styles_without_changing_evidence():
+    module=_native_kline()
+    rows=[dict(time=1700000000000+i*86400000,open=100,high=110,low=90,close=101,volume=1000) for i in range(20)]
+    original=module.render_document(dict(type='kline',props=dict(code='TEST',dataType='1d',availablePeriods=['1d'],ma=[],klineType='candle-hollow',volumeBarStyle='hollow'),dataByPeriod={'1d':rows}))
+    old=original.replace(' data-kline-bars="2"','')
+    upgraded=upgrade_native_kline_runtime(old)
+    assert 'data-kline-bars="2"' in upgraded
+    config=json.loads(re.search(r'const config = (\{[^\n]+\});',upgraded)[1])
+    assert config['ma']==[] and config['volumeBarStyle']=='hollow'
+    assert upgrade_native_kline_runtime(upgraded)==upgraded

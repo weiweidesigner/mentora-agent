@@ -286,6 +286,20 @@ test('new evidence-based drawing request reaches research even when drawingTools
  assert.equal(JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.filter(c=>c.id==='one').length,1);
  s.dom.window.close();
 });
+
+test('consecutive visual edits retain state and later computation receives the conversation and original chart',async()=>{
+ const data=twoCards();data.boards[0].chat=[{role:'user',content:'保持所有自定义配色和双底标记'},{role:'assistant',content:'已保留双底标记。'}];
+ Object.assign(data.boards[0].cards[0],{component:'kline',url:'/generated/original.html',request:'原始 AAPL 日线和双底标记',parameters:{symbols:['AAPL'],interval:'1d',ma:[],klineType:'candle-hollow',candleUpColor:'#abcdef'}});
+ let step=0;const s=setup({storage:data,plan:()=>({reply:'已调整',actions:[{type:'update',cardId:'one',componentId:'kline',...(++step===1?{parameters:{volumeBarStyle:'hollow',macdBarStyle:'hollow'}}:step===2?{parameters:{maLineWidth:3}}:{request:'新增基于真实数据的 Pine 均线',requiresGeneration:true})}]})});
+ submit(s.w,s.d,'副图柱体改空心');await tick();await tick();submit(s.w,s.d,'均线加粗');await tick();await tick();
+ let card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
+ assert.equal(card.parameters.volumeBarStyle,'hollow');assert.equal(card.parameters.macdBarStyle,'hollow');assert.equal(card.parameters.candleUpColor,'#abcdef');assert.equal(card.parameters.klineType,'candle-hollow');assert.deepEqual(card.parameters.ma,[]);
+ assert.equal(s.calls.some(c=>c.url==='/api/chat/stream'),false);
+ submit(s.w,s.d,'新增 Pine 均线');await tick();await tick();const body=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);
+ assert(body.history.some(m=>m.content==='保持所有自定义配色和双底标记'));assert(body.history.some(m=>m.content==='副图柱体改空心'));
+ assert.match(body.question,/original.html/);assert.match(body.question,/原始 AAPL 日线和双底标记/);assert.match(body.question,/volumeBarStyle.*hollow/);
+ s.dom.window.close();
+});
 test('failed analysis keeps the previous chart and settings without claiming success',async()=>{
  const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',url:'/generated/original.html',request:'原始 AAPL 日线',parameters:{symbols:['AAPL'],interval:'1d',klineType:'line',ma:[5]}});
  const s=setup({storage:data,reply:async cb=>cb('error',{detail:'服务重启中断了本轮执行'}),plan:{reply:'画双底',actions:[{type:'update',cardId:'one',componentId:'kline',request:'识别双底并画颈线',requiresGeneration:true}]}});

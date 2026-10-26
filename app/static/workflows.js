@@ -178,6 +178,11 @@ window.addEventListener('keyup',e=>{if(e.code==='Space'){spacePan=false;viewport
 window.addEventListener('blur',()=>{spacePan=false;endDrag();viewport.classList.remove('is-space-pan');});
 canvas.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!['INPUT','TEXTAREA'].includes(e.target.tagName)&&undo.length&&!locked){e.preventDefault();state.workflow=undo.pop();selected='';dirty=true;render();}if(e.key==='Escape'){e.preventDefault();close();}});
 canvas.addEventListener('cancel',e=>{e.preventDefault();close();});
+// Native dialog backdrop clicks target the dialog. Only the outside strip
+// closes it; canvas content and drags keep their existing behavior.
+let backdropPress=false;
+canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect();backdropPress=e.target===canvas&&(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom);});
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();if(backdropPress&&e.target===canvas&&(e.clientX<r.left||e.clientX>=r.right||e.clientY<r.top||e.clientY>=r.bottom))close();backdropPress=false;});
 
 function syncBuildComposer(){
  const input=$('wfBuildInput'),box=input.closest('.composerBox'),send=box.querySelector('.wfBuildSend');

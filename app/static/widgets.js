@@ -55,7 +55,7 @@
   }
 
   const progressByBoard=new Map();
-  const klineLiveKeys=['ma','subIndicators','klineType','candleColorMode','drawingTools','fitAnnotations','mainChartHeight','subChartHeight','themeMode','maColors','maLineWidth','candleUpColor','candleDownColor','annotationStyles','pineStyles'];
+  const klineLiveKeys=['ma','subIndicators','klineType','volumeBarStyle','macdBarStyle','candleColorMode','drawingTools','fitAnnotations','mainChartHeight','subChartHeight','themeMode','maColors','maLineWidth','candleUpColor','candleDownColor','annotationStyles','pineStyles'];
   const klineDataKeys=['symbols','market','interval','fromDate','toDate','limit','fullHistory','language'];
   function normalizeStoredParameters(component,parameters){
     const normalized={...(parameters||{})};
@@ -314,7 +314,7 @@
         const group=document.createElement('fieldset');group.className='widgetMultiField';group.dataset.settingKey=field.key;group.dataset.settingType=type;
         const legend=document.createElement('legend');legend.textContent=field.label;group.append(legend);
         const choices=document.createElement('div');choices.className='widgetOptionChecks';const selected=new Set(Array.isArray(value)?value:[]);
-        for(const [option,label] of field.options||[]){const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=option;input.checked=selected.has(option);item.append(input,document.createTextNode(label));choices.append(item);}group.append(choices);root.append(group);continue;
+        for(const [option,label] of field.options||[]){const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=option;input.checked=selected.has(option);item.append(input,document.createTextNode(label));choices.append(item);}group.dataset.initialValue=JSON.stringify([...choices.querySelectorAll('input:checked')].map(input=>input.value));group.append(choices);root.append(group);continue;
       }
       const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=field.label;label.append(caption);
       let input;
@@ -339,6 +339,10 @@
     }
     for(const field of settingsFields(component)){
       const node=$('widgetDynamicFields').querySelector('[data-setting-key="'+CSS.escape(field.key)+'"]');if(!node)continue;
+      if(component.id==='kline'){
+        const value=field.type==='multi-select'?JSON.stringify([...node.querySelectorAll('input:checked')].map(input=>input.value)):field.type==='boolean'?String(node.checked):node.value;
+        if(value===node.dataset.initialValue)continue;
+      }
       if(field.key==='followTheme'&&String(node.checked)===node.dataset.initialValue)continue;
       if(field.scope==='config'){
         if((field.type==='boolean'?String(node.checked):node.value)===node.dataset.initialValue)continue;
@@ -455,6 +459,8 @@
     const controller=new AbortController(),onAbort=()=>controller.abort();parameters.signal?.addEventListener('abort',onAbort,{once:true});if(parameters.signal?.aborted)controller.abort();jobs.set(board.id,controller);
     let pending=retryId&&board.cards.find(c=>c.id===retryId);
     const previous=pending?JSON.parse(JSON.stringify(pending)):null;
+    const generationHistory=(board.chat||[]).slice(-12).map(({role,content,scope,scopeId})=>({role,content:scopeId?`[调整对象：${scope||scopeId}，卡片 ${scopeId}]\n${content}`.slice(0,6000):content}));
+    const continuation=previous?.url?`这是对现有组件的连续修改。现有图表引用：${previous.url}；之前的完整需求：${previous.request||''}。以本次配置为当前状态，只修改本次要求；复用原图中未要求改变的真实数据、JEV annotations 与 Pine 结果，不要重置颜色、样式、均线或副图。需要新的计算时，先读取现有图表的嵌入配置与证据。` : '';
     if(pending)Object.assign(pending,{status:'loading',error:'',refreshError:'',request:message,component:component?.id||pending.component});
     else {pending={id:uid(),title:component?`${component.title} · ${message}`:'正在构建看板',w:component?.width||6,h:component?.height||18,status:'loading',url:'',request:message,component:component?.id||''};place(board,pending);board.cards.push(pending);}
     const renderParameters=Object.fromEntries(Object.entries(parameters).filter(([key])=>!['signal','reasoningEffort','preserveOnError'].includes(key)));
@@ -468,9 +474,9 @@
     const skill=component?.skill||(component?.provider==='business'?'business-chart-recall':''),script=component?.script||(component?.provider==='business'?component.id+'.py':'');
     const request=component?`只生成一个独立的「${component.title}」组件，选择 ${skill} 技能中的 ${script} 原生渲染器。用户完整需求：${message}`:`根据用户需求选择并生成一个独立组件：${message}`;
     const sourceContract=component?.requiresDataSource?'这是没有内置数据源的纯渲染组件：先根据需求选择数据/搜索技能或用户提供的数据，核实来源、时间范围和单位，必要时计算并把结构化数据传给指定渲染器。数据源只作上游步骤，不作为卡片交付；数据不足就说明缺口，不生成占位、示例或猜测数据。':'使用所选组件的内置真实数据源；不得用缓存示例冒充最新数据。';
-    const question=`${request}\n这是 Widget 画布的组件交付请求。${sourceContract} 配置：${JSON.stringify(pending.parameters)}。请遵守项目技能路由，调用现有业务组件的原生脚本取真实数据；先完整阅读所选技能及组件 schema，按真实 CLI 契约执行，保留组件原生交互、主题、语言和数据来源。国内股票日线使用 a-share-data/historical_kline.py（单只A股、1d），不混用快照作历史OHLCV，不把指数或ETF冒充股票；AInvest公司财报、估值与评级只用于支持的美股公司，行情组件按资产契约选择。最终只交付所选的一个组件 HTML 到 outputs/generated，仅用一个 AIME_CHART 标记引用该最终组件。不要返回研究报告、数据源卡片、CSV/JSON、上游中间图、截图或整张看板外壳，不合并其他组件；不要生成无数据依据的内容。标题具体且基于已取得的数据。刷新时重新获取可更新的数据并保持原始范围与口径；若数据是用户提供的静态数据，使用原数据重渲染，不声称更新了来源。数据不可用时明确报错，不以其他标的或旧示例替代。`;
+    const question=`${request}\n${continuation}\n这是 Widget 画布的组件交付请求。${sourceContract} 配置：${JSON.stringify(pending.parameters)}。请遵守项目技能路由，调用现有业务组件的原生脚本取真实数据；先完整阅读所选技能及组件 schema，按真实 CLI 契约执行，保留组件原生交互、主题、语言和数据来源。国内股票日线使用 a-share-data/historical_kline.py（单只A股、1d），不混用快照作历史OHLCV，不把指数或ETF冒充股票；AInvest公司财报、估值与评级只用于支持的美股公司，行情组件按资产契约选择。最终只交付所选的一个组件 HTML 到 outputs/generated，仅用一个 AIME_CHART 标记引用该最终组件。不要返回研究报告、数据源卡片、CSV/JSON、上游中间图、截图或整张看板外壳，不合并其他组件；不要生成无数据依据的内容。标题具体且基于已取得的数据。刷新时重新获取可更新的数据并保持原始范围与口径；若数据是用户提供的静态数据，使用原数据重渲染，不声称更新了来源。数据不可用时明确报错，不以其他标的或旧示例替代。`;
     try {
-      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question,agent:'mentora',reasoningEffort,sessionId:`widget-${board.id}-${pendingId}-${uid()}`,history:[],images:[],reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='light'?'light':'dark'})});
+      const response=await fetch('/api/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},signal:controller.signal,body:JSON.stringify({question,agent:'mentora',reasoningEffort,sessionId:`widget-${board.id}-${pendingId}-${uid()}`,history:generationHistory,images:[],reasoningFramework:typeof DEFAULT_REASONING_FRAMEWORK==='string'?DEFAULT_REASONING_FRAMEWORK:'deepseek',inferenceModel:typeof DEFAULT_INFERENCE_MODEL==='string'?DEFAULT_INFERENCE_MODEL:'',themeMode:document.documentElement.dataset.theme==='light'?'light':'dark'})});
       if(!response.ok)throw Error(`生成请求失败（${response.status}）`);
       await readEventStream(response.body,(event,data)=>{
         if(event==='final')final=data;
@@ -605,8 +611,8 @@
     const controller=new AbortController();commandControllers.set(board.id,controller);jobs.set(board.id,controller);
     const snapshot=JSON.parse(JSON.stringify(board)),selection=selectedCardId;
     const reasoningEffort=typeof currentReasoningEffort==='string'?currentReasoningEffort:'low';
-    const history=(board.chat||[]).slice(-12).map(({role,content})=>({role,content}));
-    board.chat=[...(board.chat||[]),{role:'user',content:message,scope:selection?board.cards.find(c=>c.id===selection)?.title:'整个看板'}].slice(-40);save();
+    const history=(board.chat||[]).slice(-12).map(({role,content,scope,scopeId})=>({role,content,scope:scope||'',cardId:scopeId||''}));
+    board.chat=[...(board.chat||[]),{role:'user',content:message,scope:selection?board.cards.find(c=>c.id===selection)?.title:'整个看板',scopeId:selection||''}].slice(-40);save();
     render();setProgress(board,'正在理解你的看板需求，梳理分析结构…');
     let reply='';
     try{

@@ -32,6 +32,8 @@ def _kline_settings_schema() -> dict:
             {'key': 'ma', 'label': '均线周期', 'type': 'integer-list', 'default': [5, 10, 20, 60], 'min': 1, 'max': 1000, 'placeholder': '例如 5,10,20,60'},
             {'key': 'subIndicators', 'label': '副图指标', 'type': 'multi-select', 'default': mappings.get('subIndicators', {}).get('default') or ['VOL', 'MACD'], 'options': [[v, v] for v in indicators]},
             {'key': 'klineType', 'label': 'K 线样式', 'type': 'select', 'default': mappings.get('klineType', {}).get('default') or 'candle-hollow', 'options': [['candle-hollow', '空心 K 线'], ['candle-solid', '实心 K 线'], ['line', '收盘价折线']]},
+            {'key': 'volumeBarStyle', 'label': '成交量柱样式', 'type': 'select', 'default': 'solid', 'options': [['solid', '实心'], ['hollow', '空心']]},
+            {'key': 'macdBarStyle', 'label': 'MACD 柱样式', 'type': 'select', 'default': 'solid', 'options': [['solid', '实心'], ['hollow', '空心']]},
             {'key': 'candleColorMode', 'label': '涨跌颜色', 'type': 'select', 'default': '', 'options': [['', '跟随市场'], ['green_up_red_down', '绿涨红跌'], ['red_up_green_down', '红涨绿跌']]},
             {'key': 'fromDate', 'label': '开始日期', 'type': 'date'},
             {'key': 'toDate', 'label': '结束日期', 'type': 'date'},
