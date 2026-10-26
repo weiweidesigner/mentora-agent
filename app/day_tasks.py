@@ -114,6 +114,7 @@ class TaskInput(BaseModel):
     workflow: dict[str, Any] | None = None
     timeMode: Literal['fixed', 'open', 'close'] = 'fixed'
     triggerMode: Literal['once', 'window'] = 'once'
+    frequency: Literal['once', 'interval'] = 'once'
     windowStart: str = '09:30'
     windowEnd: str = '15:00'
     intervalMinutes: int = Field(default=30, ge=5, le=240)
@@ -153,11 +154,12 @@ class TaskInput(BaseModel):
                 raise ValueError('请选择有效的时区')
         if not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', self.time):
             raise ValueError('时间格式应为 HH:MM')
-        if self.triggerMode == 'window':
+        if self.triggerMode == 'window' or self.frequency == 'interval':
             if any(not re.fullmatch(r'(?:[01]\d|2[0-3]):[0-5]\d', v) for v in (self.windowStart, self.windowEnd)):
                 raise ValueError('时段格式应为 HH:MM')
             if self.windowStart >= self.windowEnd:
-                raise ValueError('结束时间必须晚于开始时间，请使用市场当地时间')
+                raise ValueError('结束时间必须晚于开始时间')
+        if self.triggerMode == 'window':
             if self.stage == 'rest' or self.cadence != 'trading' or self.timezone != 'market':
                 raise ValueError('时段触发请使用交易日、交易场景和市场当地时区')
             opening, closing = '09:30', '15:00' if self.market == 'CN' else '16:00'
@@ -214,14 +216,23 @@ def next_occurrence(config, after):
         if config['cadence'] == 'monthly' and day.day != config.get('monthDay', 1):
             continue
         if config['timeMode'] == 'fixed':
-            candidate = dt.datetime.combine(day, dt.time.fromisoformat(config['time']), zone)
-            if config.get('stage')=='rest' and session(market,candidate.astimezone(ZoneInfo(MARKETS[market]['zone'])).date()) is not None:
-                continue
-            if config['cadence'] == 'trading':
-                # A fixed Beijing time for US stocks belongs to its exchange-local date.
+            interval_mode = config.get('frequency') == 'interval'
+            candidate = dt.datetime.combine(day, dt.time.fromisoformat(config['windowStart'] if interval_mode else config['time']), zone)
+            end = dt.datetime.combine(day, dt.time.fromisoformat(config['windowEnd']), zone) if interval_mode else None
+            interval = dt.timedelta(minutes=config.get('intervalMinutes', 30))
+            if interval_mode and after >= candidate:
+                candidate += interval * (int((after - candidate) // interval) + 1)
+            while end is None or candidate < end:
                 exchange_day = candidate.astimezone(ZoneInfo(MARKETS[market]['zone'])).date()
-                if session(market, exchange_day) is None:
-                    continue
+                valid = not (config.get('stage') == 'rest' and session(market, exchange_day) is not None)
+                if config['cadence'] == 'trading' and session(market, exchange_day) is None:
+                    valid = False
+                if valid and candidate > after:
+                    return stamp(candidate)
+                if not interval_mode:
+                    break
+                candidate += interval
+            continue
         else:
             s = session(market, day)
             if s is None:
@@ -279,6 +290,8 @@ def task_scene(config, at=None):
     if config.get('timeMode')=='close':return 'post' if config.get('offset',0)>=0 else 'live'
     time=dt.time.fromisoformat(config.get('time','09:00'))
     zone=ZoneInfo(MARKETS[config['market']]['zone'] if config.get('timezone','market')=='market' else config['timezone'])
+    if config.get('frequency') == 'interval':
+        time = (at or now_utc()).astimezone(zone).time().replace(tzinfo=None)
     exchange=dt.datetime.combine((at or now_utc()).astimezone(zone).date(),time,zone).astimezone(ZoneInfo(MARKETS[config['market']]['zone'])).time()
     close=dt.time(15,0) if config['market']=='CN' else dt.time(16,0)
     return 'pre' if exchange<dt.time(9,30) else 'live' if exchange<close else 'post'
@@ -589,7 +602,7 @@ class DayTasks:
                 next_at = next_occurrence(config, now)
             except Exception:
                 next_at = None
-            if config['cadence'] == 'once':
+            if config['cadence'] == 'once' and not next_at:
                 config['enabled'] = False
             db.execute('UPDATE tasks SET config=?,next_at=? WHERE id=?', (self.pack(config), next_at, row['id']))
         return run_id

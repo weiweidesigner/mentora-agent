@@ -112,7 +112,7 @@
     } catch(error) {if(!controller.signal.aborted&&version===viewVersion){waiting.remove();liveArticle?.remove();userNode.remove();$('taskChatError').textContent=error.message;if(!revision){$('taskChatInput').value=text;taskImages=images;renderTaskImages();}}}
     finally{revision?.article.querySelectorAll('textarea,button').forEach(node=>node.disabled=false);if(chatController===controller){chatController=null;$('taskChatSend').disabled=false;}}
   }
-  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.triggerMode,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay]);
+  const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.triggerMode,t.frequency,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
   let originalQuestionTemplate = '', originalVisibleQuestion = '';
   let wizardDraft = null, wizardStep = 0, saving = false;
@@ -150,7 +150,7 @@
     if(task.triggerMode==='window')return `交易日 · ${task.windowStart}–${task.windowEnd} · 每 ${task.intervalMinutes} 分钟（${task.market==='US'?'美东时间':'市场当地时间'}）`;
     const repeat = task.cadence==='custom' ? '每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、') : task.cadence==='weekly' ? '每周'+'一二三四五六日'[(task.weekdays || [0])[0]] : task.cadence==='monthly' ? `每月 ${task.monthDay || 1} 日` : cadences[task.cadence];
     const zone=zoneFor(task),zoneName=zone==='America/New_York'?'美东时间':['Asia/Shanghai','Asia/Hong_Kong'].includes(zone)?'北京时间':zone;
-    const timing = task.timeMode==='fixed' ? `${task.time}（${zoneName}）` : `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'} ${Math.abs(task.offset)} 分钟`;
+    const timing = task.frequency==='interval' ? `${task.windowStart}–${task.windowEnd} · 每 ${task.intervalMinutes} 分钟（${zoneName}）` : task.timeMode==='fixed' ? `${task.time}（${zoneName}）` : `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'} ${Math.abs(task.offset)} 分钟`;
     return `${task.cadence==='once'?task.date:repeat} · ${timing}`;
   }
   function template(stage = 'pre', type = 'stocks', selectedMarket = market) {
@@ -229,6 +229,7 @@
     return includeTime?`${label} ${clock}${task.market==='US'?'（北京时间）':''}`:label;
   }
   function compactSchedule(task) {
+    if(task.triggerMode!=='window'&&task.frequency==='interval')return schedule(task);
     if(task.triggerMode==='window')return `${names[task.market]} · ${stages[task.stage]} · ${task.market==='US'?'美东 ':''}${task.windowStart}–${task.windowEnd} 每${task.intervalMinutes}分钟`;
     const time=task.timeMode==='fixed'?String(task.time||'').replace(/^0/,''): `${task.timeMode==='open'?'开盘':'收盘'}${task.offset<0?'前':'后'}${Math.abs(task.offset)}分钟`;
     const repeat=task.cadence==='weekly'?'每周'+'一二三四五六日'[(task.weekdays||[0])[0]]:task.cadence==='custom'?'每周'+(task.weekdays||[0]).map(d=>'一二三四五六日'[d]).join('、'):cadences[task.cadence]||'';
@@ -241,7 +242,7 @@
     if(task.cadence==='once'&&task.lastRun?.status==='failed')return '运行失败'+(task.lastRun.finished?' · '+sidebarDate(task.lastRun.finished,task,true,false):'');
     if(!task.enabled)return '已暂停 · '+compactSchedule(task);
     const next=sidebarDate(task.nextAt,task,!['monthly','weekly','custom'].includes(task.cadence));
-    const repeat=task.cadence==='monthly'?'每月':task.cadence==='once'?'仅一次':compactSchedule(task);
+    const repeat=task.frequency==='interval'?compactSchedule(task):task.cadence==='monthly'?'每月':task.cadence==='once'?'仅一次':compactSchedule(task);
     const timing=next?`${next} · ${repeat}`:'等待执行 · '+repeat;
     return (task.lastRun?.status==='failed'?'运行失败 · ':'')+timing;
   }
@@ -458,27 +459,30 @@
       if(el('stage').value==='rest')el('stage').value='pre';
     }
     const windowed=el('triggerMode').value==='window';
+    const interval=windowed||el('frequency').value==='interval';
+    $('dayFrequencyLabel').hidden=windowed;
     $('dayMarketLabel').hidden=!windowed;
-    const sceneZoneLabel=el('market').value==='US'?'美东时间':el('market').value==='HK'?'香港时间':'北京时间';
+    const selectedZone=el('timezone').value==='market'?(zones[el('market').value]||'Asia/Shanghai'):el('timezone').value;
+    const sceneZoneLabel=windowed?(el('market').value==='US'?'美东时间':el('market').value==='HK'?'香港时间':'北京时间'):({'Asia/Shanghai':'北京时间','Asia/Hong_Kong':'香港时间','America/New_York':'美东时间'}[selectedZone]||selectedZone);
     $('dayWindowStartText').textContent=`开始时间（${sceneZoneLabel}）`;
     $('dayWindowEndText').textContent=`结束时间（${sceneZoneLabel}，不含）`;
     $('dayStageLabel').hidden=!windowed;
     if(!windowed&&el('timezone').value==='market'){const zone=zones[el('market').value]||'Asia/Shanghai';if(![...el('timezone').options].some(o=>o.value===zone))el('timezone').add(new Option(zone,zone));el('timezone').value=zone;}
-    el('windowIntervalAmount').disabled=el('windowIntervalUnit').disabled=!windowed;
+    el('windowIntervalAmount').disabled=el('windowIntervalUnit').disabled=!interval;
     if(windowed){el('cadence').value='trading';el('timezone').value='market';el('repeat').checked=true;}
     el('cadence').disabled=windowed;el('timezone').disabled=windowed;el('repeat').disabled=windowed;
-    $('dayWindowFields').hidden=!windowed;
+    $('dayWindowFields').hidden=!interval;
     const cadence=el('cadence').value;
     $('dayRepeatLabel').hidden=windowed;
     $('dayCadenceLabel').hidden=windowed||!el('repeat').checked;
     $('dayDateLabel').hidden=el('repeat').checked;el('date').required=!el('repeat').checked;
     $('dayCustomLabel').hidden=cadence!=='custom';
     $('dayWeekLabel').hidden=cadence!=='weekly';$('dayMonthLabel').hidden=cadence!=='monthly';
-    $('dayTimeLabel').hidden=windowed;
+    $('dayTimeLabel').hidden=interval;
     $('dayEndModeLabel').hidden=windowed||cadence==='once';$('dayEndLabel').hidden=windowed||cadence==='once'||el('endMode').value!=='date';
     el('endDate').required=!$('dayEndLabel').hidden;
     for(const [channel,id] of [['serverchan','dayServerchanFields'],['feishu','dayFeishuFields'],['wecom','dayWecomFields']])$(id).hidden=!el(channel).checked;
-    $('dayNextPreview').textContent=windowed?`${names[el('market').value]} · ${stages[el('stage').value]} · ${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（市场当地时间）`:`按${el('timezone').value==='market'&&el('market').value==='US'?'美东时间':'北京时间'} ${el('time').value} 执行。`;
+    $('dayNextPreview').textContent=interval?`${windowed?names[el('market').value]+' · '+stages[el('stage').value]+' · ':''}${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（${sceneZoneLabel}）`:`按${sceneZoneLabel} ${el('time').value} 执行。`;
     window.VeyaTaskEditor?.sync();
   }
   let workflowScheduleSave=null;
@@ -493,6 +497,7 @@
     originalVisibleQuestion=String(task.question).replace(/\{\{market\}\}/g,names[task.market]||'所选市场').replace(/\{\{symbols\}\}/g,task.symbols||'全市场').replace(/\{\{date\}\}/g,'执行当天');
     el('question').value=originalVisibleQuestion;
     el('triggerMode').value=task.triggerMode||'once';
+    el('frequency').value=task.frequency||'once';
     if(task.timeMode&&task.timeMode!=='fixed'&&task.nextAt&&Number.isFinite(Date.parse(task.nextAt))){el('time').value=new Intl.DateTimeFormat('en-GB',{timeZone:zoneFor(task),hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(task.nextAt));}
     el('timeMode').value='fixed';el('offset').value='0';
     {const minutes=Number(task.intervalMinutes)||30;setWindowInterval(minutes,minutes%60===0?'hours':'minutes');}
@@ -522,7 +527,7 @@
     if(data.assetType==='watchlist'&&!data.symbols.trim())data.assetType='stocks';
     if(data.endMode==='never')data.endDate='';if(!el('repeat').checked)data.cadence='once';if(data.cadence==='once')data.endDate='';
     data.intervalMinutes=Number(data.intervalMinutes)||30;
-    if(el('triggerMode').value==='window')data.intervalMinutes=Math.round(Number(el('windowIntervalAmount').value)*(el('windowIntervalUnit').value==='hours'?60:1));
+    if(el('triggerMode').value==='window'||el('frequency').value==='interval')data.intervalMinutes=Math.round(Number(el('windowIntervalAmount').value)*(el('windowIntervalUnit').value==='hours'?60:1));
     if(el('triggerMode').value==='window'){data.cadence='trading';data.timezone='market';data.timeMode='fixed';}
     if(data.triggerMode==='once'&&data.stage==='rest')data.stage='pre';
     return data;
@@ -562,7 +567,7 @@
     $('wizardQuestion').innerHTML=content+`<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardNext">${q?(wizardStep===d.questions.length-1?'发送回答并创建':'下一步'):'创建任务'}</button></div>`;
   }
   async function requestPlan(){const d=wizardDraft;if(!d||d.planning)return;d.planning=true;(d.activity||=[]).push({title:'请求任务配置模型',detail:'根据任务面板支持的参数生成草稿与澄清问题。'});renderWizardTranscript();$('taskClarification').hidden=true;const version=viewVersion;
-    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:Object.fromEntries(['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'].filter(k=>d[k]!==undefined).map(k=>[k,d[k]])),answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
+    try{const plan=await api('plan','POST',{message:d.originalQuestion,draft:Object.fromEntries(['title','question','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','frequency','windowStart','windowEnd','intervalMinutes'].filter(k=>d[k]!==undefined).map(k=>[k,d[k]])),answers:(d.answers||[]).map(({field,question,value})=>({field,question,value}))});if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;
       Object.assign(d,plan.draft,{reply:plan.reply,questions:plan.questions,ready:plan.ready});d.planning=false;d.activity.push({title:plan.ready?'任务参数已确认':'需要补充参数',detail:plan.reply});wizardStep=0;renderWizardTranscript();renderWizard();
     }catch(error){if(wizardDraft!==d||workspace.hidden||version!==viewVersion)return;d.planning=false;d.reply='暂时未能生成任务配置，请重试。';d.activity.push({title:'配置请求失败',detail:error.message});renderWizardTranscript();$('taskClarification').hidden=false;$('wizardQuestionTitle').textContent='配置生成失败';$('wizardProgress').textContent='';$('wizardPrevious').disabled=$('wizardForward').disabled=true;$('wizardQuestion').innerHTML='<div class="wizardActions"><button type="button" class="dayButton dayPrimary" id="wizardRetry">重试</button></div>';$('wizardError').textContent=error.message;}
     finally{d.planning=false;}
@@ -576,12 +581,12 @@
     if(d.ready)await saveDraft();
   }
   async function saveDraft(){if(saving||!wizardDraft?.ready)return;saving=true;const d=wizardDraft,record={question:d.originalQuestion,answers:wizardAnswers(d),activity:d.activity||[]};
-    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','windowStart','windowEnd','intervalMinutes'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.timeMode='fixed';data.offset=0;data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
+    const data={};for(const key of ['title','question','agent','market','stage','assetType','symbols','cadence','date','endDate','weekdays','monthDay','time','timeMode','offset','timezone','triggerMode','frequency','windowStart','windowEnd','intervalMinutes'])if(d[key]!==undefined)data[key]=d[key];data.agent=data.agent||'mentora';data.timeMode='fixed';data.offset=0;data.enabled=true;data.browser=data.feishu=data.serverchan=data.wecom=false;
     d.activity.push({title:'保存任务',detail:schedule(d)});$('taskClarification').hidden=true;renderWizardTranscript(true);
     try{const task=await api('tasks','POST',data);tasks.push(task);rememberCreation(task.id,record);if(wizardDraft!==d||$('taskWizard').hidden||workspace.hidden){renderHome();renderLists();return;}wizardDraft=null;renderHome();try{await selectTask(task.id);}catch{prepareDetail(task,true);renderCreatedTask(task);writeUrl(task.id);await loadFollowups({question:task.question},task,viewVersion);await loadTaskConfirmation(task,viewVersion);}message('','taskMessage');}
     catch(error){if(wizardDraft!==d||workspace.hidden)return;renderWizard();$('wizardError').textContent=error.message;throw error;}finally{saving=false;}
   }
-  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.agent,t.cadence,t.time,t.timezone,t.triggerMode,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
+  function confirmationConfig(t){return JSON.stringify([t.title,t.question,t.agent,t.cadence,t.time,t.timezone,t.triggerMode,t.frequency,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay,t.date,t.endDate,t.enabled]);}
   function renderCreatedTask(task){workspace.dataset.taskView='result';const target=$('taskThread');target.replaceChildren();$('taskInfoCard').hidden=true;const record=creationRecord(task.id);
     renderTaskUser(record?.question||visibleQuestion(task),[],target,task);
     if(record?.answers?.length)renderTaskUser(record.answers.map(a=>`> ${a.question}\n${a.answer}`).join('\n\n'),[],target);

@@ -411,6 +411,23 @@ test('repeat controls belong only to absolute-time scheduling',async()=>{
  assert.equal(f.elements.endDate.value,'');assert.equal(f.elements.endMode.value,'never');h.dom.window.close();
 });
 
+test('absolute-time intervals save and reopen independently of market scenes',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm');
+ const change=(name,value)=>{f.elements[name].value=value;f.elements[name].dispatchEvent(new h.w.Event('change',{bubbles:true}));};
+ change('triggerMode','once');change('frequency','interval');change('cadence','daily');
+ assert.equal(d.querySelector('#dayFrequencyLabel').hidden,false);
+ assert.equal(d.querySelector('#dayWindowFields').hidden,false);assert.equal(d.querySelector('#dayTimeLabel').hidden,true);
+ assert.equal(f.elements.timezone.disabled,false);assert.equal(f.elements.cadence.disabled,false);
+ change('windowStart','09:00');change('windowEnd','18:00');change('windowIntervalUnit','hours');change('windowIntervalAmount','2');
+ f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(h.saves[0].frequency,'interval');assert.equal(h.saves[0].intervalMinutes,120);
+ assert.equal(h.saves[0].timezone,'America/New_York');assert.equal(h.saves[0].cadence,'daily');assert.equal(h.saves[0].windowEnd,'18:00');
+ d.querySelector('#taskCardTitle').click();assert.equal(f.elements.frequency.value,'interval');assert.equal(f.elements.windowIntervalAmount.value,'2');
+ change('frequency','once');assert.equal(d.querySelector('#dayWindowFields').hidden,true);assert.equal(d.querySelector('#dayTimeLabel').hidden,false);
+ h.dom.window.close();
+});
+
  test('US next run uses today in Beijing even when New York is still yesterday',async()=>{
  const h=setup({serverTime:'2026-10-15T02:00:00Z',tasks:[{...base,id:'us',market:'US',timezone:'market',nextAt:'2026-10-15T12:30:00Z',triggerMode:'window',windowStart:'08:30',windowEnd:'09:30',intervalMinutes:30}]});await tick();
  const text=h.w.document.querySelector('#taskSidebarList [data-task-open="us"] small').textContent;

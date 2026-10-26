@@ -25,6 +25,29 @@ def main():
                 switch.check()
                 assert switch.is_checked()
                 print(json.dumps(dict(width=width,theme=theme,enabledPurple=True,disabledNeutral=True)))
+                clean=re.sub(r'<script\b[^>]*>.*?</script>','',html,flags=re.S)
+                clean=re.sub(r'<link\b[^>]*>','',clean)
+                page.set_content(clean)
+                page.add_style_tag(content=css)
+                page.evaluate("""() => {
+                    document.documentElement.dataset.theme='"""+theme+"""';
+                    window.fetch=async()=>({ok:true,json:async()=>({tasks:[],sceneTasks:[],markets:[],serverTime:'2026-10-26T01:00:00Z'})});
+                }""")
+                page.add_script_tag(content=(ROOT/'app/static/task-editor.js').read_text())
+                page.add_script_tag(content=(ROOT/'app/static/day-tasks.js').read_text())
+                page.evaluate("""() => window.MentoraTaskScheduling.edit({title:'频率设置',question:'检查任务',market:'CN',stage:'pre',cadence:'daily',time:'09:00',timezone:'Asia/Shanghai',triggerMode:'once',frequency:'interval',windowStart:'09:00',windowEnd:'18:00',intervalMinutes:120,enabled:true},data=>window.savedSchedule=data)""")
+                assert page.locator('#dayFrequencyLabel').is_visible()
+                assert page.locator('#dayWindowFields').is_visible()
+                assert not page.locator('#dayTimeLabel').is_visible()
+                assert page.locator('[name=windowIntervalAmount]').input_value()=='2'
+                for selector in ('#dayFrequencyLabel','#dayWindowFields'):
+                    box=page.locator(selector).bounding_box()
+                    assert box['x']>=0 and box['x']+box['width']<=width,(width,selector,box)
+                page.locator('[data-editor-field=frequency]').click()
+                page.get_by_role('option',name='指定时间',exact=True).click()
+                assert page.locator('#dayTimeLabel').is_visible()
+                assert not page.locator('#dayWindowFields').is_visible()
+                print(json.dumps(dict(width=width,theme=theme,absoluteFrequencyControl=True)))
                 page.close()
         browser.close()
 

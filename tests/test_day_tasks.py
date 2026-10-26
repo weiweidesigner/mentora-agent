@@ -404,6 +404,44 @@ def window_config(**changes):
     return config(stage='live',triggerMode='window',windowStart='09:30',windowEnd='15:00',**changes)
 
 
+def test_absolute_interval_anchors_to_start_and_does_not_skip_weekend_or_lunch():
+    c=config(cadence='daily',frequency='interval',timezone='Asia/Shanghai',windowStart='09:00',windowEnd='14:00',intervalMinutes=17)
+    assert next_occurrence(c,moment('2026-10-24T01:35:11Z')).startswith('2026-10-24T01:51:00')
+    assert next_occurrence(c,moment('2026-10-24T03:50:00Z')).startswith('2026-10-24T04:07:00')
+    assert next_occurrence(c,moment('2026-10-24T06:00:00Z')).startswith('2026-10-25T01:00:00')
+
+
+def test_absolute_interval_respects_date_rules_timezone_and_end_boundary():
+    c=config(cadence='weekly',weekdays=[0],frequency='interval',timezone='America/New_York',windowStart='09:00',windowEnd='12:00',intervalMinutes=120,endDate='2026-11-02')
+    assert next_occurrence(c,moment('2026-10-26T13:00:00Z')).startswith('2026-10-26T15:00:00')
+    assert next_occurrence(c,moment('2026-10-26T16:00:00Z')).startswith('2026-11-02T14:00:00')
+    assert next_occurrence(c,moment('2026-11-02T16:00:00Z')) is None
+    c.update(cadence='monthly',monthDay=31,endDate='2027-01-31')
+    assert next_occurrence(c,moment('2026-11-01T00:00:00Z')).startswith('2026-12-31T14:00:00')
+
+
+@pytest.mark.parametrize('changes',[{'windowStart':'12:00','windowEnd':'09:00'},{'windowStart':'bad'},{'intervalMinutes':0},{'frequency':'bad'}])
+def test_absolute_interval_validation(changes):
+    values=dict(cadence='daily',frequency='interval',timezone='Asia/Shanghai')
+    values.update(changes)
+    with pytest.raises(ValueError):config(**values)
+
+
+def test_single_date_interval_remains_enabled_until_final_trigger(service,monkeypatch):
+    monkeypatch.setattr('app.day_tasks.now_utc',lambda:moment('2026-10-26T00:00:00Z'))
+    task=service.save('alice',TaskInput(**config(cadence='once',date='2026-10-26',frequency='interval',timezone='Asia/Shanghai',windowStart='09:00',windowEnd='10:00',intervalMinutes=30)))
+    with service.db() as db:
+        service.enqueue(db,service.owned(db,'alice',task['id']),automatic=True,now=moment('2026-10-26T01:00:00Z'))
+        row=service.owned(db,'alice',task['id'])
+        assert service.unpack(row['config'])['enabled'] is True
+        assert row['next_at'].startswith('2026-10-26T01:30:00')
+        db.execute('UPDATE tasks SET active_run=NULL WHERE id=?',(task['id'],))
+        service.enqueue(db,service.owned(db,'alice',task['id']),automatic=True,now=moment('2026-10-26T01:30:00Z'))
+        row=service.owned(db,'alice',task['id'])
+        assert service.unpack(row['config'])['enabled'] is False
+        assert row['next_at'] is None
+
+
 def test_window_skips_lunch_end_boundary_and_holiday():
     c=window_config(intervalMinutes=30)
     assert next_occurrence(c,moment('2026-10-21T03:00:00Z')).startswith('2026-10-21T05:00:00')
