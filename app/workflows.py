@@ -98,7 +98,7 @@ def tool_catalog(agent):
                            receiptScripts=['ainvest_news_search.py'] if skill=='internal-search' else []))
         if skill=='internal-search':
             result[-1].update(schema=NewsInput.model_json_schema(),instructions=NEWS_INSTRUCTIONS,
-                              description='直接获取 AInvest 新闻首页或指定分类的原始新闻，不调用 Agent。',defaultArguments={'source':'homepage','limit':10})
+                              description='直接获取 AInvest 新闻首页或指定分类范围内全部原始新闻，不调用 Agent，不默认截断条数。',defaultArguments={'source':'homepage'})
     from app.portfolio_skills import catalog
     icons={'portfolio-account':'wallet','portfolio-backtest':'backtest','portfolio-jev':'scale','portfolio-order':'order','portfolio-data':'database','portfolio-symbols':'search','portfolio-technical':'line_chart'}
     for row in catalog():
@@ -317,12 +317,16 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             publish(node,dict(node_states[node]))
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
         outputs={};states={};receipts={};artifacts=[];warnings=[];started=time.monotonic();owner=config['_owner']
+        user_cancelled=cancelled
+        def cancelled():
+            if time.monotonic()-started>1200:raise TimeoutError('工作流执行超时，尚未评估的标的不视为无机会')
+            return user_cancelled()
         emit=config.get('_emit_event',lambda *_:None)
         for node in ordered_nodes(graph):
             if cancelled():raise InterruptedError('试运行已停止')
             if time.monotonic()-started>1200:raise RuntimeError('工作流执行超时')
             incoming=[e for e in graph.edges if e.target==node.id]
-            active=[e for e in incoming if states.get(e.source) in ('success','partial') and (e.when=='always' or str(bool(outputs.get(e.source,{}).get('value'))).lower()==e.when)]
+            active=[e for e in incoming if states.get(e.source) in ('success','partial') and (e.when=='always' or outputs.get(e.source,{}).get('value') is (e.when=='true'))]
             # Execution joins need every unconditional input, not just an account
             # or profile side input. Output is an OR merge of the selected paths.
             unavailable=[e.source for e in incoming if e.when=='always' and e not in active]
@@ -351,12 +355,18 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     value=self.portfolio.workflow.favorites(owner) if node.kind=='watchlist' else self.portfolio.workflow.preferences(owner)
                 elif node.kind=='condition':
                     v=self.resolve('{{'+node.path+'}}',outputs)
+                    parent=outputs.get(node.path.split('.')[0],{})
                     if node.operator=='truthy':passed=bool(v)
                     elif node.operator=='equals':passed=str(v)==node.expected
                     elif node.operator=='contains':passed=node.expected in str(v)
                     elif node.operator=='greater':passed=float(v)>float(node.expected)
                     else:passed=float(v)<float(node.expected)
                     value=dict(value=passed,actual=v)
+                    if isinstance(parent,dict) and 'evaluatedCount' in parent:
+                        incomplete=parent.get('status')=='partial'
+                        value['interpretation']=parent.get('interpretation','')
+                        if not passed and incomplete:
+                            value.update(value=None,evaluationStatus='incomplete',interpretation='候选尚未全部完成评估，不能判定无机会。'+value['interpretation'])
                 elif node.kind=='watchlist_update':
                     value=update_observations(self.portfolio,owner,graph,node.id,receipts,run_id,config.get('title','WorkFlow'),preview=trial)
                 elif node.kind=='output':
@@ -465,7 +475,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
         leaves=[n.id for n in graph.nodes if not any(e.source==n.id for e in graph.edges) and states.get(n.id) in ('success','partial')]
         text='\n\n'.join(outputs[i].get('interpretation') or json.dumps(outputs[i],ensure_ascii=False) if isinstance(outputs[i],dict) else json.dumps(outputs[i],ensure_ascii=False) for i in leaves)
         if warnings:
-            text='部分标的未完成（未生成或替代这些标的的数据）：\n'+'\n'.join(item['symbol']+'：'+item['error'] for warning in warnings for item in warning['errors'])+'\n\n'+text
+            text='部分标的未完成（不能据此判定无机会）：\n'+'\n'.join(str(item.get('symbol') or '未确认标的')+'：'+str(item.get('error') or item.get('reason') or '未完成评估') for warning in warnings for item in warning['errors'])+'\n\n'+text
         return dict(interpretation=text or '工作流已完成。',reportArtifacts=artifacts,workflowNodes=states,workflowWarnings=warnings)
 
     def start_trial(self,owner,payload):

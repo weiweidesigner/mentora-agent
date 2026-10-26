@@ -26,8 +26,8 @@ def test_defaults_execute_one_registered_skill_and_keep_missing_fields(root):
     assert result['outputSource']=='verified-skill-json' and '[warn]' in result['stderr']
     args=result['skillReceipt']['testArgs']
     assert args[args.index('--source')+1]=='homepage'
-    assert args[args.index('--limit')+1]=='10'
-    assert args[args.index('--max-details')+1]=='10'
+    assert args[args.index('--limit')+1]=='0'
+    assert args[args.index('--max-details')+1]=='0'
     assert not result.get('reportArtifacts') and not result.get('fileArtifacts')
     assert result['items'][0]['related_symbols']==['GOOG','GOOGL','META']
     assert result['items'][0]['mentioned_symbols']==['NVDA']

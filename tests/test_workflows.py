@@ -155,6 +155,27 @@ def test_direct_condition_edge_cannot_be_overridden_by_side_input(env):
     assert result['workflowNodes']['join']=='skipped' and not env.calls
 
 
+@pytest.mark.parametrize('incomplete',[False,True])
+def test_empty_opportunity_result_is_false_only_after_complete_assessment(env,monkeypatch,incomplete):
+    from app import text_opportunities
+    monkeypatch.setattr('app.workflows.tool_catalog',lambda agent:[text_opportunities.TOOL])
+    def extract(*args,**kwargs):
+        return dict(items=[],count=0,evaluatedCount=1,mentionedCount=2 if incomplete else 1,
+                    status='partial' if incomplete else 'completed',errors=[],
+                    deferred=[dict(symbol='MSFT',reason='fixture not evaluated')] if incomplete else [],
+                    interpretation='Fixture original evaluation summary')
+    monkeypatch.setattr(text_opportunities,'execute',extract)
+    g=graph([dict(id='input',kind='start',title='输入'),dict(id='opps',kind='tool',tool='text-opportunities',title='评估',arguments={'text':'fixture'}),dict(id='gate',kind='condition',title='是否有候选',path='opps.items'),dict(id='out',kind='output',title='无候选结果')],
+            [dict(source='input',target='opps'),dict(source='opps',target='gate'),dict(source='gate',target='out',when='false')])
+    states={};result=env.service.execute({'workflow':g,'question':'offline','_owner':'fixture'},'fixture',lambda n,s:states.update({n:s}))
+    assert states['gate']['output']['value'] is (None if incomplete else False)
+    assert states['out']['status']==('skipped' if incomplete else 'success')
+    if incomplete:
+        assert 'fixture not evaluated' in result['interpretation']
+        assert '不能据此判定无机会' in result['interpretation']
+    else:assert states['out']['output']['interpretation']=='Fixture original evaluation summary'
+
+
 def test_missing_field_from_executed_branch_still_fails_instead_of_silently_skipping(env):
     g=graph([dict(id='input',kind='start',title='输入'),dict(id='join',kind='condition',title='字段错误',path='input.missing')],[dict(source='input',target='join')])
     # Structured tool/condition resolution remains strict; no fabricated empty result.

@@ -97,7 +97,7 @@ class SkillResults:
             if not path.is_relative_to(output_root) or path.suffix.lower()!='.json':continue
             try:
                 stat=path.stat()
-                if stat.st_mtime+1<self.started or stat.st_size>2_000_000:continue
+                if stat.st_mtime+1<self.started or stat.st_size>20_000_000:continue
                 payload=json.loads(path.read_text(encoding='utf-8'))
             except (OSError,ValueError,UnicodeError):continue
             if not isinstance(payload,list) or any(not isinstance(item,dict) for item in payload):continue

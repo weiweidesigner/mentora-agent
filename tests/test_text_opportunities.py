@@ -94,6 +94,40 @@ def test_long_raw_news_keeps_bounded_jev_excerpts(service):
     assert len(json.dumps(seen,ensure_ascii=False))<5000
 
 
-@pytest.mark.parametrize('payload',[{'text':''},{'text':'   '},{'text':'AAPL','maxCandidates':31},{'text':'AAPL','markets':['XX']},{'text':'AAPL','minimumConfidence':float('nan')},{'text':'AAPL','owner':'other'}])
+@pytest.mark.parametrize('payload',[{'text':''},{'text':'   '},{'text':'AAPL','maxCandidates':0},{'text':'AAPL','markets':['XX']},{'text':'AAPL','minimumConfidence':float('nan')},{'text':'AAPL','owner':'other'}])
 def test_schema_rejects_bad_arguments(payload):
     with pytest.raises(ValueError):tool.Input.model_validate(payload)
+
+
+@pytest.mark.parametrize('structured',[False,True])
+def test_default_evaluates_all_more_than_thirty_candidates(service,monkeypatch,structured):
+    records=[dict(symbol='TST'+str(i),market='US',name='Fixture Company '+str(i),aliases=[]) for i in range(40)]
+    monkeypatch.setattr(tool,'directory',lambda s:records)
+    text=' '.join(r['symbol'] for r in records)
+    if structured:text=json.dumps([dict(title='fixture only',content_text=text,related_symbols=[r['symbol'] for r in records])])
+    result=tool.execute(service,'fixture',{'text':text},predict=lambda s,q:answer(s['symbol']))
+    assert result['evaluatedCount']==40 and result['remainingCount']==0 and result['deferred']==[]
+
+
+def test_structured_news_uses_all_explicit_codes_and_article_prose_not_json_noise(service,monkeypatch):
+    records=[dict(symbol=s,market='US',name=name,aliases=[]) for s,name in [('GOOG','Alphabet'),('GOOGL','Alphabet'),('META','Meta Platforms'),('NVDA','Nvidia'),('AI','C3.ai'),('U','Unity'),('S','SentinelOne')]]
+    monkeypatch.setattr(tool,'directory',lambda s:records)
+    article=dict(title='AI in the U.S. fixture',summary='Fixture summary',content_text='Alphabet tests a product. Nvidia faces fixture risk. Meta Platforms has fixture evidence.',aime_summary='Original source overview.',related_symbols=['GOOG','GOOGL','META'],mentioned_symbols=['NVDA'],url='https://example.invalid/news',image='https://example.invalid/AI/U/S.png',published_at='2026-10-26')
+    seen=[]
+    result=tool.execute(service,'fixture',{'text':json.dumps([article,article])},predict=lambda s,q:seen.append(s) or answer(s['symbol']))
+    assert result['source']=='structured-news' and set(result['symbols'])=={'GOOG','GOOGL','META','NVDA'}
+    assert result['evaluatedCount']==4 and all(len(s['untrustedArticles'])==2 for s in seen)
+    assert all('related_symbols' not in json.dumps(s) and '.png' not in json.dumps(s) for s in seen)
+    assert all(e['text'] in article[e['sourceField']] for a in result['assessments'] for e in a['evidence'])
+
+
+def test_unknown_explicit_news_symbol_is_pending_not_no_opportunities(service):
+    article=dict(title='fixture',content_text='fixture',related_symbols=['ZZZZUNKNOWN'],mentioned_symbols=[])
+    result=tool.execute(service,'fixture',{'text':json.dumps([article])},predict=lambda *a:pytest.fail('Unknown identity'))
+    assert result['status']=='partial' and result['remainingCount']==1 and result['items']==[]
+
+
+def test_plain_text_short_words_require_explicit_ticker_notation(service,monkeypatch):
+    monkeypatch.setattr(tool,'directory',lambda s:[dict(symbol=c,market='US',name='Fixture '+c+' Corporation',aliases=[]) for c in ['AI','U','S','A']])
+    result=tool.execute(service,'fixture',{'text':'AI in the U.S. A company and S&P index. $AI NASDAQ:U'},predict=lambda s,q:answer(s['symbol']))
+    assert result['symbols']==['AI','U']
