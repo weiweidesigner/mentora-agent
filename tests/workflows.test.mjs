@@ -271,6 +271,16 @@ test('workflow titles use available header width and node statuses stay horizont
  assert.match(css,/\.wfNode header>span:nth-child\(2\)\{min-width:0;flex:1\}/);
  assert.match(css,/\.wfNodeState\{[^}]*flex:none[^}]*white-space:nowrap[^}]*word-break:keep-all[^}]*writing-mode:horizontal-tb/);
 });
+test('tool nodes display the actual catalogue name and fall back to their tool id',async()=>{
+ const s=await setup();try{
+  const nodes=[{id:'data',kind:'tool',tool:'search',title:'逐标的获取真实历史行情',x:90,y:140},{id:'unknown',kind:'tool',tool:'custom-data-reader',title:'读取数据',x:440,y:140}];
+  await s.w.MentoraWorkflow.open({workflow:{version:1,nodes,edges:[]}});
+  const label=s.d.querySelector('[data-node=data] header small');
+  assert.equal(label.textContent,'搜索');assert.equal(label.title,'搜索');
+  assert.equal(s.d.querySelector('[data-node=unknown] header small').textContent,'custom-data-reader');
+  assert.equal(s.d.querySelector('[data-node=data] strong').textContent,'逐标的获取真实历史行情');
+ }finally{s.w.close();}
+});
 test('saved trading nodes migrate to execution and observation actions when reopened',async()=>{
  const s=await setup();try{
   const old={version:1,nodes:[{id:'trade',kind:'tool',tool:'portfolio-order',title:'执行模拟交易',instruction:'读取模拟账户并提交模拟订单',x:90,y:140},{id:'out',kind:'output',title:'输出回测决策与交易报告',x:440,y:140}],edges:[{source:'trade',target:'out',when:'always'}]};

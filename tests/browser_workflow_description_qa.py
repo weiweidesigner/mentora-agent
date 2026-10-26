@@ -31,6 +31,7 @@ def main():
             page.goto('http://workflow.test/')
             page.evaluate('(graph)=>window.MentoraWorkflow.open({workflow:graph})',graph)
             node=page.locator('[data-node=data]')
+            assert node.locator('header small').inner_text()=='交易数据'
             for zoom in range(4):
                 if zoom:page.locator('[data-act=zoom-out]').click()
                 metrics=node.locator('p').evaluate('el=>{const s=getComputedStyle(el);return {height:el.getBoundingClientRect().height,line:parseFloat(s.lineHeight),padding:s.padding,clamp:s.webkitLineClamp,max:parseFloat(s.maxHeight),title:el.title,text:el.textContent}}')

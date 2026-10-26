@@ -266,13 +266,14 @@ test('native financial configuration resolves a keyword to the native stock code
 });
 test('native kline visual settings patch the live iframe without regeneration',async()=>{
  const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',url:'/generated/kline.html',request:'分析 AAPL 日线趋势',parameters:{symbols:['AAPL'],market:'default',interval:'1d',ma:[5,10,20,60],subIndicators:['VOL','MACD']}});
- const parameters={symbols:['AAPL'],market:'default',interval:'1d',ma:[8,21,55],subIndicators:['VOL','RSI'],maColors:['#ef4444','#22c55e','#3b82f6'],maLineWidth:2.4,annotationStyles:[{text:'颈线',color:'#f97316',lineStyle:'dashed',lineWidth:3}],pineStyles:[{title:'EMA',kind:'plot',color:'#8b5cf6',width:2}]};
+ const parameters={symbols:['AAPL'],market:'default',interval:'1d',klineType:'candle-hollow',ma:[8,21,55],subIndicators:['VOL','RSI'],maColors:['#ef4444','#22c55e','#3b82f6'],maLineWidth:2.4,annotationStyles:[{text:'颈线',color:'#f97316',lineStyle:'dashed',lineWidth:3}],pineStyles:[{title:'EMA',kind:'plot',color:'#8b5cf6',width:2}]};
  const s=setup({storage:data,plan:{reply:'已更新图表样式。',actions:[{type:'update',cardId:'one',componentId:'kline',parameters}]}}),frame=s.d.querySelector('[data-card="one"] iframe'),messages=[];
  frame.contentWindow.postMessage=(message,origin)=>messages.push({message,origin});
  s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'把均线和现有颈线改下样式');await tick();await tick();
  assert.equal(s.calls.some(c=>c.url==='/api/chat/stream'),false);
  assert.equal(s.d.querySelector('[data-card="one"] iframe'),frame);
  assert(messages.some(item=>item.message.type==='mentora:kline-config'&&item.message.patch.maLineWidth===2.4));
+ assert(messages.some(item=>item.message.type==='mentora:kline-config'&&item.message.patch.klineType==='candle-hollow'));
  const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
  assert.deepEqual(card.parameters.ma,[8,21,55]);assert.equal(card.url,'/generated/kline.html');s.dom.window.close();
 });
