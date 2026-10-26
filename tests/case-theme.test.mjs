@@ -5,12 +5,14 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 
 const app=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+const imageDetection=app.slice(app.indexOf('function isGeneratedImageArtifact('),app.indexOf('function generatedImageUrl('));
 test('generated chart filenames reach the artifact route after exactly one URL decode',()=>{
   for(const prefix of ['', '/mentora']){
     // Match the deployed nginx prefix transformation for frontend source.
     const deployed=prefix?app.replaceAll('"/generated/',`"${prefix}/generated/`).replaceAll('"/share-artifact/',`"${prefix}/share-artifact/`):app;
     const dom=new JSDOM('',{url:`https://example.com${prefix}/`});
     const context=vm.createContext({document:dom.window.document,window:dom.window,URL,currentThemeMode:()=> 'dark',setTimeout:()=>1});
+    vm.runInContext(imageDetection,context);
     vm.runInContext(deployed.slice(deployed.indexOf('function createArtifactFallbackFrame('),deployed.indexOf('async function artifactCode(')),context);
     for(const name of ['chart.html','deepseek-fast-review-bar_chart-个股.html','成交额 100% #1.html']){
       for(const filename of [name,encodeURIComponent(name)]){
@@ -30,6 +32,7 @@ test('generated chart filenames reach the artifact route after exactly one URL d
 test('cached iframe themes follow the host initially and after toggling, including deployed prefixes',()=>{
   const dom=new JSDOM('',{url:'https://example.com/veya/'});
   const context=vm.createContext({document:dom.window.document,window:dom.window,URL,currentThemeMode:()=> 'dark',resizeReportDocumentFrame:()=>{},setTimeout:()=>1,clearTimeout:()=>{}});
+  vm.runInContext(imageDetection,context);
   vm.runInContext(app.slice(app.indexOf('function createArtifactFallbackFrame('),app.indexOf('async function artifactCode(')),context);
   for(const path of ['/static/cases/amd/chart.html','/veya/static/cases/jpm/chart.html']) {
     context.item={url:path};const shell=vm.runInContext('createArtifactFallbackFrame(item,0)',context);

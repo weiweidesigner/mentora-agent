@@ -1,4 +1,29 @@
 from app import presentation
+import re
+from urllib.parse import urljoin
+import pytest
+
+
+@pytest.mark.parametrize('head',['<html><head><title>Image</title></head><body>{body}</body></html>','{body}'])
+def test_shared_generated_images_keep_original_asset_directory(monkeypatch,tmp_path,head):
+    monkeypatch.setattr(presentation,'GENERATED_DIR',tmp_path)
+    name='flux-existing.html'
+    (tmp_path/name).write_text(head.format(body='<img src="flux-existing.png" alt="image">'))
+    response=presentation.share_streamviz_artifact(name)
+    document=response.body.decode()
+    base=re.search(r'<base href="([^"]+)">',document)[1]
+    assert base=='/generated/'
+    assert document.index('<base')<document.index('</head>')
+    for mount in ['', '/mentora','/nested/mentora']:
+        served_base=base.replace('/generated/',mount+'/generated/')
+        assert urljoin(urljoin('https://example.com'+mount+'/share-artifact/'+name,served_base),'flux-existing.png')=='https://example.com'+mount+'/generated/flux-existing.png'
+
+
+def test_shared_artifact_preserves_explicit_resource_base(monkeypatch,tmp_path):
+    monkeypatch.setattr(presentation,'GENERATED_DIR',tmp_path)
+    (tmp_path/'explicit.html').write_text('<html><head><base href="https://assets.example.com/"></head><body>report</body></html>')
+    document=presentation.share_streamviz_artifact('explicit.html').body.decode()
+    assert document.count('<base ')==1 and 'href="https://assets.example.com/"' in document
 
 
 def test_export_keeps_multiple_charts_between_their_original_paragraphs():

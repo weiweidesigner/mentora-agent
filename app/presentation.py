@@ -616,6 +616,13 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
         artifact = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=500, detail="cannot read generated artifact") from exc
+    # The same document is served under /share-artifact/ and /generated/.
+    # Preserve its original resource directory (images, styles, scripts) when
+    # previewing it at the alternate route, including old FLUX documents.
+    artifact_base='<base href="/generated/">'
+    if not re.search(r'<base\b[^>]*\bhref\s*=',artifact,re.I):
+        if re.search(r'<head\b[^>]*>',artifact,re.I):
+            artifact=re.sub(r'(<head\b[^>]*>)',lambda m:m[0]+artifact_base,artifact,count=1,flags=re.I)
     artifact = upgrade_legacy_intraday(artifact, theme)
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_generic_chart_typography(artifact)
@@ -645,7 +652,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     if re.search(r"</head\s*>", artifact, flags=re.I):
         document = re.sub(r"</head\s*>", lambda _: f"{runtime_theme}</head>", artifact, count=1, flags=re.I)
     else:
-        document = f'<!doctype html><html lang="zh-CN" data-theme="{theme}"><head><meta charset="utf-8">{runtime_theme}</head><body>{artifact}</body></html>'
+        base='' if re.search(r'<base\b[^>]*\bhref\s*=',artifact,re.I) else artifact_base
+        document = f'<!doctype html><html lang="zh-CN" data-theme="{theme}"><head><meta charset="utf-8">{base}{runtime_theme}</head><body>{artifact}</body></html>'
     return HTMLResponse(document, headers={"Cache-Control": "no-store"})
 
 

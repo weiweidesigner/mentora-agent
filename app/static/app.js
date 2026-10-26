@@ -1203,6 +1203,7 @@ window.addEventListener('message',event=>{
 });
 
 function createArtifactFallbackFrame(item, index, options = {}) {
+  if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
   const loadingStartedAt = Date.now();
   const demoLoadingMs = Math.max(0, Number(options.demoLoadingMs || 0));
   const shell = document.createElement("div");
@@ -1297,6 +1298,7 @@ async function artifactCode(url) {
 
 function createStreamVisualizationArtifact(item, index, options = {}) {
   item = canonicalArtifact(item);
+  if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
   if (Number(options.demoLoadingMs) > 0) return createArtifactFallbackFrame(item, index, { demoLoadingMs: options.demoLoadingMs });
   const host = document.createElement("div");
   host.className = `streamvizArtifactHost${options.live ? " is-live" : ""}`;
@@ -3733,7 +3735,7 @@ function buildVideoLane(videos, options = {}) {
 function isGeneratedImageArtifact(item) {
   if (item.mediaType === "image") return true;
   if (item.imageUrl && /\.(?:png|jpe?g|webp|gif)(?:[?#]|$)/i.test(item.imageUrl)) return true;
-  return /(?:^|\/)generated\/flux-[^/]+\.html$/i.test(new URL(item.url, window.location.origin).pathname);
+  return /(?:^|\/)generated\/flux-[^/]+\.html$/i.test(new URL(item.url||item.htmlUrl, window.location.origin).pathname);
 }
 
 function generatedImageUrl(value) {
@@ -3749,7 +3751,7 @@ function generatedImageUrl(value) {
 }
 
 function createGeneratedImageArtifact(item) {
-  const artifactUrl = new URL(item.url, window.location.origin);
+  const artifactUrl = new URL(item.url||item.htmlUrl, window.location.origin);
   artifactUrl.pathname = artifactUrl.pathname.replace(/\.html$/i, ".png");
   const image = document.createElement("img");
   image.className = "reportGeneratedImage";
@@ -3762,6 +3764,7 @@ function createGeneratedImageArtifact(item) {
   });
   const preview = document.createElement("div");
   preview.className = "reportGeneratedImageButton";
+  preview.dataset.artifactUrl=String(item.url||item.htmlUrl||'');
   preview.append(image);
   return preview;
 }
