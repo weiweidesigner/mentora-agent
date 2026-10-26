@@ -365,7 +365,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     if isinstance(parent,dict) and 'evaluatedCount' in parent:
                         incomplete=parent.get('status')=='partial'
                         value['interpretation']=parent.get('interpretation','')
-                        if not passed and incomplete:
+                        if not passed and incomplete and node.operator=='truthy' and node.path.endswith(('.items','.symbols','.count')):
                             value.update(value=None,evaluationStatus='incomplete',interpretation='候选尚未全部完成评估，不能判定无机会。'+value['interpretation'])
                 elif node.kind=='watchlist_update':
                     value=update_observations(self.portfolio,owner,graph,node.id,receipts,run_id,config.get('title','WorkFlow'),preview=trial)
