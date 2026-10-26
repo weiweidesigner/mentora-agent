@@ -43,3 +43,23 @@ test('pasted image opens OCR, select all supports partial selection and adds onl
   assert(!s.calls.some(c=>/chat|order|workflow/.test(c.url)));
  }finally{s.w.close();}
 });
+test('bulk favorites use at most four concurrent requests and expose partial failures',async()=>{
+ const s=setup();try{
+  let active=0,maximum=0,importedEvent=0;
+  s.d.querySelector('#portfolioWorkspace').addEventListener('portfolio:favorites-imported',()=>importedEvent++);
+  s.w.fetch=async(url,options)=>{
+   if(url.endsWith('/ocr'))return {ok:true,json:async()=>({candidates:Array.from({length:9},(_,i)=>({symbol:'TEST'+i,market:'us',evidence:'fixture'}))})};
+   active++;maximum=Math.max(maximum,active);await new Promise(r=>setTimeout(r,20));active--;
+   const failed=JSON.parse(options.body).symbol==='TEST4';return {ok:!failed,json:async()=>failed?{detail:'fixture invalid code'}:{ok:true}};
+  };
+  const upload=s.d.querySelector('input[type=file]');Object.defineProperty(upload,'files',{value:[new s.w.File(['fixture'],'stocks.png',{type:'image/png'})]});upload.dispatchEvent(new s.w.Event('change'));await tick();await tick();
+  s.d.querySelector('[data-ocr-all]').click();s.d.querySelector('[data-ocr-add]').click();
+  assert.match(s.d.querySelector('[data-ocr-add]').textContent,/正在加入 0\/9/);
+  await new Promise(r=>setTimeout(r,150));
+  assert.equal(maximum,4);assert.equal(importedEvent,1);
+  assert.equal(s.d.querySelectorAll('.is-imported').length,8);
+  assert.match(s.d.querySelector('[data-ocr-status]').textContent,/已加入 8 项/);
+  assert.match(s.d.querySelector('[data-ocr-status]').textContent,/TEST4：fixture invalid code/);
+  assert.equal(s.d.querySelector('[data-ocr-add]').disabled,false);
+ }finally{s.w.close();}
+});

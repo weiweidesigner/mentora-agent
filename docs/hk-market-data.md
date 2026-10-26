@@ -23,6 +23,9 @@
   strategy engine determines required history; no fabricated minimum is filled.
 - `asOf`, `expectedAsOf`, `stale`, `fetchedAt`, source and adjustment remain attached
   to reads and backtests. Cache TTL remains 1800 seconds. Errors are never cached.
-- Research returns `researchOnly=true`, `executionAuthorized=false`. Raw/adjusted
-  historical prices must not reach the paper-order path. Existing order symbol,
-  currency, decision and account checks continue to reject HK orders.
+- History returns `researchOnly=true`, `executionAuthorized=false`: this applies
+  to historical evidence, never grants order authority. Account execution now
+  accepts HK symbols through `ExecutionMarket` using unadjusted snapshots and
+  validated HKD/USD conversion, with XHKG freshness and normal JEV/account gates.
+  Adjusted history must never be used as an order mark. Account quantities use
+  integer shares, not a claim of exchange board-lot or broker matching behavior.

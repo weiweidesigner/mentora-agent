@@ -68,7 +68,8 @@ def number(value):
 def symbol_value(value):
     symbol = value.strip().upper()
     if re.fullmatch(r'\d{1,5}\.HK',symbol) or re.fullmatch(r'HKEX:\d{1,5}',symbol):
-        raise ValueError('港股 '+symbol+' 仅支持行情研究和历史回测；当前尚未开放港股成交')
+        from app.hk_market_data import normalize_hk_symbol
+        return normalize_hk_symbol(symbol)
     if re.fullmatch(r'[036]\d{5}', symbol):
         symbol += '.SH' if symbol.startswith('6') else '.SZ'
     if not re.fullmatch(r'[A-Z][A-Z0-9.-]{0,9}|\d{6}\.(?:SH|SZ|BJ)', symbol):
@@ -418,7 +419,7 @@ class Portfolio:
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / 'portfolio.sqlite3'
         if market is None:
-            from app.portfolio_data import MarketDataHub
+            from app.portfolio_execution import ExecutionMarket as MarketDataHub
             market = MarketDataHub()
         self.tasks, self.market = tasks, market
         self.stop_event = threading.Event()
@@ -442,7 +443,7 @@ class Portfolio:
             CREATE TABLE IF NOT EXISTS auto_signals(owner TEXT NOT NULL, signal TEXT NOT NULL, plan_id TEXT NOT NULL, PRIMARY KEY(owner,signal));
             ''')
         os.chmod(self.path, 0o600)
-        from app.portfolio_workflow import PortfolioWorkflow
+        from app.portfolio_execution import ExecutionWorkflow as PortfolioWorkflow
         self.workflow=PortfolioWorkflow(self)
         self.trade_notifications=TradeNotifications(self)
 
@@ -471,6 +472,13 @@ class Portfolio:
     def quote(self, symbol, fresh=False):
         with self.db() as db:
             listing = db.execute('SELECT * FROM universe WHERE symbol=?',(symbol,)).fetchone()
+        if listing is None and symbol.endswith('.HK'):
+            q=self.market.quote(symbol,fresh=fresh)
+            if q.get('currency')!='USD' or not number(q.get('price')) or q['price']<=0:raise ValueError('港股美元估值报价无效')
+            with self.db() as db:
+                db.execute('INSERT OR IGNORE INTO universe VALUES(?,?,?)',(symbol,q.get('name') or symbol,'hkstock'))
+                db.execute('INSERT OR REPLACE INTO quotes VALUES(?,?,?)',(symbol,json.dumps(q),stamp()))
+            return q
         if listing is None and re.fullmatch(r'\d{6}\.(?:SH|SZ|BJ)',symbol) and hasattr(self.market,'cn'):
             # Exact metadata resolution allows manual and task symbols before their universe page arrives.
             name=self.market.resolve_name(symbol,priority=True) if hasattr(self.market,'resolve_name') else self.market.cn.fetch_stock_name(symbol)
@@ -568,7 +576,7 @@ class Portfolio:
         if len(listings)<1000:
             raise ValueError('上市目录返回不完整，保留上次目录')
         with self.db() as db:
-            db.execute("DELETE FROM universe WHERE asset!='ashare'")
+            db.execute("DELETE FROM universe WHERE asset NOT IN ('ashare','hkstock')")
             db.executemany('INSERT INTO universe VALUES(?,?,?)',listings)
             db.execute('INSERT OR REPLACE INTO state VALUES(?,?)',('universeAt',stamp()))
 
@@ -598,7 +606,7 @@ class Portfolio:
             log.warning('A-share directory unavailable')
 
     def available_to_sell(self,owner,symbol,quantity,db=None):
-        if not symbol[0].isdigit():return quantity
+        if not re.fullmatch(r'\d{6}\.(?:SH|SZ|BJ)',symbol):return quantity
         if db is None:
             with self.db() as connection:return self.available_to_sell(owner,symbol,quantity,connection)
         today=now().astimezone(ZoneInfo('Asia/Shanghai')).date()

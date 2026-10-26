@@ -74,6 +74,7 @@ test('nodes connect, reject cycles, retain structural parameters and submit a tr
   assert.equal(s.d.querySelectorAll('.wfEdgeLine').length,1);assert.match(s.d.querySelector('#wfNotice').textContent,/循环/);
   s.d.querySelector('[data-act=run]').click();await tick();await tick();
   const call=s.calls.find(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST');const body=JSON.parse(call[1].body);
+  assert.equal(body.executionMode,'execute');
   assert.equal(body.graph.nodes.length,2);assert.equal(body.graph.edges.length,1);assert.match(s.d.querySelector('#wfNotice').textContent,/完成/);
  }finally{s.w.close();}
 });

@@ -64,12 +64,18 @@
  add.addEventListener('click',async()=>{
   const selected=[...dialog.querySelectorAll('.pfOcrCandidates input:checked:not(:disabled)')].map(input=>({input,item:candidates[Number(input.value)]}));if(!selected.length||busy)return;
   busy=true;add.disabled=true;dialog.querySelectorAll('input').forEach(input=>input.disabled=true);let count=0;const errors=[];
-  for(const {input,item} of selected){
-   try{await request('/favorites',{symbol:item.symbol,name:item.symbol});count++;input.checked=false;input.closest('label').classList.add('is-imported');}
-   catch(error){errors.push(item.symbol+'：'+error.message);}
+  let completed=0,next=0;const total=selected.length;
+  const progress=()=>{add.textContent='正在加入 '+completed+'/'+total;status('正在加入 '+completed+'/'+total+' 项自选…');};progress();
+  async function worker(){
+   while(next<total){const {input,item}=selected[next++];
+    try{await request('/favorites',{symbol:item.symbol,name:item.symbol});count++;input.checked=false;input.closest('label').classList.add('is-imported');}
+    catch(error){errors.push(item.symbol+'：'+error.message);}
+    finally{completed++;progress();}
+   }
   }
+  await Promise.all(Array.from({length:Math.min(4,total)},worker));add.textContent='加入已选自选';
   busy=false;dialog.querySelectorAll('.pfOcrCandidates input').forEach(input=>input.disabled=input.closest('label').classList.contains('is-imported'));
   status('已加入 '+count+' 项自选。'+(errors.length?'\n'+errors.join('\n'):''));syncSelection();
-  if(count)root.querySelector('[data-pf-action="refresh"]')?.click();
+  if(count)root.dispatchEvent(new CustomEvent('portfolio:favorites-imported',{bubbles:true}));
  });
 })();

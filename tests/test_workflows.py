@@ -46,6 +46,7 @@ def test_trial_is_owner_scoped_and_does_not_create_a_scheduled_task(env):
     run=client.post('/api/workflows/runs',json={'graph':graph()},headers=headers)
     assert run.status_code==200,run.text
     rid=run.json()['id'];result=client.get('/api/workflows/runs/'+rid).json()
+    assert result['preview'] is True  # Cached clients must not silently start writing.
     assert result['status']=='success' and result['nodes']['input']['output']['score']==3
     assert result['nodes']['out']['status']=='success'
     assert result['createdAt'] and result['finishedAt'] and result['serverTime']
@@ -483,7 +484,7 @@ def observation_graph():
                   dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='test',target='update')])
 
 
-def test_trial_order_receipt_reaches_final_output_without_writes(env,monkeypatch):
+def test_legacy_preview_order_receipt_reaches_final_output_without_writes(env,monkeypatch):
     from app.portfolio_skills import module as entry
     import app.workflows as module
     order=entry('portfolio-order')
@@ -493,7 +494,13 @@ def test_trial_order_receipt_reaches_final_output_without_writes(env,monkeypatch
         dict(id='execute',kind='tool',title='执行',tool='portfolio-order',arguments={'operation':'execute','planId':'{{plan.id}}'}),
         dict(id='update',kind='watchlist_update',title='更新观察列表'),dict(id='out',kind='output',title='输出')],
         [dict(source='plan',target='execute'),dict(source='execute',target='update'),dict(source='update',target='out')])
+    queued=[]
+    env.service.pool=SimpleNamespace(submit=lambda fn,*args:queued.append((fn,args)))
     run=env.client.post('/api/workflows/runs',json={'graph':g},headers={'X-Veya-Day':'1'}).json()
+    fn,args=queued[0];rid,owner,config=args
+    config.pop('executionMode')
+    with env.tasks.db() as db:db.execute('UPDATE workflow_trials SET config=? WHERE id=?',(json.dumps(config),rid))
+    fn(rid,owner,config)
     result=env.client.get('/api/workflows/runs/'+run['id']).json()
     assert result['status']=='success'
     value=result['nodes']['out']['output'];observations=value['inputs']['update']['observations']
@@ -510,6 +517,43 @@ def test_trial_order_receipt_reaches_final_output_without_writes(env,monkeypatch
     restored=env.client.get('/api/workflows/runs/'+run['id']).json()
     assert restored['nodes']['out']['output']['inputs']['update']['observations']['AAPL']['trade']['side']=='buy'
     assert '订单执行预览' in restored['result']['interpretation']
+
+
+def test_new_manual_run_uses_execution_not_preview(env,monkeypatch):
+    seen=[]
+    def execute(config,rid,update,trial=False,cancelled=lambda:False):
+        seen.append(trial);return {'interpretation':'执行回执'}
+    monkeypatch.setattr(env.service,'execute',execute)
+    run=env.client.post('/api/workflows/runs',json={'graph':graph(),'executionMode':'execute'},headers={'X-Veya-Day':'1'}).json()
+    result=env.client.get('/api/workflows/runs/'+run['id']).json()
+    assert seen==[False] and result['preview'] is False and result['status']=='success'
+
+
+def test_manual_run_persists_hk_order_and_observation_in_isolated_account(env,tmp_path,monkeypatch):
+    from app.portfolio import Portfolio
+    from app.portfolio_skills import module as entry
+    import app.workflows as module
+    feed=SimpleNamespace(quote=lambda symbol,*args,**kwargs:dict(symbol=symbol,name='fixture',market='HK',price=50,nativePrice=390.625,nativeCurrency='HKD',currency='USD',fx={'rate':.128},priceAt=module.stamp(module.now_utc()),dateOnly=False,tradable=True,lotSize=1),freshness=lambda q:(True,''))
+    portfolio=Portfolio(tmp_path/'isolated-account',market=feed);env.service.portfolio=portfolio
+    order=entry('portfolio-order')
+    monkeypatch.setattr(module,'execution_tools',lambda _:[dict(id='portfolio-order',schema=order.Input.model_json_schema())])
+    g=graph([dict(id='plan',kind='tool',title='计划',tool='portfolio-order',arguments={'operation':'plan','symbol':'0700.HK','side':'buy','quantity':10,'decisionId':'offline-decision'}),dict(id='execute',kind='tool',title='执行',tool='portfolio-order',arguments={'operation':'execute','planId':'{{plan.id}}'}),dict(id='update',kind='watchlist_update',title='保存'),dict(id='out',kind='output',title='输出')],[dict(source='plan',target='execute'),dict(source='execute',target='update'),dict(source='update',target='out')])
+    queued=[];env.service.pool=SimpleNamespace(submit=lambda fn,*args:queued.append((fn,args)))
+    run=env.client.post('/api/workflows/runs',json={'graph':g,'executionMode':'execute'},headers={'X-Veya-Day':'1'}).json()
+    fn,args=queued[0];rid,owner,config=args
+    import datetime as dt
+    created=module.stamp(module.now_utc());expires=module.stamp(module.now_utc()+dt.timedelta(minutes=10))
+    decision=dict(id='offline-decision',symbol='0700.HK',kind='entry',action='buy',status='decided',confidence=.99,sizeFraction=1,created=created,expires=expires)
+    with portfolio.db() as db:db.execute('INSERT INTO portfolio_decisions VALUES(?,?,?,?,?,?,?,?)',('offline-decision',owner,'entry','0700.HK',json.dumps(decision),'offline-fixture',created,expires))
+    fn(*args)
+    result=env.client.get('/api/workflows/runs/'+run['id']).json()
+    assert result['status']=='success',result
+    assert result['preview'] is False
+    assert result['nodes']['update']['output']['updatedCount']==1
+    with env.tasks.db() as db:owner=db.execute('SELECT owner FROM workflow_trials WHERE id=?',(run['id'],)).fetchone()[0]
+    assert len(portfolio.summary(owner)['trades'])==1
+    assert portfolio.summary(owner)['positions'][0]['symbol']=='0700.HK'
+    assert '试运行预览' not in result['result']['interpretation']
 
 
 def test_execution_summary_discloses_gates_blockers_and_no_trade():

@@ -26,7 +26,7 @@ KINDS=[
     dict(id='profile',label='投资者档案',description='读取当前用户的投资偏好与约束。'),
     dict(id='model',label='模型',description='使用当前默认模型分析上游输入，保留现有 Agent 能力。'),
     dict(id='condition',label='条件分支',description='按上游数据决定后续分支。'),
-    dict(id='watchlist_update',label='更新观察列表',description='将上游实际回测、JEV 决策与交易结果保存到当前用户的观察列表；试运行仅预览。'),
+    dict(id='watchlist_update',label='更新观察列表',description='将上游实际回测、JEV 决策与交易结果保存到当前用户的观察列表；手动运行与定时执行均写入。'),
     dict(id='output',label='输出结果',description='汇总上游节点的真实输出。'),
 ]
 
@@ -113,6 +113,7 @@ class TrialInput(BaseModel):
     title: str=Field(default='WorkFlow 试运行',max_length=80)
     question: str=Field(default='',max_length=6000)
     taskId: str | None=Field(default=None,max_length=80)
+    executionMode: Literal['preview','execute']='preview'
 
 class BuildInput(BaseModel):
     message: str=Field(min_length=2,max_length=6000)
@@ -152,7 +153,7 @@ class WorkflowService:
     def build(self,payload):
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
-                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。试运行 preview=true 不写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
+                     nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。手动运行与定时执行均实际写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
         context['nodeOutputs'].update({
             'portfolio-data/history':'对象，含 symbol、rows 和实际数据源；不是 symbols/ohlcv 的批量对象。',
             'portfolio-backtest':'单标的实际回测对象；批量执行时外层为 items/count，不存在自动汇总的 metrics。',
@@ -171,7 +172,7 @@ kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_upd
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
-只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，只用于研究和历史回测，不开放港股成交。用户可见的标题、节点说明与结果统一使用「交易账户 / 订单 / 成交」这些中性表述。"""
+只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，账户订单支持港股，使用未复权港币快照及有效港币兑美元汇率；历史前复权数据仅用于研究，不作成交报价。用户可见的标题、节点说明与结果统一使用「交易账户 / 订单 / 成交」这些中性表述。"""
             def generate(candidate_context):
                 with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
                     response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
@@ -428,7 +429,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
 
     def start_trial(self,owner,payload):
         graph=self.validate(payload.graph,payload.agent);rid=str(uuid.uuid4());now=stamp(now_utc())
-        config=dict(title=payload.title,question=payload.question,agent=payload.agent,workflow=graph.model_dump(),market='CN',symbols='',newChat=True,reasoningEffort=self.tasks.execution_preferences()['reasoningEffort'] or 'low',taskId=payload.taskId)
+        config=dict(title=payload.title,question=payload.question,agent=payload.agent,workflow=graph.model_dump(),market='CN',symbols='',newChat=True,reasoningEffort=self.tasks.execution_preferences()['reasoningEffort'] or 'low',taskId=payload.taskId,executionMode=payload.executionMode)
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
             if payload.taskId:self.tasks.owned(db,owner,payload.taskId)
@@ -449,7 +450,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
         try:
             from app.reasoning_preferences import reasoning_effort_scope
             with reasoning_effort_scope(config['reasoningEffort']):
-                result=self.execute({**config,'_owner':owner},rid,update,trial=True,cancelled=cancelled)
+                result=self.execute({**config,'_owner':owner},rid,update,trial=config.get('executionMode')!='execute',cancelled=cancelled)
             status='cancelled' if cancelled() else 'success';error=None
         except Exception as exc:result=None;status='cancelled' if isinstance(exc,InterruptedError) else 'failed';error=str(exc)[:500]
         with self.tasks.db() as db:db.execute('UPDATE workflow_trials SET status=?,result=?,error=?,updated=? WHERE id=?',(status,json.dumps(result,ensure_ascii=False) if result else None,error,stamp(now_utc()),rid))
@@ -482,7 +483,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             value=dict(interpretation='\n\n'.join(v.get('interpretation','') for v in upstream.values()),inputs=upstream)
             nodes[node['id']]['output']=value
             if result:result['interpretation']=value['interpretation']
-        return dict(id=rid,status=row['status'],nodes=nodes,result=result,error=row['error'],preview=True,
+        return dict(id=rid,status=row['status'],nodes=nodes,result=result,error=row['error'],preview=json.loads(row['config']).get('executionMode')!='execute',
                     createdAt=row['created'],updatedAt=row['updated'],serverTime=stamp(now_utc()),
                     finishedAt=row['updated'] if row['status'] not in ('queued','running','stopping') else None)
 

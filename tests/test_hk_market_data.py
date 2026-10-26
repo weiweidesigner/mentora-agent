@@ -96,7 +96,7 @@ def test_hub_reuses_canonical_hk_identity_without_us_fallback(monkeypatch):
     assert hub.history('00700.HK')['symbol']=='0700.HK'
     assert calls==['0700.HK']
 
-def test_research_read_and_backtest_accept_hk_but_orders_do_not(monkeypatch,tmp_path):
+def test_research_metadata_never_authorizes_or_supplies_order_prices(monkeypatch,tmp_path):
     from app.portfolio_skills import call
     from app.portfolio import PlanInput
     data=dict(symbol='0700.HK',rows=[],source='unit-fixture',market='HK',currency='HKD',researchOnly=True,executionAuthorized=False)
@@ -106,8 +106,8 @@ def test_research_read_and_backtest_accept_hk_but_orders_do_not(monkeypatch,tmp_
     assert result['status']=='insufficient' and result['currency']=='HKD' and result['executionAuthorized'] is False
     assert call(service,'owner','portfolio-data',{'operation':'quote','symbol':'HKEX:700'})['tradable'] is False
     from app.portfolio import Portfolio
-    from test_portfolio import Feed
-    paper=Portfolio(tmp_path,market=Feed())
-    with pytest.raises(ValueError,match='尚未开放港股成交'):
+    blocked=SimpleNamespace(quote=lambda *a,**k:dict(symbol='0700.HK',currency='HKD',price=400,tradable=False),freshness=lambda q:(False,'unconverted quote'))
+    paper=Portfolio(tmp_path,market=blocked)
+    with pytest.raises(ValueError,match='港股美元估值报价无效'):
         paper.make_plan('owner',PlanInput(symbol='0700.HK',side='buy',quantity=100))
     with paper.db() as db:assert db.execute('SELECT count(*) FROM plans').fetchone()[0]==0
