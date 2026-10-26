@@ -465,7 +465,6 @@
     $('dayStageLabel').hidden=!windowed;
     if(!windowed&&el('timezone').value==='market'){const zone=zones[el('market').value]||'Asia/Shanghai';if(![...el('timezone').options].some(o=>o.value===zone))el('timezone').add(new Option(zone,zone));el('timezone').value=zone;}
     el('windowIntervalAmount').disabled=el('windowIntervalUnit').disabled=!windowed;
-    $('dayScheduleModeHelp').textContent=windowed?`按交易场景：在所选市场的每个交易日，仅于场景时段内按间隔时间执行。时间均为${sceneZoneLabel}${el('market').value==='US'?'，自动适配夏令时':''}。`:'按绝对时间：按所选时区的固定时间执行，重复规则只决定执行日期。';
     if(windowed){el('cadence').value='trading';el('timezone').value='market';el('repeat').checked=true;}
     el('cadence').disabled=windowed;el('timezone').disabled=windowed;el('repeat').disabled=windowed;
     $('dayWindowFields').hidden=!windowed;

@@ -394,8 +394,10 @@ test('market belongs below scheduling mode and is hidden for absolute time',asyn
  assert.equal(mode.nextElementSibling,market);assert.equal(market.hidden,false);
  f.elements.triggerMode.value='once';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
  assert.equal(market.hidden,true);assert.equal(d.querySelector('#dayStageLabel').hidden,true);assert.equal(f.elements.timezone.value,'America/New_York');
+ assert.equal(d.querySelector('#dayScheduleModeHelp'),null);
  f.elements.triggerMode.value='window';f.elements.triggerMode.dispatchEvent(new h.w.Event('change',{bubbles:true}));
- assert.equal(market.hidden,false);assert.equal(f.elements.timezone.value,'market');h.dom.window.close();
+ assert.equal(market.hidden,false);assert.equal(f.elements.timezone.value,'market');
+ assert.equal(d.querySelector('#dayScheduleModeHelp'),null);assert.doesNotMatch(f.textContent,/市场当地时间 · 结束时刻不触发|按绝对时间：|按交易场景：/);h.dom.window.close();
 });
 
 test('repeat controls belong only to absolute-time scheduling',async()=>{
