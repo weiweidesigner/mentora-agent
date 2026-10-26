@@ -36,7 +36,7 @@ def component_capabilities(item: dict) -> dict:
     hosted = item.get('provider') == 'TradingView'
     mode = item.get('inputMode', 'symbol')
     maximum = 0 if widget in MARKETS else 30 if widget in GROUPS or widget in CURRENCY_WIDGETS else 1
-    intervals = {'advanced-chart': ['1', '5', '15', '30', '60', '120', '240', 'D', 'W', 'M'], 'technical-analysis': ['1D', '1W', '1M', '1h']}.get(widget, [])
+    intervals = {'advanced-chart': ['1', '5', '15', '30', '60', '120', '240', 'D', 'W', 'M'], 'technical-analysis': ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '1D', '1W', '1M']}.get(widget, [])
     if item.get('preset') == 'intraday':
         maximum, intervals = 1, []
     return {

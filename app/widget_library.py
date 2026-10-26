@@ -77,6 +77,7 @@ STUDY_ALIASES = {
     'simple moving average': 'MASimple@tv-basicstudies',
 }
 ADVANCED_CHART_INTERVALS = frozenset({'1','5','15','30','60','120','240','D','W','M'})
+TECHNICAL_ANALYSIS_INTERVALS = frozenset({'1m','5m','15m','30m','1h','2h','4h','1D','1W','1M'})
 INTERVAL_ALIASES = {
     '1m':'1','5m':'5','15m':'15','30m':'30','60m':'60','1h':'60','2h':'120','4h':'240',
     '1d':'D','day':'D','daily':'D','日线':'D','1w':'W','week':'W','weekly':'W','周线':'W',
@@ -275,7 +276,7 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     config.update(raw_config)
     symbol = config.get('symbol', symbol)
     interval = normalize_interval(payload.interval) if payload.interval and payload.widget == 'advanced-chart' else payload.interval
-    if interval and interval not in {'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':{'1D','1W','1M','1h'}}.get(payload.widget,set()):
+    if interval and interval not in {'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':TECHNICAL_ANALYSIS_INTERVALS}.get(payload.widget,set()):
         raise ValueError('该组件不支持此周期。')
     built = tool.build_config(payload.widget, symbol=symbol, interval=config.get('interval', interval), theme=payload.theme,
                              language=payload.language, config=config)

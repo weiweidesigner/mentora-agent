@@ -369,7 +369,7 @@
     editingCardId=card.id;componentId=component.id;selectedCardId=card.id;updateSelection();
     renderConfig();if(symbolPicker?.enabled&&component.provider==='TradingView'){symbolPicker.select.value='auto';symbolPicker.placeholder();}$('widgetCardName').value=card.title;$('widgetSymbol').value=card.symbolInput||(card.parameters?.symbols||[]).join('、');
     if(component.inputMode==='market')$('widgetMarket').value=card.parameters?.market||'default';
-    const intervals=component.widget==='advanced-chart'?[['1','1 分钟'],['5','5 分钟'],['15','15 分钟'],['30','30 分钟'],['60','1 小时'],['120','2 小时'],['240','4 小时'],['D','日线'],['W','周线'],['M','月线']]:component.widget==='technical-analysis'?[['1D','日线'],['1W','周线'],['1M','月线'],['1h','1 小时']]:[];
+    const intervals=component.widget==='advanced-chart'?[['1','1 分钟'],['5','5 分钟'],['15','15 分钟'],['30','30 分钟'],['60','1 小时'],['120','2 小时'],['240','4 小时'],['D','日线'],['W','周线'],['M','月线']]:component.widget==='technical-analysis'?[['1m','1 分钟'],['5m','5 分钟'],['15m','15 分钟'],['30m','30 分钟'],['1h','1 小时'],['2h','2 小时'],['4h','4 小时'],['1D','日线'],['1W','周线'],['1M','月线']]:[];
     $('widgetIntervalField').hidden=!intervals.length;$('widgetInterval').innerHTML=intervals.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
     if(card.parameters?.interval)$('widgetInterval').value=card.parameters.interval;
     renderSettingsFields(component,card.parameters||{});
