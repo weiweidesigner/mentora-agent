@@ -92,3 +92,7 @@
 .wfNode .wfPort{box-sizing:border-box;top:calc(50px * var(--wf-node-scale) - 1px);width:calc(14px * var(--wf-node-scale));height:calc(14px * var(--wf-node-scale))}
 .wfNode .wfPortIn{left:calc(-7px * var(--wf-node-scale) - 1px)}
 .wfNode .wfPortOut{right:calc(-7px * var(--wf-node-scale) - 1px)}
+.wfElapsed{flex:none;white-space:nowrap;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.wfNodeRuntime{display:flex;align-items:center;gap:calc(8px * var(--wf-node-scale));padding:0 calc(18px * var(--wf-node-scale)) calc(12px * var(--wf-node-scale));font-size:calc(10px * var(--wf-node-scale));color:var(--muted);min-width:0}
+.wfNodeTime{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wfNodeProgress{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}

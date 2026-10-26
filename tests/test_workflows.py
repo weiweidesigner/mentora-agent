@@ -48,6 +48,9 @@ def test_trial_is_owner_scoped_and_does_not_create_a_scheduled_task(env):
     rid=run.json()['id'];result=client.get('/api/workflows/runs/'+rid).json()
     assert result['status']=='success' and result['nodes']['input']['output']['score']==3
     assert result['nodes']['out']['status']=='success'
+    assert result['createdAt'] and result['finishedAt'] and result['serverTime']
+    assert result['nodes']['input']['started']
+    assert result['nodes']['input']['durationMs']>=0
     assert TestClient(env.app).get('/api/workflows/runs/'+rid).status_code==404
     with env.tasks.db() as db:
         assert db.execute('SELECT count(*) FROM tasks').fetchone()[0]==0
@@ -87,6 +90,41 @@ def test_failure_stops_downstream_and_exposes_node_error(env):
     result=env.client.get('/api/workflows/runs/'+r['id']).json()
     assert result['status']=='failed' and 'provider unavailable' in result['nodes']['bad']['error']
     assert 'next' not in result['nodes']
+    assert result['nodes']['bad']['started'] and result['nodes']['bad']['durationMs']>=0
+
+
+@pytest.mark.parametrize('status',['queued','running','stopping'])
+def test_startup_recovers_recent_orphan_trials_without_inventing_elapsed_time(env,status):
+    run=env.client.post('/api/workflows/runs',json={'graph':graph()},headers={'X-Veya-Day':'1'}).json()
+    rid=run['id']
+    with env.tasks.db() as db:
+        db.execute('UPDATE workflow_trials SET status=?,nodes=? WHERE id=?',
+                   (status,json.dumps({'input':{'status':'success','durationMs':12},'out':{'status':'running','started':run['createdAt']}}),rid))
+    assert env.service.recover_interrupted_trials()==1
+    result=env.client.get('/api/workflows/runs/'+rid).json()
+    assert result['status']=='failed' and '服务重启' in result['error']
+    assert result['nodes']['input']['status']=='success'
+    assert result['nodes']['out']['status']=='failed'
+    assert result['nodes']['out']['timingIncomplete'] is True
+    assert 'durationMs' not in result['nodes']['out']
+    assert env.service.recover_interrupted_trials()==0
+
+
+def test_constructing_service_does_not_interrupt_another_live_worker(env):
+    run=env.client.post('/api/workflows/runs',json={'graph':graph()},headers={'X-Veya-Day':'1'}).json()
+    with env.tasks.db() as db:db.execute("UPDATE workflow_trials SET status='running' WHERE id=?",(run['id'],))
+    service=WorkflowService(env.tasks,env.service.portfolio,env.service.runner)
+    try:assert env.client.get('/api/workflows/runs/'+run['id']).json()['status']=='running'
+    finally:service.pool.shutdown()
+
+
+def test_router_startup_recovers_orphan_and_leaves_completed_trials_unchanged(env):
+    first=env.client.post('/api/workflows/runs',json={'graph':graph()},headers={'X-Veya-Day':'1'}).json()
+    second=env.client.post('/api/workflows/runs',json={'graph':graph()},headers={'X-Veya-Day':'1'}).json()
+    with env.tasks.db() as db:db.execute("UPDATE workflow_trials SET status='running' WHERE id=?",(first['id'],))
+    with TestClient(env.app):
+        assert env.client.get('/api/workflows/runs/'+first['id']).json()['status']=='failed'
+        assert env.client.get('/api/workflows/runs/'+second['id']).json()['status']=='success'
 
 
 def test_order_analysis_without_saved_decision_stops_before_model_research(env,monkeypatch):
@@ -118,15 +156,23 @@ def test_portfolio_decision_bridge_enriches_persists_and_filters(env,monkeypatch
         return [{'symbol':'AAPL','action':'buy','status':'decided','confidence':.8,
                  'confidenceGate':{'passed':True,'threshold':.3}}]
     monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=call))
+    progress=[]
     value=env.service.portfolio_decisions('owner',{
         'kind':'entry','items':[{'symbol':'AAPL','returnPct':12}],
         'account':{'cash':1000,'positions':[],'settings':{}},
         'profile':{'enabled':True,'profile':'growth','investment':{'confidenceThresholdPct':30}},
-    })
+    },progress=lambda **details:progress.append(details))
     assert value['count']==1
     assert value['items'][0]['decisionId']=='saved-decision'
     assert value['items'][0]['side']=='buy'
     assert captured['account']['recommendationProfile']['investment']['confidenceThresholdPct']==30
+    assert 'AAPL' in progress[0]['progress'] and progress[0]['completed']==0
+    assert 'JEV' in progress[-1]['progress'] and progress[-1]['completed']==1
+
+
+def test_decision_cancellation_prevents_starting_evidence_and_model_calls(env):
+    with pytest.raises(InterruptedError):
+        env.service.portfolio_decisions('owner',{'items':[{'symbol':'AAPL'}],'account':{},'profile':{}},cancelled=lambda:True)
 
 
 def test_portfolio_decision_bridge_does_not_persist_in_trial(env,monkeypatch):

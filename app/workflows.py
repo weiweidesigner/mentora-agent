@@ -125,9 +125,22 @@ class WorkflowService:
         self.pool=ThreadPoolExecutor(max_workers=2,thread_name_prefix='mentora-workflow')
         with tasks.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS workflow_trials(id TEXT PRIMARY KEY,owner TEXT NOT NULL,config TEXT NOT NULL,status TEXT NOT NULL,nodes TEXT NOT NULL,result TEXT,error TEXT,created TEXT NOT NULL,updated TEXT NOT NULL,cancelled INTEGER NOT NULL DEFAULT 0)')
-            cutoff=stamp(now_utc()-dt.timedelta(hours=2))
-            db.execute("UPDATE workflow_trials SET status='failed',error='试运行已中断，请重试' WHERE status IN ('queued','running','stopping') AND updated<?",(cutoff,))
         tasks.run_handlers.insert(0,self.scheduled)
+
+    def recover_interrupted_trials(self):
+        """Trial workers live in this server process and cannot survive restart."""
+        error='服务重启中断了试运行，请重新试运行。'
+        with self.tasks.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            rows=db.execute("SELECT id,nodes FROM workflow_trials WHERE status IN ('queued','running','stopping')").fetchall()
+            for row in rows:
+                nodes=json.loads(row['nodes'])
+                for node in nodes.values():
+                    if node.get('status')=='running':
+                        node.update(status='failed',error=error,timingIncomplete=True)
+                db.execute("UPDATE workflow_trials SET status='failed',nodes=?,error=?,updated=? WHERE id=?",
+                           (json.dumps(nodes,ensure_ascii=False),error,stamp(now_utc()),row['id']))
+        return len(rows)
 
     def validate(self,graph,agent):
         graph=WorkflowGraph.model_validate(graph)
@@ -223,7 +236,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             return any(WorkflowService.has_decision_id(child) for child in value)
         return False
 
-    def portfolio_decisions(self,owner,arguments,*,preview=False):
+    def portfolio_decisions(self,owner,arguments,*,preview=False,progress=lambda **_:None,cancelled=lambda:False):
         """Build complete evidence, apply JEV gates and persist executable decisions."""
         kind=arguments.get('kind','entry')
         if kind not in ('entry','risk'):raise ValueError('决策类型只支持 entry 或 risk')
@@ -238,11 +251,13 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                         if profile.get('enabled') is True else {})
         account=dict(account,recommendationProfile=recommendation)
         evidence=[];blocked=[]
-        for row in rows:
+        for index,row in enumerate(rows):
+            if cancelled():raise InterruptedError('试运行已停止')
             if not isinstance(row,dict):continue
             symbol=str(row.get('symbol') or '').strip().upper()
             if not symbol:continue
             seed=dict(symbol=symbol,name=row.get('name') or symbol,sourceTypes=['favorite'],backtests=[row])
+            progress(progress=f'正在补齐 {symbol} 的行情与技术证据 · {index+1}/{len(rows)}',completed=index,total=len(rows))
             try:
                 evidence.append(self.portfolio.workflow.entry_evidence(owner,seed))
             except Exception as error:
@@ -250,8 +265,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                                     confidence=None,status='blocked',reason=str(error)[:220],decisionId=None))
         decisions=[];executable=[]
         if evidence:
+            if cancelled():raise InterruptedError('试运行已停止')
+            progress(progress=f'正在进行 JEV 决策 · {len(evidence)} 个标的',completed=len(rows),total=len(rows))
             from app.portfolio_skills import call
             results=call(self.portfolio,owner,'portfolio-jev',dict(operation='decide',kind=kind,evidence=evidence,account=account))
+            if cancelled():raise InterruptedError('试运行已停止')
             if not isinstance(results,list) or len(results)!=len(evidence):raise ValueError('JEV 结果数量与证据不一致')
             for index,(item,result) in enumerate(zip(evidence,results)):
                 if not isinstance(result,dict) or result.get('symbol')!=item['symbol']:raise ValueError('JEV 决策标的校验失败')
@@ -281,6 +299,10 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
         raise ValueError('试运行仅支持校验订单计划与执行节点')
 
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
+        publish=update;node_states={}
+        def update(node,patch):
+            node_states[node]={**node_states.get(node,{}),**patch}
+            publish(node,dict(node_states[node]))
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
         outputs={};states={};receipts={};artifacts=[];warnings=[];started=time.monotonic();owner=config['_owner']
         emit=config.get('_emit_event',lambda *_:None)
@@ -320,7 +342,8 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False))
                 elif node.kind=='tool' and node.tool=='portfolio-decision':
                     decision_arguments=self.resolve(node.arguments,outputs)
-                    value=self.portfolio_decisions(owner,decision_arguments,preview=trial)
+                    value=self.portfolio_decisions(owner,decision_arguments,preview=trial,
+                        progress=lambda **details:update(node.id,dict(status='running',**details)),cancelled=cancelled)
                     receipts[node.id].append(dict(tool='portfolio-jev',input=decision_arguments,output=value['decisions']))
                 elif node.kind=='tool' and node.tool.startswith('portfolio-') and (node.arguments or node.foreach):
                     from app.portfolio_skills import call
@@ -386,9 +409,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 update(node.id,dict(status=states[node.id],output=value,durationMs=round((time.monotonic()-tick)*1000)))
             except Exception as exc:
                 if isinstance(exc,InterruptedError):
-                    update(node.id,dict(status='cancelled',error='试运行已停止'));raise
+                    update(node.id,dict(status='cancelled',error='试运行已停止',durationMs=round((time.monotonic()-tick)*1000)));raise
                 error=node_error(node.title,exc)
-                state=dict(status='failed',error=error)
+                state=dict(status='failed',error=error,durationMs=round((time.monotonic()-tick)*1000))
                 if hasattr(exc,'partial_output'):state['output']=exc.partial_output
                 update(node.id,state)
                 raise RuntimeError(error) from exc
@@ -408,7 +431,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             if db.execute("SELECT count(*) FROM workflow_trials WHERE owner=? AND status IN ('queued','running','stopping')",(owner,)).fetchone()[0]>=1:raise HTTPException(409,'已有试运行正在执行')
             db.execute('INSERT INTO workflow_trials(id,owner,config,status,nodes,created,updated) VALUES(?,?,?,?,?,?,?)',(rid,owner,json.dumps(config,ensure_ascii=False),'queued','{}',now,now))
         self.pool.submit(self.trial,rid,owner,config)
-        return dict(id=rid,status='queued')
+        return dict(id=rid,status='queued',createdAt=now,serverTime=now)
 
     def trial(self,rid,owner,config):
         def cancelled():
@@ -429,7 +452,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
     def read_trial(self,owner,rid):
         with self.tasks.db() as db:row=db.execute('SELECT * FROM workflow_trials WHERE id=? AND owner=?',(rid,owner)).fetchone()
         if not row:raise HTTPException(404,'试运行不存在')
-        return dict(id=rid,status=row['status'],nodes=json.loads(row['nodes']),result=json.loads(row['result']) if row['result'] else None,error=row['error'])
+        return dict(id=rid,status=row['status'],nodes=json.loads(row['nodes']),result=json.loads(row['result']) if row['result'] else None,error=row['error'],
+                    createdAt=row['created'],updatedAt=row['updated'],serverTime=stamp(now_utc()),
+                    finishedAt=row['updated'] if row['status'] not in ('queued','running','stopping') else None)
 
     def latest(self,owner,task_id):
         with self.tasks.db() as db:
@@ -442,11 +467,14 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             nodes={}
             for row in db.execute("SELECT payload FROM run_events WHERE run_id=? AND event='progress' ORDER BY rowid",(run['id'],)):
                 data=json.loads(row['payload'])
-                if data.get('workflowNode') and data.get('workflowState'):nodes[data['workflowNode']]=data['workflowState']
-            return dict(id=run['id'],status=run['status'],nodes=nodes,result=json.loads(run['answer']) if run['answer'] else None,error=run['error'])
+                if data.get('workflowNode') and data.get('workflowState'):
+                    key=data['workflowNode'];nodes[key]={**nodes.get(key,{}),**data['workflowState']}
+            return dict(id=run['id'],status=run['status'],nodes=nodes,result=json.loads(run['answer']) if run['answer'] else None,error=run['error'],
+                        createdAt=run['created'],finishedAt=run['finished'],serverTime=stamp(now_utc()))
 
 def create_router(service):
     router=APIRouter(prefix='/api/workflows')
+    router.add_event_handler('startup',service.recover_interrupted_trials)
     def identity(request,response,write=False):
         if write and (request.headers.get('x-veya-day')!='1' or request.headers.get('sec-fetch-site')=='cross-site'):raise HTTPException(403,'请从 WorkFlow 面板操作')
         token=request.cookies.get(COOKIE,'')

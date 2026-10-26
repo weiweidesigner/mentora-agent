@@ -1,5 +1,6 @@
 """Measure actual two-line clipping at desktop/mobile widths and canvas zooms."""
 import json
+import datetime as dt
 from pathlib import Path
 import re
 from urllib.parse import urlparse
@@ -43,8 +44,18 @@ def main():
             assert page.locator('[data-field=onItemError]').input_value()=='continue'
             print(json.dumps(dict(width=width,zoomChecks=4,twoLines=True,fullDescriptionPreserved=True)))
             flow_graph=dict(version=1,nodes=[dict(id='input',kind='start',title='已完成输入',x=90,y=140),dict(id='data',kind='tool',tool='portfolio-data',title='运行中真实查询',x=440,y=140)],edges=[dict(source='input',target='data',when='always')])
-            task=dict(workflow=flow_graph,lastTrial=dict(status='running',nodes=dict(input=dict(status='success'),data=dict(status='running'))))
+            now=dt.datetime.now(dt.timezone.utc)
+            task=dict(workflow=flow_graph,lastTrial=dict(status='running',createdAt=(now-dt.timedelta(seconds=65)).isoformat(),serverTime=now.isoformat(),nodes=dict(input=dict(status='success',durationMs=1200),data=dict(status='running',started=(now-dt.timedelta(seconds=10)).isoformat(),progress='正在进行 JEV 决策 · 3 个标的'))))
             page.evaluate('(task)=>{document.querySelector(".wfCanvas").close();return MentoraWorkflow.open(task)}',task)
+            assert '运行时间 01:' in page.locator('#wfElapsed').inner_text()
+            assert page.locator('[data-node=input] .wfNodeTime').inner_text()=='耗时 00:01'
+            assert 'JEV' in page.locator('[data-node=data] .wfNodeProgress').inner_text()
+            elapsed=page.locator('[data-node=data] .wfNodeTime').inner_text()
+            page.wait_for_function('(before)=>document.querySelector("[data-node=data] .wfNodeTime").textContent!==before',arg=elapsed)
+            assert page.locator('[data-node=input] .wfNodeTime').inner_text()=='耗时 00:01'
+            footer=page.locator('[data-node=data] .wfNodeRuntime').bounding_box()
+            card=page.locator('[data-node=data]').bounding_box()
+            assert footer['y']+footer['height']<=card['y']+card['height']+1
             flow=page.locator('.wfEdgeFlow');assert flow.count()==1
             before=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
             page.wait_for_timeout(180)

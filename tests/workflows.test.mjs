@@ -10,7 +10,7 @@ const kinds=['start','watchlist','profile','model','condition','output','watchli
 const graph={version:1,nodes:[{id:'input',kind:'start',title:'输入',x:90,y:140,arguments:{score:3}},{id:'out',kind:'output',title:'输出',x:440,y:140}],edges:[{source:'input',target:'out',when:'always'}]};
 async function setup(){
  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=tasks',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];let saved=null,buildError=false;
- w.matchMedia=()=>({matches:false,addEventListener(){}});w.setInterval=()=>0;w.structuredClone=structuredClone;w.confirm=()=>true;
+ const timers=[];w.matchMedia=()=>({matches:false,addEventListener(){}});w.setInterval=fn=>{timers.push(fn);return timers.length;};w.structuredClone=structuredClone;w.confirm=()=>true;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  w.fetch=async(url,options={})=>{
   calls.push([url,options]);const body=options.body?JSON.parse(options.body):{};
@@ -22,8 +22,34 @@ async function setup(){
   return{ok:true,json:async()=>({tasks:saved?[saved]:[],sceneTasks:[],markets:[],serverTime:new Date().toISOString()})};
  };
  w.eval(day);w.eval(code);await tick();
- return{dom,w,d:w.document,calls,error:()=>{buildError=true;},saved:()=>saved};
+ return{dom,w,d:w.document,calls,error:()=>{buildError=true;},saved:()=>saved,tickTimers:()=>timers.filter(fn=>fn.name==='refreshTimings').forEach(fn=>fn())};
 }
+test('runtime ticks locally while completed node durations stay frozen and progress is visible',async()=>{
+ const s=await setup();try{
+  const now=Date.parse('2026-10-26T05:00:00Z');let clock=now;s.w.Date.now=()=>clock;
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'running',createdAt:new Date(now-65000).toISOString(),serverTime:new Date(now).toISOString(),nodes:{input:{status:'success',started:new Date(now-65000).toISOString(),durationMs:5000},out:{status:'running',started:new Date(now-10000).toISOString(),progress:'正在进行 JEV 决策'}}}});
+  assert.equal(s.d.querySelector('#wfElapsed').textContent,'运行时间 01:05');
+  assert.equal(s.d.querySelector('[data-node=input] .wfNodeTime').textContent,'耗时 00:05');
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeTime').textContent,'耗时 00:10');
+  assert.equal(s.d.querySelector('.wfNodeProgress[title="正在进行 JEV 决策"]').textContent,'正在进行 JEV 决策');
+  const card=s.d.querySelector('[data-node=out]');clock+=3000;s.tickTimers();
+  assert.equal(s.d.querySelector('#wfElapsed').textContent,'运行时间 01:08');
+  assert.equal(card.querySelector('.wfNodeTime').textContent,'耗时 00:13');
+  assert.equal(s.d.querySelector('[data-node=input] .wfNodeTime').textContent,'耗时 00:05');
+  assert.equal(s.d.querySelector('[data-node=out]'),card);
+ }finally{s.w.close();}
+});
+test('interrupted trials show incomplete timing, and terminal totals do not keep increasing',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'failed',createdAt:'2026-10-26T04:16:00Z',finishedAt:'2026-10-26T05:00:00Z',nodes:{out:{status:'failed',timingIncomplete:true}}}});
+  assert.equal(s.d.querySelector('#wfElapsed').textContent,'已中断 · 耗时记录不完整');
+  assert.equal(s.d.querySelector('.wfNodeTime').textContent,'耗时记录不完整');
+  s.d.querySelector('.wfCanvas').close();
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'success',createdAt:'2026-10-26T04:16:00Z',finishedAt:'2026-10-26T04:17:02Z',nodes:{}}});
+  assert.equal(s.d.querySelector('#wfElapsed').textContent,'总耗时 01:02');
+  s.tickTimers();assert.equal(s.d.querySelector('#wfElapsed').textContent,'总耗时 01:02');
+ }finally{s.w.close();}
+});
 test('new task chooser preserves Agent editor and opens full-screen workflow canvas',async()=>{
  const s=await setup();try{
   s.d.querySelector('#taskSidebarNew').click();assert(s.d.querySelector('.wfChooser').open);
