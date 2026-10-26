@@ -82,7 +82,7 @@ def _native_kline():
 
 def upgrade_native_kline_runtime(artifact: str) -> str:
     """Move saved native K-lines to the current runtime using embedded OHLCV only."""
-    if 'class="kline-component"' not in artifact or 'mentora:kline-config' in artifact:
+    if 'class="kline-component"' not in artifact or 'data-kline-drawings="2"' in artifact:
         return artifact
     try:
         config = _constant(artifact, "config")
@@ -107,7 +107,7 @@ def upgrade_native_kline_runtime(artifact: str) -> str:
             "dataByPeriod": data_by_period,
         }
         upgraded = _native_kline().render_document(payload)
-        return upgraded if 'mentora:kline-config' in upgraded else artifact
+        return upgraded if 'mentora:kline-config' in upgraded and 'data-kline-drawings="2"' in upgraded else artifact
     except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
         return artifact
 
@@ -421,6 +421,8 @@ html[data-widget-title="hidden"] body>#title,
 html[data-widget-title="hidden"] .kline-title>strong[data-business-title],
 html[data-widget-title="hidden"] .kline-title>strong:first-child{display:none!important}
 html[data-widget-title="hidden"] .kline-title{min-height:0!important}
+.kline-component .period-tabs:has(>.period-button:only-child){display:none!important}
+html[data-widget-title="hidden"] .kline-title:not(:has(.period-button:nth-child(2),.annotation-controls)){display:none!important}
 html[data-widget-title="hidden"] .chart-component>.chart-stage{height:calc(100% - 8px)!important;margin-top:0!important}
 </style>'''
     return re.sub(r'</head\s*>', lambda _: chrome+'</head>', artifact, count=1, flags=re.I) if re.search(r'</head\s*>', artifact, re.I) else artifact

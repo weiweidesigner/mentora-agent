@@ -12,6 +12,14 @@ def test_host_uses_component_v2_catalog_and_recognizes_native_requests():
     assert main.wants_model_derived_chart_annotation('请在JPM K线上画回归通道')
 
 
+def test_renderer_and_jev_use_the_same_complete_drawing_contract():
+    from app.artifact_upgrades import _native_kline
+    contract=_native_kline().component_schema()['annotationContract']
+    assert len(contract['supportedTypes'])==43
+    for key in ('version','supportedTypes','aliases','typeDefinitions','semantics','unsupportedTypes'):
+        assert contract[key]==CATALOG[key],key
+
+
 def test_host_preserves_native_drawing_style_and_fib_palette(tmp_path, monkeypatch):
     run, rows = run_fixture(tmp_path)
     monkeypatch.setattr(main, 'wants_model_derived_chart_annotation', lambda q: True)

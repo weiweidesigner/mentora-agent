@@ -86,11 +86,13 @@ for(const meta of [generic,streamviz])test(`${meta.id} is generated only by dial
   assert.equal(cards[0].component,meta.id);assert.equal(cards[0].url,'/generated/new-component.html');s.dom.window.close();
 });
 
-test('widget loading card follows public streamed thought text and hides connection copy',async()=>{
+test('widget loading keeps only a spinner while the composer shows streamed progress',async()=>{
   let release;const held=new Promise(resolve=>release=resolve),request='比较季度收入';
   const s=setup({cards:[],plan:{reply:'生成组件',actions:[{type:'add',componentId:generic.id,parameters:{},request}],components:[generic]},handler:async url=>url==='/api/chat/stream'?{ok:true,body:{run:async cb=>{cb('status',{key:'agent-connect',message:'正在连接 DeepSeek Harness · deepseek-flash'});cb('tool_step',{thoughtSummary:'确认季度收入数据范围',phase:'started'});await held;cb('final',{reportArtifacts:[{url:'/generated/done.html',title:'收入'}],interpretation:'[[AIME_CHART:/generated/done.html]]'});}}}:null});
   submit(s,request);await tick();await tick();
-  assert.equal(s.d.querySelector('.widgetCardBody p').textContent,'确认季度收入数据范围');
+  assert(s.d.querySelector('.widgetCardBody .widgetLoading'));
+  assert.equal(s.d.querySelector('.widgetCardBody p'),null);
+  assert.doesNotMatch(s.d.querySelector('.widgetCardBody').textContent,/确认季度收入数据范围/);
   assert.equal(s.d.querySelector('#widgetStatus').textContent,'确认季度收入数据范围');
   assert.doesNotMatch(s.d.body.textContent,/正在连接 DeepSeek Harness/);
   release();await tick();await tick();s.dom.window.close();
