@@ -74,3 +74,26 @@ def test_status_lookup_is_read_only_exact_and_owner_scoped(clients):
     assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
     assert a.post('/api/case-favorites/status',json=snapshot).status_code==403
     with store.db() as db:assert db.execute('SELECT count(*) FROM case_favorites').fetchone()[0]==1
+
+
+def test_unfavorite_removes_exact_snapshot_from_all_modules_but_not_other_answers_or_owners(clients):
+    a,b,store=clients;headers={'X-Veya-Day':'1'}
+    ids=[]
+    for category in CATEGORIES:
+        ids.append(a.post('/api/case-favorites',json=data(category),headers=headers).json()['id'])
+    other=b.post('/api/case-favorites',json=data(),headers=headers).json()
+    different=data();different['answer']['interpretation']='相同问题的另一条回答'
+    keep=a.post('/api/case-favorites',json=different,headers=headers).json()
+    snapshot={k:v for k,v in data().items() if k!='category'}
+    assert a.request('DELETE','/api/case-favorites',json=snapshot).status_code==403
+    assert a.request('DELETE','/api/case-favorites',json=snapshot,headers={**headers,'Sec-Fetch-Site':'cross-site'}).status_code==403
+    result=a.request('DELETE','/api/case-favorites',json=snapshot,headers=headers)
+    assert result.status_code==200 and result.json()['removedCount']==6
+    assert set(result.json()['removedIds'])==set(ids)
+    assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
+    assert [row['id'] for row in a.get('/api/case-favorites').json()['cases']]==[keep['id']]
+    assert b.get(other['conversationUrl']).status_code==200
+    assert a.get('/api/case-favorites/'+ids[0]).status_code==404
+    assert a.request('DELETE','/api/case-favorites',json=snapshot,headers=headers).json()['removedCount']==0
+    assert a.post('/api/case-favorites',json=data(),headers=headers).status_code==200
+    with store.db() as db:assert db.execute('SELECT count(*) FROM chat_runs').fetchone()[0]==0

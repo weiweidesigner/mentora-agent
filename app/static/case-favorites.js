@@ -1,6 +1,7 @@
 (() => {
   const categories=[['lane','泳道'],['reports','市场报告'],['charts','金融图表'],['analysis','数据分析'],['videos','金融视频'],['art','艺术绘图']];
   let rows=[],source=null,anchor=null,busy=false,revision=0;
+  const removing=new WeakSet();
   const dialog=document.createElement('dialog');dialog.className='caseFavoriteDialog';
   dialog.setAttribute('aria-labelledby','caseFavoriteTitle');
   dialog.innerHTML='<header><h2 id="caseFavoriteTitle">收藏到首页</h2><button type="button" class="caseFavoriteClose" aria-label="关闭"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><form class="caseFavoriteForm"><label class="caseFavoriteField" for="caseFavoriteCategory">首页模块</label><div class="caseFavoriteSelect"><select id="caseFavoriteCategory" name="category">'+categories.map(([id,label])=>'<option value="'+id+'">'+label+'</option>').join('')+'</select><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div><button type="submit" class="caseFavoriteSubmit">收藏到该模块</button></form><p class="caseFavoriteStatus" role="status" aria-live="polite"></p>';
@@ -22,7 +23,8 @@
   function mark(button,saved){
     if(!button?.isConnected)return;
     button.classList.toggle('is-favorited',saved);
-    button.setAttribute('aria-label',saved?'已收藏，选择其他模块':'收藏为案例');button.dataset.tip=saved?'已收藏':'收藏';
+    button.setAttribute('aria-pressed',String(saved));
+    button.setAttribute('aria-label',saved?'取消收藏':'收藏为案例');button.dataset.tip=saved?'取消收藏':'收藏';
     const icon=button.querySelector('.resultActionIcon');if(icon)icon.innerHTML=favoriteHeartIcon(saved);
   }
   async function sync(article){
@@ -36,6 +38,23 @@
     }catch{/* A failed status read must never prevent opening or saving. */}
   }
   function buttons(disabled){dialog.querySelectorAll('button,select').forEach(b=>b.disabled=disabled);}
+  async function removeFavorite(article,button){
+    if(removing.has(article))return;
+    removing.add(article);button.disabled=true;button.setAttribute('aria-busy','true');
+    article.querySelector('.favoriteActionError')?.remove();
+    try{
+      await ready;
+      const result=await api('',{method:'DELETE',headers:{'Content-Type':'application/json','X-Veya-Day':'1'},body:JSON.stringify(snapshot(article))});
+      const ids=new Set([...(result.removedIds||[]),...rows.filter(row=>row.fingerprint&&row.fingerprint===result.fingerprint).map(row=>row.id)]);
+      rows=rows.filter(row=>!ids.has(row.id));revision++;
+      mark(button,false);
+      window.dispatchEvent(new CustomEvent('mentora:case-favorite-removed',{detail:{ids:[...ids]}}));
+      document.querySelectorAll('.message.assistant').forEach(item=>void sync(item));
+    }catch(error){
+      const message=document.createElement('span');message.className='favoriteActionError';message.setAttribute('role','alert');
+      message.textContent='取消收藏失败，请重试';button.after(message);
+    }finally{removing.delete(article);button.disabled=false;button.removeAttribute('aria-busy');}
+  }
   function close(){if(!busy)dialog.close();}
   dialog.querySelector('.caseFavoriteClose').onclick=close;
   dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
@@ -59,7 +78,9 @@
   });
   dialog.addEventListener('close',()=>{source=null;anchor?.focus({preventScroll:true});anchor=null;});
   window.MentoraCaseFavorites={ready,sync,get rows(){return rows;},open(article,button){
-    if(!article||busy)return;source=snapshot(article);anchor=button;status.textContent='';
+    if(!article||busy||removing.has(article))return;
+    if(button?.classList.contains('is-favorited')){void removeFavorite(article,button);return;}
+    source=snapshot(article);anchor=button;status.textContent='';
     if(!dialog.open)dialog.showModal();
   }};
   void ready.then(()=>document.querySelectorAll('.message.assistant').forEach(article=>void sync(article)));

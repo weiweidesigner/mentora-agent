@@ -16,6 +16,12 @@ def route(r):
     path=urlparse(r.request.url).path
     if path=='/':return r.fulfill(body=html,content_type='text/html')
     if path=='/api/case-favorites':
+        if r.request.method=='DELETE':
+            value=r.request.post_data_json;writes.append(path)
+            fingerprint=hashlib.sha256(json.dumps(dict(question=value['question'],answer=value['answer']),ensure_ascii=False,sort_keys=True).encode()).hexdigest()
+            ids=[key for key,row in saved.items() if row['fingerprint']==fingerprint]
+            for key in ids:saved.pop(key);snapshots.pop(key)
+            return r.fulfill(json=dict(removedIds=ids,removedCount=len(ids),fingerprint=fingerprint))
         if r.request.method=='POST':
             value=r.request.post_data_json;key='favorite-'+value['category'];writes.append(path)
             row=dict(id=key,category=value['category'],question=value['question'],title=value['title'],
@@ -79,8 +85,16 @@ with sync_playwright() as runtime:
             page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton")')
             assert '离线收藏测试答案' in page.locator('#messages').inner_text()
             page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
-            page.locator('.cachedCaseAnswer .favoriteResultButton').click();page.keyboard.press('Escape')
-            assert page.locator('.caseOverlay').count()==1,'Escape must close only the favorite dialog'
+            page.locator('.cachedCaseAnswer .favoriteResultButton').click()
+            page.wait_for_function('!document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
+            assert not page.locator('.caseFavoriteDialog').is_visible()
+            assert not saved
+            assert page.locator('#caseGrid [data-case^=favorite-]').count()==0
+            assert page.locator('#inspirationPanel [data-case^=favorite-]').count()==0
+            assert page.locator('.caseOverlay').count()==1,'Unfavorite must preserve the open answer'
+            page.locator('.cachedCaseAnswer .favoriteResultButton').click();assert page.locator('.caseFavoriteDialog').is_visible()
+            page.keyboard.press('Escape')
+            load();assert page.locator('[data-case^=favorite-]').count()==0
             assert not errors,errors
             print(json.dumps(dict(width=width,theme=theme,sixDestinations=True,persistentReplay=True,noExecution=True)))
             page.close()

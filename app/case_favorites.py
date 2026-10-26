@@ -80,6 +80,18 @@ def create_router(store):
                        (user, key, payload.category, json.dumps(metadata, ensure_ascii=False), content, now))
         return metadata
 
+    @router.delete('')
+    def remove(payload: FavoriteSnapshot, request: Request, response: Response):
+        """Remove only this owner's exact answer snapshot, across its modules."""
+        user = owner(request, response, True)
+        fingerprint = hashlib.sha256(snapshot_content(payload).encode()).hexdigest()
+        with store.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            rows = db.execute("SELECT id FROM case_favorites WHERE owner=? AND json_extract(metadata,'$.fingerprint')=?", (user, fingerprint)).fetchall()
+            ids = [row['id'] for row in rows]
+            db.execute("DELETE FROM case_favorites WHERE owner=? AND json_extract(metadata,'$.fingerprint')=?", (user, fingerprint))
+        return dict(removedIds=ids, removedCount=len(ids), fingerprint=fingerprint)
+
     @router.post('/status')
     def status(payload: FavoriteSnapshot, request: Request, response: Response):
         """Read-only lookup shares the save serializer, including numeric values."""

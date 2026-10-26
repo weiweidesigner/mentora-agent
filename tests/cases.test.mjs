@@ -52,6 +52,10 @@ test('saved cases appear in their six destinations and open without inference',a
  assert(h.w.document.querySelector('#caseGrid [data-case=favorite-new]'));
  h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:{...added,id:'favorite-new-chart',category:'charts'}}));
  assert(h.w.document.querySelector('#inspirationPanel [data-case=favorite-new-chart]'));
+ h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-removed',{detail:{ids:['favorite-new','favorite-new-chart']}}));
+ assert.equal(h.w.document.querySelector('#caseGrid [data-case=favorite-new]'),null);
+ assert.equal(h.w.document.querySelector('#inspirationPanel [data-case=favorite-new-chart]'),null);
+ assert(h.w.document.querySelector('#inspirationPanel [data-case=favorite-analysis]'));
 });
 
 test('case replay loads cached conversation without inference; ask fills an editable draft', async () => {

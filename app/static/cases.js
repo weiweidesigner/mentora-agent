@@ -574,6 +574,13 @@
       window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
       renderGallery();
     });
+    window.addEventListener('mentora:case-favorite-removed',event=>{
+      const ids=new Set(event.detail.ids);
+      rows=rows.filter(row=>!ids.has(row.id));
+      window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));
+      ids.forEach(id=>responseCache.delete(id));
+      renderGallery();
+    });
     desktop.addEventListener("change", renderGallery);
     renderGallery();
     requestAnimationFrame(moveLanes);
@@ -688,6 +695,13 @@
         const row=event.detail;if(row.category==='lane')return;
         catalog.cases=[row,...catalog.cases.filter(item=>item.id!==row.id)];
         window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
+        render();
+      });
+      window.addEventListener('mentora:case-favorite-removed',event=>{
+        const ids=new Set(event.detail.ids);
+        catalog.cases=catalog.cases.filter(row=>!ids.has(row.id));
+        window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));
+        ids.forEach(id=>responseCache.delete(id));
         render();
       });
       render();
