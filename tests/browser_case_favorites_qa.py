@@ -61,6 +61,12 @@ with sync_playwright() as runtime:
             load()
             assert page.locator('#inspirationTabs [aria-selected=true]').get_attribute('data-category')=='mine'
             assert page.locator('#inspirationTabs [data-category=all]').count()==0
+            tab=page.locator('#inspirationTabs [data-category=reports]')
+            before=tab.evaluate('(el)=>getComputedStyle(el).backgroundColor')
+            tab.hover()
+            assert tab.evaluate('(el)=>getComputedStyle(el).backgroundColor')!=before
+            assert page.locator('#inspirationTabs [aria-selected=true]').get_attribute('data-category')=='mine'
+            page.mouse.move(0,0)
             assert page.locator('#inspiration-section-mine .inspirationEmpty').count()==1
             page.evaluate('''()=>{
                 startNewChat(false,false);

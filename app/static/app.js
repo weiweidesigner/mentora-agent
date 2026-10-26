@@ -554,11 +554,13 @@ async function syncServerSessions() {
     const data = await response.json();
     const sessions = new Map(loadSessions().map((session) => [session.id, session]));
     for (const remote of data.sessions || []) {
+      if (!isHistoryVisibleSession(remote)) continue;
       const local = sessions.get(remote.id);
       if (isStaleChatSessionSnapshot(local, remote)) continue;
       if (!local || Number(remote.updatedAt) >= Number(local.updatedAt) || (local.activeRunId && !remote.activeRunId)) sessions.set(remote.id, { ...local, ...remote });
     }
-    storeSessions(Array.from(sessions.values()).sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt)).slice(0, 20));
+    const combined=Array.from(sessions.values()).sort((a,b)=>Number(b.updatedAt)-Number(a.updatedAt));
+    storeSessions([...combined.filter(isHistoryVisibleSession).slice(0,20),...combined.filter(session=>!isHistoryVisibleSession(session))]);
     renderHistory();
     const restored = currentSession && sessions.get(currentSession.id);
     if (!activeController && restored && (currentSession.activeRunId || (currentSession.requestId && currentSession.requestId === restored.requestId && currentSession.status !== restored.status))) restoreSession(currentSession.id);
@@ -5255,10 +5257,13 @@ function saveCurrentSession() {
   renderHistory();
 }
 
+function isHistoryVisibleSession(session) {
+  return session?.sessionScope !== 'widget' && !String(session?.id || '').startsWith('widget-');
+}
+
 function renderHistory() {
   if (!historyList) return;
-  const sessions = loadSessions();
-  storeSessions(sessions.slice(0, 20));
+  const sessions = loadSessions().filter(isHistoryVisibleSession);
   if (!sessions.length) {
     historyList.innerHTML = `<div class="historyEmpty">暂无对话</div>`;
     return;

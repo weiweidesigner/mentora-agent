@@ -112,6 +112,35 @@ def test_tool_node_requires_actual_execution_receipt(env):
     g['nodes'][0]['tool']='unavailable'
     with pytest.raises(ValueError):env.service.validate(g,'mentora')
 
+
+def test_deal_news_node_uses_skill_route_and_passes_real_json_not_model_summary(env,monkeypatch,tmp_path):
+    import app.workflows as workflows
+    from app import text_opportunities
+    monkeypatch.setattr(workflows,'ROOT',tmp_path)
+    tools=[dict(id='internal-search',label='资讯搜索',description='软件测试',script='app/skills/internal-search/',receiptScripts=['ainvest_news_search.py'],schema=None),text_opportunities.TOOL]
+    monkeypatch.setattr(workflows,'tool_catalog',lambda agent:tools)
+    monkeypatch.setattr(workflows,'legacy_tool_catalog',lambda agent:[])
+    articles=[dict(title='软件测试标题 AAPL',summary='仅离线测试原文，不是投资事实',url='https://example.invalid/fixture')]
+    def runner(config,rid):
+        assert config['agent']=='mentora-deal' and config['_workflowSkillOnly'] is True
+        assert '--output' in config['question']
+        output=tmp_path/'outputs/news.json';output.parent.mkdir();output.write_text(json.dumps(articles,ensure_ascii=False))
+        config['_emit_event']('tool_step',dict(phase='started',tool='shell',script='shell',params=['python3 app/skill_runner.py execute --script ainvest_news_search.py -- --source category --category latest --output outputs/news.json']))
+        config['_emit_event']('tool_step',dict(phase='completed',tool='shell',script='shell',params=['python3 app/skill_runner.py execute --script ainvest_news_search.py -- --source category --category latest --output outputs/news.json'],observation='{"ok": true}'))
+        return dict(interpretation='模型摘要不能作为原始资讯传给 JEV')
+    env.service.runner=runner
+    def extract(service,owner,payload,**kwargs):
+        assert owner=='fixture'
+        assert json.loads(payload['text'])==articles
+        assert '模型摘要' not in payload['text']
+        return dict(items=[],symbols=[],interpretation='已核对软件测试原文',status='completed')
+    monkeypatch.setattr(text_opportunities,'execute',extract)
+    g=graph([dict(id='news',kind='tool',title='资讯',tool='internal-search'),dict(id='opps',kind='tool',title='提取',tool='text-opportunities',arguments={'text':'{{news}}'})],[dict(source='news',target='opps')])
+    states={};config={'workflow':g,'agent':'mentora-deal','question':'测试','_owner':'fixture'}
+    result=env.service.execute(config,'offline',lambda node,state:states.update({node:state}))
+    assert config['agent']=='mentora-deal' and result['workflowNodes']['opps']=='success'
+    assert states['news']['output']['items']==articles
+
 def test_failure_stops_downstream_and_exposes_node_error(env):
     g=graph([dict(id='bad',kind='model',title='失败'),dict(id='next',kind='model',title='后续')],[dict(source='bad',target='next')])
     def fail(*_):raise RuntimeError('provider unavailable')

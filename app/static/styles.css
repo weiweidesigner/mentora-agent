@@ -4081,6 +4081,9 @@ p {
 .inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:var(--bg); }
 .inspirationTabs::-webkit-scrollbar { display:none; }
 .inspirationTabs button { flex:none;white-space:nowrap; }
+.inspirationTabs button { transition:background-color .15s ease,color .15s ease,border-color .15s ease; }
+@media(hover:hover) { .inspirationTabs button:not([aria-selected="true"]):hover { color:var(--ink);background:var(--soft);border-color:var(--line); } .inspirationTabs button[aria-selected="true"]:hover { background:var(--soft-2); } }
+@media(prefers-reduced-motion:reduce) { .inspirationTabs button { transition:none; } }
 .inspirationEmpty { min-height:120px; margin:0; padding:24px 0; color:var(--muted); font-size:14px; }
 .inspirationTabs button { border:1px solid transparent; background:transparent; color:var(--muted); font:inherit; font-size:14px; padding:9px 16px; border-radius:999px; cursor:pointer; }
 .inspirationTabs button[aria-selected="true"] { color:var(--ink); background:var(--panel); border-color:color-mix(in srgb,var(--ink) 36%,var(--line)); }

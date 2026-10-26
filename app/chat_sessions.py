@@ -63,6 +63,7 @@ class ChatSessions:
             row=db.execute('SELECT payload FROM sessions WHERE owner=? AND id=?',(owner,session_id)).fetchone()
             session=json.loads(row['payload']) if row else dict(id=session_id,title=(data.get('sessionTitle') or data.get('question') or '新建对话')[:28],question=data.get('question',''),messages=list(data.get('history') or []),createdAt=moment*1000)
             session['messages'].append(dict(role='user',text=data.get('question',''),images=data.get('images') or []))
+            session['sessionScope']='widget' if session_id.startswith('widget-') or data.get('sessionScope')=='widget' or session.get('sessionScope')=='widget' else 'chat'
             session.update(status='queued',activeRunId=run_id,requestId=request_id,updatedAt=moment*1000,thinkingStartedAt=moment*1000,thinkingElapsed=0,error='',deleted=False)
             db.execute('INSERT OR REPLACE INTO sessions VALUES(?,?,?,?)',(owner,session_id,json.dumps(session,ensure_ascii=False),moment))
             db.execute('INSERT INTO chat_runs VALUES(?,?,?,?,?,?)',(run_id,owner,session_id,request_id,'queued',moment))
@@ -130,7 +131,7 @@ class ChatSessions:
 
     def sessions(self,owner):
         with self.db() as db:
-            result=[json.loads(row[0]) for row in db.execute("SELECT payload FROM sessions WHERE owner=? AND COALESCE(json_extract(payload,'$.deleted'),0)=0 ORDER BY updated DESC LIMIT 20",(owner,))]
+            result=[json.loads(row[0]) for row in db.execute("SELECT payload FROM sessions WHERE owner=? AND COALESCE(json_extract(payload,'$.deleted'),0)=0 AND substr(id,1,7)!='widget-' AND COALESCE(json_extract(payload,'$.sessionScope'),'chat')!='widget' ORDER BY updated DESC LIMIT 20",(owner,))]
             for session in result:
                 if session.get('activeRunId'):
                     run=db.execute('SELECT created FROM chat_runs WHERE id=? AND owner=?',(session['activeRunId'],owner)).fetchone()

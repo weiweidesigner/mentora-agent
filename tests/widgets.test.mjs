@@ -31,6 +31,7 @@ test('widget uploads and pastes images, sends image-only requests, and forwards 
  assert.equal(s.d.querySelector('#widgetGenerate').disabled,false);assert(s.d.querySelector('.widgetComposerBox').classList.contains('has-attachments'));
  submit(s.w,s.d,'');await tick();await tick();
  const plan=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/plan').options.body),stream=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);
+ assert.equal(stream.sessionScope,'widget');assert.match(stream.sessionId,/^widget-/);
  assert.match(plan.message,/附件图片/);assert.equal(plan.images.length,1);assert.equal(stream.images[0].name,'chart.png');assert.match(stream.question,/图片包含季度销售额/);
  assert.equal(s.d.querySelector('#widgetAttachmentPreview').hidden,true);
  const stored=s.w.localStorage.getItem('mentora-widget-boards-v1');assert(!stored.includes('data:image/'));assert.match(stored,/图片包含季度销售额/);s.dom.window.close();

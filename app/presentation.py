@@ -148,6 +148,7 @@ class ChatRequest(BaseModel):
     agent: Literal['','mentora','mentora-deal'] = ''
     images: list[UploadedImage] = Field(default_factory=list)
     sessionId: str = ""
+    sessionScope: Literal['chat','widget'] = 'chat'
     studioSessionId: int | None = None
     engineSessionId: str = ""
     reasoningFramework: Literal["deepseek", "codex"] = Field(default_factory=default_reasoning_framework)
@@ -848,12 +849,13 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     local_time = dt.datetime.now(ZoneInfo(MARKETS[config['market']]['zone']))
     # Scheduling metadata controls when to run, not what to research. Only
     # expand placeholders explicitly present in the user's research question.
+    skill_only=bool(config.get('_workflowSkillOnly'))
     context = (
         "这是 Mentora Deal 定时任务。按任务正文明确约定执行：要求下单时，完成研究、候选筛选、模型决策和账户校验后，"
         "通过 portfolio-order 提交符合条件的订单；如果任务明确仅研究或不下单，必须保持只读。"
         "不得绕过行情时效、置信度、现金、仓位、可卖数量、交易时段及市场规则；卖出仅限实际持仓。"
         "只依据真实订单和账本回执报告成交，未成交说明具体原因。不得修改全局交易设置、设置提醒或向外部渠道发送消息。"
-        if config.get('agent') == 'mentora-deal' else
+        if config.get('agent') == 'mentora-deal' and not skill_only else
         "这是自动研究任务，只进行信息查询与分析；不得交易、修改账户、设置提醒或向外部渠道发送消息。"
     )
     context += (
@@ -862,9 +864,10 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
         "用列表或表格呈现可比较信息，关键结论适度加粗；引用写成[来源名称](https://...)，不堆砌裸链接或长篇无分节文字。\n\n"
     )
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
-    payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',reasoningEffort=config.get('reasoningEffort','low'),themeMode='dark',history=config.get('_history',[]))
+    payload=ChatRequest(question=context+question,agent='mentora' if skill_only else config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',reasoningEffort=config.get('reasoningEffort','low'),themeMode='dark',history=config.get('_history',[]))
     answer=None
-    for event_name,data in durable_chat_events(payload,config['_owner']):
+    events=framework_events(payload) if skill_only else durable_chat_events(payload,config['_owner'])
+    for event_name,data in events:
         if event_name=='error':
             detail=str(data.get('detail') or data.get('message') or '').strip()
             raise RuntimeError(detail[:500] or '研究流未完成')

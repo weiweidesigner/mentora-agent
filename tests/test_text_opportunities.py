@@ -84,6 +84,16 @@ def test_cancellation_and_late_counterevidence_are_preserved(service):
     assert result['items']==[]
 
 
+def test_long_raw_news_keeps_bounded_jev_excerpts(service):
+    text='AAPL 测试资讯。'+('背景文字。'*11000)+'AAPL 测试末尾风险。'
+    assert len(text)>50000
+    seen=[]
+    result=tool.execute(service,'owner',{'text':text},predict=lambda s,q:seen.append(s) or answer(s['symbol']))
+    assert result['symbols']==['AAPL']
+    assert '测试末尾风险' in json.dumps(seen,ensure_ascii=False)
+    assert len(json.dumps(seen,ensure_ascii=False))<5000
+
+
 @pytest.mark.parametrize('payload',[{'text':''},{'text':'   '},{'text':'AAPL','maxCandidates':31},{'text':'AAPL','markets':['XX']},{'text':'AAPL','minimumConfidence':float('nan')},{'text':'AAPL','owner':'other'}])
 def test_schema_rejects_bad_arguments(payload):
     with pytest.raises(ValueError):tool.Input.model_validate(payload)

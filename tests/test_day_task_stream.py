@@ -98,8 +98,8 @@ def test_daily_research_uses_existing_framework_stream(monkeypatch):
         yield 'tool_step',{'title':'查询技能'}
         yield 'answer_text',{'text':'正在输出'}
         yield 'final',{'question':'原始上下文','code':'','selectedSkill':{},'htmlUrl':'','reportUrl':'','interpretation':'已核验的结果','status':[]}
-    monkeypatch.setattr(presentation,'framework_events',framework)
-    cfg={'market':'CN','stage':'pre','assetType':'index','symbols':'','question':'分析{{market}}','_emit_event':lambda event,data:seen.append((event,data))}
+    monkeypatch.setattr(presentation,'durable_chat_events',lambda payload,owner:framework(payload))
+    cfg={'_owner':'test-owner','market':'CN','stage':'pre','assetType':'index','symbols':'','question':'分析{{market}}','_emit_event':lambda event,data:seen.append((event,data))}
     answer=presentation.run_daily_research(cfg,'unit-run')
     assert len(calls)==1 and [e for e,_ in seen]==['tool_step','answer_text','final']
     assert answer['question']=='分析A股' and answer['interpretation']=='已核验的结果'

@@ -16,7 +16,7 @@ test('sidebar execution indicators follow session status, including background c
   const sessions=['queued','running','completed','failed','interrupted'].map(status=>({id:status,title:'Research',status,activeRunId:'possibly-stale'}));
   const historyList={innerHTML:'',querySelectorAll:()=>[]};
   const context=vm.createContext({historyList,currentSession:null,loadSessions:()=>sessions,storeSessions:()=>{},escapeHtml:value=>value});
-  vm.runInContext(implementation('renderHistory'),context);
+  vm.runInContext(implementation('isHistoryVisibleSession')+implementation('renderHistory'),context);
   vm.runInContext('renderHistory()',context);
   assert.equal((historyList.innerHTML.match(/class="historyRunIndicator"/g)||[]).length,2);
   assert.match(historyList.innerHTML,/aria-label="排队中"/);
@@ -24,6 +24,15 @@ test('sidebar execution indicators follow session status, including background c
   sessions[0].status='completed';sessions[1].status='failed';
   vm.runInContext('renderHistory()',context);
   assert.doesNotMatch(historyList.innerHTML,/historyRunIndicator/);
+});
+
+test('widget sessions are hidden from history without deleting their stored data',()=>{
+  const sessions=[{id:'chat',title:'正常会话'},{id:'widget-legacy',title:'旧看板'},{id:'scoped',sessionScope:'widget',title:'新看板'}];
+  const historyList={innerHTML:'',querySelectorAll:()=>[]};
+  const context=vm.createContext({historyList,currentSession:null,loadSessions:()=>sessions,storeSessions:()=>assert.fail('render must not delete stored sessions'),escapeHtml:value=>value});
+  vm.runInContext(implementation('isHistoryVisibleSession')+implementation('renderHistory'),context);
+  vm.runInContext('renderHistory()',context);
+  assert.match(historyList.innerHTML,/正常会话/);assert.doesNotMatch(historyList.innerHTML,/旧看板|新看板/);assert.equal(sessions.length,3);
 });
 
 test('a pending user turn is immediately restorable without an answer',()=>{
@@ -39,6 +48,7 @@ test('leaving while submission is accepted still saves the original background r
     currentSession:initial,lastQuestion:'',activeController:null,serverSessionReady:Promise.resolve(),
     DEFAULT_REASONING_FRAMEWORK:'deepseek',DEFAULT_INFERENCE_MODEL:'test',AbortController,
     currentThemeMode:()=> 'dark',currentReasoningEffort:()=> 'low',ensureCurrentSession:()=>initial,
+    boundedConversationHistory:history=>history,
     imageSessionPayload:()=>[],imageRequestPayload:x=>x,
     addUserMessage:()=>({}),createAssistantMessage:()=>({}),showAgentIdentity:()=>{},
     applyRunTiming:()=>{},
@@ -61,6 +71,7 @@ test('late title completion cannot write the answer into a different session',as
   const context=vm.createContext({currentSession:first,messages:{querySelectorAll:()=>[]},
     currentThemeMode:()=> 'dark',DEFAULT_REASONING_FRAMEWORK:'deepseek',DEFAULT_INFERENCE_MODEL:'test',
     summarizeSessionTitle:()=>title,persistChatSession:s=>saved.push(s),Date,
+    loadSessions:()=>saved,
   });
   vm.runInContext(implementation('recordAssistantResult'),context);
   const result=vm.runInContext(`recordAssistantResult({interpretation:'first answer',chatRunId:'run-first'})`,context);

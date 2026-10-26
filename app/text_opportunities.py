@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class Input(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    text: str = Field(min_length=1, max_length=50000, description='原始文本，或引用上游输出的文本字段')
+    text: str = Field(min_length=1, max_length=500000, description='原始文本，或引用上游输出的文本字段；长文按标的附近的原文片段评估')
     markets: list[Literal['CN', 'HK', 'US']] = Field(default_factory=lambda: ['CN', 'HK', 'US'], min_length=1, max_length=3)
     minimumConfidence: float = Field(default=.6, ge=0, le=1, allow_inf_nan=False, description='文本机会分类门槛，不是下单门槛或盈利概率')
     maxCandidates: int = Field(default=10, ge=1, le=30, description='最多评估的文本候选数，超出项明确列为未评估')

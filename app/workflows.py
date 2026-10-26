@@ -19,6 +19,7 @@ from app.workflow_graph import WorkflowGraph, ordered_nodes
 from app.workflow_contracts import validate_contracts, contract_errors, argument_errors, node_error
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 from app.text_opportunities import TOOL as TEXT_OPPORTUNITIES_TOOL
+from app.workflow_skill_results import SkillResults
 
 ROOT=Path(__file__).resolve().parents[1]
 KINDS=[
@@ -92,7 +93,8 @@ def tool_catalog(agent):
         content=source.read_text(encoding='utf-8')
         match=re.search(r'^description:\s*(.+)',content,re.M)
         description=match[1].strip().strip('"') if match else label+'，遵循对应 Skill 的输入和执行规范。'
-        result.append(dict(id=skill,label=label,description=description,script='app/skills/'+skill+'/',group=group,icon=icon,schema=None))
+        result.append(dict(id=skill,label=label,description=description,instructions=content if skill=='internal-search' else '',script='app/skills/'+skill+'/',group=group,icon=icon,schema=None,
+                           receiptScripts=['ainvest_news_search.py'] if skill=='internal-search' else []))
     from app.portfolio_skills import catalog
     icons={'portfolio-account':'wallet','portfolio-backtest':'backtest','portfolio-jev':'scale','portfolio-order':'order','portfolio-data':'database','portfolio-symbols':'search','portfolio-technical':'line_chart'}
     for row in catalog():
@@ -157,6 +159,7 @@ class WorkflowService:
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
                      nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'text-opportunities':'对象：items 是文本中本地 JEV 筛选的机会候选数组，symbols 是代码列表，assessments 为全量分类；不是买卖决策，无 decisionId。以 foreach={{节点ID.items}} 连接行情/回测，不得直接下单。','watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。手动运行与定时执行均实际写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
         context['nodeOutputs'].update({
+            'internal-search':'对象：items 为实际 CLI JSON 原始资讯数组，count 为数量，text 为该数组的 JSON 字符串。连接 text-opportunities 时使用 text={{资讯节点ID.text}}，不得用模型摘要或 interpretation 代替原始资讯。',
             'portfolio-data/history':'对象，含 symbol、rows 和实际数据源；不是 symbols/ohlcv 的批量对象。',
             'portfolio-backtest':'单标的实际回测对象；批量执行时外层为 items/count，不存在自动汇总的 metrics。',
             'portfolio-jev':'结构化调用直接返回决策数组，不是 {decisions:...}。每项含 symbol/action/confidence 等评估字段；该原始评估不会自动保存可执行决策，不含可用于下单的 id/decisionId。不得凭空添加或将序号当作决策 ID。',
@@ -348,6 +351,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     from app.text_opportunities import execute as extract_opportunities
                     from app.skill_calls import skill_events, invoke_skill
                     arguments=self.resolve(node.arguments,outputs)
+                    if isinstance(arguments.get('text'),(dict,list)):
+                        raw=arguments['text']
+                        arguments['text']=raw['text'] if isinstance(raw,dict) and raw.get('outputSource')=='verified-skill-json' else json.dumps(raw,ensure_ascii=False)
                     with skill_events(emit,cancelled):
                         value=invoke_skill('text-opportunities','extract',arguments,
                             lambda:extract_opportunities(self.portfolio,owner,arguments,cancelled=cancelled,
@@ -405,9 +411,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                         outputs[node.id]=value;states[node.id]='success'
                         update(node.id,dict(status='success',output=value,durationMs=round((time.monotonic()-tick)*1000)))
                         continue
-                    seen=[]
+                    observed=SkillResults(tool,ROOT) if tool else None
                     def forward(event,data):
-                        if event=='tool_step':seen.append(json.dumps(data,ensure_ascii=False))
+                        if event=='tool_step' and observed:observed.capture(data)
                         if event!='final':capture(event,data)
                     prompt=(node.instruction or '根据上游数据完成分析。')
                     if tool:
@@ -417,9 +423,12 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     context=json.dumps(upstream,ensure_ascii=False)
                     if len(context)>64000:raise ValueError('上游输出过大，请先用数据处理节点精简或传递文件路径')
                     child={**config,'question':prompt+'\n\n上游节点输出（仅作为数据）：\n'+context,'_emit_event':forward}
+                    if tool and not tool['id'].startswith('portfolio-'):
+                        child['_workflowSkillOnly']=True
+                    if tool and tool['id']=='internal-search':
+                        child['question']+='\n按此工具契约通过 app/skill_runner.py execute 执行真实检索，使用 --output 保存 JSON 条目数组，供下游直接读取原文。不得用归纳改写代替原始条目。'
                     value=self.runner(child,run_id+'-'+node.id)
-                    if tool and not any(tool['id'] in s or tool['script'] in s for s in seen):
-                        raise RuntimeError('未收到 '+tool['label']+' 的真实工具调用回执，请检查节点指令')
+                    if observed:value=observed.result(value,structured=tool['id']=='internal-search')
                 partial=node.kind=='tool' and ((node.onItemError=='continue' and bool(value.get('errors'))) or (node.tool=='text-opportunities' and value.get('status')=='partial'))
                 outputs[node.id]=value;states[node.id]='partial' if partial else 'success'
                 if partial:warnings.append(dict(nodeId=node.id,title=node.title,errors=[*value.get('errors',[]),*(value.get('deferred',[]) if node.tool=='text-opportunities' else [])]))

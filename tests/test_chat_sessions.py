@@ -13,6 +13,24 @@ class Payload(BaseModel):
     question:str
     sessionId:str='session-example'
     history:list=[]
+    sessionScope:str='chat'
+
+
+def test_widget_sessions_are_hidden_not_deleted_and_do_not_consume_history_limit(tmp_path):
+    store=ChatSessions(tmp_path)
+    def execute(*_):yield 'final',{'interpretation':'离线 Widget 保存测试'}
+    normal=store.start('owner',Payload(question='普通对话',sessionId='ordinary'),execute)
+    widget=store.start('owner',Payload(question='Widget',sessionId='widget-board-test'),execute)
+    scoped=store.start('owner',Payload(question='Widget scope',sessionId='scoped',sessionScope='widget'),execute)
+    store.pool.shutdown(wait=True)
+    assert [s['id'] for s in store.sessions('owner')]==['ordinary']
+    assert store.run('owner',widget['runId'])['status']=='completed'
+    assert 'event: final' in ''.join(store.events('owner',scoped['runId']))
+    with store.db() as db:
+        template=db.execute("SELECT payload FROM sessions WHERE id='widget-board-test'").fetchone()[0]
+        for index in range(25):db.execute('INSERT INTO sessions VALUES(?,?,?,?)',('owner','widget-old-'+str(index),template,9999999999+index))
+        assert db.execute('SELECT count(*) FROM sessions').fetchone()[0]==28
+    assert [s['id'] for s in store.sessions('owner')]==['ordinary']
 
 
 def test_session_created_immediately_and_disconnected_reader_does_not_stop_execution(tmp_path):

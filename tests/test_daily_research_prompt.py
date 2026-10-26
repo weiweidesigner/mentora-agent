@@ -3,6 +3,20 @@ import pytest
 from app import presentation
 
 
+def test_workflow_skill_node_uses_framework_not_deal_and_preserves_task_agent(monkeypatch):
+    seen=[]
+    def framework(payload):
+        seen.append(payload)
+        yield 'final',{'question':'测试','selectedSkill':{},'interpretation':'软件路由测试','reportArtifacts':[]}
+    monkeypatch.setattr(presentation,'framework_events',framework)
+    monkeypatch.setattr(presentation,'durable_chat_events',lambda *_:pytest.fail('Skill 节点不应进入 Deal 自动路由'))
+    config={'market':'US','symbols':'','question':'检索资讯，不下单','agent':'mentora-deal','_owner':'fixture','_workflowSkillOnly':True}
+    result=presentation.run_daily_research(config,'offline-skill-routing')
+    assert config['agent']=='mentora-deal' and seen[0].agent=='mentora'
+    assert '只进行信息查询与分析' in seen[0].question and '这是 Mentora Deal 定时任务' not in seen[0].question
+    assert result['interpretation']=='软件路由测试'
+
+
 @pytest.mark.parametrize('market', ['CN', 'US', 'HK'])
 def test_scheduler_metadata_does_not_override_research_question(monkeypatch, market):
     seen = []
