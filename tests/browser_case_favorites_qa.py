@@ -9,8 +9,8 @@ from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
 html=re.sub(r'<script\b[^>]*>.*?</script>','',(ROOT/'app/static/index.html').read_text(),flags=re.S)
 saved={};snapshots={};writes=[]
-categories=['lane','reports','charts','analysis','videos','art']
-catalog=dict(cases=[],categories=[dict(id=c,title=c,subtitle='') for c in categories[1:]])
+categories=['reports','charts','analysis','videos','art']
+catalog=dict(cases=[dict(id=f'demo-{c}-{i}',category=c,title='离线模块测试卡片',question='离线测试问题',tag='测试',preview='仅用于界面测试，不是投资事实。',cachedDate='2026-10-26',conversationUrl='/qa/'+c) for c in categories for i in range(9)],categories=[dict(id=c,title=c,subtitle='离线测试模块') for c in categories])
 
 def route(r):
     path=urlparse(r.request.url).path
@@ -57,45 +57,51 @@ with sync_playwright() as runtime:
                 for asset in ('app.js','case-favorites.js','cases.js'):
                     page.add_script_tag(content=(ROOT/'app/static'/asset).read_text())
                 page.evaluate('(theme)=>document.documentElement.dataset.theme=theme',theme)
-                page.wait_for_function('window.MentoraCaseFavorites && document.querySelector("#inspirationTabs [role=tab]")')
+                page.wait_for_function('document.querySelector("#inspirationTabs [data-category=mine]")')
             load()
+            assert page.locator('#inspirationTabs [aria-selected=true]').get_attribute('data-category')=='mine'
+            assert page.locator('#inspirationTabs [data-category=all]').count()==0
+            assert page.locator('#inspiration-section-mine .inspirationEmpty').count()==1
             page.evaluate('''()=>{
                 startNewChat(false,false);
                 const a=createAssistantMessage('仅离线软件测试问题');
                 renderFinalAnswer(a,{interpretation:'这是一条离线收藏测试答案，不是投资事实。',lang:'zh-CN',sources:[]});
             }''')
             page.locator('.favoriteResultButton').click()
-            dialog=page.locator('.caseFavoriteDialog');box=dialog.bounding_box()
-            assert box['x']>=0 and box['x']+box['width']<=width and box['height']<=900
-            assert page.locator('#caseFavoriteCategory option').count()==6
-            for category in categories:
-                previous=len(writes)
-                page.locator('#caseFavoriteCategory').select_option(category)
-                assert len(writes)==previous,'Changing the selection must not save'
-                page.locator('.caseFavoriteSubmit').click()
-                page.wait_for_function('document.querySelector(".caseFavoriteStatus").textContent.startsWith("已收藏到")')
-                assert len(writes)==previous+1
-                assert 'M356.1 177.4' not in page.locator('.favoriteResultButton path').get_attribute('d')
-            page.keyboard.press('Escape');assert not dialog.is_visible()
-            assert len(saved)==6 and all(p=='/api/case-favorites' for p in writes)
+            page.wait_for_function('document.querySelector(".favoriteResultButton").classList.contains("is-favorited")')
+            assert page.locator('.caseFavoriteDialog').count()==0
+            assert len(saved)==1 and saved['favorite-mine']['category']=='mine'
+            assert all(p=='/api/case-favorites' for p in writes)
             load()
-            assert page.locator('#caseGrid [data-case=favorite-lane]').count()>0
-            for category in categories[1:]:assert page.locator('#inspirationPanel [data-case=favorite-'+category+']').count()==1
-            page.locator('[data-case=favorite-analysis]').click()
-            page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton")')
+            assert page.locator('#caseGrid [data-case^=favorite-]').count()==0
+            assert page.locator('#inspiration-section-mine [data-case=favorite-mine]').count()==1
+            assert page.locator('.inspirationCategory').count()==6
+            for category in categories+['mine']:
+                page.evaluate('''category=>{
+                    const container=document.querySelector('.conversation');
+                    const tabs=document.querySelector('#inspirationTabs');
+                    const section=document.querySelector('#inspiration-section-'+category);
+                    container.scrollTop+=section.getBoundingClientRect().top-container.getBoundingClientRect().top-(parseFloat(getComputedStyle(tabs).top)||0)-tabs.offsetHeight-10;
+                }''',category)
+                page.wait_for_function('category=>document.querySelector("#inspirationTabs [aria-selected=true]").dataset.category===category',arg=category)
+            page.locator('#inspirationTabs [data-category=charts]').click()
+            page.wait_for_function('document.querySelector("#inspirationTabs [aria-selected=true]").dataset.category==="charts"')
+            assert page.locator('.inspirationCategory').count()==6
+            page.keyboard.press('Home')
+            page.wait_for_function('document.querySelector("#inspirationTabs [aria-selected=true]").dataset.category==="mine"')
+            page.locator('#inspiration-section-mine [data-case=favorite-mine]').click()
+            page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton")?.classList.contains("is-favorited")')
             assert '离线收藏测试答案' in page.locator('#messages').inner_text()
-            page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
             page.locator('.cachedCaseAnswer .favoriteResultButton').click()
             page.wait_for_function('!document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
-            assert not page.locator('.caseFavoriteDialog').is_visible()
-            assert not saved
-            assert page.locator('#caseGrid [data-case^=favorite-]').count()==0
-            assert page.locator('#inspirationPanel [data-case^=favorite-]').count()==0
-            assert page.locator('.caseOverlay').count()==1,'Unfavorite must preserve the open answer'
-            page.locator('.cachedCaseAnswer .favoriteResultButton').click();assert page.locator('.caseFavoriteDialog').is_visible()
-            page.keyboard.press('Escape')
-            load();assert page.locator('[data-case^=favorite-]').count()==0
+            assert not saved and page.locator('#inspiration-section-mine [data-case^=favorite-]').count()==0
+            assert page.locator('.caseOverlay').count()==1
+            page.locator('.cachedCaseAnswer .favoriteResultButton').click()
+            page.wait_for_function('document.querySelector(".cachedCaseAnswer .favoriteResultButton").classList.contains("is-favorited")')
+            assert saved['favorite-mine']['category']=='mine' and page.locator('dialog.caseFavoriteDialog').count()==0
+            page.locator('#caseBackButton').click()
+            load();assert page.locator('#inspiration-section-mine [data-case=favorite-mine]').count()==1
             assert not errors,errors
-            print(json.dumps(dict(width=width,theme=theme,sixDestinations=True,persistentReplay=True,noExecution=True)))
+            print(json.dumps(dict(width=width,theme=theme,mineDefault=True,directFavorite=True,scrollSpy=True,persistentReplay=True,noExecution=True)))
             page.close()
     browser.close()

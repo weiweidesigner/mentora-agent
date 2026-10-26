@@ -420,7 +420,6 @@
     if (!selectedCase) return;
     // The native image dialog owns its keyboard handling while it is open.
     if (document.querySelector("#generatedImageDialog")?.open) return;
-    if (document.querySelector('.caseFavoriteDialog')?.open) return;
     const videoOverlay = document.querySelector(".aimeVideoOverlay.is-open");
     if (event.key === "Escape") {
       event.preventDefault();
@@ -456,10 +455,7 @@
   fetch("/static/cases/manifest.json", { cache: "no-store" }).then((response) => {
     if (!response.ok) throw new Error("Case catalog unavailable");
     return response.json();
-  }).then(async (rows) => {
-    await window.MentoraCaseFavorites?.ready;
-    const favorites=window.MentoraCaseFavorites?.rows||[];
-    rows=[...favorites.filter(row=>row.category==='lane'),...rows];
+  }).then((rows) => {
     window.veyaCases = [...rows, ...(window.veyaCases || []).filter(row => row.id.startsWith("day-"))];
     loadInspiration(cardHtml);
     const desktop = window.matchMedia("(min-width:761px)");
@@ -568,12 +564,6 @@
       state.position = state.lane.scrollLeft;
       state.manualUntil = performance.now() + 2500;
     }));
-    window.addEventListener('mentora:case-favorite-saved',event=>{
-      const row=event.detail;if(row.category!=='lane')return;
-      rows=[row,...rows.filter(item=>item.id!==row.id)];
-      window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
-      renderGallery();
-    });
     window.addEventListener('mentora:case-favorite-removed',event=>{
       const ids=new Set(event.detail.ids);
       rows=rows.filter(row=>!ids.has(row.id));
@@ -593,128 +583,103 @@
   });
 
   async function loadInspiration(cardHtml) {
-    const square = document.querySelector("#inspirationSquare");
-    if (!square) return;
-    const tabs = square.querySelector("#inspirationTabs");
-    const panel = square.querySelector("#inspirationPanel");
+    const square=document.querySelector('#inspirationSquare');if(!square)return;
+    const tabs=square.querySelector('#inspirationTabs'),panel=square.querySelector('#inspirationPanel');
     try {
-      const response = await fetch("/static/cases/inspiration/manifest.json", { cache: "no-store" });
-      if (!response.ok) throw new Error("灵感案例暂时无法加载");
-      const catalog = await response.json();
+      let catalog,publicError=false;
+      try {
+        const response=await fetch('/static/cases/inspiration/manifest.json',{cache:'no-store'});
+        if(!response.ok)throw new Error('catalog');
+        catalog=await response.json();
+      }catch{
+        publicError=true;catalog={cases:[],categories:[]};
+      }
       await window.MentoraCaseFavorites?.ready;
-      const favorites=window.MentoraCaseFavorites?.rows||[];
-      catalog.cases=[...favorites.filter(row=>row.category!=='lane'),...catalog.cases];
-      window.veyaCases = [...window.veyaCases, ...catalog.cases.filter(row => !window.veyaCases.some(existing => existing.id === row.id))];
-      const categories = [{ id: "all", title: "全部" }, ...catalog.categories];
-      let active = categories[0]?.id;
-      let current = active;
-      const render = () => {
-        tabs.innerHTML = categories.map(category => {
-          return `<button type="button" role="tab" id="inspiration-tab-${category.id}" aria-controls="inspirationPanel" aria-selected="${category.id === current}" tabindex="${category.id === current ? 0 : -1}" data-category="${category.id}">${escapeHtml(category.title)}</button>`;
-        }).join("");
-        panel.setAttribute("aria-labelledby", `inspiration-tab-${active}`);
-        panel.innerHTML = catalog.categories.filter(category => active === "all" || category.id === active).map(category => {
-          const rows = catalog.cases.filter(row => row.category === category.id);
-          const cards = (items, level = 4) => `<div class="inspirationGrid">${items.map((row, index) => cardHtml(row, index).replaceAll("<h2>", `<h${level}>`).replaceAll("</h2>", `</h${level}>`)).join("")}</div>`;
-          let content = cards(rows);
-          if (category.id === "charts" && catalog.tradingViewGroups?.length) {
-            const groups = [...catalog.tradingViewGroups, {id:"native",title:"公司财务与研究",description:"使用原生业务图表查看财报、估值与资金。"}];
-            content = groups.map(group => {
-              const items = rows.filter(row => group.id === "native" ? row.tool !== "TradingViewChart" : row.tool === "TradingViewChart" && row.widgetGroup === group.id);
-              if (!items.length) return "";
-              return `<section class="inspirationWidgetGroup" aria-labelledby="widget-group-${group.id}"><header class="inspirationWidgetGroupHeader"><h4 id="widget-group-${group.id}">${escapeHtml(group.id === "native" ? group.title : "TradingView · " + group.title)}</h4><p>${escapeHtml(group.description)}</p></header>${cards(items,5)}</section>`;
-            }).join("");
+      let personal=[...(window.MentoraCaseFavorites?.rows||[])];
+      const categories=[{id:'mine',title:'我的',subtitle:''},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];
+      window.veyaCases=[...(window.veyaCases||[]),...[...personal,...catalog.cases].filter(row=>!(window.veyaCases||[]).some(item=>item.id===row.id))];
+      let current='mine',scrollPending=false;
+      const revealTab=()=>{
+        const selected=tabs.querySelector('[aria-selected="true"]');if(!selected)return;
+        const bounds=tabs.getBoundingClientRect(),rect=selected.getBoundingClientRect();
+        tabs.scrollLeft+=rect.left<bounds.left?rect.left-bounds.left-12:Math.max(0,rect.right-bounds.right+12);
+      };
+      const activate=(id,focus=false)=>{
+        current=id;
+        tabs.querySelectorAll('[role="tab"]').forEach(tab=>{
+          const selected=tab.dataset.category===id;tab.setAttribute('aria-selected',String(selected));tab.tabIndex=selected?0:-1;
+          if(selected&&focus)tab.focus({preventScroll:true});
+        });
+        panel.setAttribute('aria-labelledby','inspiration-tab-'+id);revealTab();
+      };
+      const mineRows=()=>{
+        const seen=new Set();
+        return personal.filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;}).map(row=>({...row,category:'mine'}));
+      };
+      const render=()=>{
+        tabs.innerHTML=categories.map(category=>'<button type="button" role="tab" id="inspiration-tab-'+category.id+'" aria-controls="inspirationPanel" aria-selected="'+(category.id===current)+'" tabindex="'+(category.id===current?0:-1)+'" data-category="'+category.id+'">'+escapeHtml(category.title)+'</button>').join('');
+        panel.innerHTML=categories.map(category=>{
+          const rows=category.id==='mine'?mineRows():catalog.cases.filter(row=>row.category===category.id);
+          const cards=(items,level=4)=>'<div class="inspirationGrid">'+items.map((row,index)=>cardHtml(row,index).replaceAll('<h2>','<h'+level+'>').replaceAll('</h2>','</h'+level+'>')).join('')+'</div>';
+          let content=category.id==='mine'&&!rows.length?'<p class="inspirationEmpty">暂无收藏</p>':cards(rows);
+          if(category.id==='charts'&&catalog.tradingViewGroups?.length){
+            const groups=[...catalog.tradingViewGroups,{id:'native',title:'公司财务与研究',description:'使用原生业务图表查看财报、估值与资金。'}];
+            content=groups.map(group=>{
+              const items=rows.filter(row=>group.id==='native'?row.tool!=='TradingViewChart':row.tool==='TradingViewChart'&&row.widgetGroup===group.id);
+              if(!items.length)return '';
+              return '<section class="inspirationWidgetGroup" aria-labelledby="widget-group-'+group.id+'"><header class="inspirationWidgetGroupHeader"><h4 id="widget-group-'+group.id+'">'+escapeHtml(group.id==='native'?group.title:'TradingView · '+group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';
+            }).join('');
           }
-          return `<section class="inspirationCategory" aria-labelledby="inspiration-category-${category.id}"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-${category.id}">${escapeHtml(category.title)}</h3></header><p class="inspirationCategorySubtitle">${escapeHtml(category.subtitle)}</p>${content}</section>`;
-        }).join("");
+          return '<section id="inspiration-section-'+category.id+'" class="inspirationCategory" aria-labelledby="inspiration-category-'+category.id+'"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-'+category.id+'">'+escapeHtml(category.title)+'</h3></header>'+(category.subtitle?'<p class="inspirationCategorySubtitle">'+escapeHtml(category.subtitle)+'</p>':'')+content+'</section>';
+        }).join('')+(publicError?'<p role="alert">灵感案例暂时无法加载，请刷新页面重试。</p>':'');
+        activate(current);
       };
-      tabs.addEventListener("click", event => {
-        const tab = event.target.closest("[data-category]");
-        if (!tab) return;
-        active = tab.dataset.category;
-        current = active;
-        render();
-        const selected = tabs.querySelector('[aria-selected="true"]');
-        selected.focus({ preventScroll: true });
-        tabs.scrollLeft += selected.getBoundingClientRect().left < tabs.getBoundingClientRect().left
-          ? selected.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 12
-          : Math.max(0, selected.getBoundingClientRect().right - tabs.getBoundingClientRect().right + 12);
-      });
-      tabs.addEventListener("keydown", event => {
-        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+      const jump=id=>{
+        const section=panel.querySelector('#inspiration-section-'+id);if(!section)return;
+        activate(id,true);
+        const top=conversation.scrollTop+section.getBoundingClientRect().top-conversation.getBoundingClientRect().top-(parseFloat(window.getComputedStyle(tabs).top)||0)-tabs.offsetHeight-12;
+        conversation.scrollTo?.({top:Math.max(0,top),behavior:'auto'});
+      };
+      tabs.addEventListener('click',event=>{const tab=event.target.closest('[data-category]');if(tab)jump(tab.dataset.category);});
+      tabs.addEventListener('keydown',event=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
         event.preventDefault();
-        const index = categories.findIndex(category => category.id === current);
-        const next = event.key === "Home" ? 0 : event.key === "End" ? categories.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + categories.length) % categories.length;
-        active = categories[next].id;
-        current = active;
-        render();
-        const selected = tabs.querySelector('[aria-selected="true"]');
-        selected.focus({ preventScroll: true });
-        tabs.scrollLeft += selected.getBoundingClientRect().left < tabs.getBoundingClientRect().left
-          ? selected.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 12
-          : Math.max(0, selected.getBoundingClientRect().right - tabs.getBoundingClientRect().right + 12);
+        const index=categories.findIndex(category=>category.id===current);
+        const next=event.key==='Home'?0:event.key==='End'?categories.length-1:(index+(event.key==='ArrowRight'?1:-1)+categories.length)%categories.length;
+        jump(categories[next].id);
       });
-      let scrollPending = false;
-      const updateCurrentCategory = () => {
-        scrollPending = false;
-        if (active !== "all" || selectedCase || !conversation.classList.contains("is-empty")) return;
-        const bounds = conversation.getBoundingClientRect();
-        const tabBounds = tabs.getBoundingClientRect();
-        if (tabBounds.top >= bounds.bottom) return;
-        const threshold = Math.max(bounds.top, tabBounds.bottom) + 30;
-        let next = "all";
-        panel.querySelectorAll('.inspirationCategory').forEach(section => {
-          if (section.getBoundingClientRect().top <= threshold) next = section.getAttribute('aria-labelledby').replace('inspiration-category-', '');
+      const updateCurrentCategory=()=>{
+        scrollPending=false;
+        if(selectedCase||!conversation.classList.contains('is-empty'))return;
+        const bounds=conversation.getBoundingClientRect(),tabBounds=tabs.getBoundingClientRect();
+        if(tabBounds.top>=bounds.bottom)return;
+        const threshold=Math.max(bounds.top,tabBounds.bottom)+30;
+        let next='mine';
+        panel.querySelectorAll('.inspirationCategory').forEach(section=>{
+          if(section.getBoundingClientRect().top<=threshold)next=section.id.replace('inspiration-section-','');
         });
-        if (conversation.scrollTop + conversation.clientHeight >= conversation.scrollHeight - 2) {
-          next = catalog.categories[catalog.categories.length - 1]?.id || next;
-        }
-        if (next === current) return;
-        current = next;
-        tabs.querySelectorAll('[role="tab"]').forEach(tab => {
-          const selected = tab.dataset.category === current;
-          tab.setAttribute('aria-selected', String(selected));
-          tab.tabIndex = selected ? 0 : -1;
-        });
-        panel.setAttribute('aria-labelledby', `inspiration-tab-${current}`);
-        const selected = tabs.querySelector('[aria-selected="true"]');
-        if (selected) tabs.scrollLeft += selected.getBoundingClientRect().left < tabBounds.left
-          ? selected.getBoundingClientRect().left - tabBounds.left - 12
-          : Math.max(0, selected.getBoundingClientRect().right - tabBounds.right + 12);
+        if(conversation.scrollTop>0&&conversation.scrollTop+conversation.clientHeight>=conversation.scrollHeight-2)next=categories[categories.length-1].id;
+        if(next!==current)activate(next);
       };
-      conversation.addEventListener('scroll', () => {
-        if (scrollPending) return;
-        scrollPending = true;
-        requestAnimationFrame(updateCurrentCategory);
-      }, {passive:true});
-      panel.addEventListener("click", event => {
-        const card = event.target.closest("[data-case]");
-        if (card) showCase(card.dataset.case);
-      });
+      const scheduleSpy=()=>{if(!scrollPending){scrollPending=true;requestAnimationFrame(updateCurrentCategory);}};
+      conversation.addEventListener('scroll',scheduleSpy,{passive:true});
+      window.addEventListener('veya:home-restored',scheduleSpy);
+      window.addEventListener('resize',scheduleSpy);
+      panel.addEventListener('click',event=>{const card=event.target.closest('[data-case]');if(card)showCase(card.dataset.case);});
       window.addEventListener('mentora:case-favorite-saved',event=>{
-        const row=event.detail;if(row.category==='lane')return;
-        catalog.cases=[row,...catalog.cases.filter(item=>item.id!==row.id)];
-        window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
-        render();
+        const row=event.detail;personal=[row,...personal.filter(item=>item.id!==row.id)];
+        window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];render();
       });
       window.addEventListener('mentora:case-favorite-removed',event=>{
-        const ids=new Set(event.detail.ids);
-        catalog.cases=catalog.cases.filter(row=>!ids.has(row.id));
-        window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));
-        ids.forEach(id=>responseCache.delete(id));
-        render();
+        const ids=new Set(event.detail.ids);personal=personal.filter(row=>!ids.has(row.id));
+        window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));ids.forEach(id=>responseCache.delete(id));render();
       });
-      render();
-      tabs.setAttribute('aria-busy', 'false');
-      panel.setAttribute('aria-busy', 'false');
-      panel.classList.add('homeContentReady');
-      const id = new URLSearchParams(location.search).get("case");
-      if (catalog.cases.some(row => row.id === id)) showCase(id, false);
-    } catch {
-      tabs.replaceChildren();
-      tabs.setAttribute('aria-busy', 'false');
-      panel.setAttribute('aria-busy', 'false');
-      panel.innerHTML = '<p role="alert">灵感案例暂时无法加载，请刷新页面重试。</p>';
+      render();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');panel.classList.add('homeContentReady');
+      const id=new URLSearchParams(location.search).get('case');
+      if([...personal,...catalog.cases].some(row=>row.id===id))showCase(id,false);
+    }catch{
+      tabs.replaceChildren();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');
+      panel.innerHTML='<p role="alert">案例暂时无法加载，请刷新页面重试。</p>';
     }
   }
 })();

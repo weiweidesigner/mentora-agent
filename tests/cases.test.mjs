@@ -38,20 +38,20 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   vm.runInContext(source,context);
   return {w, requests, sent, formatted, conversation, messages, startNewChat: context.startNewChat};
 }
-test('saved cases appear in their six destinations and open without inference',async()=>{
+test('all legacy favorites appear only in Mine and open without inference',async()=>{
  const favorites=['lane','reports','charts','analysis','videos','art'].map(category=>({id:'favorite-'+category,category,title:'测试收藏'+category,tag:'收藏',preview:'离线测试',question:'收藏问题'+category,cachedDate:'2026-10-26',conversationUrl:'/api/case-favorites/'+category}));
  const catalog={categories:favorites.filter(r=>r.category!=='lane').map(r=>({id:r.category,title:r.category,subtitle:''})),cases:[]};
  const h=setup('https://example.com/','收藏的原始回答',catalog,{favorites});await tick();
- assert(h.w.document.querySelector('#caseGrid [data-case=favorite-lane]'));
- for(const row of favorites.filter(r=>r.category!=='lane'))assert(h.w.document.querySelector('#inspirationPanel [data-case='+row.id+']'));
+ assert.equal(h.w.document.querySelector('#caseGrid [data-case=favorite-lane]'),null);
+ for(const row of favorites)assert(h.w.document.querySelector('#inspiration-section-mine [data-case='+row.id+']'));
  h.w.document.querySelector('[data-case=favorite-analysis]').click();await tick();assert.match(h.messages.textContent,/收藏问题analysis收藏的原始回答/);
  assert.equal(h.sent.length,0);
  h.w.document.querySelector('#caseBackButton').click();
  const added={...favorites[0],id:'favorite-new',title:'新收藏'};
  h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:added}));
- assert(h.w.document.querySelector('#caseGrid [data-case=favorite-new]'));
+ assert(h.w.document.querySelector('#inspiration-section-mine [data-case=favorite-new]'));
  h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:{...added,id:'favorite-new-chart',category:'charts'}}));
- assert(h.w.document.querySelector('#inspirationPanel [data-case=favorite-new-chart]'));
+ assert(h.w.document.querySelector('#inspiration-section-mine [data-case=favorite-new-chart]'));
  h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-removed',{detail:{ids:['favorite-new','favorite-new-chart']}}));
  assert.equal(h.w.document.querySelector('#caseGrid [data-case=favorite-new]'),null);
  assert.equal(h.w.document.querySelector('#inspirationPanel [data-case=favorite-new-chart]'),null);
@@ -70,6 +70,23 @@ test('case replay loads cached conversation without inference; ask fills an edit
   assert.equal(h.w.document.activeElement,h.w.document.querySelector('#question'));
   assert.equal(h.w.document.querySelector('#caseActionBar').hidden,true);
   assert.equal(new URL(h.w.location.href).searchParams.has('case'),false);
+});
+
+test('Mine deduplicates legacy module copies and scroll updates tabs without hiding sections',async()=>{
+ const favorites=[{id:'saved-a',fingerprint:'same',category:'reports',question:'旧收藏',title:'旧收藏',tag:'收藏',preview:'测试',cachedDate:'2026-10-26'}, {id:'saved-b',fingerprint:'same',category:'charts',question:'旧收藏',title:'旧收藏',tag:'收藏',preview:'测试',cachedDate:'2026-10-26'}];
+ const catalog={categories:[{id:'reports',title:'市场报告'},{id:'charts',title:'金融图表'}],cases:[]};
+ const h=setup('https://example.com/','测试',catalog,{favorites});await tick();
+ const d=h.w.document,tabs=d.querySelector('#inspirationTabs'),main=h.conversation;
+ assert.equal(d.querySelectorAll('#inspiration-section-mine .caseCard').length,1);
+ assert.equal(tabs.querySelector('[aria-selected=true]').dataset.category,'mine');
+ main.getBoundingClientRect=()=>({top:0,bottom:600});tabs.getBoundingClientRect=()=>({top:0,bottom:60,left:0,right:600});
+ Object.defineProperty(main,'clientHeight',{value:600});Object.defineProperty(main,'scrollHeight',{value:3000});
+ let positions={mine:-200,reports:70,charts:400};
+ for(const id of ['mine','reports','charts'])d.querySelector('#inspiration-section-'+id).getBoundingClientRect=()=>({top:positions[id]});
+ main.scrollTop=500;main.dispatchEvent(new h.w.Event('scroll'));await tick();assert.equal(tabs.querySelector('[aria-selected=true]').dataset.category,'reports');
+ positions={mine:-600,reports:-250,charts:70};main.scrollTop=1000;main.dispatchEvent(new h.w.Event('scroll'));await tick();assert.equal(tabs.querySelector('[aria-selected=true]').dataset.category,'charts');
+ positions={mine:70,reports:300,charts:600};main.scrollTop=100;main.dispatchEvent(new h.w.Event('scroll'));await tick();assert.equal(tabs.querySelector('[aria-selected=true]').dataset.category,'mine');
+ assert.equal(d.querySelectorAll('.inspirationCategory').length,3);h.w.close();
 });
 test('direct case links work and returning home restores cards', async () => {
   const h=setup('https://example.com/veya/?case=amd');await tick();
@@ -298,12 +315,14 @@ test('inspiration categories switch by click and keyboard and replay without inf
   const tabs=h.w.document.querySelector('#inspirationTabs');
   assert.equal(tabs.querySelector('[data-category="recommended"]'),null);
   assert.equal(tabs.querySelector('.inspirationCount'),null);
-  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'all');
-  assert.equal(tabs.querySelector('[data-category="all"]').textContent,'全部');
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'mine');
+  assert.equal(tabs.querySelector('[data-category="mine"]').textContent,'我的');
+  assert.equal(tabs.querySelector('[data-category="all"]'),null);
   assert.equal(h.w.document.querySelectorAll('#inspirationPanel .caseCard').length,2);
   assert.equal(h.w.document.querySelector('#inspirationPanel').getAttribute('aria-busy'),'false');
   tabs.querySelector('[data-category="art"]').click();
-  assert.match(h.w.document.querySelector('#inspirationPanel h3').textContent,/艺术绘图/);
+  assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'art');
+  assert.equal(h.w.document.querySelectorAll('#inspirationPanel .inspirationCategory').length,3);
   tabs.querySelector('[data-category="art"]').dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
   assert.equal(tabs.querySelector('[aria-selected="true"]').dataset.category,'charts');
   const card=h.w.document.querySelector('#inspirationPanel .caseCard');card.focus();card.click();await tick();

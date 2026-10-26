@@ -4474,7 +4474,7 @@ function buildResultActions(article, lang) {
   return `
     <div class="resultActionsRow">
       ${shareButton}
-      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏为案例" data-tip="收藏"><span class="resultActionIcon">${favoriteHeartIcon()}</span></button>
+      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏到我的" data-tip="收藏"><span class="resultActionIcon">${favoriteHeartIcon()}</span></button>
     </div>
   `;
 }

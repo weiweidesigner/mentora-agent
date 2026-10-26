@@ -32,10 +32,10 @@ def test_six_categories_persist_and_replay_owner_only(clients):
         assert 'secret' not in snapshot['answer'] and 'messages' not in snapshot['answer']
         assert b.get(row['conversationUrl']).status_code==404
         assert a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=data(category)).json()['id']==row['id']
-    assert len(a.get('/api/case-favorites').json()['cases'])==6
+    assert len(a.get('/api/case-favorites').json()['cases'])==len(CATEGORIES)
     assert b.get('/api/case-favorites').json()==dict(cases=[])
     with store.db() as db:
-        assert db.execute('SELECT count(*) FROM case_favorites').fetchone()[0]==6
+        assert db.execute('SELECT count(*) FROM case_favorites').fetchone()[0]==len(CATEGORIES)
         assert db.execute('SELECT count(*) FROM chat_runs').fetchone()[0]==0
     assert a.get('/api/case-favorites').headers['cache-control']=='no-store'
 
@@ -88,7 +88,7 @@ def test_unfavorite_removes_exact_snapshot_from_all_modules_but_not_other_answer
     assert a.request('DELETE','/api/case-favorites',json=snapshot).status_code==403
     assert a.request('DELETE','/api/case-favorites',json=snapshot,headers={**headers,'Sec-Fetch-Site':'cross-site'}).status_code==403
     result=a.request('DELETE','/api/case-favorites',json=snapshot,headers=headers)
-    assert result.status_code==200 and result.json()['removedCount']==6
+    assert result.status_code==200 and result.json()['removedCount']==len(CATEGORIES)
     assert set(result.json()['removedIds'])==set(ids)
     assert a.post('/api/case-favorites/status',json=snapshot,headers=headers).json()['saved'] is False
     assert [row['id'] for row in a.get('/api/case-favorites').json()['cases']]==[keep['id']]
@@ -97,3 +97,11 @@ def test_unfavorite_removes_exact_snapshot_from_all_modules_but_not_other_answer
     assert a.request('DELETE','/api/case-favorites',json=snapshot,headers=headers).json()['removedCount']==0
     assert a.post('/api/case-favorites',json=data(),headers=headers).status_code==200
     with store.db() as db:assert db.execute('SELECT count(*) FROM chat_runs').fetchone()[0]==0
+
+
+def test_new_favorite_defaults_to_mine_without_changing_legacy_categories(clients):
+    a,_,_=clients;headers={'X-Veya-Day':'1'}
+    value=data();value.pop('category')
+    row=a.post('/api/case-favorites',json=value,headers=headers).json()
+    assert row['category']=='mine'
+    assert a.post('/api/case-favorites',json=data('charts'),headers=headers).json()['category']=='charts'

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.chat_sessions import identity
 
-CATEGORIES = {'lane': '泳道', 'reports': '市场报告', 'charts': '金融图表',
+CATEGORIES = {'mine': '我的', 'lane': '泳道', 'reports': '市场报告', 'charts': '金融图表',
               'analysis': '数据分析', 'videos': '金融视频', 'art': '艺术绘图'}
 ANSWER_FIELDS = {'interpretation', 'reportUrl', 'reportArtifacts', 'fileArtifacts',
                  'streamBlocks', 'sources', 'videos', 'actionLinks', 'lang'}
@@ -23,7 +23,7 @@ class FavoriteSnapshot(BaseModel):
 
 
 class FavoriteInput(FavoriteSnapshot):
-    category: Literal['lane', 'reports', 'charts', 'analysis', 'videos', 'art']
+    category: Literal['mine', 'lane', 'reports', 'charts', 'analysis', 'videos', 'art'] = 'mine'
 
 
 def snapshot_content(payload):
