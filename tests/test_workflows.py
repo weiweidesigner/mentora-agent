@@ -113,6 +113,55 @@ def test_tool_node_requires_actual_execution_receipt(env):
     with pytest.raises(ValueError):env.service.validate(g,'mentora')
 
 
+@pytest.mark.parametrize('candidates',[[],[{'symbol':'FIXTURE'}]])
+def test_execution_join_requires_branch_even_when_side_inputs_succeed(env,monkeypatch,candidates):
+    import app.workflows as module
+    writes=[]
+    monkeypatch.setattr(module,'update_observations',lambda *a,**kw:writes.append('fixture') or {'interpretation':'fixture receipt'})
+    def runner(config,rid):
+        env.calls.append(rid)
+        return dict(items=candidates,interpretation='仅离线执行测试')
+    env.service.runner=runner
+    g=graph([
+        dict(id='input',kind='start',title='测试输入',arguments={'items':candidates}),
+        dict(id='account',kind='start',title='独立侧输入'),
+        dict(id='gate',kind='condition',title='存在候选',path='input.items'),
+        dict(id='backtest',kind='model',title='离线分支'),
+        dict(id='decision',kind='model',title='离线合流',arguments={'items':'{{backtest.items}}'}),
+        dict(id='update',kind='watchlist_update',title='离线写入替身'),
+        dict(id='out',kind='output',title='汇总'),
+    ],[
+        dict(source='input',target='gate'),dict(source='gate',target='backtest',when='true'),
+        dict(source='backtest',target='decision'),dict(source='account',target='decision'),
+        dict(source='input',target='update'),dict(source='backtest',target='update'),dict(source='decision',target='update'),
+        dict(source='update',target='out'),dict(source='gate',target='out',when='false'),
+    ])
+    states={}
+    result=env.service.execute({'workflow':g,'question':'离线测试','_owner':'fixture'},'fixture',lambda n,s:states.update({n:s}))
+    assert states['account']['status']=='success' and states['out']['status']=='success'
+    for node in ('backtest','decision','update'):
+        assert result['workflowNodes'][node]==('success' if candidates else 'skipped')
+    assert len(env.calls)==(2 if candidates else 0)
+    assert len(writes)==(1 if candidates else 0)
+    if not candidates:
+        assert 'backtest' in states['decision']['skipReason']
+        assert states['out']['output']['inputs']['gate']['actual']==[]
+
+
+def test_direct_condition_edge_cannot_be_overridden_by_side_input(env):
+    g=graph([dict(id='input',kind='start',title='输入',arguments={'items':[]}),dict(id='gate',kind='condition',title='判断',path='input.items'),dict(id='side',kind='start',title='侧输入'),dict(id='join',kind='model',title='分支节点')],
+            [dict(source='input',target='gate'),dict(source='gate',target='join',when='true'),dict(source='side',target='join')])
+    result=env.service.execute({'workflow':g,'question':'离线测试','_owner':'fixture'},'fixture',lambda *_:None)
+    assert result['workflowNodes']['join']=='skipped' and not env.calls
+
+
+def test_missing_field_from_executed_branch_still_fails_instead_of_silently_skipping(env):
+    g=graph([dict(id='input',kind='start',title='输入'),dict(id='join',kind='condition',title='字段错误',path='input.missing')],[dict(source='input',target='join')])
+    # Structured tool/condition resolution remains strict; no fabricated empty result.
+    with pytest.raises(RuntimeError,match='没有有效输出'):
+        env.service.execute({'workflow':g,'question':'离线测试','_owner':'fixture'},'fixture',lambda *_:None)
+
+
 def test_deal_news_node_uses_skill_route_and_passes_real_json_not_model_summary(env,monkeypatch,tmp_path):
     import app.workflows as workflows
     from app import text_opportunities

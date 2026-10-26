@@ -16,7 +16,7 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, ValidationError
 from app.workflow_observations import update_observations, observation_summary
 from app.workflow_graph import WorkflowGraph, ordered_nodes
-from app.workflow_contracts import validate_contracts, contract_errors, argument_errors, node_error
+from app.workflow_contracts import validate_contracts, contract_errors, argument_errors, node_error, references
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 from app.text_opportunities import TOOL as TEXT_OPPORTUNITIES_TOOL
 from app.workflow_skill_results import SkillResults
@@ -177,6 +177,7 @@ kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_upd
 每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。需要根据 JEV 置信度自动下单时，必须使用 portfolio-decision 合并回测 items、账户和 profile，再将它的 items 逐项连接 portfolio-order plan，最后将 plan 的 items 逐项连接 portfolio-order execute。不添加用途重复的通用模型节点。
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
+执行节点的 always 入边都是必需输入：任一上游分支跳过，该执行节点及依赖它的执行节点也跳过；独立账户或档案输入不能重新激活未选中的分支。直接带条件入边的执行节点还必须命中条件边。只有 output 节点按 OR 合流，汇总实际激活的分支；无候选时应从 false 分支连到 output，不执行回测、决策或写入。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
 只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，账户订单支持港股，使用未复权港币快照及有效港币兑美元汇率；历史前复权数据仅用于研究，不作成交报价。用户可见的标题、节点说明与结果统一使用「交易账户 / 订单 / 成交」这些中性表述。"""
             def generate(candidate_context):
@@ -318,8 +319,18 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             if time.monotonic()-started>1200:raise RuntimeError('工作流执行超时')
             incoming=[e for e in graph.edges if e.target==node.id]
             active=[e for e in incoming if states.get(e.source) in ('success','partial') and (e.when=='always' or str(bool(outputs.get(e.source,{}).get('value'))).lower()==e.when)]
-            if incoming and not active:
-                states[node.id]='skipped';update(node.id,dict(status='skipped'));continue
+            # Execution joins need every unconditional input, not just an account
+            # or profile side input. Output is an OR merge of the selected paths.
+            unavailable=[e.source for e in incoming if e.when=='always' and e not in active]
+            conditional=[e for e in incoming if e.when!='always']
+            refs=list(references(node.arguments))+list(references(node.foreach))
+            if node.kind=='condition':refs.append(node.path)
+            skipped_refs=[ref.split('.')[0] for ref in refs if states.get(ref.split('.')[0])=='skipped']
+            blocked_join=node.kind!='output' and (unavailable or conditional and not any(e in active for e in conditional))
+            if (incoming and not active) or blocked_join or skipped_refs:
+                dependencies=list(dict.fromkeys([*unavailable,*skipped_refs]))
+                reason='上游分支未执行'+('：'+', '.join(dependencies) if dependencies else '')
+                states[node.id]='skipped';update(node.id,dict(status='skipped',skipReason=reason));continue
             upstream={e.source:outputs[e.source] for e in active}
             update(node.id,dict(status='running',started=stamp(now_utc())))
             emit('progress',dict(text='正在执行：'+node.title,workflowNode=node.id,lang='zh-CN'))
