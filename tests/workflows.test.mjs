@@ -65,6 +65,19 @@ test('new task chooser preserves Agent editor and opens full-screen workflow can
  }finally{s.w.close();}
 });
 
+test('workflow delivery drafts survive reopening settings and saved secrets remain masked',async()=>{
+ const s=await setup();try{
+  const original=s.w.fetch;s.w.fetch=async(url,options={})=>{const response=await original(url,options);if(url.endsWith('/api/day/tasks')&&options.method==='POST'){const data=await response.json();return{...response,json:async()=>{const value={...data,feishuUrlConfigured:!!data.feishuUrl};delete value.feishuUrl;return value;}};}return response;};
+  await s.w.MentoraWorkflow.open({workflow:graph});s.d.querySelector('[data-act=schedule]').click();
+  const f=s.d.querySelector('#dayForm');f.elements.feishu.checked=true;f.elements.feishuUrl.value='https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow';
+  f.dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+  s.d.querySelector('[data-act=schedule]').click();assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.feishuUrl.value,'https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow');
+  f.dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await tick();s.d.querySelector('[data-act=save]').click();await tick();
+  assert.equal(s.saved().feishu,true);assert.equal(s.saved().feishuUrl,'https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow');
+  s.d.querySelector('[data-act=schedule]').click();assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.feishuUrl.value,'');assert.equal(f.elements.feishuUrl.placeholder,'已保存，留空保持不变');
+ }finally{s.w.close();}
+});
+
 test('top backdrop closes like X and preserves the unsaved-change guard',async()=>{
  const s=await setup();try{
   const clickBackdrop=()=>{const c=s.d.querySelector('.wfCanvas');c.dispatchEvent(new s.w.MouseEvent('pointerdown',{clientX:120,clientY:20,bubbles:true}));c.dispatchEvent(new s.w.MouseEvent('click',{clientX:120,clientY:20,bubbles:true}));};

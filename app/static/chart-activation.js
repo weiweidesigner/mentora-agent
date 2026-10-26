@@ -19,7 +19,7 @@
     const button=document.createElement('button');button.type='button';button.className='widgetChartActivation';
     button.setAttribute('aria-label','点击激活图表缩放交互');
     button.style.top=(card.classList.contains('widgetCard')?(card.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40):0)+'px';
-    button.innerHTML='<span>点击图表以缩放</span>';
+    // Keep the transparent scroll gate and accessible label, without a caption.
     button.addEventListener('click',event=>{
       event.preventDefault();event.stopPropagation();
       if(active&&active!==frame)lock(active);

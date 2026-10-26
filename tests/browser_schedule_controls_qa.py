@@ -48,6 +48,26 @@ def main():
                 assert page.locator('#dayTimeLabel').is_visible()
                 assert not page.locator('#dayWindowFields').is_visible()
                 print(json.dumps(dict(width=width,theme=theme,absoluteFrequencyControl=True)))
+                page.evaluate("""()=>{document.querySelector('#dayDialog').close();window.deliveryTask={title:'推送设置',question:'检查推送设置',market:'CN',stage:'pre',cadence:'daily',time:'09:00',timezone:'Asia/Shanghai',triggerMode:'once',enabled:true};MentoraTaskScheduling.edit(window.deliveryTask,data=>window.savedDelivery=data);}""")
+                page.locator('#dayAdvanced summary').click()
+                page.locator('[name=feishu]').check()
+                page.locator('#daySave').click()
+                assert page.locator('#dayDialog').is_visible()
+                assert '飞书机器人 Webhook' in page.locator('#dayDialogMessage').inner_text()
+                page.locator('[name=feishuUrl]').fill('https://open.feishu.cn/open-apis/bot/v2/hook/browser-test')
+                page.locator('#daySave').click()
+                assert page.evaluate('window.savedDelivery.feishu') is True
+                assert page.evaluate('window.savedDelivery.feishuUrl').endswith('browser-test')
+                page.evaluate("MentoraTaskScheduling.edit(window.savedDelivery,data=>window.savedDelivery=data)")
+                assert page.locator('[name=feishu]').is_checked()
+                assert page.locator('[name=feishuUrl]').input_value().endswith('browser-test')
+                page.evaluate("""()=>{document.querySelector('#dayDialog').close();MentoraTaskScheduling.edit({...window.deliveryTask,feishu:true,feishuUrlConfigured:true},data=>window.maskedDelivery=data);}""")
+                assert page.locator('[name=feishu]').is_checked()
+                assert page.locator('[name=feishuUrl]').input_value()==''
+                assert page.locator('[name=feishuUrl]').get_attribute('placeholder')=='已保存，留空保持不变'
+                page.locator('#daySave').click()
+                assert page.evaluate('window.maskedDelivery.feishu') is True
+                print(json.dumps(dict(width=width,theme=theme,feishuSave=True,draftPreserved=True,maskedSecret=True)))
                 page.close()
         browser.close()
 

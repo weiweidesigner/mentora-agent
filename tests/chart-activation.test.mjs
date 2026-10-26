@@ -10,6 +10,7 @@ function setup(){
 test('charts start locked; clicking enables interaction and leaving or clicking outside relocks',()=>{
  const s=setup(),[frame]=s.frames;s.w.installChartActivation(frame,'advanced-chart');const button=s.d.querySelector('.widgetChartActivation');
  assert.equal(button.hidden,false);let bubbled=false;s.d.querySelector('main').addEventListener('wheel',()=>bubbled=true);
+ assert.equal(button.textContent,'');assert.equal(button.querySelector('span'),null);assert.equal(button.getAttribute('aria-label'),'点击激活图表缩放交互');
  const wheel=new s.w.WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:100});button.dispatchEvent(wheel);assert.equal(wheel.defaultPrevented,false);assert(bubbled);
  button.click();assert.equal(button.hidden,true);assert(frame.closest('article').classList.contains('is-chart-active'));
  s.d.querySelector('#outside').dispatchEvent(new s.w.Event('pointerdown',{bubbles:true}));assert.equal(button.hidden,false);

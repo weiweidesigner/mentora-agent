@@ -173,13 +173,24 @@ test('calendar supports end date selection and turning repeat off schedules one 
  f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.saves[0].cadence,'once');assert.ok(h.saves[0].date);assert.equal(h.saves[0].endDate,'');h.dom.window.close();
 });
 
-test('push channels always open switched off, including tasks with saved delivery settings',async()=>{
+test('new tasks start with push off, while saved channels and masked credentials stay configured',async()=>{
  const h=setup({tasks:[{...base,id:'live',serverchan:true,feishu:true,serverchanKeyConfigured:true,feishuUrlConfigured:true}]});await tick();const d=h.w.document;
- d.querySelector('#navTasks').click();await openScenarioEditor(d,'morning');const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
+ d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm'),advanced=d.querySelector('#dayAdvanced');
  assert.equal(advanced.open,false);assert.ok(advanced.contains(d.querySelector('.editorNotifications')));assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayDelete'),null);
  advanced.open=true;d.querySelector('#dayClose').click();d.querySelector('#taskSidebarList [data-task-open="live"]').click();await tick();d.querySelector('#taskCardTitle').click();
- assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,false);assert.equal(f.elements.feishu.checked,false);assert.equal(d.querySelector('#dayServerchanFields').hidden,true);assert.equal(d.querySelector('#dayFeishuFields').hidden,true);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'输入 SCT 开头的 SendKey');assert.equal(f.elements.feishuUrl.placeholder,'输入飞书机器人 Webhook');assert.equal(d.querySelector('#dayDelete'),null);
+ assert.equal(advanced.open,false);assert.equal(f.elements.serverchan.checked,true);assert.equal(f.elements.feishu.checked,true);assert.equal(d.querySelector('#dayServerchanFields').hidden,false);assert.equal(d.querySelector('#dayFeishuFields').hidden,false);assert.equal(f.elements.serverchanKey.value,'');assert.equal(f.elements.serverchanKey.placeholder,'已保存，留空保持不变');assert.equal(f.elements.feishuUrl.placeholder,'已保存，留空保持不变');assert.equal(d.querySelector('#dayDelete'),null);
+ f.elements.title.value='更新标题';f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ const update=h.requests.find(r=>r.method==='PUT');assert.equal(update.body.feishu,true);assert.equal(update.body.serverchan,true);assert.equal(update.body.feishuUrl,'');
  assert.equal(h.requests.some(r=>r.method==='DELETE'),false);h.dom.window.close();
+});
+
+test('enabling Feishu without a webhook explains the missing field and keeps settings editable',async()=>{
+ const h=setup({tasks:[]});await tick();const d=h.w.document;d.querySelector('[data-recommendation="deal-US-live-0"]').click();const f=d.querySelector('#dayForm');
+ f.elements.feishu.checked=true;f.elements.feishu.dispatchEvent(new h.w.Event('change',{bubbles:true}));f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(h.saves.length,0);assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#dayAdvanced').open,true);assert.match(d.querySelector('#dayDialogMessage').textContent,/飞书机器人 Webhook/);assert.equal(f.elements.feishuUrl.getAttribute('aria-invalid'),'true');
+ f.elements.feishuUrl.value=' https://open.feishu.cn/open-apis/bot/v2/hook/test-url ';f.elements.feishuUrl.dispatchEvent(new h.w.Event('input',{bubbles:true}));
+ f.dispatchEvent(new h.w.Event('submit',{bubbles:true,cancelable:true}));await tick();assert.equal(h.saves[0].feishu,true);assert.equal(h.saves[0].feishuUrl,'https://open.feishu.cn/open-apis/bot/v2/hook/test-url');
+ h.dom.window.close();
 });
 
 test('scheduled output uses the saved history answer shell without inventing execution duration',async()=>{

@@ -114,6 +114,7 @@
   }
   const detailState = t => JSON.stringify([t.resultVersion,t.activeRun,t.lastRun?.status,t.enabled,t.nextAt,t.title,t.question,t.agent,t._agent,t.cadence,t.time,t.timezone,t.triggerMode,t.frequency,t.stage,t.market,t.timeMode,t.offset,t.windowStart,t.windowEnd,t.intervalMinutes,t.weekdays,t.monthDay]);
   let editing = null, suggestedQuestion = '', suggestedTitle = '', filter = 'all', internalNavigation = false;
+  let deliveryConfigured={};
   let originalQuestionTemplate = '', originalVisibleQuestion = '';
   let wizardDraft = null, wizardStep = 0, saving = false;
   const creationRecords=new Map();
@@ -481,7 +482,7 @@
     $('dayTimeLabel').hidden=interval;
     $('dayEndModeLabel').hidden=windowed||cadence==='once';$('dayEndLabel').hidden=windowed||cadence==='once'||el('endMode').value!=='date';
     el('endDate').required=!$('dayEndLabel').hidden;
-    for(const [channel,id] of [['serverchan','dayServerchanFields'],['feishu','dayFeishuFields'],['wecom','dayWecomFields']])$(id).hidden=!el(channel).checked;
+    for(const [channel,id,field] of [['serverchan','dayServerchanFields','serverchanKey'],['feishu','dayFeishuFields','feishuUrl'],['wecom','dayWecomFields','wecomUrl']]){$(id).hidden=!el(channel).checked;if(!el(channel).checked){el(field).setCustomValidity('');el(field).removeAttribute('aria-invalid');}}
     $('dayNextPreview').textContent=interval?`${windowed?names[el('market').value]+' · '+stages[el('stage').value]+' · ':''}${el('windowStart').value}–${el('windowEnd').value} · 每 ${el('windowInterval').value} 分钟（${sceneZoneLabel}）`:`按${sceneZoneLabel} ${el('time').value} 执行。`;
     window.VeyaTaskEditor?.sync();
   }
@@ -502,10 +503,11 @@
     el('timeMode').value='fixed';el('offset').value='0';
     {const minutes=Number(task.intervalMinutes)||30;setWindowInterval(minutes,minutes%60===0?'hours':'minutes');}
     el('date').value=task.date||today();
-    for(const channel of ['serverchan','feishu','wecom'])el(channel).checked=false;
+    for(const channel of ['serverchan','feishu','wecom'])el(channel).checked=!!task[channel];
     el('repeat').checked=task.cadence!=='once';el('weekday').value=(task.weekdays||[0])[0];el('monthDay').value=task.monthDay||1;
     el('endMode').value=task.endDate?'date':'never';
-    for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){el(name).value='';el(name).placeholder=name==='serverchanKey'?'输入 SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':'输入飞书机器人 Webhook';}
+    deliveryConfigured={};
+    for(const name of ['feishuUrl','feishuSecret','wecomUrl','serverchanKey']){deliveryConfigured[name]=!!task[name+'Configured'];el(name).value=task[name]||'';el(name).setCustomValidity('');el(name).removeAttribute('aria-invalid');el(name).placeholder=deliveryConfigured[name]?'已保存，留空保持不变':name==='serverchanKey'?'输入 SCT 开头的 SendKey':name==='feishuSecret'?'可选的签名密钥':name==='wecomUrl'?'输入企业微信机器人 Webhook':'输入飞书机器人 Webhook';}
     $('dayDialogTitle').textContent=readOnly?'定时任务设置':editing?'编辑任务':'新建任务';
     $('daySave').textContent=editing?'保存':'创建';$('daySave').hidden=readOnly;
     $('dayAdvanced').open=false;
@@ -521,6 +523,12 @@
   function payload() {
     const data=Object.fromEntries(new FormData(form));
     for(const name of ['enabled','newChat','browser','serverchan','feishu','wecom'])data[name]=el(name).checked;
+    for(const [channel,field,label] of [['feishu','feishuUrl','飞书机器人 Webhook 地址'],['serverchan','serverchanKey','SCT 开头的 SendKey'],['wecom','wecomUrl','企业微信机器人 Webhook 地址']]){
+      data[field]=String(data[field]||'').trim();
+      if(data[channel]&&!data[field]&&!deliveryConfigured[field]){
+        const error='请先填写'+label+'，再保存';$('dayAdvanced').open=true;el(field).setCustomValidity(error);el(field).setAttribute('aria-invalid','true');el(field).reportValidity();el(field).focus();throw Error(error);
+      }
+    }
     data.timeMode='fixed';data.offset=0;data.monthDay=Number(data.monthDay)||1;data.weekdays=data.cadence==='custom'?(window.VeyaTaskEditor?.weekdays()||[0]):[Number(data.weekday)||0];
     if(!data.weekdays.length)throw new Error('请至少选择一个重复日期');
     if(data.question===originalVisibleQuestion)data.question=originalQuestionTemplate;
@@ -698,13 +706,14 @@
   setInterval(()=>{if(updateDayHeader())renderHome();},1000);
   $('dayClose').onclick=$('dayCancelEdit').onclick=()=>dialog.close();
   form.addEventListener('change',updateFields);
+  form.addEventListener('input',event=>{if(['feishuUrl','feishuSecret','wecomUrl','serverchanKey'].includes(event.target.name)){event.target.setCustomValidity('');event.target.removeAttribute('aria-invalid');}});
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
     try{const data=payload();if(workflowScheduleSave){const save=workflowScheduleSave;workflowScheduleSave=null;dialog.close();save(data);return;}const draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
-  dialog.addEventListener('close',()=>{workflowScheduleSave=null;});
+  dialog.addEventListener('close',()=>{if(!dialog.open)workflowScheduleSave=null;});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   window.addEventListener('veya:chat-navigate',()=>{closeTaskMenu();if(internalNavigation)return;shellMode(false);viewVersion++;selectedId='';const url=new URL(location.href);['tab','task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);});
   window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search);if(p.get('dayShare'))openShared(p.get('dayShare')).catch(e=>message(e.message));else if(p.get('tab')==='tasks'){if(p.get('task'))selectTask(p.get('task'),{updateUrl:false,runId:p.get('run')||''}).catch(e=>message(e.message));else showLanding(false);}else shellMode(false);});
