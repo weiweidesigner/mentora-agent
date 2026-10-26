@@ -125,7 +125,7 @@ class WorkflowService:
             'portfolio-data/history':'对象，含 symbol、rows 和实际数据源；不是 symbols/ohlcv 的批量对象。',
             'portfolio-backtest':'单标的实际回测对象；批量执行时外层为 items/count，不存在自动汇总的 metrics。',
             'portfolio-jev':'结构化调用直接返回决策数组，不是 {decisions:...}。每项含 symbol/action/confidence 等评估字段；该原始评估不会自动保存可执行决策，不含可用于下单的 id/decisionId。不得凭空添加或将序号当作决策 ID。',
-            'portfolio-order':'plan 返回真实计划对象（id）；execute 仅接受该计划的 planId。plan 必须使用当前用户已保存且有效的 JEV decisionId，不能把原始评估当成已保存决策。watch/skip/hold 不是合法 side，不能直接逐项映射全部决策下单；需要筛选/动作映射等推理时使用模型工具节点（留空 arguments/foreach），让 Agent 根据实际输出调用工具，缺少有效决策记录时明确无法下单，不伪造 ID 或成交。',
+            'portfolio-order':'plan 返回真实计划对象（id）；execute 仅接受该计划的 planId。plan 必须使用当前用户已保存且有效的 JEV decisionId，不能把原始评估当成已保存决策。watch/skip/hold 不是合法 side，不能直接逐项映射全部决策下单。原始 JEV 评估不含 decisionId 时，不得创建会重新研究或尝试下单的模型节点；直接记录「缺少可执行决策记录」并继续汇总。只有上游明确提供真实 decisionId 时才可连接下单节点；不伪造 ID 或成交。',
         })
         if self.builder:generate=self.builder
         else:
@@ -138,7 +138,7 @@ kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_upd
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
-只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，只用于研究和历史回测，不开放港股模拟成交。"""
+只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，只用于研究和历史回测，不开放港股成交。用户可见的标题、节点说明与结果统一使用「交易账户 / 订单 / 成交」这些中性表述。"""
             def generate(candidate_context):
                 with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
                     response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
@@ -192,6 +192,16 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             return result
         if match:return lookup(match[1])
         return re.sub(r'\{\{([\w.-]+)\}\}',lambda m:json.dumps(lookup(m[1]),ensure_ascii=False),value)
+
+    @staticmethod
+    def has_decision_id(value):
+        if isinstance(value, dict):
+            if isinstance(value.get('decisionId'), str) and value['decisionId'].strip():
+                return True
+            return any(WorkflowService.has_decision_id(child) for child in value.values())
+        if isinstance(value, list):
+            return any(WorkflowService.has_decision_id(child) for child in value)
+        return False
 
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
@@ -270,6 +280,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     value=batch_output() if node.foreach else results[0]
                 else:
                     tool=next((t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool),None)
+                    if node.kind=='model' and 'portfolio-order' in node.instruction and 'decisionId' in node.instruction and not self.has_decision_id(upstream):
+                        value=dict(interpretation='上游未提供当前用户已保存且有效的 JEV decisionId，本节点未提交订单。',orderReceipts=[])
+                        outputs[node.id]=value;states[node.id]='success'
+                        update(node.id,dict(status='success',output=value,durationMs=round((time.monotonic()-tick)*1000)))
+                        continue
                     seen=[]
                     def forward(event,data):
                         if event=='tool_step':seen.append(json.dumps(data,ensure_ascii=False))

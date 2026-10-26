@@ -51,8 +51,17 @@ def test_deal_schedule_honors_explicit_order_intent_and_requires_markdown(monkey
     monkeypatch.setattr(presentation,'durable_chat_events',stream)
     for agent in ('mentora-deal','mentora'):
         presentation.run_daily_research({'agent':agent,'market':'CN','symbols':'','_owner':'fixture','question':'筛选并下单'},'orders-'+agent)
-    assert '通过 portfolio-order 提交符合条件的模拟订单' in seen[0].question
+    assert '通过 portfolio-order 提交符合条件的订单' in seen[0].question
+    assert '模拟' not in seen[0].question
     assert '任务明确仅研究或不下单' in seen[0].question
     assert '只进行信息查询与分析；不得交易' not in seen[0].question
     assert '只进行信息查询与分析；不得交易' in seen[1].question
     assert all('标准 Markdown' in item.question for item in seen)
+
+
+def test_scheduler_surfaces_the_original_stream_failure(monkeypatch):
+    def stream(payload, owner):
+        yield 'error', {'detail': '研究工具轮次达到上限'}
+    monkeypatch.setattr(presentation, 'durable_chat_events', stream)
+    with pytest.raises(RuntimeError, match='研究工具轮次达到上限'):
+        presentation.run_daily_research({'market':'CN','symbols':'','_owner':'fixture','question':'研究'}, 'failed')

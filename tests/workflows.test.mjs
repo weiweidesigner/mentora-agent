@@ -234,9 +234,13 @@ test('workflow titles use available header width and node statuses stay horizont
 });
 test('saved trading nodes migrate to execution and observation actions when reopened',async()=>{
  const s=await setup();try{
-  const old={version:1,nodes:[{id:'trade',kind:'tool',tool:'portfolio-order',title:'执行模拟交易',x:90,y:140},{id:'out',kind:'output',title:'输出回测决策与交易报告',x:440,y:140}],edges:[{source:'trade',target:'out',when:'always'}]};
-  await s.w.MentoraWorkflow.open({workflow:old});
+  const old={version:1,nodes:[{id:'trade',kind:'tool',tool:'portfolio-order',title:'执行模拟交易',instruction:'读取模拟账户并提交模拟订单',x:90,y:140},{id:'out',kind:'output',title:'输出回测决策与交易报告',x:440,y:140}],edges:[{source:'trade',target:'out',when:'always'}]};
+  await s.w.MentoraWorkflow.open({workflow:old,lastTrial:{nodes:{trade:{status:'failed',error:'执行模拟交易失败：模拟账户缺少决策'}}}});
   assert.equal(s.d.querySelector('[data-node=trade] strong').textContent,'执行交易');
+  assert.doesNotMatch(s.d.querySelector('[data-node=trade] p').textContent,/模拟/);
+  s.d.querySelector('[data-node=trade]').click();
+  assert.doesNotMatch(s.d.querySelector('#wfRunResult').textContent,/模拟/);
+  assert.match(s.d.querySelector('#wfRunResult').textContent,/执行交易失败：交易账户缺少决策/);
   assert.equal(s.d.querySelector('[data-node=out] strong').textContent,'更新观察列表');
   assert(s.d.querySelector('[data-add=watchlist_update]'));
   s.d.querySelector('[data-act=save]').click();await tick();

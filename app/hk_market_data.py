@@ -93,7 +93,7 @@ def fetch_history(symbol,*,limit=132,as_of=None):
     values=[rows[d] for d in sorted(rows)][-limit:]
     if not values:raise ValueError('港股历史行情没有已完成交易日数据')
     stale=values[-1]['date']<finished[-1].isoformat()
-    limitation='仅用于港股行情研究和历史回测；HKD 原价，前复权全部 OHLC，不可用于模拟成交；成交量沿用源单位，不猜测手/股换算'
+    limitation='仅用于港股行情研究和历史回测；HKD 原价，前复权全部 OHLC，不可用于成交；成交量沿用源单位，不猜测手/股换算'
     if stale:limitation+='；历史末日早于最近完整交易日，不能冒称当前行情'
     return dict(symbol=symbol,rows=values,rowCount=len(values),market='HK',currency='HKD',nativeCurrency='HKD',timezone='Asia/Hong_Kong',
                 adjusted=True,adjustment='forward',priceBasis='forward-adjusted native HKD OHLC',volumeUnit='provider-reported',

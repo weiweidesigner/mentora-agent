@@ -108,6 +108,6 @@ def test_research_read_and_backtest_accept_hk_but_orders_do_not(monkeypatch,tmp_
     from app.portfolio import Portfolio
     from test_portfolio import Feed
     paper=Portfolio(tmp_path,market=Feed())
-    with pytest.raises(ValueError,match='尚未开放港股模拟成交'):
+    with pytest.raises(ValueError,match='尚未开放港股成交'):
         paper.make_plan('owner',PlanInput(symbol='0700.HK',side='buy',quantity=100))
     with paper.db() as db:assert db.execute('SELECT count(*) FROM plans').fetchone()[0]==0

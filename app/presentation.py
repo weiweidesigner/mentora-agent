@@ -837,7 +837,7 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     # expand placeholders explicitly present in the user's research question.
     context = (
         "这是 Mentora Deal 定时任务。按任务正文明确约定执行：要求下单时，完成研究、候选筛选、模型决策和账户校验后，"
-        "通过 portfolio-order 提交符合条件的模拟订单；如果任务明确仅研究或不下单，必须保持只读。"
+        "通过 portfolio-order 提交符合条件的订单；如果任务明确仅研究或不下单，必须保持只读。"
         "不得绕过行情时效、置信度、现金、仓位、可卖数量、交易时段及市场规则；卖出仅限实际持仓。"
         "只依据真实订单和账本回执报告成交，未成交说明具体原因。不得修改全局交易设置、设置提醒或向外部渠道发送消息。"
         if config.get('agent') == 'mentora-deal' else
@@ -852,7 +852,9 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     payload=ChatRequest(question=context+question,agent=config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',reasoningEffort=config.get('reasoningEffort','low'),themeMode='dark',history=config.get('_history',[]))
     answer=None
     for event_name,data in durable_chat_events(payload,config['_owner']):
-        if event_name=='error':raise RuntimeError('Scheduled research stream failed')
+        if event_name=='error':
+            detail=str(data.get('detail') or data.get('message') or '').strip()
+            raise RuntimeError(detail[:500] or '研究流未完成')
         if event_name=='final':
             answer=normalize_chat_result(data);answer['question']=question;data=answer
         if callable(config.get('_emit_event')):config['_emit_event'](event_name,data)

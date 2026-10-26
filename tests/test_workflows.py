@@ -87,6 +87,20 @@ def test_failure_stops_downstream_and_exposes_node_error(env):
     assert result['status']=='failed' and 'provider unavailable' in result['nodes']['bad']['error']
     assert 'next' not in result['nodes']
 
+
+def test_order_analysis_without_saved_decision_stops_before_model_research(env,monkeypatch):
+    monkeypatch.setattr('app.workflows.execution_tools',lambda agent:[])
+    g=graph([
+        dict(id='jev',kind='start',title='JEV 评估',arguments={'items':[{'symbol':'AAPL','action':'buy','confidence':.8}]}),
+        dict(id='trade',kind='model',title='筛选并下单',instruction='只有存在有效 decisionId 时才调用 portfolio-order，否则明确说明。'),
+    ],[dict(source='jev',target='trade')])
+    states={}
+    result=env.service.execute({'workflow':g,'agent':'mentora-deal','question':'执行','_owner':'owner'},'guarded',lambda i,s:states.update({i:s}))
+    assert result['workflowNodes']['trade']=='success'
+    assert states['trade']['output']['orderReceipts']==[]
+    assert 'decisionId' in states['trade']['output']['interpretation']
+    assert not env.calls
+
 def test_saved_graph_reloads_and_scheduled_run_executes_its_snapshot(env):
     c=env.client;headers={'X-Veya-Day':'1'}
     payload=dict(title='我的流程',question='按图执行',taskMode='workflow',workflow=graph(),cadence='daily',time='14:30',timezone='Asia/Shanghai',enabled=False,newChat=False)
@@ -370,10 +384,11 @@ def test_continue_policy_is_only_available_for_foreach_reads(env,monkeypatch,too
     with pytest.raises(ValueError,match='仅逐项只读行情或回测'):env.service.validate(g,'mentora-deal')
 
 def test_legacy_trading_graph_migrates_without_mutating_input():
-    source=graph([dict(id='trade',kind='tool',title='执行模拟交易',tool='portfolio-order'),
+    source=graph([dict(id='trade',kind='tool',title='执行模拟交易',tool='portfolio-order',instruction='从模拟账户提交模拟订单'),
                   dict(id='out',kind='output',title='输出回测决策与交易报告')],[dict(source='trade',target='out')])
     result=WorkflowGraph.model_validate(source)
     assert result.nodes[0].title=='执行交易'
+    assert result.nodes[0].instruction=='从交易账户提交订单'
     assert result.nodes[1].kind=='watchlist_update' and result.nodes[1].title=='更新观察列表'
     assert source['nodes'][1]['kind']=='output'
 

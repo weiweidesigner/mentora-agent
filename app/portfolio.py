@@ -68,7 +68,7 @@ def number(value):
 def symbol_value(value):
     symbol = value.strip().upper()
     if re.fullmatch(r'\d{1,5}\.HK',symbol) or re.fullmatch(r'HKEX:\d{1,5}',symbol):
-        raise ValueError('港股 '+symbol+' 仅支持行情研究和历史回测；当前尚未开放港股模拟成交')
+        raise ValueError('港股 '+symbol+' 仅支持行情研究和历史回测；当前尚未开放港股成交')
     if re.fullmatch(r'[036]\d{5}', symbol):
         symbol += '.SH' if symbol.startswith('6') else '.SZ'
     if not re.fullmatch(r'[A-Z][A-Z0-9.-]{0,9}|\d{6}\.(?:SH|SZ|BJ)', symbol):
@@ -313,7 +313,7 @@ class TradeNotifications:
         return '暂无估值' if value is None else f'{value:,.2f}'
 
     def body(self, changes, account):
-        lines = ['Mentora Deal · 模拟交易记录更新', '持仓快照时间（北京时间）：' + now().astimezone(ZoneInfo('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')]
+        lines = ['Mentora Deal · 交易记录更新', '持仓快照时间（北京时间）：' + now().astimezone(ZoneInfo('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M:%S')]
         for trade, previous in changes:
             event = '成交' if previous is None else '撤销' if trade.get('voided') else '恢复' if previous['voided'] else '记录变更'
             currency = trade.get('nativeCurrency', 'USD')
@@ -353,8 +353,8 @@ class TradeNotifications:
                 if len((chunks[-1] + line).encode()) > 12000: chunks.append('')
                 chunks[-1] += line + '\n'
             for index, chunk in enumerate(chunks):
-                notification = dict(title='模拟交易记录更新', body=chunk.strip(), path='/?tab=portfolio&portfolioView=trades', linkLabel='查看交易记录与持仓')
-                if len(chunks) > 1: notification['body'] = f'模拟交易更新（{index+1}/{len(chunks)}）\n' + notification['body']
+                notification = dict(title='交易记录更新', body=chunk.strip(), path='/?tab=portfolio&portfolioView=trades', linkLabel='查看交易记录与持仓')
+                if len(chunks) > 1: notification['body'] = f'交易更新（{index+1}/{len(chunks)}）\n' + notification['body']
                 db.execute('INSERT OR IGNORE INTO trade_notice_outbox(id,owner,notification,created) VALUES(?,?,?,?)', (key + ':' + str(index), owner, json.dumps(notification, ensure_ascii=False), stamp()))
             for trade, _ in changes:
                 db.execute('INSERT OR REPLACE INTO trade_notice_versions VALUES(?,?,?,?)', (owner, trade['id'], self.fingerprint(trade), bool(trade.get('voided'))))
