@@ -317,6 +317,17 @@ test('zoom resizes node layout and vector connections while the background stays
   assert.match(css,/font-size:calc\(13px \* var\(--wf-node-scale\)\)/);
  }finally{s.w.close();}
 });
+test('model hint is absent and animated edges hide the static line and marker',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'running',nodes:{input:{status:'success'},out:{status:'running'}}}});
+  assert.equal(s.d.querySelector('#wfModelHint'),null);
+  assert.doesNotMatch(s.d.querySelector('#wfBuildForm').textContent,/默认模型/);
+  assert(s.d.querySelector('.wfEdge.is-flowing .wfEdgeFlow'));
+  const css=readFileSync(new URL('../app/static/workflows.css',import.meta.url),'utf8');
+  assert.match(css,/\.wfEdge\.is-flowing \.wfEdgeLine\{display:none\}/);
+ }finally{s.w.close();}
+});
+
 test('workflow titles use available header width and node statuses stay horizontal',()=>{
  const css=readFileSync(new URL('../app/static/workflows.css',import.meta.url),'utf8');
  assert.match(css,/\.wfHeading\{flex:1;min-width:0;max-width:none\}/);

@@ -85,6 +85,7 @@
 .wfNode p{padding:0;margin:0 calc(18px * var(--wf-node-scale)) calc(18px * var(--wf-node-scale));font-size:calc(11px * var(--wf-node-scale));line-height:calc(16px * var(--wf-node-scale));max-height:calc(32px * var(--wf-node-scale));-webkit-line-clamp:2;line-clamp:2;overflow-wrap:anywhere}
 .wfNode.is-partial{border-color:#d4ae73}.wfNode.is-partial .wfNodeState{color:#d4ae73}
 .wfEdge.is-flowing{color:#b4a2d4}
+.wfEdge.is-flowing .wfEdgeLine{display:none}
 .wfEdgeFlow{fill:none;stroke:#a7e3dd;stroke-width:3;stroke-linecap:round;stroke-dasharray:7 15;pointer-events:none;filter:drop-shadow(0 0 3px #9cd6d466);animation:wf-edge-flow .9s linear infinite}
 [data-theme="light"] .wfEdgeFlow{stroke:#287b78;filter:drop-shadow(0 0 2px #287b7822)}
 @keyframes wf-edge-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-22}}

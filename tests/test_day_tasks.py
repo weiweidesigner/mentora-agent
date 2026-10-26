@@ -46,6 +46,26 @@ def test_execution_preferences_validated_and_durable(client, service):
     assert reopened.execution_preferences() == {'reasoningEffort':'ultra'}
 
 
+@pytest.mark.parametrize('existing_count,same_owner',[(20,True),(500,False)])
+def test_task_creation_and_preset_copy_have_no_saved_task_cap(client,service,existing_count,same_owner):
+    """Offline rows only; the run endpoint queues but never executes a task."""
+    from app.day_presets import SCENE_OWNER
+    first=create(client,enabled=False).json()
+    with service.db() as db:
+        row=dict(db.execute('SELECT * FROM tasks WHERE id=?',(first['id'],)).fetchone())
+        for index in range(existing_count-1):
+            values={**row,'id':'fixture-'+str(index),'owner':row['owner'] if same_owner else 'fixture-other-owner'}
+            db.execute('INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?,?)',tuple(values.values()))
+    response=client.post('/api/day/tasks',json=config(enabled=False),headers={'X-Veya-Day':'1'})
+    assert response.status_code==200,response.text
+    assert client.put('/api/day/tasks/'+response.json()['id'],json={**config(enabled=False),'title':'修改已保存任务'},headers={'X-Veya-Day':'1'}).status_code==200
+    source=service.save(SCENE_OWNER,TaskInput(**config(enabled=False)))
+    result=client.post('/api/day/tasks/'+source['id']+'/run',headers={'X-Veya-Day':'1'})
+    assert result.status_code==200,result.text
+    with service.db() as db:
+        assert db.execute('SELECT count(*) FROM runs WHERE status=\'running\'').fetchone()[0]==0
+
+
 def test_existing_tasks_use_latest_effort_at_execution_and_snapshot_it(client, service):
     from app.day_presets import SCENE_OWNER
     captured = []

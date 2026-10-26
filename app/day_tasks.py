@@ -555,10 +555,6 @@ class DayTasks:
                     for name in SECRET_FIELDS:
                         config[name] = config.get(name, '') or previous.get(name, '')
             if not task_id or not old:
-                if db.execute('SELECT count(*) FROM tasks WHERE owner=? AND deleted=0', (owner,)).fetchone()[0] >= 20:
-                    raise HTTPException(400, '最多创建 20 个任务')
-                if db.execute('SELECT count(*) FROM tasks WHERE deleted=0').fetchone()[0] >= 500:
-                    raise HTTPException(429, '任务容量已满，请稍后重试')
                 task_id = task_id or str(uuid.uuid4())
             if (config['feishu'] and not config['feishuUrl']) or (config['wecom'] and not config['wecomUrl']):
                 raise HTTPException(400, '请先填写所选机器人的 Webhook 地址')
@@ -954,10 +950,6 @@ def create_router(service):
                 task_id = service.preset_run_id(user, source_id)
                 private = db.execute('SELECT * FROM tasks WHERE id=? AND owner=? AND deleted=0', (task_id,user)).fetchone()
                 if not private:
-                    if db.execute('SELECT count(*) FROM tasks WHERE owner=? AND deleted=0',(user,)).fetchone()[0] >= 20:
-                        raise HTTPException(400, '最多创建 20 个任务')
-                    if db.execute('SELECT count(*) FROM tasks WHERE deleted=0').fetchone()[0] >= 500:
-                        raise HTTPException(429, '任务容量已满，请稍后重试')
                     config = service.unpack(row['config'])
                     config.update(enabled=False,cadence='once',browser=False,serverchan=False,feishu=False,wecom=False)
                     for name in SECRET_FIELDS:

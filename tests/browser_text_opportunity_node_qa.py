@@ -49,6 +49,16 @@ with sync_playwright() as runtime:
         assert saved[-1]['enabled'] is False
         page.locator('[data-act=schedule]').click();assert not toggle.is_checked()
         page.locator('#dayCancelEdit').click()
+        page.evaluate('''async()=>{
+            document.querySelector('.wfCanvas').close();
+            await MentoraWorkflow.open({workflow:{version:1,nodes:[
+                {id:'input',kind:'start',title:'离线输入',x:90,y:140},
+                {id:'out',kind:'output',title:'离线输出',x:440,y:140}
+            ],edges:[{source:'input',target:'out',when:'always'}]},lastTrial:{status:'running',nodes:{input:{status:'success'},out:{status:'running'}}}});
+        }''')
+        assert page.locator('#wfModelHint').count()==0
+        assert page.locator('.wfEdge.is-flowing .wfEdgeLine').evaluate('el=>getComputedStyle(el).display')=='none'
+        assert page.locator('.wfEdgeFlow').evaluate('el=>getComputedStyle(el).animationName')=='wf-edge-flow'
         assert not errors,errors
         print(json.dumps(dict(width=width,nodeVisible=True,textEditable=True,saveAndReopen=True,noExecution=True)))
         page.close()
