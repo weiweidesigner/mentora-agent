@@ -23,6 +23,30 @@ from app.widget_capabilities import generation_catalogue
 router = APIRouter()
 
 
+class AnnotationStyle(BaseModel):
+    """A visual patch for annotations already present in a native K-line."""
+    model_config = ConfigDict(extra='forbid')
+    id: str | None = Field(default=None, max_length=160)
+    type: str | None = Field(default=None, max_length=40)
+    role: str | None = Field(default=None, max_length=40)
+    text: str | None = Field(default=None, max_length=80)
+    color: str | None = Field(default=None, max_length=40)
+    lineWidth: float | None = Field(default=None, ge=1, le=8)
+    lineStyle: Literal['solid', 'dashed', 'dotted'] | None = None
+    offsetX: float | None = Field(default=None, ge=-2000, le=2000)
+    offsetY: float | None = Field(default=None, ge=-2000, le=2000)
+
+
+class PineStyle(BaseModel):
+    """A visual patch for Pine output already embedded in a native K-line."""
+    model_config = ConfigDict(extra='forbid')
+    title: str | None = Field(default=None, max_length=120)
+    kind: Literal['plot', 'hline', 'all'] = 'all'
+    color: str | None = Field(default=None, max_length=40)
+    width: float | None = Field(default=None, ge=1, le=8)
+    style: Literal['line', 'linebr', 'stepline', 'solid', 'dashed', 'dotted'] | None = None
+
+
 class Parameters(BaseModel):
     model_config = ConfigDict(extra='forbid')
     symbols: list[str] | None = Field(default=None, max_length=30)
@@ -58,6 +82,12 @@ class Parameters(BaseModel):
     subChartHeight: int | None = Field(default=None, ge=36, le=400)
     themeMode: Literal['light', 'dark'] | None = None
     language: Literal['zh', 'zh-hk', 'en', 'ja', 'th'] | None = None
+    maColors: list[str] | None = Field(default=None, max_length=4)
+    maLineWidth: float | None = Field(default=None, ge=1, le=8)
+    candleUpColor: str | None = Field(default=None, max_length=40)
+    candleDownColor: str | None = Field(default=None, max_length=40)
+    annotationStyles: list[AnnotationStyle] | None = Field(default=None, max_length=40)
+    pineStyles: list[PineStyle] | None = Field(default=None, max_length=40)
 
     @field_validator('ma')
     @classmethod
@@ -185,6 +215,12 @@ def enrich_card(card: Card) -> dict:
                         'subChartHeight': config.get('subChartHeight'),
                         'themeMode': config.get('themeMode'),
                         'language': config.get('language'),
+                        'maColors': config.get('maColors'),
+                        'maLineWidth': config.get('maLineWidth'),
+                        'candleUpColor': config.get('candleUpColor'),
+                        'candleDownColor': config.get('candleDownColor'),
+                        'annotationStyles': config.get('annotationStyles'),
+                        'pineStyles': config.get('pineStyles'),
                     }
                     data['component'] = 'kline'
                     data['parameters'] = {**data.get('parameters', {}), **{key:value for key,value in recovered.items() if value is not None}}
@@ -212,7 +248,7 @@ remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_bo
 TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart支持interval：1/5/15/30（分钟）、60/120/240（分钟）、D/W/M；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。
 advanced-chart 可直接修改原卡片，不得因样式或设置要求替换成其他组件：parameters.style 使用0美国线、1K线、2折线、3面积、4砖型、5卡吉、6点数、7新价线、8平均K线、9空心K线、10基准线；compareSymbols是对比标的数组，watchlist是观察列表数组，timezone例如exchange、Etc/UTC、Asia/Shanghai。布尔字段包括allowSymbolChange、showDrawingToolbar、showTopToolbar、showLegend、showVolume、showDetails、showHotlist、showDateRanges、showCalendar、saveImage。studies不再限定五种指标；优先使用用户提供或组件文档已确认的官方指标ID，不猜造ID。catalogue中的configDefaults和configExtraKeys就是同一个TradingView Skill的配置契约。parameters.config可以传该组件的全部允许配置，例如高级图表的style、studies、interval，标的概览的chartType/dateRanges。修改config只输出变化的键；列表明确给出最终值（添加时保留原项）。需要保留结构化studies值，不要降级为字符串或丢失inputs。官方是否实际支持某个指标输入格式仍以组件契约为准，不能把未文档化字段、Pine源码、任意HTML/JS/CSS塞入config。Skill没有允许的顶层键不可新增；指标细项若没有可用官方配置，不声称已调整，可说明需在图表内手动设置。说“添加”指标/对比标的/观察列表时在原列表上合并；说删除、移除、清空、只保留或替换时输出最终列表。看板中只有一张高级图表且用户要求改标的、周期、样式、指标、对比、观察列表或上述开关时，必须update该卡片，不能add新图表。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 看板支持国内K线（ashare-kline，a-share-data/historical_kline.py，只支持单只A股日线，不支持指数或ETF）、AInvest原生行情和业务组件（business-chart-recall）、通用图表（generic-前缀）和 StreamVis/StreamViz（streamviz）。优先遵循用户明确指定的组件，不要擅自换成TradingView。原生kline、多K线、多股分时已可用；按各自资产/周期契约选择，公司财报、估值和评级只用于支持的美股公司。A股日线只用ashare-kline，interval为1d；原生kline支持1m/5m/15m/30m/1h/2h/4h/1d/1w/1M/3M，multi_intraday只支持1m，multi_kline不支持1m。国内交易日历不需要股票代码，日期范围通过request传达。
-调整已有原生 kline 时必须 update 原卡片，不能新增或替换组件。可直接写入 parameters 的结构化字段包括 symbols、interval、ma、subIndicators、klineType、candleColorMode、fromDate、toDate、limit、fullHistory、drawingTools、fitAnnotations、mainChartHeight、subChartHeight、themeMode、language。更复杂的技术指标、Pine Script、JEV 证据标记、支撑压力/买卖点、标记颜色、线宽、虚实线、文字与气泡等要求，不得在本规划器中编造代码或坐标；将用户完整要求写入 update.request，交给下游按 Pine、JEV 与 kline 正式契约基于真实 OHLCV 重新渲染。只改均线等结构化字段时也保留原 request，验证器会合并本次要求。
+调整已有原生 kline 时必须 update 原卡片，不能新增或替换组件。可直接写入 parameters 的结构化字段包括 symbols、interval、ma、subIndicators、klineType、candleColorMode、fromDate、toDate、limit、fullHistory、drawingTools、fitAnnotations、mainChartHeight、subChartHeight、themeMode、language、maColors、maLineWidth、candleUpColor、candleDownColor。对已有 JEV/画线标记改颜色、粗细、虚实线或偏移，输出 annotationStyles，用 id/type/role/text 匹配已有标记，只输出要改的样式键。对已有 Pine 结果改颜色、线宽或线型，输出 pineStyles，用 title 匹配已有 plot/hline。这些展示设置都是就地配置补丁，不要只输出 request，不要要求重新渲染。只有新增需要计算的 Pine 逻辑、新增需要证据坐标的 JEV 标记或更换数据范围时，才将完整要求写入 update.request 交给下游计算；不得在本规划器中编造代码或坐标。
 requiresDataSource=true的组件没有内置数据源，不在手动组件库展示，但可通过对话添加。必须在add/update的request中完整保留用户要看的业务问题、数据来源（用户提供的数据也可）、指标、时间范围、筛选和变换要求，交给通用执行agent选择真实数据源、必要计算并渲染；最终只交付该组件，不把上游数据源或研究报告作为额外卡片。不能因为它没有symbols而要求用户填写股票代码；只有实际缺少必要数据定义或可用来源时才澄清，不虚构数据。用户说StreamVis或streamvis也指streamviz。不要在这里生成数据或执行取数。
 非TradingView生成动作必须带request，不能把原需求缩减为股票代码。更新时合并原卡片request和本次修改，保留未更改的数据来源、日期及计算口径。只改标题/布局时不要重新生成。禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
     effort = context.get('reasoningEffort', 'low')
@@ -253,6 +289,17 @@ def existing_native_kline_target(payload: PlanningInput, cards: list[dict]) -> s
     if payload.selectedCardId:
         return payload.selectedCardId if payload.selectedCardId in matches else ''
     return matches[0] if len(matches) == 1 else ''
+
+
+def native_kline_needs_data_work(message: str) -> bool:
+    """New evidence/data needs computation; visual changes are live config patches."""
+    return bool(re.search(
+        r'\b(?:new|add|create|calculate|recompute)\b|'
+        r'(?:新增|添加|加上|新画|识别|计算|重算|更换标的|改成.{0,8}(?:分钟|小时|日线|周线|月线)|从\d{4}-\d{2}-\d{2}|到\d{4}-\d{2}-\d{2})'
+        r'.{0,24}(?:Pine|JEV|标记|画线|支撑|压力|买点|卖点|指标|周期|数据)?',
+        message,
+        re.I,
+    ))
 
 
 def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> dict:
@@ -364,9 +411,10 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
         if any(action.get('type') == 'add' for action in actions) or not matching:
             raise ValueError('这是对现有 TradingView 高级图表的设置修改；请 update 该卡片的 parameters，不要新增或替换组件。')
     if kline_target:
-        matching = [action for action in actions if action.get('type') == 'update' and action.get('cardId') == kline_target and action.get('componentId') == 'kline' and (action.get('parameters') or action.get('request'))]
+        needs_data = native_kline_needs_data_work(payload.message)
+        matching = [action for action in actions if action.get('type') == 'update' and action.get('cardId') == kline_target and action.get('componentId') == 'kline' and (action.get('parameters') or (needs_data and action.get('request')))]
         if any(action.get('type') == 'add' for action in actions) or not matching:
-            raise ValueError('这是对现有原生 K 线的调整；请 update 该卡片并保留完整 request，不要新增或替换组件。')
+            raise ValueError('这是对现有原生 K 线的调整；展示调整请输出 parameters 配置补丁，只有新数据或新计算才使用 request，不要新增或替换组件。')
     if payload.board.title == '自定义' and not cards and any(a['type'] == 'add' for a in actions):
         if not any(a['type'] == 'rename_board' and a.get('title', '').strip() not in {'', '自定义', '我的看板'} for a in actions):
             raise ValueError('首次创建看板时，请根据用户需求生成具体标题，并添加 rename_board 动作。')

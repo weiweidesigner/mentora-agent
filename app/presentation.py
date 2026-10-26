@@ -32,7 +32,7 @@ try:
 except ModuleNotFoundError as exc:
     if exc.name != 'app.cost_monitor':raise
     create_cost_router=None
-from app.artifact_upgrades import upgrade_widget_generic_chart, upgrade_widget_tradingview, upgrade_native_kline_pine
+from app.artifact_upgrades import upgrade_widget_generic_chart, upgrade_widget_tradingview, upgrade_native_kline_pine, upgrade_native_kline_runtime
 from app.wecom_channel import WeComChannelError, WeComRobotClient, configured_webhook_url
 
 
@@ -620,6 +620,7 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_generic_chart_typography(artifact)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
+    artifact = upgrade_native_kline_runtime(artifact)
     artifact = sync_native_kline_theme(artifact, theme)
     artifact = upgrade_widget_generic_chart(artifact)
     artifact = upgrade_widget_tradingview(artifact)

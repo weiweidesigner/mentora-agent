@@ -55,6 +55,8 @@
   }
 
   const progressByBoard=new Map();
+  const klineLiveKeys=['ma','subIndicators','klineType','candleColorMode','drawingTools','fitAnnotations','mainChartHeight','subChartHeight','themeMode','maColors','maLineWidth','candleUpColor','candleDownColor','annotationStyles','pineStyles'];
+  const klineDataKeys=['symbols','market','interval','fromDate','toDate','limit','fullHistory','language'];
   function setProgress(board,text){progressByBoard.set(board.id,text);if(activeId===board.id){updateSelection();notice(text);}}
   function notice(text) { const status=$('widgetStatus'),thinking=progressByBoard.has(activeId),scoped=thinking&&!!selectedCardId;status.textContent=scoped?'':text;status.hidden=scoped||!text;status.classList.toggle("is-thinking",thinking&&!scoped); }
   function streamedWidgetText(event,data={}){
@@ -184,6 +186,19 @@
     if(card.refreshedAt)url.searchParams.set('refresh',card.refreshedAt);
     return url.pathname+url.search;
   }
+  function postKlineConfig(card,node=null){
+    if(card?.component!=='kline')return false;
+    const frame=(node||canvas.querySelector(`[data-card="${CSS.escape(card.id)}"]`))?.querySelector('iframe');
+    if(!frame?.contentWindow)return false;
+    const patch=Object.fromEntries(klineLiveKeys.map(key=>[key,card.parameters?.[key]??null]));
+    frame.contentWindow.postMessage({type:'mentora:kline-config',patch},location.origin);return true;
+  }
+  function sameSetting(left,right){return JSON.stringify(left??null)===JSON.stringify(right??null);}
+  function isLiveKlineUpdate(card,component,parameters){
+    if(!card||component?.id!=='kline'||!parameters)return false;
+    if(klineDataKeys.some(key=>!sameSetting(card.parameters?.[key],parameters[key])))return false;
+    return klineLiveKeys.some(key=>!sameSetting(card.parameters?.[key],parameters[key]));
+  }
   function normalizeVerticalGaps(board){
     const placed=[];let changed=false;
     for(const card of [...board.cards].sort((a,b)=>a.y-b.y||a.x-b.x)){
@@ -213,7 +228,7 @@
     el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
     if (card.url && card.status==='ready') {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      frame.addEventListener('load',()=>{try{hydrateTradingView(card,JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}'),el);}catch{}window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
+      frame.addEventListener('load',()=>{postKlineConfig(card,el);try{hydrateTradingView(card,JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}'),el);}catch{}window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
         if(!intrinsic||card.manualHeight)return;
         height+=(el.querySelector('.widgetCardHeader')?.getBoundingClientRect().height||40);
         const board=boards.find(b=>b.cards.includes(card));if(!board||!el.isConnected)return;
@@ -251,7 +266,7 @@
     canvas.setAttribute('role','tabpanel');canvas.setAttribute('aria-labelledby',`widget-tab-${board.id}`);
     const oldNodes=new Map([...canvas.children].map(el=>[el.dataset.card,el]));
     const ids=new Set(board.cards.map(c=>c.id));for(const [id,node] of oldNodes)if(!ids.has(id))node.remove();
-    for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText,card.refreshedAt])){old.querySelector('.widgetCardTitle').textContent=card.title;}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
+    for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText,card.refreshedAt])){old.querySelector('.widgetCardTitle').textContent=card.title;postKlineConfig(card,old);}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
     updateSelection();
     applyLayout();notice(progressByBoard.get(activeId)||'');
@@ -289,7 +304,7 @@
       const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=field.label;label.append(caption);
       let input;
       if(type==='select'){input=document.createElement('select');for(const [option,text] of field.options||[]){const node=document.createElement('option');node.value=option;node.textContent=text;input.append(node);}input.value=String(value);}
-      else {input=document.createElement('input');input.type=type==='boolean'?'checkbox':type==='integer'?'number':type==='date'?'date':'text';if(type==='boolean'){input.checked=Boolean(value);label.className='widgetBooleanField';label.prepend(input);}else{input.value=type==='integer-list'?(Array.isArray(value)?value.join(','):value):value;if(field.placeholder)input.placeholder=field.placeholder;if(field.min!==undefined)input.min=field.min;if(field.max!==undefined)input.max=field.max;if(type==='integer')input.step='1';}}
+      else {input=document.createElement('input');input.type=type==='boolean'?'checkbox':['integer','number'].includes(type)?'number':type==='date'?'date':type==='color'?'color':'text';if(type==='boolean'){input.checked=Boolean(value);label.className='widgetBooleanField';label.prepend(input);}else{input.value=['integer-list','color-list'].includes(type)?(Array.isArray(value)?value.join(','):value):value;if(field.placeholder)input.placeholder=field.placeholder;if(field.min!==undefined)input.min=field.min;if(field.max!==undefined)input.max=field.max;if(['integer','number'].includes(type))input.step=field.step||'1';}}
       input.dataset.settingKey=field.key;input.dataset.settingType=type;label.append(input);root.append(label);
     }
   }
@@ -302,6 +317,8 @@
       const raw=node.value.trim();if(!raw){result[field.key]=null;continue;}
       if(field.type==='integer'){const value=Number(raw);if(!Number.isInteger(value)||(field.min!==undefined&&value<field.min)||(field.max!==undefined&&value>field.max))throw Error(field.label+'请填写有效整数。');result[field.key]=value;continue;}
       if(field.type==='integer-list'){const values=raw.split(/[,，\s]+/).filter(Boolean).map(Number);if(!values.length||values.some(value=>!Number.isInteger(value)||(field.min!==undefined&&value<field.min)||(field.max!==undefined&&value>field.max)))throw Error(field.label+'请填写用逗号分隔的有效整数。');result[field.key]=[...new Set(values)];continue;}
+      if(field.type==='number'){const value=Number(raw);if(!Number.isFinite(value)||(field.min!==undefined&&value<field.min)||(field.max!==undefined&&value>field.max))throw Error(field.label+'请填写有效数值。');result[field.key]=value;continue;}
+      if(field.type==='color-list'){const values=raw.split(/[,，\s]+/).filter(Boolean);if(!values.length||(field.maxItems&&values.length>field.maxItems))throw Error(field.label+'请填写有效的颜色列表。');result[field.key]=values;continue;}
       result[field.key]=raw;
     }
     return result;
@@ -576,11 +593,16 @@
           const component=componentFor(action.componentId||card?.component);if(!component)throw Error('组件能力暂不可用，请刷新页面重试。');
           const parameters=action.parameters||{},text=component.provider==='TradingView'?(parameters.symbols?.join(',')||component.defaultScope||component.title):(action.request||message);
           const before=new Set(board.cards.map(c=>c.id));
-          if(card){card.component=component.id;card.request=text;}
-          await generate(text,component,card?.id||null,parameters.market||'default',board,{...parameters,reasoningEffort,signal:controller.signal});
-          target=card?board.cards.find(c=>c.id===card.id):board.cards.find(c=>!before.has(c.id));
-          if(target?.status==='error')throw Error(target.error);
-          if(!controller.signal.aborted)jobs.set(board.id,controller);
+          if(isLiveKlineUpdate(card,component,parameters)){
+            card.component=component.id;card.parameters={...(card.parameters||{}),...parameters};
+            postKlineConfig(card);target=card;save();
+          }else{
+            if(card){card.component=component.id;card.request=text;}
+            await generate(text,component,card?.id||null,parameters.market||'default',board,{...parameters,reasoningEffort,signal:controller.signal});
+            target=card?board.cards.find(c=>c.id===card.id):board.cards.find(c=>!before.has(c.id));
+            if(target?.status==='error')throw Error(target.error);
+            if(!controller.signal.aborted)jobs.set(board.id,controller);
+          }
         }
         if(target){if(action.layout)Object.assign(target,action.layout);if(action.title){target.title=action.title;target.customTitle=true;}}
       }
@@ -677,6 +699,8 @@
           const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'保存失败，请重试。');const url=safeUrl(result.url);if(!url)throw Error('图表地址不可用。');if(!boards.includes(board)||!board.cards.includes(card))return;
           if(result.config)parameters.config=result.config;
           Object.assign(card,{url,parameters,market,request:text,status:'ready'});delete card.contentHeight;
+        }else if(isLiveKlineUpdate(card,component,parameters)){
+          Object.assign(card,{parameters,title,customTitle:true,symbolInput:raw,market,status:'ready'});postKlineConfig(card);save();render();$('widgetConfig').close();return;
         }else{ const baseRequest=String(card.request||text||('生成'+component.title)).replace(/\n本次配置面板参数以结构化配置为准。$/,'');const request=baseRequest+'\n本次配置面板参数以结构化配置为准。';$('widgetConfig').close();await generate(request,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true,symbolInput:raw});save();if(activeId===board.id)render();return; }
       }
       if(!boards.includes(board)||!board.cards.includes(card))return;Object.assign(card,{title,customTitle:true,symbolInput:raw});save();render();$('widgetConfig').close();

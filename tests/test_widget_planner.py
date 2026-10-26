@@ -216,7 +216,7 @@ def test_native_kline_visual_edit_retries_addition_and_requires_same_card(monkey
     def model(context):
         calls.append(dict(context))
         if len(calls)==1:return {'reply':'新增图表','actions':[{'type':'add','componentId':'kline','parameters':{'symbols':['000001.SH']},'request':'新增'}]}
-        return {'reply':'已调整原图','actions':[{'type':'update','cardId':'chart','request':'保留原分析并将颈线改为橙色虚线'}]}
+        return {'reply':'已调整原图','actions':[{'type':'update','cardId':'chart','parameters':{'annotationStyles':[{'text':'颈线','color':'#f97316','lineStyle':'dashed'}]}}]}
     monkeypatch.setattr(planner,'model_plan',model)
     payload=planner.PlanningInput(message='把 JEV 颈线改为橙色虚线',selectedCardId='chart',board={'id':'b','title':'指数看板','cards':[
         {'id':'chart','title':'上证指数','component':'kline','request':'分析双底','x':0,'y':0,'w':12,'h':22,'parameters':{'symbols':['000001.SH'],'interval':'1d'}}]})
@@ -225,6 +225,7 @@ def test_native_kline_visual_edit_retries_addition_and_requires_same_card(monkey
     assert '现有原生 K 线' in calls[1]['validationError']
     assert result['actions'][0]['cardId']=='chart'
     assert result['actions'][0]['componentId']=='kline'
+    assert result['actions'][0]['parameters']['annotationStyles'][0]['color']=='#f97316'
 
 
 def test_final_planner_validation_error_keeps_the_component_reason(monkeypatch):

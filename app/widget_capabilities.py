@@ -43,6 +43,10 @@ def _kline_settings_schema() -> dict:
             {'key': 'subChartHeight', 'label': '副图高度', 'type': 'integer', 'default': mappings.get('subChartHeight', {}).get('default') or 52, 'min': 36, 'max': 400},
             {'key': 'themeMode', 'label': '图表主题', 'type': 'select', 'default': 'dark', 'options': [['dark', '深色'], ['light', '浅色']]},
             {'key': 'language', 'label': '图表语言', 'type': 'select', 'default': 'zh', 'options': [['zh', '简体中文'], ['zh-hk', '繁体中文'], ['en', 'English'], ['ja', '日本語'], ['th', 'ไทย']]},
+            {'key': 'maColors', 'label': '均线颜色', 'type': 'color-list', 'default': ['#fbbf24', '#8b5cf6', '#38bdf8', '#f97316'], 'maxItems': 4, 'placeholder': '例如 #fbbf24,#8b5cf6,#38bdf8,#f97316'},
+            {'key': 'maLineWidth', 'label': '均线粗细', 'type': 'number', 'default': 1.6, 'min': 1, 'max': 8, 'step': 0.1},
+            {'key': 'candleUpColor', 'label': '上涨颜色', 'type': 'text', 'default': '', 'placeholder': '可选，例如 #ff2f57'},
+            {'key': 'candleDownColor', 'label': '下跌颜色', 'type': 'text', 'default': '', 'placeholder': '可选，例如 #00b899'},
         ],
     }
 

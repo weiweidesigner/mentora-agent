@@ -71,6 +71,47 @@ def _constant(document: str, name: str):
     return json.JSONDecoder().raw_decode(document[start:])[0]
 
 
+@lru_cache(maxsize=1)
+def _native_kline():
+    script = Path(__file__).parent / "skills/business-chart-recall/scripts/kline.py"
+    spec = importlib.util.spec_from_file_location("saved_native_kline", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_native_kline_runtime(artifact: str) -> str:
+    """Move saved native K-lines to the current runtime using embedded OHLCV only."""
+    if 'class="kline-component"' not in artifact or 'mentora:kline-config' in artifact:
+        return artifact
+    try:
+        config = _constant(artifact, "config")
+        current = _constant(artifact, "dataByPeriod")
+        lazy = _constant(artifact, "lazyPagesByPeriod") if "const lazyPagesByPeriod = " in artifact else {}
+        if not isinstance(config, dict) or not isinstance(current, dict):
+            return artifact
+        data_by_period = {}
+        for period, rows in current.items():
+            if not isinstance(rows, list):
+                continue
+            pages = lazy.get(period, []) if isinstance(lazy, dict) else []
+            older = [row for page in pages if isinstance(page, list) for row in page]
+            data_by_period[str(period)] = [*older, *rows]
+        if not any(data_by_period.values()):
+            return artifact
+        props = {**config, "availablePeriods": list(data_by_period), "prefetchPeriods": list(data_by_period)}
+        payload = {
+            "type": "kline",
+            "title": config.get("displayTitle") or config.get("name") or config.get("code") or "K-line",
+            "props": props,
+            "dataByPeriod": data_by_period,
+        }
+        upgraded = _native_kline().render_document(payload)
+        return upgraded if 'mentora:kline-config' in upgraded else artifact
+    except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return artifact
+
+
 def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
     """Re-render legacy multi-intraday srcdocs with exactly their saved OHLCV rows."""
     if 'class="multi-intraday"' not in artifact or 'data-intraday-layout="2"' in artifact:

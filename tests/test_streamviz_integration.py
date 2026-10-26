@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 from app import presentation
+from app.artifact_upgrades import _native_kline
 from app.native_streamviz import _flatten_native_canvas, _repair_streamed_html
 
 
@@ -161,6 +162,22 @@ def test_saved_native_kline_follows_host_theme_without_changing_data(tmp_path, m
 def test_native_kline_compatibility_does_not_patch_generic_artifacts() -> None:
     artifact = '<html><head></head><body><script>const config = {"themeMode": "light"};</script></body></html>'
     assert presentation.sync_native_kline_theme(artifact, "dark") == artifact
+
+
+def test_saved_native_kline_gets_live_config_runtime_without_refetching(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(presentation, "GENERATED_DIR", tmp_path)
+    rows = [
+        {"time": 1700000000000 + index * 86400000, "open": 100 + index,
+         "high": 102 + index, "low": 99 + index, "close": 101 + index, "volume": 1000 + index}
+        for index in range(90)
+    ]
+    payload = {"type": "kline", "props": {"code": "AAPL", "dataType": "1d", "availablePeriods": ["1d"]}, "dataByPeriod": {"1d": rows}}
+    legacy = _native_kline().render_document(payload).replace("mentora:kline-config", "legacy:kline-config")
+    (tmp_path / "legacy-kline.html").write_text(legacy, encoding="utf-8")
+    page = presentation.share_streamviz_artifact("legacy-kline.html", theme="dark").body.decode()
+    assert "mentora:kline-config" in page
+    assert '"close": 190' in page
+    assert '"code": "AAPL"' in page
 
 
 def test_streamviz_repairs_streaming_whitespace_in_list_markup() -> None:
