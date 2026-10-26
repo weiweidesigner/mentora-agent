@@ -9,7 +9,7 @@
   const shell = document.querySelector('.shell'), canvas = $('widgetCanvas');
   const KEY = 'mentora-widget-boards-v1', GAP = 20, ROW = 24;
   const systemBoardIds = new Set(['starter-stocks','starter-crypto','starter-forex']);
-  const advancedChartParameters = ['config','interval','studies','style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar','showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges','showCalendar','saveImage'];
+  const advancedChartParameters = ['config','followTheme','interval','studies','style','compareSymbols','watchlist','timezone','allowSymbolChange','showDrawingToolbar','showTopToolbar','showLegend','showVolume','showDetails','showHotlist','showDateRanges','showCalendar','saveImage'];
   const isSystemBoard = board => systemBoardIds.has(board.id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const uid = () => crypto.randomUUID();
@@ -154,9 +154,9 @@
   }
   function hydrateTradingView(card,spec,node){
     if(!spec.widget||!spec.config)return;const cfg=spec.config;let symbols;
-    // Exclude host-added interaction switches; preserve the Skill-owned settings.
-    const config=Object.fromEntries(Object.entries(cfg).filter(([key])=>!['disabled_features','enabled_features'].includes(key)));
+    const config={...cfg};
     card.parameters={...card.parameters,config};
+    if(typeof spec.followTheme==='boolean')card.parameters.followTheme=spec.followTheme;
     if(spec.widget==='market-data')symbols=(cfg.symbolsGroups||[]).flatMap(g=>(g.symbols||[]).map(s=>s.name));
     else if(spec.preset==='intraday')symbols=(cfg.symbols||[]).map(s=>s[s.length-1].split('|')[0]);
     else if(typeof cfg.symbol==='string')symbols=[cfg.symbol];
@@ -308,7 +308,7 @@
   function renderSettingsFields(component,parameters={}){
     const root=$('widgetDynamicFields'),fields=settingsFields(component);root.replaceChildren();
     for(const field of fields){
-      const value=parameters[field.key]??field.default??'',type=field.type||'text';
+      const value=(field.scope==='config'?parameters.config?.[field.key]:parameters[field.key])??field.default??'',type=field.type||'text';
       if(type==='multi-select'){
         const group=document.createElement('fieldset');group.className='widgetMultiField';group.dataset.settingKey=field.key;group.dataset.settingType=type;
         const legend=document.createElement('legend');legend.textContent=field.label;group.append(legend);
@@ -317,15 +317,35 @@
       }
       const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=field.label;label.append(caption);
       let input;
-      if(type==='select'){input=document.createElement('select');for(const [option,text] of field.options||[]){const node=document.createElement('option');node.value=option;node.textContent=text;input.append(node);}input.value=String(value);}
+      if(type==='json'){input=document.createElement('textarea');input.value=JSON.stringify(value,null,2);input.rows=4;input.spellcheck=false;label.className='widgetJsonField';}
+      else if(type==='select'){input=document.createElement('select');for(const [option,text] of field.options||[]){const node=document.createElement('option');node.value=option;node.textContent=text;input.append(node);}input.value=String(value);}
       else {input=document.createElement('input');input.type=type==='boolean'?'checkbox':['integer','number'].includes(type)?'number':type==='date'?'date':type==='color'?'color':'text';if(type==='boolean'){input.checked=Boolean(value);label.className='widgetBooleanField';label.prepend(input);}else{input.value=['integer-list','color-list'].includes(type)?(Array.isArray(value)?value.join(','):value):value;if(field.placeholder)input.placeholder=field.placeholder;if(field.min!==undefined)input.min=field.min;if(field.max!==undefined)input.max=field.max;if(['integer','number'].includes(type))input.step=field.step||'1';}}
-      input.dataset.settingKey=field.key;input.dataset.settingType=type;label.append(input);root.append(label);
+      input.dataset.settingKey=field.key;input.dataset.settingType=type;input.dataset.initialValue=type==='boolean'?String(input.checked):input.value;label.append(input);root.append(label);
+    }
+    if(component?.settingsSchema?.fullConfigEditor){
+      const details=document.createElement('details');details.className='widgetJsonField';const summary=document.createElement('summary');summary.textContent='完整参数配置（JSON）';
+      const help=document.createElement('p');help.textContent='可编辑分组、显示名称和其他官方参数。未修改的配置会保留；官方新增参数也可在这里设置。';
+      const editor=document.createElement('textarea');editor.dataset.fullConfig='true';editor.value=JSON.stringify(parameters.config||{},null,2);editor.dataset.initialValue=editor.value;editor.rows=10;editor.spellcheck=false;editor.setAttribute('aria-label','TradingView 完整参数配置');details.append(summary,help,editor);root.append(details);
     }
   }
   function readSettingsFields(component){
     const result={};
+    const editor=$('widgetDynamicFields').querySelector('[data-full-config]');
+    if(editor&&editor.value!==editor.dataset.initialValue){
+      try{result.config=JSON.parse(editor.value);}catch{throw Error('完整参数配置需要有效的 JSON。');}
+      if(!result.config||Array.isArray(result.config)||typeof result.config!=='object')throw Error('完整参数配置必须是 JSON 对象。');
+      result._replaceConfig=true;
+    }
     for(const field of settingsFields(component)){
       const node=$('widgetDynamicFields').querySelector('[data-setting-key="'+CSS.escape(field.key)+'"]');if(!node)continue;
+      if(field.key==='followTheme'&&String(node.checked)===node.dataset.initialValue)continue;
+      if(field.scope==='config'){
+        if((field.type==='boolean'?String(node.checked):node.value)===node.dataset.initialValue)continue;
+        let value=field.type==='boolean'?node.checked:node.value.trim();
+        if(field.type==='json'){try{value=JSON.parse(value);}catch{throw Error(field.label+'需要有效的 JSON。');}}
+        else if(field.type==='number'){value=Number(value);if(!Number.isFinite(value))throw Error(field.label+'需要有效的数值。');}
+        result.config={...(result.config||{}),[field.key]:value};continue;
+      }
       if(field.type==='multi-select'){result[field.key]=[...node.querySelectorAll('input:checked')].map(input=>input.value);continue;}
       if(field.type==='boolean'){result[field.key]=node.checked;continue;}
       const raw=node.value.trim();if(!raw){result[field.key]=null;continue;}
@@ -335,6 +355,8 @@
       if(field.type==='color-list'){const values=raw.split(/[,，\s]+/).filter(Boolean);if(!values.length||(field.maxItems&&values.length>field.maxItems))throw Error(field.label+'请填写有效的颜色列表。');result[field.key]=values;continue;}
       result[field.key]=raw;
     }
+    const originalConfig=editor?JSON.parse(editor.dataset.initialValue||'{}'):{};
+    if(result.config&&['theme','colorTheme'].some(key=>Object.hasOwn(result.config,key)&&!sameSetting(result.config[key],originalConfig[key])))result.followTheme=false;
     return result;
   }
   function renderLibrary(){
@@ -700,9 +722,16 @@
       const text=component.provider==='TradingView'?resolved:resolved.split(/[,，、;；]+/).map(symbol=>symbol.trim().split(':').at(-1)).join('、');
       const market=component.inputMode==='market'?$('widgetMarket').value:'default',symbols=component.inputMode==='market'?[]:text.split(/[,，、;；\s]+/).filter(Boolean);
       const previous=card.parameters||{},dynamic=readSettingsFields(component);
+      const replaceConfig=dynamic._replaceConfig===true;delete dynamic._replaceConfig;
       const retained=Object.fromEntries(advancedChartParameters.filter(key=>previous[key]!==undefined&&key!=='interval').map(key=>[key,previous[key]]));
       const parameters={...previous,symbols,market,...retained,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{}),...dynamic};
-      if(parameters.config){parameters.config={...parameters.config};for(const key of ['symbol','symbols','symbolsGroups','interval','market','exchange','countryFilter','broker','currencies'])delete parameters.config[key];}
+      if(parameters.config){
+        parameters.config={...(replaceConfig?{}:previous.config||{}),...(dynamic.config||{})};
+        const clear=keys=>{for(const key of keys)if(!Object.hasOwn(dynamic.config||{},key))delete parameters.config[key];};
+        if(!sameSetting(previous.symbols||[],symbols))clear(['symbol','symbols','symbolsGroups','broker','currencies']);
+        if((previous.market||'default')!==market)clear(['market','exchange','countryFilter']);
+        if(parameters.interval!==previous.interval)clear(['interval']);
+      }
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
       const comparablePrevious={...previous,symbols:previous.symbols||[],market:previous.market||'default'};
       const same=JSON.stringify(comparablePrevious)===JSON.stringify(parameters);

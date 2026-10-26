@@ -58,6 +58,31 @@ def _attach_settings(component: dict) -> dict:
     return item
 
 
+def _tradingview_settings(widget: str, contract: dict) -> dict:
+    labels={'chartType':'图表类型','dateRanges':'时间范围与周期','dateRange':'时间范围','showMA':'显示均线',
+            'maLength':'均线周期','maLineColor':'均线颜色','maLineWidth':'均线粗细','lineWidth':'线条粗细',
+            'lineType':'线形','showVolume':'显示成交量','symbols':'标的与显示名称','symbolsGroups':'标的分组',
+            'tabs':'分组页签','currencies':'货币列表','countryFilter':'国家筛选','importanceFilter':'事件重要性',
+            'grouping':'分组方式','blockSize':'区块大小指标','blockColor':'区块颜色指标','dataSource':'数据集',
+            'displayMode':'展示模式','showToolbar':'显示工具栏','backgroundColor':'背景颜色',
+            'colorTheme':'组件主题','theme':'组件主题','locale':'组件语言','isTransparent':'透明背景',
+            'showIntervalTabs':'显示周期标签','exchange':'交易所','market':'市场','interval':'周期',
+            'symbol':'标的代码','studies':'技术指标','watchlist':'观察列表','compareSymbols':'对比标的'}
+    fields=[]
+    for key,value in contract['fields'].items():
+        if key=='interval':continue  # Uses the component-specific period control.
+        field=dict(key=key,label=labels.get(key,key),scope='config',default=value)
+        if key in {'width','height'}:field['type']='text'
+        elif isinstance(value,bool):field['type']='boolean'
+        elif isinstance(value,(dict,list)) or value is None:field['type']='json'
+        elif isinstance(value,(int,float)):field.update(type='number',step='any')
+        else:field['type']='text'
+        fields.append(field)
+    fields.append(dict(key='followTheme',label='跟随应用主题',type='boolean',default=True))
+    return dict(version=1,renderer='trading-view-chart',fields=fields,fullConfigEditor=True,
+                sourceUrl=contract['sourceUrl'],additionalProperties=True)
+
+
 def generation_catalogue() -> list[dict]:
     """The planner can compose a data source with these existing renderers.
 
@@ -69,8 +94,12 @@ def generation_catalogue() -> list[dict]:
     tradingview=renderer().CATALOG
     for item in library:
         if item.get('provider')=='TradingView' and item.get('widget') in tradingview:
-            item['configDefaults']=tradingview[item['widget']]['defaults']
+            contract=renderer().settings_contract(item['widget'])
+            item['configDefaults']=contract['defaults']
             item['configExtraKeys']=['width','height','locale','isTransparent']
+            item['configAdditionalProperties']=True
+            item['configFields']=contract['fields']
+            item['settingsSchema']=_tradingview_settings(item['widget'],contract)
     hidden = []
     for stem, title in GENERIC_TITLES.items():
         schema = ROOT / f'app/skills/generic-chart/schemas/{stem}.schema.json'

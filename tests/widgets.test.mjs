@@ -52,6 +52,45 @@ test('empty or failed output is visible and never inserts fabricated charts',asy
 
 
 function twoCards(){return {activeId:'board',boards:[{id:'board',title:'观察看板',messages:[],cards:[{id:'one',title:'苹果行情',component:'tv-advanced-chart',url:'/generated/one.html',status:'ready',x:0,y:0,w:6,h:18,parameters:{symbols:['NASDAQ:AAPL'],interval:'D'}},{id:'two',title:'筛选器',component:'tv-screener',url:'/generated/two.html',status:'ready',x:6,y:0,w:6,h:18,parameters:{market:'default'}}]}]};}
+function configuredMarketData(){
+ const storage=twoCards();storage.boards[0].cards[0].component='tv-market-data';
+ storage.boards[0].cards[0].parameters={symbols:['NASDAQ:AAPL'],market:'default',config:{symbolsGroups:[{name:'保留分组',symbols:[{name:'NASDAQ:AAPL',displayName:'自定义苹果'}]}],isTransparent:false,extraOfficialOption:{enabled:true}}};
+ const generationCatalog=catalog.map(item=>item.id!=='tv-market-data'?item:{...item,settingsSchema:{fullConfigEditor:true,fields:[{key:'symbolsGroups',type:'json',label:'分组',scope:'config'},{key:'isTransparent',type:'boolean',label:'透明背景',scope:'config',default:false},{key:'followTheme',type:'boolean',label:'跟随主题',default:true}]}});
+ return {storage,generationCatalog};
+}
+test('TradingView settings patch preserves groups, display names and optional nested config',async()=>{
+ const s=setup(configuredMarketData());s.d.querySelector('[data-card="one"] [data-config]').click();await tick();
+ assert.match(s.d.querySelector('[data-setting-key="symbolsGroups"]').value,/自定义苹果/);
+ s.d.querySelector('[data-setting-key="isTransparent"]').checked=true;
+ s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
+ const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
+ assert.equal(body.config.symbolsGroups[0].symbols[0].displayName,'自定义苹果');
+ assert.equal(body.config.symbolsGroups[0].name,'保留分组');assert.equal(body.config.isTransparent,true);
+ assert.deepEqual(body.config.extraOfficialOption,{enabled:true});s.dom.window.close();
+});
+test('complete TradingView config editor replaces removed keys and accepts newly documented options',async()=>{
+ const s=setup(configuredMarketData());s.d.querySelector('[data-card="one"] [data-config]').click();await tick();
+ const config={symbolsGroups:[{name:'新分组',symbols:[{name:'NASDAQ:MSFT',displayName:'微软别名'}]}],newOfficialOption:{values:[1,2]}};
+ s.d.querySelector('[data-full-config]').value=JSON.stringify(config);
+ s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
+ const body=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/tradingview').options.body);
+ assert.deepEqual(body.config,config);s.dom.window.close();
+});
+test('invalid JSON keeps the TradingView settings dialog open without submitting',async()=>{
+ const s=setup(configuredMarketData());s.d.querySelector('[data-card="one"] [data-config]').click();await tick();
+ s.d.querySelector('[data-full-config]').value='{broken';
+ s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();
+ assert.equal(s.d.querySelector('#widgetConfig').open,true);assert.match(s.d.querySelector('#widgetConfigError').textContent,/JSON/);
+ assert.equal(s.calls.filter(c=>c.url==='/api/widgets/tradingview').length,0);s.dom.window.close();
+});
+test('title-only edits retain full TradingView config without recreating the widget',async()=>{
+ const initial=configuredMarketData(),s=setup(initial);s.d.querySelector('[data-card="one"] [data-config]').click();await tick();
+ s.d.querySelector('#widgetCardName').value='只改标题';
+ s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
+ assert.equal(s.calls.filter(c=>c.url==='/api/widgets/tradingview').length,0);
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
+ assert.deepEqual(card.parameters.config,initial.storage.boards[0].cards[0].parameters.config);s.dom.window.close();
+});
 test('legacy no-MA sentinel is migrated before the board reaches the planner',async()=>{
  const storage={activeId:'board',boards:[{id:'board',title:'苹果',messages:[],cards:[{id:'chart',title:'MACD · NASDAQ:AAPL',component:'kline',url:'/generated/aapl.html',status:'ready',x:0,y:0,w:12,h:22,parameters:{symbols:['AAPL'],interval:'1d',ma:[0],subIndicators:['MACD']}}]}]};
  const s=setup({storage,plan:{reply:'无需调整。',actions:[]}});submit(s.w,s.d,'调整 MACD 颜色');await tick();await tick();
@@ -100,8 +139,7 @@ test('imported TradingView artifacts retain complete Skill config on hydration',
  frame.contentDocument.open();frame.contentDocument.write('<html><body><script id="tv-config" type="application/json">'+JSON.stringify({widget:'advanced-chart',config})+'</script></body></html>');frame.contentDocument.close();
  frame.dispatchEvent(new s.w.Event('load'));await tick();
  const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.find(c=>c.id==='one');
- const expected={...config};delete expected.disabled_features;
- assert.deepEqual(card.parameters.config,expected);
+ assert.deepEqual(card.parameters.config,config);
  s.dom.window.close();
 });
 test('layout-only command preserves live iframe elements and the scope can return to the whole board',async()=>{

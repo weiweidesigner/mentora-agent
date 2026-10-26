@@ -31,6 +31,7 @@ class TradingViewInput(BaseModel):
     language: Literal['zh-CN', 'zh-Hant', 'en'] = 'zh-CN'
     interval: str | None = Field(default=None, max_length=10)
     config: dict[str, Any] | None = None
+    followTheme: bool = True
     studies: list[Any] | None = None
     style: str | None = Field(default=None, max_length=40)
     compareSymbols: list[str] | None = Field(default=None, max_length=8)
@@ -128,7 +129,12 @@ def merge_tradingview_parameters(previous: dict, patch: dict) -> dict:
     merged = copy.deepcopy(previous)
     merged.update(copy.deepcopy(patch))
     if 'config' in previous or 'config' in patch:
-        config = {**copy.deepcopy(previous.get('config') or {}), **copy.deepcopy(patch.get('config') or {})}
+        def merge(left,right):
+            result=copy.deepcopy(left)
+            for key,value in right.items():
+                result[key]=merge(result[key],value) if isinstance(result.get(key),dict) and isinstance(value,dict) else copy.deepcopy(value)
+            return result
+        config = merge(previous.get('config') or {},patch.get('config') or {})
         raw_patch=patch.get('config') or {}
         if 'symbols' in patch:
             for key in ('symbol','symbols','symbolsGroups','currencies','broker'):
@@ -146,7 +152,7 @@ def merge_tradingview_parameters(previous: dict, patch: dict) -> dict:
 
 
 def validate_tradingview_config(widget: str, config: dict) -> dict:
-    """The Skill, not a host-maintained allowlist, owns supported config keys."""
+    """Validate safe JSON; the official widget owns its settings API."""
     renderer().build_config(widget, config=config)
     return copy.deepcopy(config)
 
@@ -186,7 +192,7 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
         raise ValueError('该组件不支持指定的预设。')
     raw_config = validate_tradingview_config(payload.widget, payload.config or {})
     values = list(dict.fromkeys(s.strip() for s in payload.symbols if s.strip()))
-    if not values and isinstance(raw_config.get('symbol'), str):
+    if not values and payload.widget not in MARKETS and isinstance(raw_config.get('symbol'), str):
         values = [raw_config['symbol']]
     if not values and payload.config is not None and payload.widget not in MARKETS|GROUPS|CURRENCY_WIDGETS|BROKER_WIDGETS:
         default_symbol=tool.CATALOG[payload.widget]['defaults'].get('symbol')
@@ -278,8 +284,10 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     interval = normalize_interval(payload.interval) if payload.interval and payload.widget == 'advanced-chart' else payload.interval
     if interval and interval not in {'advanced-chart':ADVANCED_CHART_INTERVALS,'technical-analysis':TECHNICAL_ANALYSIS_INTERVALS}.get(payload.widget,set()):
         raise ValueError('该组件不支持此周期。')
-    built = tool.build_config(payload.widget, symbol=symbol, interval=config.get('interval', interval), theme=payload.theme,
-                             language=payload.language, config=config)
+    theme=payload.theme if payload.followTheme else config.get('colorTheme',config.get('theme',payload.theme))
+    language=config.get('locale',config.get('lang',payload.language))
+    built = tool.build_config(payload.widget, symbol=symbol, interval=config.get('interval', interval), theme=theme,
+                             language=language, config=config)
     catalogue = json.loads((ROOT/'app/static/widget-catalog.json').read_text())
     item = next((c for c in catalogue if c.get('widget') == payload.widget and c.get('preset') == payload.preset), None)
     if item is None:
@@ -290,7 +298,8 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     suffix = ', '.join(symbols) if symbols else labels.get(payload.market, item.get('defaultScope', ''))
     title = item['title'] + (' · '+suffix if suffix else '')
     height = 160 if payload.widget in {'ticker-tape', 'single-ticker', 'tickers'} else 560
-    document = tool.render(payload.widget, built, title, height, payload.language, preset=payload.preset)
+    document = tool.render(payload.widget, built, title, height, language, preset=payload.preset,
+                          follow_theme=payload.followTheme,preserve_styles=raw_config.keys())
     # The content hash makes repeated additions reusable and updates on renderer changes.
     digest = hashlib.sha256(document.encode()).hexdigest()[:24]
     output_dir.mkdir(parents=True, exist_ok=True)

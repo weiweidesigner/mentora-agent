@@ -93,9 +93,9 @@ def test_every_widget_raw_config_matches_the_canonical_skill(tmp_path):
     for widget,spec in tool.CATALOG.items():
         config=copy.deepcopy(spec['defaults'])
         result=lib.build_widget(lib.TradingViewInput(widget=widget,config=config),tmp_path)
-        assert result['config']==tool.build_config(widget,theme='dark',language='zh-CN',config=config),widget
+        assert result['config']==tool.build_config(widget,theme='dark',language=config.get('locale',config.get('lang','zh-CN')),config=config),widget
         with pytest.raises(ValueError,match='Unsupported settings'):
-            lib.build_widget(lib.TradingViewInput(widget=widget,config={'not_a_skill_key':True}),tmp_path)
+            lib.build_widget(lib.TradingViewInput(widget=widget,config={'script':'https://example.com/script.js'}),tmp_path)
 
 
 def test_merge_config_retains_unmentioned_values_and_resolves_alias_conflicts():
@@ -108,6 +108,35 @@ def test_merge_config_retains_unmentioned_values_and_resolves_alias_conflicts():
     assert alias['config']['hide_volume'] is True
     groups=lib.merge_tradingview_parameters({'config':{'symbols':[['NASDAQ:AAPL|1D']],'chartType':'line'}},{'symbols':['NASDAQ:MSFT']})
     assert groups['config']=={'chartType':'line'}
+
+
+def test_nested_style_patches_preserve_sibling_settings():
+    old={'config':{'styles':{'line':{'color':'red','width':2}},'tabs':[{'title':'原分组'}]}}
+    merged=lib.merge_tradingview_parameters(old,{'config':{'styles':{'line':{'width':4}}}})
+    assert merged['config']=={'styles':{'line':{'color':'red','width':4}},'tabs':[{'title':'原分组'}]}
+
+
+def test_explicit_theme_locale_size_and_optional_news_symbol_reach_embed(tmp_path):
+    raw={'feedMode':'symbol','symbol':'NASDAQ:AAPL','colorTheme':'light','locale':'ja','width':460,'height':360}
+    result=lib.build_widget(lib.TradingViewInput(widget='top-stories',config=raw,followTheme=False),tmp_path)
+    assert all(result['config'][key]==value for key,value in raw.items())
+    document=(tmp_path/Path(result['url']).name).read_text()
+    payload=json.loads(document.split('<script id="tv-config" type="application/json">')[1].split('</script>')[0])
+    assert payload['followTheme'] is False
+
+
+def test_every_tradingview_component_exposes_all_registered_settings_and_full_editor():
+    from app.widget_capabilities import generation_catalogue
+    seen=set()
+    for component in generation_catalogue():
+        if component.get('provider')!='TradingView':continue
+        widget=component['widget'];seen.add(widget)
+        schema=component['settingsSchema']
+        fields={field['key'] for field in schema['fields'] if field.get('scope')=='config'}
+        expected=set(lib.renderer().settings_contract(widget)['fields'])-{'interval'}
+        assert fields==expected,widget
+        assert schema['fullConfigEditor'] and component['configAdditionalProperties'],widget
+    assert seen==set(lib.renderer().CATALOG)
 
 
 @pytest.mark.parametrize('data',[

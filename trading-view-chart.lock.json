@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/trading-view-chart.git",
-  "revision": "79f8a02e7ff927b45857cdfdd851b7bd0335077c",
+  "revision": "61147396a874512e29bfe9193173e9a94ff41918",
   "checkout": ".dependencies/trading-view-chart",
   "links": {
     "app/skills/trading-view-chart": "app/skills/trading-view-chart"
