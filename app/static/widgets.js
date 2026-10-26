@@ -96,6 +96,7 @@
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
       defaultsVersion=Number(data.defaultsVersion)||0;
       boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),lastRefreshedAt:typeof b.lastRefreshedAt==='string'?b.lastRefreshedAt:'',focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&!isOldSymbolNotice(m)).slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,parameters:normalizeStoredParameters(c.component,c.parameters),url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),Math.max(40,minRows(c))),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      for(const board of boards)for(const card of board.cards)if(card.url&&card.status==='error'&&card.error==='上次生成已中断，请重试。'){card.status='ready';card.refreshError='上次调整已中断，已保留原图。';delete card.error;}
       activeId = data.activeId;openIds=Array.isArray(data.openIds)?[...new Set(data.openIds)].filter(id=>boards.some(b=>b.id===id)):boards.map(b=>b.id);
       if((Array.isArray(data.boards)?data.boards:[]).some(b=>Array.isArray(b?.chat)&&b.chat.some(isOldSymbolNotice)))localStorage.setItem(KEY,JSON.stringify({...data,boards}));
     } catch { boards = []; }
@@ -240,7 +241,7 @@
   function cardNode(card) {
     const el=document.createElement('article');el.className='widgetCard';el.dataset.card=card.id;el.dataset.signature=JSON.stringify([card.status,card.url,card.error,card.loadingText,card.refreshedAt]);
     el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
-    if (card.url && card.status==='ready') {
+    if (card.url && ['ready','loading'].includes(card.status)) {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
       frame.addEventListener('load',()=>{postKlineConfig(card,el);try{hydrateTradingView(card,JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}'),el);}catch{}window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
         if(!intrinsic||card.manualHeight)return;
@@ -454,7 +455,7 @@
     const controller=new AbortController(),onAbort=()=>controller.abort();parameters.signal?.addEventListener('abort',onAbort,{once:true});if(parameters.signal?.aborted)controller.abort();jobs.set(board.id,controller);
     let pending=retryId&&board.cards.find(c=>c.id===retryId);
     const previous=pending?JSON.parse(JSON.stringify(pending)):null;
-    if(pending)Object.assign(pending,{status:'loading',error:'',url:'',request:message,component:component?.id||pending.component});
+    if(pending)Object.assign(pending,{status:'loading',error:'',refreshError:'',request:message,component:component?.id||pending.component});
     else {pending={id:uid(),title:component?`${component.title} · ${message}`:'正在构建看板',w:component?.width||6,h:component?.height||18,status:'loading',url:'',request:message,component:component?.id||''};place(board,pending);board.cards.push(pending);}
     const renderParameters=Object.fromEntries(Object.entries(parameters).filter(([key])=>!['signal','reasoningEffort','preserveOnError'].includes(key)));
     pending.parameters={...(pending.parameters||{}),...renderParameters};
@@ -495,9 +496,9 @@
       settle(board,pending);
       board.messages.push({role:'assistant',content:'已生成组件。'});
     } catch(error) {
-      if(boards.includes(board)&&board.cards.includes(pending)){const detail=error.name==='AbortError'?'生成已停止，可以重新生成。':error.message;if(parameters.preserveOnError&&previous?.url)Object.assign(pending,previous,{refreshError:detail});else{pending.status='error';pending.error=detail;}}
+      if(boards.includes(board)&&board.cards.includes(pending)){const detail=error.name==='AbortError'?'生成已停止，可以重新生成。':error.message;if(previous?.url)Object.assign(pending,previous,{status:'ready',refreshError:detail});else{pending.status='error';pending.error=detail;}}
     } finally {
-      parameters.signal?.removeEventListener('abort',onAbort);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(!commandControllers.has(board.id))progressByBoard.delete(board.id);save();if(activeId===board.id){render();if(pending.status==='error')notice(pending.error);}
+      parameters.signal?.removeEventListener('abort',onAbort);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(!commandControllers.has(board.id))progressByBoard.delete(board.id);save();if(activeId===board.id){render();if(pending.status==='error')notice(pending.error);else if(pending.refreshError)notice('调整未完成，已保留原图：'+pending.refreshError);}
     }
     return pending;
   }
@@ -633,10 +634,10 @@
             card.component=component.id;card.parameters=parameters;
             postKlineConfig(card);target=card;save();
           }else{
-            if(card){card.component=component.id;card.request=text;}
             await generate(text,component,card?.id||null,parameters.market||'default',board,{...parameters,reasoningEffort,signal:controller.signal});
             target=card?board.cards.find(c=>c.id===card.id):board.cards.find(c=>!before.has(c.id));
             if(target?.status==='error')throw Error(target.error);
+            if(target?.refreshError)throw Error('调整未完成，已保留原图：'+target.refreshError);
             if(!controller.signal.aborted)jobs.set(board.id,controller);
           }
         }

@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sqlite3
 import subprocess
 import tempfile
 import time
@@ -166,6 +167,22 @@ def healthy():
         except Exception:time.sleep(3)
     return False
 
+def executions_active(root):
+    """Defer a release while known in-process chat or workflow workers run."""
+    checks=[('outputs/chat-sessions/sessions.sqlite3','chat_runs',('queued','running')),
+            ('outputs/day-tasks/tasks.sqlite3','workflow_trials',('queued','running','stopping')),
+            ('outputs/day-tasks/tasks.sqlite3','runs',('running',))]
+    for name,table,statuses in checks:
+        path=root/name
+        if not path.is_file():continue
+        try:
+            with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True,timeout=3) as db:
+                exists=db.execute('SELECT 1 FROM sqlite_master WHERE type=? AND name=?',('table',table)).fetchone()
+                if exists and db.execute('SELECT 1 FROM '+table+' WHERE status IN ('+','.join('?' for _ in statuses)+') LIMIT 1',statuses).fetchone():return True
+        except sqlite3.Error:return True
+    return False
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--retry',action='store_true')
     parser.add_argument('--mount-current',action='store_true');args=parser.parse_args()
@@ -187,6 +204,8 @@ def main():
         try:
             print('Preparing '+revision,flush=True)
             target=prepare(revision,cache)
+            if executions_active(previous):
+                print('Deployment deferred: active executions; retry when idle',flush=True);return
             switch(target)
             try:
                 run(['sudo','systemctl','restart','veya-agent'])

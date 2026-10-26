@@ -82,10 +82,26 @@ def test_missing_final_is_a_persisted_failure_and_restart_does_not_reexecute(tmp
     assert store.run('owner',run['runId'])['status']=='failed'
     with store.db() as db:db.execute("UPDATE chat_runs SET status='running' WHERE id=?",(run['runId'],))
     restarted=ChatSessions(tmp_path)
+    assert restarted.recover_interrupted_runs()==1
     assert restarted.run('owner',run['runId'])['status']=='interrupted'
     assert restarted.sessions('owner')[0]['status']=='interrupted'
     assert '服务重启' in ''.join(restarted.events('owner',run['runId']))
     restarted.pool.shutdown(wait=True)
+
+
+def test_diagnostic_store_creation_does_not_interrupt_live_worker(tmp_path):
+    store=ChatSessions(tmp_path);started=threading.Event();release=threading.Event()
+    def execute(*_):
+        started.set();release.wait(3);yield 'final',dict(interpretation='completed normally')
+    try:
+        run=store.start('owner',Payload(question='live'),execute)
+        assert started.wait(2)
+        diagnostic=ChatSessions(tmp_path)
+        try:assert diagnostic.run('owner',run['runId'])['status']=='running'
+        finally:diagnostic.pool.shutdown()
+        release.set();store.pool.shutdown(wait=True)
+        assert store.run('owner',run['runId'])['status']=='completed'
+    finally:release.set();store.pool.shutdown(wait=True)
 
 
 def test_timeout_explains_deadline_without_exposing_internal_errors(tmp_path):

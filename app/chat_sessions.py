@@ -32,9 +32,14 @@ class ChatSessions:
             CREATE TABLE IF NOT EXISTS chat_runs(id TEXT PRIMARY KEY,owner TEXT,session_id TEXT,request_id TEXT,status TEXT,created REAL,UNIQUE(owner,request_id));
             CREATE TABLE IF NOT EXISTS chat_events(run_id TEXT,seq INTEGER,event TEXT,data TEXT,PRIMARY KEY(run_id,seq));
             ''')
-            pending=list(db.execute("SELECT id FROM chat_runs WHERE status IN ('queued','running')"))
         os.chmod(self.path,0o600)
+
+    def recover_interrupted_runs(self):
+        """Only actual server startup may recover workers from its old process."""
+        with self.db() as db:
+            pending=list(db.execute("SELECT id FROM chat_runs WHERE status IN ('queued','running')"))
         for row in pending:self.publish(row['id'],'error',{'detail':'服务重启中断了本轮执行，已保留会话与进度，请重新发起。','lang':'zh-CN'},status='interrupted')
+        return len(pending)
 
     @contextmanager
     def db(self):
@@ -188,6 +193,7 @@ def identity(request,response):
 
 def create_router(store,request_model,event_factory,cancel_factory=None):
     router=APIRouter(prefix='/api/chat')
+    router.add_event_handler('startup',store.recover_interrupted_runs)
     @router.post('/runs')
     def start(payload:dict,request:Request,response:Response):
         parsed=request_model.model_validate(payload)

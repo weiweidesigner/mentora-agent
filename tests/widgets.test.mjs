@@ -285,6 +285,19 @@ test('new evidence-based drawing request reaches research even when drawingTools
  assert.equal(JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards.filter(c=>c.id==='one').length,1);
  s.dom.window.close();
 });
+test('failed analysis keeps the previous chart and settings without claiming success',async()=>{
+ const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',url:'/generated/original.html',request:'原始 AAPL 日线',parameters:{symbols:['AAPL'],interval:'1d',klineType:'line',ma:[5]}});
+ const s=setup({storage:data,reply:async cb=>cb('error',{detail:'服务重启中断了本轮执行'}),plan:{reply:'画双底',actions:[{type:'update',cardId:'one',componentId:'kline',request:'识别双底并画颈线',requiresGeneration:true}]}});
+ s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s.w,s.d,'画双底');await tick();await tick();
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
+ assert.equal(card.url,'/generated/original.html');assert.equal(card.status,'ready');assert.equal(card.parameters.klineType,'line');assert.equal(card.request,'原始 AAPL 日线');
+ assert.match(s.d.querySelector('[data-card="one"] iframe').src,/original.html/);
+ assert.match(s.d.querySelector('#widgetStatus').textContent,/已保留原图/);s.dom.window.close();
+});
+test('reopening a loading card with an existing URL recovers the original chart',()=>{
+ const data=twoCards();data.boards[0].cards[0].status='loading';
+ const s=setup({storage:data});assert.match(s.d.querySelector('[data-card="one"] iframe').src,/one.html/);s.dom.window.close();
+});
 test('native kline exposes schema-driven parameters and persists them when regenerated',async()=>{
  const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',request:'分析 AAPL 日线趋势',parameters:{symbols:['AAPL'],market:'default',interval:'1d',ma:[5,10,20,60],subIndicators:['VOL','MACD']}});
  const settingsSchema={version:1,renderer:'business-chart-recall/kline.py',fields:[
