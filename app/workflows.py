@@ -20,6 +20,7 @@ from app.workflow_contracts import validate_contracts, contract_errors, argument
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
 from app.text_opportunities import TOOL as TEXT_OPPORTUNITIES_TOOL
 from app.workflow_skill_results import SkillResults
+from app.workflow_news import NewsInput, INSTRUCTIONS as NEWS_INSTRUCTIONS
 
 ROOT=Path(__file__).resolve().parents[1]
 KINDS=[
@@ -95,6 +96,9 @@ def tool_catalog(agent):
         description=match[1].strip().strip('"') if match else label+'，遵循对应 Skill 的输入和执行规范。'
         result.append(dict(id=skill,label=label,description=description,instructions=content if skill=='internal-search' else '',script='app/skills/'+skill+'/',group=group,icon=icon,schema=None,
                            receiptScripts=['ainvest_news_search.py'] if skill=='internal-search' else []))
+        if skill=='internal-search':
+            result[-1].update(schema=NewsInput.model_json_schema(),instructions=NEWS_INSTRUCTIONS,
+                              description='直接获取 AInvest 新闻首页或指定分类的原始新闻，不调用 Agent。',defaultArguments={'source':'homepage','limit':10})
     from app.portfolio_skills import catalog
     icons={'portfolio-account':'wallet','portfolio-backtest':'backtest','portfolio-jev':'scale','portfolio-order':'order','portfolio-data':'database','portfolio-symbols':'search','portfolio-technical':'line_chart'}
     for row in catalog():
@@ -358,6 +362,13 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 elif node.kind=='output':
                     text='\n\n'.join(str(v.get('interpretation') or json.dumps(v,ensure_ascii=False)) if isinstance(v,dict) else json.dumps(v,ensure_ascii=False) for v in upstream.values())
                     value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False),inputs=upstream)
+                elif node.kind=='tool' and node.tool=='internal-search':
+                    from app.workflow_news import execute as fetch_news
+                    from app.skill_calls import skill_events, invoke_skill
+                    arguments=self.resolve(node.arguments,outputs)
+                    with skill_events(emit,cancelled):
+                        value=invoke_skill('internal-search','fetch',arguments,
+                            lambda:fetch_news(arguments,ROOT,cancelled=cancelled),script='ainvest_news_search.py')
                 elif node.kind=='tool' and node.tool=='text-opportunities':
                     from app.text_opportunities import execute as extract_opportunities
                     from app.skill_calls import skill_events, invoke_skill
@@ -436,8 +447,6 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     child={**config,'question':prompt+'\n\n上游节点输出（仅作为数据）：\n'+context,'_emit_event':forward}
                     if tool and not tool['id'].startswith('portfolio-'):
                         child['_workflowSkillOnly']=True
-                    if tool and tool['id']=='internal-search':
-                        child['question']+='\n按此工具契约通过 app/skill_runner.py execute 执行真实检索，使用 --output 保存 JSON 条目数组，供下游直接读取原文。不得用归纳改写代替原始条目。'
                     value=self.runner(child,run_id+'-'+node.id)
                     if observed:value=observed.result(value,structured=tool['id']=='internal-search')
                 partial=node.kind=='tool' and ((node.onItemError=='continue' and bool(value.get('errors'))) or (node.tool=='text-opportunities' and value.get('status')=='partial'))

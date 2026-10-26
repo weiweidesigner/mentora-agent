@@ -162,22 +162,20 @@ def test_missing_field_from_executed_branch_still_fails_instead_of_silently_skip
         env.service.execute({'workflow':g,'question':'离线测试','_owner':'fixture'},'fixture',lambda *_:None)
 
 
-def test_deal_news_node_uses_skill_route_and_passes_real_json_not_model_summary(env,monkeypatch,tmp_path):
+def test_deal_news_node_directly_calls_skill_and_passes_raw_json_without_agent(env,monkeypatch,tmp_path):
     import app.workflows as workflows
+    import app.workflow_news as news
     from app import text_opportunities
     monkeypatch.setattr(workflows,'ROOT',tmp_path)
     tools=[dict(id='internal-search',label='资讯搜索',description='软件测试',script='app/skills/internal-search/',receiptScripts=['ainvest_news_search.py'],schema=None),text_opportunities.TOOL]
     monkeypatch.setattr(workflows,'tool_catalog',lambda agent:tools)
     monkeypatch.setattr(workflows,'legacy_tool_catalog',lambda agent:[])
     articles=[dict(title='软件测试标题 AAPL',summary='仅离线测试原文，不是投资事实',url='https://example.invalid/fixture')]
-    def runner(config,rid):
-        assert config['agent']=='mentora-deal' and config['_workflowSkillOnly'] is True
-        assert '--output' in config['question']
-        output=tmp_path/'outputs/news.json';output.parent.mkdir();output.write_text(json.dumps(articles,ensure_ascii=False))
-        config['_emit_event']('tool_step',dict(phase='started',tool='shell',script='shell',params=['python3 app/skill_runner.py execute --script ainvest_news_search.py -- --source category --category latest --output outputs/news.json']))
-        config['_emit_event']('tool_step',dict(phase='completed',tool='shell',script='shell',params=['python3 app/skill_runner.py execute --script ainvest_news_search.py -- --source category --category latest --output outputs/news.json'],observation='{"ok": true}'))
-        return dict(interpretation='模型摘要不能作为原始资讯传给 JEV')
-    env.service.runner=runner
+    env.service.runner=lambda *_:pytest.fail('direct Skill node must never invoke Agent')
+    def fetch(arguments,root,**kwargs):
+        assert arguments=={} and root==tmp_path
+        return dict(items=articles,count=1,text=json.dumps(articles,ensure_ascii=False),outputSource='verified-skill-json')
+    monkeypatch.setattr(news,'execute',fetch)
     def extract(service,owner,payload,**kwargs):
         assert owner=='fixture'
         assert json.loads(payload['text'])==articles
