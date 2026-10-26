@@ -52,6 +52,14 @@ test('empty or failed output is visible and never inserts fabricated charts',asy
 
 
 function twoCards(){return {activeId:'board',boards:[{id:'board',title:'观察看板',messages:[],cards:[{id:'one',title:'苹果行情',component:'tv-advanced-chart',url:'/generated/one.html',status:'ready',x:0,y:0,w:6,h:18,parameters:{symbols:['NASDAQ:AAPL'],interval:'D'}},{id:'two',title:'筛选器',component:'tv-screener',url:'/generated/two.html',status:'ready',x:6,y:0,w:6,h:18,parameters:{market:'default'}}]}]};}
+test('legacy no-MA sentinel is migrated before the board reaches the planner',async()=>{
+ const storage={activeId:'board',boards:[{id:'board',title:'苹果',messages:[],cards:[{id:'chart',title:'MACD · NASDAQ:AAPL',component:'kline',url:'/generated/aapl.html',status:'ready',x:0,y:0,w:12,h:22,parameters:{symbols:['AAPL'],interval:'1d',ma:[0],subIndicators:['MACD']}}]}]};
+ const s=setup({storage,plan:{reply:'无需调整。',actions:[]}});submit(s.w,s.d,'调整 MACD 颜色');await tick();await tick();
+ const request=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/plan').options.body);
+ assert.deepEqual(request.board.cards[0].parameters.ma,[]);
+ const saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));
+ assert.deepEqual(saved.boards[0].cards[0].parameters.ma,[]);s.dom.window.close();
+});
 test('card selection scopes model edits, applies parameter changes directly, and undo restores the board',async()=>{
  const s=setup({storage:twoCards(),plan:{reply:'已改为微软周线。',actions:[{type:'update',cardId:'one',componentId:'tv-advanced-chart',parameters:{symbols:['NASDAQ:MSFT'],interval:'W'},layout:{w:12,x:0}}]}});
  s.d.querySelector('[data-card="one"] .widgetCardHeader').click();assert.match(s.d.querySelector('#widgetScope').textContent,/苹果行情/);

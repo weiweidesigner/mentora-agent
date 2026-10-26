@@ -211,6 +211,18 @@ def test_native_kline_config_is_recovered_and_can_be_adjusted_in_place(monkeypat
     assert '本次要求：去掉其他均线，只保留 MA60' in action['request']
 
 
+def test_legacy_zero_ma_sentinel_is_normalized_to_empty_list():
+    payload=planner.PlanningInput(message='调整 MACD 样式',selectedCardId='chart',board={'id':'b','title':'苹果','cards':[
+        {'id':'chart','title':'MACD · NASDAQ:AAPL','component':'kline','parameters':{
+            'symbols':['AAPL'],'interval':'1d','ma':[0],'subIndicators':['MACD'],
+        }},
+    ]})
+    assert payload.board.cards[0].parameters.ma == []
+    assert planner.Parameters(ma=[]).ma == []
+    with pytest.raises(Exception,match='均线周期'):
+        planner.Parameters(ma=[0,20])
+
+
 def test_native_kline_visual_edit_retries_addition_and_requires_same_card(monkeypatch):
     calls=[]
     def model(context):

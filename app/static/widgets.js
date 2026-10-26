@@ -57,6 +57,11 @@
   const progressByBoard=new Map();
   const klineLiveKeys=['ma','subIndicators','klineType','candleColorMode','drawingTools','fitAnnotations','mainChartHeight','subChartHeight','themeMode','maColors','maLineWidth','candleUpColor','candleDownColor','annotationStyles','pineStyles'];
   const klineDataKeys=['symbols','market','interval','fromDate','toDate','limit','fullHistory','language'];
+  function normalizeStoredParameters(component,parameters){
+    const normalized={...(parameters||{})};
+    if(component==='kline'&&Array.isArray(normalized.ma)&&normalized.ma.length===1&&Number(normalized.ma[0])===0)normalized.ma=[];
+    return normalized;
+  }
   function setProgress(board,text){progressByBoard.set(board.id,text);if(activeId===board.id){updateSelection();notice(text);}}
   function notice(text) { const status=$('widgetStatus'),thinking=progressByBoard.has(activeId),scoped=thinking&&!!selectedCardId;status.textContent=scoped?'':text;status.hidden=scoped||!text;status.classList.toggle("is-thinking",thinking&&!scoped); }
   function streamedWidgetText(event,data={}){
@@ -90,7 +95,7 @@
     try {
       const data = JSON.parse(localStorage.getItem(KEY) || '{}');
       defaultsVersion=Number(data.defaultsVersion)||0;
-      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),lastRefreshedAt:typeof b.lastRefreshedAt==='string'?b.lastRefreshedAt:'',focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&!isOldSymbolNotice(m)).slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),Math.max(40,minRows(c))),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
+      boards = (Array.isArray(data.boards) ? data.boards : []).slice(0, 40).filter(b => b && typeof b.id === 'string').map(b => ({id:b.id,title:String(b.title || '我的看板').slice(0,48),lastRefreshedAt:typeof b.lastRefreshedAt==='string'?b.lastRefreshedAt:'',focusSymbol:typeof b.focusSymbol==='string'?b.focusSymbol:'',chat:(Array.isArray(b.chat)?b.chat:[]).filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&!isOldSymbolNotice(m)).slice(-40).map(m=>({role:m.role,content:m.content.slice(0,6000),scope:typeof m.scope==='string'?m.scope.slice(0,160):''})),messages:Array.isArray(b.messages)?b.messages.slice(-12):[],cards:(Array.isArray(b.cards)?b.cards:[]).slice(0,60).filter(c=>c&&typeof c.id==='string').map(c=>({...c,parameters:normalizeStoredParameters(c.component,c.parameters),url:safeUrl(c.url),w:clamp(c.w,3,12),h:clamp(c.h,minRows(c),Math.max(40,minRows(c))),x:clamp(c.x,0,9),y:clamp(c.y,0,10000),status:c.status==='loading'?'error':c.status,error:c.status==='loading'?'上次生成已中断，请重试。':c.error}))}));
       activeId = data.activeId;openIds=Array.isArray(data.openIds)?[...new Set(data.openIds)].filter(id=>boards.some(b=>b.id===id)):boards.map(b=>b.id);
       if((Array.isArray(data.boards)?data.boards:[]).some(b=>Array.isArray(b?.chat)&&b.chat.some(isOldSymbolNotice)))localStorage.setItem(KEY,JSON.stringify({...data,boards}));
     } catch { boards = []; }
