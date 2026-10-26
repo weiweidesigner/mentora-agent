@@ -296,6 +296,7 @@
 
 /* Echo the selected chart border on its capsule label. */
 .widgetWorkspace #widgetScope{position:relative;isolation:isolate;border-radius:999px;border-color:#9c8aff66;box-shadow:0 0 18px #8c78ff24,inset 0 0 10px #81e8f407;padding:6px 12px}
+.widgetWorkspace #widgetScope.is-thinking{max-width:min(560px,calc(100% - 120px));cursor:default;color:var(--muted)}
 
 /* Keep command buttons circular even inside narrow grid columns. */
 .widgetWorkspace #widgetUndo,.widgetWorkspace #widgetConfirm{box-sizing:border-box;width:32px;min-width:32px;max-width:32px;height:32px;min-height:32px;max-height:32px;aspect-ratio:1;border-radius:50%;padding:0;margin-left:0;align-self:center;justify-self:end;line-height:1}

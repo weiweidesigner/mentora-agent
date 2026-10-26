@@ -189,6 +189,52 @@ def test_existing_tradingview_config_can_be_recovered_from_saved_html(monkeypatc
     assert result['parameters']['symbols']==['NASDAQ:MSFT']
 
 
+def test_native_kline_config_is_recovered_and_can_be_adjusted_in_place(monkeypatch,tmp_path):
+    monkeypatch.setattr(planner,'ROOT',tmp_path)
+    directory=tmp_path/'outputs/generated';directory.mkdir(parents=True)
+    config={'code':'000001.SH','dataType':'1d','ma':[5,10,20,60],'subIndicators':['VOL','MACD'],
+            'klineType':'candle-hollow','candleColorMode':'red_up_green_down','drawingTools':False,
+            'fitAnnotations':True,'mainChartHeight':470,'subChartHeight':104,'themeMode':'dark','language':'zh'}
+    (directory/'kline.html').write_text('<section class="kline-component"></section><script>const config = '+json.dumps(config)+';</script>')
+    card=planner.Card(id='chart',title='上证指数',url='/mentora/generated/kline.html',request='分析上证指数双底',parameters={'fromDate':'2025-01-01'})
+    enriched=planner.enrich_card(card)
+    assert enriched['component']=='kline'
+    assert enriched['parameters']['symbols']==['000001.SH']
+    assert enriched['parameters']['ma']==[5,10,20,60]
+    assert enriched['parameters']['fromDate']=='2025-01-01'
+    payload=planner.PlanningInput(message='去掉其他均线，只保留 MA60',selectedCardId='chart',board={'id':'b','title':'指数看板','cards':[card.model_dump()]})
+    result=planner.validate_plan({'reply':'已调整','actions':[{'type':'update','cardId':'chart','parameters':{'ma':[60]}}]},payload,[enriched])
+    action=result['actions'][0]
+    assert action['componentId']=='kline'
+    assert action['parameters']['symbols']==['000001.SH']
+    assert action['parameters']['ma']==[60]
+    assert '本次要求：去掉其他均线，只保留 MA60' in action['request']
+
+
+def test_native_kline_visual_edit_retries_addition_and_requires_same_card(monkeypatch):
+    calls=[]
+    def model(context):
+        calls.append(dict(context))
+        if len(calls)==1:return {'reply':'新增图表','actions':[{'type':'add','componentId':'kline','parameters':{'symbols':['000001.SH']},'request':'新增'}]}
+        return {'reply':'已调整原图','actions':[{'type':'update','cardId':'chart','request':'保留原分析并将颈线改为橙色虚线'}]}
+    monkeypatch.setattr(planner,'model_plan',model)
+    payload=planner.PlanningInput(message='把 JEV 颈线改为橙色虚线',selectedCardId='chart',board={'id':'b','title':'指数看板','cards':[
+        {'id':'chart','title':'上证指数','component':'kline','request':'分析双底','x':0,'y':0,'w':12,'h':22,'parameters':{'symbols':['000001.SH'],'interval':'1d'}}]})
+    result=planner.plan_widgets(payload)
+    assert len(calls)==2
+    assert '现有原生 K 线' in calls[1]['validationError']
+    assert result['actions'][0]['cardId']=='chart'
+    assert result['actions'][0]['componentId']=='kline'
+
+
+def test_final_planner_validation_error_keeps_the_component_reason(monkeypatch):
+    monkeypatch.setattr(planner,'model_plan',lambda context:{'reply':'无法处理','actions':[]})
+    payload=planner.PlanningInput(message='把均线改成 MA60',board={'id':'b','title':'指数看板','cards':[
+        {'id':'chart','title':'上证指数','component':'kline','request':'分析双底','parameters':{'symbols':['000001.SH'],'interval':'1d'}}]})
+    with pytest.raises(ValueError,match='现有原生 K 线'):
+        planner.plan_widgets(payload)
+
+
 def test_tradingview_dashboard_chrome_is_scoped_to_canvas_and_preserves_provider_frame():
     document='<html><head></head><body><header>title</header><iframe src="https://tradingview.com"></iframe><script id="tv-config">{}</script></body></html>'
     result=upgrade_widget_tradingview(document)

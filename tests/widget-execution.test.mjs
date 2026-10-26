@@ -24,6 +24,17 @@ test('execution exposes animated progress and completion can be confirmed or und
  s.d.querySelector('#widgetConfirm').click();assert.equal(s.d.querySelector('#widgetConfirm').hidden,true);assert.equal(s.d.querySelector('#widgetUndo').hidden,true);assert.equal(s.d.querySelector('#widgetStatus').hidden,true);assert.equal(s.board().title,'新看板');s.dom.window.close();
  const undo=setup();submit(undo);await tick();undo.d.querySelector('#widgetUndo').click();assert.equal(undo.board().title,'原看板');undo.dom.window.close();
 });
+test('selected card reuses its scope chip as the only visible thinking message',async()=>{
+ let finish;const pending=new Promise(r=>finish=r),card={id:'one',title:'上证指数日线',component:'kline',status:'ready',url:'/generated/one.html',parameters:{symbols:['000001.SH']},x:0,y:0,w:12,h:22};
+ const s=setup([card],()=>pending);s.d.querySelector('[data-card="one"] .widgetCardHeader').click();submit(s);await tick();
+ assert.equal(s.d.querySelector('#widgetStatus').hidden,true);
+ assert(s.d.querySelector('#widgetScope').classList.contains('is-thinking'));
+ assert.match(s.d.querySelector('#widgetScope').textContent,/正在理解你的看板需求/);
+ finish({reply:'请补充线条颜色。',actions:[]});await tick();await tick();
+ assert(!s.d.querySelector('#widgetScope').classList.contains('is-thinking'));
+ assert.match(s.d.querySelector('#widgetScope').textContent,/上证指数日线/);
+ assert.equal(s.d.querySelector('#widgetStatus').textContent,'请补充线条颜色。');s.dom.window.close();
+});
 test('quote lists do not render symbol tabs or change other components',()=>{
  const list={id:'list',title:'列表',component:'tv-market-data',status:'ready',url:'/generated/list.html',parameters:{symbols:['NASDAQ:AAPL','NASDAQ:MSFT']},x:0,y:0,w:12,h:18};
  const s=setup([list]);assert.equal(s.d.querySelector('[data-link-symbol], [data-link-all], .widgetSymbolLinks'),null);assert(s.d.querySelector('[data-card="list"] iframe'));s.dom.window.close();

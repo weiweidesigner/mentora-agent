@@ -53,6 +53,11 @@ class Parameters(BaseModel):
     limit: int | None = Field(default=None, ge=20, le=10000)
     fullHistory: bool | None = None
     drawingTools: bool | None = None
+    fitAnnotations: bool | None = None
+    mainChartHeight: int | None = Field(default=None, ge=180, le=1200)
+    subChartHeight: int | None = Field(default=None, ge=36, le=400)
+    themeMode: Literal['light', 'dark'] | None = None
+    language: Literal['zh', 'zh-hk', 'en', 'ja', 'th'] | None = None
 
     @field_validator('ma')
     @classmethod
@@ -162,6 +167,29 @@ def enrich_card(card: Card) -> dict:
                         })
                 except (ValueError, KeyError, TypeError, IndexError):
                     pass
+            if 'class="kline-component"' in document or "class='kline-component'" in document:
+                match = re.search(r'\bconst\s+config\s*=\s*(\{[^\n]*\});', document)
+                try:
+                    config = json.loads(match.group(1)) if match else {}
+                    symbol = str(config.get('code') or '').strip()
+                    recovered = {
+                        'symbols': [symbol] if symbol else [],
+                        'interval': config.get('dataType'),
+                        'ma': config.get('ma'),
+                        'subIndicators': config.get('subIndicators'),
+                        'klineType': config.get('klineType'),
+                        'candleColorMode': config.get('candleColorMode'),
+                        'drawingTools': config.get('drawingTools'),
+                        'fitAnnotations': config.get('fitAnnotations'),
+                        'mainChartHeight': config.get('mainChartHeight'),
+                        'subChartHeight': config.get('subChartHeight'),
+                        'themeMode': config.get('themeMode'),
+                        'language': config.get('language'),
+                    }
+                    data['component'] = 'kline'
+                    data['parameters'] = {**data.get('parameters', {}), **{key:value for key,value in recovered.items() if value is not None}}
+                except (ValueError, TypeError, AttributeError):
+                    pass
     if not data['parameters'].get('symbols') and card.request and re.fullmatch(r'[A-Za-z0-9_:.,!\-\s]+', card.request):
         data['parameters']['symbols'] = [s for s in re.split(r'[,\s]+', card.request.upper()) if s]
     return data
@@ -184,6 +212,7 @@ remove: {"type":"remove","cardId":"已有id"}。rename_board: {"type":"rename_bo
 TradingView使用tv-开头的组件id，当前可用组件以catalogue为准；包含新版Web Components、外汇矩阵、股票涨跌榜、ETF热力图、季节性图、经纪商评分与评论、经济地图。货币矩阵的symbols为货币代码数组（例如USD、EUR、JPY），经纪商组件symbols为一个TradingView经纪商slug；用户未指定时直接用默认easymarkets，不追问用户填写标识，不要当成股票解析。行情和筛选器优先这些组件。股票代码保留交易所前缀；不要把港股或A股改成ADR。筛选器market为default(美股)、america、china、hongkong、japan、uk、germany、forex、crypto；股票涨跌榜和市场动态摘要market为default(美国)、SSE、SZSE、HKEX、TSE、LSE；经济日历market为default(全球)、us、cn、eu、gb、jp，其他市场组件market=default。symbol/group类需要symbols，市场类不需要symbols。advanced-chart支持interval：1/5/15/30（分钟）、60/120/240（分钟）、D/W/M；technical-analysis仅1D/1W/1M/1h；其他组件不设置interval。
 advanced-chart 可直接修改原卡片，不得因样式或设置要求替换成其他组件：parameters.style 使用0美国线、1K线、2折线、3面积、4砖型、5卡吉、6点数、7新价线、8平均K线、9空心K线、10基准线；compareSymbols是对比标的数组，watchlist是观察列表数组，timezone例如exchange、Etc/UTC、Asia/Shanghai。布尔字段包括allowSymbolChange、showDrawingToolbar、showTopToolbar、showLegend、showVolume、showDetails、showHotlist、showDateRanges、showCalendar、saveImage。studies不再限定五种指标；优先使用用户提供或组件文档已确认的官方指标ID，不猜造ID。catalogue中的configDefaults和configExtraKeys就是同一个TradingView Skill的配置契约。parameters.config可以传该组件的全部允许配置，例如高级图表的style、studies、interval，标的概览的chartType/dateRanges。修改config只输出变化的键；列表明确给出最终值（添加时保留原项）。需要保留结构化studies值，不要降级为字符串或丢失inputs。官方是否实际支持某个指标输入格式仍以组件契约为准，不能把未文档化字段、Pine源码、任意HTML/JS/CSS塞入config。Skill没有允许的顶层键不可新增；指标细项若没有可用官方配置，不声称已调整，可说明需在图表内手动设置。说“添加”指标/对比标的/观察列表时在原列表上合并；说删除、移除、清空、只保留或替换时输出最终列表。看板中只有一张高级图表且用户要求改标的、周期、样式、指标、对比、观察列表或上述开关时，必须update该卡片，不能add新图表。日内分时线使用tv-intraday（官方symbol-overview的单标的预设），只传一个symbols，不设置interval。原生公司财务、估值、评级仅支持美股公司；这些图表需要一个股票代码，不支持任意绘图代码或虚构数据。
 看板支持国内K线（ashare-kline，a-share-data/historical_kline.py，只支持单只A股日线，不支持指数或ETF）、AInvest原生行情和业务组件（business-chart-recall）、通用图表（generic-前缀）和 StreamVis/StreamViz（streamviz）。优先遵循用户明确指定的组件，不要擅自换成TradingView。原生kline、多K线、多股分时已可用；按各自资产/周期契约选择，公司财报、估值和评级只用于支持的美股公司。A股日线只用ashare-kline，interval为1d；原生kline支持1m/5m/15m/30m/1h/2h/4h/1d/1w/1M/3M，multi_intraday只支持1m，multi_kline不支持1m。国内交易日历不需要股票代码，日期范围通过request传达。
+调整已有原生 kline 时必须 update 原卡片，不能新增或替换组件。可直接写入 parameters 的结构化字段包括 symbols、interval、ma、subIndicators、klineType、candleColorMode、fromDate、toDate、limit、fullHistory、drawingTools、fitAnnotations、mainChartHeight、subChartHeight、themeMode、language。更复杂的技术指标、Pine Script、JEV 证据标记、支撑压力/买卖点、标记颜色、线宽、虚实线、文字与气泡等要求，不得在本规划器中编造代码或坐标；将用户完整要求写入 update.request，交给下游按 Pine、JEV 与 kline 正式契约基于真实 OHLCV 重新渲染。只改均线等结构化字段时也保留原 request，验证器会合并本次要求。
 requiresDataSource=true的组件没有内置数据源，不在手动组件库展示，但可通过对话添加。必须在add/update的request中完整保留用户要看的业务问题、数据来源（用户提供的数据也可）、指标、时间范围、筛选和变换要求，交给通用执行agent选择真实数据源、必要计算并渲染；最终只交付该组件，不把上游数据源或研究报告作为额外卡片。不能因为它没有symbols而要求用户填写股票代码；只有实际缺少必要数据定义或可用来源时才澄清，不虚构数据。用户说StreamVis或streamvis也指streamviz。不要在这里生成数据或执行取数。
 非TradingView生成动作必须带request，不能把原需求缩减为股票代码。更新时合并原卡片request和本次修改，保留未更改的数据来源、日期及计算口径。只改标题/布局时不要重新生成。禁止生成脚本、HTML、CSS、URL或请求catalogue以外组件；禁止账户、交易和外部消息操作。最多60个动作；JSON不要带注释或markdown。'''
     effort = context.get('reasoningEffort', 'low')
@@ -205,6 +234,24 @@ def existing_advanced_chart_target(payload: PlanningInput, cards: list[dict]) ->
     if not re.search(controls, text, re.I):
         return ''
     matches = [card['id'] for card in cards if card.get('component') == 'tv-advanced-chart']
+    if payload.selectedCardId:
+        return payload.selectedCardId if payload.selectedCardId in matches else ''
+    return matches[0] if len(matches) == 1 else ''
+
+
+def existing_native_kline_target(payload: PlanningInput, cards: list[dict]) -> str:
+    """Resolve a visual or analytical edit of the sole existing native K-line."""
+    text = payload.message.strip()
+    if re.search(r'新建|创建|生成|另(?:外)?加|再加|new\b|create\b', text, re.I):
+        return ''
+    controls = (r'均线|MA\d*|EMA|SMA|MACD|RSI|KDJ|VOL|指标|Pine|JEV|标记|画线|支撑|压力|买点|卖点|'
+                r'颜色|配色|线宽|粗细|线形|线型|虚线|实线|气泡|文字|箭头|K线|蜡烛|空心|实心|折线|'
+                r'周期|分钟|小时|日线|周线|月线|主题|语言|高度|日期|区间|indicator|annotation|style|color')
+    if not re.search(controls, text, re.I):
+        return ''
+    matches = [card['id'] for card in cards if card.get('component') == 'kline']
+    if payload.selectedCardId:
+        return payload.selectedCardId if payload.selectedCardId in matches else ''
     return matches[0] if len(matches) == 1 else ''
 
 
@@ -213,6 +260,7 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
     existing = {c['id']: c for c in cards}
     components = {c['id']: c for c in catalogue()}
     advanced_target = existing_advanced_chart_target(payload, cards)
+    kline_target = existing_native_kline_target(payload, cards)
     if payload.selectedCardId and payload.selectedCardId not in existing:
         raise ValueError('选中的卡片已不存在，请重新选择。')
     actions = []
@@ -315,6 +363,10 @@ def validate_plan(result: dict, payload: PlanningInput, cards: list[dict]) -> di
         matching = [action for action in actions if action.get('type') == 'update' and action.get('cardId') == advanced_target and action.get('componentId') == 'tv-advanced-chart' and action.get('parameters')]
         if any(action.get('type') == 'add' for action in actions) or not matching:
             raise ValueError('这是对现有 TradingView 高级图表的设置修改；请 update 该卡片的 parameters，不要新增或替换组件。')
+    if kline_target:
+        matching = [action for action in actions if action.get('type') == 'update' and action.get('cardId') == kline_target and action.get('componentId') == 'kline' and (action.get('parameters') or action.get('request'))]
+        if any(action.get('type') == 'add' for action in actions) or not matching:
+            raise ValueError('这是对现有原生 K 线的调整；请 update 该卡片并保留完整 request，不要新增或替换组件。')
     if payload.board.title == '自定义' and not cards and any(a['type'] == 'add' for a in actions):
         if not any(a['type'] == 'rename_board' and a.get('title', '').strip() not in {'', '自定义', '我的看板'} for a in actions):
             raise ValueError('首次创建看板时，请根据用户需求生成具体标题，并添加 rename_board 动作。')
@@ -332,7 +384,8 @@ def plan_widgets(payload: PlanningInput) -> dict:
             return validate_plan(model_plan(context),payload,copy.deepcopy(cards))
         except (ValueError,TypeError) as error:
             if attempt:
-                raise ValueError('没有得到可执行的看板调整，请换一种说法重试。') from error
+                detail = re.sub(r'\s+', ' ', str(error)).strip()[:360]
+                raise ValueError('看板调整未通过组件能力校验：' + (detail or '缺少合法调整动作')) from error
             context['validationError'] = str(error)
     raise ValueError('看板指令无法执行。')
 

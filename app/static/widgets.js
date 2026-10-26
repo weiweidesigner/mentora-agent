@@ -55,8 +55,8 @@
   }
 
   const progressByBoard=new Map();
-  function setProgress(board,text){progressByBoard.set(board.id,text);if(activeId===board.id)notice(text);}
-  function notice(text) { const status=$('widgetStatus');status.textContent=text;status.hidden=!text;status.classList.toggle("is-thinking",progressByBoard.has(activeId)); }
+  function setProgress(board,text){progressByBoard.set(board.id,text);if(activeId===board.id){updateSelection();notice(text);}}
+  function notice(text) { const status=$('widgetStatus'),thinking=progressByBoard.has(activeId),scoped=thinking&&!!selectedCardId;status.textContent=scoped?'':text;status.hidden=scoped||!text;status.classList.toggle("is-thinking",thinking&&!scoped); }
   function streamedWidgetText(event,data={}){
     const text=String(data.thoughtSummary||data.thought_summary||data.text||data.detail||data.message||data.title||'').replace(/\s+/g,' ').trim();
     if(!text||/^(?:正在连接|正在連接|连接模型|連接模型|Connecting to).*?(?:Agent|Harness|模型|model)/i.test(text)||data.key==='agent-connect')return '';
@@ -180,7 +180,7 @@
     url.pathname = url.pathname.replace('/generated/','/share-artifact/');
     url.searchParams.set('theme',document.documentElement.dataset.theme || 'dark');
     url.searchParams.set('canvas','1');
-    if(String(card.component||'').startsWith('generic-'))url.searchParams.set('widgetTitle','0');
+    if(String(card.component||'').startsWith('generic-')||card.component==='kline')url.searchParams.set('widgetTitle','0');
     if(card.refreshedAt)url.searchParams.set('refresh',card.refreshedAt);
     return url.pathname+url.search;
   }
@@ -533,7 +533,10 @@
   }
   function updateSelection(){
     const board=current(),card=board?.cards.find(c=>c.id===selectedCardId);if(!card)selectedCardId='';
-    $('widgetScope').textContent=card?`${card.title} ×`:'';
+    const progress=progressByBoard.get(activeId)||'';
+    $('widgetScope').textContent=card?(progress||`${card.title} ×`):'';
+    $('widgetScope').classList.toggle('is-thinking',!!card&&!!progress);
+    $('widgetScope').disabled=!!progress;
     $('widgetScope').hidden=!card;
     $('widgetScope').parentElement.hidden=!card&&!undoByBoard.has(activeId);
     const pending=commandControllers.has(activeId)||jobs.has(activeId);

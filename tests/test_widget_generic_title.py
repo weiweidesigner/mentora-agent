@@ -13,3 +13,11 @@ def test_widget_generic_title_is_query_scoped():
 def test_non_generic_artifacts_keep_their_own_title():
     source = '<html><head></head><body><h1 class="streamviz-title">StreamViz 标题</h1></body></html>'
     assert upgrade_widget_generic_chart(source) == source
+
+
+def test_native_kline_title_is_hidden_only_inside_widget_canvas():
+    source = '<html><head></head><body><section class="kline-component"><header class="kline-title"><strong data-business-title="true">重复标题</strong><nav>周期</nav></header></section></body></html>'
+    upgraded = upgrade_widget_generic_chart(source)
+    assert '.kline-title>strong[data-business-title]' in upgraded
+    assert "p.get('canvas')==='1'||p.get('widgetTitle')==='0'" in upgraded
+    assert '<strong data-business-title="true">重复标题</strong><nav>周期</nav>' in upgraded

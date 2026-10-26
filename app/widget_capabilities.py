@@ -38,6 +38,11 @@ def _kline_settings_schema() -> dict:
             {'key': 'limit', 'label': 'K 线数量', 'type': 'integer', 'default': 320, 'min': 20, 'max': 10000},
             {'key': 'fullHistory', 'label': '加载完整历史', 'type': 'boolean', 'default': False},
             {'key': 'drawingTools', 'label': '显示画线标记工具', 'type': 'boolean', 'default': mappings.get('drawingTools', {}).get('default', True)},
+            {'key': 'fitAnnotations', 'label': '自动适配标记范围', 'type': 'boolean', 'default': False},
+            {'key': 'mainChartHeight', 'label': '主图高度', 'type': 'integer', 'default': mappings.get('mainChartHeight', {}).get('default') or 300, 'min': 180, 'max': 1200},
+            {'key': 'subChartHeight', 'label': '副图高度', 'type': 'integer', 'default': mappings.get('subChartHeight', {}).get('default') or 52, 'min': 36, 'max': 400},
+            {'key': 'themeMode', 'label': '图表主题', 'type': 'select', 'default': 'dark', 'options': [['dark', '深色'], ['light', '浅色']]},
+            {'key': 'language', 'label': '图表语言', 'type': 'select', 'default': 'zh', 'options': [['zh', '简体中文'], ['zh-hk', '繁体中文'], ['en', 'English'], ['ja', '日本語'], ['th', 'ไทย']]},
         ],
     }
 
