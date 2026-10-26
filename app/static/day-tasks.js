@@ -244,8 +244,8 @@
     if(!task.enabled)return '已暂停 · '+compactSchedule(task);
     const next=sidebarDate(task.nextAt,task,!['monthly','weekly','custom'].includes(task.cadence));
     const repeat=task.frequency==='interval'?compactSchedule(task):task.cadence==='monthly'?'每月':task.cadence==='once'?'仅一次':compactSchedule(task);
-    const timing=next?`${next} · ${repeat}`:'等待执行 · '+repeat;
-    return (task.lastRun?.status==='failed'?'运行失败 · ':'')+timing;
+    const timing=next?`下次 ${next} · ${repeat}`:'等待执行 · '+repeat;
+    return (task.lastRun?.status==='failed'?'上次运行失败 · ':'')+timing;
   }
   function taskAgent(task) {
     return ['mentora','mentora-deal'].includes(task.agent) ? task.agent : task._agent || 'mentora';
@@ -710,7 +710,7 @@
   $('dayEnablePush').onclick=async()=>{const b=$('dayEnablePush');b.disabled=true;try{await enablePush();}catch(error){$('dayPushState').textContent=error.message;}finally{b.disabled=false;}};
   form.addEventListener('submit',async e=>{
     e.preventDefault();if(saving)return;saving=true;$('daySave').disabled=true;
-    try{const data=payload();if(workflowScheduleSave){const save=workflowScheduleSave;workflowScheduleSave=null;dialog.close();save(data);return;}const draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
+    try{const data=payload();if(workflowScheduleSave){const save=workflowScheduleSave;await save(data);workflowScheduleSave=null;dialog.close();return;}const draft=wizardDraft&&!editing?{...wizardDraft,...data}:null;const task=await api('tasks'+(editing?'/'+editing:''),editing?'PUT':'POST',data);if(task.sourcePresetId)sceneTasks=sceneTasks.map(t=>t.id===task.sourcePresetId?task:t);else{tasks=tasks.filter(t=>t.id!==task.id);tasks.push(task);}if(draft)rememberCreation(task.id,{question:draft.originalQuestion,answers:wizardAnswers(draft),focus:[task.question]});dialog.close();wizardDraft=null;renderHome();await selectTask(task.id);message(editing?(task.enabled?'任务已保存，云端会按时运行。':'任务已保存为暂停状态。'):'','taskMessage');}
     catch(error){message(error.message,'dayDialogMessage');}finally{saving=false;$('daySave').disabled=false;}
   });
   dialog.addEventListener('close',()=>{if(!dialog.open)workflowScheduleSave=null;});

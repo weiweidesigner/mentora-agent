@@ -8,13 +8,13 @@ const day=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'ut
 const tick=()=>new Promise(r=>setTimeout(r,30));
 const kinds=['start','watchlist','profile','model','condition','output','watchlist_update'].map(id=>({id,label:id,description:id}));
 const graph={version:1,nodes:[{id:'input',kind:'start',title:'输入',x:90,y:140,arguments:{score:3}},{id:'out',kind:'output',title:'输出',x:440,y:140}],edges:[{source:'input',target:'out',when:'always'}]};
-async function setup(){
+async function setup(extraTools=[]){
  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=tasks',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,calls=[];let saved=null,buildError=false;
  const timers=[];w.matchMedia=()=>({matches:false,addEventListener(){}});w.setInterval=fn=>{timers.push(fn);return timers.length;};w.structuredClone=structuredClone;w.confirm=()=>true;
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
  w.fetch=async(url,options={})=>{
   calls.push([url,options]);const body=options.body?JSON.parse(options.body):{};
-  if(url.includes('/workflows/catalog'))return{ok:true,json:async()=>({kinds,tools:[{id:'search',label:'搜索',description:'工具',group:'Agent 工具'}],model:'deepseek-flash'})};
+  if(url.includes('/workflows/catalog'))return{ok:true,json:async()=>({kinds,tools:[{id:'search',label:'搜索',description:'工具',group:'Agent 工具'},...extraTools],model:'deepseek-flash'})};
   if(url.endsWith('/workflows/build'))return{ok:!buildError,json:async()=>buildError?{detail:'模型返回了无效流程'}:{title:'AI 流程',graph}};
   if(url.endsWith('/workflows/runs')&&options.method==='POST')return{ok:true,json:async()=>({id:'trial',status:'queued'})};
   if(url.endsWith('/workflows/runs/trial'))return{ok:true,json:async()=>({id:'trial',status:'success',nodes:Object.fromEntries(body.graph?.nodes?.map(n=>[n.id,{status:'success'}])||[]),result:{interpretation:'真实结果'}})};
@@ -65,15 +65,29 @@ test('new task chooser preserves Agent editor and opens full-screen workflow can
  }finally{s.w.close();}
 });
 
+test('text opportunity node can be added, connected, edited as text or JSON and saved without executing',async()=>{
+ const s=await setup([{id:'text-opportunities',label:'文本机会提取',description:'本地 JEV 机会筛选',instructions:'给定文本或上游引用，输出 items 候选，不下单',group:'数据与搜索',defaultArguments:{text:''},schema:{type:'object',required:['text']}}]);try{
+  await s.w.MentoraWorkflow.open({workflow:graph});s.d.querySelector('[data-add=tool][data-tool=text-opportunities]').click();
+  const id=s.d.querySelector('.wfNode.is-selected').dataset.node,text=s.d.querySelector('[data-field=opportunityText]');assert(text);
+  text.value='测试材料 AAPL';text.dispatchEvent(new s.w.Event('input',{bubbles:true}));
+  assert.equal(JSON.parse(s.d.querySelector('[data-json]').value).text,'测试材料 AAPL');
+  const json=s.d.querySelector('[data-json]');json.value=JSON.stringify({text:'{{input.question}}',minimumConfidence:.7});json.dispatchEvent(new s.w.Event('input',{bubbles:true}));assert.equal(text.value,'{{input.question}}');
+  s.d.querySelector('[data-out=input]').click();s.d.querySelector('[data-in="'+id+'"]').click();
+  s.d.querySelector('[data-act=save]').click();await tick();const node=s.saved().workflow.nodes.find(n=>n.id===id);
+  assert.equal(node.tool,'text-opportunities');assert.equal(node.arguments.text,'{{input.question}}');assert.equal(node.arguments.minimumConfidence,.7);
+  assert(s.saved().workflow.edges.some(e=>e.source==='input'&&e.target===id));assert(!s.calls.some(([url])=>url.endsWith('/workflows/runs')));
+ }finally{s.w.close();}
+});
+
 test('workflow delivery drafts survive reopening settings and saved secrets remain masked',async()=>{
  const s=await setup();try{
   const original=s.w.fetch;s.w.fetch=async(url,options={})=>{const response=await original(url,options);if(url.endsWith('/api/day/tasks')&&options.method==='POST'){const data=await response.json();return{...response,json:async()=>{const value={...data,feishuUrlConfigured:!!data.feishuUrl};delete value.feishuUrl;return value;}};}return response;};
   await s.w.MentoraWorkflow.open({workflow:graph});s.d.querySelector('[data-act=schedule]').click();
   const f=s.d.querySelector('#dayForm');f.elements.feishu.checked=true;f.elements.feishuUrl.value='https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow';
   f.dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
-  s.d.querySelector('[data-act=schedule]').click();assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.feishuUrl.value,'https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow');
+  s.d.querySelector('[data-act=schedule]').click();assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.feishuUrl.value,'');assert.equal(f.elements.feishuUrl.placeholder,'已保存，留空保持不变');
   f.dispatchEvent(new s.w.Event('submit',{bubbles:true,cancelable:true}));await tick();s.d.querySelector('[data-act=save]').click();await tick();
-  assert.equal(s.saved().feishu,true);assert.equal(s.saved().feishuUrl,'https://open.feishu.cn/open-apis/bot/v2/hook/test-workflow');
+  assert.equal(s.saved().feishu,true);
   s.d.querySelector('[data-act=schedule]').click();assert.equal(f.elements.feishu.checked,true);assert.equal(f.elements.feishuUrl.value,'');assert.equal(f.elements.feishuUrl.placeholder,'已保存，留空保持不变');
  }finally{s.w.close();}
 });
@@ -120,12 +134,26 @@ test('workflow reuses every schedule field and graph survives save and reopen',a
   await s.w.MentoraWorkflow.open({workflow:graph,title:'保存测试',enabled:false});
   s.d.querySelector('[data-act=schedule]').click();assert(s.d.querySelector('#dayDialog').open);
   const form=s.d.querySelector('#dayForm');form.elements.time.value='14:30';form.elements.newChat.checked=false;
-  form.requestSubmit();await tick();assert.equal(s.saved(),null);
-  s.d.querySelector('[data-act=save]').click();await tick();const saved=s.saved();
-  assert(saved);assert.equal(saved.taskMode,'workflow');assert.equal(saved.time,'14:30');assert.equal(saved.newChat,false);
+  assert.equal(form.elements.enabled.closest('label').textContent,'启用定时任务');
+  form.requestSubmit();await tick();const saved=s.saved();
+  assert(saved);assert.equal(saved.taskMode,'workflow');assert.equal(saved.time,'14:30');assert.equal(saved.newChat,false);assert.equal(saved.enabled,false);
   assert.equal(saved.workflow.nodes.length,2);
   s.d.querySelector('[data-act=close]').click();await s.w.MentoraWorkflow.open(saved);
   assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.equal(s.d.querySelector('#wfTitle').value,'保存测试');
+ }finally{s.w.close();}
+});
+
+test('schedule save failure stays open, retains interval and toggle, and retries without executing',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});
+  const original=s.w.fetch;let fail=true;
+  s.w.fetch=async(url,options={})=>url.endsWith('/api/day/tasks')&&options.method==='POST'&&fail?{ok:false,json:async()=>({detail:'测试保存失败'})}:original(url,options);
+  s.d.querySelector('[data-act=schedule]').click();const f=s.d.querySelector('#dayForm');
+  f.elements.enabled.checked=false;f.elements.frequency.value='interval';f.elements.frequency.dispatchEvent(new s.w.Event('change',{bubbles:true}));
+  f.elements.windowStart.value='09:30';f.elements.windowEnd.value='22:30';f.elements.windowIntervalUnit.value='hours';f.elements.windowIntervalUnit.dispatchEvent(new s.w.Event('change',{bubbles:true}));f.elements.windowIntervalAmount.value='1';
+  f.requestSubmit();await tick();assert(s.d.querySelector('#dayDialog').open);assert.match(s.d.querySelector('#dayDialogMessage').textContent,/测试保存失败/);assert.equal(f.elements.enabled.checked,false);
+  fail=false;f.requestSubmit();await tick();assert.equal(s.d.querySelector('#dayDialog').open,false);assert.equal(s.saved().intervalMinutes,60);assert.equal(s.saved().windowEnd,'22:30');assert.equal(s.saved().enabled,false);
+  assert.equal(s.calls.filter(([u,o])=>u.endsWith('/workflows/runs')&&o.method==='POST').length,0);
  }finally{s.w.close();}
 });
 

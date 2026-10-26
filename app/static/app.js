@@ -6185,8 +6185,6 @@ function updateScrollHint() {
   hint.classList.toggle('is-loading',active);
   hint.setAttribute('aria-label',label);
   hint.title=label;
-  const state=hint.querySelector('.scrollToBottomState');
-  if(state)state.textContent=active?(chinese?'生成中':'Generating'):'';
 }
 
 function formatInsight(value) {

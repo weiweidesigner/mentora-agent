@@ -6,8 +6,8 @@ import {JSDOM} from 'jsdom';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
-const start=source.indexOf('let scrollToBottomFrame');
-const end=source.indexOf('activityBody?.addEventListener',start);
+const start=source.indexOf('function updateScrollHint()');
+const end=source.indexOf('function formatInsight',start);
 const behavior=source.slice(start,end);
 
 function setup(){
@@ -17,25 +17,26 @@ function setup(){
   Object.defineProperty(messages,'scrollHeight',{get:()=>1200,configurable:true});
   Object.defineProperty(messages,'clientHeight',{get:()=>400,configurable:true});
   messages.scrollTop=0;messages.scrollTo=({top})=>{messages.scrollTop=top;};
-  w.eval(`const messages=document.querySelector('#messages'),scrollToBottomButton=document.querySelector('#scrollToBottomButton'),conversation=document.querySelector('.conversation');let autoFollow=false;${behavior}`);
+  w.eval(`const messages=document.querySelector('#messages');const normalizeLang=x=>x;${behavior} updateScrollHint();`);
   const flush=()=>{while(frames.length)frames.shift()();};
   flush();return {dom,w,messages,button,conversation,flush};
 }
 
-test('new assistant activity starts collapsed',()=>{
-  assert.match(source,/article\.dataset\.thinkingState = "active";\s*article\.dataset\.thinkingCollapsed = "true";/);
+test('generation indicator is animated instead of visible status text',()=>{
+  assert.doesNotMatch(html,/class="scrollToBottomState"/);
+  assert.doesNotMatch(behavior,/\.textContent\s*=/);
 });
 
 test('scroll-to-bottom appears only with content below and reflects generation state',()=>{
   const h=setup();
   assert.equal(h.button.hidden,false);
   assert.equal(h.button.classList.contains('is-loading'),true);
-  assert.match(h.button.getAttribute('aria-label'),/正在生成/);
+  assert.match(h.button.getAttribute('aria-label'),/生成中/);
   h.messages.querySelector('.message.assistant').activityEnded=true;
-  h.w.eval('syncScrollToBottomButton()');
+  h.w.eval('updateScrollHint()');
   assert.equal(h.button.classList.contains('is-loading'),false);
-  h.button.click();h.flush();assert.equal(h.messages.scrollTop,1200);
-  h.w.eval('syncScrollToBottomButton()');assert.equal(h.button.hidden,true);
+  h.messages.scrollTop=800;
+  h.w.eval('updateScrollHint()');assert.equal(h.button.hidden,true);
   h.dom.window.close();
 });
 

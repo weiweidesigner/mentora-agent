@@ -14,6 +14,15 @@ def graph(nodes=None,edges=None):
 class Immediate:
     def submit(self,fn,*args):fn(*args)
 
+
+def test_text_opportunity_node_is_discoverable_and_has_a_real_schema():
+    from app.workflows import tool_catalog
+    for agent in ('mentora','mentora-deal'):
+        row=next(t for t in tool_catalog(agent) if t['id']=='text-opportunities')
+        assert row['label']=='文本机会提取'
+        assert row['schema']['required']==['text']
+        assert row['defaultArguments']=={'text':''}
+
 @pytest.fixture
 def env(tmp_path,monkeypatch):
     import app.workflows as module
@@ -30,6 +39,26 @@ def env(tmp_path,monkeypatch):
     service.pool.shutdown();service.pool=Immediate()
     app=FastAPI();app.include_router(task_router(tasks));app.include_router(create_router(service))
     return SimpleNamespace(tasks=tasks,service=service,client=TestClient(app),app=app,calls=calls)
+
+
+def test_text_node_executes_local_adapter_with_references_and_traced_results(env,monkeypatch):
+    import app.workflows as workflows
+    from app import text_opportunities
+    from app import portfolio_laya
+    monkeypatch.setattr(workflows,'tool_catalog',lambda agent:[text_opportunities.TOOL])
+    monkeypatch.setattr(text_opportunities,'directory',lambda service:[dict(symbol='AAPL',name='Apple Inc.',market='US',aliases=['Apple Inc.'])])
+    def predict(state,questions):
+        assert state['symbol']=='AAPL' and 'AAPL' in json.dumps(state)
+        return dict(model='local-test',answers={'opportunity':dict(choice='opportunity',probabilities={'opportunity':.9,'unsupported':.1})})
+    monkeypatch.setattr(portfolio_laya,'http_predict',predict)
+    g=graph([dict(id='input',kind='start',title='原文',arguments={'text':'AAPL 仅为离线流程测试材料'}),dict(id='extract',kind='tool',tool='text-opportunities',title='文本机会提取',arguments={'text':'{{input.text}}'}),dict(id='out',kind='output',title='结果')],[dict(source='input',target='extract'),dict(source='extract',target='out')])
+    states={};events=[]
+    result=env.service.execute({'workflow':g,'agent':'mentora','question':'测试','_owner':'owner','_emit_event':lambda event,data:events.append((event,data))},'test-text',lambda node,state:states.update({node:state}))
+    assert states['extract']['output']['symbols']==['AAPL']
+    assert result['workflowNodes']['extract']=='success'
+    assert env.calls==[]  # No general model, hosted JEV, quotes or order runner.
+    assert any(event=='tool_step' and data.get('skillId')=='text-opportunities' and data.get('phase')=='completed' for event,data in events)
+    assert states['extract']['output']['executionAuthorized'] is False
 
 @pytest.mark.parametrize('bad',[
     graph([dict(id='a',kind='output',title='A'),dict(id='a',kind='start',title='B')],[]),
