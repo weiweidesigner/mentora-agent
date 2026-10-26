@@ -60,6 +60,14 @@ test('legacy no-MA sentinel is migrated before the board reaches the planner',as
  const saved=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1'));
  assert.deepEqual(saved.boards[0].cards[0].parameters.ma,[]);s.dom.window.close();
 });
+test('adding an overlay preserves a line main series instead of falling back to candlesticks',async()=>{
+ const storage={activeId:'board',boards:[{id:'board',title:'苹果',messages:[],cards:[{id:'chart',title:'AAPL',component:'kline',url:'/generated/aapl.html',status:'ready',x:0,y:0,w:12,h:22,parameters:{symbols:['AAPL'],interval:'1d',klineType:'line',ma:[],subIndicators:['MACD']}}]}]};
+ const s=setup({storage,plan:{reply:'已添加均线。',actions:[{type:'update',cardId:'chart',componentId:'kline',parameters:{ma:[5,20]}}]}});
+ s.d.querySelector('[data-card="chart"] .widgetCardHeader').click();submit(s.w,s.d,'添加 MA5 和 MA20');await tick();await tick();
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
+ assert.equal(card.parameters.klineType,'line');assert.deepEqual(card.parameters.ma,[5,20]);
+ assert.equal(s.calls.some(c=>c.url==='/api/chat/stream'),false);s.dom.window.close();
+});
 test('card selection scopes model edits, applies parameter changes directly, and undo restores the board',async()=>{
  const s=setup({storage:twoCards(),plan:{reply:'已改为微软周线。',actions:[{type:'update',cardId:'one',componentId:'tv-advanced-chart',parameters:{symbols:['NASDAQ:MSFT'],interval:'W'},layout:{w:12,x:0}}]}});
  s.d.querySelector('[data-card="one"] .widgetCardHeader').click();assert.match(s.d.querySelector('#widgetScope').textContent,/苹果行情/);

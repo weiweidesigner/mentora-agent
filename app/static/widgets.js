@@ -199,10 +199,19 @@
     frame.contentWindow.postMessage({type:'mentora:kline-config',patch},location.origin);return true;
   }
   function sameSetting(left,right){return JSON.stringify(left??null)===JSON.stringify(right??null);}
+  function mergedKlineParameters(card,component,parameters){
+    if(card?.component!=='kline'||component?.id!=='kline')return parameters||{};
+    // Planner actions are patches.  Always carry the current presentation
+    // state into the action before deciding whether a rerender is required;
+    // otherwise adding an MA/Pine/JEV overlay can silently fall back to the
+    // renderer's default candlestick type.
+    return {...(card.parameters||{}),...(parameters||{})};
+  }
   function isLiveKlineUpdate(card,component,parameters){
     if(!card||component?.id!=='kline'||!parameters)return false;
-    if(klineDataKeys.some(key=>!sameSetting(card.parameters?.[key],parameters[key])))return false;
-    return klineLiveKeys.some(key=>!sameSetting(card.parameters?.[key],parameters[key]));
+    const merged=mergedKlineParameters(card,component,parameters);
+    if(klineDataKeys.some(key=>!sameSetting(card.parameters?.[key],merged[key])))return false;
+    return klineLiveKeys.some(key=>!sameSetting(card.parameters?.[key],merged[key]));
   }
   function normalizeVerticalGaps(board){
     const placed=[];let changed=false;
@@ -596,10 +605,10 @@
         let target=card;
         if(action.type==='add'||action.parameters||action.componentId||action.request){
           const component=componentFor(action.componentId||card?.component);if(!component)throw Error('组件能力暂不可用，请刷新页面重试。');
-          const parameters=action.parameters||{},text=component.provider==='TradingView'?(parameters.symbols?.join(',')||component.defaultScope||component.title):(action.request||message);
+          const parameters=mergedKlineParameters(card,component,action.parameters||{}),text=component.provider==='TradingView'?(parameters.symbols?.join(',')||component.defaultScope||component.title):(action.request||message);
           const before=new Set(board.cards.map(c=>c.id));
           if(isLiveKlineUpdate(card,component,parameters)){
-            card.component=component.id;card.parameters={...(card.parameters||{}),...parameters};
+            card.component=component.id;card.parameters=parameters;
             postKlineConfig(card);target=card;save();
           }else{
             if(card){card.component=component.id;card.request=text;}

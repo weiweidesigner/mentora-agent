@@ -1,4 +1,5 @@
 import json
+import sys
 from types import SimpleNamespace
 import pytest
 from fastapi import FastAPI
@@ -100,6 +101,45 @@ def test_order_analysis_without_saved_decision_stops_before_model_research(env,m
     assert states['trade']['output']['orderReceipts']==[]
     assert 'decisionId' in states['trade']['output']['interpretation']
     assert not env.calls
+
+
+def test_portfolio_decision_bridge_enriches_persists_and_filters(env,monkeypatch):
+    captured={}
+    class DealWorkflow:
+        def entry_evidence(self,owner,item):
+            return {'symbol':item['symbol'],'quote':{'price':100,'priceAt':'2026-10-26T00:00:00Z'},
+                    'signal':{},'backtests':item['backtests']}
+        def store(self,owner,kind,evidence,decision,account):
+            captured.update(owner=owner,kind=kind,evidence=evidence,account=account)
+            return dict(decision,id='saved-decision',kind=kind,evidence=evidence)
+    env.service.portfolio=SimpleNamespace(workflow=DealWorkflow())
+    def call(portfolio,owner,tool,args):
+        assert tool=='portfolio-jev' and args['operation']=='decide'
+        return [{'symbol':'AAPL','action':'buy','status':'decided','confidence':.8,
+                 'confidenceGate':{'passed':True,'threshold':.3}}]
+    monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=call))
+    value=env.service.portfolio_decisions('owner',{
+        'kind':'entry','items':[{'symbol':'AAPL','returnPct':12}],
+        'account':{'cash':1000,'positions':[],'settings':{}},
+        'profile':{'enabled':True,'profile':'growth','investment':{'confidenceThresholdPct':30}},
+    })
+    assert value['count']==1
+    assert value['items'][0]['decisionId']=='saved-decision'
+    assert value['items'][0]['side']=='buy'
+    assert captured['account']['recommendationProfile']['investment']['confidenceThresholdPct']==30
+
+
+def test_portfolio_decision_bridge_does_not_persist_in_trial(env,monkeypatch):
+    class DealWorkflow:
+        def entry_evidence(self,owner,item):return {'symbol':item['symbol']}
+        def store(self,*args):raise AssertionError('trial must not persist decisions')
+    env.service.portfolio=SimpleNamespace(workflow=DealWorkflow())
+    monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=lambda *_:[{
+        'symbol':'AAPL','action':'buy','status':'decided','confidence':.8,
+        'confidenceGate':{'passed':True,'threshold':.3}}]))
+    value=env.service.portfolio_decisions('owner',{'items':[{'symbol':'AAPL'}],'account':{},'profile':{'enabled':True}},preview=True)
+    assert value['items'][0]['decisionId']=='preview-decision-0'
+    assert env.service.preview_order({'operation':'plan','decisionId':'preview-decision-0','symbol':'AAPL','side':'buy'})['id']=='preview-plan-0'
 
 def test_saved_graph_reloads_and_scheduled_run_executes_its_snapshot(env):
     c=env.client;headers={'X-Veya-Day':'1'}

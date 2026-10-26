@@ -30,6 +30,24 @@ KINDS=[
     dict(id='output',label='输出结果',description='汇总上游节点的真实输出。'),
 ]
 
+PORTFOLIO_DECISION_TOOL=dict(
+    id='portfolio-decision',
+    label='Mentora Deal 决策',
+    description='将上游回测结果与当前行情、账户、风控和已启用的投资偏好合并为完整 JEV 证据，执行置信度门槛并保存可执行决策。',
+    instructions='输入回测 items、账户和用户偏好；输出 decisions 全量评估与 items 可执行决策。items 每项含 decisionId、symbol、side、confidence，可逐项连接 portfolio-order plan。',
+    script='portfolio-decision',group='交易能力',icon='scale',
+    schema={
+        'type':'object','additionalProperties':False,
+        'properties':{
+            'kind':{'type':'string','enum':['entry','risk'],'default':'entry'},
+            'items':{'type':'array','items':{'type':'object'},'minItems':1},
+            'account':{'type':'object'},
+            'profile':{'type':'object'},
+        },
+        'required':['items','account','profile'],
+    },
+)
+
 @lru_cache(maxsize=2)
 def legacy_tool_catalog(agent):
     from app.business_chart_dependency import load_registry_data
@@ -83,6 +101,7 @@ def tool_catalog(agent):
         if row['name']=='portfolio-data':
             schema.setdefault('allOf',[]).append({'if':{'properties':{'operation':{'enum':['quote','history','fundamentals','save_candidate']}},'required':['operation']},'then':{'required':['symbol'],'properties':{'symbol':{'type':'string','minLength':1}}}})
         result.append(dict(id=row['name'],label={'screener':'股票筛选','portfolio-account':'账户信息','portfolio-backtest':'策略回测','portfolio-jev':'JEV 决策','portfolio-order':'执行交易','portfolio-data':'交易数据','portfolio-symbols':'标的查询','portfolio-technical':'技术分析','portfolio-strategies':'策略配置'}.get(row['name'],row['name']),description=description,instructions=row['instructions'],script=row['name'],group='数据与搜索' if row['name']=='screener' else '交易能力',icon='filter' if row['name']=='screener' else icons.get(row['name'],'tool'),schema=schema))
+    result.append(PORTFOLIO_DECISION_TOOL)
     return list({row['id']:row for row in result}.values())
 
 def execution_tools(agent):
@@ -126,6 +145,7 @@ class WorkflowService:
             'portfolio-backtest':'单标的实际回测对象；批量执行时外层为 items/count，不存在自动汇总的 metrics。',
             'portfolio-jev':'结构化调用直接返回决策数组，不是 {decisions:...}。每项含 symbol/action/confidence 等评估字段；该原始评估不会自动保存可执行决策，不含可用于下单的 id/decisionId。不得凭空添加或将序号当作决策 ID。',
             'portfolio-order':'plan 返回真实计划对象（id）；execute 仅接受该计划的 planId。plan 必须使用当前用户已保存且有效的 JEV decisionId，不能把原始评估当成已保存决策。watch/skip/hold 不是合法 side，不能直接逐项映射全部决策下单。原始 JEV 评估不含 decisionId 时，不得创建会重新研究或尝试下单的模型节点；直接记录「缺少可执行决策记录」并继续汇总。只有上游明确提供真实 decisionId 时才可连接下单节点；不伪造 ID 或成交。',
+            'portfolio-decision':'对每个上游回测项补齐最新行情、技术信号、风控、账户和已启用的用户偏好，再调用 JEV。输出对象中 decisions 是全量结果，items 只含已通过置信度和硬性风控、已保存且含 decisionId/side 的可执行决策。正式流程应将 {{该节点.items}} 逐项连接 portfolio-order plan，再将计划 items 逐项连接 execute；不需要通用模型二次判断置信度。',
         })
         if self.builder:generate=self.builder
         else:
@@ -134,7 +154,7 @@ class WorkflowService:
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
 严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,onItemError,path,operator,expected。
 kind 仅可为 start/watchlist/profile/tool/model/condition/output/watchlist_update。工具必须使用目录中的真实 id。
-每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。
+每个 tool 节点使用 instruction 清楚描述该工具的任务、输入和期望输出；Mentora Deal 工具可通过 arguments 指定其合法 JSON 参数，参数中的 {{节点id.字段}} 引用上游输出，必须连线。需要根据 JEV 置信度自动下单时，必须使用 portfolio-decision 合并回测 items、账户和 profile，再将它的 items 逐项连接 portfolio-order plan，最后将 plan 的 items 逐项连接 portfolio-order execute。不添加用途重复的通用模型节点。
 必须遵循每个工具的 schema，禁止猜测参数名、operation 或输出字段。portfolio-data 历史行情使用 operation=history 和单个 symbol，不支持 action=ohlcv 或 symbols。\n对自选列表等多个标的，结构化交易工具节点设置 foreach={{自选节点ID}}，arguments.symbol={{item.symbol}}；执行器会逐项调用，并输出 items 数组。下游逐项工具可用 foreach={{上游工具ID.items}}，不能把列表直接传给单标的参数。其他 Skill 的批量任务使用模型节点自主调用。条件节点只判断实际存在的单值字段；多标的汇总/正负收益筛选应由模型基于真实回测 items 分析，不编造 profit、totalReturn 等汇总字段。需要更新观察列表时，使用 watchlist_update 节点连接上游回测、JEV 决策和交易节点，它会写入真实工具回执，不用模型摘要冒充写入。交易节点标题使用「执行交易」。若需要正式回测报告，先用模型节点汇总真实结果，再接输出节点。\nmodel 节点使用当前默认模型；指令说明如何使用上游数据。watchlist/profile 始终读取当前用户真实数据，不填写虚构股票或档案。
 condition 使用 path（上游节点id.字段）、operator（truthy/equals/contains/greater/less）、expected；从条件节点出发的边可指定 when=true/false，否则 always。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
@@ -203,6 +223,63 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             return any(WorkflowService.has_decision_id(child) for child in value)
         return False
 
+    def portfolio_decisions(self,owner,arguments,*,preview=False):
+        """Build complete evidence, apply JEV gates and persist executable decisions."""
+        kind=arguments.get('kind','entry')
+        if kind not in ('entry','risk'):raise ValueError('决策类型只支持 entry 或 risk')
+        rows=arguments.get('items')
+        if not isinstance(rows,list) or not rows:raise ValueError('上游回测结果为空，无法生成 JEV 决策')
+        account=arguments.get('account')
+        if not isinstance(account,dict):raise ValueError('账户输出无效')
+        profile=arguments.get('profile')
+        if not isinstance(profile,dict):raise ValueError('投资偏好输出无效')
+        # A paused preference must not silently continue to authorize orders.
+        recommendation=(dict(notes=profile.get('profile',''),investment=profile.get('investment') or {})
+                        if profile.get('enabled') is True else {})
+        account=dict(account,recommendationProfile=recommendation)
+        evidence=[];blocked=[]
+        for row in rows:
+            if not isinstance(row,dict):continue
+            symbol=str(row.get('symbol') or '').strip().upper()
+            if not symbol:continue
+            seed=dict(symbol=symbol,name=row.get('name') or symbol,sourceTypes=['favorite'],backtests=[row])
+            try:
+                evidence.append(self.portfolio.workflow.entry_evidence(owner,seed))
+            except Exception as error:
+                blocked.append(dict(symbol=symbol,action='watch' if kind=='entry' else 'hold',modelAction=None,
+                                    confidence=None,status='blocked',reason=str(error)[:220],decisionId=None))
+        decisions=[];executable=[]
+        if evidence:
+            from app.portfolio_skills import call
+            results=call(self.portfolio,owner,'portfolio-jev',dict(operation='decide',kind=kind,evidence=evidence,account=account))
+            if not isinstance(results,list) or len(results)!=len(evidence):raise ValueError('JEV 结果数量与证据不一致')
+            for index,(item,result) in enumerate(zip(evidence,results)):
+                if not isinstance(result,dict) or result.get('symbol')!=item['symbol']:raise ValueError('JEV 决策标的校验失败')
+                if preview:
+                    record=dict(result,id='preview-decision-'+str(index),decisionId='preview-decision-'+str(index),preview=True)
+                else:
+                    stored=self.portfolio.workflow.store(owner,kind,item,result,account)
+                    record=dict(stored,decisionId=stored['id'])
+                action=record.get('action')
+                record['side']='buy' if action=='buy' else 'sell' if action in ('reduce','sell') else None
+                decisions.append(record)
+                if record.get('status')=='decided' and record.get('side') and record.get('confidenceGate',{}).get('passed') is True:
+                    executable.append(record)
+        decisions.extend(blocked)
+        return dict(items=executable,count=len(executable),decisions=decisions,decisionCount=len(decisions),preview=preview,
+                    interpretation=(f'共完成 {len(decisions)} 项 JEV 决策，{len(executable)} 项通过置信度与执行门槛。'))
+
+    @staticmethod
+    def preview_order(arguments):
+        operation=arguments.get('operation')
+        if operation=='plan':
+            decision_id=str(arguments.get('decisionId') or '')
+            return dict(id='preview-plan-'+decision_id.removeprefix('preview-decision-'),status='preview',preview=True,
+                        symbol=arguments.get('symbol'),side=arguments.get('side'),decisionId=decision_id)
+        if operation=='execute':
+            return dict(id='preview-order',status='preview',preview=True,planId=arguments.get('planId'),interpretation='试运行已校验订单链路，未提交订单。')
+        raise ValueError('试运行仅支持校验订单计划与执行节点')
+
     def execute(self,config,run_id,update,trial=False,cancelled=lambda:False):
         graph=self.validate(config['workflow'],config.get('agent','mentora'))
         outputs={};states={};receipts={};artifacts=[];warnings=[];started=time.monotonic();owner=config['_owner']
@@ -224,7 +301,6 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     receipts[node.id].append(dict(tool=data['skillId'],input=data.get('input') or {},output=data.get('output')))
                 emit(event,data)
             try:
-                if trial and node.kind=='tool' and node.tool=='portfolio-order':raise RuntimeError('试运行不提交订单；请先验证研究和决策节点')
                 if node.kind=='start':value=dict(question=config['question'],instruction=node.instruction,**self.resolve(node.arguments,outputs))
                 elif node.kind in ('watchlist','profile'):
                     if not self.portfolio:raise RuntimeError('个人信息服务暂不可用')
@@ -242,8 +318,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                 elif node.kind=='output':
                     text='\n\n'.join(str(v.get('interpretation') or json.dumps(v,ensure_ascii=False)) if isinstance(v,dict) else json.dumps(v,ensure_ascii=False) for v in upstream.values())
                     value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False))
+                elif node.kind=='tool' and node.tool=='portfolio-decision':
+                    decision_arguments=self.resolve(node.arguments,outputs)
+                    value=self.portfolio_decisions(owner,decision_arguments,preview=trial)
+                    receipts[node.id].append(dict(tool='portfolio-jev',input=decision_arguments,output=value['decisions']))
                 elif node.kind=='tool' and node.tool.startswith('portfolio-') and (node.arguments or node.foreach):
-                    if trial and node.tool=='portfolio-order':raise RuntimeError('试运行不提交订单；请先验证研究和决策节点')
                     from app.portfolio_skills import call
                     from app.skill_calls import skill_events
                     tool=next(t for t in execution_tools(config.get('agent','mentora')) if t['id']==node.tool)
@@ -264,7 +343,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                             if cancelled():raise InterruptedError('试运行已停止')
                             try:
                                 with skill_events(emit,cancelled):
-                                    result=call(self.portfolio,owner,node.tool,args)
+                                    result=self.preview_order(args) if trial and node.tool=='portfolio-order' else call(self.portfolio,owner,node.tool,args)
                                     results.append(result)
                                     receipts[node.id].append(dict(tool=node.tool,input=args,output=result))
                             except InterruptedError:raise
