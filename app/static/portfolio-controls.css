@@ -1,0 +1,36 @@
+.pfCardHead.pfFavoriteHeader{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;overflow:visible}
+.pfFavoriteHeader h2{flex:none;white-space:nowrap;margin:0}
+.pfFavoriteHeader .pfFavoriteForm{flex:1;min-width:0;justify-content:flex-end;padding:0;margin:0;border:0;gap:10px}
+.pfCardHead.pfFavoriteHeader .pfFavoriteForm>.pfFavoriteAdd{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-end;gap:10px;width:100%;min-width:0}
+.pfFavoriteHeader .pfFavoriteField{width:clamp(130px,24vw,320px);min-width:0}
+.pfFavoriteHeader .pfFavoriteAdd button{flex:none;white-space:nowrap;width:auto}
+.pfFavoriteHeader .pfFavoriteAdd .pfFavoriteImage{width:36px;height:36px}
+.pfFavoriteImage{display:inline-grid;place-items:center;width:36px;height:36px;padding:8px!important;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--ink)}
+.pfFavoriteImage svg{width:18px;height:18px}
+.pfFavoriteHeader [data-pf-action="refresh"] svg{display:none;width:18px;height:18px}
+.pfIdeaComposer textarea:placeholder-shown{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:24px!important;min-height:24px!important;max-height:24px!important;line-height:24px;padding:0;align-self:center}
+.pfOcrDialog{box-sizing:border-box;width:min(560px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:24px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.pfOcrDialog::backdrop{background:#0008}
+.pfOcrDialog header,.pfOcrDialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pfOcrDialog h2{margin:0;font-size:18px}
+.pfOcrDialog button{padding:8px 12px;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.pfOcrDialog button:disabled{opacity:.45;cursor:default}
+.pfOcrDialog [data-ocr-status]{white-space:pre-wrap;font-size:13px;line-height:1.6}
+.pfOcrCandidates{display:grid;gap:8px;margin:16px 0}
+.pfOcrCandidates label{display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--line);cursor:pointer}
+.pfOcrCandidates small{display:block;color:var(--muted);margin-top:4px}
+.pfOcrCandidates .is-imported{opacity:.5}
+.pfOcrDialog pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;font-size:12px}
+.pfOcrDialog footer{justify-content:flex-end;margin-top:20px}
+@media(max-width:600px){
+ .pfCardHead.pfFavoriteHeader{gap:12px}
+ .pfFavoriteHeader .pfFavoriteForm{overflow:visible}
+ .pfFavoriteHeader .pfFavoriteForm>.pfFavoriteAdd{gap:8px;max-width:100%}
+ .pfFavoriteHeader .pfFavoriteField{width:120px;flex:1}
+ .pfFavoriteHeader .pfFavoriteAdd button{padding:7px;font-size:11px}
+ .pfFavoriteHeader h2{font-size:14px}
+ .pfFavoriteHeader [data-pf-action="refresh"]{display:grid;place-items:center;width:32px;height:36px;padding:6px}
+ .pfFavoriteHeader [data-pf-action="refresh"] .pfFavoriteRefreshLabel{display:none}
+ .pfFavoriteHeader [data-pf-action="refresh"] svg{display:block}
+ .pfOcrDialog{padding:20px}
+}

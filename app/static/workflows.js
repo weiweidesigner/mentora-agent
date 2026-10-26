@@ -97,7 +97,7 @@ function lines(){
   const s=nodes.get(e.source),t=nodes.get(e.target);if(!s||!t)return '';
   const source=run?.nodes?.[s.id],target=run?.nodes?.[t.id];
   const active=live&&['success','partial'].includes(source?.status)&&target?.status==='running'&&(e.when==='always'||e.when===String(!!source.output?.value));
-  const z=state.zoom,x=(s.x+260)*z,y=(s.y+57)*z,x2=t.x*z,y2=(t.y+57)*z,d=Math.max(70*z,Math.abs(x2-x)/2),path='M'+x+','+y+'C'+(x+d)+','+y+' '+(x2-d)+','+y2+' '+x2+','+y2;
+  const z=state.zoom,x=(s.x+267)*z,y=(s.y+57)*z,x2=t.x*z-(7*z+6),y2=(t.y+57)*z,d=Math.max(70*z,Math.abs(x2-x)/2),path='M'+x+','+y+'C'+(x+d)+','+y+' '+(x2-d)+','+y2+' '+x2+','+y2;
   return '<g class="wfEdge'+(active?' is-flowing':'')+'" data-edge-source="'+s.id+'" data-edge-target="'+t.id+'"><path class="wfEdgeHit" d="'+path+'"/><path class="wfEdgeLine" marker-end="url(#wfArrow)" d="'+path+'"/>'+(active?'<path class="wfEdgeFlow" d="'+path+'" style="animation-delay:'+phase+'s" aria-hidden="true"/>':'')+(e.when!=='always'?'<text x="'+((x+x2)/2)+'" y="'+((y+y2)/2-8)+'">'+(e.when==='true'?'满足':'不满足')+'</text>':'')+'</g>';
  }).join('');
 }

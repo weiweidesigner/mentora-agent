@@ -57,6 +57,13 @@ def main():
             card=page.locator('[data-node=data]').bounding_box()
             assert footer['y']+footer['height']<=card['y']+card['height']+1
             flow=page.locator('.wfEdgeFlow');assert flow.count()==1
+            clearance=page.evaluate('''()=>{
+                const path=document.querySelector('.wfEdgeLine'),point=path.getPointAtLength(path.getTotalLength());
+                const tip=new DOMPoint(point.x,point.y).matrixTransform(path.getScreenCTM());
+                const port=document.querySelector('[data-node=data] .wfPortIn').getBoundingClientRect();
+                return port.left-tip.x;
+            }''')
+            assert clearance>=3,(width,clearance)
             before=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
             page.wait_for_timeout(180)
             after=flow.evaluate('el=>getComputedStyle(el).strokeDashoffset')
