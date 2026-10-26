@@ -226,6 +226,12 @@ test('zoom resizes node layout and vector connections while the background stays
   assert.match(css,/font-size:calc\(13px \* var\(--wf-node-scale\)\)/);
  }finally{s.w.close();}
 });
+test('workflow titles use available header width and node statuses stay horizontal',()=>{
+ const css=readFileSync(new URL('../app/static/workflows.css',import.meta.url),'utf8');
+ assert.match(css,/\.wfHeading\{flex:1;min-width:0;max-width:none\}/);
+ assert.match(css,/\.wfNode header>span:nth-child\(2\)\{min-width:0;flex:1\}/);
+ assert.match(css,/\.wfNodeState\{[^}]*flex:none[^}]*white-space:nowrap[^}]*word-break:keep-all[^}]*writing-mode:horizontal-tb/);
+});
 test('saved trading nodes migrate to execution and observation actions when reopened',async()=>{
  const s=await setup();try{
   const old={version:1,nodes:[{id:'trade',kind:'tool',tool:'portfolio-order',title:'执行模拟交易',x:90,y:140},{id:'out',kind:'output',title:'输出回测决策与交易报告',x:440,y:140}],edges:[{source:'trade',target:'out',when:'always'}]};
