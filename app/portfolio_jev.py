@@ -48,10 +48,14 @@ def execution_confidence_gate(action,confidence,agreed=True,preferences=None):
                 reason='execution-confidence' if applicable else 'non-trading-action')
 
 
+def local_laya_client(active):
+    parameters=inspect.signature(active.client_factory).parameters
+    return 'endpoint' in parameters and 'api_key' not in parameters
+
+
 def decision_client(active,timeout=20):
     """Open either the hosted TypeSafe SDK or the local Laya adapter."""
-    parameters=inspect.signature(active.client_factory).parameters
-    if 'endpoint' in parameters and 'api_key' not in parameters:
+    if local_laya_client(active):
         return active.client_factory(endpoint=active.endpoint,model=active.model,timeout=timeout)
     return active.client_factory(api_key=active.api_key,model=active.model,timeout=timeout,retry=RetryPolicy(max_retries=0))
 
@@ -101,6 +105,13 @@ class PortfolioJev:
         if provider!='jev':raise ValueError('不支持的持仓决策提供商')
         active=self.router_factory(20)
         if not active.configured:raise RuntimeError('JEV 未配置，未生成可执行决策')
+        # The local sidecar has a strict per-symbol input budget.  Its
+        # portfolio adapter applies hard eligibility first and sends compact,
+        # bounded evidence one symbol at a time; the hosted batch prompt does
+        # not satisfy that contract.
+        if local_laya_client(active):
+            from app.portfolio_laya import LayaPortfolio
+            return LayaPortfolio().decide(kind,evidence,account)
         actions={'buy':'可以买入，且证据、账户预算和当前行情允许参与','watch':'继续观察，证据或时机尚不充分','skip':'当前不参与'} if kind=='entry' else {'hold':'继续持有，逻辑未被破坏','reduce':'降低部分持仓，风险或集中度升高','sell':'退出可卖持仓，风险或原有逻辑被破坏'}
         questions={}
         intent={}
