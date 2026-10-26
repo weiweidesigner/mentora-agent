@@ -676,6 +676,12 @@ shareDialog?.addEventListener("click", (event) => {
 copyShareLinkButton?.addEventListener("click", copyShareLink);
 saveShareImageButton?.addEventListener("click", saveShareImage);
 function handleSavedResultAction(event) {
+  const favoriteButton = event.target?.closest?.('.favoriteResultButton');
+  if (favoriteButton) {
+    event.preventDefault();event.stopPropagation();
+    window.MentoraCaseFavorites?.open(favoriteButton.closest('.message.assistant'),favoriteButton);
+    return;
+  }
   const shareButton = event.target?.closest?.(".shareResultButton");
   if (shareButton) {
     event.preventDefault();
@@ -4462,6 +4468,7 @@ function buildResultActions(article, lang) {
   return `
     <div class="resultActionsRow">
       ${shareButton}
+      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏为案例" data-tip="收藏"><span class="resultActionIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v15l-6-4-6 4Z"/></svg></span></button>
     </div>
   `;
 }

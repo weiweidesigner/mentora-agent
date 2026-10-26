@@ -10,6 +10,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 20));
 function setup(url = 'https://example.com/', text = '完整缓存答案', catalog = null, options = {}) {
   const dom = new JSDOM(`<main class="conversation is-empty"><form id="chatForm"><input id="question"></form><section id="homeCases"><div id="caseGrid"></div></section>${catalog ? '<section id="inspirationSquare"><div id="inspirationTabs"></div><div id="inspirationPanel"></div></section>' : ''}<header id="caseDetailHeader" hidden><button id="caseBackButton"></button><span id="caseCacheDate"></span></header><div id="messages"></div><div id="caseActionBar" hidden><button id="caseAskButton"></button></div></main>`, { url });
   const w = dom.window;
+  if(options.favorites)w.MentoraCaseFavorites={ready:Promise.resolve(options.favorites),rows:options.favorites};
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
   const rows = options.homeCases || [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
   const requests = [], sent = [], formatted = [];
@@ -26,7 +27,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     fetch: async url => {
       requests.push(url);
       if(url.includes('/inspiration/manifest.json') && options.failCatalog)throw new Error('offline');
-      const row = catalog?.cases.find(item => item.conversationUrl === url) || rows[0];
+      const row = options.favorites?.find(item=>item.conversationUrl===url) || catalog?.cases.find(item => item.conversationUrl === url) || rows[0];
       if (!url.endsWith('manifest.json') && options.failConversationAttempts > 0) {
         options.failConversationAttempts -= 1;
         return {ok:false,status:502,json:async()=>({})};
@@ -37,6 +38,22 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   vm.runInContext(source,context);
   return {w, requests, sent, formatted, conversation, messages, startNewChat: context.startNewChat};
 }
+test('saved cases appear in their six destinations and open without inference',async()=>{
+ const favorites=['lane','reports','charts','analysis','videos','art'].map(category=>({id:'favorite-'+category,category,title:'测试收藏'+category,tag:'收藏',preview:'离线测试',question:'收藏问题'+category,cachedDate:'2026-10-26',conversationUrl:'/api/case-favorites/'+category}));
+ const catalog={categories:favorites.filter(r=>r.category!=='lane').map(r=>({id:r.category,title:r.category,subtitle:''})),cases:[]};
+ const h=setup('https://example.com/','收藏的原始回答',catalog,{favorites});await tick();
+ assert(h.w.document.querySelector('#caseGrid [data-case=favorite-lane]'));
+ for(const row of favorites.filter(r=>r.category!=='lane'))assert(h.w.document.querySelector('#inspirationPanel [data-case='+row.id+']'));
+ h.w.document.querySelector('[data-case=favorite-analysis]').click();await tick();assert.match(h.messages.textContent,/收藏问题analysis收藏的原始回答/);
+ assert.equal(h.sent.length,0);
+ h.w.document.querySelector('#caseBackButton').click();
+ const added={...favorites[0],id:'favorite-new',title:'新收藏'};
+ h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:added}));
+ assert(h.w.document.querySelector('#caseGrid [data-case=favorite-new]'));
+ h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:{...added,id:'favorite-new-chart',category:'charts'}}));
+ assert(h.w.document.querySelector('#inspirationPanel [data-case=favorite-new-chart]'));
+});
+
 test('case replay loads cached conversation without inference; ask fills an editable draft', async () => {
   const h=setup();await tick();
   h.w.document.querySelector('.caseCard').click();await tick();

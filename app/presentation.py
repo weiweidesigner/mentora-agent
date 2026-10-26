@@ -168,6 +168,8 @@ class SessionTitleRequest(BaseModel):
 from app.chat_sessions import ChatSessions,create_router as create_chat_session_router,identity as chat_identity
 
 CHAT_SESSIONS=ChatSessions(ROOT/'outputs/chat-sessions')
+from app.case_favorites import create_router as create_case_favorites_router
+app.include_router(create_case_favorites_router(CHAT_SESSIONS))
 
 
 def durable_chat_events(payload,user):

@@ -420,6 +420,7 @@
     if (!selectedCase) return;
     // The native image dialog owns its keyboard handling while it is open.
     if (document.querySelector("#generatedImageDialog")?.open) return;
+    if (document.querySelector('.caseFavoriteDialog')?.open) return;
     const videoOverlay = document.querySelector(".aimeVideoOverlay.is-open");
     if (event.key === "Escape") {
       event.preventDefault();
@@ -455,7 +456,10 @@
   fetch("/static/cases/manifest.json", { cache: "no-store" }).then((response) => {
     if (!response.ok) throw new Error("Case catalog unavailable");
     return response.json();
-  }).then((rows) => {
+  }).then(async (rows) => {
+    await window.MentoraCaseFavorites?.ready;
+    const favorites=window.MentoraCaseFavorites?.rows||[];
+    rows=[...favorites.filter(row=>row.category==='lane'),...rows];
     window.veyaCases = [...rows, ...(window.veyaCases || []).filter(row => row.id.startsWith("day-"))];
     loadInspiration(cardHtml);
     const desktop = window.matchMedia("(min-width:761px)");
@@ -564,6 +568,12 @@
       state.position = state.lane.scrollLeft;
       state.manualUntil = performance.now() + 2500;
     }));
+    window.addEventListener('mentora:case-favorite-saved',event=>{
+      const row=event.detail;if(row.category!=='lane')return;
+      rows=[row,...rows.filter(item=>item.id!==row.id)];
+      window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
+      renderGallery();
+    });
     desktop.addEventListener("change", renderGallery);
     renderGallery();
     requestAnimationFrame(moveLanes);
@@ -584,6 +594,9 @@
       const response = await fetch("/static/cases/inspiration/manifest.json", { cache: "no-store" });
       if (!response.ok) throw new Error("灵感案例暂时无法加载");
       const catalog = await response.json();
+      await window.MentoraCaseFavorites?.ready;
+      const favorites=window.MentoraCaseFavorites?.rows||[];
+      catalog.cases=[...favorites.filter(row=>row.category!=='lane'),...catalog.cases];
       window.veyaCases = [...window.veyaCases, ...catalog.cases.filter(row => !window.veyaCases.some(existing => existing.id === row.id))];
       const categories = [{ id: "all", title: "全部" }, ...catalog.categories];
       let active = categories[0]?.id;
@@ -670,6 +683,12 @@
       panel.addEventListener("click", event => {
         const card = event.target.closest("[data-case]");
         if (card) showCase(card.dataset.case);
+      });
+      window.addEventListener('mentora:case-favorite-saved',event=>{
+        const row=event.detail;if(row.category==='lane')return;
+        catalog.cases=[row,...catalog.cases.filter(item=>item.id!==row.id)];
+        window.veyaCases=[row,...window.veyaCases.filter(item=>item.id!==row.id)];
+        render();
       });
       render();
       tabs.setAttribute('aria-busy', 'false');
