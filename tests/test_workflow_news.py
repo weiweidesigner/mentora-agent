@@ -12,7 +12,7 @@ def root(tmp_path):
 args=sys.argv[1:]
 assert args[:3]==['execute','--script','ainvest_news_search.py']
 path=pathlib.Path(args[args.index('--output')+1]);path.parent.mkdir(parents=True,exist_ok=True)
-items=[dict(title='fixture raw title',summary='fixture raw summary',published_at='',content_text='',url='https://example.invalid/fixture')]
+items=[dict(title='fixture raw title',summary='fixture raw summary',published_at='',content_text='',url='https://example.invalid/fixture',related_symbols=['GOOG','GOOGL','META'],mentioned_symbols=['NVDA'],symbol_evidence=[dict(symbol='GOOG',kind='article-tag')],aime_summary='fixture source overview')]
 path.write_text(json.dumps(items))
 print(json.dumps(dict(ok=True,exitCode=0,artifacts=[dict(path=str(path),verified=True)],stderr='[warn] fixture missing publication time',testArgs=args)))
 ''')
@@ -29,6 +29,10 @@ def test_defaults_execute_one_registered_skill_and_keep_missing_fields(root):
     assert args[args.index('--limit')+1]=='10'
     assert args[args.index('--max-details')+1]=='10'
     assert not result.get('reportArtifacts') and not result.get('fileArtifacts')
+    assert result['items'][0]['related_symbols']==['GOOG','GOOGL','META']
+    assert result['items'][0]['mentioned_symbols']==['NVDA']
+    assert result['items'][0]['symbol_evidence']==[dict(symbol='GOOG',kind='article-tag')]
+    assert result['items'][0]['aime_summary']=='fixture source overview'
 
 
 def test_explicit_categories_dates_and_unique_outputs(root):
