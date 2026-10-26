@@ -275,6 +275,37 @@
   // Keep canvas acceptance controls interactive while browsing components.
   async function library(){ $('widgetLibraryStatus').textContent='';$('widgetLibrary').show();try{await ensureCatalog();renderLibrary();}catch(error){$('widgetLibraryStatus').textContent=error.message;} }
   const symbolPicker=window.WidgetSymbolPicker?new window.WidgetSymbolPicker($('widgetAddForm'),$('widgetSymbol'),$('widgetParameterField')):null;
+  function settingsFields(component){return Array.isArray(component?.settingsSchema?.fields)?component.settingsSchema.fields:[];}
+  function renderSettingsFields(component,parameters={}){
+    const root=$('widgetDynamicFields'),fields=settingsFields(component);root.replaceChildren();
+    for(const field of fields){
+      const value=parameters[field.key]??field.default??'',type=field.type||'text';
+      if(type==='multi-select'){
+        const group=document.createElement('fieldset');group.className='widgetMultiField';group.dataset.settingKey=field.key;group.dataset.settingType=type;
+        const legend=document.createElement('legend');legend.textContent=field.label;group.append(legend);
+        const choices=document.createElement('div');choices.className='widgetOptionChecks';const selected=new Set(Array.isArray(value)?value:[]);
+        for(const [option,label] of field.options||[]){const item=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=option;input.checked=selected.has(option);item.append(input,document.createTextNode(label));choices.append(item);}group.append(choices);root.append(group);continue;
+      }
+      const label=document.createElement('label'),caption=document.createElement('span');caption.textContent=field.label;label.append(caption);
+      let input;
+      if(type==='select'){input=document.createElement('select');for(const [option,text] of field.options||[]){const node=document.createElement('option');node.value=option;node.textContent=text;input.append(node);}input.value=String(value);}
+      else {input=document.createElement('input');input.type=type==='boolean'?'checkbox':type==='integer'?'number':type==='date'?'date':'text';if(type==='boolean'){input.checked=Boolean(value);label.className='widgetBooleanField';label.prepend(input);}else{input.value=type==='integer-list'?(Array.isArray(value)?value.join(','):value):value;if(field.placeholder)input.placeholder=field.placeholder;if(field.min!==undefined)input.min=field.min;if(field.max!==undefined)input.max=field.max;if(type==='integer')input.step='1';}}
+      input.dataset.settingKey=field.key;input.dataset.settingType=type;label.append(input);root.append(label);
+    }
+  }
+  function readSettingsFields(component){
+    const result={};
+    for(const field of settingsFields(component)){
+      const node=$('widgetDynamicFields').querySelector('[data-setting-key="'+CSS.escape(field.key)+'"]');if(!node)continue;
+      if(field.type==='multi-select'){result[field.key]=[...node.querySelectorAll('input:checked')].map(input=>input.value);continue;}
+      if(field.type==='boolean'){result[field.key]=node.checked;continue;}
+      const raw=node.value.trim();if(!raw){result[field.key]=null;continue;}
+      if(field.type==='integer'){const value=Number(raw);if(!Number.isInteger(value)||(field.min!==undefined&&value<field.min)||(field.max!==undefined&&value>field.max))throw Error(field.label+'请填写有效整数。');result[field.key]=value;continue;}
+      if(field.type==='integer-list'){const values=raw.split(/[,，\s]+/).filter(Boolean).map(Number);if(!values.length||values.some(value=>!Number.isInteger(value)||(field.min!==undefined&&value<field.min)||(field.max!==undefined&&value>field.max)))throw Error(field.label+'请填写用逗号分隔的有效整数。');result[field.key]=[...new Set(values)];continue;}
+      result[field.key]=raw;
+    }
+    return result;
+  }
   function renderLibrary(){
     const visible=catalog.filter(c=>c.libraryVisible!==false&&!c.requiresDataSource);
     $('widgetCategories').innerHTML=['全部',...new Set(visible.map(c=>c.category))].map(c=>`<button type="button" data-category="${esc(c)}" aria-pressed="${category===c}">${esc(c)}</button>`).join('');
@@ -298,17 +329,19 @@
     if(mode==='currencies')$('widgetSymbol').placeholder='例如 USD、EUR、JPY；留空使用主要货币';
     if(mode==='broker'&&!input.value.trim())input.value=selected?.defaultSymbols?.[0]||'easymarkets';
     if(selected?.allowEmptySymbols)$('widgetSymbol').placeholder=mode==='broker'?'默认使用 easyMarkets，可直接添加':'留空查看全球市场，或输入自选标的名称 / 代码';
+    renderSettingsFields(selected,{});
   }
   async function configureCard(card){
     if(card.status==='loading'){notice('请等待图表完成加载。');return;}
-    try{await ensureCatalog();}catch(error){notice(error.message);return;}
-    const component=catalog.find(c=>c.id===card.component);if(!component){notice('该图表暂不支持直接配置，可以选中后在底部输入调整。');return;}
+    try{await ensureGenerationCatalog();}catch(error){notice(error.message);return;}
+    const component=componentFor(card.component);if(!component){notice('该图表暂不支持直接配置，可以选中后在底部输入调整。');return;}
     editingCardId=card.id;componentId=component.id;selectedCardId=card.id;updateSelection();
     renderConfig();if(symbolPicker?.enabled&&component.provider==='TradingView'){symbolPicker.select.value='auto';symbolPicker.placeholder();}$('widgetCardName').value=card.title;$('widgetSymbol').value=card.symbolInput||(card.parameters?.symbols||[]).join('、');
     if(component.inputMode==='market')$('widgetMarket').value=card.parameters?.market||'default';
     const intervals=component.widget==='advanced-chart'?[['1','1 分钟'],['5','5 分钟'],['15','15 分钟'],['30','30 分钟'],['60','1 小时'],['120','2 小时'],['240','4 小时'],['D','日线'],['W','周线'],['M','月线']]:component.widget==='technical-analysis'?[['1D','日线'],['1W','周线'],['1M','月线'],['1h','1 小时']]:[];
     $('widgetIntervalField').hidden=!intervals.length;$('widgetInterval').innerHTML=intervals.map(([value,label])=>`<option value="${value}">${label}</option>`).join('');
     if(card.parameters?.interval)$('widgetInterval').value=card.parameters.interval;
+    renderSettingsFields(component,card.parameters||{});
     $('widgetConfigError').textContent='';$('widgetConfig').showModal();
   }
   function ensureBoard(){if(current())return current();if(boards.length>=40)throw Error('最多保存 40 个 Widget。');const board={id:uid(),title:'我的 Widget',cards:[],messages:[]};boards.push(board);openIds.push(board.id);activeId=board.id;save();route();render();return board;}
@@ -370,7 +403,8 @@
     const previous=pending?JSON.parse(JSON.stringify(pending)):null;
     if(pending)Object.assign(pending,{status:'loading',error:'',url:'',request:message,component:component?.id||pending.component});
     else {pending={id:uid(),title:component?`${component.title} · ${message}`:'正在构建看板',w:component?.width||6,h:component?.height||18,status:'loading',url:'',request:message,component:component?.id||''};place(board,pending);board.cards.push(pending);}
-    pending.parameters={...(pending.parameters||{}),...Object.fromEntries(Object.entries(parameters).filter(([key])=>['symbols','market','interval','studies'].includes(key)))};
+    const renderParameters=Object.fromEntries(Object.entries(parameters).filter(([key])=>!['signal','reasoningEffort','preserveOnError'].includes(key)));
+    pending.parameters={...(pending.parameters||{}),...renderParameters};
     pending.market=market;
     const pendingId=pending.id;
     board.messages.push({role:'user',content:message});board.messages=board.messages.slice(-12);
@@ -617,7 +651,7 @@
   $('widgetConfigClose').onclick=$('widgetConfigCancel').onclick=()=>$('widgetConfig').close();
   let resolvingSymbol=false;
   $('widgetAddForm').onsubmit=async event=>{
-    event.preventDefault();if(resolvingSymbol)return;const board=current(),card=board?.cards.find(c=>c.id===editingCardId),component=catalog.find(c=>c.id===componentId);if(!card||!component)return;
+    event.preventDefault();if(resolvingSymbol)return;const board=current(),card=board?.cards.find(c=>c.id===editingCardId),component=componentFor(componentId);if(!card||!component)return;
     const title=$('widgetCardName').value.trim(),raw=$('widgetSymbol').value.trim();if(!title)return;
     if(jobs.has(activeId)||commandControllers.has(activeId)){$('widgetConfigError').textContent='请等待当前调整完成。';return;}
     resolvingSymbol=true;const submit=$('widgetAddForm').querySelector('button[type=submit]');submit.disabled=true;
@@ -626,12 +660,13 @@
       if(raw!==$('widgetSymbol').value.trim()||editingCardId!==card.id||!$('widgetConfig').open)return;
       const text=component.provider==='TradingView'?resolved:resolved.split(/[,，、;；]+/).map(symbol=>symbol.trim().split(':').at(-1)).join('、');
       const market=component.inputMode==='market'?$('widgetMarket').value:'default',symbols=component.inputMode==='market'?[]:text.split(/[,，、;；\s]+/).filter(Boolean);
-      const previous=card.parameters||{};
+      const previous=card.parameters||{},dynamic=readSettingsFields(component);
       const retained=Object.fromEntries(advancedChartParameters.filter(key=>previous[key]!==undefined&&key!=='interval').map(key=>[key,previous[key]]));
-      const parameters={symbols,market,...retained,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{})};
+      const parameters={...previous,symbols,market,...retained,...(!$('widgetIntervalField').hidden?{interval:$('widgetInterval').value}:{}),...dynamic};
       if(parameters.config){parameters.config={...parameters.config};for(const key of ['symbol','symbols','symbolsGroups','interval','market','exchange','countryFilter','broker','currencies'])delete parameters.config[key];}
       if(!symbols.length&&!['market','currencies'].includes(component.inputMode)&&!component.allowEmptySymbols)throw Error('请填写关注标的。');
-      const same=JSON.stringify(previous.symbols||[])===JSON.stringify(symbols)&& (previous.market||'default')===market&&(previous.interval||'')===(parameters.interval||'');
+      const comparablePrevious={...previous,symbols:previous.symbols||[],market:previous.market||'default'};
+      const same=JSON.stringify(comparablePrevious)===JSON.stringify(parameters);
       undoByBoard.set(board.id,JSON.parse(JSON.stringify(board)));
       if(!same){
         if(component.provider==='TradingView'){
@@ -639,7 +674,7 @@
           const result=await response.json();if(!response.ok)throw Error(typeof result.detail==='string'?result.detail:'保存失败，请重试。');const url=safeUrl(result.url);if(!url)throw Error('图表地址不可用。');if(!boards.includes(board)||!board.cards.includes(card))return;
           if(result.config)parameters.config=result.config;
           Object.assign(card,{url,parameters,market,request:text,status:'ready'});delete card.contentHeight;
-        }else{ $('widgetConfig').close();await generate(text,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true,symbolInput:raw});save();if(activeId===board.id)render();return; }
+        }else{ const baseRequest=String(card.request||text||('生成'+component.title)).replace(/\n本次配置面板参数以结构化配置为准。$/,'');const request=baseRequest+'\n本次配置面板参数以结构化配置为准。';$('widgetConfig').close();await generate(request,component,card.id,market,board,parameters);const updated=board.cards.find(c=>c.id===editingCardId);if(updated)Object.assign(updated,{parameters,title,customTitle:true,symbolInput:raw});save();if(activeId===board.id)render();return; }
       }
       if(!boards.includes(board)||!board.cards.includes(card))return;Object.assign(card,{title,customTitle:true,symbolInput:raw});save();render();$('widgetConfig').close();
     }catch(error){$('widgetConfigError').textContent=error.message;}finally{resolvingSymbol=false;submit.disabled=false;}

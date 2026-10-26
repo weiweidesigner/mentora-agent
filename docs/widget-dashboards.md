@@ -25,3 +25,17 @@ Widget parameters accept `config`, identical to the pinned `trading-view-chart` 
 For example, advanced-chart config `{ "style": "2", "studies": ["STD;EMA"], "hide_volume": true }` is passed to the same renderer as Skill output. Structured study entries are preserved, not converted to strings. Passing a value through is not proof that TradingView supports it: confirm official indicator IDs/input formats before claiming execution. The current Skill does not expose arbitrary Pine scripts or undocumented `studies_overrides`; those keys are rejected in both paths. Host theme, locale, size and provider availability follow the Skill's existing rules.
 
 Historical native K-line controls receive the current native `kline-theme.css` at response time, including encoded child charts and inspiration cases. Saved OHLCV, annotations and period bindings remain intact; no prices are refreshed merely by opening an old report. The native business-chart repository remains the owner of the control style.
+
+## Schema-driven native component settings
+
+The card configuration dialog consumes `settingsSchema` from
+`/api/widgets/generation-catalog`. The schema is server-owned and contains only
+safe renderer parameters. The shared form supports select, multi-select,
+integer, integer-list, date, boolean and text controls, so other native
+components can opt in without adding component-specific DOM.
+
+The native `kline` component exposes period, MA periods, sub-chart indicators,
+candle/line style, market color convention, date bounds, bar limit, full
+history and drawing-tool visibility. Values persist in `card.parameters`,
+survive reload/Undo/refresh and are included in regeneration requests.
+Transport-only fields such as AbortSignal and reasoning controls are excluded.

@@ -12,7 +12,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from openai import OpenAI
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.widget_library import (ROOT, GROUPS, MARKETS, STOCK_MARKETS, REGIONS, CURRENCY_WIDGETS,
     BROKER_WIDGETS, ADVANCED_CHART_INTERVALS, ADVANCED_CHART_OPTION_FIELDS, allowed_markets,
@@ -44,6 +44,22 @@ class Parameters(BaseModel):
     showDateRanges: bool | None = None
     showCalendar: bool | None = None
     saveImage: bool | None = None
+    ma: list[int] | None = Field(default=None, max_length=20)
+    subIndicators: list[Literal['VOL', 'KDJ', 'MACD', 'RSI']] | None = Field(default=None, max_length=4)
+    klineType: Literal['candle-hollow', 'candle-solid', 'line'] | None = None
+    candleColorMode: Literal['green_up_red_down', 'red_up_green_down'] | None = None
+    fromDate: str | None = Field(default=None, pattern=r'^\d{4}-\d{2}-\d{2}$')
+    toDate: str | None = Field(default=None, pattern=r'^\d{4}-\d{2}-\d{2}$')
+    limit: int | None = Field(default=None, ge=20, le=10000)
+    fullHistory: bool | None = None
+    drawingTools: bool | None = None
+
+    @field_validator('ma')
+    @classmethod
+    def validate_ma(cls, value: list[int] | None) -> list[int] | None:
+        if value is not None and (not value or any(period < 1 or period > 1000 for period in value)):
+            raise ValueError('均线周期必须是 1–1000 的整数')
+        return value
 
 
 class Geometry(BaseModel):

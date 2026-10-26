@@ -7,13 +7,13 @@ const source=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'u
 const homeSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../app/static/widget-catalog.json',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,15));
-function setup({storage,reply,plan,blocked=false,symbolResults=[]}={}) {
+function setup({storage,reply,plan,blocked=false,symbolResults=[],generationCatalog=catalog}={}) {
  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=widgets',runScripts:'outside-only'}),w=dom.window;
  w.ResizeObserver=class{observe(){}};w.CSS={escape:x=>x};w.matchMedia=()=>({matches:false});w.confirm=()=>true;
  w.HTMLDialogElement.prototype.show=w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(value){this.open=false;this.returnValue=value;this.dispatchEvent(new w.Event('close'));};
  if(storage)w.localStorage.setItem('mentora-widget-boards-v1',JSON.stringify(storage));
  if(blocked)Object.defineProperty(w,'localStorage',{get(){throw Error('blocked');}});
- const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.startsWith('/api/widgets/symbols?'))return{ok:true,json:async()=>({results:symbolResults})};if(url.includes('catalog'))return{ok:true,json:async()=>catalog};if(url==='/api/widgets/plan')return{ok:true,json:async()=>typeof plan==='function'?plan(JSON.parse(options.body)):plan||{reply:'已添加图表。',actions:[{type:'add',componentId:'cash_flow',parameters:{symbols:['AAPL']}}]}};if(url.startsWith('/api/widgets/presets/'))return{ok:true,json:async()=>({url:'/generated/preset.html',title:'苹果预制图表',parameters:{symbols:['NASDAQ:AAPL'],market:'default'}})};if(url==='/api/widgets/tradingview')return{ok:true,json:async()=>({url:'/generated/direct-tv.html',title:'TradingView 直接添加',mode:'direct'})};return{ok:true,body:reply};};
+ const calls=[];w.fetch=async(url,options)=>{calls.push({url,options});if(url.startsWith('/api/widgets/symbols?'))return{ok:true,json:async()=>({results:symbolResults})};if(url==='/api/widgets/generation-catalog')return{ok:true,json:async()=>generationCatalog};if(url.includes('catalog'))return{ok:true,json:async()=>catalog};if(url==='/api/widgets/plan')return{ok:true,json:async()=>typeof plan==='function'?plan(JSON.parse(options.body)):plan||{reply:'已添加图表。',actions:[{type:'add',componentId:'cash_flow',parameters:{symbols:['AAPL']}}]}};if(url.startsWith('/api/widgets/presets/'))return{ok:true,json:async()=>({url:'/generated/preset.html',title:'苹果预制图表',parameters:{symbols:['NASDAQ:AAPL'],market:'default'}})};if(url==='/api/widgets/tradingview')return{ok:true,json:async()=>({url:'/generated/direct-tv.html',title:'TradingView 直接添加',mode:'direct'})};return{ok:true,body:reply};};
  w.readEventStream=async(body,callback)=>{if(typeof body==='function')await body(callback);else callback('final',{reportArtifacts:[{url:'/generated/real-kline.html',title:'苹果近期股价'},{url:'/generated/real-revenue.html',title:'苹果营收构成'}],interpretation:'真实研究结果'});};
  w.eval(homeSource.slice(homeSource.indexOf('function formatInsight(')));
  w.eval(homeSource.slice(homeSource.indexOf('function resizeComposerInput('),homeSource.indexOf('function ensureCurrentSession(')));
@@ -209,4 +209,29 @@ test('native financial configuration resolves a keyword to the native stock code
  s.d.querySelector('#widgetSymbol').value='微软';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
  const lookup=s.calls.find(c=>c.url.startsWith('/api/widgets/symbols?'));assert.match(lookup.url,/market=us/);
  const request=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);assert.match(request.question,/用户完整需求：MSFT/);assert.doesNotMatch(request.question,/用户完整需求：NASDAQ:MSFT/);s.dom.window.close();
+});
+test('native kline exposes schema-driven parameters and persists them when regenerated',async()=>{
+ const data=twoCards();Object.assign(data.boards[0].cards[0],{component:'kline',request:'分析 AAPL 日线趋势',parameters:{symbols:['AAPL'],market:'default',interval:'1d',ma:[5,10,20,60],subIndicators:['VOL','MACD']}});
+ const settingsSchema={version:1,renderer:'business-chart-recall/kline.py',fields:[
+  {key:'interval',label:'周期',type:'select',default:'1d',options:[['1d','1d'],['1w','1w']]},
+  {key:'ma',label:'均线周期',type:'integer-list',default:[5,10,20,60],min:1,max:1000},
+  {key:'subIndicators',label:'副图指标',type:'multi-select',default:['VOL','MACD'],options:[['VOL','VOL'],['MACD','MACD'],['RSI','RSI']]},
+  {key:'fromDate',label:'开始日期',type:'date'},
+  {key:'drawingTools',label:'显示画线标记工具',type:'boolean',default:true},
+ ]};
+ const generationCatalog=catalog.map(item=>item.id==='kline'?{...item,settingsSchema}:item);
+ const s=setup({storage:data,generationCatalog,symbolResults:[{name:'苹果',code:'AAPL',symbol:'NASDAQ:AAPL',market:'us'}]});
+ s.d.querySelector('[data-card="one"] [data-config]').click();await tick();await tick();
+ assert.equal(s.d.querySelector('[data-setting-key="ma"]').value,'5,10,20,60');
+ assert.equal(s.d.querySelector('[data-setting-key="interval"]').value,'1d');
+ s.d.querySelector('[data-setting-key="ma"]').value='5,13,34';
+ s.d.querySelector('[data-setting-key="interval"]').value='1w';
+ s.d.querySelector('[data-setting-key="fromDate"]').value='2025-01-01';
+ s.d.querySelector('[data-setting-key="drawingTools"]').checked=false;
+ s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();await tick();
+ const request=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);
+ assert.match(request.question,/\"ma\":\[5,13,34\]/);assert.match(request.question,/\"fromDate\":\"2025-01-01\"/);
+ const card=JSON.parse(s.w.localStorage.getItem('mentora-widget-boards-v1')).boards[0].cards[0];
+ assert.deepEqual(card.parameters.ma,[5,13,34]);assert.equal(card.parameters.interval,'1w');assert.equal(card.parameters.drawingTools,false);
+ s.dom.window.close();
 });

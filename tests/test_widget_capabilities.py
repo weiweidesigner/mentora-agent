@@ -73,6 +73,22 @@ def test_dialogue_catalogue_endpoint():
     assert any(c['id'] == 'streamviz' for c in result.json())
 
 
+def test_native_kline_exposes_structured_settings_and_accepts_them_in_board_state():
+    component = next(item for item in generation_catalogue() if item['id'] == 'kline')
+    fields = {field['key']: field for field in component['settingsSchema']['fields']}
+    assert {'interval', 'ma', 'subIndicators', 'klineType', 'fromDate', 'toDate', 'drawingTools'} <= fields.keys()
+    assert [option[0] for option in fields['interval']['options']] == ['1m', '5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w', '1M', '3M']
+    payload = planner.PlanningInput(message='调整参数', board={'id': 'b', 'title': '行情', 'cards': [{
+        'id': 'c', 'component': 'kline', 'parameters': {
+            'symbols': ['AAPL'], 'interval': '1d', 'ma': [5, 13, 34],
+            'subIndicators': ['VOL', 'RSI'], 'klineType': 'line',
+            'fromDate': '2025-01-01', 'toDate': '2026-10-26',
+            'limit': 800, 'fullHistory': True, 'drawingTools': False,
+        },
+    }]})
+    assert payload.board.cards[0].parameters.ma == [5, 13, 34]
+
+
 def test_streamviz_is_allowlisted_and_executes_with_an_explicit_test_payload(tmp_path):
     from app.skill_runner import _registered_script
     script, _ = _registered_script('render_streamviz.py', ROOT)
