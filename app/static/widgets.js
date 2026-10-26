@@ -320,7 +320,7 @@
       if(type==='json'){input=document.createElement('textarea');input.value=JSON.stringify(value,null,2);input.rows=4;input.spellcheck=false;label.className='widgetJsonField';}
       else if(type==='select'){input=document.createElement('select');for(const [option,text] of field.options||[]){const node=document.createElement('option');node.value=option;node.textContent=text;input.append(node);}input.value=String(value);}
       else {input=document.createElement('input');input.type=type==='boolean'?'checkbox':['integer','number'].includes(type)?'number':type==='date'?'date':type==='color'?'color':'text';if(type==='boolean'){input.checked=Boolean(value);label.className='widgetBooleanField';label.prepend(input);}else{input.value=['integer-list','color-list'].includes(type)?(Array.isArray(value)?value.join(','):value):value;if(field.placeholder)input.placeholder=field.placeholder;if(field.min!==undefined)input.min=field.min;if(field.max!==undefined)input.max=field.max;if(['integer','number'].includes(type))input.step=field.step||'1';}}
-      input.dataset.settingKey=field.key;input.dataset.settingType=type;input.dataset.initialValue=type==='boolean'?String(input.checked):input.value;label.append(input);root.append(label);
+      input.dataset.settingKey=field.key;input.dataset.settingType=type;input.dataset.initialValue=type==='boolean'?String(input.checked):input.value;input.setAttribute('aria-label',field.label);label.append(input);root.append(label);
     }
     if(component?.settingsSchema?.fullConfigEditor){
       const details=document.createElement('details');details.className='widgetJsonField';const summary=document.createElement('summary');summary.textContent='完整参数配置（JSON）';
