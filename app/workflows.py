@@ -14,7 +14,7 @@ import uuid
 from typing import Literal
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, ValidationError
-from app.workflow_observations import update_observations
+from app.workflow_observations import update_observations, observation_summary
 from app.workflow_graph import WorkflowGraph, ordered_nodes
 from app.workflow_contracts import validate_contracts, contract_errors, argument_errors, node_error
 from app.day_tasks import COOKIE, TaskInput, now_utc, stamp
@@ -339,7 +339,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     value=update_observations(self.portfolio,owner,graph,node.id,receipts,run_id,config.get('title','WorkFlow'),preview=trial)
                 elif node.kind=='output':
                     text='\n\n'.join(str(v.get('interpretation') or json.dumps(v,ensure_ascii=False)) if isinstance(v,dict) else json.dumps(v,ensure_ascii=False) for v in upstream.values())
-                    value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False))
+                    value=dict(interpretation=text or node.instruction or json.dumps(outputs,ensure_ascii=False),inputs=upstream)
                 elif node.kind=='tool' and node.tool=='portfolio-decision':
                     decision_arguments=self.resolve(node.arguments,outputs)
                     value=self.portfolio_decisions(owner,decision_arguments,preview=trial,
@@ -367,6 +367,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                             try:
                                 with skill_events(emit,cancelled):
                                     result=self.preview_order(args) if trial and node.tool=='portfolio-order' else call(self.portfolio,owner,node.tool,args)
+                                    if trial and node.tool=='portfolio-order' and args.get('operation')=='execute':
+                                        plans=[r['output'] for rows in receipts.values() for r in rows if r['tool']=='portfolio-order' and r.get('input',{}).get('operation')=='plan']
+                                        plan=next((p for p in plans if p.get('id')==args.get('planId')),None)
+                                        if not plan:raise ValueError('订单执行预览缺少对应的上游订单计划')
+                                        result.update(symbol=plan.get('symbol'),side=plan.get('side'),decisionId=plan.get('decisionId'))
                                     results.append(result)
                                     receipts[node.id].append(dict(tool=node.tool,input=args,output=result))
                             except InterruptedError:raise
@@ -452,7 +457,32 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
     def read_trial(self,owner,rid):
         with self.tasks.db() as db:row=db.execute('SELECT * FROM workflow_trials WHERE id=? AND owner=?',(rid,owner)).fetchone()
         if not row:raise HTTPException(404,'试运行不存在')
-        return dict(id=rid,status=row['status'],nodes=json.loads(row['nodes']),result=json.loads(row['result']) if row['result'] else None,error=row['error'],
+        nodes=json.loads(row['nodes']);result=json.loads(row['result']) if row['result'] else None
+        previews=[]
+        for state in nodes.values():
+            output=state.get('output')
+            if not isinstance(output,dict):continue
+            for item in output.get('items',[]) if isinstance(output.get('items'),list) else [output]:
+                if isinstance(item,dict) and item.get('preview') and item.get('planId'):previews.append(item)
+        # Recover the full receipt summary for already-saved trials as well;
+        # this only changes the response, never performs writes or orders.
+        for state in nodes.values():
+            output=state.get('output')
+            if isinstance(output,dict) and output.get('observations'):
+                for symbol,item in output['observations'].items():
+                    plan=item.get('plan') or {}
+                    receipt=next((p for p in previews if p['planId']==plan.get('id')),None)
+                    if receipt and not item.get('trade'):item['trade']=dict(receipt,symbol=symbol,side=plan.get('side'))
+                output['interpretation']=observation_summary(output)
+        graph=json.loads(row['config']).get('workflow',{})
+        for node in graph.get('nodes',[]):
+            if node['kind']!='output' or node['id'] not in nodes:continue
+            upstream={e['source']:nodes[e['source']]['output'] for e in graph.get('edges',[]) if e['target']==node['id'] and nodes.get(e['source'],{}).get('output')}
+            if not any(isinstance(v,dict) and v.get('observations') for v in upstream.values()):continue
+            value=dict(interpretation='\n\n'.join(v.get('interpretation','') for v in upstream.values()),inputs=upstream)
+            nodes[node['id']]['output']=value
+            if result:result['interpretation']=value['interpretation']
+        return dict(id=rid,status=row['status'],nodes=nodes,result=result,error=row['error'],preview=True,
                     createdAt=row['created'],updatedAt=row['updated'],serverTime=stamp(now_utc()),
                     finishedAt=row['updated'] if row['status'] not in ('queued','running','stopping') else None)
 

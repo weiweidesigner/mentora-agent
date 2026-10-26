@@ -71,11 +71,13 @@ function refreshTimings(){
  elapsed.textContent=incomplete?'已中断 · 耗时记录不完整':Number.isFinite(started)?(live?'运行时间 ':'总耗时 ')+durationText((live?clock:Number.isFinite(finished)?finished:started)-started):'';
  for(const article of $('wfNodes').children){
   const node=run?.nodes?.[article.dataset.node];let footer=article.querySelector('.wfNodeRuntime');
+  const badge=article.querySelector('.wfNodeState');badge.classList.add('wfNodeTime');badge.textContent='';
   if(!node){footer?.remove();continue;}
   const start=Date.parse(node.started),ms=node.status==='running'&&live&&Number.isFinite(start)?clock-start:Number.isFinite(node.durationMs)?node.durationMs:null;
-  if(ms===null&&!node.timingIncomplete&&!node.progress){footer?.remove();continue;}
-  if(!footer){footer=document.createElement('div');footer.className='wfNodeRuntime';footer.innerHTML='<span class="wfNodeTime"></span><span class="wfNodeProgress"></span>';article.append(footer);}
-  footer.querySelector('.wfNodeTime').textContent=node.timingIncomplete?'耗时记录不完整':ms===null?'':'耗时 '+durationText(ms);
+  badge.textContent=node.timingIncomplete?'—':ms===null?'':'耗时 '+durationText(ms);
+  badge.title=node.error||node.progress||(node.timingIncomplete?'耗时记录不完整':'');
+  if(node.status!=='running'||!live||!node.progress){footer?.remove();continue;}
+  if(!footer){footer=document.createElement('div');footer.className='wfNodeRuntime';footer.innerHTML='<span class="wfNodeProgress"></span>';article.append(footer);}
   const progress=footer.querySelector('.wfNodeProgress');progress.textContent=node.status==='running'&&live?node.progress||'':'';progress.title=progress.textContent;
  }
 }
@@ -108,7 +110,11 @@ if(n.kind==='tool'&&['portfolio-data','portfolio-backtest'].includes(n.tool))htm
 if(['start','tool'].includes(n.kind)){html+='<details '+(n.kind==='start'?'open':'')+'><summary>输入参数（JSON）</summary><p class="wfSubtle">使用 {{节点ID.字段}} 引用上游输出。</p><textarea data-json rows="6" spellcheck="false" '+(locked?'readonly':'')+'>'+esc(JSON.stringify(n.arguments||{},null,2))+'</textarea>';const schema=catalog?.tools.find(t=>t.id===n.tool)?.schema;if(schema)html+='<details><summary>参数格式</summary><pre>'+esc(JSON.stringify(schema,null,2))+'</pre></details>';html+='</details>';}
 if(n.kind==='condition'){html+=field('判断字段（上游节点ID.字段）','path',n.path||'')+'<label>比较方式<select data-field="operator">'+['truthy','equals','contains','greater','less'].map((v,i)=>'<option value="'+v+'" '+(n.operator===v?'selected':'')+'>'+['有值 / 为真','等于','包含','大于','小于'][i]+'</option>').join('')+'</select></label>'+field('比较值','expected',n.expected||'');}
 html+='<section class="wfConnections"><h4>上游连接</h4>'+state.workflow.edges.filter(e=>e.target===n.id).map(e=>{const source=state.workflow.nodes.find(x=>x.id===e.source);return '<div><span>'+esc(source?.title)+'</span>'+(source?.kind==='condition'?'<select data-branch="'+esc(e.source)+'">'+['always','true','false'].map(v=>'<option value="'+v+'" '+(e.when===v?'selected':'')+'>'+({always:'始终',true:'满足时',false:'不满足时'})[v]+'</option>').join('')+'</select>':'')+'<button type="button" data-disconnect="'+esc(e.source)+'" aria-label="移除上游连接" '+(locked?'disabled':'')+'>×</button></div>';}).join('')+'</section><button type="button" data-act="delete" class="wfDelete" '+(locked?'disabled':'')+'>删除节点</button>';target.innerHTML=html;const r=trial?.nodes?.[n.id]||state.lastTrial?.nodes?.[n.id];$('wfRunResult').innerHTML=r?'<h4>节点运行结果</h4><pre>'+esc(r.error?neutralWorkflowText(r.error):JSON.stringify(r.output??{status:r.status},null,2))+'</pre>':'<p class="wfSubtle">试运行后在这里查看节点的真实输出。</p>';}
-function render(){nodes();inspect();flags();refreshTimings();canvas.querySelector('.wfEmpty').hidden=state.workflow.nodes.length>0;}
+function renderRunSummary(){
+ const r=currentRun()?.nodes?.[selected];if(!r?.output?.interpretation||r.error)return;
+ $('wfRunResult').innerHTML='<h4>节点运行结果</h4><p class="wfResultSummary">'+esc(r.output.interpretation)+'</p><details><summary>完整执行数据</summary><pre>'+esc(JSON.stringify(r.output,null,2))+'</pre></details>';
+}
+function render(){nodes();inspect();renderRunSummary();flags();refreshTimings();canvas.querySelector('.wfEmpty').hidden=state.workflow.nodes.length>0;}
 function connect(target){if(!linkFrom||locked)return;if(target===linkFrom){linkFrom='';nodes();return;}const reach=(id,seen=new Set())=>{if(id===linkFrom)return true;if(seen.has(id))return false;seen.add(id);return state.workflow.edges.filter(e=>e.source===id).some(e=>reach(e.target,seen));};if(reach(target)){note('不能创建循环连线');return;}if(state.workflow.edges.some(e=>e.source===linkFrom&&e.target===target)){note('这两个节点已经连接');return;}snapshot();state.workflow.edges.push({source:linkFrom,target,when:'always'});linkFrom='';render();note('连线已添加');}
 
 function zoom(){$('wfViewport').style.backgroundPosition=camera.x+'px '+camera.y+'px';$('wfViewport').style.backgroundSize='22px 22px';$('wfWorld').style.transform='translate('+camera.x+'px,'+camera.y+'px)';$('wfWorld').style.setProperty('--wf-node-scale',state.zoom);for(const card of $('wfNodes').children){const n=state.workflow.nodes.find(n=>n.id===card.dataset.node);if(n){card.style.left=n.x*state.zoom+'px';card.style.top=n.y*state.zoom+'px';}}lines();$('wfZoom').textContent=Math.round(state.zoom*100)+'%';}
@@ -154,7 +160,7 @@ viewport.addEventListener('pointerdown',e=>{
  if(!state||![0,1].includes(e.button))return;
  const el=e.target.closest('[data-node]'),node=el&&state.workflow.nodes.find(n=>n.id===el.dataset.node);
  if(!spacePan&&e.button===0&&e.target.closest('button,input,textarea,select,a'))return;
- if(node&&!locked&&!spacePan&&e.button===0){snapshot();selected=node.id;canvas.classList.add('wfHasInspector');inspect();for(const card of $('wfNodes').children)card.classList.toggle('is-selected',card.dataset.node===node.id);drag={id:node.id,x:e.clientX,y:e.clientY,nx:node.x,ny:node.y};}
+ if(node&&!locked&&!spacePan&&e.button===0){snapshot();selected=node.id;canvas.classList.add('wfHasInspector');inspect();renderRunSummary();for(const card of $('wfNodes').children)card.classList.toggle('is-selected',card.dataset.node===node.id);drag={id:node.id,x:e.clientX,y:e.clientY,nx:node.x,ny:node.y};}
  else{drag={pan:true,x:e.clientX,y:e.clientY,nx:camera.x,ny:camera.y};viewport.classList.add('is-panning');}
  viewport.setPointerCapture?.(e.pointerId);e.preventDefault();
 });

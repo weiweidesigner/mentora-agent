@@ -482,6 +482,43 @@ def observation_graph():
     return graph([dict(id='test',kind='tool',title='回测',tool='portfolio-backtest',arguments={'symbol':'AAPL','strategy':'trend'}),
                   dict(id='update',kind='watchlist_update',title='更新观察列表')],[dict(source='test',target='update')])
 
+
+def test_trial_order_receipt_reaches_final_output_without_writes(env,monkeypatch):
+    from app.portfolio_skills import module as entry
+    import app.workflows as module
+    order=entry('portfolio-order')
+    monkeypatch.setattr(module,'execution_tools',lambda _:[dict(id='portfolio-order',schema=order.Input.model_json_schema())])
+    g=graph([
+        dict(id='plan',kind='tool',title='计划',tool='portfolio-order',arguments={'operation':'plan','symbol':'AAPL','side':'buy','decisionId':'preview-decision-0'}),
+        dict(id='execute',kind='tool',title='执行',tool='portfolio-order',arguments={'operation':'execute','planId':'{{plan.id}}'}),
+        dict(id='update',kind='watchlist_update',title='更新观察列表'),dict(id='out',kind='output',title='输出')],
+        [dict(source='plan',target='execute'),dict(source='execute',target='update'),dict(source='update',target='out')])
+    run=env.client.post('/api/workflows/runs',json={'graph':g},headers={'X-Veya-Day':'1'}).json()
+    result=env.client.get('/api/workflows/runs/'+run['id']).json()
+    assert result['status']=='success'
+    value=result['nodes']['out']['output'];observations=value['inputs']['update']['observations']
+    assert observations['AAPL']['trade']['symbol']=='AAPL'
+    assert observations['AAPL']['trade']['side']=='buy'
+    assert '未提交订单' in value['interpretation'] and '未写入观察列表' in value['interpretation']
+    assert value['inputs']['update']['updatedCount']==0 and result['preview'] is True
+    # Saved pre-fix output can be reconstructed without rerunning the graph.
+    with env.tasks.db() as db:
+        row=db.execute('SELECT nodes FROM workflow_trials WHERE id=?',(run['id'],)).fetchone();nodes=json.loads(row[0])
+        nodes['out']['output']={'interpretation':'试运行预览：将更新 AAPL'}
+        nodes['update']['output']['observations']['AAPL'].pop('trade')
+        db.execute('UPDATE workflow_trials SET nodes=? WHERE id=?',(json.dumps(nodes),run['id']))
+    restored=env.client.get('/api/workflows/runs/'+run['id']).json()
+    assert restored['nodes']['out']['output']['inputs']['update']['observations']['AAPL']['trade']['side']=='buy'
+    assert '订单执行预览' in restored['result']['interpretation']
+
+
+def test_execution_summary_discloses_gates_blockers_and_no_trade():
+    from app.workflow_observations import observation_summary
+    text=observation_summary(dict(preview=True,observations={'TLT':{'decision':{'action':'buy','confidence':.3294,'confidenceGate':{'threshold':.3,'passed':True}},'plan':{'preview':True}},'CRCL':{'decision':{'action':'watch','confidence':.2654,'confidenceGate':{'threshold':.3,'passed':False}}},'0700.HK':{'decision':{'action':'watch','reason':'仅用于研究'}}}))
+    assert 'TLT：买入' in text and '32.94%' in text and '门槛 30%（通过）' in text
+    assert '26.54%' in text and '未通过' in text and '未下单' in text
+    assert '0700.HK：观察；仅用于研究' in text
+
 def test_observation_node_persists_actual_results_per_owner_and_survives_reload(env,monkeypatch,tmp_path):
     native_tools(monkeypatch)
     from app.portfolio import Portfolio

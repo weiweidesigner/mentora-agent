@@ -95,4 +95,6 @@
 .wfElapsed{flex:none;white-space:nowrap;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .wfNodeRuntime{display:flex;align-items:center;gap:calc(8px * var(--wf-node-scale));padding:0 calc(18px * var(--wf-node-scale)) calc(12px * var(--wf-node-scale));font-size:calc(10px * var(--wf-node-scale));color:var(--muted);min-width:0}
 .wfNodeTime{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.wfNodeState:not(.wfNodeTime){font-size:0}
 .wfNodeProgress{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.wfResultSummary{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.8;color:var(--ink)}

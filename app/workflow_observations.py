@@ -2,6 +2,27 @@
 from copy import deepcopy
 from app.day_tasks import now_utc, stamp
 
+def observation_summary(result):
+    """Describe only the recorded decisions and receipts, including dry-run scope."""
+    preview=result.get('preview',False)
+    lines=['试运行预览：未提交订单，未写入观察列表。' if preview else '已更新观察列表：'+'、'.join(result.get('symbols',[]))]
+    labels={'buy':'买入','sell':'卖出','reduce':'减仓','hold':'持有','watch':'观察','skip':'跳过'}
+    for symbol,item in result.get('observations',{}).items():
+        decision=item.get('decision') or {};gate=decision.get('confidenceGate') or {}
+        details=[labels.get(decision.get('action'),decision.get('action') or '未生成 JEV 决策')]
+        confidence=decision.get('confidence')
+        if isinstance(confidence,(int,float)):details.append(f'置信度 {confidence*100:.2f}%')
+        if isinstance(gate.get('threshold'),(int,float)):
+            details.append(f'门槛 {gate["threshold"]*100:g}%（'+('通过' if gate.get('passed') is True else '未通过')+'）')
+        reason=decision.get('reason') or decision.get('factorLabel')
+        if reason:details.append(str(reason))
+        trade=item.get('trade');plan=item.get('plan')
+        if trade:details.append('订单执行预览校验，未提交' if trade.get('preview') else '订单回执：'+str(trade.get('status') or '已返回'))
+        elif plan:details.append('订单计划预览，未提交' if plan.get('preview') else '已生成订单计划，未收到执行回执')
+        else:details.append('未下单')
+        lines.append(symbol+'：'+'；'.join(details))
+    return '\n'.join(lines)
+
 def update_observations(portfolio,owner,graph,node_id,receipts,run_id,title,preview=False):
     if not portfolio:raise ValueError('观察列表服务暂不可用')
     ancestors=set()
@@ -61,5 +82,5 @@ def update_observations(portfolio,owner,graph,node_id,receipts,run_id,title,prev
             if item.get('quote'):values['quote']=item['quote']
             portfolio.workflow.merge(owner,symbol,values)
     symbols=list(records)
-    text=('试运行预览：将更新 ' if preview else '已更新观察列表：')+'、'.join(symbols)
-    return dict(interpretation=text,symbols=symbols,updatedCount=0 if preview else len(symbols),preview=preview,observations=records)
+    result=dict(symbols=symbols,updatedCount=0 if preview else len(symbols),preview=preview,observations=records)
+    return dict(result,interpretation=observation_summary(result))

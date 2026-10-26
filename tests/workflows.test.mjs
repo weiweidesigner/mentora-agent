@@ -31,6 +31,9 @@ test('runtime ticks locally while completed node durations stay frozen and progr
   assert.equal(s.d.querySelector('#wfElapsed').textContent,'运行时间 01:05');
   assert.equal(s.d.querySelector('[data-node=input] .wfNodeTime').textContent,'耗时 00:05');
   assert.equal(s.d.querySelector('[data-node=out] .wfNodeTime').textContent,'耗时 00:10');
+  assert(s.d.querySelector('[data-node=out] header .wfNodeTime'));
+  assert.doesNotMatch(s.d.querySelector('[data-node=out] header').textContent,/运行中|✓/);
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeRuntime .wfNodeTime'),null);
   assert.equal(s.d.querySelector('.wfNodeProgress[title="正在进行 JEV 决策"]').textContent,'正在进行 JEV 决策');
   const card=s.d.querySelector('[data-node=out]');clock+=3000;s.tickTimers();
   assert.equal(s.d.querySelector('#wfElapsed').textContent,'运行时间 01:08');
@@ -43,7 +46,8 @@ test('interrupted trials show incomplete timing, and terminal totals do not keep
  const s=await setup();try{
   await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'failed',createdAt:'2026-10-26T04:16:00Z',finishedAt:'2026-10-26T05:00:00Z',nodes:{out:{status:'failed',timingIncomplete:true}}}});
   assert.equal(s.d.querySelector('#wfElapsed').textContent,'已中断 · 耗时记录不完整');
-  assert.equal(s.d.querySelector('.wfNodeTime').textContent,'耗时记录不完整');
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeTime').textContent,'—');
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeTime').title,'耗时记录不完整');
   s.d.querySelector('.wfCanvas').close();
   await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'success',createdAt:'2026-10-26T04:16:00Z',finishedAt:'2026-10-26T04:17:02Z',nodes:{}}});
   assert.equal(s.d.querySelector('#wfElapsed').textContent,'总耗时 01:02');
@@ -194,7 +198,7 @@ test('partial nodes stay visibly partial and preserve the read-only error policy
   const workflow={version:1,nodes:[{id:'data',kind:'tool',title:'行情',tool:'portfolio-data',instruction,foreach:'{{watch}}',onItemError:'continue',arguments:{operation:'history',symbol:'{{item.symbol}}'}}],edges:[]};
   await s.w.MentoraWorkflow.open({workflow,lastTrial:{nodes:{data:{status:'partial',output:{items:[{symbol:'TLT'}],errors:[{symbol:'0700.HK',error:'未支持港股'}]}}}}});
   const card=s.d.querySelector('[data-node=data]');assert(card.classList.contains('is-partial'));
-  assert.equal(card.querySelector('.wfNodeState').textContent,'部分完成');
+  assert.equal(card.querySelector('.wfNodeState').textContent,'');
   assert.equal(card.querySelector('p').title,instruction);assert.equal(card.querySelector('p').textContent,instruction);
   card.click();const policy=s.d.querySelector('[data-field=onItemError]');assert.equal(policy.value,'continue');
   policy.value='stop';policy.dispatchEvent(new s.w.Event('change',{bubbles:true}));
@@ -233,7 +237,7 @@ test('saved scheduled progress is refreshed and stops edge motion when the run f
   assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,1);
   done=true;await new Promise(r=>setTimeout(r,1500));
   assert.equal(s.d.querySelectorAll('.wfEdgeFlow').length,0);
-  assert.equal(s.d.querySelector('[data-node=out] .wfNodeState').textContent,'✓');
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeState').textContent,'');
  }finally{s.w.close();}
 });
 
