@@ -11,6 +11,9 @@ from app.portfolio_jev import CATALYST_SCORES,CATALYST_INSTRUCTION,catalyst_scor
 
 MODEL = 'convaiinnovations/laya-multilingual'
 FACTORS = {
+    'confidence-qualified': '买卖方向置信度达到执行门槛',
+    'confidence-insufficient': '买卖方向置信度未达到执行门槛',
+    'order-inconsistent': '两次选项顺序校验结果不一致',
     'trend-confirmed': '当前趋势与回测支持参与',
     'catalyst-confirmed': '存在已核验事件证据',
     'catalyst-unclear': '事件或信号尚不充分',
@@ -222,17 +225,20 @@ class LayaPortfolio:
             confidence_gate=execution_confidence_gate(choice,confidence,agreed,account.get('recommendationProfile'))
             accepted=agreed and (not confidence_gate['applicable'] or confidence_gate['passed'])
             fraction={'quarter':.25,'half':.5,'full':1.}[size]
-            factor = 'trend-confirmed' if choice == 'buy' else 'catalyst-unclear' if kind == 'entry' else 'thesis-intact' if choice == 'hold' else 'stop-risk'
+            factor='order-inconsistent' if not agreed else 'confidence-qualified' if confidence_gate['thresholdPassed'] else 'confidence-insufficient'
+            reasons=[]
+            if not confidence_gate['thresholdPassed']:reasons.append(('买入' if direction=='buy' else '卖出')+'方向置信度未达到执行门槛')
+            if not agreed:reasons.append('两次选项顺序校验结果不一致，未执行交易')
+            reason='；'.join(reasons) or ('买入' if direction=='buy' else '卖出')+'方向置信度达到执行门槛，仍需通过下单风控'
             # Neither model computes amounts nor can it bypass the order planner's fresh re-check.
             # Sell must still respect availableToSell in the final planner; partial availability is capped here.
             if kind == 'risk' and choice=='sell':
                 fraction = 1
-            elif choice == 'buy' and state['verifiedEventEvidence']:
-                factor = 'catalyst-confirmed'
             results.append(dict(symbol=item['symbol'], action=choice if accepted else fallback, modelAction=choice,
                 confidence=round(confidence, 4),modelConfidence=round(confidence,4),effectiveConfidence=round(confidence,4),userIntentWeight=0,decisionSource='jev',userInstruction=(account.get('userIntent') or {}).get('instruction',''),confidenceGate=confidence_gate,answerProbability=probability,probabilityMargin=margin,
-                orderAgreement=agreed, confidenceKind='direction-option-probability', calibrated=False, actionConfidences=action_confidences,
+                orderAgreement=agreed,classificationActions={'forward':first[0],'reversed':second[0]},confidenceDirection=direction,
+                confidenceKind='direction-option-probability', calibrated=False, actionConfidences=action_confidences,
                 factor=factor, factorLabel=FACTORS[factor], sizeFraction=fraction if accepted and choice not in {'watch','skip','hold'} else 0,
-                providerModel=response.get('model') or MODEL,status='decided' if accepted else 'low-confidence' if confidence_gate['applicable'] else 'inconsistent'))
+                reason=reason,providerModel=response.get('model') or MODEL,status='decided' if accepted else 'inconsistent' if not agreed else 'low-confidence'))
             results[-1].update(catalystImpactScore=impact,catalystImpactStatus=state['catalystAssessment']['status'],catalystImpactScale='positive-impact-0-100')
         return results

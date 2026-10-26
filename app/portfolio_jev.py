@@ -42,10 +42,12 @@ def execution_confidence_gate(action,confidence,agreed=True,preferences=None):
     """Execution thresholds apply to orders, not to non-trading opinions."""
     applicable=action in {'buy','reduce','sell'}
     threshold=execution_confidence_threshold(action,preferences) if applicable else None
+    threshold_passed=confidence>=threshold if applicable else None
     return dict(applicable=applicable,action=action,
                 threshold=threshold,value=confidence if applicable else None,
-                passed=bool(agreed and confidence>=threshold) if applicable else None,
-                reason='execution-confidence' if applicable else 'non-trading-action')
+                thresholdPassed=threshold_passed,agreementPassed=bool(agreed) if applicable else None,
+                passed=bool(agreed and threshold_passed) if applicable else None,
+                reason=('order-inconsistent' if not agreed else 'execution-confidence') if applicable else 'non-trading-action')
 
 
 def local_laya_client(active):
@@ -147,5 +149,9 @@ class PortfolioJev:
             allowed=not confidence_gate['applicable'] or confidence_gate['passed']
             fraction=1 if choice=='sell' else min(.5,{'quarter':.25,'half':.5,'full':1}[scale]) if choice=='reduce' else {'quarter':.25,'half':.5,'full':1}[scale]
             result.append(dict(symbol=item['symbol'],action=choice if allowed else ('watch' if kind=='entry' else 'hold'),modelAction=choice,confidence=confidence,modelConfidence=confidence,effectiveConfidence=confidence,userIntentWeight=0,decisionSource='jev',userInstruction=(account.get('userIntent') or {}).get('instruction',''),confidenceGate=confidence_gate,factor=reason,factorLabel=FACTORS[reason],sizeFraction=fraction if allowed and confidence_gate['applicable'] else 0,providerModel=str(getattr(response,'model',None) or active.model),status='decided' if allowed else 'low-confidence'))
-            result[-1].update(actionConfidences={choice:confidence},catalystImpactScore=impact,catalystImpactScale='positive-impact-0-100')
+            # A selected watch/hold/skip certainty is not a buy or sell confidence.
+            direction='buy' if choice=='buy' else 'sell' if choice in ('reduce','sell') else None
+            if direction is None:
+                result[-1].update(confidence=None,modelConfidence=None,effectiveConfidence=None,classificationConfidence=confidence)
+            result[-1].update(confidenceDirection=direction,actionConfidences={direction:confidence} if direction else {},catalystImpactScore=impact,catalystImpactScale='positive-impact-0-100')
         return result

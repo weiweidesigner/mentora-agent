@@ -740,10 +740,10 @@ def test_manual_run_persists_hk_order_and_observation_in_isolated_account(env,tm
 
 def test_execution_summary_discloses_gates_blockers_and_no_trade():
     from app.workflow_observations import observation_summary
-    text=observation_summary(dict(preview=True,observations={'TLT':{'decision':{'action':'buy','confidence':.3294,'confidenceGate':{'threshold':.3,'passed':True}},'plan':{'preview':True}},'CRCL':{'decision':{'action':'watch','confidence':.2654,'confidenceGate':{'threshold':.3,'passed':False}}},'0700.HK':{'decision':{'action':'watch','reason':'仅用于研究'}}}))
+    text=observation_summary(dict(preview=True,observations={'TLT':{'decision':{'action':'buy','confidence':.3294,'confidenceGate':{'threshold':.3,'passed':True}},'plan':{'preview':True}},'CRCL':{'decision':{'action':'watch','modelAction':'buy','confidence':.2654,'confidenceGate':{'threshold':.3,'passed':False}}},'0700.HK':{'decision':{'action':'watch','reason':'仅用于研究'}}}))
     assert 'TLT：买入' in text and '32.94%' in text and '门槛 30%（通过）' in text
     assert '26.54%' in text and '未通过' in text and '未下单' in text
-    assert '0700.HK：观察；仅用于研究' in text
+    assert '0700.HK：观察；未记录买卖方向置信度；仅用于研究' in text
 
 def test_observation_node_persists_actual_results_per_owner_and_survives_reload(env,monkeypatch,tmp_path):
     native_tools(monkeypatch)

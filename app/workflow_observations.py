@@ -1,6 +1,7 @@
 """Persist workflow execution evidence in the existing owner-scoped observation pool."""
 from copy import deepcopy
 from app.day_tasks import now_utc, stamp
+from app.decision_confidence import trading_confidence
 
 def observation_summary(result):
     """Describe only the recorded decisions and receipts, including dry-run scope."""
@@ -8,13 +9,19 @@ def observation_summary(result):
     lines=['试运行预览：未提交订单，未写入观察列表。' if preview else '已更新观察列表：'+'、'.join(result.get('symbols',[]))]
     labels={'buy':'买入','sell':'卖出','reduce':'减仓','hold':'持有','watch':'观察','skip':'跳过'}
     for symbol,item in result.get('observations',{}).items():
-        decision=item.get('decision') or {};gate=decision.get('confidenceGate') or {}
+        decision=item.get('decision') or {}
         details=[labels.get(decision.get('action'),decision.get('action') or '未生成 JEV 决策')]
-        confidence=decision.get('confidence')
-        if isinstance(confidence,(int,float)):details.append(f'置信度 {confidence*100:.2f}%')
-        if isinstance(gate.get('threshold'),(int,float)):
-            details.append(f'门槛 {gate["threshold"]*100:g}%（'+('通过' if gate.get('passed') is True else '未通过')+'）')
+        confidence=trading_confidence(decision)
+        if confidence['value'] is not None:
+            details.append(('买入' if confidence['direction']=='buy' else '卖出')+f'置信度 {confidence["value"]*100:.2f}%')
+        elif decision:details.append('未记录买卖方向置信度')
+        if confidence['thresholdPassed'] is not None:
+            details.append(f'置信度门槛 {confidence["threshold"]*100:g}%（'+('通过' if confidence['thresholdPassed'] else '未通过')+'）')
+        if confidence['agreementPassed'] is False:details.append('顺序一致性校验未通过')
+        elif confidence['thresholdPassed'] is True and confidence['executionPassed'] is False:
+            details.append('其他执行校验未通过（历史记录未提供具体原因）')
         reason=decision.get('reason') or decision.get('factorLabel')
+        if not decision.get('reason') and decision.get('action') not in ('buy','sell','reduce') and decision.get('factor')=='trend-confirmed':reason=None
         if reason:details.append(str(reason))
         trade=item.get('trade');plan=item.get('plan')
         if trade:details.append('订单执行预览校验，未提交' if trade.get('preview') else '订单回执：'+str(trade.get('status') or '已返回'))

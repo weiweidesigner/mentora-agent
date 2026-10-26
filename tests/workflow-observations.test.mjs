@@ -19,17 +19,22 @@ test('workflow backtests remain visible without inventing a JEV decision or fill
  assert.match(row.querySelector('.pfWatchJev').textContent,/未生成/);
  }finally{dom.window.close();}
 });
-test('workflow JEV observation displays actual watch decision and confidence',async()=>{
+test('legacy watch certainty is not displayed as a buy or sell confidence',async()=>{
  const dom=await render([{symbol:'AAPL',name:'Apple',observationAction:'watch',reason:'工作流「最新研究」：需要价格确认',confidence:.62,directionAssessment:{action:'watch',confidence:.62,assessedAt:'2026-10-25T10:00:00Z'},decisionAt:'2026-10-25T10:00:00Z',decision:'watch',workflowExecution:{title:'最新研究',tools:['portfolio-jev'],updated:'2026-10-25T10:00:00Z',backtests:[],decision:{action:'watch',modelAction:'watch',confidence:.62,actionConfidences:{watch:.62},factorLabel:'需要价格确认'}}}]);
  try{
  const row=dom.window.document.querySelector('.pfWatchTable tbody tr');
  assert.equal(row.querySelector('.pfWatchAction').textContent,'观察');
- assert.equal(row.querySelector('.pfWatchJev').textContent,'62%');
+ assert.equal(row.querySelector('.pfWatchJev').textContent,'未记录买卖方向置信度');
  assert.equal(row.querySelector('.pfWatchTrade').textContent,'未下单');
  assert.match(row.textContent,/需要价格确认/);
  }finally{dom.window.close();}
 });
 test('newer canonical decisions retain priority over older workflow evidence',async()=>{
  const dom=await render([{symbol:'AAPL',decisionAt:'2026-10-26T10:00:00Z',decision:'buy',buyConfidence:.85,workflowExecution:{title:'旧研究',tools:['portfolio-jev'],updated:'2026-10-25T10:00:00Z',backtests:[],decision:{action:'watch',confidence:.62}}}]);
- try{assert.equal(dom.window.document.querySelector('.pfWatchJev').textContent,'85%');}finally{dom.window.close();}
+ try{assert.equal(dom.window.document.querySelector('.pfWatchJev').textContent,'买入 85%');}finally{dom.window.close();}
+});
+
+test('watch status retains an explicit buy direction confidence without claiming a trade',async()=>{
+ const dom=await render([{symbol:'T',observationAction:'watch',confidenceAction:'buy',confidence:.3472,confidenceGate:{action:'buy',threshold:.3,passed:false},directionAssessment:{action:'watch',buyConfidence:.3472},workflowExecution:{decision:{action:'watch',modelAction:'buy',confidence:.3472,actionConfidences:{buy:.3472}}}}]);
+ try{const row=dom.window.document.querySelector('.pfWatchTable tbody tr');assert.equal(row.querySelector('.pfWatchAction').textContent,'观察');assert.equal(row.querySelector('.pfWatchJev').textContent,'买入 34.7%');assert.equal(row.querySelector('.pfWatchTrade').textContent,'未下单');}finally{dom.window.close();}
 });
