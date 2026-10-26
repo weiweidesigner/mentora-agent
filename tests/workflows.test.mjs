@@ -24,7 +24,7 @@ async function setup(){
  w.eval(day);w.eval(code);await tick();
  return{dom,w,d:w.document,calls,error:()=>{buildError=true;},saved:()=>saved,tickTimers:()=>timers.filter(fn=>fn.name==='refreshTimings').forEach(fn=>fn())};
 }
-test('runtime ticks locally while completed node durations stay frozen and progress is visible',async()=>{
+test('runtime ticks locally while completed durations stay frozen and progress stays hidden',async()=>{
  const s=await setup();try{
   const now=Date.parse('2026-10-26T05:00:00Z');let clock=now;s.w.Date.now=()=>clock;
   await s.w.MentoraWorkflow.open({workflow:graph,lastTrial:{status:'running',createdAt:new Date(now-65000).toISOString(),serverTime:new Date(now).toISOString(),nodes:{input:{status:'success',started:new Date(now-65000).toISOString(),durationMs:5000},out:{status:'running',started:new Date(now-10000).toISOString(),progress:'正在进行 JEV 决策'}}}});
@@ -34,7 +34,9 @@ test('runtime ticks locally while completed node durations stay frozen and progr
   assert(s.d.querySelector('[data-node=out] header .wfNodeTime'));
   assert.doesNotMatch(s.d.querySelector('[data-node=out] header').textContent,/运行中|✓/);
   assert.equal(s.d.querySelector('[data-node=out] .wfNodeRuntime .wfNodeTime'),null);
-  assert.equal(s.d.querySelector('.wfNodeProgress[title="正在进行 JEV 决策"]').textContent,'正在进行 JEV 决策');
+  assert.equal(s.d.querySelector('.wfNodeProgress'),null);
+  assert.doesNotMatch(s.d.querySelector('[data-node=out]').textContent,/正在进行 JEV 决策/);
+  assert.equal(s.d.querySelector('[data-node=out] .wfNodeTime').title,'');
   const card=s.d.querySelector('[data-node=out]');clock+=3000;s.tickTimers();
   assert.equal(s.d.querySelector('#wfElapsed').textContent,'运行时间 01:08');
   assert.equal(card.querySelector('.wfNodeTime').textContent,'耗时 00:13');

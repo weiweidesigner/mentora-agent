@@ -70,15 +70,13 @@ function refreshTimings(){
  elapsed.hidden=!run||!Number.isFinite(started);
  elapsed.textContent=incomplete?'已中断 · 耗时记录不完整':Number.isFinite(started)?(live?'运行时间 ':'总耗时 ')+durationText((live?clock:Number.isFinite(finished)?finished:started)-started):'';
  for(const article of $('wfNodes').children){
-  const node=run?.nodes?.[article.dataset.node];let footer=article.querySelector('.wfNodeRuntime');
+  const node=run?.nodes?.[article.dataset.node];const footer=article.querySelector('.wfNodeRuntime');
+  footer?.remove();
   const badge=article.querySelector('.wfNodeState');badge.classList.add('wfNodeTime');badge.textContent='';
-  if(!node){footer?.remove();continue;}
+  if(!node)continue;
   const start=Date.parse(node.started),ms=node.status==='running'&&live&&Number.isFinite(start)?clock-start:Number.isFinite(node.durationMs)?node.durationMs:null;
   badge.textContent=node.timingIncomplete?'—':ms===null?'':'耗时 '+durationText(ms);
-  badge.title=node.error||node.progress||(node.timingIncomplete?'耗时记录不完整':'');
-  if(node.status!=='running'||!live||!node.progress){footer?.remove();continue;}
-  if(!footer){footer=document.createElement('div');footer.className='wfNodeRuntime';footer.innerHTML='<span class="wfNodeProgress"></span>';article.append(footer);}
-  const progress=footer.querySelector('.wfNodeProgress');progress.textContent=node.status==='running'&&live?node.progress||'':'';progress.title=progress.textContent;
+  badge.title=node.error||(node.timingIncomplete?'耗时记录不完整':'');
  }
 }
 setInterval(refreshTimings,1000);
