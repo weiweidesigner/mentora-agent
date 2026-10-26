@@ -20,6 +20,31 @@ function setup({storage,reply,plan,blocked=false,symbolResults=[],generationCata
  w.eval(readFileSync(new URL('../app/static/widget-symbol-picker.js',import.meta.url),'utf8'));w.eval(source);return {dom,w,d:w.document,calls};
 }
 function submit(w,d,text){d.querySelector('#widgetPrompt').value=text;d.querySelector('#widgetForm').dispatchEvent(new w.Event('submit',{cancelable:true}));}
+async function pasteImage(s,name='chart.png'){
+ const event=new s.w.Event('paste',{bubbles:true,cancelable:true});Object.defineProperty(event,'clipboardData',{value:{files:[new s.w.File(['test'],name,{type:'image/png'})]}});s.d.querySelector('#widgetPrompt').dispatchEvent(event);await tick();await tick();
+}
+
+test('widget uploads and pastes images, sends image-only requests, and forwards attachments to generation',async()=>{
+ const s=setup({storage:twoCards(),plan:{reply:'已创建',attachmentContext:'图片包含季度销售额',actions:[{type:'add',componentId:'cash_flow',parameters:{symbols:['AAPL']},request:'根据附件数据生成图表'}]}});
+ let opened=false;s.d.querySelector('#widgetImageInput').click=()=>{opened=true;};s.d.querySelector('#widgetAttachButton').click();assert(opened);
+ await pasteImage(s);assert.equal(s.d.querySelectorAll('#widgetAttachmentPreview .attachmentThumb').length,1);
+ assert.equal(s.d.querySelector('#widgetGenerate').disabled,false);assert(s.d.querySelector('.widgetComposerBox').classList.contains('has-attachments'));
+ submit(s.w,s.d,'');await tick();await tick();
+ const plan=JSON.parse(s.calls.find(c=>c.url==='/api/widgets/plan').options.body),stream=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);
+ assert.match(plan.message,/附件图片/);assert.equal(plan.images.length,1);assert.equal(stream.images[0].name,'chart.png');assert.match(stream.question,/图片包含季度销售额/);
+ assert.equal(s.d.querySelector('#widgetAttachmentPreview').hidden,true);
+ const stored=s.w.localStorage.getItem('mentora-widget-boards-v1');assert(!stored.includes('data:image/'));assert.match(stored,/图片包含季度销售额/);s.dom.window.close();
+});
+
+test('widget draft attachments are isolated by board, removable, and restored after a failed request',async()=>{
+ const s=setup({storage:twoCards(),plan:()=>{throw Error('识别失败');}});
+ await pasteImage(s);s.d.querySelector('#widgetNew').click();assert.equal(s.d.querySelector('#widgetAttachmentPreview').hidden,true);
+ s.d.querySelector('[data-board="board"]').click();
+ assert.equal(s.d.querySelectorAll('#widgetAttachmentPreview .attachmentThumb').length,1);
+ submit(s.w,s.d,'根据图片调整');await tick();await tick();assert.equal(s.d.querySelectorAll('#widgetAttachmentPreview .attachmentThumb').length,1);
+ assert.equal(s.d.querySelector('#widgetPrompt').value,'根据图片调整');assert.match(s.d.querySelector('#widgetStatus').textContent,/识别失败/);
+ s.d.querySelector('[data-widget-image="0"]').click();assert.equal(s.d.querySelector('#widgetAttachmentPreview').hidden,true);s.dom.window.close();
+});
 test('catalogue refers only to existing data-backed components',()=>{assert.ok(catalog.some(c=>c.id==='ashare-kline'));assert.ok(!catalog.some(c=>c.requiresDataSource));const widgets=JSON.parse(readFileSync(new URL('../app/skills/trading-view-chart/widgets.json',import.meta.url),'utf8'));assert.equal(new Set(catalog.filter(c=>c.provider==='TradingView').map(c=>c.widget)).size,Object.keys(widgets).length);for(const c of catalog){if(c.provider==='TradingView')assert.ok(widgets[c.widget]);else assert.ok(readFileSync(new URL(`../app/skills/${c.skill}/scripts/${c.script}`,import.meta.url),'utf8').length);assert.ok(c.category);}});
 test('generation uses the real research stream, persists separate charts and keyboard resize avoids overlap',async()=>{
  const{dom,w,d,calls}=setup();assert.equal(d.querySelector('#widgetWorkspace').hidden,false);assert.ok(d.querySelector('.shell').classList.contains('widgets-view'));assert.equal(d.querySelector('#widgetSidebar').hidden,true);assert.ok(d.querySelector('#widgetWorkspace .widgetTopbar #widgetTabs'));assert.equal(d.querySelector('#widgetBoardTitle').textContent,'我的 Widget');

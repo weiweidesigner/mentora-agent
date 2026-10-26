@@ -403,6 +403,7 @@ imageInput?.addEventListener("change", async (event) => {
 });
 document.addEventListener("paste", async (event) => {
   if (document.querySelector('#taskWorkspace') && !document.querySelector('#taskWorkspace').hidden) return;
+  if (document.querySelector('#widgetWorkspace') && !document.querySelector('#widgetWorkspace').hidden) return;
   const files = Array.from(event.clipboardData?.files || []).filter((file) => file.type.startsWith("image/"));
   if (!files.length) return;
   event.preventDefault();

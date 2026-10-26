@@ -74,6 +74,32 @@ def test_existing_pattern_style_change_does_not_request_new_analysis():
     assert not planner.native_kline_needs_data_work('把双底的颈线改为橙色虚线')
 
 
+def test_widget_attachments_use_home_vision_and_pass_observations_not_base64_to_planner(monkeypatch):
+    seen=[];observed=[]
+    monkeypatch.setattr(planner,'observe_attachments',lambda question,images:observed.append((question,images)) or '图片内容：AAPL 周线，成交量和 MACD')
+    monkeypatch.setattr(planner,'model_plan',lambda context:seen.append(context) or {'reply':'想保留哪几项？','actions':[]})
+    p=payload();p.images=[planner.WidgetImage(name='chart.png',mimeType='image/png',dataUrl='data:image/png;base64,dGVzdA==')]
+    result=planner.plan_widgets(p)
+    assert len(observed)==1 and observed[0][1][0].name=='chart.png'
+    assert result['attachmentContext']=='图片内容：AAPL 周线，成交量和 MACD'
+    assert seen[0]['attachments']['images']==[{'name':'chart.png','mimeType':'image/png'}]
+    assert 'dGVzdA==' not in json.dumps(seen[0])
+    assert 'AAPL' in seen[0]['attachments']['observation']
+
+
+@pytest.mark.parametrize('url',['https://example.com/image.png','data:text/html;base64,dGVzdA==','data:image/png;base64,!!!'])
+def test_widget_attachment_rejects_unsupported_or_invalid_data(url):
+    with pytest.raises(ValueError):planner.WidgetImage(dataUrl=url)
+
+
+def test_widget_attachment_limit_and_empty_observation_fail_explicitly(monkeypatch):
+    image={'name':'chart.png','mimeType':'image/png','dataUrl':'data:image/png;base64,dGVzdA=='}
+    with pytest.raises(ValueError):planner.PlanningInput(**{**payload().model_dump(),'images':[image]*7})
+    monkeypatch.setattr(planner,'observe_attachments',lambda *args:'')
+    p=planner.PlanningInput(**{**payload().model_dump(),'images':[image]})
+    with pytest.raises(ValueError,match='未能读取附件'):planner.plan_widgets(p)
+
+
 def test_saved_live_settings_win_over_original_artifact_on_every_followup(monkeypatch,tmp_path):
     monkeypatch.setattr(planner,'ROOT',tmp_path)
     directory=tmp_path/'outputs/generated';directory.mkdir(parents=True)

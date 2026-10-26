@@ -327,6 +327,21 @@
 .widgetWorkspace .reasoningStrengthPopover { top:auto;bottom:calc(100% + 10px); }
 @media(max-width:760px) { .widgetComposer .widgetComposerBox { grid-template-columns:minmax(0,1fr) auto 42px; } }
 
+/* Match the home composer: attachment entry, draft previews, then input/actions. */
+.widgetComposer .widgetComposerBox{grid-template-columns:38px minmax(0,1fr) auto 38px;padding-left:12px}
+.widgetComposerBox #widgetAttachButton{grid-column:1;grid-row:1;width:38px;height:38px;border:0;padding:8px;border-radius:50%}
+.widgetComposerBox #widgetPrompt{grid-column:2;grid-row:1}
+.widgetComposerBox .reasoningStrengthControl{grid-column:3;grid-row:1}
+.widgetComposerBox #widgetGenerate,.widgetComposerBox #widgetStop{grid-column:4;grid-row:1}
+.widgetComposerBox #widgetAttachmentPreview{grid-column:1/-1;grid-row:1}
+.widgetComposerBox.has-attachments #widgetAttachButton,.widgetComposerBox.has-attachments #widgetPrompt,.widgetComposerBox.has-attachments .reasoningStrengthControl,.widgetComposerBox.has-attachments #widgetGenerate,.widgetComposerBox.has-attachments #widgetStop{grid-row:2}
+.widgetComposer .widgetComposerBox.is-multiline #widgetPrompt{grid-column:1/-1;grid-row:1}
+.widgetComposer .widgetComposerBox.is-multiline #widgetAttachButton,.widgetComposer .widgetComposerBox.is-multiline .reasoningStrengthControl,.widgetComposer .widgetComposerBox.is-multiline #widgetGenerate,.widgetComposer .widgetComposerBox.is-multiline #widgetStop{grid-row:2}
+.widgetComposer .widgetComposerBox.is-multiline #widgetGenerate,.widgetComposer .widgetComposerBox.is-multiline #widgetStop{grid-column:4}
+.widgetComposer .widgetComposerBox.is-multiline .reasoningStrengthControl{grid-column:3}
+.widgetComposer .widgetComposerBox.has-attachments.is-multiline #widgetPrompt{grid-row:2}
+.widgetComposer .widgetComposerBox.has-attachments.is-multiline #widgetAttachButton,.widgetComposer .widgetComposerBox.has-attachments.is-multiline .reasoningStrengthControl,.widgetComposer .widgetComposerBox.has-attachments.is-multiline #widgetGenerate,.widgetComposer .widgetComposerBox.has-attachments.is-multiline #widgetStop{grid-row:3}
+
 /* Refresh belongs to the active board, never to a global session clock. */
 .widgetRefreshControl{display:flex;align-items:center;gap:10px;flex:none}
 #widgetLastRefresh{color:var(--muted);font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
