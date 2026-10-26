@@ -3738,11 +3738,12 @@ function isGeneratedImageArtifact(item) {
 
 function generatedImageUrl(value) {
   const url=new URL(value,window.location.origin);
-  if(url.origin!==window.location.origin || !url.pathname.startsWith('/generated/'))return url.href;
-  const script=document.querySelector('script[src*="/static/app.js"]');
+  // The reverse proxy rewrites quoted root paths in JS as well as HTML.
+  // Escaped regexes keep this check canonical for old, unprefixed chat data.
+  if(url.origin!==window.location.origin || !/^\/generated\//.test(url.pathname))return url.href;
+  const script=Array.from(document.scripts).find(script=>/\/static\/app\.js(?:[?#]|$)/.test(script.src));
   const asset=new URL(script?.src || document.baseURI,window.location.origin);
-  const at=asset.pathname.lastIndexOf('/static/');
-  const mount=at>=0?asset.pathname.slice(0,at):new URL('.',document.baseURI).pathname.replace(/\/$/,'');
+  const mount=asset.pathname.match(/^(.*)\/static\/app\.js$/)?.[1]??new URL('.',document.baseURI).pathname.replace(/\/$/,'');
   if(mount)url.pathname=mount+url.pathname;
   return url.href;
 }
