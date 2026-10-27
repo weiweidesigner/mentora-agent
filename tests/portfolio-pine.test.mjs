@@ -23,11 +23,13 @@ async function setup(){
  w.eval(source);await tick();const d=w.document;d.querySelector('[data-pf-view=strategies]').click();
  return {dom,w,d,calls,state,send:event=>controller.enqueue(new TextEncoder().encode('data: '+JSON.stringify(event)+'\n\n')),close:()=>controller.close()};
 }
-test('initial layout hides code and keeps delete beside add',async()=>{
+test('initial layout displays saved code and keeps delete beside add',async()=>{
  const s=await setup();try{
-  assert.equal(s.d.querySelector('[name=customCode]'),null);
+  assert.ok(s.d.querySelector('[name=customCode]'));
+  assert.equal(s.d.querySelector('[data-pf-strategy=show-code]'),null);
   assert.equal(s.d.querySelector('[data-pf-strategy=add]').nextElementSibling.dataset.pfStrategy,'remove');
-  assert.equal(s.d.querySelector('[data-pf-strategy=generate]').textContent,'生成 PineScript');
+  assert.equal(s.d.querySelector('[name=customCode]').value,old);
+  assert.equal(s.d.querySelector('[data-pf-strategy=generate]').textContent,'重新生成');
   assert.equal(s.d.querySelector('[name=strategyDescription]').placeholder,'描述你的策略逻辑，比如“目前处于筑底，有望回升”');
   assert.doesNotMatch(s.d.querySelector('#pfStrategyForm').textContent,/保存配置|保存方案|用自然语言描述策略/);
  }finally{s.w.close();}
@@ -66,7 +68,8 @@ test('metadata stays draft until generation; choices and deletion persist withou
   assert.equal(s.state.customStrategies[0].name,'Original');
   assert.equal(s.d.querySelector('[name=strategyName]').value,'Renamed');
   s.d.querySelector('[data-pf-strategy=add]').click();
-  assert.equal(s.d.querySelector('[name=customCode]'),null);
+  assert.ok(s.d.querySelector('[name=customCode]'));
+  assert.equal(s.d.querySelector('[data-pf-strategy=show-code]'),null);
   const checkbox=s.d.querySelector('[name=enabled][value=reversion]');checkbox.checked=true;checkbox.dispatchEvent(new s.w.Event('change',{bubbles:true}));await tick();
   assert.equal(s.state.customStrategies.length,1);assert.ok(s.state.enabled.includes('reversion'));
   s.d.querySelector('[data-pf-strategy-select="custom:one"]').click();
@@ -83,7 +86,7 @@ test('copy code shows success only after clipboard write succeeds',async()=>{
    s.d.querySelector('[data-pf-strategy=copy]').click();await tick();
    const toast=s.d.querySelector('.pfToast');
    assert.equal(toast.hidden,false);
-   assert.equal(toast.textContent,fails?'复制失败，请展开代码后手动复制':'复制成功');
+   assert.equal(toast.textContent,fails?'复制失败，请在代码区域手动复制':'复制成功');
    assert.equal(copied,fails?'':old);
   }finally{s.w.close();}
  }

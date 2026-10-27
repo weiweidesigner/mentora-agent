@@ -16,7 +16,7 @@ test('trading and board refresh controls share their glyph and borderless style'
 test('deployed trading UI preserves the latest navigation and strategy save scopes',async()=>{
   const dom=new JSDOM('<main class="shell"><button id="railHome"></button><button id="railWidgets"></button><button id="navWidgets"></button><section id="taskWorkspace"></section><section id="widgetWorkspace"></section></main>',{url:'https://example.com/mentora/?tab=portfolio',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;
-  const workflow={strategies:{enabled:['trend','custom-1'],customStrategies:[{id:'custom-1',name:'测试策略',description:'测试',code:'def signal(context):\n    return "hold"'}]},preferences:{},tasks:[],decisions:[]};
+  const workflow={strategies:{enabled:['trend','custom-1'],customStrategies:[{id:'custom-1',name:'测试策略',description:'测试',code:'def signal(context):\n    return "hold"'},{id:'custom-2',name:'第二个策略',description:'第二个',code:'//@version=5\nstrategy("Second")'}]},preferences:{},tasks:[],decisions:[]};
   const account={initial:1000,cash:1000,equity:1000,marketValue:0,positions:[],trades:[],plans:[],history:[],settings:{},valuationComplete:true,scan:{},serverTime:'2026-10-23T09:00:00Z'};
   w.setInterval=()=>1;w.clearInterval=()=>{};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
@@ -34,10 +34,18 @@ test('deployed trading UI preserves the latest navigation and strategy save scop
     assert.equal(savePlan,null);
     const saveCustom=d.querySelector('[data-pf-strategy=save-custom]');
     assert.equal(saveCustom,null);
-    assert.equal(d.querySelector('textarea[name=customCode]'),null);
+    assert.equal(d.querySelector('textarea[name=customCode]').value,workflow.strategies.customStrategies[0].code);
+    assert.equal(d.querySelector('[data-pf-strategy=show-code]'),null);
     assert.equal(d.querySelector('[data-pf-strategy=add]').nextElementSibling.textContent,'删除策略');
-    d.querySelector('[data-pf-strategy=show-code]').click();
     assert.equal(d.querySelector('textarea[name=customCode]').getAttribute('aria-label'),'策略编辑器');
+    d.querySelector('[data-pf-strategy-select=custom-2]').click();
+    assert.equal(d.querySelector('textarea[name=customCode]').value,workflow.strategies.customStrategies[1].code);
+    assert.equal(d.querySelector('[data-pf-strategy=show-code]'),null);
+    assert.equal(d.querySelector('[data-pf-strategy=generate]').textContent,'重新生成');
+    assert.ok(d.querySelector('[data-pf-strategy=copy]'));
+    d.querySelector('[data-pf-view=positions]').click();
+    d.querySelector('[data-pf-view=strategies]').click();
+    assert.ok(d.querySelector('textarea[name=customCode]'));
     assert.doesNotMatch(d.querySelector('#pfPanel').textContent,/新策略尚未保存|修改将在保存后生效|全部策略已保存/);
     d.querySelector('[data-pf-view=profile]').click();
     assert.ok(d.querySelector('#pfProfileForm'));
