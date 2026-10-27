@@ -304,6 +304,7 @@ def stream_native_widget(
         tool_choice={"type": "function", "function": {"name": TOOL_NAME}},
         stream=True,
         stream_options={"include_usage": True},
+        extra_body={"thinking": {"type": "disabled"}},
         temperature=0.2,
     )
     calls: dict[int, dict[str, str]] = {}

@@ -99,7 +99,7 @@ class ParallelWidgets:
                 else:yield event,data
             if self.errors:
                 self.buffer.clear()
-                raise RuntimeError('可视化生成失败，未交付尚未验证的后续内容。请重试。')
+                raise RuntimeError('可视化生成失败，未交付尚未验证的后续内容。请重试。') from RuntimeError('; '.join(self.errors))
             if not done:break
             self.jobs.pop(key,None);self.current=None
             while self.buffer:

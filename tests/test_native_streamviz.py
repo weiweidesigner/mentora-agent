@@ -5,6 +5,7 @@ from app import native_streamviz
 
 class _FakeCompletions:
     def create(self, **_kwargs):
+        assert _kwargs.get('extra_body') == {'thinking': {'type': 'disabled'}}
         # Deliberately split in the middle of JSON/SVG so the adapter's delta
         # contract is exercised rather than only the completed artifact path.
         return iter([
