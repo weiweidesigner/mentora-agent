@@ -5277,6 +5277,8 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 /* One narrative stream and bounded, nested tool disclosures in both surfaces. */
 .thinkingTrigger:disabled{opacity:1;cursor:default;pointer-events:none}
 .thinkingTrigger.is-thinking .thinkingSummaryText{background:none;color:inherit;animation:none}
+/* A block trigger avoids an anonymous text line before the answer. */
+.assistantBubble>.thinkingTrigger{display:flex;margin-bottom:8px}
 .assistantBubble>.thinkingSteps{display:none!important}
 .thinkingFlow{margin:0 0 8px;padding:0;border:0;min-width:0}
 .thinkingFlow[hidden]{display:none}
@@ -5285,7 +5287,7 @@ html[data-theme="dark"] .caseCardBrandIcon .brandLogoDark{display:block}
 .activityFlowList,.activityGroupItems,.activityCurrentAction{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-width:0}
 .activityFlowList>li,.activityGroupItems>li,.activityCurrentAction>li{min-width:0;margin:0;padding:0;list-style:none}
 .activityNarrative>p{margin:0;color:var(--ink);font-size:var(--chat-body-font-size);font-weight:400;line-height:1.55;overflow-wrap:anywhere;white-space:pre-wrap}
-:root .thinkingTrigger.is-thinking,:root[data-theme] .thinkingTrigger.is-thinking{display:flex;margin:0 0 10px;padding:2px 5px 2px 0;color:var(--muted);font-size:15px;font-weight:430;line-height:1.35}
+:root .thinkingTrigger.is-thinking,:root[data-theme] .thinkingTrigger.is-thinking{display:flex;margin:0 0 8px;padding:2px 5px 2px 0;color:var(--muted);font-size:15px;font-weight:430;line-height:1.35}
 :root[data-theme] .thinkingTrigger.is-thinking:hover,:root[data-theme] .thinkingTrigger.is-thinking:focus-visible{color:var(--ink)}
 .activityConnection{color:var(--muted);font-size:14px;line-height:1.6;animation:activityTextFade 1.8s ease-in-out infinite}
 .activityTool{min-width:0}
@@ -5374,6 +5376,9 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .interleavedFlow>.streamAnswerPreview>.reportInterpretation:last-child{margin-bottom:0}
 .interleavedFlow>.streamAnswerPreview:empty{display:none}
 .interleavedFlow .streamvizLiveLane{margin:0;min-width:0}
+/* The ordered flow owns spacing; restored artifact shells add no second gutter. */
+.interleavedFlow>.streamvizLiveLane>.chatArtifactShell{margin:0}
+.finalAnswer>.mixedReport>:is(.chatArtifactShell,.reportFrameShell,.streamvizArtifactHost):first-child{margin-top:0}
 .orderedTool{font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
 .orderedTool[data-phase="running"],.orderedTool[data-phase="started"]{opacity:.8}
 .orderedTool[data-phase="failed"]{color:var(--danger,#d95555)}
