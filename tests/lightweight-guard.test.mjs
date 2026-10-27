@@ -289,6 +289,8 @@ test('SDK canonical value rendering is compacted at post-execute without changin
 test('full skill instructions and JSON schemas never lose their execution contract',t=>{
  const {root}=setup(t);for(const file of ['app/skills/any/SKILL.md','app/skills/any/schemas/payload.schema.json']){
   const text='contract '.repeat(2000);assert.equal(compactToolResult({name:'read',arguments:{file_path:file}},ok(text),root).content[0].text,text);
+  assert.equal(compactToolResult({name:'bash',arguments:{command:'cat '+file}},ok(text),root).content[0].text,text);
+  assert.equal(compactToolResult({name:'skill',arguments:{name:'fixture'}},ok(text),root).content[0].text,text);
  }
 });
 

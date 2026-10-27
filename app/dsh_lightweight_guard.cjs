@@ -115,7 +115,8 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
   const text = textOf(result);
   const file=String(exec.arguments?.file_path || exec.arguments?.path || '');
   // Skill instructions and schemas are executable contracts, not datasets.
-  if (/SKILL\.md$|(?:^|[\/])[^\/]*schema[^\/]*\.json$/i.test(file))
+  const contractRead=exec.name==='skill' || exec.name==='bash' && /^\s*(?:cat|sed|head|tail)\s/.test(String(exec.arguments?.command || '')) && /(?:SKILL\.md|schema[^\s]*\.json)/i.test(exec.arguments.command);
+  if (contractRead || /SKILL\.md$|(?:^|[\/])[^\/]*schema[^\/]*\.json$/i.test(file))
     return transformedResult(result.content || [], result.isError || failed(result), result);
   let parsed = null;
   try { parsed = JSON.parse(text); } catch { /* Preserve arbitrary text as a file. */ }
