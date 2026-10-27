@@ -2280,6 +2280,9 @@ p {
   outline-offset: 3px;
 }
 
+/* Image-only replies need no prose-sized gap below the processing summary. */
+.assistantBubble:has(.finalAnswer .reportGeneratedImageButton):not(:has(.finalAnswer .reportInterpretation))>.thinkingTrigger{display:flex;margin-bottom:4px}
+
 .generatedImageDialog {
   width: min(94vw, 1100px);
   max-width: none;

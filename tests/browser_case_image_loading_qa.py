@@ -102,6 +102,19 @@ def main():
             for request in pending_images:request.fulfill(body=png,content_type='image/png')
             page.wait_for_selector('.reportGeneratedImage:not([hidden])')
             assert page.locator('.imageGenerationLoading').count()==0
+            gap=page.evaluate("""()=>{
+              const trigger=imageArticle.querySelector('.thinkingTrigger').getBoundingClientRect();
+              const image=imageArticle.querySelector('.reportGeneratedImage').getBoundingClientRect();
+              return image.top-trigger.bottom;
+            }""")
+            assert 3<=gap<=5,(width,gap)
+            # Tightening image-only replies must not change ordinary answers.
+            normal=page.evaluate("""()=>{
+              const article=createAssistantMessage('文字测试',{taskContext:{question:'离线测试'}});
+              handleStreamEvent(article,'final',{interpretation:'普通文字回答',reportArtifacts:[]});
+              return getComputedStyle(article.querySelector('.thinkingTrigger')).marginBottom;
+            }""")
+            assert normal=='10px',normal
             page.close()
         browser.close()
     print('PASS: rating boots once; image loading animates and cleans up at mobile/desktop widths')
