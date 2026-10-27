@@ -50,7 +50,7 @@
 /* Generated palettes are aliases, never a separate fixed light/dark theme. */
 [data-aime-streamviz-root],[data-aime-streamviz-root] *{--c-bg:transparent!important;--c-surface:var(--sv-surface-primary)!important;--c-surface2:var(--sv-surface-secondary)!important;--c-border:var(--sv-border-subtle)!important;--c-text:var(--sv-text-primary)!important;--c-text2:var(--sv-text-secondary)!important;--c-muted:var(--sv-text-secondary)!important;--c-up:var(--sv-price-up)!important;--c-dn:var(--sv-price-down)!important;--c-flat:var(--sv-text-secondary)!important}
 :root:not([data-theme="dark"]){color-scheme:light;--sv-gain:#08745f;--sv-loss:#c43244;--sv-warning:#925f0b;--sv-status-success:#08745f;--sv-status-danger:#c43244;--sv-bg-success:#e9f8f2;--sv-bg-warning:#fff5db;--sv-bg-danger:#fff0f1}
-:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#3ddc97;--sv-loss:#ff6b6b;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
+:root[data-theme="dark"]{color-scheme:dark;--sv-gain:#64b79d;--sv-loss:#ee777d;--sv-warning:#ffd28b;--sv-bg-success:#133c36;--sv-bg-warning:#493617;--sv-bg-danger:#49202a}
 [data-aime-streamviz-root]{color:var(--sv-text-primary)!important;background:transparent!important}
 [data-aime-streamviz-root] :is(h1,h2,h3,h4){color:var(--sv-text-primary)!important}
 :is(.stv,.sv-report,.svv,.sv){color:var(--sv-text-primary)!important}
@@ -94,8 +94,8 @@
 :root:not([data-theme="dark"]) .svv svg :is(line,path)[stroke="#233247"]{stroke:#cbd3df!important}
 :root:not([data-theme="dark"]) .svv svg line[stroke="#93a4bd"]{stroke:#98a2b3!important}
 
-:root[data-theme="dark"]{--sv-surface-primary:#181e28;--sv-surface-secondary:#111824}
-:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f1f5f9;--sv-text-secondary:#c1cad7;--sv-text-muted:#93a0b3;--sv-border-subtle:#2b3544;--sv-chart-series-1:#8294ff;--sv-chart-series-2:#34d3ad;--sv-chart-series-3:#ff7188;--sv-status-success:#34d3ad;--sv-status-warning:#f6ad55;--sv-status-danger:#ff7188}
+:root[data-theme="dark"]{--sv-surface-primary:#181818;--sv-surface-secondary:#202020}
+:root[data-theme="dark"]{color-scheme:dark;--sv-text-primary:#f5f5f5;--sv-text-secondary:#aaa;--sv-text-muted:#858585;--sv-border-subtle:#343434;--sv-chart-series-1:#a580ef;--sv-chart-series-2:#64b79d;--sv-chart-series-3:#ee777d;--sv-status-success:#64b79d;--sv-status-warning:#f6ad55;--sv-status-danger:#ee777d}
 :root[data-theme="dark"] html,:root[data-theme="dark"] body{color:var(--sv-text-primary)}
 :root[data-theme="dark"] .svv{--bg:transparent!important;--card:#181e28!important;--card2:#181e28!important;--line:#334052!important;--text:#f1f5f9!important;--muted:#aab6c7!important;background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;box-shadow:none!important}
 :root[data-theme="dark"] .svv :is(.sub,.lg,ul,[style*="color:#b9c6dc"]){color:#c1cad7!important}
@@ -146,7 +146,7 @@
 :is([data-aime-streamviz-root],[data-visualize-root]) thead th{background:var(--sv-surface-primary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
 
 /* Financial direction is market-specific; success/danger remain status colors. */
-:root{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss);--sv-price-flat:var(--sv-text-secondary)}
+:root{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain);--sv-price-flat:var(--sv-text-secondary)}
 [data-financial-market="CN"],[data-financial-market="HK"]{--sv-price-up:var(--sv-loss);--sv-price-down:var(--sv-gain)}
 [data-financial-market="US"]{--sv-price-up:var(--sv-gain);--sv-price-down:var(--sv-loss)}
 
@@ -260,6 +260,19 @@ html{-webkit-tap-highlight-color:transparent}
 }
 
 /* Neutral dark report tables, including saved StreamViz artifacts. */
+/* Neutral night applies to new templates and the old private palette aliases.
+   Financial direction and success/error states stay independent. */
+:root[data-theme="dark"] :is(.sv,.svv,.sv-report,.stv){--ink:var(--sv-text-primary)!important;--sub:var(--sv-text-secondary)!important;--text:var(--sv-text-primary)!important;--muted:var(--sv-text-secondary)!important;--line:var(--sv-border-subtle)!important;--card:var(--sv-surface-primary)!important;--card2:var(--sv-surface-secondary)!important;color:var(--sv-text-primary)!important}
+:root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) :is(.card,.panel,.sv-card,.sv-node,.sv-rank,.rank-html,[data-sv-card]){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important;box-shadow:none!important;border-radius:8px!important}
+:root[data-theme="dark"] :is(.sv,.svv,.sv-report,.stv) :is(.sub,.lg,ul,.note,.sv-note,.sv-sum,.sv-narrative p,.dsub,.dlabel,.dlabel-flat,.keyline,.sv-rank small){color:var(--sv-text-secondary)!important}
+:root[data-theme="dark"] :is(.sv,.svv,.sv-report,.stv) :is(.sv-note,.note,.pp-tabs>div,.sv-narr>div,svg.payoff){background:var(--sv-surface-primary)!important;border-color:var(--sv-border-subtle)!important}
+:root[data-theme="dark"] :is(.sv,.svv,.sv-report,.stv) :is(.btrack,.ttrack){background:var(--sv-surface-secondary)!important}
+:root[data-theme="dark"] :is(.sv,.svv,.sv-report,.stv) .chip:not(:is(.success,.warning,.danger)){background:var(--sv-surface-secondary)!important;color:var(--sv-text-secondary)!important;border-color:var(--sv-border-subtle)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) .sv-rank>strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+/* Only explicitly typed directional values receive financial color. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-direction="up"]{color:var(--sv-price-up)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-direction="down"]{color:var(--sv-price-down)!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-direction="flat"]{color:var(--sv-price-flat)!important}
 :root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) :is(.sv-table-wrap,.table-wrap){background:transparent!important;border:1px solid #2c2c2c!important;border-radius:10px!important}
 :root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) table{background:transparent!important;color:#d4d4d4}
 :root[data-theme="dark"] :is([data-aime-streamviz-root],[data-visualize-root],.sv,.svv,.sv-report,.stv) table thead tr th{background:#1c1c1c!important;color:#e4e4e4!important}

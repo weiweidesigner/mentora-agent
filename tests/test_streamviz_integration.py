@@ -134,7 +134,9 @@ def test_shared_streamviz_artifact_freezes_runtime_theme(tmp_path, monkeypatch) 
     dark = presentation.share_streamviz_artifact("report.html", theme="dark").body.decode("utf-8")
     assert 'data-theme="dark"' in dark
     assert 'data-streamviz-theme="dual"' in dark
-    assert '--sv-text-primary:#f1f5f9' in dark
+    assert '--sv-text-primary:#f5f5f5' in dark
+    assert '--sv-surface-primary:#181818' in dark
+    assert 'data-sv-financial-semantics' in dark
 
 
 def test_saved_native_kline_follows_host_theme_without_changing_data(tmp_path, monkeypatch) -> None:

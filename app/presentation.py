@@ -644,6 +644,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     host_controls=f'<script data-artifact-host-theme="{theme}">{presentation_script}</script>'
     artifact=re.sub(r'</body\s*>',lambda _:host_controls+'</body>',artifact,count=1,flags=re.I) if re.search(r'</body\s*>',artifact,re.I) else artifact+host_controls
     runtime_theme = f'<style data-streamviz-theme="dual">{STREAMVIZ_THEME_PATH.read_text(encoding="utf-8")}</style>'
+    if 'data-sv-financial-semantics' not in artifact:
+        financial=(Path(__file__).parent/'skills/streamviz/assets/financial-semantics.js').read_text(encoding='utf-8')
+        runtime_theme+='<script data-sv-financial-semantics>'+financial+'</script>'
     if 'data-sv-chart-geometry' not in artifact:
         geometry = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
         runtime_theme += '<script data-sv-chart-geometry>' + geometry + '</script>'

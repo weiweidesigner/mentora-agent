@@ -77,6 +77,12 @@ For financial price changes/returns/breadth use `var(--sv-price-up)`, `var(--sv-
 and `var(--sv-price-flat)` instead. Mark each financial region with
 `data-financial-market="CN"`, "HK", or "US": CN/HK red-up green-down; US green-up red-down.
 Mixed-market reports must mark each region independently.
+The night palette is neutral charcoal, not navy: use the shared surface/text/border tokens,
+never #181e28, #111824, #2b3544 or private hard-coded blue-gray cards. Financial direction
+must be bound to the rendered value (including rankings, KPIs and table changes): add
+data-sv-direction="up", "down", or "flat" from the actual signed change. Preserve the
+displayed sign and unit; zero is neutral. Do not color standalone percentages such as
+80% participation/market share as gains. Use success/danger only for execution or risk status.
 Do not render an entire chart by varying the opacity of `var(--sv-text-primary)`; grayscale is
 only appropriate for neutral context or de-emphasized comparisons. The first code must be a
 visible card or SVG node—never a long text block.
@@ -257,9 +263,10 @@ def _save_widget(generated_dir: Path, title: str, code: str) -> dict[str, str] |
     code = _flatten_native_canvas(code)
     theme_css = (Path(__file__).parent / "skills/streamviz/assets/artifact-theme.css").read_text(encoding="utf-8")
     geometry_js = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
+    financial_js = (Path(__file__).parent / 'skills/streamviz/assets/financial-semantics.js').read_text(encoding='utf-8')
     code = ('<!doctype html><html data-theme="light"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<style data-streamviz-theme="dual">{theme_css}</style><script data-sv-chart-geometry>{geometry_js}</script></head><body>'
+            f'<style data-streamviz-theme="dual">{theme_css}</style><script data-sv-chart-geometry>{geometry_js}</script><script data-sv-financial-semantics>{financial_js}</script></head><body>'
             f'<main data-aime-streamviz-root="true">{code}</main></body></html>')
     name = f"native-streamviz-{uuid.uuid4().hex[:12]}.html"
     path = generated_dir / name

@@ -297,6 +297,9 @@ class LocalAgentFrameworks:
             "SVG fill/stroke 也必须使用主题变量；不要另定义带固定颜色的 --c-* 或其他私有主题。"
             "金融涨跌必须使用 var(--sv-price-up)、var(--sv-price-down)、var(--sv-price-flat)，禁止使用 success/danger 状态色表示收益。"
             "每个金融图表区域声明 data-financial-market=\"CN\"、\"HK\" 或 \"US\"：A股/港股红涨绿跌，美股绿涨红跌。混合市场必须分区域声明。"
+            "暗夜主题使用中性炭黑表面和灰色边框，禁止旧蓝灰色卡片；不要私设固定配色。"
+            "涨跌方向必须绑定到实际数值：自定义 HTML 用 data-sv-direction=up/down/flat；模板传 financialMarket 及 change 或 direction。"
+            "排行、指标和涨跌幅表格同样遵守涨跌语义，零值中性；参与率、占比、置信度等普通百分比不能自动视为上涨。"
         )
 
     @staticmethod

@@ -37,6 +37,7 @@ StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分
 ```json
 {
   "layout": "comparison",
+  "financialMarket": "CN",
   "title": "今日 A 股市场表现",
   "eyebrow": "收盘复盘 · 2026-10-08",
   "summary": "核心结论，必须可由上游证据支持。",
@@ -45,7 +46,7 @@ StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分
     {"label": "成交待确认", "tone": "warning"}
   ],
   "metrics": [
-    {"label": "上证指数", "value": "+0.18%", "detail": "收于 3,830.45 点"}
+    {"label": "上证指数", "value": "+0.18%", "change": 0.18, "detail": "收于 3,830.45 点"}
   ],
   "flow": {
     "title": "市场传导路径",
@@ -65,6 +66,7 @@ StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分
       "type": "table",
       "title": "指数对照",
       "columns": ["指数", "涨跌幅"],
+      "financialColumns": ["涨跌幅"],
       "rows": [{"指数": "上证指数", "涨跌幅": "+0.18%"}]
     }
   ],
@@ -150,3 +152,23 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 ## 金融涨跌色
 
 金融涨跌使用 `--sv-price-up`、`--sv-price-down`、`--sv-price-flat`，不要使用 success/danger 状态色。每个金融区域声明 `data-financial-market="CN"`、`"HK"` 或 `"US"`；A股、港股红涨绿跌，美股绿涨红跌。混合市场按区域分别声明，深浅色切换不改变市场语义。
+
+模板在 payload、block 或单项上声明 `financialMarket`，更细范围优先。指标/排行
+可传真实数值 `change`（仅用于方向，不改显示值）或 `direction: up|down|flat`。
+已声明的金融区域内，带正负号的数值可派生方向；零值保持中性，负号与单位完整保留。
+`change`、可解析的带符号值和显式 `direction` 依次提供方向，不能出现负值标红涨的冲突。
+表格用 `financialColumns` 指定真正的涨跌/收益变化列，不能把价格、持仓数、置信度、
+市场份额、参与率等列都设成金融涨跌。没有方向依据的普通百分比保留文字色。
+
+自定义与原生流式 HTML 在具体数值元素上写 `data-sv-direction="up|down|flat"`；
+图形本身的 fill/stroke 也使用同一涨跌变量，不能只给标题或卡片染色。
+旧模板只对金融语境中明确带符号的排行/指标百分比做兼容标注，不改数据、顺序或推断交易市场。
+缺少市场声明的旧金融值使用应用默认红涨绿跌展示；新产物仍须明确标注市场。
+
+## 当前暗夜主题
+
+共享主题使用中性炭黑，不再使用旧蓝灰/藏蓝卡片：主表面 `#181818`、次级表面
+`#202020`、边框 `#343434`、主文字 `#f5f5f5`、说明 `#aaaaaa`、弱文字 `#858585`。
+这些值只在 `assets/artifact-theme.css` 维护；生成代码引用语义变量，不复制色值。
+根背景透明，卡片 8px 圆角、无阴影，排行数值不换行；深浅色切换只改变调色板，
+不能丢失涨跌方向。状态成功/失败和金融上涨/下跌是两套独立语义。
