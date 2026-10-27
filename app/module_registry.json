@@ -27,7 +27,7 @@
     "name": "external_info_search",
     "script": "external_info_search.py",
     "label": "External Info Search",
-    "description": "通用联网搜索工具。默认按 Tavily → Serper 自动回退，返回第一个成功来源的 answer、articles、source 和 fallback_attempts；Kimi 仅在用户明确要求或 Agent 明确选择时使用。适合当前事实、事件、新闻、公告及非 AInvest 来源。多个独立角度优先写入 JSON queries 数组并通过 --queries-file 一次并发执行。成功结果应在本轮复用，不要重复抓取结果页。cli_args 可使用 --query、--queries-file、--site、--source auto|tavily|serper|kimi、--limit、--timeout、--output。"
+    "description": "通用联网搜索与图片搜索工具。默认按 Tavily → Serper 自动回退；Kimi 仅明确选择时用于网页搜索。当前事实、新闻、公告使用默认 web 模式。搜图、找照片、logo、参考图片使用 --mode images，返回 images（原图、缩略图、来源页、尺寸），不调用生图或额外 Agent；图片模式不支持 Kimi。图片展示可输出 outputs/generated/ 下的 HTML 画廊，并用 --payload-output 保留 JSON，最终以 AIME_CHART 标记引用。cli_args 可使用 --query、--queries-file、--site、--source auto|tavily|serper|kimi、--mode web|images、--page（图片翻页）、--limit（网页1..10，图片1..50）、--timeout、--output、--payload-output。多个独立角度可用 --queries-file；成功证据本轮复用，来源和失败尝试保留，搜索结果不代表商用授权。"
   },
   {
     "name": "url_content_reader",

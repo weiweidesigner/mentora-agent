@@ -48,7 +48,7 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
     "timeline.py": ("时间线", "timeline"),
     "flowchart.py": ("流程图", "flowchart"),
     "mind_map.py": ("思维导图", "脑图", "mind map"),
-    "external_info_search.py": ("联网搜索", "外部搜索", "最新新闻", "为什么", "原因", "解释", "kimi", "web search", "latest news"),
+    "external_info_search.py": ("联网搜索", "外部搜索", "最新新闻", "为什么", "原因", "解释", "kimi", "web search", "latest news", "搜图", "搜索图片", "找图片", "找照片", "image search", "photos"),
     "render_streamviz.py": ("可视化", "看板", "仪表盘", "dashboard", "visualization"),
     "ainvest_news_search.py": ("ainvest新闻", "站内新闻", "美股新闻", "最新新闻", "为什么", "原因", "解释"),
     "ainvest_video_search.py": ("视频搜索", "shorts", "youtube video"),

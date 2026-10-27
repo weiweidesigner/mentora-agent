@@ -1,11 +1,12 @@
 ---
 name: external-search
-description: Live web retrieval with automatic Tavily then Serper fallback, an explicitly selectable Kimi route, and separate URL reading.
+description: Search the web or find existing images/photos with source links through Tavily and Serper. Kimi is explicitly selected and web-only. URL reading is separate; image generation is not image search.
 ---
 
 # External Search
 
 Use this skill when a request needs external web evidence or content from specific URLs.
+Also use it for finding existing images, photos, logos or reference pictures, not generating new artwork.
 
 ## Scripts
 
@@ -42,6 +43,43 @@ The default `--source auto` order is Tavily → Serper. A provider fails over wh
 The JSON output includes `source`, `model`, `answer`, `articles`, `article_count`, `usage`, and `fallback_attempts`. Missing credentials and provider errors stay in `fallback_attempts`; do not describe an unattempted provider as failed or a failed route as successful.
 
 Use `url_content_reader.py` only when the user provides one or more URLs and asks to read, summarize, extract, or analyze them.
+
+## Image search
+
+Use the same script with `--mode images`. It reuses the existing keys and the
+Tavily → Serper fallback, without an embedded Agent or model synthesis. Do not
+route image search to Kimi or to FLUX. Existing web mode is unchanged.
+
+```sh
+python3 app/skill_runner.py execute --script external_info_search.py -- --mode images --query "Apple Park aerial photo" --limit 12 --output outputs/generated/image-search-unique.html --payload-output outputs/data/image-search-unique.json
+```
+
+Use a unique output basename for each search. For data only, `--output` may be
+a JSON path. Image mode accepts `--limit 1..50`, `--site`, `--source auto|tavily|serper`,
+`--page 1..100`, `--timeout`, and the existing query batch input. Limits are requested
+counts, not guarantees. Tavily has no pagination: page >1 fails that route and
+auto can proceed to Serper. Explicit Tavily fails rather than silently changing
+providers. No automatic multi-page scraping. Keep provider/failed attempts visible.
+
+Results add `images`, `image_count`, `page`, `mode`, and optional `gallery_path`.
+Each image keeps `image_url`, `thumbnail_url`, `source_url`, `title`, `description`,
+`width`, `height`, `source`, `provider`, `license`, and `availability`.
+Missing fields remain empty/null. Tavily result-level images inherit that result's
+source URL; standalone images without a source page remain unattributed. Never
+guess a source page from the image host. URLs are deduplicated; no image bytes or
+base64 enter the reasoning context, and no original images are downloaded server-side.
+
+For a visual answer, emit the returned gallery using the existing
+`[[AIME_CHART:/absolute/path/to/image-search-unique.html]]` marker. It is an iframe
+gallery, not a generated-image artifact and not a financial chart. Do not label
+external search results as AI-generated art or interpret their contents without
+actually viewing them. The gallery uses browser-side previews, click-to-enlarge,
+source/original links and copy-link controls; each failed image degrades independently.
+Search metadata is not proof that a URL still loads or that an image is genuine,
+current, licensed, or commercially reusable. License remains unknown unless verified.
+
+Provider references: [Tavily source-linked images](https://www.tavily.com/blog/better-image-retrieval)
+and [Serper Images response](https://serper.dev/).
 
 ## Evidence reuse and stopping
 

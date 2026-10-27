@@ -37,6 +37,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--site", action="append", default=[])
     parser.add_argument("--source", choices=["auto", "tavily", "serper", "kimi", "moonshot"], default="auto")
+    parser.add_argument("--mode", choices=["web", "images"], default="web")
+    parser.add_argument("--page", type=int, default=1, help="Image results page; Tavily supports only page 1.")
     parser.add_argument("--limit", type=int, default=6)
     parser.add_argument("--max-details", type=int, default=5)
     parser.add_argument("--freshness-context")
@@ -263,7 +265,13 @@ def run_query(args: argparse.Namespace, query: str, limit: int, source: str) -> 
     result: dict[str, Any] | None = None
     for provider in providers:
         try:
-            if provider == "tavily":
+            if getattr(args,'mode','web')=='images':
+                if provider not in {'tavily','serper'}:raise SearchProviderError('Kimi does not support image search; choose Tavily or Serper')
+                if str(PROJECT_ROOT) not in sys.path:sys.path.insert(0,str(PROJECT_ROOT))
+                from app.search_images import search_images
+                result=search_images(provider,query,args.site,limit,args.timeout,args.page,
+                    request=request_json,search_query=search_query,normalized_domains=normalized_domains,error=SearchProviderError)
+            elif provider == "tavily":
                 result = search_tavily(query, args.site, limit, args.timeout)
             elif provider == "serper":
                 result = search_serper(query, args.site, limit, args.timeout)
@@ -297,6 +305,10 @@ def run_query(args: argparse.Namespace, query: str, limit: int, source: str) -> 
         "usage": result.get("usage") or {},
         "fallback_attempts": attempts,
     }
+    if getattr(args,'mode','web')=='images':
+        payload.update(type='external-image-search',mode='images',page=args.page,
+            images=result.get('images') or [],image_count=len(result.get('images') or []),
+            limitation='图片与来源为搜索接口原始返回；可用性未预检，许可未知，不代表商用授权。')
     record_search(payload)
     return payload
 
@@ -311,7 +323,10 @@ def main() -> int:
     if not queries:
         print("Missing --query or --queries-file.", file=sys.stderr)
         return 2
-    limit = max(1, min(int(args.limit), 10))
+    if args.mode=='images' and (args.source in {'kimi','moonshot'} or not 1<=args.page<=100):
+        print('Image search requires Tavily/Serper and --page 1..100.',file=sys.stderr)
+        return 2
+    limit = max(1, min(int(args.limit), 50 if args.mode=='images' else 10))
     source = "kimi" if args.source == "moonshot" else args.source
     if len(queries) == 1:
         payload = run_query(args, queries[0], limit, source)
@@ -334,7 +349,13 @@ def main() -> int:
             "success_count": len(successful),
             "results": results,
         }
-    write_json(args.output, payload)
+    gallery=args.mode=='images' and Path(args.output).suffix.lower()=='.html'
+    if gallery:
+        if str(PROJECT_ROOT) not in sys.path:sys.path.insert(0,str(PROJECT_ROOT))
+        from app.search_images import write_gallery
+        payload['gallery_path']=write_gallery(args.output,payload)
+        payload['renderMode']='iframe'
+    else:write_json(args.output, payload)
     if args.payload_output and Path(args.payload_output).expanduser().resolve() != Path(args.output).expanduser().resolve():
         write_json(args.payload_output, payload)
     print(json.dumps(payload, ensure_ascii=False))

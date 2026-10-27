@@ -17235,7 +17235,7 @@ def media_search_category(question: str) -> str:
 def build_external_info_search_args(cli_args: list[Any], question: str) -> list[str]:
     args = sanitize_cli_args(cli_args)
     args = remove_cli_option(args, {"--output", "--format", "--payload-output", "--code", "--symbol"})
-    allowed_with_value = {"--query", "--topic", "--keyword", "--site", "--source", "--limit", "--max-details", "--timeout", "--freshness-context"}
+    allowed_with_value = {"--query", "--topic", "--keyword", "--site", "--source", "--limit", "--max-details", "--timeout", "--freshness-context", "--mode", "--page"}
     allowed_flags: set[str] = set()
     cleaned: list[str] = []
     index = 0
@@ -17252,6 +17252,10 @@ def build_external_info_search_args(cli_args: list[Any], question: str) -> list[
         if value in allowed_flags:
             cleaned.append(value)
         index += 1
+    if value_after_option(cleaned,'--mode')=='images':
+        if not any(has_cli_option(cleaned,key) for key in ('--query','--topic','--keyword')):cleaned.extend(['--query',question])
+        if not has_cli_option(cleaned,'--source'):cleaned.extend(['--source','auto'])
+        return cleaned
     if not has_cli_option(cleaned, "--query") and not has_cli_option(cleaned, "--topic") and not has_cli_option(cleaned, "--keyword"):
         cleaned.extend(["--query", infer_external_info_search_query_with_model(question)])
     elif has_cli_option(cleaned, "--query"):
