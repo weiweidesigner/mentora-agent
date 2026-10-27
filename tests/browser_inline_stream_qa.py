@@ -74,7 +74,7 @@ with sync_playwright() as p:
             document.querySelector('.finalAnswer').replaceChildren();article.streamAnswerNodes=new Map();delete article.streamAnswerRaw;article.streamVisualizationArtifacts=[];
             queueStreamVisualization(article,{id:'native',htmlUrl:'/generated/native.html',reset:true,delta:'<svg>',native:true});
             if(!document.querySelector('.streamvizArtifactHost'))throw Error('native stream waits for text');
-            window.nativeHost=document.querySelector('.streamvizArtifactHost');if(!nativeHost.querySelector('.streamvizToolThought')||nativeHost.querySelector('iframe'))throw Error('tool thought must precede completed visualization');
+            window.nativeHost=document.querySelector('.streamvizArtifactHost');if(!nativeHost.querySelector('iframe')||!mounts.some(item=>item.final===false))throw Error('incremental visualization must mount before completion');
             renderStreamAnswerText(article,{text:'Before\\n\\n[[AIME_CHART:/generated/native.html]]\\n\\nAfter',final:false});
             queueStreamVisualization(article,{id:'native',delta:'<text>more</text></svg>',native:true,final:true});
             if(document.querySelectorAll('.streamvizArtifactHost').length!==1||document.querySelector('.streamChartSlot .streamvizArtifactHost')!==nativeHost)throw Error('native duplicated on relocation');

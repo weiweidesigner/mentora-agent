@@ -103,9 +103,15 @@ test('native argument deltas increment one live host and final URL settles in pl
  w.renderStreamAnswerText(f.article,{blockId:'a',delta:'A'});
  w.queueStreamVisualization(f.article,{id:'v',argumentDelta:'{"title":"Chart",',native:true,reset:true});
  const host=f.article.querySelector('.streamvizArtifactHost');
+ assert.equal(seen.length,1);assert.equal(seen[0].final,false);
+ assert.equal(host.dataset.visualizationPhase,'running');
  w.renderStreamAnswerText(f.article,{blockId:'b',delta:'B'});
  w.queueStreamVisualization(f.article,{id:'v',argumentDelta:'"widget_code":"<p>1</p>"}',native:true});
+ assert.equal(seen.length,2);assert.equal(seen[1].final,false);
+ assert.equal(JSON.parse(seen[1].toolRawInput).widget_code,'<p>1</p>');
  w.queueStreamVisualization(f.article,{id:'v',htmlUrl:'/generated/live.html',native:true,final:true});
+ assert.equal(seen.length,3);assert.equal(seen[2].final,true);
+ assert.equal(host.dataset.visualizationPhase,'completed');
  assert.equal(f.article.querySelector('.streamvizArtifactHost'),host);
  assert.equal(f.article.querySelectorAll('.streamvizArtifactHost').length,1);
  assert.equal(host.dataset.artifactUrl,'/generated/live.html');

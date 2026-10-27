@@ -1744,29 +1744,11 @@ function upsertStreamVisualization(article, data = {}) {
     host.remove();
     return;
   }
-  if (!data.final) {
-    let thought = host.querySelector('.streamvizToolThought');
-    if (!thought) {
-      thought = document.createElement('div');
-      thought.className = 'streamvizToolThought';
-      thought.setAttribute('role','status');
-      thought.innerHTML = '<span class="streamvizToolThoughtText"></span><span class="streamvizToolThoughtState">正在生成可视化…</span>';
-      host.append(thought);
-    }
-    let title = data.thoughtSummary || data.title || '';
-    if (!title) {
-      const match = (host.streamVisualizationRawArguments || '').match(/"title"\s*:\s*("(?:[^"\\]|\\.)*")/);
-      try { if (match) title = JSON.parse(match[1]); } catch {}
-    }
-    thought.querySelector('.streamvizToolThoughtText').textContent = title || '构建可视化组件';
-    host.dataset.visualizationPhase = 'running';
-    keepScrollPosition(isNearBottom());
-    return;
-  }
-  host.querySelector('.streamvizToolThought')?.remove();
-  host.dataset.visualizationPhase = 'completed';
-  host.classList.remove('is-live');
-  if (data.htmlUrl && !host.streamVisualizationCode && !host.streamVisualizationRawArguments) {
+  // StreamViz parses incomplete tool JSON/HTML and patches its existing iframe.
+  // Forward real deltas immediately; its own loader handles an empty prefix.
+  host.dataset.visualizationPhase = data.final ? 'completed' : 'running';
+  host.classList.toggle('is-live', !data.final);
+  if (data.final && data.htmlUrl && !host.streamVisualizationCode && !host.streamVisualizationRawArguments) {
     const completed = createStreamVisualizationArtifact({url:data.htmlUrl,title:data.title || ''},0);
     completed.dataset.visualizationId = key;
     host.replaceWith(completed);
