@@ -1053,7 +1053,7 @@ function installReportTooltipPortal(frame) {
     if (source.nodeType !== 1 || !["DIV","SPAN","B","STRONG","SMALL","BR","UL","LI","P"].includes(source.tagName)) return document.createDocumentFragment();
     const clone = document.createElement(source.tagName.toLowerCase());
     const style = win.getComputedStyle(source);
-    for (const property of ["display","box-sizing","flex-direction","flex-wrap","flex-grow","flex-shrink","flex-basis","grid-template-columns","grid-auto-flow","gap","row-gap","column-gap","align-items","justify-content","min-width","max-width","min-height","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","font-variant-numeric","font-feature-settings","letter-spacing","line-height","white-space","text-align","overflow","text-overflow"]) clone.style.setProperty(property, style.getPropertyValue(property));
+    for (const property of ["display","box-sizing","flex-direction","flex-wrap","flex-grow","flex-shrink","flex-basis","grid-template-columns","grid-auto-flow","gap","row-gap","column-gap","align-items","align-self","justify-content","min-width","max-width","min-height","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","font-variant-numeric","font-feature-settings","letter-spacing","line-height","white-space","text-align","overflow","text-overflow"]) clone.style.setProperty(property, style.getPropertyValue(property));
     if (source.matches(".tip-dot,.tooltip-dot,.swatch")) {
       clone.style.width = style.width;
       clone.style.height = style.height;

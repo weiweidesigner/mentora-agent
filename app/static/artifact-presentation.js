@@ -219,6 +219,21 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 
+/* Keep numeric values/units intact while long field labels wrap independently. */
+(() => {
+  if(document.querySelector('[data-tooltip-value-layout]'))return;
+  const style=document.createElement('style');
+  style.dataset.tooltipValueLayout='1';
+  const scope=':is(.tooltip,.chart-tooltip,.generic-canvas-tooltip,.pie-tooltip,.ring-tooltip,.treemap-tooltip,.waterfall-tooltip,.group-line-tooltip-portal,.bar-line-tooltip-portal,.bar-chart-tooltip-portal,.grouped-bar-tooltip-portal,.generic-local-tooltip-portal)';
+  style.textContent=`
+${scope} :is(.tip-row,.tooltip-row,.tooltip-body){align-items:start!important}
+${scope} :is(.tip-label,.tooltip-label){min-width:0!important;white-space:normal!important;align-items:start!important}
+${scope} :is(.tip-value,.tooltip-value,.tooltip-row>b){white-space:nowrap!important;flex-shrink:0!important;min-width:max-content!important;align-self:start!important}
+${scope} :is(.tip-dot,.tooltip-dot){flex-shrink:0!important;align-self:start!important;margin-top:.5em!important}
+`;
+  (document.head||document.documentElement).append(style);
+})();
+
 /* Generic chart typography contract: axis/legend 13, tooltip 14/title 13. */
 (() => {
   if(document.querySelector('[data-generic-chart-typography]'))return;
