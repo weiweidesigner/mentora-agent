@@ -65,7 +65,7 @@ class PublicStream:
         if semantics.get('channel')!='progress' or key in self.final_keys or key in self.progress_keys or self.public_blocks.get(key)!=text:return []
         self.progress_keys.add(key)
         return [('answer_text',dict(blockId=key,discard=True,channel='commentary')),
-                ('progress',dict(blockId=key,text=text,kind='commentary',channelSemantics=semantics))]
+                ('progress',dict(blockId=key,text=semantics.get('progressSummary') or text,kind='commentary',channelSemantics=semantics))]
 
     def settle_progress(self):
         """Compatibility no-op: a tool boundary does not identify text semantics."""

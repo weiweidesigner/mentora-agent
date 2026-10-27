@@ -5,7 +5,7 @@ import pytest
 from app.public_text_channel import PublicTextChannelSession
 from app.public_stream import PublicStream,reduce_stream_block
 
-def router(choice='progress',failed=False):
+def router(choice='progress',failed=False,summary=None):
     calls=[]
     class Client:
         def __init__(self,**kwargs):self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
@@ -14,7 +14,7 @@ def router(choice='progress',failed=False):
         def create(self,**kwargs):
             calls.append(kwargs)
             if failed:raise TimeoutError('offline')
-            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps({'channel':choice})))],model='configured-model')
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps({'channel':choice,**({'progressSummary':summary} if summary is not None else {})})))],model='configured-model')
     return SimpleNamespace(factory=Client,calls=calls)
 
 def session_for(r):
@@ -73,12 +73,13 @@ def test_async_classifier_never_blocks_model_stream_and_fails_open():
         assert len(r.calls)==1
     finally:session.close()
 
-def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_path,monkeypatch):
+@pytest.mark.parametrize("summary",[None,"正在核对数据来源和统计口径。"])
+def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_path,monkeypatch,summary):
     import sys,threading
     from app.reasoning_frameworks import LocalAgentFrameworks
     release=threading.Event()
     monkeypatch.setenv('DSH_HOME',str(tmp_path/'dsh'))
-    monkeypatch.setattr('app.reasoning_frameworks.PublicTextChannelSession',lambda **_:session_for(router()))
+    monkeypatch.setattr('app.reasoning_frameworks.PublicTextChannelSession',lambda **_:session_for(router(summary=summary)))
     class Harness:
         def __init__(self,**kwargs):pass
         def close(self):release.set()
@@ -98,7 +99,7 @@ def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_p
         for event,data in events:
             seen.append((event,data))
             if event=='progress' and data.get('channelSemantics'):
-                assert data['text']=='我先确认数据口径。'
+                assert data['text']==(summary or '我先确认数据口径。')
                 release.set();break
         else:pytest.fail('public progress was not reclassified while the run was active')
         rest=list(events)
@@ -121,3 +122,49 @@ def test_classifier_receives_user_requested_body_context_without_changing_text()
     key=events[0][1]['blockId']
     assert stream.classify_progress(key,text,decision)==[]
     assert text in stream.transcript('展示后继续正文。')
+
+
+@pytest.mark.parametrize('question,text,summary',[
+    ('把今天美股盘前市场表现整理成一份HTML报告',
+     "I'll start by defining the minimum sufficient evidence for the report: today's US pre-market performance across major indices, key mega-cap stocks, and drivers (news). Then I'll check the data contracts.",
+     '正在确认美股盘前报告所需的信息和数据口径。'),
+    ('请用英文介绍今天的美股盘前市场', '我先检查行情数据契约。',
+     'Checking the pre-market data sources and available fields.'),
+    ('把数据整理成报告', '我会先读取 schema 再核对参数。',
+     '正在确认数据字段和统计口径。'),
+])
+def test_progress_normalizes_language_and_internal_terms_in_the_existing_classification_call(question,text,summary):
+    r=router(summary=summary)
+    session=PublicTextChannelSession(r.factory,usage_recorder=lambda _:None,question=question)
+    decision=session.classify(text)
+    assert len(r.calls)==1
+    assert decision['progressSummary']==summary
+    assert json.loads(r.calls[0]['messages'][1]['content'])['userQuestion']==question
+    stream=PublicStream();stream.chunk({'type':'text-delta','text':text})
+    stream.message({'content':[{'type':'text','text':text}]})
+    key,_=stream.channel_candidates[0]
+    events=stream.classify_progress(key,text,decision)
+    assert events[0][1]['discard']
+    assert events[1][1]['text']==summary
+    assert stream.public_blocks[key]==text  # retain original public source for provenance
+    assert stream.transcript('报告正文')=='报告正文'
+    blocks=[]
+    for event,data in events:reduce_stream_block(blocks,event,data)
+    assert blocks[0]['data']['text']==summary
+
+
+def test_answer_is_never_rewritten_even_if_classifier_returns_a_summary():
+    r=router(choice='answer',summary='不应替换正文')
+    decision=session_for(r).classify('NVDA rose 1.2%.')
+    assert 'progressSummary' not in decision
+    stream=PublicStream();stream.chunk({'type':'text-delta','text':'NVDA rose 1.2%.'})
+    stream.message({'content':[{'type':'text','text':'NVDA rose 1.2%.'}]})
+    key,text=stream.channel_candidates[0]
+    assert stream.classify_progress(key,text,decision)==[]
+    assert stream.transcript('')=='NVDA rose 1.2%.'
+
+
+@pytest.mark.parametrize('summary',[None, '', 'x'*241, {'invalid':'type'}])
+def test_invalid_progress_summary_keeps_original_public_text(summary):
+    decision=session_for(router(summary=summary)).classify('正在核对数据。')
+    assert 'progressSummary' not in decision
