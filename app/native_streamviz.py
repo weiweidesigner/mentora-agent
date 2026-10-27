@@ -84,7 +84,9 @@ data-sv-direction="up", "down", or "flat" from the actual signed change. Preserv
 displayed sign and unit; zero is neutral. Do not color standalone percentages such as
 80% participation/market share as gains. Use success/danger only for execution or risk status.
 Do not render an entire chart by varying the opacity of `var(--sv-text-primary)`; grayscale is
-only appropriate for neutral context or de-emphasized comparisons. The first code must be a
+only appropriate for neutral context or de-emphasized comparisons. Keep the report canvas and section/card backgrounds transparent in both palettes. Inherit the
+host sans-serif font; do not introduce a separate page font or filled report panels.
+The first code must be a
 visible card or SVG node—never a long text block.
 
 Treat a horizontal bar chart as a compact three-column system: reserve no more than 12% of the
