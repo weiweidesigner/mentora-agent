@@ -57,6 +57,8 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
+    "my-holdings": ("我的持仓", "持仓", "我的股票", "持仓看板", "my portfolio", "my holdings"),
+    "my-watchlist": ("我的自选", "自选股", "自选", "my watchlist", "favorites"),
     "streamviz": ("streamviz", "dashboard", "仪表盘", "看板", "可视化", "交互式html", "流式网页"),
     "custom-html-widget": ("html报告", "html页面", "html组件", "widget", "mini app"),
     "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),

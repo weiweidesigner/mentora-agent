@@ -64,3 +64,8 @@ test('registered renderers inherit only the session-scoped live HTML channel',()
  const value='/project/outputs/.streamviz-events/session.jsonl';
  assert.equal(configuredEnvironment({MENTORA_STREAMVIZ_EVENTS:value}).MENTORA_STREAMVIZ_EVENTS,value);
 });
+
+test('personal Skills receive only the host-bound local read capability',()=>{
+ const endpoint='http://127.0.0.1:10000/session-capability';
+ assert.deepEqual(configuredEnvironment({MENTORA_PERSONAL_DATA_ENDPOINT:endpoint,OTHER_OWNER:'two'}),{MENTORA_PERSONAL_DATA_ENDPOINT:endpoint});
+});

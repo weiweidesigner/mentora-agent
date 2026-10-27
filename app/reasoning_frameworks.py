@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import difflib
 import importlib.util
 import ipaddress
@@ -255,6 +256,7 @@ class LocalAgentFrameworks:
         reasoning_effort: str = "",
         resolved_inference_model: str = "",
         visualization_theme: str = "light",
+        runtime_env: dict[str,str] | None = None,
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         # Start the general agent directly. Choosing renderers before the agent
         # sees the evidence (including uploaded images) both blocks its first
@@ -266,6 +268,7 @@ class LocalAgentFrameworks:
                 question, images, session_key, engine_session_id, history or [], inference_model,
                 reasoning_effort=reasoning_effort,
                 visualization_guidance=visualization_guidance,
+                runtime_env=runtime_env,
             )
             yield from events
             return
@@ -274,6 +277,7 @@ class LocalAgentFrameworks:
                 question, images, session_key, engine_session_id, history or [], inference_model,
                 reasoning_effort=reasoning_effort,
                 visualization_guidance=visualization_guidance,
+                runtime_env=runtime_env,
             )
             yield from events
             return
@@ -834,6 +838,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 用户明确要求 HTML 报告、HTML 页面或 HTML 组件时，先完成匹配的上游研究与验证。DeepSeek 对无脚本的 HTML/CSS/SVG 报告优先使用 visualize_show_widget 实时生成并保存独立 HTML，以 AIME_CHART 标记交付。已有结构化 payload、非原生框架或确需脚本的页面可使用 streamviz 的 render_streamviz.py；不要为可原生流式的报告额外加载 custom-html-widget 并写完整 html 包装文件。不能只交付 Markdown 或几张图表来代替用户要求的 HTML 报告；不能把普通文本回答强制改成 HTML。
 文件生成任务还须在最终回答中用 [[AIME_FILE:已验证生成文件的绝对路径]] 交付可下载文件，不能只说“已生成”。HTML 报告同时保留 AIME_CHART 预览标记。仅将最终交付文件标记为 AIME_FILE，不标记临时数据或中间产物。报告跟随宿主主题，不要添加浅色/暗色切换控件；独立下载文件也不需要第二套主题开关。
 最终答案末尾另起一行写 [[AIME_SKILLS:实际使用的Skill名称，以英文逗号分隔]]；未使用项目 Skill 时写 [[AIME_SKILLS:none]]。该标记只用于系统记录。
+用户提到“我的持仓”“我的自选”、个人监控或看板时，使用 my-holdings / my-watchlist Skill 读取当前会话用户已有数据；不要未调用就声称不知道持仓或要求手工输入代码。身份由宿主绑定，不索取身份或凭证；持仓为 Mentora 模拟账户，自选不是持仓。仅在实际读取失败或成功返回空列表时说明情况，按必要缺口询问。
 所有面向用户的文字（包括执行前说明、工具间进度、commentary 和最终回答）都必须使用用户的语言。执行过程中只提供简短、具体的公开行动摘要，例如“我先核对苹果的图表设置，再加载日线”，供界面的动态进度文案使用；不要输出内部思维链。
 最终回答使用用户的语言，先给核心结论，再给关键证据和图表解读，最后给风险、数据时间与口径。结论强度必须与证据质量匹配；代理数据、降级数据或不完整数据必须显式披露。不得把内部规划、命令日志或密钥写进答案。
 联网搜索、新闻、公告、研报或网页事实的来源由 Skill 工具返回的结构化数据自动收集，并由 Mentora 现有溯源组件展示。最终正文不要加入 Markdown 来源链接、裸 URL、“来源：”引导或“来源/参考资料”清单。
@@ -1640,6 +1645,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         reasoning_effort: str = "",
         _repair_attempt: int = 0,
         visualization_guidance: str = "",
+        runtime_env: dict[str,str] | None = None,
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         codex_bin = os.getenv("AICHART_CODEX_BIN", "codex")
         resolved = shutil.which(codex_bin) or (codex_bin if Path(codex_bin).is_file() else "")
@@ -1892,6 +1898,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         runtime_sources: list[dict[str, str]] = []
         completed_tools: list[dict[str, Any]] = []
         codex_env = os.environ.copy()
+        codex_env.update(runtime_env or {})
         command_guard = (self.project_root / "scripts" / "codex-command-guard").resolve()
         if command_guard.is_dir():
             codex_env["MENTORA_CODEX_GUARD_BIN"] = str(command_guard)
@@ -2076,6 +2083,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         reasoning_effort=selected_effort,
                         _repair_attempt=1,
                         visualization_guidance=visualization_guidance,
+                        runtime_env=runtime_env,
                     )
                     return
                 raise ReasoningFrameworkError(f"本地模型未完成可信的工具执行：{issue}。请重试或切换模型。")
@@ -2117,6 +2125,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         reasoning_effort: str = "",
         visualization_guidance: str = "",
         _repair_attempt: int = 0,
+        runtime_env: dict[str,str] | None = None,
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         self._add_deepseek_sdk_path()
         selected_model = inference_model.strip() or os.getenv("AICHART_DEEPSEEK_MODEL", "deepseek-flash")
@@ -2222,6 +2231,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             ),
             "env": {
                 "MENTORA_PROJECT_ROOT": str(self.project_root),
+                **(runtime_env or {}),
                 "MENTORA_TOOL_ENV_KEYS": os.getenv("AICHART_TOOL_ENV_KEYS", ""),
             },
         }
@@ -2245,7 +2255,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         requested_session_id = str(engine_session_id or session_key or "").strip() or f"session-{uuid.uuid4().hex}"
         # A Harness keeps its launch configuration. Separate effort profiles so
         # changing the slider cannot reuse a process with different model options.
-        requested_harness_key = f"{requested_session_id}::{selected_model}::{selected_reasoning_effort}"
+        runtime_scope=("::personal-"+hashlib.sha256(runtime_env["MENTORA_PERSONAL_DATA_ENDPOINT"].encode()).hexdigest()[:20]) if runtime_env and runtime_env.get("MENTORA_PERSONAL_DATA_ENDPOINT") else ""
+        requested_harness_key = f"{requested_session_id}::{selected_model}::{selected_reasoning_effort}{runtime_scope}"
         with self._deepseek_harness_guard:
             cached = requested_harness_key in self._deepseek_harnesses
         session_root = dsh_home / "sessions"
@@ -2256,7 +2267,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         # but allocate a fresh engine session for the replacement Harness.
         if not cached and any(session_root.glob(f"*/{requested_session_id}/session*.jsonl*")):
             requested_session_id = f"session-{uuid.uuid4().hex}"
-        harness_key = f"{requested_session_id}::{selected_model}::{selected_reasoning_effort}"
+        harness_key = f"{requested_session_id}::{selected_model}::{selected_reasoning_effort}{runtime_scope}"
         with self._active_run_guard:self._active_deepseek_runs[session_key]=harness_key
         yield "status", {
             "message": f"正在连接 DeepSeek Harness · {selected_model}",
@@ -2550,6 +2561,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     reasoning_effort,
                     repair_guidance,
                     _repair_attempt=1,
+                    runtime_env=runtime_env,
                 )
                 return
             raise ReasoningFrameworkError(

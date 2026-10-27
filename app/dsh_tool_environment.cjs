@@ -25,6 +25,7 @@ function configuredEnvironment(env = process.env) {
       result.PATH = [bin, env.PATH].filter(Boolean).join(path.delimiter);
     }
   }
+  if (env.MENTORA_PERSONAL_DATA_ENDPOINT) result.MENTORA_PERSONAL_DATA_ENDPOINT = env.MENTORA_PERSONAL_DATA_ENDPOINT;
   if (env.MENTORA_STREAMVIZ_EVENTS) result.MENTORA_STREAMVIZ_EVENTS = env.MENTORA_STREAMVIZ_EVENTS;
   return result;
 }

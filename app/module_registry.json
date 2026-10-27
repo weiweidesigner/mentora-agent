@@ -377,5 +377,17 @@
     "script": "render_streamviz.py",
     "label": "StreamViz 组件渲染",
     "description": "泛化的可视化、整体视图、数据看板或未指定图表类型的视觉表达，默认优先使用 StreamViz；只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 内置结构确实无法表达时，才选择其他渲染组件。它是唯一的通用看板展示组件，无内置数据源。必须先使用匹配的数据、搜索或计算技能，或读取用户提供的数据，将核实的结构化事实通过 --input UTF-8 JSON 文件传入，--output 输出一个 standalone HTML 组件。默认复用已验证的 dashboard/comparison/timeline/flow/brief 模板，不再加载其他展示技能或手写 HTML；仅当用户明确要求定制或内置结构无法表达时使用 html。不得编造数据，不把上游数据源交付为额外组件。"
+  },
+  {
+    "name": "read_my_holdings",
+    "script": "read_my_holdings.py",
+    "label": "我的持仓",
+    "description": "读取当前会话用户的 Mentora Deal 模拟账户持仓、数量、成本、估值与资金；复用 portfolio-account，只读，不下单。 用户说我的持仓、我的自选、持仓监控或个人看板时可直接读取，不要求手工提供代码。无参数，身份由宿主注入；失败不等于空列表。"
+  },
+  {
+    "name": "read_my_watchlist",
+    "script": "read_my_watchlist.py",
+    "label": "我的自选",
+    "description": "读取当前会话用户在 Mentora Deal 保存的自选股票列表及代码；只读，不添加、删除或交易。 用户说我的持仓、我的自选、持仓监控或个人看板时可直接读取，不要求手工提供代码。无参数，身份由宿主注入；失败不等于空列表。"
   }
 ]

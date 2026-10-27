@@ -177,7 +177,7 @@ def durable_chat_events(payload,user):
     portfolio=globals().get('PORTFOLIO')
     research_only=bool(portfolio and portfolio.workflow.research_only_request(payload.question))
     deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or (not payload.agent and portfolio.workflow.handles_question(payload.question,payload.history))))
-    events=portfolio.workflow.stream_idea(user,payload.question,payload.history,reasoning_effort=payload.reasoningEffort) if deal else framework_events(payload)
+    events=portfolio.workflow.stream_idea(user,payload.question,payload.history,reasoning_effort=payload.reasoningEffort) if deal else framework_events(payload,user=user)
     if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
     charts={}
     answer_started=False
@@ -326,7 +326,7 @@ def streamviz_events_for_module(data: dict[str, Any]) -> Iterator[tuple[str, dic
     yield "module", data
 
 
-def framework_events(payload: ChatRequest) -> Iterator[tuple[str, dict[str, Any]]]:
+def framework_events(payload: ChatRequest, *, user=None) -> Iterator[tuple[str, dict[str, Any]]]:
     question = normalized_question(payload)
     if not question:
         raise HTTPException(status_code=400, detail="问题不能为空")
@@ -355,6 +355,7 @@ def framework_events(payload: ChatRequest) -> Iterator[tuple[str, dict[str, Any]
         reasoning_effort=payload.reasoningEffort,
         resolved_inference_model=payload.resolvedInferenceModel,
         visualization_theme=payload.themeMode,
+        runtime_env=globals()["PERSONAL_DATA"].environment(user) if user and globals().get("PERSONAL_DATA") else {},
     ):
         yield event_name, data
 
@@ -445,10 +446,10 @@ def delete_studio_session(session_id: int) -> dict[str, bool]:
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-def chat(payload: ChatRequest) -> ChatResponse:
+def chat(payload: ChatRequest, request: Request, response: Response) -> ChatResponse:
     try:
         final: dict[str, Any] | None = None
-        for event_name, data in framework_events(payload):
+        for event_name, data in framework_events(payload,user=chat_identity(request,response)):
             if event_name == "final":
                 final = data
         if final is None:
@@ -872,7 +873,7 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
     question = config['question'].replace('{{date}}', local_time.date().isoformat()).replace('{{market}}', MARKETS[config['market']]['name']).replace('{{symbols}}', config['symbols'])
     payload=ChatRequest(question=context+question,agent='mentora' if skill_only else config.get('agent','mentora'),sessionId='day-'+run_id,reasoningFramework='deepseek',reasoningEffort=config.get('reasoningEffort','low'),themeMode='dark',history=config.get('_history',[]))
     answer=None
-    events=framework_events(payload) if skill_only else durable_chat_events(payload,config['_owner'])
+    events=framework_events(payload,user=config["_owner"]) if skill_only else durable_chat_events(payload,config['_owner'])
     for event_name,data in events:
         if event_name=='error':
             detail=str(data.get('detail') or data.get('message') or '').strip()
@@ -905,6 +906,8 @@ if (ROOT/'app/portfolio.py').is_file():
     from app.portfolio import Portfolio, create_router as create_portfolio_router
     PORTFOLIO = Portfolio(Path(os.getenv('VEYA_PORTFOLIO_DATA_DIR', str(ROOT / 'outputs' / 'portfolio'))), DAY_TASKS)
     app.include_router(create_portfolio_router(PORTFOLIO))
+    from app.personal_data import PersonalDataBridge
+    PERSONAL_DATA=PersonalDataBridge(PORTFOLIO)
 
     @app.on_event('startup')
     def start_portfolio():
@@ -913,6 +916,7 @@ if (ROOT/'app/portfolio.py').is_file():
 
     @app.on_event('shutdown')
     def stop_portfolio():
+        PERSONAL_DATA.close()
         PORTFOLIO.stop()
 
 

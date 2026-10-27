@@ -13,7 +13,7 @@ function = next(node for node in ast.parse(source.read_text()).body
 
 
 def run(events):
-    scope = {'framework_events': lambda payload: iter(events)}
+    scope = {'framework_events': lambda payload,**kwargs: iter(events)}
     exec(compile(ast.Module(body=[function], type_ignores=[]), '<isolated gateway>', 'exec'), scope)
     return list(scope['durable_chat_events'](SimpleNamespace(question='fixture', agent='', history=[]), {}))
 
