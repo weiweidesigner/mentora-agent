@@ -2484,7 +2484,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             activity.close()
             public_channels.close()
             parallel_widgets.close()
-            with self._active_run_guard:self._active_widget_runs.pop(session_key,None)
+            with self._active_run_guard:
+                self._active_widget_runs.pop(session_key,None)
+                if self._active_deepseek_runs.get(session_key)==harness_key:self._active_deepseek_runs.pop(session_key,None)
+            if worker.is_alive():self._drop_deepseek_harness(harness_key)
         worker.join()
         with self._active_run_guard:
             if self._active_deepseek_runs.get(session_key)==harness_key:self._active_deepseek_runs.pop(session_key,None)
