@@ -56,6 +56,8 @@ def main():
             assert loading.locator('circle').count()==621
             assert loading.locator('.imageGenerationProgress').inner_text()=='准备中'
             assert loading.locator('.imageGenerationLabel').count()==0
+            loading.evaluate("node=>node.insertAdjacentHTML('afterbegin','<div class=\"imageGenerationLabel\">正在勾勒草图</div>')")
+            assert loading.locator('.imageGenerationLabel').evaluate('(node)=>getComputedStyle(node).display')=='none'
             bounds=loading.bounding_box()
             assert bounds['width']<=width
             assert bounds['width']<=512 and abs(bounds['height']-bounds['width'])<1
@@ -65,6 +67,7 @@ def main():
             assert dots.evaluate('(g)=>getComputedStyle(g).transform')!=first
             page.evaluate("handleStreamEvent(qaArticle,'status',{phase:'flux-wait',progressPct:36})")
             assert loading.locator('.imageGenerationProgress').inner_text()=='36%'
+            assert loading.locator('.imageGenerationLabel').count()==0
             page.evaluate("handleStreamEvent(qaArticle,'status',{phase:'flux-denoise',progressPct:50,message:'正在生成图像细节 · 2/4 步'})")
             assert page.evaluate('qaArticle.dataset.currentThinking')=='正在生成图像细节 · 2/4 步'
             page.evaluate("handleStreamEvent(qaArticle,'status',{phase:'flux-decode',progressPct:100,message:'推理已完成，正在解码图片'})")

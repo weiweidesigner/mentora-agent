@@ -20,8 +20,13 @@ test('image loading reuses one animated field and never invents percent progress
   assert.doesNotMatch(field.textContent,/%/);
   w.renderImageGenerationLoading(article,{phase:'flux-generate',progressPct:36});
   assert.equal(field.querySelector('.imageGenerationProgress').textContent,'36%');
+  field.insertAdjacentHTML('afterbegin','<div class="imageGenerationLabel">正在勾勒草图</div>');
+  w.renderImageGenerationLoading(article,{phase:'flux-denoise',progressPct:50});
+  assert.equal(article.querySelector('.imageGenerationLoading'),field);
+  assert.equal(field.querySelector('.imageGenerationLabel'),null);
+  assert.doesNotMatch(field.textContent,/正在勾勒草图/);
   w.renderImageGenerationLoading(article,{phase:'flux-wait',progressPct:900});
-  assert.equal(field.querySelector('.imageGenerationProgress').textContent,'36%');
+  assert.equal(field.querySelector('.imageGenerationProgress').textContent,'50%');
   w.clearImageGenerationLoading(article);
   assert.equal(article.querySelector('.imageGenerationLoading'),null);
   article.activityEnded=true;w.renderImageGenerationLoading(article,{phase:'flux-wait'});

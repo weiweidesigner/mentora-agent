@@ -3779,6 +3779,9 @@ function renderImageGenerationLoading(article, data = {}) {
     loading.innerHTML='<div class="imageGenerationField"><svg viewBox="0 0 672 576" aria-hidden="true"><g class="imageGenerationDots">'+dots.join('')+'</g></svg><span class="imageGenerationProgress"></span></div>';
     target.append(loading);
   }
+  // Open conversations may retain the older loading DOM across reconnects.
+  // Migrate that DOM in place instead of preserving its removed caption.
+  loading.querySelectorAll('.imageGenerationLabel').forEach(node=>node.remove());
   const chinese=/^zh/.test(article.dataset.lang || 'zh-CN');
   loading.setAttribute('aria-label',data.message || (chinese?'正在生成图片':'Generating image'));
   const progress=loading.querySelector('.imageGenerationProgress');

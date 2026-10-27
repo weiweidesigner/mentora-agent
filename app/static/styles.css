@@ -3998,6 +3998,7 @@ p {
 }
 
 .imageGenerationLoading{width:min(100%,512px);margin:8px 0 16px;color:var(--ink);box-sizing:border-box}
+.imageGenerationLoading .imageGenerationLabel{display:none!important}
 .imageGenerationField{position:relative;width:100%;overflow:hidden;aspect-ratio:1}
 .imageGenerationField svg{display:block;width:100%;height:100%;overflow:visible;fill:#a580ef}
 .imageGenerationWave{transform-box:fill-box;transform-origin:center;animation:imageDotWave 3.2s ease-in-out infinite}
