@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { StreamVisualization, normalizeStreamVisualizationPayload } from "streamviz-react";
+import { StreamVisualization, normalizeStreamVisualizationPayload, completeStreamHtml } from "streamviz-react";
+import { prepareStreamDocument } from "./streamviz-document.mjs";
 import "streamviz-react/styles.css";
 import chartGeometry from "../app/skills/streamviz/assets/chart-geometry.js?raw";
 import financialSemantics from "../app/skills/streamviz/assets/financial-semantics.js?raw";
@@ -22,14 +23,11 @@ function mount(container, payload = {}) {
     roots.set(container, root);
   }
   mountedPayloads.set(container, payload);
-  const props = normalizeStreamVisualizationPayload(payload);
-  // Saved and live widgets render inside StreamViz's sandbox, bypassing the artifact route.
-  const repairGeometry = (code) => typeof code === 'string' && code.includes('chartbox') && !code.includes('data-sv-chart-geometry')
-    ? code + '<script data-sv-chart-geometry>' + chartGeometry + '</script>' : code;
-  const bindFinancial = code => typeof code === 'string' && !code.includes('data-sv-financial-semantics')
-    ? code + '<script data-sv-financial-semantics>' + financialSemantics + '</script>' : code;
-  props.code = bindFinancial(repairGeometry(props.code)) + "<script data-widget-control>" + widgetControl + "</script>";
-  if (props.exportCode) props.exportCode = bindFinancial(repairGeometry(props.exportCode));
+  const props = prepareStreamDocument(normalizeStreamVisualizationPayload(payload), [
+    ['data-sv-chart-geometry', chartGeometry],
+    ['data-sv-financial-semantics', financialSemantics],
+    ['data-widget-control', widgetControl],
+  ], completeStreamHtml);
   root.render(
     <StreamVisualization
       {...props}

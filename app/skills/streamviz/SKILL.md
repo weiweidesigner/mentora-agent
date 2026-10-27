@@ -173,3 +173,7 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 这些值只在 `assets/artifact-theme.css` 维护；生成代码引用语义变量，不复制色值。
 根背景透明，卡片 8px 圆角、无阴影，排行数值不换行；深浅色切换只改变调色板，
 不能丢失涨跌方向。状态成功/失败和金融上涨/下跌是两套独立语义。
+
+### 正文中的调用时机
+
+在正文需要 HTML 展示的位置先输出必要的解读，再调用原生 `visualize_show_widget`，工具参数生成时就在该位置增量预览，随后继续正文。不要等整段回答结束才调用；不要把 HTML、widget_code 或内部脚本作为正文代码块输出。

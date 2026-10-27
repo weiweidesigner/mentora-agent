@@ -1445,8 +1445,13 @@ function replayOrderedStream(article, blocks, container) {
     } else if (block.kind === 'visualization' && block.data?.native) {
       const item = canonicalArtifact(block.data || {});
       const url = item.htmlUrl || item.url;
-      if (url && !Array.from(container.querySelectorAll('[data-artifact-url]')).some(node => streamChartReferenceKey(node.dataset.artifactUrl) === streamChartReferenceKey(url)))
-        container.appendChild(withArtifactWidgetControl(createStreamVisualizationArtifact({...item,url},0),{...item,url}));
+      if (url && !Array.from(container.querySelectorAll('[data-artifact-url]')).some(node => streamChartReferenceKey(node.dataset.artifactUrl) === streamChartReferenceKey(url))) {
+        const lane = document.createElement('section');
+        lane.className = 'streamvizLiveLane';
+        lane.dataset.streamKey = block.id || url;
+        lane.appendChild(withArtifactWidgetControl(createStreamVisualizationArtifact({...item,url},0),{...item,url}));
+        container.appendChild(lane);
+      }
     }
   }
 }
@@ -1545,6 +1550,11 @@ function syncStreamAnswerPlacement(article, preview) {
     const key = streamChartReferenceKey(token.reference);
     if (!key || seen.has(key)) continue;
     seen.add(key);
+    // A streamed tool already occupies its chronological invocation position.
+    // The final delivery marker must not pull that live iframe below later prose.
+    const invokedHost = Array.from(target.querySelectorAll('[data-artifact-url]'))
+      .find(node => streamChartReferenceKey(node.dataset.artifactUrl) === key && node.closest('.streamvizLiveLane'));
+    if (invokedHost) continue;
     let slot = preview.streamAnswerNodes.get(key);
     if (!slot) {
       slot = document.createElement("section");
