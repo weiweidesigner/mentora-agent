@@ -59,3 +59,8 @@ test('market cache is stable within a turn, changes for the next user, and honor
   dispose();
  }finally{if(old===undefined)delete process.env.MENTORA_PROJECT_ROOT;else process.env.MENTORA_PROJECT_ROOT=old;}
 });
+
+test('registered renderers inherit only the session-scoped live HTML channel',()=>{
+ const value='/project/outputs/.streamviz-events/session.jsonl';
+ assert.equal(configuredEnvironment({MENTORA_STREAMVIZ_EVENTS:value}).MENTORA_STREAMVIZ_EVENTS,value);
+});

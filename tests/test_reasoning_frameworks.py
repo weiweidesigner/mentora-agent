@@ -351,7 +351,8 @@ def test_framework_prompt_chooses_chart_scope_from_question(tmp_path: Path) -> N
     assert "代理数据、降级数据或不完整数据必须显式披露" in prompt
     assert "尝试另一个匹配来源并说明降级情况" in prompt
     assert "工具之间必须用文件路径传递数据" in prompt
-    assert "前端只接收生成文件的绝对路径" in prompt
+    assert "普通文件组件通过绝对路径交付" in prompt
+    assert "原生 visualize_show_widget" in prompt
     assert "禁止把大段数组" in prompt
 
 
@@ -1246,3 +1247,44 @@ def test_tool_metadata_uses_conversation_language_without_translation_call(tmp_p
     assert client._localized_tool_summary('Render a chart', english, chinese) == english
     prompt = client._prompt('deepseek', '生成图表', [], [])
     assert 'description、title、thoughtSummary 也是直接展示给用户的步骤标题' in prompt
+
+
+def test_generated_file_stream_reaches_gateway_before_tool_result_and_final(tmp_path,monkeypatch):
+    import os
+    from app.streamviz_files import HtmlRenderStream
+    generated=tmp_path/'outputs/generated';generated.mkdir(parents=True)
+    output=generated/'report.html';finished=threading.Event()
+    monkeypatch.setenv('DSH_HOME',str(tmp_path/'dsh'))
+    class Harness:
+        def __init__(self,**kwargs):self.options=kwargs
+        def close(self):pass
+        def run(self,prompt,*,session_id,on_notification):
+            previous=os.environ.get('MENTORA_STREAMVIZ_EVENTS')
+            os.environ['MENTORA_STREAMVIZ_EVENTS']=self.options['env']['MENTORA_STREAMVIZ_EVENTS']
+            try:
+                writer=HtmlRenderStream(output,'Report')
+                writer.append('<section>Before complete</section>')
+                on_notification(SimpleNamespace(method='session.event',payload={'sessionId':session_id,'event':{'type':'tool/call','data':{'callId':'render','name':'bash','arguments':{'command':'render_streamviz.py'}}}}))
+                assert finished.wait(3)
+                output.write_text('<section>Before complete</section>');writer.finish();writer.close()
+                return SimpleNamespace(session_id=session_id,final_response='完成',events=[],notifications=[])
+            finally:
+                if previous is None:os.environ.pop('MENTORA_STREAMVIZ_EVENTS',None)
+                else:os.environ['MENTORA_STREAMVIZ_EVENTS']=previous
+    monkeypatch.setitem(sys.modules,'deepseek_harness',SimpleNamespace(DeepSeekHarness=Harness))
+    client=LocalAgentFrameworks(project_root=tmp_path,generated_dir=generated)
+    stream=client.stream('deepseek','生成 HTML 报告',[],session_key='file-stream')
+    try:
+        first=[]
+        for event,data in stream:
+            first.append((event,data))
+            if event=='visualization':break
+        assert first[-1][1]['delta']=='<section>Before complete</section>'
+        assert first[-1][1]['final'] is False and not output.exists()
+        assert first[-1][1]['streamvizSource']=='generated-html-live'
+    finally:finished.set()
+    rest=list(stream)
+    assert any(event=='visualization' and data.get('final') for event,data in rest)
+    assert rest[-1][0]=='final'
+    assert rest[-1][1]['fileArtifacts'][0]['type']=='HTML'
+    client.close()

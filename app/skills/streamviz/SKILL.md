@@ -11,13 +11,14 @@ StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分
 
 1. 先按用户问题选择并执行数据、搜索、计算、分析或图表 Skill。
 2. 核对上游产物的来源、时间和口径；将用于展示的事实压缩为一个 JSON 文件。
-3. 调用本 Skill 的脚本生成独立 HTML。Aime Chart 网关会自动把该 HTML 作为 StreamViz 流式视觉模块嵌入对话。
+3. DeepSeek 优先调用本轮工具循环内的 `visualize_show_widget`，传 `title` 和基于已核实数据的 `widget_code`。HTML/SVG 随模型参数真实增量展示，工具完成时自动保存独立 HTML，仍可下载报告文件。不要先写 Python/JSON 包装完整 `html` 再渲染，导致模型生成期间没有可视内容。
+4. 已有结构化 payload、非原生框架或需要脚本的页面可继续调用 `render_streamviz.py`。渲染器按生成顺序发出真实 HTML 事件并原子保存文件；它不对完整成品做延时回放。
 
 不得跳过前两步直接根据用户问题生成“市场数据”或指标占位符。没有经过验证的数据时，payload 只能表达限制和下一步，不能使用 `—`、示例数值或模拟结论冒充真实结果。
 
 ## 选择表达形态
 
-默认复用本 Skill 已验证的结构模板和响应式样式，不手写页面 HTML/CSS，也不再加载
+原生工具沿用本 Skill 的布局结构、响应式规则和主题变量；已有 payload 可复用已验证的模板。不再加载
 `custom-html-widget` 或另一个看板展示 Skill。依据问题和上游证据选择 `layout`，而不是一律铺满 metrics：
 
 - `dashboard`：需要同时扫读多个关键指标时使用。

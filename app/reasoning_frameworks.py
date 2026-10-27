@@ -21,6 +21,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Iterator
 from app.public_stream import PublicStream, WIDGET_TOOL
+from app.streamviz_files import HtmlRenderEvents
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urlsplit
@@ -806,7 +807,7 @@ class LocalAgentFrameworks:
 {question}{image_note}{history_note}{artifact_note}
 
 你是 Mentora 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
-计划、取数检查、契约读取和执行过程属于公开进度说明，不是正式答案；有消息通道时使用 commentary。正式答案以有依据的结论和解读为主，不复述这些执行日志，也不要为凑交互增加工具或重复段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。宿主先显示工具说明和执行状态，成功结束后在同一位置展示组件；普通组件生成的完整 HTML 直接展示，不伪装成逐字生成。
+计划、取数检查、契约读取和执行过程属于公开进度说明，不是正式答案；有消息通道时使用 commentary。正式答案以有依据的结论和解读为主，不复述这些执行日志，也不要为凑交互增加工具或重复段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。原生工具的参数在模型生成期间实时展示，并自动保存可下载的独立 HTML。需要 HTML 报告时也优先使用该原生工具，不要先写 Python/JSON 包装完整 html 再调用渲染脚本，这会失去模型生成期间的增量。已有结构化 payload 或需要脚本的页面仍可使用 render_streamviz.py；它发送真实渲染事件，普通组件的完整 HTML 不伪装成逐字生成。
 Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Yahoo 行情/财务接口，包括临时代码和组件回退；历史会话中的 Yahoo 命令不得复用。使用现有其他数据源；无匹配数据时明确说明限制，不得编造或替换标的。 该禁用策略不是本轮取数失败的原因。数据缺口必须依据本轮真实工具回执说明已尝试来源及实际失败原因；不得把工具移除、内部配置或未发生的请求写成市场数据缺失的原因。
 请直接完成用户任务，而不是解释如何完成。宿主会根据本轮语义提供少量候选 Skill 和组件；它们只是检索结果，你仍负责选择、组合或放弃。优先阅读所选候选的契约并执行；只有候选明显不足时才扩展检索 .agents/skills，禁止为了发现工具而扫描全部目录。不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
@@ -824,9 +825,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
 工具之间必须用文件路径传递数据：数据、搜索或计算结果先写入 outputs 下的 JSON/CSV 文件，后续脚本只接收该文件路径。禁止把大段数组、K 线、新闻列表或完整 JSON 直接填入命令参数、提示词或最终回答。
 所有已注册的数据、搜索、计算和渲染脚本统一通过 app/skill_runner.py execute 调用，不得绕过 runner 直接执行 canonical script。runner 返回 dataHandoffs 时，直接使用其中的 summary 完成推理，并把 path 传给下游；除非摘要明确缺少用户要求的字段，否则禁止再用 Python、cat、jq、sed 等重新展开完整文件。
 当一次确定性计算已经覆盖用户要求的样本、口径、关键统计和限制，证据即视为充分：立即进入报告生成或最终回答。禁止以“再确认一次”“确定性汇总”“稳健性检查”为由重读结果、重算同一指标、额外切分子样本或寻找旁证；只有出现具体矛盾、执行失败或缺少用户明确要求的字段时才能补一步，并须说明缺口。不要连续输出笼统的“正在推进当前分析步骤”，进度应明确对应当前真实交付动作。
-需要图表时，把独立 HTML 写入 {self.generated_dir}，文件名以 {framework}- 开头；前端只接收生成文件的绝对路径，不接收内嵌图表数据。在最终 Markdown 的相应位置单独写一行 [[AIME_CHART:绝对HTML路径]]。
-当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板、通用可视化或交互式 HTML，或者只说“可视化”而没有指定具体图表类型时，默认优先选择 streamviz 作为“展示阶段” Skill；不要为了比较候选而读取 generic-chart、business-chart-recall 或 custom-html-widget。只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 契约确实无法表达时，才选择其他展示 Skill。streamviz 是唯一的通用看板展示 Skill，不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，再将精简的、证据驱动的展示 payload 文件交给 streamviz 渲染。默认复用已经过响应式验证的 dashboard、comparison、timeline、flow 或 brief 模板，并按需组合表格、排序、时间线和叙事区块；不要手写 HTML/CSS，也不要把所有内容都压成指标卡。只有用户明确要求定制版式或内置结构确实无法表达时，才使用 streamviz payload 的 html 字段。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。网关会自动把已生成 HTML 以流式方式呈现。
-用户明确要求 HTML 报告、HTML 页面或 HTML 组件时，选择 custom-html-widget 组装完整独立 HTML；静态报告同样适用，不要求必须交互。先完成匹配的上游研究与验证，再按该 Skill 复用 streamviz 渲染并验证最终 .html 文件，以 AIME_CHART 标记交付。不能只交付 Markdown 或几张图表来代替用户要求的 HTML 报告；不能把普通文本回答强制改成 HTML。
+需要图表时，把独立 HTML 写入 {self.generated_dir}，文件名以 {framework}- 开头；普通文件组件通过绝对路径交付；原生 visualize_show_widget 的 HTML/SVG 参数则直接增量传给前端并由工具自动保存。在最终 Markdown 的相应位置单独写一行 [[AIME_CHART:绝对HTML路径]]。
+当用户要求 StreamViz、流式网页、仪表盘、关系/流程看板、通用可视化或交互式 HTML，或者只说“可视化”而没有指定具体图表类型时，默认优先选择 streamviz 作为“展示阶段” Skill；不要为了比较候选而读取 generic-chart、business-chart-recall 或 custom-html-widget。只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 契约确实无法表达时，才选择其他展示 Skill。streamviz 是唯一的通用看板展示 Skill，不能单独充当数据源、搜索或分析器。涉及行情、新闻、财务或其他事实时，必须同时先选择并执行匹配的数据/搜索/分析 Skill，得到可追溯的 JSON/CSV 结果后，DeepSeek 使用 visualize_show_widget 在同一轮工具循环中生成展示 HTML/SVG；按 streamviz 的布局和主题规范组织表格、排序、时间线和叙事区块，不要把所有内容压成指标卡。已有结构化 payload 可以交给 render_streamviz.py 使用 dashboard、comparison、timeline、flow 或 brief 模板；不要为本来可原生流式生成的报告先拼出完整 html 文件。默认输出浅色主题：根背景透明，正文使用深色高对比文字，卡片与表格使用白色或浅灰表面；除非用户明确要求深色模式，不得使用浅色文字、深色半透明卡片或仅适配深色背景的 SVG。streamviz 不得编造指标、日期、结论或用“—”占位伪装结果；上游数据缺失时应展示已验证的限制而非虚构看板。最终 AIME_SKILLS 标记应同时列出 streamviz 和实际使用的上游 Skill。只有原生工具参数或渲染器实际发出的事件才是增量展示；单个已完成 HTML 的加载不等同于生成过程流式。
+用户明确要求 HTML 报告、HTML 页面或 HTML 组件时，先完成匹配的上游研究与验证。DeepSeek 对无脚本的 HTML/CSS/SVG 报告优先使用 visualize_show_widget 实时生成并保存独立 HTML，以 AIME_CHART 标记交付。已有结构化 payload、非原生框架或确需脚本的页面可使用 streamviz 的 render_streamviz.py；不要为可原生流式的报告额外加载 custom-html-widget 并写完整 html 包装文件。不能只交付 Markdown 或几张图表来代替用户要求的 HTML 报告；不能把普通文本回答强制改成 HTML。
 文件生成任务还须在最终回答中用 [[AIME_FILE:已验证生成文件的绝对路径]] 交付可下载文件，不能只说“已生成”。HTML 报告同时保留 AIME_CHART 预览标记。仅将最终交付文件标记为 AIME_FILE，不标记临时数据或中间产物。报告跟随宿主主题，不要添加浅色/暗色切换控件；独立下载文件也不需要第二套主题开关。
 最终答案末尾另起一行写 [[AIME_SKILLS:实际使用的Skill名称，以英文逗号分隔]]；未使用项目 Skill 时写 [[AIME_SKILLS:none]]。该标记只用于系统记录。
 所有面向用户的文字（包括执行前说明、工具间进度、commentary 和最终回答）都必须使用用户的语言。执行过程中只提供简短、具体的公开行动摘要，例如“我先核对苹果的图表设置，再加载日线”，供界面的动态进度文案使用；不要输出内部思维链。
@@ -2166,7 +2167,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "若现有可用证据已足以支撑结论，则直接披露缺失和影响，不得继续尝试新工具或新来源。"
             "若最小充分证据需要多个独立联网角度，把查询写入一个 JSON queries 数组，"
             "通过 external_info_search.py --queries-file 一次并行执行；不要逐条串行搜索。"
-            "通用可视化只选 streamviz 一个展示 Skill，默认使用其内置布局模板；"
+            "通用可视化只选 streamviz 一个展示 Skill；HTML 报告优先用 visualize_show_widget 原生流式生成并自动保存文件；已有结构化 payload 可用内置布局模板；"
             "不要再加载 custom-html-widget 或手写 HTML，除非用户明确要求定制版式或模板确实无法表达。"
             "默认只执行一次自动布局检查；只有检查返回具体缺陷时才读取截图、修复并复验。"
         )
@@ -2253,6 +2254,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "engine": FRAMEWORKS["deepseek"], "agent": "Root Agent", "phase": "run", "status": "started",
             "runId": session_key, "message": f"DeepSeek Harness 使用 {selected_model} 开始处理", "lang": "zh-CN",
         }
+        html_events=HtmlRenderEvents(self.project_root,harness_key)
+        options['env']['MENTORA_STREAMVIZ_EVENTS']=str(html_events.path)
         notifications: queue.Queue[Any] = queue.Queue()
         result_box: list[Any] = []
         error_box: list[BaseException] = []
@@ -2300,6 +2303,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         run_timeout = self._deepseek_run_timeout_seconds()
         try:
             while worker.is_alive() or not notifications.empty():
+                yield from html_events.poll()
                 yield from activity_updates()
                 try:
                     notification = notifications.get(timeout=0.25)
@@ -2431,9 +2435,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     if step_context is not None:step_context['lastToolStep']=tool_step
                     yield "tool_step", tool_step
                     if event_type == "tool/result":
+                        yield from html_events.poll()
                         if name==WIDGET_TOOL:
                             for module in self._html_modules_from_tool_output(observation):
-                                public_stream.artifacts.append(dict(url=module['htmlUrl'],label=module.get('label','')))
+                                public_stream.artifacts.append(dict(url=module['htmlUrl'],path=str(self.generated_dir/Path(module['htmlUrl']).name),label=module.get('label',''),streamvizSource='native-streamviz'))
                                 yield 'visualization',dict(id=result_call_id,toolName=WIDGET_TOOL,htmlUrl=module['htmlUrl'],title=module.get('label',''),native=True,live=True,final=True)
                         else:
                             for module in self._html_modules_from_tool_output(observation):
@@ -2457,6 +2462,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         "message": "DeepSeek 子智能体已启动" if method.endswith("started") else "DeepSeek 子智能体已完成",
                         "lang": "zh-CN",
                     }
+            yield from html_events.poll()
             yield from activity_updates(final=True)
         finally:
             activity.close()
@@ -2484,6 +2490,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     break
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
+        public_stream.artifacts.extend(html_events.artifacts)
         if not public_stream.artifacts and self._requires_html_deliverable(question) and not re.search(
             r"\[\[AIME_CHART:[^\]\n]+\.html\]\]", answer
         ):
@@ -2498,7 +2505,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     f"{visualization_guidance}\n\n" if visualization_guidance else ""
                 ) + (
                     "交付完整性修复：上一阶段已完成数据获取和计算，但未生成用户明确要求的最终 HTML。"
-                    "复用工作区中本轮已生成的中间数据，直接完成 custom-html-widget/streamviz 展示阶段。"
+                    "复用工作区中本轮已生成的中间数据，优先通过 visualize_show_widget 完成 streamviz 展示并保存文件；不要重新取数或先拼完整 html 包装文件。"
                     "必须生成、验证一个 outputs/generated 下的完整可交互 HTML，并在最终回答中同时交付 "
                     "[[AIME_CHART:绝对路径]] 和 [[AIME_FILE:绝对路径]]。不得再以‘将生成’、‘页面将展示’等未完成描述结束。"
                 )
@@ -2547,6 +2554,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             existing={item['url'] for item in final_payload['reportArtifacts']}
             final_payload['reportArtifacts'].extend(item for item in public_stream.artifacts if item['url'] not in existing)
             final_payload['reportUrl']=final_payload['reportUrl'] or public_stream.artifacts[0]['url']
+            from app.file_artifacts import collect_file_artifacts
+            files,_=collect_file_artifacts(question,'',public_stream.artifacts,self.generated_dir,self.project_root,allow_html=True)
+            present={item['url'] for item in final_payload.get('fileArtifacts',[])}
+            final_payload.setdefault('fileArtifacts',[]).extend(item for item in files if item['url'] not in present)
         yield 'final',final_payload
 
     def _drop_deepseek_harness(self, session_id: str) -> None:
