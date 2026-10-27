@@ -282,3 +282,8 @@ html{-webkit-tap-highlight-color:transparent}
 /* Reports share the host canvas in both themes and throughout streaming/export. */
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]){background:transparent!important;background-image:none!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-section){background:transparent!important;background-image:none!important;box-shadow:none!important}
+
+/* Open report sections align with the surrounding answer; metric cards keep
+   their internal safe inset. This contract also applies before final HTML. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]){box-sizing:border-box;padding-inline:0!important;margin-inline:0!important;width:100%;max-width:100%}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-section):not(:is(.metric,.sv-metric,[data-sv-metric])){padding-inline:0!important;margin-inline:0!important}

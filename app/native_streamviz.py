@@ -86,6 +86,9 @@ displayed sign and unit; zero is neutral. Do not color standalone percentages su
 Do not render an entire chart by varying the opacity of `var(--sv-text-primary)`; grayscale is
 only appropriate for neutral context or de-emphasized comparisons. Keep the report canvas and section/card backgrounds transparent in both palettes. Inherit the
 host sans-serif font; do not introduce a separate page font or filled report panels.
+Align the report and open section edges with the host text: no horizontal outer margin,
+no horizontal padding on report/section wrappers, and no centered max-width canvas.
+Keep safe internal padding inside compact outlined metric cards and table cells only.
 The first code must be a
 visible card or SVG node—never a long text block.
 
