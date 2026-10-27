@@ -4,6 +4,7 @@ Only actual renderer deltas are sent. Text generated concurrently is held in its
 original event order until the visual commits; the renderer never writes prose.
 """
 from pathlib import Path
+import json
 import queue
 import threading
 import time
@@ -21,7 +22,9 @@ class ParallelWidgets:
     def active(self):return bool(self.jobs)
 
     def start(self, call_id, args, receipt):
-        if receipt.get('status')!='rendering' or not isinstance(args.get('brief'),str):return False
+        if receipt.get('status')!='rendering':return False
+        if isinstance(args,str):args=json.loads(args)
+        if not isinstance(args,dict) or not isinstance(args.get('brief'),str):raise ValueError('Missing visual brief')
         output=Path(receipt.get('output','')).resolve()
         if output.parent!=self.generated or not output.name.startswith('streamviz-job-') or output.suffix!='.html':
             raise ValueError('Invalid parallel widget output')

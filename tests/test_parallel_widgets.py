@@ -80,7 +80,8 @@ def test_two_parallel_visuals_preserve_text_between_them(tmp_path):
         pool.close()
 
 
-def test_harness_continues_prose_before_visual_commits_but_delivery_waits(tmp_path,monkeypatch):
+@pytest.mark.parametrize('encoded_arguments',[False,True])
+def test_harness_continues_prose_before_visual_commits_but_delivery_waits(tmp_path,monkeypatch,encoded_arguments):
     import json,sys
     from types import SimpleNamespace
     from app.reasoning_frameworks import LocalAgentFrameworks
@@ -100,7 +101,8 @@ def test_harness_continues_prose_before_visual_commits_but_delivery_waits(tmp_pa
         def run(self,prompt,*,session_id,on_notification):
             def emit(kind,data):on_notification(SimpleNamespace(method='session.event',payload={'sessionId':session_id,'event':{'type':kind,'data':data}}))
             emit('assistant/message',{'message':{'channel':'final','content':[{'type':'text','text':'Before visual'}]}})
-            emit('tool/call',{'callId':'v','name':'visualize_show_widget','arguments':{'title':'Visual','brief':'verified facts'}})
+            args={'title':'Visual','brief':'verified facts'}
+            emit('tool/call',{'callId':'v','name':'visualize_show_widget','arguments':json.dumps(args) if encoded_arguments else args})
             receipt={'status':'rendering','output':str(output)}
             emit('tool/result',{'message':{'toolCallId':'v','content':[{'type':'text','text':json.dumps(receipt)}]}})
             emit('assistant/chunk',{'chunk':{'type':'text-delta','index':0,'text':'Prepared after text'}})

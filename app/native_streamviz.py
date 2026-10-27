@@ -200,7 +200,7 @@ def _client_from_env() -> tuple[OpenAI, str]:
         or os.getenv("DEEPSEEK_BASE_URL")
         or "https://api.deepseek.com"
     )
-    model = os.getenv("AICHART_STREAMVIZ_MODEL") or os.getenv("DEEPSEEK_MODEL") or "deepseek-chat"
+    model = os.getenv("AICHART_STREAMVIZ_MODEL") or os.getenv("AICHART_DEEPSEEK_MODEL") or os.getenv("DEEPSEEK_MODEL") or "deepseek-chat"
     return OpenAI(api_key=api_key, base_url=base_url.rstrip("/")), model
 
 
