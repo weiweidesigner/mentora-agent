@@ -3786,9 +3786,10 @@ function renderImageGenerationLoading(article, data = {}) {
   loading.setAttribute('aria-label',data.message || (chinese?'正在生成图片':'Generating image'));
   const progress=loading.querySelector('.imageGenerationProgress');
   const percent=data.progressPct;
-  // Only display a percentage supplied by the generation service, never a timer.
+  // Service-driven progress, with a 10% display floor for the initial stage.
+  // Keep the raw value for diagnostics; never advance progress using a timer.
   if (typeof percent==='number' && Number.isFinite(percent) && percent>=0 && percent<=100) {
-    progress.textContent=Math.round(percent)+'%';
+    progress.textContent=Math.max(10,Math.round(percent))+'%';
     loading.dataset.progressPct=String(percent);
   } else if (!loading.dataset.progressPct) progress.textContent=chinese?'准备中':'Preparing';
 }

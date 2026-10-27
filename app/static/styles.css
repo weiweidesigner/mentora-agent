@@ -2281,7 +2281,7 @@ p {
 }
 
 /* Image-only replies need no prose-sized gap below the processing summary. */
-.assistantBubble:has(.finalAnswer .reportGeneratedImageButton):not(:has(.finalAnswer .reportInterpretation))>.thinkingTrigger{display:flex;margin-bottom:4px}
+.assistantBubble:has(.finalAnswer .reportGeneratedImageButton):not(:has(.finalAnswer .reportInterpretation))>.thinkingTrigger{display:flex;margin-bottom:2px;padding-bottom:0}
 
 .generatedImageDialog {
   width: min(94vw, 1100px);
@@ -3934,6 +3934,9 @@ p {
 .reportFrameShell{position:relative;width:100%;min-width:0;margin:18px 0}
 .chatArtifactShell{position:relative;width:100%;min-width:0;margin:18px 0}
 .chatArtifactShell>.reportFrameShell,.chatArtifactShell>.streamvizArtifactHost{margin:0}
+/* Streamed/restored images inherit chart wrappers; strip their chart-sized top gap. */
+.chatArtifactShell:has(>.reportGeneratedImageButton),
+.streamChartSlot:has(.reportGeneratedImageButton){margin-top:0}
 .artifactWidgetTitle{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-weight:600;color:var(--ink)}
 .artifactWidgetTitle[hidden]{display:none}
 .artifactAddToWidget{position:static;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;height:28px;padding:5px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s ease}

@@ -56,6 +56,8 @@ def main():
             assert loading.locator('circle').count()==621
             assert loading.locator('.imageGenerationProgress').inner_text()=='准备中'
             assert loading.locator('.imageGenerationLabel').count()==0
+            page.evaluate("handleStreamEvent(qaArticle,'status',{phase:'flux-denoise',progressPct:0})")
+            assert loading.locator('.imageGenerationProgress').inner_text()=='10%'
             loading.evaluate("node=>node.insertAdjacentHTML('afterbegin','<div class=\"imageGenerationLabel\">正在勾勒草图</div>')")
             assert loading.locator('.imageGenerationLabel').evaluate('(node)=>getComputedStyle(node).display')=='none'
             bounds=loading.bounding_box()
@@ -107,7 +109,22 @@ def main():
               const image=imageArticle.querySelector('.reportGeneratedImage').getBoundingClientRect();
               return image.top-trigger.bottom;
             }""")
-            assert 3<=gap<=5,(width,gap)
+            assert 1<=gap<=3,(width,gap)
+            # Live/replayed chart markers wrap images twice. Those wrappers
+            # must not reintroduce the 18px chart margin above the image.
+            streamed_gap=page.evaluate("""()=>{
+              const article=createAssistantMessage('流式图片测试',{taskContext:{question:'离线测试'}});
+              const data={url:'/generated/flux-fixture.html',mediaType:'image',native:true};
+              appendStreamVisualizationModule(article,data);
+              const preview=document.createElement('div');preview.className='streamAnswerPreview';
+              preview.streamText='[[AIME_CHART:/generated/flux-fixture.html]]';
+              orderedStreamFlow(article).append(preview);syncStreamAnswerPlacement(article,preview);
+              handleStreamEvent(article,'final',{interpretation:preview.streamText,reportArtifacts:[data]});
+              const trigger=article.querySelector('.thinkingTrigger').getBoundingClientRect();
+              const image=article.querySelector('.reportGeneratedImageButton').getBoundingClientRect();
+              return image.top-trigger.bottom;
+            }""")
+            assert 1<=streamed_gap<=3,(width,streamed_gap)
             # Tightening image-only replies must not change ordinary answers.
             normal=page.evaluate("""()=>{
               const article=createAssistantMessage('文字测试',{taskContext:{question:'离线测试'}});

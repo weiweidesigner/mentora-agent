@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const runtime=source.slice(source.indexOf('function renderImageGenerationLoading('),source.indexOf('function isGeneratedImageArtifact('));
 
-test('image loading reuses one animated field and never invents percent progress',()=>{
+test('image loading reuses one animated field with a service-driven 10% display floor',()=>{
   const dom=new JSDOM('<article data-lang="zh-Hans"><div class="finalAnswer"></div></article>',{runScripts:'outside-only'});
   const w=dom.window,article=w.document.querySelector('article');w.eval(runtime);
   w.renderImageGenerationLoading(article,{phase:'flux-connect'});
@@ -18,6 +18,11 @@ test('image loading reuses one animated field and never invents percent progress
   assert.equal(article.querySelector('.imageGenerationLoading'),field);
   assert.doesNotMatch(field.textContent,/正在勾勒草图/);
   assert.doesNotMatch(field.textContent,/%/);
+  for (const percent of [0,5,10]) {
+    w.renderImageGenerationLoading(article,{phase:'flux-denoise',progressPct:percent});
+    assert.equal(field.querySelector('.imageGenerationProgress').textContent,'10%');
+    assert.equal(field.dataset.progressPct,String(percent));
+  }
   w.renderImageGenerationLoading(article,{phase:'flux-generate',progressPct:36});
   assert.equal(field.querySelector('.imageGenerationProgress').textContent,'36%');
   field.insertAdjacentHTML('afterbegin','<div class="imageGenerationLabel">正在勾勒草图</div>');
@@ -27,6 +32,8 @@ test('image loading reuses one animated field and never invents percent progress
   assert.doesNotMatch(field.textContent,/正在勾勒草图/);
   w.renderImageGenerationLoading(article,{phase:'flux-wait',progressPct:900});
   assert.equal(field.querySelector('.imageGenerationProgress').textContent,'50%');
+  w.renderImageGenerationLoading(article,{phase:'flux-decode',progressPct:100});
+  assert.equal(field.querySelector('.imageGenerationProgress').textContent,'100%');
   w.clearImageGenerationLoading(article);
   assert.equal(article.querySelector('.imageGenerationLoading'),null);
   article.activityEnded=true;w.renderImageGenerationLoading(article,{phase:'flux-wait'});
