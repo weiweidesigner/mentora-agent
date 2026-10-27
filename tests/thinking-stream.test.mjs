@@ -14,13 +14,13 @@ function fixture(mobile = false) {
 }
 const started = {callId:'shell-1', tool:'bash', phase:'started', thoughtSummary:'我会使用现有数据计算。完成后生成报告。', shellCommand:['python3', 'analysis.py']};
 
-test('public thought stays verbatim with its tool inside the collapsed disclosure', () => {
+test('public thought streams with its tool while complete history stays collapsed', () => {
   const dom=fixture(),w=dom.window,a=w.article;
   const thought='我先确认 A 股全市场快照的口径和当前时间，再根据实际返回的数据判断上午市场宽度与结构';
   a.dataset.publicThoughtText=thought;
   w.appendToolStep(a,{callId:'snapshot',tool:'screener',phase:'started',thoughtSummary:'核对执行入口的必填参数'});
   assert.match(a.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
-  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
   assert.equal(a.querySelector('.thinkingFlow').hidden,true);
   assert.match(a.querySelector('.thinkingFlow').textContent,/核对执行入口的必填参数/);
   assert.match(a.querySelector('.thinkingFlow').textContent,/screener/);
@@ -401,7 +401,8 @@ test('the latest live summary expands and collapses the complete reasoning histo
   const trigger=a.querySelector('.thinkingTrigger');
   assert.match(trigger.querySelector('.thinkingSummaryText').textContent,/^已处理 /);
   assert.equal(a.querySelector('.thinkingFlow').hidden,true);
-  assert.equal(a.querySelector('.thinkingCurrentTool').textContent,'');
+  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/第二阶段/);
+  assert.doesNotMatch(a.querySelector('.thinkingCurrentTool').textContent,/first result/);
   assert.match(a.querySelector('.thinkingFlow').textContent,/第二阶段/);
   trigger.click();
   assert.equal(a.querySelector('.thinkingFlow').hidden,false);
@@ -606,7 +607,7 @@ test('visualization hides compact tool preview and later progress cannot revive 
   w.upsertStreamVisualization=()=>{};w.syncStreamAnswerPlacement=()=>{};
   w.eval(source.slice(start,source.indexOf('\nfunction ',start+1)));
   w.appendToolStep(a,{callId:'viz',tool:'visualize_show_widget',phase:'started',thoughtSummary:'美股盘前市场速览'});
-  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
   w.setInlineActivityExpanded(a,true);
   w.queueStreamVisualization(a,{id:'viz',argumentDelta:'{',final:false});
   assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'false');
@@ -624,7 +625,7 @@ test('visualization hides compact tool preview and later progress cannot revive 
   w.close();
 });
 
-test('collapsed running activity hides public progress and shell details until expanded',()=>{
+test('running activity streams the latest public stage and retains complete history',()=>{
  const dom=fixture(),w=dom.window,a=w.article;
  try {
   const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
@@ -633,8 +634,11 @@ test('collapsed running activity hides public progress and shell details until e
   w.renderPublicProgress(a,{blockId:'status',text,kind:'commentary'});
   w.appendToolStep(a,{callId:'quote',tool:'bash',phase:'started',thoughtSummary:'批量读取重点美股盘前报价',shellCommand:['python3','app/skill_runner.py','execute']});
   assert.equal(a.querySelector('.thinkingFlow').hidden,true);
-  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
-  assert.equal(a.querySelector('.thinkingCurrentTool').textContent,'');
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/批量读取重点美股盘前报价/);
+  w.renderPublicProgress(a,{blockId:'next',text:'现在开始核验最新财报。',kind:'commentary'});
+  assert.match(a.querySelector('.thinkingCurrentTool').textContent,/现在开始核验最新财报/);
+  assert.doesNotMatch(a.querySelector('.thinkingCurrentTool').textContent,/批量读取重点美股盘前报价/);
   assert.equal(a.querySelector('.finalAnswer').textContent,'');
   a.querySelector('.thinkingTrigger').click();
   assert.equal(a.querySelector('.thinkingFlow').hidden,false);

@@ -71,7 +71,7 @@ document.querySelector('#progress-replay').onclick=()=>{
  renderStreamAnswerText(article,{blockId:'recorded-status',discard:true});
  renderPublicProgress(article,{blockId:'recorded-status',text,kind:'commentary',channelSemantics:{provider:'assistant-channel-model',channel:'progress'}});
  setInlineActivityExpanded(article,false);
- result.textContent='进度已归入可展开的思考记录；正文为空；运行命令随箭头收起。';
+ result.textContent='最新进度持续展示；正文为空；完整历史可点击箭头展开。';
 };
 '''
 PAGE+=activity['bootstrap']+function('mountStreamVisualization')+function('setInlineActivityExpanded')+SOURCE[SOURCE.index('function orderedStreamFlow('):SOURCE.index('function upsertStreamVisualization(')]+function('upsertStreamVisualization')+BOOT+'</script></body></html>'

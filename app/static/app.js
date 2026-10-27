@@ -2616,11 +2616,19 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const expanded = isInlineActivityExpanded(article);
-  // The disclosure controls all public activity. A compact preview beneath a
-  // collapsed trigger made running commands and progress look like answer text.
-  currentTool.hidden = true;
-  currentTool.replaceChildren();
-  delete currentTool.dataset.signature;
+  // Stream the latest public stage until answer content starts. Later tool
+  // events must not bring this preview back alongside text or visualization.
+  currentTool.hidden = Boolean(article.activityEnded || article.answerTextStarted ||
+    article.visualizationStarted || article.dataset.thinkingState !== "active" || expanded);
+  if (currentTool.hidden) {
+    currentTool.replaceChildren();
+    delete currentTool.dataset.signature;
+  } else if (currentTool.dataset.signature !== source.innerHTML) {
+    currentTool.innerHTML = buildActivityFlow(article, {latestOnly:true});
+    bindActivityFileChangeButtons(currentTool);
+    bindActivityCommandPanels(currentTool);
+    currentTool.dataset.signature = source.innerHTML;
+  }
   let view = article.querySelector(".thinkingFlow");
   if (!view) {
     view = document.createElement("div");
