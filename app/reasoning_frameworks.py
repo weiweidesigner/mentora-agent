@@ -2279,7 +2279,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         pending_public_text = ""
         public_stream = PublicStream('deepseek')
         activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)
-        public_channels=PublicTextChannelSession()
+        public_channels=PublicTextChannelSession(question=question)
 
         def activity_updates(*,final=False):
             for key,text,semantics in public_channels.drain():

@@ -78,7 +78,7 @@ def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_p
     from app.reasoning_frameworks import LocalAgentFrameworks
     release=threading.Event()
     monkeypatch.setenv('DSH_HOME',str(tmp_path/'dsh'))
-    monkeypatch.setattr('app.reasoning_frameworks.PublicTextChannelSession',lambda:session_for(router()))
+    monkeypatch.setattr('app.reasoning_frameworks.PublicTextChannelSession',lambda **_:session_for(router()))
     class Harness:
         def __init__(self,**kwargs):pass
         def close(self):release.set()
@@ -106,3 +106,18 @@ def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_p
         assert any(e=='final' and '实际分析结论。' in d.get('interpretation','') for e,d in rest)
         assert all('我先确认数据口径。' not in d.get('interpretation','') for e,d in rest if e=='final')
     finally:release.set();client._drop_deepseek_harness('classified')
+
+
+def test_classifier_receives_user_requested_body_context_without_changing_text():
+    r=router(choice='answer')
+    question='先在正文写“先说明，再展示交互过程。”，然后在这里展示 HTML。'
+    text='先说明，再展示交互过程。'
+    session=PublicTextChannelSession(r.factory,usage_recorder=lambda _:None,question=question)
+    decision=session.classify(text)
+    assert json.loads(r.calls[0]['messages'][1]['content'])=={'publicText':text,'userQuestion':question}
+    stream=PublicStream()
+    events=stream.chunk({'type':'text-delta','index':1,'text':text})
+    stream.message({'content':[{'type':'reasoning','text':'private'},{'type':'text','text':text}]})
+    key=events[0][1]['blockId']
+    assert stream.classify_progress(key,text,decision)==[]
+    assert text in stream.transcript('展示后继续正文。')
