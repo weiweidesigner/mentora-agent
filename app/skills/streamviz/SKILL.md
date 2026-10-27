@@ -11,7 +11,7 @@ StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分
 
 1. 先按用户问题选择并执行数据、搜索、计算、分析或图表 Skill。
 2. 核对上游产物的来源、时间和口径；将用于展示的事实压缩为一个 JSON 文件。
-3. DeepSeek 优先调用本轮工具循环内的 `visualize_show_widget`，优先传 `title` 和包含完整已验证事实与展示要求的 `brief`。HTML 渲染与主 Agent 正文并行生成，宿主先展示真实 HTML 增量，再释放已生成的后续正文；验证成功后自动保存独立 HTML 并附下载。需要精确保留已有 HTML 时仍可传 `widget_code`。不要先写 Python/JSON 包装完整 `html` 再渲染，导致模型生成期间没有可视内容。
+3. DeepSeek 优先调用本轮工具循环内的 `visualize_show_widget`，优先传 `title` 和包含完整已验证事实与展示要求的 `brief`。HTML 渲染与主 Agent 正文并行生成，宿主先展示真实 HTML 增量，再释放已生成的后续正文；验证成功后自动保存独立 HTML 并附下载。需要精确保留已有 HTML 时使用渲染脚本的 `html` 输入。不要先写 Python/JSON 包装完整 `html` 再渲染，导致模型生成期间没有可视内容。
 4. 已有结构化 payload、非原生框架或需要脚本的页面可继续调用 `render_streamviz.py`。渲染器按生成顺序发出真实 HTML 事件并原子保存文件；它不对完整成品做延时回放。
 
 不得跳过前两步直接根据用户问题生成“市场数据”或指标占位符。没有经过验证的数据时，payload 只能表达限制和下一步，不能使用 `—`、示例数值或模拟结论冒充真实结果。
@@ -180,4 +180,4 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 
 ### 与正文并行生成
 
-原生工具优先传 `title` 与 `brief`：完整提供已验证事实、单位、来源、限制、布局和结论。HTML 渲染任务独立运行；主 Agent 收到 `status: rendering` 后立即继续自己的正文，不等待、不轮询。宿主缓冲后续真实文字增量，HTML 验证成功后按顺序发送，并附上生成文件。pending 回执不代表文件完成。只有精确保留已有 HTML 时使用 `widget_code`。渲染器不取数、不增加事实，也不代写答复正文。
+原生工具优先传 `title` 与 `brief`：完整提供已验证事实、单位、来源、限制、布局和结论。HTML 渲染任务独立运行；主 Agent 收到 `status: rendering` 后立即继续自己的正文，不等待、不轮询。宿主缓冲后续真实文字增量，HTML 验证成功后按顺序发送，并附上生成文件。pending 回执不代表文件完成。主 Agent 的原生工具只接收 `title` 与 `brief`，不要生成 `widget_code`；精确保留已有 HTML 时使用渲染脚本的 `html` 输入。渲染器不取数、不增加事实，也不代写答复正文。
