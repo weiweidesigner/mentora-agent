@@ -777,6 +777,7 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "status") {
+    if (String(data?.phase || '').startsWith('flux-')) renderImageGenerationLoading(article,data);
     if (!shouldRenderStatusEvent(data)) return;
     appendStep(article, statusTitle(data, lang), statusDetail(data, lang), "loading", statusStepKey(data, lang));
     return;
@@ -3347,6 +3348,7 @@ function renderRoute(article, steps) {
 }
 
 function renderFinalAnswer(article, data) {
+  clearImageGenerationLoading(article);
   const previewOnly = article.dataset.sessionPersistence === 'none' || article.classList.contains('cachedCaseAnswer');
   const persistResult = !article.taskContext && !previewOnly;
   const target = article.querySelector(".finalAnswer");
@@ -3739,6 +3741,43 @@ function buildVideoLane(videos, options = {}) {
     button.addEventListener("click", () => openVideoPlayer(videos[index]));
   });
   return section;
+}
+
+function renderImageGenerationLoading(article, data = {}) {
+  if (article.activityEnded) return;
+  const target=article.querySelector('.finalAnswer');
+  if (!target) return;
+  let loading=target.querySelector('.imageGenerationLoading');
+  if (!loading) {
+    loading=document.createElement('section');
+    loading.className='imageGenerationLoading';
+    loading.setAttribute('role','status');
+    loading.setAttribute('aria-live','polite');
+    loading.setAttribute('aria-busy','true');
+    const dots=[];
+    for(let y=0;y<23;y++)for(let x=0;x<27;x++) {
+      const distance=((x-13)/7)**2+((y-11)/7)**2;
+      const strength=Math.exp(-distance);
+      dots.push(`<circle cx="${24+x*24}" cy="${24+y*24}" r="${(1.2+2.8*strength).toFixed(2)}" opacity="${(.2+.8*strength).toFixed(2)}"/>`);
+    }
+    loading.innerHTML='<div class="imageGenerationLabel"></div><div class="imageGenerationField"><svg viewBox="0 0 672 576" aria-hidden="true"><g class="imageGenerationDots">'+dots.join('')+'</g></svg><span class="imageGenerationProgress"></span></div>';
+    target.append(loading);
+  }
+  const chinese=/^zh/.test(article.dataset.lang || 'zh-CN');
+  loading.querySelector('.imageGenerationLabel').textContent=data.phase==='flux-connect'
+    ? (chinese?'正在连接生图服务':'Connecting to image service')
+    : (chinese?'正在勾勒草图':'Sketching your image');
+  const progress=loading.querySelector('.imageGenerationProgress');
+  const percent=data.progressPct;
+  // Only display a percentage supplied by the generation service, never a timer.
+  if (typeof percent==='number' && Number.isFinite(percent) && percent>=0 && percent<=100) {
+    progress.textContent=Math.round(percent)+'%';
+    loading.dataset.progressPct=String(percent);
+  } else if (!loading.dataset.progressPct) progress.textContent=chinese?'生成中':'Generating';
+}
+
+function clearImageGenerationLoading(article) {
+  article.querySelectorAll('.imageGenerationLoading').forEach(node=>node.remove());
 }
 
 function isGeneratedImageArtifact(item) {
@@ -4221,6 +4260,7 @@ function streamAnswerText(target, text, onDone) {
 }
 
 function showError(article, message, options = {}) {
+  clearImageGenerationLoading(article);
   const target = article.querySelector(".finalAnswer") || article.querySelector(".bubble");
   const shouldStick = isNearBottom();
   article.querySelectorAll(".thinkingSteps li.is-loading").forEach((item) => {
@@ -4239,6 +4279,7 @@ function showError(article, message, options = {}) {
 
 function showStopped(article, message="已停止本轮任务", options={}) {
   if (!article || article.activityEnded) return;
+  clearImageGenerationLoading(article);
   const target=article.querySelector(".finalAnswer") || article.querySelector(".bubble");
   article.querySelectorAll(".thinkingSteps li.is-loading").forEach((item)=>{
     item.classList.remove("is-loading","is-error");

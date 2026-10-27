@@ -260,7 +260,7 @@
     if (answer.videos?.length || answer.reportArtifacts?.some(item => typeof isGeneratedImageArtifact === "function" && isGeneratedImageArtifact(item))) return;
     const target = article.querySelector(".finalAnswer");
     const flow = document.createElement("div");
-    flow.className = "mixedReport cachedReplay";
+    flow.className = "mixedReport cachedReplay interleavedFlow";
     flow.setAttribute("aria-busy", "true");
     target.append(flow);
     const artifacts = answer.reportArtifacts || [];
@@ -273,7 +273,7 @@
         const index = artifacts.findIndex((item) => item.path === marker[1]);
         if (index >= 0 && !shown.has(index)) {
           const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal, demoLoadingMs: artifacts[index].caseDemoLoadingMs });
-          flow.append(host);
+          flow.append(typeof withArtifactWidgetControl === 'function' ? withArtifactWidgetControl(host,artifacts[index]) : host);
           shown.add(index);
           if (!await replayPause(280, signal)) return;
           // Continue the narrative after this chart has finished its own loading/replay.
@@ -316,6 +316,9 @@
       }
     }
     flow.setAttribute("aria-busy", "false");
+    // Final settlement must retain this connected DOM. Moving an iframe into a
+    // new final-answer tree reloads its document and replays the chart twice.
+    article.orderedStream = true;
   }
 
   async function showCase(id, navigate = true) {

@@ -80,7 +80,7 @@ test('finalization preserves existing live nodes and does not reorder the chart'
  const f=fixture();try{
  const w=f.w;
  w.eval(source.slice(source.indexOf('function renderFinalAnswer('),source.indexOf('function buildShareSessionForArticle(')));
- for(const name of ['completeThinking','updateThinkingSummary','attachResultActionHandlers','syncActivityDrawer','renderFileDeliverables','recordAssistantResult'])w[name]=()=>{};
+ for(const name of ['clearImageGenerationLoading','completeThinking','updateThinkingSummary','attachResultActionHandlers','syncActivityDrawer','renderFileDeliverables','recordAssistantResult'])w[name]=()=>{};
  w.copyFor=()=>'';w.buildResultActions=()=>'';w.buildCapabilityBar=()=>'';w.buildShareSessionForArticle=()=>({});w.sourcesFromInsightMarkdown=()=>[];w.mergeSourcesByUrl=()=>[];
  w.renderStreamAnswerText(f.article,{blockId:'a',delta:'A'});
  w.appendStreamVisualizationModule(f.article,{htmlUrl:'/generated/fixture.html'});

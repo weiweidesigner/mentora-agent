@@ -23,7 +23,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     addUserMessage: question => {const el=w.document.createElement('p');el.textContent=question;messages.append(el);},
     createAssistantMessage: () => {const el=w.document.createElement('article');el.innerHTML='<div class="finalAnswer"></div>';messages.append(el);return el;},
     sanitizeUserFacingInsight: value => value, formatInsight: value => {formatted.push(value);return options.formatInsight?.(value) || `<p>${value}</p>`;},
-    renderFinalAnswer: (article, answer) => {article.textContent=answer.interpretation;},
+    renderFinalAnswer: options.renderFinalAnswer || ((article, answer) => {article.textContent=answer.interpretation;}),
     fetch: async url => {
       requests.push(url);
       if(url.includes('/inspiration/manifest.json') && options.failCatalog)throw new Error('offline');
@@ -70,6 +70,18 @@ test('case replay loads cached conversation without inference; ask fills an edit
   assert.equal(h.w.document.activeElement,h.w.document.querySelector('#question'));
   assert.equal(h.w.document.querySelector('#caseActionBar').hidden,true);
   assert.equal(new URL(h.w.location.href).searchParams.has('case'),false);
+});
+
+test('completed case replay hands the connected ordered DOM to finalization',async()=>{
+  let settled;
+  const h=setup('https://example.com/','已保存的分析',null,{renderFinalAnswer:article=>{settled=article;}});
+  await tick();h.w.document.querySelector('.caseCard').click();
+  for(let i=0;i<30&&!settled;i++)await tick();
+  assert.ok(settled);
+  assert.equal(settled.orderedStream,true);
+  assert.match(settled.querySelector('.interleavedFlow').textContent,/已保存的分析/);
+  assert.equal(settled.querySelector('.interleavedFlow').getAttribute('aria-busy'),'false');
+  h.w.close();
 });
 
 test('Mine deduplicates legacy module copies and scroll updates tabs without hiding sections',async()=>{
