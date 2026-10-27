@@ -1,6 +1,8 @@
-"""Read-only Hong Kong daily history; never a paper-order price source.
+"""Read-only Hong Kong snapshots and daily history.
 
-Provider contract: AKShare stock_zh_ah_daily (Tencent hkfqkline/get).
+Snapshots require separate execution validation; adjusted history is never an
+order-price source. Provider contracts: easyquotation HKQuote and AKShare
+stock_zh_ah_daily (Tencent hkfqkline/get).
 See docs/hk-market-data.md for identity, adjustment and session semantics.
 """
 from __future__ import annotations
@@ -15,6 +17,58 @@ import requests
 HK=ZoneInfo('Asia/Hong_Kong')
 ENDPOINT='https://web.ifzq.gtimg.cn/appstock/app/hkfqkline/get'
 CALLBACK='mentora_hk_history'
+QUOTE_ENDPOINT='https://sqt.gtimg.cn/utf8/q='
+
+
+def fetch_snapshot(symbol,*,as_of=None):
+    """Unadjusted r_hk quote, with provider identity/time, never order authority.
+
+    The hk channel is delayed; r_hk follows easyquotation's HKQuote contract.
+    An advertised channel name is not proof of freshness: validate the time.
+    """
+    symbol=normalize_hk_symbol(symbol)
+    code=symbol[:-3].zfill(5);provider='r_hk'+code
+    current=as_of or dt.datetime.now(dt.timezone.utc)
+    if current.tzinfo is None:raise ValueError('港股行情时间必须带时区')
+    try:
+        response=requests.get(QUOTE_ENDPOINT+provider,timeout=(3,10),allow_redirects=False)
+        if response.status_code!=200:raise ValueError('港股实时快照返回 HTTP '+str(response.status_code)+'；未替换为延迟通道')
+        response.encoding='utf-8'
+        match=re.fullmatch(r'\s*v_'+provider+r'="([^"\r\n]*)";?\s*',response.text)
+        if not match:raise ValueError('港股实时快照未返回请求标的，或返回了错误通道')
+        values=match[1].split('~')
+        if len(values)<38 or values[2]!=code:raise ValueError('港股实时快照标的或字段校验失败')
+        price=_number(values[3])
+        if price<=0:raise ValueError('港股实时快照缺少有效成交价格')
+        at=None
+        for fmt in ('%Y/%m/%d %H:%M:%S','%Y%m%d%H%M%S'):
+            try:at=dt.datetime.strptime(values[30],fmt).replace(tzinfo=HK);break
+            except ValueError:pass
+        if at is None or at>current+dt.timedelta(minutes=1):raise ValueError('港股实时快照时间无法验证')
+        if as_of is None:current=dt.datetime.now(dt.timezone.utc)
+        age=(current-at).total_seconds()
+        def optional(value):return None if value in ('','-','--') else _number(value)
+        from app.day_tasks import market_state,calendar
+        state=market_state('HK',current)
+        status='Open' if state['stage']=='live' else 'Closed'
+        cal=calendar('HK');day=current.astimezone(HK).date()
+        if cal.is_session(day):
+            try:
+                if cal.session_break_start(day).to_pydatetime()<=current<cal.session_break_end(day).to_pydatetime():status='Break'
+            except (ValueError,TypeError):pass
+        quote=dict(symbol=symbol,name=values[1] or symbol,market='HK',price=price,nativePrice=price,
+            currency='HKD',nativeCurrency='HKD',priceAt=at.isoformat(),priceDate=at.date().isoformat(),
+            dateOnly=False,fetchedAt=current.isoformat(),source='Tencent HK r_hk quote snapshot',
+            sourceUrl='https://gu.qq.com/hk'+code+'/gp',providerSymbol=provider,adjusted=False,
+            quoteAgeSeconds=max(0,round(age,3)),realTime=-60<=age<=180,
+            marketStatus=status,
+            changePct=optional(values[32]),volume=optional(values[6]),turnover=optional(values[37]),
+            tradable=False,researchOnly=True,executionAuthorized=False,
+            limitation='原始港元报价；下单前仍须校验交易时效、汇率、账户与 JEV 决策')
+        if any(quote[k] is not None and quote[k]<0 for k in ('volume','turnover')):raise ValueError('港股实时快照成交字段无效')
+        return quote
+    except requests.RequestException as exc:
+        raise ValueError('港股实时快照连接失败（'+type(exc).__name__+'）；未使用延迟通道代替') from exc
 
 def is_hk_symbol(value):
     text=str(value or '').strip().upper()

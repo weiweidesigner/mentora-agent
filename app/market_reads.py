@@ -75,19 +75,20 @@ class MarketReader:
         if any(not re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) and not is_hk_symbol(row['symbol']) for row in requests):
             from app.portfolio import MarketData
             self.adapters['US'] = MarketData()
-        if any(re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) or is_hk_symbol(row['symbol']) for row in requests):
+        if any(re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', row['symbol']) for row in requests):
             from app.portfolio_data import MarketDataHub
             hub=MarketDataHub()
             self.adapters['CN'] = hub
-            self.adapters['HK'] = hub
 
     def read(self, operation, symbol, asset):
         market = 'HK' if is_hk_symbol(symbol) else 'CN' if re.fullmatch(r'\d{6}\.(SH|SZ|BJ)', symbol) else 'US'
+        if market=='HK':
+            from app.hk_market_data import fetch_snapshot,fetch_history
+            return fetch_snapshot(symbol) if operation=='quote' else fetch_history(symbol)
         adapter = self.adapters[market]
         # Each uncached query reaches the adapter. Freshness checks and CN source
         # throttling remain in the original implementation.
         if operation == 'quote':
-            if market=='HK':return adapter.favorite_quote(symbol,fresh=True)
             return adapter.quote(symbol, asset=asset, fresh=True)
         return adapter.history(symbol)
 
@@ -131,7 +132,7 @@ def read_batch(requests, *, operation='quote', workers=4, cache_dir=None,
         if item['asset']=='index' and (operation=='history' or is_hk_symbol(item['symbol'])):
             return {**item, 'ok': False,
                     'error': 'Index history is not supported by the installed history adapter'}
-        identity = {'adapter': 'mentora-market-v1', 'operation': operation, **item}
+        identity = {'adapter': 'mentora-market-v2' if is_hk_symbol(item['symbol']) else 'mentora-market-v1', 'operation': operation, **item}
         try:
             value, cached, age = cached_read(cache_dir, identity,
                 lambda: reader.read(operation, **item), refresh=refresh, max_age=max_age)

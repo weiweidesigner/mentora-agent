@@ -10,6 +10,43 @@ from app import hk_market_data as hk
 NOW=dt.datetime(2026,10,25,15,tzinfo=dt.timezone.utc)
 BARS=[['2026-10-22','10','11','12','9','100'],['2026-10-23','11','12','13','10','120']]
 
+
+def snapshot_response(monkeypatch,*,variable='v_r_hk00700',code='00700',price='400',at='2026/10/26 10:59:59',status=200):
+    fields=['']*38
+    for key,value in {1:'腾讯控股',2:code,3:price,6:'100',30:at,32:'-1.5',37:'40000'}.items():fields[key]=value
+    calls=[]
+    def get(url,**kwargs):
+        calls.append((url,kwargs));return SimpleNamespace(status_code=status,text=variable+'="'+'~'.join(fields)+'";')
+    monkeypatch.setattr(hk.requests,'get',get)
+    return calls
+
+
+def test_r_hk_snapshot_preserves_source_clock_and_never_authorizes_orders(monkeypatch):
+    calls=snapshot_response(monkeypatch)
+    current=dt.datetime(2026,10,26,11,tzinfo=hk.HK)
+    quote=hk.fetch_snapshot('00700.HK',as_of=current)
+    assert len(calls)==1 and calls[0][0]==hk.QUOTE_ENDPOINT+'r_hk00700'
+    assert calls[0][1]['allow_redirects'] is False
+    assert quote['symbol']=='0700.HK' and quote['nativeCurrency']==quote['currency']=='HKD'
+    assert quote['providerSymbol']=='r_hk00700' and quote['priceAt']=='2026-10-26T10:59:59+08:00'
+    assert quote['quoteAgeSeconds']==1 and quote['realTime'] is True
+    assert quote['tradable'] is False and quote['executionAuthorized'] is False and quote['adjusted'] is False
+
+
+@pytest.mark.parametrize('options',[{'variable':'v_hk00700'},{'variable':'v_r_hk09988'},{'code':'09988'},
+    {'price':'NaN'},{'price':'0'},{'price':'-1'},{'at':'invalid'},{'at':'2026/10/26 11:05:00'},{'status':403},{'status':302}])
+def test_snapshot_identity_invalid_prices_and_upstream_failures_do_not_fallback(monkeypatch,options):
+    calls=snapshot_response(monkeypatch,**options)
+    with pytest.raises(ValueError):hk.fetch_snapshot('0700.HK',as_of=dt.datetime(2026,10,26,11,tzinfo=hk.HK))
+    assert len(calls)==1
+
+
+def test_delayed_snapshot_keeps_timestamp_and_is_not_called_realtime(monkeypatch):
+    snapshot_response(monkeypatch,at='2026/10/26 10:45:00')
+    quote=hk.fetch_snapshot('0700.HK',as_of=dt.datetime(2026,10,26,11,tzinfo=hk.HK))
+    assert quote['quoteAgeSeconds']==900 and quote['realTime'] is False
+    assert quote['priceAt']=='2026-10-26T10:45:00+08:00'
+
 def response(monkeypatch,bars=None,**options):
     calls=[]
     payload=options.get('payload',dict(code=0,data={'hk00700':{'qfqday':deepcopy(BARS if bars is None else bars)}}))

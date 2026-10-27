@@ -15,7 +15,7 @@ def market(monkeypatch):
     import app.portfolio_execution as module
     monkeypatch.setattr(module,'now',lambda:NOW)
     value=object.__new__(ExecutionMarket);value.guard=threading.Lock();value.cache={}
-    monkeypatch.setattr(MarketDataHub,'favorite_quote',lambda *a,**k:dict(symbol='0700.HK',name='Tencent',market='HK',price=400,nativePrice=400,nativeCurrency='HKD',currency='HKD',priceAt=NOW.isoformat(),dateOnly=False,tradable=False,limitation='legacy restriction',source='offline fixture'))
+    monkeypatch.setattr('app.hk_market_data.fetch_snapshot',lambda *a,**k:dict(symbol='0700.HK',name='Tencent',market='HK',price=400,nativePrice=400,nativeCurrency='HKD',currency='HKD',priceAt=NOW.isoformat(),dateOnly=False,tradable=False,limitation='research quote',source='offline r_hk fixture',providerSymbol='r_hk00700'))
     monkeypatch.setattr(value,'hk_fx',lambda:dict(base='HKD',quote='USD',rate=.128,date='2026-10-23',source='offline fixture'))
     return value
 
@@ -25,8 +25,33 @@ def test_hk_identity_and_unadjusted_execution_quote(monkeypatch,value):
     assert symbol_value(value)=='0700.HK'
     assert q['tradable'] is True and q['price']==51.2 and q['nativePrice']==400
     assert q['currency']=='USD' and q['nativeCurrency']=='HKD'
+    assert q['providerSymbol']=='r_hk00700'
     assert q['lotSize']==1 and '整数股' in q['quantityRule']
     assert feed.favorite_quote('0700.HK')['tradable'] is True
+
+
+def test_delayed_realtime_channel_does_not_bypass_execution_gate(monkeypatch):
+    feed=market(monkeypatch)
+    monkeypatch.setattr('app.hk_market_data.fetch_snapshot',lambda *a,**k:dict(symbol='0700.HK',market='HK',price=400,nativePrice=400,nativeCurrency='HKD',currency='HKD',priceAt=(NOW-dt.timedelta(minutes=15)).isoformat(),realTime=False,providerSymbol='r_hk00700'))
+    quote=feed.quote('0700.HK',fresh=True)
+    assert quote['tradable'] is False and '过期' in quote['limitation']
+
+
+def test_fresh_hk_position_restores_account_and_us_gate_without_any_orders(tmp_path,monkeypatch):
+    from app.portfolio_laya import gate
+    feed=market(monkeypatch);p=Portfolio(tmp_path,market=feed);p.account('owner')
+    import json
+    stale=dict(feed.quote('0700.HK'),priceAt=(NOW-dt.timedelta(minutes=15)).isoformat())
+    with p.db() as db:
+        db.execute('INSERT INTO positions VALUES(?,?,?,?)',('owner','0700.HK',100,512000))
+        db.execute('INSERT OR REPLACE INTO quotes VALUES(?,?,?)',('0700.HK',json.dumps(stale),NOW.isoformat()))
+    assert p.summary('owner')['valuationComplete'] is False
+    account=p.refresh('owner')
+    assert account['valuationComplete'] is True and account['refreshFailures']==[]
+    assert account['positions'][0]['quote']['providerSymbol']=='r_hk00700'
+    item=dict(symbol='QQQ',quote=dict(price=100,currency='USD',tradable=True,priceAt=NOW.isoformat()))
+    assert gate('entry',item,account)[0]==''
+    assert account['trades']==[] and account['plans']==[]
 
 def test_hk_stale_fx_stale_quote_and_wrong_conversion_block(monkeypatch):
     feed=market(monkeypatch);q=feed.quote('0700.HK')

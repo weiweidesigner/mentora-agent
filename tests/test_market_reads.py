@@ -129,11 +129,12 @@ def test_hk_normalization_and_duplicate_reads_keep_native_evidence():
     assert [r['symbol'] for r in result['results']]==['0700.HK','0700.HK']
     assert reader.calls==[('history','0700.HK','stocks')]
 
-def test_hk_history_and_quote_share_hub_without_using_us_adapter():
+def test_hk_history_and_quote_use_shared_native_adapter_without_account(monkeypatch):
     from app.market_reads import MarketReader
     from types import SimpleNamespace
     calls=[];reader=MarketReader()
-    reader.adapters['HK']=SimpleNamespace(history=lambda s:calls.append(('history',s)) or {'currency':'HKD'},favorite_quote=lambda s,fresh:calls.append(('quote',s)) or {'currency':'HKD','tradable':False})
+    monkeypatch.setattr('app.hk_market_data.fetch_history',lambda s:calls.append(('history',s)) or {'currency':'HKD'})
+    monkeypatch.setattr('app.hk_market_data.fetch_snapshot',lambda s:calls.append(('quote',s)) or {'currency':'HKD','tradable':False})
     assert reader.read('history','0700.HK','stocks')['currency']=='HKD'
     assert reader.read('quote','0700.HK','stocks')['tradable'] is False
     assert calls==[('history','0700.HK'),('quote','0700.HK')]

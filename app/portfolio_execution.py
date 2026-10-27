@@ -28,7 +28,7 @@ class ExecutionMarket(MarketDataHub):
         return result
 
     def quote(self,symbol,asset='stocks',fresh=False):
-        from app.hk_market_data import is_hk_symbol,normalize_hk_symbol
+        from app.hk_market_data import is_hk_symbol,normalize_hk_symbol,fetch_snapshot
         if not is_hk_symbol(symbol):
             quote=super().quote(symbol,asset,fresh)
             if quote.get('changePct') is None and quote.get('dateOnly') and quote.get('sourceUrl')=='https://quote.ainvest.com/':
@@ -48,11 +48,18 @@ class ExecutionMarket(MarketDataHub):
                 except Exception:pass  # Keep the valid price; missing change remains unknown.
             return quote
         symbol=normalize_hk_symbol(symbol)
-        q=dict(super().favorite_quote(symbol,fresh=fresh));fx=self.hk_fx()
+        key=('execution-hk-quote-v2',symbol)
+        with self.guard:cached=self.cache.get(key)
+        if cached and not fresh and time.monotonic()-cached[0]<30:
+            q=dict(cached[1])
+        else:
+            q=fetch_snapshot(symbol,as_of=now())
+            with self.guard:self.cache[key]=(time.monotonic(),dict(q))
+        fx=self.hk_fx()
         native=number(q.get('nativePrice'))
         if native is None or native<=0 or q.get('nativeCurrency')!='HKD':raise ValueError('港股原币报价无效，未执行订单')
         q.update(price=round(native*fx['rate'],8),currency='USD',fx=fx,
-                 lotSize=1,quantityRule='Mentora 账户按整数股记账',dateOnly=False)
+                 lotSize=1,quantityRule='Mentora 账户按整数股记账',dateOnly=False,researchOnly=False)
         q['tradable'],q['limitation']=self.freshness(q)
         return q
 

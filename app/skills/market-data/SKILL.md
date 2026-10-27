@@ -41,8 +41,20 @@ is the latest 132 completed sessions (new/suspended listings may have fewer).
 It uses XHKG/Asia-Hong_Kong and a ten-minute post-close auction buffer, including
 half days; excludes unfinished/non-session bars, flags stale history, validates
 finite OHLCV and duplicate dates, and never fills missing prices. Results include
-source, `asOf`, `expectedAsOf`, `stale`, adjustment and currency. HK display quotes
-reuse the existing native-currency favorite quote adapter; they remain nontradable.
+source, `asOf`, `expectedAsOf`, `stale`, adjustment and currency.
+
+HK display quotes use the fixed Tencent HTTPS `sqt.gtimg.cn/utf8/q=r_hkNNNNN`
+contract implemented by `app.hk_market_data.fetch_snapshot`, following
+[easyquotation HKQuote](https://github.com/shidenggui/easyquotation/blob/master/easyquotation/hkquote.py).
+The old `hkNNNNN` quote channel is delayed and is not a freshness fallback.
+Require the exact `v_r_hkNNNNN` response identity and matching code field, a finite
+positive unadjusted HKD price, and the source timestamp (field 30). Preserve
+`priceAt`, `fetchedAt`, `quoteAgeSeconds` and `providerSymbol`; `realTime` is true
+only if the timestamp is within three minutes, never merely because the channel
+claims realtime. One request, no retry/provider guessing or timestamp replacement.
+HTTP errors, HTML, identity mismatch and invalid prices/times fail that item.
+These native-currency research quotes remain nontradable; the account adapter
+separately validates calendar freshness, FX and all existing order gates.
 
 HK history has `researchOnly=true`, `executionAuthorized=false`; only research
 and historical backtests are added. No FX conversion, trade permission, provider

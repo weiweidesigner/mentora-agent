@@ -1,5 +1,21 @@
 # Hong Kong research history
 
+## Unadjusted snapshots
+
+Research reads and `ExecutionMarket` now share `fetch_snapshot` and the fixed
+Tencent `https://sqt.gtimg.cn/utf8/q=r_hkNNNNN` contract, as implemented by
+[easyquotation's primary HKQuote source](https://github.com/shidenggui/easyquotation/blob/master/easyquotation/hkquote.py).
+Do not use the delayed `hkNNNNN` quote channel as a realtime fallback. Both the
+response variable and code field must identify the requested HK listing. Keep
+the provider's original trade timestamp and report its age separately from the
+fetch timestamp. A successful HTTP read is not proof of a current quote. No
+request retries, alternate-channel guessing, fresh timestamp synthesis or
+unadjusted daily-close substitutions are allowed. Research snapshots remain HKD
+and nontradable; execution independently applies the unchanged three-minute
+intraday check, exchange calendar, FX, account, JEV and order checks.
+
+## Forward-adjusted historical evidence
+
 `market-data`, `portfolio-data history` and `portfolio-backtest` share
 `app.hk_market_data.fetch_history`. This does not enable Hong Kong paper orders.
 
