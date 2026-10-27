@@ -2616,21 +2616,11 @@ function syncInlineActivity(article) {
     source.before(currentTool);
   }
   const expanded = isInlineActivityExpanded(article);
-  const hasActiveTool = Boolean(source.querySelector("li.is-tool-step.is-loading"));
-  currentTool.hidden = article.activityEnded || article.visualizationStarted || (article.answerTextStarted && article.dataset.activityPhase === "answer" && !hasActiveTool) || article.dataset.thinkingState !== "active" || expanded;
-  if (article.activityEnded || article.dataset.thinkingState !== "active") {
-    currentTool.replaceChildren();
-    delete currentTool.dataset.signature;
-  }
-  if (!currentTool.hidden) {
-    const toolSignature = source.innerHTML;
-    if (currentTool.dataset.signature !== toolSignature) {
-      currentTool.innerHTML = buildActivityFlow(article, {latestOnly:true});
-      bindActivityFileChangeButtons(currentTool);
-      bindActivityCommandPanels(currentTool);
-      currentTool.dataset.signature = toolSignature;
-    }
-  }
+  // The disclosure controls all public activity. A compact preview beneath a
+  // collapsed trigger made running commands and progress look like answer text.
+  currentTool.hidden = true;
+  currentTool.replaceChildren();
+  delete currentTool.dataset.signature;
   let view = article.querySelector(".thinkingFlow");
   if (!view) {
     view = document.createElement("div");

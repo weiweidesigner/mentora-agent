@@ -59,6 +59,21 @@ if os.environ.get('STREAMVIZ_QA_HTML'):
 start=PAGE.index('<article class="message assistant"')
 end=PAGE.index('</article>',start)+len('</article>')
 PAGE=PAGE[:start]+activity['markup']+PAGE[end:]
+if os.environ.get('STREAMVIZ_QA_PROGRESS'):
+    PAGE=PAGE.replace('<button id="visualonly">', '<button id="progress-replay">重放截图中的进度事件</button><button id="visualonly">')
+    PAGE=PAGE.replace('分析现有数据，并生成一份报告','把今天美股盘前市场表现整理成一份HTML报告')
+    BOOT+=function('renderPublicProgress')+'''
+
+document.querySelector('#progress-replay').onclick=()=>{
+ const text='盘前指数代理已拿到：标普、纳指、道指与罗素 2000 的 ETF 均小幅上行。接下来我会核对一批高流动性个股的盘前涨跌，区分真实异动与仅由新闻标题带来的噪声。';
+ renderStreamAnswerText(article,{blockId:'recorded-status',text});
+ appendToolStep(article,{callId:'recorded-quote',tool:'bash',phase:'started',thoughtSummary:'批量读取重点美股盘前报价',shellCommand:['python3','app/skill_runner.py','execute','--script','read_market_data.py']});
+ renderStreamAnswerText(article,{blockId:'recorded-status',discard:true});
+ renderPublicProgress(article,{blockId:'recorded-status',text,kind:'commentary',channelSemantics:{provider:'assistant-channel-model',channel:'progress'}});
+ setInlineActivityExpanded(article,false);
+ result.textContent='进度已归入可展开的思考记录；正文为空；运行命令随箭头收起。';
+};
+'''
 PAGE+=activity['bootstrap']+function('mountStreamVisualization')+function('setInlineActivityExpanded')+SOURCE[SOURCE.index('function orderedStreamFlow('):SOURCE.index('function upsertStreamVisualization(')]+function('upsertStreamVisualization')+BOOT+'</script></body></html>'
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(ROOT),**kwargs)
