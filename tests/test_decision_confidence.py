@@ -24,15 +24,17 @@ def summary(decision):
     return observation_summary(dict(observations={'T':{'decision':decision}}))
 
 
-def test_3472_percent_passes_30_percent_but_disagreement_still_blocks_execution():
+def test_3472_percent_passes_30_percent_despite_option_order_disagreement():
     decision=decide({'buy':.3472,'watch':.4,'skip':.2528},{'buy':.4,'watch':.35,'skip':.25})
     assert decision['confidence']==.3472 and decision['actionConfidences']=={'buy':.3472}
-    assert decision['action']=='watch' and decision['status']=='inconsistent' and decision['sizeFraction']==0
+    assert decision['action']=='buy' and decision['status']=='decided' and decision['sizeFraction']==.5
     gate=decision['confidenceGate']
-    assert gate['thresholdPassed'] is True and gate['agreementPassed'] is False and gate['passed'] is False
+    assert gate['thresholdPassed'] is True and gate['agreementPassed'] is False and gate['passed'] is True
+    assert gate['agreementRequired'] is False
+    assert decision['classificationActions']=={'forward':'watch','reversed':'buy'}
     text=summary(decision)
-    assert '观察；买入置信度 34.72%；置信度门槛 30%（通过）' in text
-    assert '顺序一致性校验未通过' in text and '未下单' in text
+    assert '买入；买入置信度 34.72%；置信度门槛 30%（通过）' in text
+    assert '顺序一致性校验未通过' not in text and '未下单' in text
     assert '趋势与回测支持参与' not in text
 
 
@@ -59,6 +61,31 @@ def test_consistent_above_threshold_still_allows_the_existing_trade_policy():
     decision=decide(probabilities,probabilities)
     assert decision['action']=='buy' and decision['status']=='decided'
     assert decision['confidenceGate']['passed'] is True and decision['sizeFraction']==.5
+
+
+@pytest.mark.parametrize('confidence,passed',[(.3449,True),(.3,True),(.2999,False)])
+@pytest.mark.parametrize('direction',['buy','sell','reduce'])
+def test_order_disagreement_cannot_override_the_direction_threshold(direction,confidence,passed):
+    gate=execution_confidence_gate(direction,confidence,False,{'investment':{'confidenceThresholdPct':30}})
+    assert gate['passed'] is passed and gate['thresholdPassed'] is passed
+    assert gate['agreementPassed'] is False and gate['agreementRequired'] is False
+
+
+def test_disagreement_below_threshold_still_stays_watch():
+    decision=decide({'buy':.2,'watch':.5,'skip':.3},{'buy':.4,'watch':.35,'skip':.25})
+    assert decision['orderAgreement'] is False
+    assert decision['action']=='watch' and decision['status']=='low-confidence'
+    assert decision['sizeFraction']==0 and decision['confidenceGate']['passed'] is False
+    assert '顺序一致性校验未通过' not in summary(decision)
+
+
+def test_sell_disagreement_above_threshold_passes_without_executing_order():
+    decision=decide({'hold':.3,'reduce':.6,'sell':.1},{'hold':.4,'reduce':.35,'sell':.25},kind='risk')
+    assert decision['orderAgreement'] is False
+    assert decision['action']=='reduce' and decision['status']=='decided'
+    assert decision['confidence']==.6 and decision['sizeFraction']==.5
+    assert '顺序一致性校验未通过' not in summary(decision)
+    assert '未下单' in summary(decision)
 
 
 @pytest.mark.parametrize('action',['watch','hold','skip'])

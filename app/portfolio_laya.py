@@ -225,12 +225,11 @@ class LayaPortfolio:
             choice='buy' if kind=='entry' else ('sell' if first[0]=='sell' else 'reduce')
             action_confidences={direction:round(confidence,4)}
             confidence_gate=execution_confidence_gate(choice,confidence,agreed,account.get('recommendationProfile'))
-            accepted=agreed and (not confidence_gate['applicable'] or confidence_gate['passed'])
+            accepted=not confidence_gate['applicable'] or confidence_gate['passed']
             fraction={'quarter':.25,'half':.5,'full':1.}[size]
-            factor='order-inconsistent' if not agreed else 'confidence-qualified' if confidence_gate['thresholdPassed'] else 'confidence-insufficient'
+            factor='confidence-qualified' if confidence_gate['thresholdPassed'] else 'confidence-insufficient'
             reasons=[]
             if not confidence_gate['thresholdPassed']:reasons.append(('买入' if direction=='buy' else '卖出')+'方向置信度未达到执行门槛')
-            if not agreed:reasons.append('两次选项顺序校验结果不一致，未执行交易')
             reason='；'.join(reasons) or ('买入' if direction=='buy' else '卖出')+'方向置信度达到执行门槛，仍需通过下单风控'
             # Neither model computes amounts nor can it bypass the order planner's fresh re-check.
             # Sell must still respect availableToSell in the final planner; partial availability is capped here.
@@ -241,6 +240,6 @@ class LayaPortfolio:
                 orderAgreement=agreed,classificationActions={'forward':first[0],'reversed':second[0]},confidenceDirection=direction,
                 confidenceKind='direction-option-probability', calibrated=False, actionConfidences=action_confidences,
                 factor=factor, factorLabel=FACTORS[factor], sizeFraction=fraction if accepted and choice not in {'watch','skip','hold'} else 0,
-                reason=reason,providerModel=response.get('model') or MODEL,status='decided' if accepted else 'inconsistent' if not agreed else 'low-confidence'))
+                reason=reason,providerModel=response.get('model') or MODEL,status='decided' if accepted else 'low-confidence'))
             results[-1].update(catalystImpactScore=impact,catalystImpactStatus=state['catalystAssessment']['status'],catalystImpactScale='positive-impact-0-100')
         return results

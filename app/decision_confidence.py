@@ -19,6 +19,8 @@ def trading_confidence(decision):
     gate_value=gate.get('value')
     measured=gate_value if valid(gate_value) else value
     passed=measured>=threshold if measured is not None and threshold is not None and direction else None
-    agreement=gate.get('agreementPassed',decision.get('orderAgreement'))
+    # Preserve historical rejection explanations, but new diagnostic-only
+    # disagreement must not be displayed as an execution failure.
+    agreement=None if gate.get('agreementRequired') is False else gate.get('agreementPassed',decision.get('orderAgreement'))
     return dict(direction=direction,value=value,threshold=threshold,thresholdPassed=passed,agreementPassed=agreement,
                 executionPassed=gate.get('passed'))

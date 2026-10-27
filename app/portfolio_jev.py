@@ -39,15 +39,16 @@ def catalyst_score(choice):
 
 
 def execution_confidence_gate(action,confidence,agreed=True,preferences=None):
-    """Execution thresholds apply to orders, not to non-trading opinions."""
+    """Only directional confidence gates execution; order agreement is diagnostic."""
     applicable=action in {'buy','reduce','sell'}
     threshold=execution_confidence_threshold(action,preferences) if applicable else None
     threshold_passed=confidence>=threshold if applicable else None
     return dict(applicable=applicable,action=action,
                 threshold=threshold,value=confidence if applicable else None,
                 thresholdPassed=threshold_passed,agreementPassed=bool(agreed) if applicable else None,
-                passed=bool(agreed and threshold_passed) if applicable else None,
-                reason=('order-inconsistent' if not agreed else 'execution-confidence') if applicable else 'non-trading-action')
+                agreementRequired=False,
+                passed=bool(threshold_passed) if applicable else None,
+                reason='execution-confidence' if applicable else 'non-trading-action')
 
 
 def local_laya_client(active):
