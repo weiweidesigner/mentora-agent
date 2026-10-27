@@ -141,3 +141,5 @@
 .wfAdvanced>summary{font-size:12px;user-select:none}.wfAdvanced .wfNodeId{margin-top:16px}
 @media(max-width:760px){.wfInspector{width:440px;max-width:calc(100% - 24px);top:64px;right:12px;bottom:116px}.wfInspector #wfNodeHeader{padding:20px}.wfNodeHeadline{gap:8px}.wfNodeHeadline .wfNodeGlyph{display:none}.wfInspector .wfNodeHeadline input{font-size:14px}.wfJSONCode.is-editable{height:180px}.wfInspector .wfJSONCode pre{max-height:240px}}
 @media(forced-colors:active){.wfInspector .wfJSONCode.is-editable pre{visibility:hidden}.wfInspector .wfJSONCode.is-editable textarea{color:CanvasText;-webkit-text-fill-color:CanvasText}}
+
+.wfNodeConfig{max-height:calc(100dvh - 48px);overflow:auto}

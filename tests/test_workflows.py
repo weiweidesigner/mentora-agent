@@ -917,3 +917,60 @@ def test_observation_preserves_plan_vs_executed_trade_and_newer_risk_decision(en
     risk=dict(symbol='AAPL',kind='risk',action='sell',created='2030-01-01',confidence=.8,confidenceKind='direction-option-probability',actionConfidences={'sell':.8})
     row=portfolio.workflow.watchlist(pool,[risk],positions=[dict(symbol='AAPL',quantity=2)])[0]
     assert row['observationAction']=='sell' and row['directionAssessment']['confidence']==.8
+
+
+def test_build_disconnect_cancels_model_and_closes_connection(env,monkeypatch):
+    import asyncio
+    import openai
+    from fastapi import Response
+    env.service.builder=None
+    events=[]
+    class Client:
+        def __init__(self,**kwargs):
+            self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):events.append('closed')
+        async def create(self,**kwargs):
+            events.append('started')
+            try:await asyncio.Event().wait()
+            except asyncio.CancelledError:
+                events.append('cancelled')
+                raise
+    monkeypatch.setattr(openai,'AsyncOpenAI',Client)
+    class Request:
+        headers={};cookies={}
+        url=SimpleNamespace(scheme='https')
+        async def is_disconnected(self):return 'started' in events
+    request=Request();request.headers={'x-veya-day':'1'}
+    endpoint=next(r.endpoint for r in env.app.routes if getattr(r,'path','')=='/api/workflows/build')
+    async def scenario():
+        response=await asyncio.wait_for(endpoint(BuildInput(message='修复流程'),request,Response()),2)
+        assert response.status_code==499
+    asyncio.run(scenario())
+    assert events==['started','cancelled','closed']
+    assert not env.calls
+
+
+@pytest.mark.parametrize('stays_stale',[False,True])
+def test_plan_rechecks_and_refreshes_account_after_long_decision(env,monkeypatch,stays_stale):
+    import app.workflows as module
+    from app import portfolio_skills
+    monkeypatch.setattr(module,'execution_tools',lambda agent:[dict(id='portfolio-order',schema=None)])
+    calls=[]
+    def call(service,owner,name,args):
+        calls.append((name,args.get('operation')))
+        if name=='portfolio-account':
+            return dict(valuationComplete=args.get('operation')=='refresh' and not stays_stale,positions=[])
+        assert calls[-3:]==[('portfolio-account','read'),('portfolio-account','refresh'),('portfolio-order','plan')]
+        if stays_stale:raise ValueError('部分持仓行情尚未更新，先刷新估值后再生成交易计划')
+        return dict(id='plan-1',symbol='QQQ')
+    monkeypatch.setattr(portfolio_skills,'call',call)
+    g=graph([dict(id='plan',kind='tool',title='生成订单计划',tool='portfolio-order',arguments=dict(operation='plan',symbol='QQQ',side='buy',decisionId='decision-1'))],[])
+    config=dict(workflow=g,agent='mentora-deal',_owner='owner');states={}
+    if stays_stale:
+        with pytest.raises(RuntimeError,match='持仓行情'):env.service.execute(config,'refresh-check',lambda i,s:states.update({i:s}))
+        assert states['plan']['status']=='failed'
+    else:
+        env.service.execute(config,'refresh-check',lambda i,s:states.update({i:s}))
+        assert states['plan']['output']['id']=='plan-1'
+    assert all(op!='execute' for _,op in calls)

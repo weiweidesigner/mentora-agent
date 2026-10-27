@@ -2,6 +2,7 @@
 from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
+import asyncio
 import datetime as dt
 import hashlib
 import json
@@ -173,6 +174,9 @@ class WorkflowService:
         return validate_contracts(graph,execution_tools(agent))
 
     def build(self,payload):
+        return asyncio.run(self.build_async(payload))
+
+    async def build_async(self,payload):
         tools=tool_catalog(payload.agent)
         context=dict(message=payload.message,currentGraph=payload.graph.model_dump() if payload.graph else None,agent=payload.agent,
                      nodeKinds=KINDS,graphSchema=WorkflowGraph.model_json_schema(),nodeOutputs={'text-opportunities':'对象：items 是文本中本地 JEV 筛选的机会候选数组，symbols 是代码列表，assessments 为全量分类；不是买卖决策，无 decisionId。以 foreach={{节点ID.items}} 连接行情/回测，不得直接下单。','watchlist_update':'保存上游真实工具结果至观察列表；返回 symbols、updatedCount、preview 和 interpretation。手动运行与定时执行均实际写入。','watchlist':'数组，每项含 symbol/name 等实际字段。{{节点ID}} 是整个列表，{{节点ID.0.symbol}} 是第一项代码；没有 symbols/stocks 属性。','profile':'对象，含 profile/investment/enabled/updated。','tool':'单次调用输出该 Skill 的真实结果；设置 foreach 时输出 {items:[每次真实结果],count:数量}。','model':'对象，主要含 interpretation 文本及 reportArtifacts，不会自动产生任意结构化字段。','output':'仅汇总已有输出，不执行分析、筛选、计算或报告生成；这些任务需先经过工具或模型节点。'},tools=[{k:t.get(k) for k in ('id','label','description','schema','instructions')} for t in tools])
@@ -184,9 +188,11 @@ class WorkflowService:
             'portfolio-order':'plan 返回真实计划对象（id）；execute 仅接受该计划的 planId。plan 必须使用当前用户已保存且有效的 JEV decisionId，不能把原始评估当成已保存决策。watch/skip/hold 不是合法 side，不能直接逐项映射全部决策下单。原始 JEV 评估不含 decisionId 时，不得创建会重新研究或尝试下单的模型节点；直接记录「缺少可执行决策记录」并继续汇总。只有上游明确提供真实 decisionId 时才可连接下单节点；不伪造 ID 或成交。',
             'portfolio-decision':'对每个上游回测项补齐最新行情、技术信号、风控、账户和已启用的用户偏好，再调用 JEV。输出对象中 decisions 是全量结果，items 只含已通过置信度和硬性风控、已保存且含 decisionId/side 的可执行决策。正式流程应将 {{该节点.items}} 逐项连接 portfolio-order plan，再将计划 items 逐项连接 execute；不需要通用模型二次判断置信度。',
         })
-        if self.builder:generate=self.builder
+        if self.builder:
+            async def generate(candidate_context):
+                return await asyncio.to_thread(self.builder,candidate_context)
         else:
-            from openai import OpenAI
+            from openai import AsyncOpenAI
             prompt="""你是 Mentora WorkFlow 构建助手。根据用户要求创建或修改可执行的 DAG，不执行流程。
 输出 JSON {"title":"简短中文名称","graph":{"version":1,"nodes":[...],"edges":[...]}}。
 严格遵循 graphSchema。连线字段必须为 source（起点节点id）、target（终点节点id）、when（字符串always/true/false）；禁止使用from/to。\n节点字段 id,kind,title,x,y,instruction,tool,arguments,foreach,onItemError,path,operator,expected。
@@ -198,16 +204,16 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
 执行节点的 always 入边都是必需输入：任一上游分支跳过，该执行节点及依赖它的执行节点也跳过；独立账户或档案输入不能重新激活未选中的分支。直接带条件入边的执行节点还必须命中条件边。只有 output 节点按 OR 合流，汇总实际激活的分支；无候选时应从 false 分支连到 output，不执行回测、决策或写入。
 节点坐标按依赖从左到右分列，至少间隔320px，同列上下间隔170px。保留用户已有节点与连线的意图，不擅自增加下单或外发通知。图中必须有有意义的输入和结果；不能伪造运行结果。
 只读行情/回测逐项节点可用 onItemError=continue 保留成功结果并明确记录失败标的；输出 items/count/errors，部分成功为 partial。交易、写入节点禁止此策略。默认 stop。全部失败仍报错，不伪造数据或自动替换标的。行情研究与回测支持 A 股、美股及明确代码的港股；港股保留 HKD 与前复权口径，账户订单支持港股，使用未复权港币快照及有效港币兑美元汇率；历史前复权数据仅用于研究，不作成交报价。用户可见的标题、节点说明与结果统一使用「交易账户 / 订单 / 成交」这些中性表述。"""
-            def generate(candidate_context):
-                with OpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
-                    response=client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
+            async def generate(candidate_context):
+                async with AsyncOpenAI(api_key=os.getenv('DEEPSEEK_API_KEY'),base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=90,max_retries=1) as client:
+                    response=await client.chat.completions.create(model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'),messages=[dict(role='system',content=prompt),dict(role='user',content=json.dumps(candidate_context,ensure_ascii=False))],response_format=dict(type='json_object'),max_tokens=8000)
                     return json.loads(response.choices[0].message.content or '{}')
         # Validation feedback repairs the proposed graph, never runs it or guesses
         # replacement arguments. Keep the user's original canvas until it validates.
         for attempt in range(3):
             result=None
             try:
-                result=generate(context)
+                result=await generate(context)
                 if not isinstance(result,dict):raise ValueError('构建结果必须为包含 graph 的 JSON 对象')
                 graph=self.validate(result.get('graph',{}),payload.agent)
             except (ValueError,KeyError) as exc:
@@ -476,6 +482,9 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                             if cancelled():raise InterruptedError('试运行已停止')
                             try:
                                 with skill_events(emit,cancelled):
+                                    if node.tool=='portfolio-order' and args.get('operation')=='plan' and not trial:
+                                        self.decision_account(owner)
+                                        if cancelled():raise InterruptedError('试运行已停止')
                                     result=self.preview_order(args) if trial and node.tool=='portfolio-order' else call(self.portfolio,owner,node.tool,args)
                                     if trial and node.tool=='portfolio-order' and args.get('operation')=='execute':
                                         plans=[r['output'] for rows in receipts.values() for r in rows if r['tool']=='portfolio-order' and r.get('input',{}).get('operation')=='plan']
@@ -660,12 +669,22 @@ def create_router(service):
         identity(request,response)
         return dict(kinds=KINDS,tools=tool_catalog(agent),model=os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash'))
     @router.post('/build')
-    def build(payload:BuildInput,request:Request,response:Response):
+    async def build(payload:BuildInput,request:Request,response:Response):
         identity(request,response,True)
-        try:return service.build(payload)
+        pending=asyncio.create_task(service.build_async(payload))
+        try:
+            while not pending.done():
+                if await request.is_disconnected():
+                    return Response(status_code=499)
+                await asyncio.wait({pending},timeout=.1)
+            return await pending
         except ValidationError as exc:raise HTTPException(422,'模型生成的流程格式不完整，请重试：'+ '; '.join('.'.join(map(str,e['loc']))+' '+e['msg'] for e in exc.errors())[:350]) from exc
         except (ValueError,KeyError) as exc:raise HTTPException(422,str(exc)[:500]) from exc
         except Exception as exc:raise HTTPException(502,'工作流构建暂时不可用，请重试') from exc
+        finally:
+            if not pending.done():pending.cancel()
+            try:await pending
+            except (asyncio.CancelledError,Exception):pass  # Release the model connection on disconnect.
     @router.get('/tasks/{task_id}/latest')
     def latest(task_id:str,request:Request,response:Response):
         return service.latest(identity(request,response),task_id)

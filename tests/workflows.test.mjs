@@ -404,3 +404,26 @@ test('saved trading nodes migrate to execution and observation actions when reop
   assert.equal(old.nodes[1].kind,'output');
  }finally{s.w.close();}
 });
+
+test('closing during a build aborts it and ignores a late result after reopening',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});let resolveBuild,signal;
+  const original=s.w.fetch;s.w.fetch=(url,options)=>url.endsWith('/workflows/build')?(signal=options.signal,new Promise(resolve=>{resolveBuild=resolve;})):original(url,options);
+  const input=s.d.querySelector('#wfBuildInput');input.value='修改工作流';input.dispatchEvent(new s.w.Event('input',{bubbles:true}));s.d.querySelector('#wfBuildForm').requestSubmit();await tick();
+  s.d.querySelector('[data-act=close]').click();assert.equal(signal.aborted,true);assert.equal(s.d.querySelector('.wfCanvas').open,false);
+  await s.w.MentoraWorkflow.open({workflow:graph,title:'新的画布'});
+  resolveBuild({ok:true,json:async()=>({title:'过期结果',graph:{version:1,nodes:[],edges:[]}})});await tick();
+  assert.equal(s.d.querySelector('#wfTitle').value,'新的画布');assert.equal(s.d.querySelectorAll('[data-node]').length,2);assert.equal(s.d.querySelector('.wfBuildStop').hidden,true);
+ }finally{s.w.close();}
+});
+
+test('node panel body contains only input and output; settings open separately',async()=>{
+ const s=await setup();try{
+  await s.w.MentoraWorkflow.open({workflow:graph});s.d.querySelector('[data-node=input]').click();
+  assert.deepEqual([...s.d.querySelector('.wfInspectorBody').children].map(n=>n.id),['wfNodeFields','wfRunResult']);
+  assert.equal(s.d.querySelector('.wfInspectorBody .wfAdvanced'),null);
+  assert.equal(s.d.querySelector('.wfResolvedInput'),null);
+  s.d.querySelector('[data-act=node-more]').click();s.d.querySelector('[data-act=node-config]').click();assert(s.d.querySelector('.wfNodeConfig').open);
+  s.d.querySelector('[data-act=config-close]').click();assert(!s.d.querySelector('.wfNodeConfig').open);assert(s.d.querySelector('.wfCanvas').open);
+ }finally{s.w.close();}
+});
