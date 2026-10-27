@@ -113,6 +113,10 @@ function hasStructuredRows(value, depth = 0) {
 
 function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_THRESHOLD) {
   const text = textOf(result);
+  const file=String(exec.arguments?.file_path || exec.arguments?.path || '');
+  // Skill instructions and schemas are executable contracts, not datasets.
+  if (/SKILL\.md$|(?:^|[\/])[^\/]*schema[^\/]*\.json$/i.test(file))
+    return transformedResult(result.content || [], result.isError || failed(result), result);
   let parsed = null;
   try { parsed = JSON.parse(text); } catch { /* Preserve arbitrary text as a file. */ }
   // Contracts are executable metadata, not large research datasets. Losing
@@ -288,7 +292,9 @@ class LightweightGuard {
         this.failureResults.set(key,structuredClone(summarized));
         return summarized;
       }
-      return compactToolResult(exec,raw,this.root);
+      // SDK re-renders value after tools/execute. Content projection belongs
+      // in tools/post-execute, otherwise the compact receipt is discarded.
+      return transformedResult(raw.content || [], raw.isError || false, raw);
     };
     // Never alter cancellation, failures, mutations or unknown commands.
     if(!call.cacheable || exec.signal?.aborted)return run();
@@ -310,16 +316,65 @@ class LightweightGuard {
     }
   }
 }
+// Only already-selected, read-only calls may share one native tool batch.
+// Shell syntax and resource conflicts remain exclusive; no command is invented.
+class ParallelReadPlan {
+  constructor(root){this.root=root;this.reset();}
+  reset(){this.reads=new Set();this.writes=new Set();}
+  classify(args){
+    const command=String(args.command || '');
+    if(!command || /[;&|<>`$\\\n\r]/.test(command))return false;
+    const tokens=command.match(/"[^"]*"|'[^']*'|[^\s]+/g)?.map(unquote) || [];
+    if(!/^python(?:3(?:\.\d+)?)?$/.test(path.basename(tokens[0] || '')))return false;
+    const cwd=path.resolve(this.root,args.workdir || '.');
+    if(path.resolve(cwd,tokens[1] || '')!==path.join(this.root,'app/skill_runner.py'))return false;
+    const flag=name=>{let value;for(let i=0;i<tokens.length;i++){if(tokens[i]===name)value=tokens[i+1];else if(tokens[i].startsWith(name+'='))value=tokens[i].slice(name.length+1);}return value;};
+    const script=flag('--script');
+    if(tokens[2]!=='contract' && !(tokens[2]==='execute' && script==='read_market_data.py' && ['quote','history'].includes(flag('--operation'))))return false;
+    const reads=['--input','--payload','--file'].map(flag).filter(Boolean).map(f=>path.resolve(cwd,f));
+    const writes=['--output','--payload-output','--code-output'].map(flag).filter(Boolean).map(f=>path.resolve(cwd,f));
+    if(reads.some(f=>this.writes.has(f)) || writes.some(f=>this.reads.has(f)||this.writes.has(f)))return false;
+    reads.forEach(f=>this.reads.add(f));writes.forEach(f=>this.writes.add(f));return true;
+  }
+}
 function apply(ctx) {
   const caches=new WeakMap();
+  const parallelPlans=new WeakMap();
+  const planFor=agent=>{
+    let plan=parallelPlans.get(agent);
+    if(!plan){plan=new ParallelReadPlan(path.resolve(process.env.MENTORA_PROJECT_ROOT || process.cwd()));parallelPlans.set(agent,plan);}
+    return plan;
+  };
+  ctx.effect?.(()=>{
+    const tools=ctx.tools,executionMode=tools.executionMode;
+    if(typeof executionMode!=='function')return;
+    function classifyExecution(exec){
+      const mode=executionMode.call(this,exec);
+      if(mode.kind==='parallel' || exec.name!=='bash' || !exec.agent || exec.signal?.aborted || !tools.get('bash',exec.agent))return mode;
+      return planFor(exec.agent).classify(exec.arguments)?{kind:'parallel'}:mode;
+    }
+    // The pinned SDK's scheduler resolves mode before tools/execute. Wrap that
+    // boundary without replacing tool definitions, schemas or tool bodies.
+    tools.executionMode=classifyExecution;
+    return ()=>{if(tools.executionMode===classifyExecution)tools.executionMode=executionMode;};
+  });
   const cacheFor=agent=>{let cache=caches.get(agent);if(!cache){cache=new LightweightGuard(process.env.MENTORA_PROJECT_ROOT || process.cwd());caches.set(agent,cache);}return cache;};
   ctx.on('agent/pre-step',({agent,messages},next)=>{
+    if(agent)planFor(agent).reset();
     if(agent && messages.some(m=>m.source?.kind==='user'))cacheFor(agent).reset();
     return next();
   });
   ctx.on('agent/turn-stopping',({agent})=>{if(agent)cacheFor(agent).reset();});
   ctx.on('tools/execute',(exec,next)=>exec.agent?cacheFor(exec.agent).execute(exec,next):next(),{prepend:true});
+  ctx.on('tools/post-execute',async(exec,result,next)=>{
+    const decision=await next();
+    if(!exec.agent || decision.kind!=='accept' || Object.hasOwn(decision,'value') || Object.hasOwn(decision,'content'))return decision;
+    const projected=compactToolResult(exec,result,cacheFor(exec.agent).root);
+    // Content-only accept preserves the native validated value, errors, meta,
+    // additional contexts and cancellation result at the SDK commit boundary.
+    return {...decision,content:projected.content};
+  });
 }
-module.exports={name,inject,apply,LightweightGuard,inspect,failed,webFetchFailed,compactToolResult,
+module.exports={name,inject,apply,LightweightGuard,ParallelReadPlan,inspect,failed,webFetchFailed,compactToolResult,
   isNetworkUnavailable,isDirectExternalCall,plainJson,transformedResult,retryFamily,
   DEFAULT_COMPACTION_THRESHOLD,JOB_POLL_TIMEOUT_MS};

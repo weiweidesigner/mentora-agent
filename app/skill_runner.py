@@ -396,6 +396,8 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
                 "首次执行必须提供 --transform-file 或 --transform-code，其中定义确定性的 "
                 "transform(raw_data, question)。转换文件只能包含这一个顶层函数；不要写 import、辅助函数、"
                 "lambda、class、文件或网络访问。全部逻辑写在 transform 内并返回 JSON 可序列化 dict。"
+                "纯统计、筛选、排序或汇总不要传 --chart-type；它会强制按图表 schema 验证结果，并不是最终报告的格式。"
+                "只有本次 transform 确实返回绘图 payload 时才设置 --chart-type，并按该类型返回必需的数据字段。"
                 "--output 是内部 HTML 回执；结构化结果传 --payload-output 并从其中的 result 字段读取。"
                 "若误把 .json 传给 --output，skill_runner 会自动改为同名 .html 回执并将原路径作为 "
                 "--payload-output。禁止让工具调用辅助模型生成代码，也不要读取工具源码。"

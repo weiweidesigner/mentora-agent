@@ -266,3 +266,54 @@ test('environment adapter only forwards the configured shell environment', async
   assert.deepEqual(adapter.inject,['shell']);
   assert.equal(handlers.has('tools/execute'),false);
 });
+
+test('SDK canonical value rendering is compacted at post-execute without changing tool value',async t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'mentora-post-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+ const previous=process.env.MENTORA_PROJECT_ROOT;process.env.MENTORA_PROJECT_ROOT=root;
+ const handlers=new Map();try{policy.apply({on:(name,fn)=>handlers.set(name,fn)});}finally{if(previous===undefined)delete process.env.MENTORA_PROJECT_ROOT;else process.env.MENTORA_PROJECT_ROOT=previous;}
+ const agent={},exec={name:'bash',arguments:{command:'python3 local.py'},agent};
+ const stdout=JSON.stringify({rows:Array.from({length:1000},(_,i)=>({id:i,value:i*2}))});
+ const native={content:[{type:'text',text:stdout}],isError:false,value:{stdout,exitCode:0},meta:{cwd:root}};
+ const around=await handlers.get('tools/execute')(exec,async()=>native);
+ // Match the real SDK: it discards around-dispatch content and renders value.
+ const canonical={...around,content:[{type:'text',text:around.value.stdout}]};
+ const result=await handlers.get('tools/post-execute')(exec,canonical,async()=>({kind:'accept',additionalContexts:[{context:'retained'}]}));
+ assert.equal(result.kind,'accept');assert.equal(result.value,undefined);
+ assert.deepEqual(canonical.value,native.value);assert.equal(canonical.meta.cwd,root);
+ const receipt=JSON.parse(result.content[0].text);assert(receipt.compacted);assert(result.content[0].text.length<1000);
+ assert.equal(JSON.parse(fs.readFileSync(receipt.fullOutputPath,'utf8')).rows.length,1000);
+ assert.deepEqual(result.additionalContexts,[{context:'retained'}]);
+ assert.equal((await handlers.get('tools/post-execute')(exec,canonical,async()=>({kind:'block',feedback:[]}))).kind,'block');
+});
+
+test('full skill instructions and JSON schemas never lose their execution contract',t=>{
+ const {root}=setup(t);for(const file of ['app/skills/any/SKILL.md','app/skills/any/schemas/payload.schema.json']){
+  const text='contract '.repeat(2000);assert.equal(compactToolResult({name:'read',arguments:{file_path:file}},ok(text),root).content[0].text,text);
+ }
+});
+
+test('native parallel classification accepts independent read batches and preserves dependency barriers',()=>{
+ const plan=new policy.ParallelReadPlan('/project');
+ const cmd=(file,input='')=>({command:`python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote --symbols TEST --output ${file}${input?' --input '+input:''}`});
+ assert.equal(plan.classify(cmd('outputs/a.json')),true);
+ assert.equal(plan.classify(cmd('outputs/b.json')),true);
+ assert.equal(plan.classify(cmd('outputs/a.json')),false);
+ assert.equal(plan.classify(cmd('outputs/c.json','outputs/b.json')),false);
+ plan.reset();assert.equal(plan.classify(cmd('outputs/a.json')),true);
+ for(const command of ['python3 app/skill_runner.py execute --script order.py -- --operation quote','python3 app/skill_runner.py execute --script read_market_data.py -- --operation trade','python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote; touch file','python3 arbitrary.py','cat file | python3 app/skill_runner.py contract --script test.py'])assert.equal(plan.classify({command}),false);
+});
+
+test('scheduler adapter only changes safe visible bash modes and restores on disposal',()=>{
+ const handlers=new Map();let dispose;
+ const original=()=>({kind:'exclusive'}),tools={executionMode:original,get:()=>({name:'bash'})};
+ policy.apply({tools,on:(name,fn)=>handlers.set(name,fn),effect:fn=>{dispose=fn();}});
+ const agent={},exec={agent,name:'bash',arguments:{command:'python3 app/skill_runner.py execute --script read_market_data.py -- --operation quote --output outputs/one.json'}};
+ assert.equal(tools.executionMode(exec).kind,'parallel');
+ assert.equal(tools.executionMode(exec).kind,'exclusive');
+ handlers.get('agent/pre-step')({agent,messages:[]},()=>{});
+ assert.equal(tools.executionMode(exec).kind,'parallel');
+ assert.equal(tools.executionMode({...exec,arguments:{command:'python3 app/skill_runner.py execute --script order.py'}}).kind,'exclusive');
+ assert.equal(tools.executionMode({...exec,signal:{aborted:true}}).kind,'exclusive');
+ tools.get=()=>undefined;assert.equal(tools.executionMode(exec).kind,'exclusive');
+ dispose();assert.equal(tools.executionMode,original);
+});
