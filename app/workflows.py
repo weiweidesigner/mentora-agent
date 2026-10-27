@@ -262,6 +262,25 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
             return any(WorkflowService.has_decision_id(child) for child in value)
         return False
 
+    def decision_account(self,owner,arguments=None):
+        """Read current facts; refresh held quotes only when valuation is stale.
+
+        Keep this on the registered account Skill so refreshes retain receipts.
+        Never relax freshness checks if the provider still returns an old quote.
+        """
+        from app.portfolio_skills import call
+        args=arguments or {'operation':'read'}
+        account=call(self.portfolio,owner,'portfolio-account',args)
+        if account.get('valuationComplete') is not True and args.get('operation','read')!='refresh':
+            account=call(self.portfolio,owner,'portfolio-account',{'operation':'refresh'})
+        issues=[]
+        for position in account.get('positions',[]):
+            if position.get('stale'):
+                quote=position.get('quote') or {}
+                issues.append(dict(symbol=position['symbol'],priceAt=quote.get('priceAt'),
+                                   reason='持仓报价过期或缺失'))
+        return dict(account,valuationIssues=issues)
+
     def portfolio_decisions(self,owner,arguments,*,preview=False,progress=lambda **_:None,cancelled=lambda:False):
         """Build complete evidence, apply JEV gates and persist executable decisions."""
         kind=arguments.get('kind','entry')
@@ -292,6 +311,11 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
         decisions=[];executable=[]
         if evidence:
             if cancelled():raise InterruptedError('试运行已停止')
+            # News/backtests can outlive the upstream account snapshot, especially
+            # across a market open. Re-read current facts immediately before JEV.
+            progress(progress='正在校验当前账户与持仓报价',completed=len(rows),total=len(rows))
+            account=dict(self.decision_account(owner),recommendationProfile=recommendation)
+            if cancelled():raise InterruptedError('试运行已停止')
             progress(progress=f'正在进行 JEV 决策 · {len(evidence)} 个标的',completed=len(rows),total=len(rows))
             from app.portfolio_skills import call
             results=call(self.portfolio,owner,'portfolio-jev',dict(operation='decide',kind=kind,evidence=evidence,account=account))
@@ -311,6 +335,7 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                     executable.append(record)
         decisions.extend(blocked)
         return dict(items=executable,count=len(executable),decisions=decisions,decisionCount=len(decisions),preview=preview,
+                    accountCheck={k:account.get(k) for k in ('serverTime','valuationComplete','valuationIssues')},
                     interpretation=(f'共完成 {len(decisions)} 项 JEV 决策，{len(executable)} 项通过置信度与执行门槛。'))
 
     @staticmethod
@@ -418,10 +443,18 @@ condition 使用 path（上游节点id.字段）、operator（truthy/equals/cont
                                 progress=lambda **details:update(node.id,dict(status='running',**details))),
                             script='app/text_opportunities.py')
                 elif node.kind=='tool' and node.tool=='portfolio-decision':
+                    from app.skill_calls import skill_events
                     decision_arguments=self.resolve(node.arguments,outputs)
-                    value=self.portfolio_decisions(owner,decision_arguments,preview=trial,
-                        progress=lambda **details:update(node.id,dict(status='running',**details)),cancelled=cancelled)
+                    with skill_events(emit,cancelled):
+                        value=self.portfolio_decisions(owner,decision_arguments,preview=trial,
+                            progress=lambda **details:update(node.id,dict(status='running',**details)),cancelled=cancelled)
                     receipts[node.id].append(dict(tool='portfolio-jev',input=decision_arguments,output=value['decisions']))
+                elif node.kind=='tool' and node.tool=='portfolio-account' and not node.foreach:
+                    from app.skill_calls import skill_events
+                    account_arguments=self.resolve(node.arguments,outputs)
+                    with skill_events(emit,cancelled):
+                        value=self.decision_account(owner,account_arguments)
+                    receipts[node.id].append(dict(tool=node.tool,input=account_arguments,output=value))
                 elif node.kind=='tool' and node.tool.startswith('portfolio-') and (node.arguments or node.foreach):
                     from app.portfolio_skills import call
                     from app.skill_calls import skill_events

@@ -14,13 +14,14 @@ def observation_summary(result):
         confidence=trading_confidence(decision)
         if confidence['value'] is not None:
             details.append(('买入' if confidence['direction']=='buy' else '卖出')+f'置信度 {confidence["value"]*100:.2f}%')
-        elif decision:details.append('未记录买卖方向置信度')
+        elif decision:
+            details.append('前置校验未通过，未进行买卖方向评估' if decision.get('status')=='blocked' and not decision.get('modelAction') else '未记录买卖方向置信度')
         if confidence['thresholdPassed'] is not None:
             details.append(f'置信度门槛 {confidence["threshold"]*100:g}%（'+('通过' if confidence['thresholdPassed'] else '未通过')+'）')
         if confidence['agreementPassed'] is False:details.append('顺序一致性校验未通过')
         elif confidence['thresholdPassed'] is True and confidence['executionPassed'] is False:
             details.append('其他执行校验未通过（历史记录未提供具体原因）')
-        reason=decision.get('reason') or decision.get('factorLabel')
+        reason=decision.get('reason') or decision.get('constraint') or decision.get('factorLabel')
         if not decision.get('reason') and decision.get('action') not in ('buy','sell','reduce') and decision.get('factor')=='trend-confirmed':reason=None
         if reason:details.append(str(reason))
         trade=item.get('trade');plan=item.get('plan')

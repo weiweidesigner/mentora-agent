@@ -49,7 +49,9 @@ def gate(kind, item, account):
         settings = account['settings']
         if kind == 'entry':
             if account.get('valuationComplete') is not True:
-                return 'data-insufficient', '账户估值不完整', 0
+                issues=account.get('valuationIssues') or []
+                detail='、'.join(str(row.get('symbol',''))+'（报价时间 '+str(row.get('priceAt') or '缺失')+'）' for row in issues)
+                return 'data-insufficient', '账户估值不完整'+('：持仓报价过期或缺失 '+detail if detail else ''), 0
             cash, equity = number(account['cash']), number(account['equity'])
             if cash <= 0 or equity <= 0:
                 return 'portfolio-limit', '可用资金或权益不足', 0

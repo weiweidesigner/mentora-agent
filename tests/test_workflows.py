@@ -335,6 +335,7 @@ def test_portfolio_decision_bridge_enriches_persists_and_filters(env,monkeypatch
             return dict(decision,id='saved-decision',kind=kind,evidence=evidence)
     env.service.portfolio=SimpleNamespace(workflow=DealWorkflow())
     def call(portfolio,owner,tool,args):
+        if tool=='portfolio-account':return {'cash':2000,'positions':[],'settings':{},'valuationComplete':True}
         assert tool=='portfolio-jev' and args['operation']=='decide'
         return [{'symbol':'AAPL','action':'buy','status':'decided','confidence':.8,
                  'confidenceGate':{'passed':True,'threshold':.3}}]
@@ -349,6 +350,7 @@ def test_portfolio_decision_bridge_enriches_persists_and_filters(env,monkeypatch
     assert value['items'][0]['decisionId']=='saved-decision'
     assert value['items'][0]['side']=='buy'
     assert captured['account']['recommendationProfile']['investment']['confidenceThresholdPct']==30
+    assert captured['account']['cash']==2000  # Do not reuse the upstream snapshot.
     assert 'AAPL' in progress[0]['progress'] and progress[0]['completed']==0
     assert 'JEV' in progress[-1]['progress'] and progress[-1]['completed']==1
 
@@ -358,11 +360,76 @@ def test_decision_cancellation_prevents_starting_evidence_and_model_calls(env):
         env.service.portfolio_decisions('owner',{'items':[{'symbol':'AAPL'}],'account':{},'profile':{}},cancelled=lambda:True)
 
 
+@pytest.mark.parametrize('valid_after_refresh',[True,False])
+def test_account_read_refreshes_stale_positions_once_without_relaxing_checks(env,monkeypatch,valid_after_refresh):
+    calls=[]
+    def call(portfolio,owner,tool,args):
+        assert owner=='owner' and tool=='portfolio-account'
+        calls.append(args['operation'])
+        valid=valid_after_refresh and args['operation']=='refresh'
+        return dict(valuationComplete=valid,positions=[dict(symbol='0700.HK',stale=not valid,
+            quote=dict(priceAt='2026-10-27T09:09:03+08:00'))])
+    monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=call))
+    account=env.service.decision_account('owner')
+    assert calls==['read','refresh']
+    assert account['valuationComplete'] is valid_after_refresh
+    assert bool(account['valuationIssues']) is not valid_after_refresh
+    if not valid_after_refresh:
+        assert account['valuationIssues'][0]['symbol']=='0700.HK'
+        assert '09:09:03' in account['valuationIssues'][0]['priceAt']
+
+
+def test_fresh_account_does_not_refetch_and_explicit_refresh_is_not_retried(env,monkeypatch):
+    calls=[]
+    def call(portfolio,owner,tool,args):
+        calls.append(args['operation'])
+        return dict(valuationComplete=args['operation']=='read',positions=[])
+    monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=call))
+    assert env.service.decision_account('owner')['valuationComplete']
+    assert not env.service.decision_account('owner',{'operation':'refresh'})['valuationComplete']
+    assert calls==['read','refresh']
+
+
+def test_account_node_refreshes_existing_read_graph_without_model_or_orders(env,monkeypatch):
+    monkeypatch.setattr('app.workflows.execution_tools',lambda _:[dict(id='portfolio-account',schema=None)])
+    calls=[]
+    def call(portfolio,owner,tool,args):
+        assert tool=='portfolio-account'
+        calls.append(args.get('operation','read'))
+        return dict(valuationComplete=args.get('operation')=='refresh',positions=[])
+    monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=call))
+    states={}
+    g=graph([dict(id='account',kind='tool',tool='portfolio-account',title='账户',arguments={'operation':'read'})],[])
+    env.service.execute(dict(workflow=g,agent='mentora-deal',question='账户',_owner='owner'),'account-check',lambda i,s:states.update({i:s}))
+    assert states['account']['output']['valuationComplete'] is True
+    assert calls==['read','refresh'] and not env.calls
+
+
+def test_blocked_summary_explains_precheck_and_exact_constraint():
+    from app.workflow_observations import observation_summary
+    text=observation_summary(dict(observations={'SCHD':{'decision':dict(action='watch',status='blocked',
+        confidence=None,factorLabel='行情或账户数据不完整',constraint='账户估值不完整：0700.HK 报价过期')}}))
+    assert '前置校验未通过，未进行买卖方向评估' in text
+    assert '账户估值不完整：0700.HK 报价过期' in text
+    assert '行情或账户数据不完整' not in text and '未记录买卖方向置信度' not in text
+
+
+def test_stale_account_reports_symbol_and_time_without_calling_model():
+    from app.portfolio_laya import LayaPortfolio
+    item=dict(symbol='SCHD',quote=dict(price=35.3,currency='USD',tradable=True,priceAt='2026-10-26T16:00:00-04:00'))
+    account=dict(settings={},valuationComplete=False,valuationIssues=[dict(symbol='0700.HK',priceAt='2026-10-27T09:09:03+08:00')])
+    def predict(*_):pytest.fail('Stale account must not reach the model')
+    result=LayaPortfolio(predict).decide('entry',[item],account)[0]
+    assert result['status']=='blocked' and result['confidence'] is None
+    assert '0700.HK' in result['constraint'] and '09:09:03' in result['constraint']
+
+
 def test_portfolio_decision_bridge_does_not_persist_in_trial(env,monkeypatch):
     class DealWorkflow:
         def entry_evidence(self,owner,item):return {'symbol':item['symbol']}
         def store(self,*args):raise AssertionError('trial must not persist decisions')
     env.service.portfolio=SimpleNamespace(workflow=DealWorkflow())
+    monkeypatch.setattr(env.service,'decision_account',lambda owner:{'valuationComplete':True})
     monkeypatch.setitem(sys.modules,'app.portfolio_skills',SimpleNamespace(call=lambda *_:[{
         'symbol':'AAPL','action':'buy','status':'decided','confidence':.8,
         'confidenceGate':{'passed':True,'threshold':.3}}]))
