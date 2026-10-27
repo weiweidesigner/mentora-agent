@@ -92,6 +92,7 @@ def test_gallery_caps_deduplicates_and_uses_four_grid_two_list_without_losing_ca
     assert soup.select_one('.grid img')['src']=='https://images.example.com/0.jpg'
     assert soup.select_one('.list img')['src']=='https://images.example.com/thumb-4.jpg'
     assert soup.select_one('.source').text=='来源：来源名'
+    assert not soup.select('.refine, .suggestions, footer, [data-refinement]')
     assert payload['image_count']==12 and len(payload['images'])==13 and payload['displayed_count']==6
 
 
@@ -114,6 +115,21 @@ def test_served_legacy_gallery_upgrades_without_rewriting_stored_file(tmp_path,m
     old='<html><head><title>图片搜索</title></head><body><h1>旧图集</h1><article class="image-card"><button data-original="https://example.com/p.jpg"><img src="https://example.com/t.jpg"></button><h2>原始标题</h2><a href="https://source.example.com/page">查看来源</a></article></body></html>'
     path=tmp_path/'old-gallery.html';path.write_text(old)
     page=presentation.share_streamviz_artifact(path.name,theme='dark').body.decode()
-    assert 'data-image-search-gallery="2"' in page and 'data-theme="dark"' in page
+    assert 'data-image-search-gallery="3"' in page and 'data-theme="dark"' in page
     assert '原始标题' in page and 'https://source.example.com/page' in page
     assert path.read_text()==old
+
+
+def test_v2_gallery_upgrade_removes_footer_preserving_photos_and_sources():
+    from bs4 import BeautifulSoup
+    old='<html><head><title>图片搜索</title></head><body><main data-image-search-gallery="2"><h1>照片</h1>'
+    old+=''.join(f'<article class="image-card"><button class="preview" data-original="https://example.com/{n}.jpg" data-source="https://source.example.com/{n}"><img src="https://example.com/t{n}.jpg"></button><h2>照片{n}</h2><p class="source"><a href="https://source.example.com/{n}">来源：原始来源{n}</a></p></article>' for n in range(6))
+    old+='<section class="refine"><p>想找哪一类？</p><button data-refinement="高清">高清大图</button></section><footer>图片来自外部网站，不代表商用授权。</footer></main></body></html>'
+    upgraded=upgrade_image_gallery(old)
+    soup=BeautifulSoup(upgraded,'html.parser')
+    assert len(soup.select('.image-card'))==6
+    assert not soup.select('.refine, footer, [data-refinement]')
+    assert soup.select('.source a')[5]['href']=='https://source.example.com/5'
+    assert soup.select('.source a')[5].text=='来源：原始来源5'
+    assert soup.select('.preview')[5]['data-original']=='https://example.com/5.jpg'
+    assert upgrade_image_gallery(upgraded)==upgraded

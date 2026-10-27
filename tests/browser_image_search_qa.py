@@ -48,34 +48,10 @@ def main():
                     page.wait_for_function("document.querySelector('#resource-status').textContent.includes('失败')")
                     assert page.locator('dialog img').is_hidden()
                     page.locator('.close').click()
-                    page.locator('[data-refinement]').first.click()
-                    assert page.locator('#refine-query').input_value()==payload['requested_query']+'，只找高清大图'
+                    assert page.locator('.refine, footer, [data-refinement]').count()==0
                     assert not errors,errors
                     page.close()
-            # Real cross-frame refinement only fills a draft and preserves
-            # existing input; it never sends a search request by itself.
-            page=browser.new_page(viewport=dict(width=390,height=900))
-            app=(Path(__file__).resolve().parents[1]/'app/static/app.js').read_text()
-            start=app.index('function handleImageSearchRefinement(event) {')
-            helper=app[start:app.index("\nwindow.addEventListener('message',handleImageSearchRefinement);",start)]
-            host='<textarea id="question"></textarea><article class="message assistant"><iframe class="reportDocumentFrame" src="https://gallery.test/?theme=dark" style="border:0;width:100%;height:1600px"></iframe></article>'
-            def embedded_route(r):
-                if r.request.url.startswith('https://host.test/'):return r.fulfill(body=host,content_type='text/html')
-                return route(r)
-            page.route('**/*',embedded_route);page.goto('https://host.test/')
-            page.add_script_tag(content="const input=document.querySelector('#question');\n"+helper+"\nwindow.addEventListener('message',handleImageSearchRefinement);")
-            frame=page.frame_locator('iframe')
-            frame.locator('[data-refinement]').first.click()
-            page.wait_for_function("document.querySelector('#question').value.includes('只找高清大图')")
-            assert page.locator('#question').input_value()==payload['requested_query']+'，只找高清大图'
-            page.locator('#question').fill('已有草稿')
-            frame.locator('[data-refinement]').nth(1).click()
-            frame.locator('#refine-status').filter(has_text='已保留').wait_for()
-            assert page.locator('#question').input_value()=='已有草稿'
-            page.evaluate("window.postMessage({type:'mentora:image-search-refine',prompt:'伪造请求'},'*')")
-            assert page.locator('#question').input_value()=='已有草稿'
-            page.close()
             browser.close()
-    print('PASS: 320/390/1280px light/dark, 4-grid/2-list, edge alignment, fixed cover crops, previews, failures, metadata escaping and safe refinement drafts')
+    print('PASS: 320/390/1280px light/dark, 4-grid/2-list, edge alignment, fixed cover crops, previews, failures, metadata escaping and no footer/refinement controls')
 
 if __name__=='__main__':main()

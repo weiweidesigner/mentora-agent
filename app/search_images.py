@@ -105,15 +105,17 @@ def write_gallery(path,payload):
 
 
 def upgrade_image_gallery(artifact):
-    """Read-only upgrade of the first-party v1 gallery, without fetching again."""
-    if 'data-image-search-gallery=' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
+    """Read-only upgrade of first-party older galleries, without fetching again."""
+    if 'data-image-search-gallery="3"' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
     class Parser(HTMLParser):
         def __init__(self):super().__init__();self.images=[];self.image=None;self.query='';self.capture='';self.parts=[];self.href=''
         def handle_starttag(self,tag,attrs):
             attrs=dict(attrs)
             if tag=='article' and 'image-card' in attrs.get('class','').split():self.image={}
             if self.image is not None:
-                if tag=='button' and attrs.get('data-original'):self.image['image_url']=attrs['data-original']
+                if tag=='button' and attrs.get('data-original'):
+                    self.image['image_url']=attrs['data-original']
+                    if attrs.get('data-source'):self.image['source_url']=attrs['data-source']
                 if tag=='img':self.image['thumbnail_url']=attrs.get('src','')
             if tag in ('h1','h2','a'):
                 self.capture=tag;self.parts=[];self.href=attrs.get('href','')
@@ -126,6 +128,9 @@ def upgrade_image_gallery(artifact):
                 if self.image is not None:
                     if tag=='h2':self.image['title']=value
                     if tag=='a' and '查看来源' in value:self.image['source_url']=self.href
+                    if tag=='a' and value.startswith('来源：'):
+                        self.image['source_url']=self.href
+                        self.image['source_name']=value.removeprefix('来源：')
                 self.capture=''
             if tag=='article' and self.image is not None:self.images.append(self.image);self.image=None
     parser=Parser()

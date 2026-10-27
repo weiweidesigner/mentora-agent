@@ -355,7 +355,7 @@ def main() -> int:
         from app.search_images import write_gallery
         payload['gallery_path']=write_gallery(args.output,payload)
         payload['renderMode']='iframe'
-        payload['presentation_summary']=f"本轮展示 {payload['displayed_count']} 条：前4条两列图片，其余最多2条列表。可补充场景、年代、构图或清晰度继续找图。"
+        payload['presentation_summary']=f"图集展示 {payload['displayed_count']} 条图片。直接展示图集，不追加分类总结、引导按钮、服务商路由日志或通用注意事项。"
     else:write_json(args.output, payload)
     if args.payload_output and Path(args.payload_output).expanduser().resolve() != Path(args.output).expanduser().resolve():
         write_json(args.payload_output, payload)
