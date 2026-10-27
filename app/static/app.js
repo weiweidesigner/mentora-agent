@@ -2617,7 +2617,7 @@ function syncInlineActivity(article) {
   }
   const expanded = isInlineActivityExpanded(article);
   const hasActiveTool = Boolean(source.querySelector("li.is-tool-step.is-loading"));
-  currentTool.hidden = article.activityEnded || (article.answerTextStarted && article.dataset.activityPhase === "answer" && !hasActiveTool) || article.dataset.thinkingState !== "active" || expanded;
+  currentTool.hidden = article.activityEnded || article.visualizationStarted || (article.answerTextStarted && article.dataset.activityPhase === "answer" && !hasActiveTool) || article.dataset.thinkingState !== "active" || expanded;
   if (article.activityEnded || article.dataset.thinkingState !== "active") {
     currentTool.replaceChildren();
     delete currentTool.dataset.signature;

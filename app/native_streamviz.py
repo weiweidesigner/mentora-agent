@@ -91,8 +91,10 @@ Treat a horizontal bar chart as a compact three-column system: reserve no more t
 SVG width for right-aligned category labels, 78% for the plotting area, and 10% for values or
 annotations. Align the left edge of the label column with the card title's content edge; do not
 insert decorative outer gutters on either side of the chart.
-For every horizontal bar, put the value in the reserved value column, 10–14px to the right of the
-bar end. Never place dark text over a colored bar. Text may appear inside a bar only when it is
+For signed horizontal bars, keep category labels in a separate left column before the entire
+negative plotting extent. Reserve measured text width outside BOTH negative and positive bar ends;
+include those complete text bounds in the viewBox. Never put category names at the zero axis where
+negative bars can cover them. Put values 10–14px outside their free bar ends. Never place dark text over a colored bar. Text may appear inside a bar only when it is
 white, bold, and has verified contrast against that exact fill; outside labels are the default.
 Before emitting an SVG, verify that every point, bar, and text baseline stays inside its viewBox,
 including negative values and labels below the x-axis. For categorical charts, give every category

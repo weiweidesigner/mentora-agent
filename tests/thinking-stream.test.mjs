@@ -596,3 +596,29 @@ test('saved progress is placed between the same tool calls when history is resto
   assert.deepEqual([...a.querySelector('.thinkingSteps').children].map(n=>n.dataset.publicBlockId||n.dataset.toolCallId),['p1','one','p2','two']);
  }finally{w.close();}
 });
+
+// Exercise the real compact preview as well as the full timeline.
+test('visualization hides compact tool preview and later progress cannot revive it', () => {
+  const dom=fixture(),w=dom.window,a=w.article;
+  const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
+  const start=source.indexOf('function queueStreamVisualization(');
+  w.upsertStreamVisualization=()=>{};w.syncStreamAnswerPlacement=()=>{};
+  w.eval(source.slice(start,source.indexOf('\nfunction ',start+1)));
+  w.appendToolStep(a,{callId:'viz',tool:'visualize_show_widget',phase:'started',thoughtSummary:'美股盘前市场速览'});
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,false);
+  w.setInlineActivityExpanded(a,true);
+  w.queueStreamVisualization(a,{id:'viz',argumentDelta:'{',final:false});
+  assert.equal(a.querySelector('.thinkingTrigger').getAttribute('aria-expanded'),'false');
+  assert.equal(a.querySelector('.thinkingFlow').hidden,true);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  w.appendToolStep(a,{callId:'viz',tool:'visualize_show_widget',phase:'completed'});
+  w.appendStep(a,'继续处理后续内容','','loading','public-progress');
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  assert.match(a.querySelector('.thinkingSteps').textContent,/visualize_show_widget/);
+  a.querySelector('.thinkingTrigger').click();
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  w.queueStreamVisualization(a,{id:'viz',argumentDelta:'more',final:false});
+  assert.equal(a.querySelector('.thinkingFlow').hidden,false);
+  assert.equal(a.querySelector('.thinkingCurrentTool').hidden,true);
+  w.close();
+});

@@ -38,3 +38,50 @@
   });
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();
 })();
+
+
+// Repair confidently identified ranked bars, including legacy generated SVGs.
+// Keep every supplied mark/value; change only text placement and canvas bounds.
+(() => {
+  const repair = () => document.querySelectorAll('svg[viewBox]:not([data-sv-bar-layout])').forEach(svg => {
+    if (typeof svg.getBBox !== 'function') return;
+    const box=svg.viewBox.baseVal;
+    if (!box.width || !box.height) return;
+    const bars=[...svg.querySelectorAll('rect')].filter(r=>r.width.baseVal.value>0 && r.height.baseVal.value>0);
+    if (bars.length<3 || bars.some(r=>r.height.baseVal.value>box.height/5)) return;
+    const rows=bars.map(bar=>({bar,x:bar.x.baseVal.value,y:bar.y.baseVal.value,w:bar.width.baseVal.value,h:bar.height.baseVal.value}));
+    if (rows.some((r,i)=>rows.some((q,j)=>j!==i && Math.abs(r.y-q.y)<Math.max(r.h,q.h)))) return;
+    const zero=[rows[0].x,rows[0].x+rows[0].w].find(x=>rows.every(r=>Math.abs(r.x-x)<1 || Math.abs(r.x+r.w-x)<1));
+    if (zero===undefined) return;
+    const texts=[...svg.querySelectorAll('text')];
+    for (const row of rows) {
+      const near=texts.filter(t=>{const y=t.y.baseVal[0]?.value;return y>=row.y && y<=row.y+row.h+2;});
+      // A shared category column just before zero plus one value per row.
+      row.category=near.find(t=>Math.abs((t.x.baseVal[0]?.value??Infinity)-(zero-10))<8);
+      row.value=near.find(t=>t!==row.category);
+      if (!row.category || !row.value || near.length!==2) return;
+    }
+    svg.dataset.svBarLayout='true';
+    let left=Math.min(...rows.map(r=>r.x));
+    for (const row of rows) {
+      const positive=Math.abs(row.x-zero)<1;
+      row.value.setAttribute('x',String(positive?row.x+row.w+8:row.x-8));
+      row.value.setAttribute('text-anchor',positive?'start':'end');
+      const bounds=row.value.getBBox();left=Math.min(left,bounds.x);
+    }
+    for (const row of rows) row.category.setAttribute('x',String(left-12));
+    const bounds=svg.getBBox();
+    if (bounds.width>0 && bounds.height>0) {
+      const x=Math.min(box.x,bounds.x-8),y=Math.min(box.y,bounds.y-8);
+      const right=Math.max(box.x+box.width,bounds.x+bounds.width+8),bottom=Math.max(box.y+box.height,bounds.y+bounds.height+8);
+      svg.setAttribute('viewBox',[x,y,right-x,bottom-y].join(' '));
+      // On narrow screens scroll the chart locally rather than shrink labels.
+      svg.style.minWidth=Math.ceil(right-x)+'px';
+      if(svg.parentElement){svg.parentElement.style.minWidth='0';svg.parentElement.style.overflowX='auto';}
+
+    }
+  });
+  const schedule=()=>requestAnimationFrame(repair);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+  document.fonts?.ready.then(schedule);
+})();

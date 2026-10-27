@@ -5,7 +5,6 @@ export function prepareStreamDocument(props, scripts, completeHtml) {
     if (!String(source || '').trim()) return source;
     let html = completeHtml(source);
     for (const [marker, script] of scripts) {
-      if (marker === 'data-sv-chart-geometry' && !html.includes('chartbox')) continue;
       if (!html.includes(marker)) html += `<script ${marker}>${script}</script>`;
     }
     return html;

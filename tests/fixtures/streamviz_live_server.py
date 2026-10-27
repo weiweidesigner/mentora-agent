@@ -7,6 +7,7 @@ from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from pathlib import Path
 import json
 import os
+import subprocess
 
 ROOT=Path(__file__).resolve().parents[2]
 SOURCE=(ROOT/'app/static/app.js').read_text()
@@ -14,15 +15,13 @@ def function(name):
     start=SOURCE.index('function '+name+'(')
     end=SOURCE.index('window.addEventListener("aime:streamviz-followup"',start) if name=='upsertStreamVisualization' else SOURCE.find('\nfunction ',start+1)
     return SOURCE[start:end]
+activity=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {markup,bootstrap} from './tests/helpers/thinking-stream-fixture.mjs';process.stdout.write(JSON.stringify({markup,bootstrap}));"],cwd=ROOT))
 PAGE='''<!doctype html><html lang="zh-CN" data-theme="dark"><head><meta charset="utf-8"><title>StreamViz 增量验证</title><link rel="stylesheet" href="/app/static/styles.css"><link rel="stylesheet" href="/app/static/vendor/streamviz/streamviz.css"><style>body{margin:0;padding:24px;background:#141414;color:#eee;font:16px system-ui}main{max-width:1000px;margin:auto}button{padding:10px;margin:4px;background:#333;color:white;border:1px solid #777;border-radius:6px}output{display:block;padding:12px 0;font-size:14px;color:#a8d8c5}.streamvizArtifactHost{width:100%;min-width:0}iframe{max-width:100%}</style></head><body><main><h2>StreamViz 真实增量验证</h2><p>第一段和第二段都不会发送完成事件。</p><button id="visualonly">仅开始可视化</button><button id="waiting">0 · 正在处理</button><button id="first">1 · 第一段</button><button id="second">2 · 第二段</button><button id="finish">3 · 完成</button><button id="reset">重置</button><button id="theme">切换主题</button><output id="result">等待第一段</output><article class="message assistant" data-thinking-state="active" data-activity-inline-expanded="true"><button class="thinkingTrigger" aria-expanded="true">思考过程 <span class="thinkingChevron"></span></button><div class="thinkingFlow" id="qa-thinking">已完成数据检查，正在准备可视化。</div><div class="finalAnswer"></div></article></main><script type="module" src="/app/static/vendor/streamviz/streamviz.js"></script><script>'''
 BOOT='''
-const article=document.querySelector('article');
 window.canonicalArtifact=value=>value;
 window.sanitizeUserFacingInsight=value=>value;window.formatInsight=value=>value;
-let activeActivityArticle=null;
-window.closeActivityDrawer=()=>{};
-window.updateThinkingSummary=()=>{};window.syncInlineActivity=a=>{const flow=a.querySelector('.thinkingFlow');flow.hidden=a.dataset.activityInlineExpanded!=='true';return flow;};
-document.querySelector('.thinkingTrigger').onclick=()=>setInlineActivityExpanded(article,article.dataset.activityInlineExpanded!=='true');
+appendToolStep(article,{callId:'qa',tool:'visualize_show_widget',phase:'started',thoughtSummary:'美股盘前市场速览'});
+setInlineActivityExpanded(article,true);
 window.withArtifactWidgetControl=node=>node;
 window.isNearBottom=()=>false;window.keepScrollPosition=()=>{};
 window.createStreamVisualizationArtifact=()=>{throw Error('Unexpected full-artifact fallback')};
@@ -51,12 +50,16 @@ function queue(data){queueStreamVisualization(article,data);}
 # boundary. Embed only as escaped data; never execute a report in the host page.
 if os.environ.get('STREAMVIZ_QA_HTML'):
     report = Path(os.environ['STREAMVIZ_QA_HTML']).read_text()
-    split = report.index('<p', report.index('核心判断')) + 2
+    position=report.find('核心判断')
+    split=report.index('<p',position)+2 if position>=0 else report.index('<svg')+4
     start = BOOT.index('const prefix=')
     end = BOOT.index('const escaped=', start)
     data = 'const prefix=' + json.dumps(report[:split]) + ';\nconst suffix=' + json.dumps(report[split:]) + ';\n'
     BOOT = BOOT[:start] + data.replace('</', '<\\/') + BOOT[end:]
-PAGE+=function('mountStreamVisualization')+function('setInlineActivityExpanded')+SOURCE[SOURCE.index('function orderedStreamFlow('):SOURCE.index('function upsertStreamVisualization(')]+function('upsertStreamVisualization')+BOOT+'</script></body></html>'
+start=PAGE.index('<article class="message assistant"')
+end=PAGE.index('</article>',start)+len('</article>')
+PAGE=PAGE[:start]+activity['markup']+PAGE[end:]
+PAGE+=activity['bootstrap']+function('mountStreamVisualization')+function('setInlineActivityExpanded')+SOURCE[SOURCE.index('function orderedStreamFlow('):SOURCE.index('function upsertStreamVisualization(')]+function('upsertStreamVisualization')+BOOT+'</script></body></html>'
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):super().__init__(*args,directory=str(ROOT),**kwargs)
     def do_GET(self):
