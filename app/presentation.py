@@ -603,6 +603,7 @@ def standalone_share_html(session: dict[str, Any]) -> str:
 .visualize-widget-panel{{display:block;width:100%;height:var(--visualize-widget-height,260px)!important;min-height:0;overflow:visible}}
 .visualize-widget-frame{{display:block;width:100%;height:var(--visualize-widget-height,260px)!important;border:0;background:transparent}}
 </style></head><body style="{body_style}"><main class="shareAnswerDocument {context_classes}"><h1 class="shareAnswerTitle">{title}</h1><section class="mixedReport">{answer_html}</section></main>
+<link rel="stylesheet" href="/static/image-viewer.css?v=20261027-viewer4"><script src="/static/image-viewer.js?v=20261027-viewer4"></script>
 <script src="/static/share-chart-layout.js"></script></body></html>'''
 
 

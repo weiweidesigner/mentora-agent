@@ -42,12 +42,12 @@ def main():
                     assert all(x['height']==(176 if width<=600 else 300) for x in boxes)
                     assert page.locator('.preview img').first.evaluate('(n)=>getComputedStyle(n).objectFit')=='cover'
                     page.locator('.preview').first.click()
-                    page.wait_for_selector('dialog img:not([hidden])')
+                    page.wait_for_selector('.iv-image')
                     page.keyboard.press('Escape');assert not page.locator('dialog').is_visible()
                     page.locator('.preview').nth(1).click()
-                    page.wait_for_function("document.querySelector('#resource-status').textContent.includes('失败')")
-                    assert page.locator('dialog img').is_hidden()
-                    page.locator('.close').click()
+                    page.wait_for_function("document.querySelector('.iv-status').textContent.includes('原图暂不可用')")
+                    assert page.locator('.iv-image').count()==0
+                    page.locator('.iv-close').click()
                     assert page.locator('.refine, footer, [data-refinement]').count()==0
                     assert not errors,errors
                     page.close()

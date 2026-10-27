@@ -115,7 +115,7 @@ def test_served_legacy_gallery_upgrades_without_rewriting_stored_file(tmp_path,m
     old='<html><head><title>图片搜索</title></head><body><h1>旧图集</h1><article class="image-card"><button data-original="https://example.com/p.jpg"><img src="https://example.com/t.jpg"></button><h2>原始标题</h2><a href="https://source.example.com/page">查看来源</a></article></body></html>'
     path=tmp_path/'old-gallery.html';path.write_text(old)
     page=presentation.share_streamviz_artifact(path.name,theme='dark').body.decode()
-    assert 'data-image-search-gallery="3"' in page and 'data-theme="dark"' in page
+    assert 'data-image-search-gallery="4"' in page and 'data-theme="dark"' in page
     assert '原始标题' in page and 'https://source.example.com/page' in page
     assert path.read_text()==old
 
@@ -133,3 +133,16 @@ def test_v2_gallery_upgrade_removes_footer_preserving_photos_and_sources():
     assert soup.select('.source a')[5].text=='来源：原始来源5'
     assert soup.select('.preview')[5]['data-original']=='https://example.com/5.jpg'
     assert upgrade_image_gallery(upgraded)==upgraded
+
+
+def test_v3_upgrade_preserves_separate_thumbnail_for_original_load_failures():
+    from bs4 import BeautifulSoup
+    old='<html><head><title>图片搜索</title></head><body><main data-image-search-gallery="3"><h1>旧图集</h1><article class="image-card"><button class="preview" data-original="https://example.com/full.jpg" data-source="https://source.example.com/story"><span>载入中</span><img src="https://example.com/full.jpg" data-fallback="https://example.com/thumb.jpg"></button><h2>原始标题</h2><a href="https://source.example.com/story">来源：原始来源</a></article></main></body></html>'
+    page=upgrade_image_gallery(old);soup=BeautifulSoup(page,'html.parser')
+    assert soup.select_one('main')['data-image-search-gallery']=='4'
+    assert soup.select_one('.preview')['data-thumbnail']=='https://example.com/thumb.jpg'
+    assert soup.select_one('.preview')['data-original']=='https://example.com/full.jpg'
+    assert soup.select_one('.preview')['data-source-name']=='原始来源'
+    assert '@@VIEWER_' not in page
+    assert not soup.select('script[src],link[rel="stylesheet"]')  # standalone stays self-contained
+    assert upgrade_image_gallery(page)==page

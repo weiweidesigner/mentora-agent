@@ -89,13 +89,15 @@ def render_gallery(payload):
             kind='image-card' if len(cards)<4 else 'image-card image-result-row'
             displayed=url if len(cards)<4 else thumb
             fallback=thumb if displayed!=thumb else ''
-            cards.append(f'<article class="{kind}"><button class="preview" data-original="{escape(url)}" data-source="{escape(source)}" aria-label="放大 {title}"><span class="placeholder">图片载入中</span><img src="{escape(displayed)}" data-fallback="{escape(fallback)}" alt="{title}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></button><div class="details"><h2>{title}</h2>{description}<p class="source">{origin}</p></div></article>')
+            cards.append(f'<article class="{kind}"><button class="preview" data-original="{escape(url)}" data-thumbnail="{escape(thumb)}" data-source="{escape(source)}" data-source-name="{escape(source_name)}" aria-label="放大 {title}"><span class="placeholder">图片载入中</span><img src="{escape(displayed)}" data-fallback="{escape(fallback)}" alt="{title}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></button><div class="details"><h2>{title}</h2>{description}<p class="source">{origin}</p></div></article>')
     template=(Path(__file__).parent/'skills/external-search/assets/image-gallery.html').read_text()
     query=payload.get('requested_query') or ' / '.join(payload.get('queries') or [])
     remaining='<section class="list" aria-label="更多图片">'+''.join(cards[4:])+'</section>' if len(cards)>4 else ''
     replacements={'TITLE':escape(query),'QUERY':escape(query),'COUNT':str(len(cards)),'CARDS':''.join(cards[:4]),'LIST':remaining}
+    static=Path(__file__).parent/'static'
+    replacements.update(VIEWER_CSS=(static/'image-viewer.css').read_text(),VIEWER_JS=(static/'image-viewer.js').read_text())
     payload['displayed_count']=len(cards)
-    return re.sub(r'@@(TITLE|QUERY|COUNT|CARDS|LIST)@@',lambda match:replacements[match[1]],template)
+    return re.sub(r'@@(TITLE|QUERY|COUNT|CARDS|LIST|VIEWER_CSS|VIEWER_JS)@@',lambda match:replacements[match[1]],template)
 
 
 def write_gallery(path,payload):
@@ -106,7 +108,7 @@ def write_gallery(path,payload):
 
 def upgrade_image_gallery(artifact):
     """Read-only upgrade of first-party older galleries, without fetching again."""
-    if 'data-image-search-gallery="3"' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
+    if 'data-image-search-gallery="4"' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
     class Parser(HTMLParser):
         def __init__(self):super().__init__();self.images=[];self.image=None;self.query='';self.capture='';self.parts=[];self.href=''
         def handle_starttag(self,tag,attrs):
@@ -116,7 +118,8 @@ def upgrade_image_gallery(artifact):
                 if tag=='button' and attrs.get('data-original'):
                     self.image['image_url']=attrs['data-original']
                     if attrs.get('data-source'):self.image['source_url']=attrs['data-source']
-                if tag=='img':self.image['thumbnail_url']=attrs.get('src','')
+                    if attrs.get('data-thumbnail'):self.image['thumbnail_url']=attrs['data-thumbnail']
+                if tag=='img' and 'thumbnail_url' not in self.image:self.image['thumbnail_url']=attrs.get('data-fallback') or attrs.get('src','')
             if tag in ('h1','h2','a'):
                 self.capture=tag;self.parts=[];self.href=attrs.get('href','')
         def handle_data(self,data):
