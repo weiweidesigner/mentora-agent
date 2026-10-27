@@ -11,12 +11,12 @@ test('image loading reuses one animated field and never invents percent progress
   const w=dom.window,article=w.document.querySelector('article');w.eval(runtime);
   w.renderImageGenerationLoading(article,{phase:'flux-connect'});
   const field=article.querySelector('.imageGenerationLoading');
-  assert.match(field.textContent,/正在连接生图服务/);
+  assert.equal(field.querySelector('.imageGenerationLabel'),null);
   assert.equal(field.querySelectorAll('circle').length,621);
-  assert.equal(field.querySelector('.imageGenerationProgress').textContent,'生成中');
+  assert.equal(field.querySelector('.imageGenerationProgress').textContent,'准备中');
   w.renderImageGenerationLoading(article,{phase:'flux-wait'});
   assert.equal(article.querySelector('.imageGenerationLoading'),field);
-  assert.match(field.textContent,/正在勾勒草图/);
+  assert.doesNotMatch(field.textContent,/正在勾勒草图/);
   assert.doesNotMatch(field.textContent,/%/);
   w.renderImageGenerationLoading(article,{phase:'flux-generate',progressPct:36});
   assert.equal(field.querySelector('.imageGenerationProgress').textContent,'36%');
@@ -35,5 +35,5 @@ test('terminal paths clear loading and reduced motion disables its animation',()
     assert.match(body,/clearImageGenerationLoading\(article\)/);
   }
   const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
-  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.imageGenerationDots\{animation:none\}\}/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.imageGenerationWave\{animation:none\}\}/);
 });

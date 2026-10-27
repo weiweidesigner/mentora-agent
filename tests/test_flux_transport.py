@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import subprocess
 import threading
+import os
+import sys
 from types import SimpleNamespace
 from urllib.request import Request,urlopen
 from urllib.error import HTTPError
@@ -57,3 +59,38 @@ def test_process_wait_emits_safe_elapsed_progress_and_cleans_up_on_close(monkeyp
     iterator=LocalAgentFrameworks._flux_process(['private-prompt'],cwd=ROOT,env={})
     status=next(iterator);assert status['phase']=='flux-wait' and 'private' not in json.dumps(status)
     iterator.close();assert stopped==[process]
+
+
+def test_step_progress_ignores_weight_bars_and_uses_actual_inference_counts():
+    assert worker.step_progress('Loading weights: 100%|xxx| 4/4 [00:01]',4) is None
+    assert worker.step_progress('\r 50%|xxxxx| 2/4 [00:02<00:02]',4)['progressPct']==50
+    assert worker.step_progress('\r 50%|xxxxx| 2/9 [00:02<00:02]',4) is None
+    assert worker.step_progress('\r100%|xxxxx| 4/4 [00:04<00:00]',4)['phase']=='flux-decode'
+
+
+def test_worker_remote_runner_host_progress_bridge_without_inference(tmp_path):
+    runner=tmp_path/'runner'
+    runner.write_text('#!'+sys.executable+'\n'+'''import sys,time,pathlib
+sys.stderr.write('\\r 25%|xx| 1/4 [00:01<00:03]');sys.stderr.flush()
+time.sleep(2)
+pathlib.Path(sys.argv[sys.argv.index('--output')+1]).write_bytes(b'\\x89PNG\\r\\n\\x1a\\nfixture')
+''')
+    runner.chmod(0o700)
+    token=tmp_path/'token';token.write_text('fixture-only-token')
+    image=tmp_path/'image.png'
+    with worker.Worker(('127.0.0.1',0),runner,'fixture-only-token') as server:
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        endpoint='http://127.0.0.1:'+str(server.server_port)
+        try:
+            with pytest.raises(HTTPError) as error:urlopen(endpoint+'/progress/'+'a'*32,timeout=2)
+            assert error.value.code==401
+            env=dict(os.environ,MENTORA_FLUX_TOKEN_FILE=str(token),MENTORA_FLUX_URL=endpoint)
+            events=list(LocalAgentFrameworks._flux_process([sys.executable,str(ROOT/'scripts/flux_remote_runner.py'),'private fixture prompt','--output',str(image)],cwd=ROOT,env=env))
+            updates=[event for event in events if isinstance(event,dict)]
+            assert any(event.get('progressPct')==25 for event in updates),updates
+            assert all('private' not in json.dumps(event) for event in updates)
+            assert events[-1].returncode==0 and image.read_bytes().startswith(worker.PNG)
+            request=Request(endpoint+'/progress/'+'a'*32,headers={'Authorization':'Bearer fixture-only-token'})
+            with pytest.raises(HTTPError) as error:urlopen(request,timeout=2)
+            assert error.value.code==404
+        finally:server.shutdown();thread.join(timeout=2)

@@ -6,6 +6,8 @@ import json
 import os
 import http.client
 import socket
+import threading
+import uuid
 from pathlib import Path
 from urllib.request import Request,urlopen
 from urllib.error import URLError,HTTPError
@@ -23,10 +25,26 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('prompt');p.add_argument('--size',default='512x512');p.add_argument('--steps',type=int,default=4);p.add_argument('--seed',type=int,default=42);p.add_argument('--output',type=Path,required=True);p.add_argument('--input-image',type=Path)
     args=p.parse_args()
     token=Path(os.environ['MENTORA_FLUX_TOKEN_FILE']).read_text().strip()
-    payload=dict(prompt=args.prompt,size=args.size,steps=args.steps,seed=args.seed)
+    job=uuid.uuid4().hex
+    payload=dict(prompt=args.prompt,size=args.size,steps=args.steps,seed=args.seed,job_id=job)
     if args.input_image:payload['input_image']=base64.b64encode(args.input_image.read_bytes()).decode()
     endpoint=os.getenv('MENTORA_FLUX_URL','http://127.0.0.1:18766').rstrip('/')
     check_health(endpoint)
+    stopped=threading.Event()
+    def poll_progress():
+        path=os.environ.get('MENTORA_FLUX_PROGRESS_FILE')
+        if not path:return
+        while not stopped.wait(.4):
+            try:
+                request=Request(endpoint+'/progress/'+job,headers={'Authorization':'Bearer '+token})
+                with urlopen(request,timeout=2) as response:state=json.load(response)
+                percent=state.get('progressPct')
+                if type(percent) not in (int,float) or not 0<=percent<=100:continue
+                safe={key:state[key] for key in ('phase','message','progressPct','completedSteps','totalSteps','progressKind') if key in state}
+                target=Path(path);temporary=target.with_suffix('.tmp')
+                temporary.write_text(json.dumps(safe));temporary.replace(target)
+            except (OSError,ValueError,TypeError):pass
+    thread=threading.Thread(target=poll_progress,daemon=True);thread.start()
     url=urlsplit(endpoint)
     if url.scheme not in {'http','https'}:raise SystemExit('Mac 生图节点地址配置无效')
     connection=(http.client.HTTPSConnection if url.scheme=='https' else http.client.HTTPConnection)(url.hostname,url.port,timeout=5)
@@ -41,7 +59,8 @@ def main():
         result=json.loads(response.read(20*1024*1024))
     except socket.timeout:raise SystemExit('Mac 生图节点连接或生成超时，请稍后重试')
     except (OSError,http.client.HTTPException):raise SystemExit('Mac 生图节点离线，请确认 Mac 已开机并连接网络')
-    finally:connection.close()
+    finally:
+        stopped.set();thread.join(timeout=3);connection.close()
     image=base64.b64decode(result['image'],validate=True)
     if not image.startswith(b'\x89PNG\r\n\x1a\n'):raise SystemExit('Mac 未返回有效 PNG')
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_bytes(image)

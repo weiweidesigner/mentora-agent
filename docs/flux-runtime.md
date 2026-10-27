@@ -5,7 +5,12 @@ names `flux_remote_runner.py`, the host checks the Mac worker's `/health` with
 a five-second timeout before preparing/generating an image. An unavailable or
 busy worker returns an actionable error, not a successful artifact. While the
 Skill subprocess runs, status events report elapsed waiting time every ten
-seconds; these are not claimed inference percentages or private subprocess logs.
+seconds. The runner also polls a job-scoped, bearer-authenticated `/progress/<id>`
+endpoint and passes sanitized state through a temporary progress file. The worker
+recognizes only the inference step bar (not weight/download bars), so percentages
+mean completed denoising steps, not estimated elapsed time. At 100% the client
+still waits for image decoding, transfer and browser resource decoding. Private
+subprocess logs and prompts never enter public progress events.
 The existing thirty-minute host deadline remains authoritative. Closing the
 generator terminates its local subprocess group.
 

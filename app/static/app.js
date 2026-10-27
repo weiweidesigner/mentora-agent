@@ -824,6 +824,18 @@ function handleStreamEvent(article, eventName, data) {
     return;
   }
   if (eventName === "final") {
+    const images=(data.reportArtifacts || []).filter(isGeneratedImageArtifact);
+    if(images.length && article.querySelector('.imageGenerationLoading')) {
+      const token={};article.pendingImageFinal=token;
+      renderImageGenerationLoading(article,{phase:'flux-transfer',progressPct:100,message:'图片已生成，正在载入资源'});
+      appendStep(article,'图片已生成，正在载入资源','','loading','flux-transfer');
+      Promise.all(images.map(waitForGeneratedImage)).then(()=>{
+        if(article.pendingImageFinal===token && !article.activityEnded)renderFinalAnswer(article,data);
+      }).catch(()=>{
+        if(article.pendingImageFinal===token)showError(article,'图片资源载入失败，请重新打开会话重试。',{skipSessionRecord:!!article.taskContext});
+      });
+      return;
+    }
     renderFinalAnswer(article, data);
     return;
   }
@@ -3755,28 +3767,31 @@ function renderImageGenerationLoading(article, data = {}) {
     loading.setAttribute('aria-live','polite');
     loading.setAttribute('aria-busy','true');
     const dots=[];
-    for(let y=0;y<23;y++)for(let x=0;x<27;x++) {
+    for(let y=0;y<23;y++) {
+      dots.push(`<g class="imageGenerationWave" style="animation-delay:${(-y*.16).toFixed(2)}s">`);
+      for(let x=0;x<27;x++) {
       const distance=((x-13)/7)**2+((y-11)/7)**2;
       const strength=Math.exp(-distance);
       dots.push(`<circle cx="${24+x*24}" cy="${24+y*24}" r="${(1.2+2.8*strength).toFixed(2)}" opacity="${(.2+.8*strength).toFixed(2)}"/>`);
+      }
+      dots.push('</g>');
     }
-    loading.innerHTML='<div class="imageGenerationLabel"></div><div class="imageGenerationField"><svg viewBox="0 0 672 576" aria-hidden="true"><g class="imageGenerationDots">'+dots.join('')+'</g></svg><span class="imageGenerationProgress"></span></div>';
+    loading.innerHTML='<div class="imageGenerationField"><svg viewBox="0 0 672 576" aria-hidden="true"><g class="imageGenerationDots">'+dots.join('')+'</g></svg><span class="imageGenerationProgress"></span></div>';
     target.append(loading);
   }
   const chinese=/^zh/.test(article.dataset.lang || 'zh-CN');
-  loading.querySelector('.imageGenerationLabel').textContent=data.phase==='flux-connect'
-    ? (chinese?'正在连接生图服务':'Connecting to image service')
-    : (chinese?'正在勾勒草图':'Sketching your image');
+  loading.setAttribute('aria-label',data.message || (chinese?'正在生成图片':'Generating image'));
   const progress=loading.querySelector('.imageGenerationProgress');
   const percent=data.progressPct;
   // Only display a percentage supplied by the generation service, never a timer.
   if (typeof percent==='number' && Number.isFinite(percent) && percent>=0 && percent<=100) {
     progress.textContent=Math.round(percent)+'%';
     loading.dataset.progressPct=String(percent);
-  } else if (!loading.dataset.progressPct) progress.textContent=chinese?'生成中':'Generating';
+  } else if (!loading.dataset.progressPct) progress.textContent=chinese?'准备中':'Preparing';
 }
 
 function clearImageGenerationLoading(article) {
+  article.pendingImageFinal=null;
   article.querySelectorAll('.imageGenerationLoading').forEach(node=>node.remove());
 }
 
@@ -3798,20 +3813,41 @@ function generatedImageUrl(value) {
   return url.href;
 }
 
-function createGeneratedImageArtifact(item) {
+function generatedImageSource(item) {
   const artifactUrl = new URL(item.url||item.htmlUrl, window.location.origin);
   artifactUrl.pathname = artifactUrl.pathname.replace(/\.html$/i, ".png");
+  return generatedImageUrl(item.imageUrl || artifactUrl.pathname);
+}
+
+function waitForGeneratedImage(item) {
+  return new Promise((resolve,reject)=>{
+    const image=new Image();
+    const finish=(callback,value)=>{clearTimeout(timer);image.onload=null;image.onerror=null;callback(value);};
+    const timer=setTimeout(()=>finish(reject,new Error('Image resource timed out')),90000);
+    image.onload=()=>Promise.resolve(image.decode?.()).then(()=>image.naturalWidth>0?finish(resolve):finish(reject,new Error('Empty image')),error=>finish(reject,error));
+    image.onerror=()=>finish(reject,new Error('Image resource unavailable'));
+    image.src=generatedImageSource(item);
+  });
+}
+
+function createGeneratedImageArtifact(item) {
   const image = document.createElement("img");
   image.className = "reportGeneratedImage";
   image.alt = item.alt || "本地生成图片";
-  image.loading = "lazy";
+  image.loading = "eager";
   image.decoding = "async";
-  image.src = generatedImageUrl(item.imageUrl || artifactUrl.pathname);
-  image.addEventListener("load", () => {
+  image.hidden=true;
+  image.src = generatedImageSource(item);
+  image.addEventListener("load", async () => {
+    try{if(image.decode)await image.decode();}catch{image.dispatchEvent(new Event('error'));return;}
     if (image.naturalWidth % 16 === 8 && image.naturalHeight % 16 === 8) image.classList.add("reportGeneratedImageLegacyFrame");
+    image.hidden=false;
+    preview.dataset.imageReady='true';
   });
   const preview = document.createElement("div");
   preview.className = "reportGeneratedImageButton";
+  preview.dataset.imageReady='false';
+  image.addEventListener('error',()=>{preview.dataset.imageReady='error';preview.setAttribute('role','alert');preview.textContent='图片资源载入失败，请重新打开重试。';});
   preview.dataset.artifactUrl=String(item.url||item.htmlUrl||'');
   preview.append(image);
   return preview;

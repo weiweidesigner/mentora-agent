@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import uuid
 from dataclasses import replace
@@ -609,19 +610,35 @@ class LocalAgentFrameworks:
     @staticmethod
     def _flux_process(command, *, cwd, env):
         """Keep the public stream alive without exposing subprocess diagnostics."""
-        process=subprocess.Popen(command,cwd=cwd,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
+        progress_dir=tempfile.TemporaryDirectory(prefix='mentora-flux-progress-')
+        progress_file=Path(progress_dir.name)/'progress.json'
+        try:process=subprocess.Popen(command,cwd=cwd,env=dict(env,MENTORA_FLUX_PROGRESS_FILE=str(progress_file)),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
+        except BaseException:
+            progress_dir.cleanup();raise
         started=time.monotonic()
+        last_state=None;last_notice=-10
         try:
             while True:
                 remaining=1800-(time.monotonic()-started)
                 if remaining<=0:raise subprocess.TimeoutExpired(command,1800)
                 try:
-                    stdout,stderr=process.communicate(timeout=min(10,remaining))
+                    stdout,stderr=process.communicate(timeout=min(.5,remaining))
                     yield subprocess.CompletedProcess(command,process.returncode,stdout,stderr)
                     return
                 except subprocess.TimeoutExpired:
                     seconds=int(time.monotonic()-started)
-                    yield {'message':f'正在等待本地生图结果，已等待 {seconds} 秒','phase':'flux-wait','lang':'zh-CN'}
+                    state=None
+                    try:
+                        candidate=json.loads(progress_file.read_text())
+                        if candidate.get('phase') in {'flux-model','flux-denoise','flux-decode','flux-transfer'} and type(candidate.get('progressPct')) in (int,float) and 0<=candidate['progressPct']<=100:
+                            state={k:candidate[k] for k in ('phase','message','progressPct','completedSteps','totalSteps','progressKind') if k in candidate}
+                    except (OSError,ValueError,TypeError,AttributeError):pass
+                    if state and state!=last_state:
+                        last_state=state;last_notice=seconds
+                        yield dict(state,lang='zh-CN')
+                    elif seconds-last_notice>=10:
+                        last_notice=seconds
+                        yield dict(last_state or {'message':'正在准备绘图指令，等待模型就绪','phase':'flux-wait'},lang='zh-CN')
         finally:
             if process.poll() is None:
                 LocalAgentFrameworks._terminate_codex_process(process)
@@ -630,6 +647,7 @@ class LocalAgentFrameworks:
                     try:os.killpg(process.pid,signal.SIGKILL)
                     except ProcessLookupError:pass
                     process.wait()
+            progress_dir.cleanup()
 
     def stream_flux_image(
         self,
@@ -678,7 +696,7 @@ class LocalAgentFrameworks:
                 if health.get('busy'):raise FluxImageExecutionError.from_runner('Mac 生图节点正在处理其他图片')
             except (OSError,ValueError) as exc:
                 raise FluxImageExecutionError.from_runner('Mac 生图节点离线或隧道超时') from exc
-        yield 'status',{'message':'生图服务已连接，正在准备提示词并生成图片','phase':'flux-generate','lang':'zh-CN'}
+        yield 'status',{'message':'正在准备绘图指令','phase':'flux-prepare','lang':'zh-CN'}
         try:
             result=None
             for event in self._flux_process(command,cwd=self.project_root,env=child_env):
