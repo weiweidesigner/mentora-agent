@@ -2281,7 +2281,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
-        public_stream = PublicStream('deepseek')
+        public_stream = PublicStream('deepseek',visual_briefs=True)
         parallel_widgets = ParallelWidgets(self.generated_dir)
         with self._active_run_guard:self._active_widget_runs[session_key]=parallel_widgets
         activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)

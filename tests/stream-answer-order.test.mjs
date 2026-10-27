@@ -11,6 +11,7 @@ function fixture() {
   w.formatInsight = value => value;
   w.isNearBottom = () => false;
   w.keepScrollPosition = () => {};
+  w.setInlineActivityExpanded=(article,value)=>{article.dataset.activityInlineExpanded=String(value);};
   w.syncInlineActivity=()=>{};
   w.updateThinkingSummary=()=>{};
   w.withArtifactWidgetControl=node=>node;

@@ -28,6 +28,7 @@ def test_native_tool_arguments_are_forwarded_as_visualization_deltas(tmp_path, m
     assert visualization[0]["reset"] is True
     assert visualization[1]["argumentDelta"].startswith('{"title"')
     assert visualization[2]["argumentDelta"].startswith(" viewBox")
+    assert all("toolRawInput" not in item for item in visualization[1:-1])
     assert visualization[-1]["final"] is True
     assert visualization[-1]["htmlUrl"].startswith("/generated/native-streamviz-")
     final = next(data for name, data in events if name == "final")

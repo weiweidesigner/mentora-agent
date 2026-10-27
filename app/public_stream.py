@@ -6,7 +6,8 @@ PROGRESS_TOOL='report_progress'
 
 
 class PublicStream:
-    def __init__(self,prefix='assistant'):
+    def __init__(self,prefix='assistant',*,visual_briefs=False):
+        self.visual_briefs=visual_briefs
         self.prefix=prefix;self.turn=0;self.texts={};self.last_text='';self.has_text=False
         self.calls={};self.artifacts=[];self.segments=[]
         self.public_blocks={};self.progress_keys=set();self.final_keys=set()
@@ -90,6 +91,8 @@ class PublicStream:
             if call['name']!=WIDGET_TOOL:return []
             call_id=call['id'] or f'{self.prefix}:{self.turn}:tool:{index}'
             reset=not call['started'];call['started']=True
+            if self.visual_briefs:
+                return [('visualization',dict(id=call_id,toolName=WIDGET_TOOL,reset=True,native=True,live=True,final=False,phase='preparing'))] if reset else []
             return [('visualization',dict(id=call_id,toolName=WIDGET_TOOL,argumentDelta=chunk.get('argumentsDelta') or '',reset=reset,native=True,live=True,final=False))]
         # reasoning-delta, signatures, usage and unknown chunks are not public prose.
         return []

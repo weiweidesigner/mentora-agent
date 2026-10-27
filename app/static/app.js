@@ -1042,23 +1042,26 @@ function streamVisualizationReplayPlan(code) {
 }
 
 function mountStreamVisualization(host, payload) {
-  const render = () => {
-    if (!window.AimeStreamViz?.mount || !host.isConnected) return false;
-    try {
-      window.AimeStreamViz.mount(host, payload);
-      host.dataset.streamvizMounted = "true";
-    } catch {
-      host.dataset.streamvizFailed = "true";
+  host.streamvizPendingPayload = payload;
+  if (host.streamvizRenderFrame) return;
+  host.streamvizRenderFrame = requestAnimationFrame(() => {
+    host.streamvizRenderFrame = null;
+    if (!host.isConnected) return;
+    if (!window.AimeStreamViz?.mount) {
+      if (!host.streamvizReadyListener) {
+        host.streamvizReadyListener = true;
+        window.addEventListener('aime:streamviz-ready', () => {
+          host.streamvizReadyListener = false;
+          mountStreamVisualization(host, host.streamvizPendingPayload);
+        }, {once:true});
+      }
+      return;
     }
-    return true;
-  };
-  if (render()) return;
-  // New hosts are appended by the caller after construction. If the runtime
-  // is already ready, mount on the next frame without overwriting newer content.
-  requestAnimationFrame(() => {
-    if (host.dataset.streamvizMounted !== "true") render();
+    try {
+      window.AimeStreamViz.mount(host, host.streamvizPendingPayload);
+      host.dataset.streamvizMounted = 'true';
+    } catch { host.dataset.streamvizFailed = 'true'; }
   });
-  window.addEventListener("aime:streamviz-ready", render, { once: true });
 }
 
 function guardStreamVisualization(host, item, index) {
@@ -1688,8 +1691,10 @@ function renderStreamAnswerText(article, data = {}) {
       article.answerTextStarted = false;
       article.activeAnswerBlockId = '';
       article.dataset.activityPhase = 'thinking';
-      if (article.activityExpandedBeforeAnswer === undefined) delete article.dataset.activityInlineExpanded;
-      else article.dataset.activityInlineExpanded = article.activityExpandedBeforeAnswer;
+      if (!article.visualizationStarted) {
+        if (article.activityExpandedBeforeAnswer === undefined) delete article.dataset.activityInlineExpanded;
+        else article.dataset.activityInlineExpanded = article.activityExpandedBeforeAnswer;
+      }
       delete article.activityExpandedBeforeAnswer;
       updateThinkingSummary(article, '', {live:!article.activityEnded});
     }
@@ -1705,7 +1710,7 @@ function renderStreamAnswerText(article, data = {}) {
   const stick = isNearBottom();
   if (preview.streamText.trim()) {
     const firstAnswer = !article.answerTextStarted;
-    if (firstAnswer) {
+    if (firstAnswer && !article.visualizationStarted) {
       article.activityExpandedBeforeAnswer = article.dataset.activityInlineExpanded;
       article.dataset.activityInlineExpanded = 'false';
       if (typeof activeActivityArticle !== 'undefined' && activeActivityArticle === article) closeActivityDrawer();
@@ -1724,6 +1729,10 @@ function renderStreamAnswerText(article, data = {}) {
 
 function queueStreamVisualization(article, data = {}) {
   if (article.activityEnded) return;
+  if (!data.discard && !data.final && !article.visualizationStarted) {
+    article.visualizationStarted = true;
+    setInlineActivityExpanded(article, false);
+  }
   upsertStreamVisualization(article, data);
   syncStreamAnswerPlacement(article);
 }

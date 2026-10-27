@@ -343,7 +343,7 @@ def stream_native_widget(
                 call["arguments"] += arguments
                 yield "visualization", {
                     "id": call["id"], "toolName": TOOL_NAME, "argumentDelta": arguments,
-                    "toolRawInput": call["arguments"], "final": False, "native": True,
+                    "final": False, "native": True,
                 }
 
     artifacts: list[dict[str, str]] = []

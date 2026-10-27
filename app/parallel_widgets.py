@@ -8,6 +8,7 @@ import json
 import queue
 import threading
 import time
+from app.stream_deltas import compact_visual_events
 
 
 class ParallelWidgets:
@@ -46,7 +47,7 @@ class ParallelWidgets:
                 with self.lock:
                     if self.stopped.is_set():client.close();return
                     self.clients[key]=client
-                source=stream_native_widget('根据以下完整简报生成 HTML；只负责展示，不取数、不补充事实、不撰写后续回答。\n'+args['brief'],self.generated,
+                source=stream_native_widget('根据已验证简报生成 HTML，标题：'+args.get('title','')+'。只负责展示，不取数、不补充事实、不撰写后续回答。',self.generated,
                     evidence=args['brief'],theme_mode=self.theme,client_override=client,model_override=model)
             committed=False;final_data=None;saved=None
             for event,data in source:
@@ -91,7 +92,7 @@ class ParallelWidgets:
             self.held_events.setdefault(key,[]).append((event,data))
         while self.current:
             key=self.current
-            rows=self.held_events.pop(key,[])
+            rows=compact_visual_events(self.held_events.pop(key,[]))
             done=False
             for event,data in rows:
                 if event=='_render_done':done=True
