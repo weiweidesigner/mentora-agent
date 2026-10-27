@@ -42,12 +42,12 @@ def test_model_delta_arrives_before_harness_finishes(tmp_path,monkeypatch,bridge
                 if bridge:on_notification(SimpleNamespace(method='mentora.public-stream',payload={'sessionId':session_id,'frame':{'type':'chunk','chunk':value}}))
                 else:emit('assistant/chunk',{'chunk':value})
             chunk({'type':'reasoning-delta','index':0,'text':'private'})
-            chunk({'type':'text-delta','index':1,'text':'first'})
+            chunk({'type':'text-delta','index':1,'text':'[[MENTORA_ANSWER]]first'})
             assert release.wait(5)
-            emit('assistant/message',{'message':{'content':[{'type':'reasoning','text':'private'},{'type':'text','text':'first'}]}})
+            emit('assistant/message',{'message':{'content':[{'type':'reasoning','text':'private'},{'type':'text','text':'[[MENTORA_ANSWER]]first'}]}})
             emit('tool/call',{'callId':'read','name':'read','arguments':{'file_path':'fixture'}})
-            chunk({'type':'text-delta','index':0,'text':'second'})
-            emit('assistant/message',{'message':{'content':[{'type':'text','text':'second'}]}})
+            chunk({'type':'text-delta','index':0,'text':'[[MENTORA_ANSWER]]second'})
+            emit('assistant/message',{'message':{'content':[{'type':'text','text':'[[MENTORA_ANSWER]]second'}]}})
             finished.set()
             return SimpleNamespace(session_id=session_id,final_response='second',events=[],notifications=[])
     monkeypatch.setitem(sys.modules,'deepseek_harness',SimpleNamespace(DeepSeekHarness=Harness))
@@ -100,3 +100,69 @@ def test_final_only_legacy_artifacts_still_replay(tmp_path):
     store.pool.shutdown(wait=True)
     blocks=store.sessions('owner')[0]['messages'][-1]['streamBlocks']
     assert [block['kind'] for block in blocks]==['text','visualization']
+
+
+def test_unlabelled_stage_never_flashes_before_its_progress_classification():
+    stream=PublicStream('deepseek',gate_unlabelled=True)
+    text='盘前主线已经清楚：风险偏好温和回升，但内部明显分化。我现在把这份横截面快照和驱动因素整理成 HTML 报告。'
+    for char in text:
+        assert stream.chunk({'type':'text-delta','index':0,'text':char})==[]
+    assert stream.message({'content':[{'type':'text','text':text}]})==[]
+    key,source=stream.channel_candidates.pop()
+    events=stream.classify_progress(key,source,{'channel':'progress','progressSummary':'正在整理盘前市场报告。'})
+    assert [e for e,d in events]==['progress']
+    assert stream.finish(text)==[]  # terminal settlement must not resurrect the status
+    assert stream.transcript(text)==''
+
+
+def test_answer_channel_header_is_consumed_for_every_possible_split_without_buffering_body():
+    from app.public_stream import ANSWER_PREFIX
+    text='核心结论：已成交样本中半导体领涨。\n下面是完整报告。'
+    raw=ANSWER_PREFIX+text
+    for split in range(1,len(raw)):
+        stream=PublicStream(gate_unlabelled=True)
+        first=stream.chunk({'type':'text-delta','index':1,'text':raw[:split]})
+        if split<=len(ANSWER_PREFIX):assert first==[]
+        else:assert first[0][1]['delta']==text[:split-len(ANSWER_PREFIX)]
+        second=stream.chunk({'type':'text-delta','index':1,'text':raw[split:]})
+        assert ''.join(d.get('delta','') for e,d in first+second)==text
+        assert stream.message({'content':[{'type':'reasoning','text':'private'},{'type':'text','text':raw}]})==[]
+        assert stream.channel_candidates==[]
+        assert stream.finish(raw)==[]
+        assert stream.transcript(raw)==text
+
+
+def test_unlabelled_answer_waits_for_classification_without_blocking_widget_or_tools():
+    stream=PublicStream(gate_unlabelled=True)
+    text='下面是基于已核验数据的完整报告。'
+    assert stream.chunk({'type':'text-delta','text':text})==[]
+    assert stream.message({'content':[{'type':'text','text':text}]})==[]
+    key,_=stream.channel_candidates[0]
+    assert stream.progress_event('tool/call',{'callId':'p','name':'report_progress','arguments':{'summary':'核对图表数据。'}})[0][0]=='progress'
+    assert stream.chunk({'type':'tool-call-delta','id':'v','name':'visualize_show_widget','argumentsDelta':'{'})[0][0]=='visualization'
+    event,data=stream.classify_progress(key,text,{'channel':'answer'})[0]
+    assert event=='answer_text' and data['text']==text
+    assert stream.classify_progress(key,text,{'channel':'answer'})==[]
+
+
+def test_failed_classifier_does_not_publish_intermediate_status_as_body():
+    stream=PublicStream(gate_unlabelled=True)
+    status='数据已取到，接下来继续核验。'
+    assert stream.chunk({'type':'text-delta','text':status})==[]
+    stream.message({'content':[{'type':'text','text':status}]})
+    assert stream.classify_progress(*stream.channel_candidates[0],{})==[]
+    stream.chunk({'type':'text-delta','text':'[[MENTORA_ANSWER]]实际结论。'})
+    stream.message({'content':[{'type':'text','text':'[[MENTORA_ANSWER]]实际结论。'}]})
+    assert stream.finish('[[MENTORA_ANSWER]]实际结论。')==[]
+    assert stream.transcript('实际结论。')=='实际结论。'
+
+
+
+def test_requested_literal_header_in_body_is_not_removed_twice():
+    from app.public_stream import ANSWER_PREFIX
+    stream=PublicStream(gate_unlabelled=True)
+    raw=ANSWER_PREFIX+ANSWER_PREFIX+' 是正文中的字面量。'
+    stream.chunk({'type':'text-delta','text':raw})
+    stream.message({'content':[{'type':'text','text':raw}]})
+    assert stream.finish(raw)==[]
+    assert stream.transcript(raw)==ANSWER_PREFIX+' 是正文中的字面量。'

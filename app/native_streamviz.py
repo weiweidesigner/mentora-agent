@@ -88,7 +88,7 @@ only appropriate for neutral context or de-emphasized comparisons. Keep the repo
 host sans-serif font; do not introduce a separate page font or filled report panels.
 Align the report and open section edges with the host text: no horizontal outer margin,
 no horizontal padding on report/section wrappers, and no centered max-width canvas.
-Keep safe internal padding inside compact outlined metric cards and table cells only.
+Keep the outer report edges aligned with the answer. Any component with its own frame/border must retain at least 12px internal padding on every side (including chart cards, panels and metric cards), so headings, text and marks never touch the border. Use .card/.panel/.sv-card or data-sv-card for framed components; use .sv-section or data-sv-open for borderless open sections with no horizontal inset. Never remove a framed component's internal padding merely to align the outer edges. Keep table cell padding as well.
 The first code must be a
 visible card or SVG node—never a long text block.
 

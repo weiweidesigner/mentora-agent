@@ -283,7 +283,11 @@ html{-webkit-tap-highlight-color:transparent}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]){background:transparent!important;background-image:none!important}
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-section){background:transparent!important;background-image:none!important;box-shadow:none!important}
 
-/* Open report sections align with the surrounding answer; metric cards keep
-   their internal safe inset. This contract also applies before final HTML. */
+/* Open report sections align with the answer. Component cards retain their
+   internal safe inset so content never touches an existing frame. */
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]){box-sizing:border-box;padding-inline:0!important;margin-inline:0!important;width:100%;max-width:100%}
-:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-section):not(:is(.metric,.sv-metric,[data-sv-metric])){padding-inline:0!important;margin-inline:0!important}
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.sv-native-canvas,.sv-section,[data-sv-open]):not(:is(.card,.panel,.sv-card,[data-sv-card],.metric,.sv-metric,[data-sv-metric])){padding-inline:0!important;margin-inline:0!important}
+
+/* A framed section is still a component, even when it is also a section. */
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]):is(.card,.panel,.sv-card,[data-sv-card]),
+:root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) :is(.card,.panel,.sv-card,[data-sv-card]){padding:var(--sv-card-padding,12px)!important;box-sizing:border-box;min-width:0}

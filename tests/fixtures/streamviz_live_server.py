@@ -34,8 +34,8 @@ window.addEventListener('message',event=>{
   result.textContent=`阶段：${phase}；已有可见内容；同一 iframe：${firstFrame===frame}；数量：${document.querySelectorAll('iframe').length}`;
  }
 });
-const prefix='<style>.qa-card{padding:24px;border:1px solid #666;border-radius:8px;margin:12px 0;color:var(--sv-text-primary)}</style><section class="qa-card"><h2>第一段已显示</h2><p>尚未发送 final，真实内容已进入预览。</p></section><aside><h2>核心判断</h2><p';
-const suffix='><strong>没有脚本泄漏</strong></p></aside><section class="qa-card"><h2>第二段已追加</h2><svg width="240" height="80" viewBox="0 0 240 80"><rect width="160" height="30" y="5" fill="#61b59a"/><rect width="220" height="30" y="45" fill="#aa8fd6"/></svg></section>';
+const prefix='<style>.card{padding:24px;border:1px solid #666;border-radius:8px;margin:12px 0;color:var(--sv-text-primary)}</style><section class="card sv-section"><h2>第一段已显示</h2><p>尚未发送 final，真实内容已进入预览。</p></section><aside><h2>核心判断</h2><p';
+const suffix='><strong>没有脚本泄漏</strong></p></aside><section class="card sv-section"><h2>第二段已追加</h2><svg width="240" height="80" viewBox="0 0 240 80"><rect width="160" height="30" y="5" fill="#61b59a"/><rect width="220" height="30" y="45" fill="#aa8fd6"/></svg></section>';
 const escaped=text=>JSON.stringify(text).slice(1,-1);
 document.querySelector('#visualonly').onclick=()=>{phase='无先行正文，开始增量';queue({id:'qa',reset:true,native:true,argumentDelta:'{"title":"增量预览","widget_code":"'+escaped(prefix),final:false});};
 document.querySelector('#waiting').onclick=()=>{renderStreamAnswerText(article,{blockId:'intro',text:'下面是一张可交互的可视化。'});queue({id:'qa',reset:true,native:true,argumentDelta:'{',final:false});};

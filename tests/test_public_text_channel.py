@@ -103,7 +103,7 @@ def test_live_harness_reclassifies_only_progress_and_keeps_terminal_answer(tmp_p
                 release.set();break
         else:pytest.fail('public progress was not reclassified while the run was active')
         rest=list(events)
-        assert any(e=='answer_text' and d.get('discard') for e,d in seen)
+        assert not any(e=='answer_text' for e,d in seen)  # progress never flashes in the answer
         assert any(e=='final' and '实际分析结论。' in d.get('interpretation','') for e,d in rest)
         assert all('我先确认数据口径。' not in d.get('interpretation','') for e,d in rest if e=='final')
     finally:release.set();client._drop_deepseek_harness('classified')

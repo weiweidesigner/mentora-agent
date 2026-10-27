@@ -2144,7 +2144,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             visualization_guidance=visualization_guidance,
         )
         prompt += (
-            "\n\n本 Harness 没有 commentary/final 文本通道，普通 assistant text 会立即作为答案显示。"
+            "\n\n本 Harness 没有 commentary/final 文本通道。每段正式答复（包括图表前引入、图后解读和最终回答）的普通 assistant text 必须以 [[MENTORA_ANSWER]] 开头，然后立即流式写正文。该前缀仅用于声明正文通道，不属于给用户看的文字；每个新 assistant message 都要声明一次。未声明的文字会等待通道核验，不会直接显示。"
             "公开执行进度必须使用原生 report_progress(summary=一句用户语言的行动摘要) 工具，"
             "不得把‘我先确认…’等计划或工具间进度写在普通 assistant text 中，也不要把摘要重复到答案。"
             "例如告知‘我先确认取数口径’时应调用 report_progress，而不是先输出一句普通文本再调用工具。"
@@ -2158,7 +2158,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "不要把计划写成已完成，不编造百分比、结论或进度。"
             "已有工具的 description/title 可以说明当前动作，无需为每次工具调用额外调用 report_progress。"
             "只有确有独立进度需要告知时才使用；不包含内部推理、分析结论、命令、路径或原始工具结果。"
-            "有依据的结论和解读直接作为普通答案文本输出；图文可以交错，之后调用工具也不会把正文移到思考区。"
+            "有依据的结论和解读以 [[MENTORA_ANSWER]] 开头后直接作为普通答案文本输出；图文可以交错，之后调用工具也不会把正文移到思考区。"
         )
         prompt += (
             "\n\n工程执行建议：完整理解本轮问题和历史约束，由你决定研究范围、工具、步骤、"
@@ -2290,7 +2290,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
-        public_stream = PublicStream('deepseek',visual_briefs=True)
+        public_stream = PublicStream('deepseek',visual_briefs=True,gate_unlabelled=True)
         parallel_widgets = ParallelWidgets(self.generated_dir)
         with self._active_run_guard:self._active_widget_runs[session_key]=parallel_widgets
         activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)
@@ -2506,7 +2506,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             raise ReasoningFrameworkError("DeepSeek Harness 未返回结果")
         result = result_box[0]
         answer = str(getattr(result, "final_response", "") or "")
-        if not answer:
+        if not public_stream.clean_answer(answer):
             failure_message = ""
             for event in reversed(getattr(result, "events", []) or []):
                 if not isinstance(event, dict):

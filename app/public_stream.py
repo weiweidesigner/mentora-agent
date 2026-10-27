@@ -3,11 +3,13 @@ from __future__ import annotations
 
 WIDGET_TOOL='visualize_show_widget'
 PROGRESS_TOOL='report_progress'
+ANSWER_PREFIX='[[MENTORA_ANSWER]]'
 
 
 class PublicStream:
-    def __init__(self,prefix='assistant',*,visual_briefs=False):
+    def __init__(self,prefix='assistant',*,visual_briefs=False,gate_unlabelled=False):
         self.visual_briefs=visual_briefs
+        self.gate_unlabelled=gate_unlabelled;self.pending_keys=set();self.answer_keys=set();self.emitted_texts={}
         self.prefix=prefix;self.turn=0;self.texts={};self.last_text='';self.has_text=False
         self.calls={};self.artifacts=[];self.segments=[]
         self.public_blocks={};self.progress_keys=set();self.final_keys=set()
@@ -39,9 +41,17 @@ class PublicStream:
     def _text(self,index,text,channel=None):
         if channel=='final_answer':channel='final'
         key=f'{self.prefix}:{self.turn}:text:{index}'
-        seen=self.public_blocks.get(key,'')
-        self.public_blocks[key]=text
         self.texts[index]=text
+        if self.gate_unlabelled and channel not in {'commentary','analysis','reasoning'}:
+            stripped=text.lstrip()
+            if stripped.startswith(ANSWER_PREFIX):
+                text=stripped[len(ANSWER_PREFIX):].lstrip('\r\n')
+                self.answer_keys.add(key)
+            elif stripped and ANSWER_PREFIX.startswith(stripped):
+                return []  # A partial channel header is never user-facing text.
+        seen=self.emitted_texts.get(key,'')
+        previous_text=self.public_blocks.get(key,'')
+        self.public_blocks[key]=text
         confirming=channel=='final' and key not in self.final_keys
         if channel=='final':
             self.final_keys.add(key)
@@ -50,11 +60,16 @@ class PublicStream:
             was_answer=bool(seen) and key not in self.progress_keys
             self.progress_keys.add(key)
             events=[('answer_text',dict(blockId=key,discard=True))] if was_answer else []
-            if text!=seen:events.append(('progress',dict(blockId=key,text=text,kind='commentary')))
+            if text!=previous_text:events.append(('progress',dict(blockId=key,text=text,kind='commentary')))
             return events
         if key in self.progress_keys:
-            return [('progress',dict(blockId=key,text=text,kind='commentary'))] if text!=seen else []
+            return [('progress',dict(blockId=key,text=text,kind='commentary'))] if text!=previous_text else []
+        if self.gate_unlabelled and not channel and key not in self.answer_keys:
+            self.pending_keys.add(key)
+            return []
         if not text or (text==seen and not confirming):return []
+        self.pending_keys.discard(key)
+        self.emitted_texts[key]=text
         self.has_text=True
         data=dict(blockId=key,live=True,final=False)
         if text.startswith(seen) and (not confirming or not seen):data['delta']=text[len(seen):]
@@ -62,10 +77,16 @@ class PublicStream:
         return [('answer_text',data)]
 
     def classify_progress(self,key,text,semantics):
-        if semantics.get('channel')!='progress' or key in self.final_keys or key in self.progress_keys or self.public_blocks.get(key)!=text:return []
-        self.progress_keys.add(key)
-        return [('answer_text',dict(blockId=key,discard=True,channel='commentary')),
-                ('progress',dict(blockId=key,text=semantics.get('progressSummary') or text,kind='commentary',channelSemantics=semantics))]
+        if key in self.final_keys or key in self.progress_keys or self.public_blocks.get(key)!=text:return []
+        if semantics.get('channel')=='answer':
+            if key not in self.pending_keys:return []
+            self.pending_keys.discard(key);self.answer_keys.add(key)
+            self.emitted_texts[key]=text;self.has_text=True
+            return [('answer_text',dict(blockId=key,text=text,replace=True,live=True,final=False))]
+        if semantics.get('channel')!='progress':return []
+        self.pending_keys.discard(key);self.progress_keys.add(key)
+        events=[('answer_text',dict(blockId=key,discard=True,channel='commentary'))] if key in self.emitted_texts else []
+        return events+[('progress',dict(blockId=key,text=semantics.get('progressSummary') or text,kind='commentary',channelSemantics=semantics))]
 
     def settle_progress(self):
         """Compatibility no-op: a tool boundary does not identify text semantics."""
@@ -106,27 +127,40 @@ class PublicStream:
                 if not isinstance(block,dict) or block.get('type')!='text':continue
                 text=str(block.get('text') or '')
                 events.extend(self._text(index,text,channel))
-                if not channel and text.strip():self.channel_candidates.append((f'{self.prefix}:{self.turn}:text:{index}',text))
+                key=f'{self.prefix}:{self.turn}:text:{index}'
+                if not channel and text.strip() and key not in self.answer_keys:
+                    self.channel_candidates.append((key,text))
             self.last_text=''.join(str(b.get('text') or '') for b in content if isinstance(b,dict) and b.get('type')=='text') if isinstance(content,list) else ''
             if self.last_text:self.segments.append(self.last_text)
         self.turn=f'{self.turn}:next';self.texts={}
         return events
 
     def finish(self,answer):
-        text=str(answer or '')
+        text=self.clean_answer(answer)
         if not text:return []
+        if any(value.strip()==text.strip() for key,value in self.public_blocks.items() if key in self.progress_keys):return []
         matching=[key for key,value in self.public_blocks.items() if key not in self.progress_keys and value.strip()==text.strip()]
         if matching:
             key=matching[-1]
             self.final_keys.add(key)
+            if key in self.pending_keys:
+                self.pending_keys.discard(key);self.emitted_texts[key]=text
+                return [('answer_text',dict(blockId=key,text=text,replace=True,final=True))]
             return []
         events=self._text('final',text,'final')
         for _,data in events:data['final']=True
         return events
 
+    @staticmethod
+    def clean_answer(answer):
+        text=str(answer or '')
+        return text.lstrip()[len(ANSWER_PREFIX):].lstrip('\r\n') if text.lstrip().startswith(ANSWER_PREFIX) else text
+
     def transcript(self, answer):
-        parts=[text for key,text in self.public_blocks.items() if key not in self.progress_keys and text.strip()]
-        if answer and (not parts or parts[-1].strip()!=answer.strip()):parts.append(answer)
+        answer=self.clean_answer(answer)
+        parts=[text for key,text in self.public_blocks.items() if key not in self.progress_keys and key not in self.pending_keys and text.strip()]
+        is_progress=any(text.strip()==answer.strip() for key,text in self.public_blocks.items() if key in self.progress_keys)
+        if answer and not is_progress and (not parts or parts[-1].strip()!=answer.strip()):parts.append(answer)
         return '\n\n'.join(parts)
 
 
