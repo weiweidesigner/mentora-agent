@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from app.search_images import normalize_image,public_url,search_images,write_gallery
+from app.search_images import normalize_image,public_url,search_images,write_gallery,render_gallery,upgrade_image_gallery
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -79,3 +79,41 @@ def test_legacy_argument_builder_preserves_image_mode_without_model_rewrite():
     exec(compile(ast.Module(body=[function],type_ignores=[]),'<helper>','exec'),scope)
     args=['--mode','images','--query','Apple Park photo','--source','serper','--limit','12','--page','2']
     assert scope['build_external_info_search_args'](args,'搜图')==args
+
+
+def test_gallery_caps_deduplicates_and_uses_four_grid_two_list_without_losing_candidates():
+    from bs4 import BeautifulSoup
+    rows=[dict(image_url=f'https://images.example.com/{n}.jpg',thumbnail_url=f'https://images.example.com/thumb-{n}.jpg',title=f'照片{n}',source_url='https://example.com/story',source_name='来源名') for n in range(12)]
+    payload=dict(requested_query='照片',image_count=12,images=[rows[0],*rows])
+    soup=BeautifulSoup(render_gallery(payload),'html.parser')
+    assert len(soup.select('.grid>.image-card'))==4
+    assert len(soup.select('.list>.image-result-row'))==2
+    assert len(soup.select('.preview'))==6
+    assert soup.select_one('.grid img')['src']=='https://images.example.com/0.jpg'
+    assert soup.select_one('.list img')['src']=='https://images.example.com/thumb-4.jpg'
+    assert soup.select_one('.source').text=='来源：来源名'
+    assert payload['image_count']==12 and len(payload['images'])==13 and payload['displayed_count']==6
+
+
+def test_legacy_gallery_upgrade_is_read_only_and_does_not_touch_other_artifacts():
+    from bs4 import BeautifulSoup
+    old='<html><head><title>图片搜索</title></head><body><header><h1>旧照片</h1></header>'
+    old+=''.join(f'<article class="image-card"><button class="preview" data-original="https://example.com/{n}.jpg"><img src="https://example.com/t{n}.jpg"></button><h2>照片{n}</h2><a href="https://source.example.com/page">查看来源</a></article>' for n in range(10))
+    old+='</body></html>'
+    upgraded=upgrade_image_gallery(old);soup=BeautifulSoup(upgraded,'html.parser')
+    assert len(soup.select('.image-card'))==6 and soup.h1.text=='旧照片'
+    assert soup.select_one('.source a')['href']=='https://source.example.com/page'
+    assert upgrade_image_gallery(upgraded)==upgraded
+    other='<html><title>图片搜索</title><div>用户自己的图表</div></html>'
+    assert upgrade_image_gallery(other)==other
+
+
+def test_served_legacy_gallery_upgrades_without_rewriting_stored_file(tmp_path,monkeypatch):
+    from app import presentation
+    monkeypatch.setattr(presentation,'GENERATED_DIR',tmp_path)
+    old='<html><head><title>图片搜索</title></head><body><h1>旧图集</h1><article class="image-card"><button data-original="https://example.com/p.jpg"><img src="https://example.com/t.jpg"></button><h2>原始标题</h2><a href="https://source.example.com/page">查看来源</a></article></body></html>'
+    path=tmp_path/'old-gallery.html';path.write_text(old)
+    page=presentation.share_streamviz_artifact(path.name,theme='dark').body.decode()
+    assert 'data-image-search-gallery="2"' in page and 'data-theme="dark"' in page
+    assert '原始标题' in page and 'https://source.example.com/page' in page
+    assert path.read_text()==old

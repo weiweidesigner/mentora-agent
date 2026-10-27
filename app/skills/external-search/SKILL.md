@@ -51,7 +51,7 @@ Tavily → Serper fallback, without an embedded Agent or model synthesis. Do not
 route image search to Kimi or to FLUX. Existing web mode is unchanged.
 
 ```sh
-python3 app/skill_runner.py execute --script external_info_search.py -- --mode images --query "Apple Park aerial photo" --limit 12 --output outputs/generated/image-search-unique.html --payload-output outputs/data/image-search-unique.json
+python3 app/skill_runner.py execute --script external_info_search.py -- --mode images --query "Apple Park aerial photo" --limit 6 --output outputs/generated/image-search-unique.html --payload-output outputs/data/image-search-unique.json
 ```
 
 Use a unique output basename for each search. For data only, `--output` may be
@@ -75,6 +75,21 @@ gallery, not a generated-image artifact and not a financial chart. Do not label
 external search results as AI-generated art or interpret their contents without
 actually viewing them. The gallery uses browser-side previews, click-to-enlarge,
 source/original links and copy-link controls; each failed image degrades independently.
+The gallery displays at most **six unique results per answer**: the first four
+are a two-column, two-row photo grid, and results five/six are compact thumbnail
+list rows. Display photo, provider-returned title and source; omit heavy cards,
+dimensions and repeated action bars. Photos fill a fixed-height crop with
+`object-fit:cover`; clicking opens the uncropped original. The component itself
+has zero horizontal padding and stays aligned with the answer text at every width.
+This photo-cropping rule does not apply to financial chart axes or data marks.
+
+The full search payload may retain more candidates, but the gallery's
+`displayed_count` is the visible count: never say all `image_count` results are
+displayed. Do not expand beyond six by adding more galleries or recreating the
+layout with StreamViz. Use the gallery directly. After the visual, invite the user
+to specify scene, era, aspect ratio or resolution when useful; do not fabricate
+photo content, dates, descriptions or source names. Gallery refinement buttons
+only prepare a composer draft; a new search requires the user's next message.
 Search metadata is not proof that a URL still loads or that an image is genuine,
 current, licensed, or commercially reusable. License remains unknown unless verified.
 

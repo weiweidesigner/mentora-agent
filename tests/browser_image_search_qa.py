@@ -13,10 +13,11 @@ def main():
         path=Path(directory)/'gallery.html'
         payload=dict(requested_query='照片 <script>alert(1)</script>',images=[dict(image_url='https://images.test/good.png',thumbnail_url='https://images.test/good.png',source_url='https://source.test/page',title='正常图片',width=800,height=600),
             dict(image_url='https://images.test/bad.png',thumbnail_url='',source_url='',title='失败图片')])
+        payload['images'] += [dict(image_url=f'https://images.test/{n}/good.png',source_url='https://source.test/page',title='长标题照片 '+str(n),description='来源已有的说明文字') for n in range(2,10)]
         write_gallery(path,payload);document=path.read_text()
         with sync_playwright() as runtime:
             browser=runtime.chromium.launch(headless=True)
-            for width in (390,1280):
+            for width in (320,390,1280):
                 for theme in ('light','dark'):
                     page=browser.new_page(viewport=dict(width=width,height=900));errors=[]
                     page.on('pageerror',lambda error:errors.append(str(error)))
@@ -27,11 +28,19 @@ def main():
                     page.route('**/*',route)
                     page.goto('https://gallery.test/?theme='+theme)
                     page.wait_for_selector('.preview img.ready')
-                    assert page.locator('.image-card').count()==2
+                    assert page.locator('.image-card').count()==6
+                    assert page.locator('.grid>.image-card').count()==4
+                    assert page.locator('.list>.image-card').count()==2
                     assert page.locator('.placeholder').nth(0).is_hidden()
                     assert '暂不可用' in page.locator('.placeholder').nth(1).inner_text()
                     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                     assert page.locator('h1').inner_text()==payload['requested_query']
+                    boxes=page.locator('.grid .preview').evaluate_all('(nodes)=>nodes.map(n=>({x:n.getBoundingClientRect().x,y:n.getBoundingClientRect().y,width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height}))')
+                    assert boxes[0]['x']==0 and abs(boxes[1]['x']+boxes[1]['width']-width)<1
+                    assert boxes[0]['y']==boxes[1]['y'] and boxes[2]['y']==boxes[3]['y']
+                    assert boxes[2]['y']>boxes[0]['y']
+                    assert all(x['height']==(176 if width<=600 else 300) for x in boxes)
+                    assert page.locator('.preview img').first.evaluate('(n)=>getComputedStyle(n).objectFit')=='cover'
                     page.locator('.preview').first.click()
                     page.wait_for_selector('dialog img:not([hidden])')
                     page.keyboard.press('Escape');assert not page.locator('dialog').is_visible()
@@ -39,9 +48,34 @@ def main():
                     page.wait_for_function("document.querySelector('#resource-status').textContent.includes('失败')")
                     assert page.locator('dialog img').is_hidden()
                     page.locator('.close').click()
+                    page.locator('[data-refinement]').first.click()
+                    assert page.locator('#refine-query').input_value()==payload['requested_query']+'，只找高清大图'
                     assert not errors,errors
                     page.close()
+            # Real cross-frame refinement only fills a draft and preserves
+            # existing input; it never sends a search request by itself.
+            page=browser.new_page(viewport=dict(width=390,height=900))
+            app=(Path(__file__).resolve().parents[1]/'app/static/app.js').read_text()
+            start=app.index('function handleImageSearchRefinement(event) {')
+            helper=app[start:app.index("\nwindow.addEventListener('message',handleImageSearchRefinement);",start)]
+            host='<textarea id="question"></textarea><article class="message assistant"><iframe class="reportDocumentFrame" src="https://gallery.test/?theme=dark" style="border:0;width:100%;height:1600px"></iframe></article>'
+            def embedded_route(r):
+                if r.request.url.startswith('https://host.test/'):return r.fulfill(body=host,content_type='text/html')
+                return route(r)
+            page.route('**/*',embedded_route);page.goto('https://host.test/')
+            page.add_script_tag(content="const input=document.querySelector('#question');\n"+helper+"\nwindow.addEventListener('message',handleImageSearchRefinement);")
+            frame=page.frame_locator('iframe')
+            frame.locator('[data-refinement]').first.click()
+            page.wait_for_function("document.querySelector('#question').value.includes('只找高清大图')")
+            assert page.locator('#question').input_value()==payload['requested_query']+'，只找高清大图'
+            page.locator('#question').fill('已有草稿')
+            frame.locator('[data-refinement]').nth(1).click()
+            frame.locator('#refine-status').filter(has_text='已保留').wait_for()
+            assert page.locator('#question').input_value()=='已有草稿'
+            page.evaluate("window.postMessage({type:'mentora:image-search-refine',prompt:'伪造请求'},'*')")
+            assert page.locator('#question').input_value()=='已有草稿'
+            page.close()
             browser.close()
-    print('PASS: mobile/desktop light/dark gallery, decoded previews, broken-image fallback, modal and escaped metadata')
+    print('PASS: 320/390/1280px light/dark, 4-grid/2-list, edge alignment, fixed cover crops, previews, failures, metadata escaping and safe refinement drafts')
 
 if __name__=='__main__':main()

@@ -1787,6 +1787,19 @@ window.addEventListener("aime:streamviz-followup", (event) => {
   }
 });
 
+function handleImageSearchRefinement(event) {
+  if(event.data?.type!=='mentora:image-search-refine'||typeof event.data.prompt!=='string')return;
+  const prompt=event.data.prompt.trim();
+  if(!prompt||prompt.length>1000)return;
+  // Only a mounted result iframe may request a draft, never a background page.
+  const frame=Array.from(document.querySelectorAll('.reportDocumentFrame,.chatArtifactShell iframe')).find(node=>node.contentWindow===event.source);
+  if(!frame||!frame.closest('.message.assistant'))return;
+  const accepted=!input.disabled&&!input.readOnly&&(!input.value.trim()||input.value.trim()===prompt);
+  if(accepted){input.value=prompt;input.dispatchEvent(new Event('input',{bubbles:true}));input.focus();}
+  event.source.postMessage({type:'mentora:image-search-refine-ack',ok:accepted},event.origin==='null'?'*':event.origin);
+}
+window.addEventListener('message',handleImageSearchRefinement);
+
 function addMessage(role, html, options = {}) {
   if (role === "user") {
     return addUserMessage(decodeHtml(html), options);
