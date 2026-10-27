@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Iterator
 from app.public_stream import PublicStream, WIDGET_TOOL
 from app.streamviz_files import HtmlRenderEvents
+from app.parallel_widgets import ParallelWidgets
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urlsplit
@@ -112,6 +113,7 @@ class LocalAgentFrameworks:
         self._active_run_guard = threading.Lock()
         self._active_codex_processes: dict[str, Any] = {}
         self._active_deepseek_runs: dict[str, str] = {}
+        self._active_widget_runs = {}
         self._tool_activity_guard = threading.Lock()
         self._tool_activity_cache: dict[str, dict[str, Any]] = {}
         self._capability_index = CapabilityIndex(self.project_root)
@@ -124,6 +126,8 @@ class LocalAgentFrameworks:
         with self._active_run_guard:
             process = self._active_codex_processes.pop(session_key, None)
             harness_key = self._active_deepseek_runs.pop(session_key, None)
+            widgets = self._active_widget_runs.pop(session_key, None)
+        if widgets is not None:widgets.close()
         if process is not None and process.poll() is None:
             self._terminate_codex_process(process)
         if harness_key:
@@ -807,7 +811,7 @@ class LocalAgentFrameworks:
 {question}{image_note}{history_note}{artifact_note}
 
 你是 Mentora 的金融研究与可视化智能体，当前推理框架是 {FRAMEWORKS[framework]}。
-计划、取数检查、契约读取和执行过程属于公开进度说明，不是正式答案；有消息通道时使用 commentary。正式答案以有依据的结论和解读为主，不复述这些执行日志，也不要为凑交互增加工具或重复段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。原生工具的参数在模型生成期间实时展示，并自动保存可下载的独立 HTML。让展示与正文自然交错：在需要可视化的位置，先输出有依据的正文引入或解读，再调用 visualize_show_widget；调用开始即在该位置增量展示，完成后继续后续正文。不要把整个展示延迟到最终回答之后；widget_code 和内部脚本仅放在工具参数中，不能作为正文或代码块输出。需要 HTML 报告时也优先使用该原生工具，不要先写 Python/JSON 包装完整 html 再调用渲染脚本，这会失去模型生成期间的增量。已有结构化 payload 或需要脚本的页面仍可使用 render_streamviz.py；它发送真实渲染事件，普通组件的完整 HTML 不伪装成逐字生成。
+计划、取数检查、契约读取和执行过程属于公开进度说明，不是正式答案；有消息通道时使用 commentary。正式答案以有依据的结论和解读为主，不复述这些执行日志，也不要为凑交互增加工具或重复段落。内部推理保持私有。DeepSeek 提供原生 visualize_show_widget 工具；需要 StreamViz 时在本轮工具循环中使用它，基于已核实数据生成 HTML/SVG，不要等待最终回答后启动第二轮模型。原生工具优先传 title 和 brief（完整的已验证事实、布局、单位、来源与结论），让独立的 HTML 渲染任务并行生成；主 Agent 收到 rendering 回执后立即继续撰写自己的正文，不等待、不轮询、不重复生成 HTML。宿主缓冲这部分真实正文增量，待 HTML 验证保存后按顺序释放并附上下载文件；pending 回执不代表生成成功，禁止仅凭它声称文件完成。仅需精确保留现成 HTML 时传 widget_code。让展示与正文自然交错：在需要可视化的位置，先输出有依据的正文引入或解读，再调用 visualize_show_widget；调用开始即在该位置增量展示，完成后继续后续正文。不要把整个展示延迟到最终回答之后；widget_code 和内部脚本仅放在工具参数中，不能作为正文或代码块输出。需要 HTML 报告时也优先使用该原生工具，不要先写 Python/JSON 包装完整 html 再调用渲染脚本，这会失去模型生成期间的增量。已有结构化 payload 或需要脚本的页面仍可使用 render_streamviz.py；它发送真实渲染事件，普通组件的完整 HTML 不伪装成逐字生成。
 Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Yahoo 行情/财务接口，包括临时代码和组件回退；历史会话中的 Yahoo 命令不得复用。使用现有其他数据源；无匹配数据时明确说明限制，不得编造或替换标的。 该禁用策略不是本轮取数失败的原因。数据缺口必须依据本轮真实工具回执说明已尝试来源及实际失败原因；不得把工具移除、内部配置或未发生的请求写成市场数据缺失的原因。
 请直接完成用户任务，而不是解释如何完成。宿主会根据本轮语义提供少量候选 Skill 和组件；它们只是检索结果，你仍负责选择、组合或放弃。优先阅读所选候选的契约并执行；只有候选明显不足时才扩展检索 .agents/skills，禁止为了发现工具而扫描全部目录。不要用临时代码替代已有 Skill。
 用户明确要求创意图片或插画时，选择 flux-image Skill；它生成的是插画，不要将其当作数据图表或金融事实证据。仅生图任务无需执行金融研究链路。
@@ -2278,12 +2282,14 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
         public_stream = PublicStream('deepseek')
+        parallel_widgets = ParallelWidgets(self.generated_dir)
+        with self._active_run_guard:self._active_widget_runs[session_key]=parallel_widgets
         activity=ToolActivitySession(self._tool_activity_router,self._tool_activity_cache,self._tool_activity_guard)
         public_channels=PublicTextChannelSession(question=question)
 
         def activity_updates(*,final=False):
             for key,text,semantics in public_channels.drain():
-                yield from public_stream.classify_progress(key,text,semantics)
+                yield from parallel_widgets.hold(public_stream.classify_progress(key,text,semantics))
             updates=dict(activity.drain())
             if final:
                 for call_id,context in tool_context_by_call_id.items():
@@ -2302,7 +2308,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         started_at = time.monotonic()
         run_timeout = self._deepseek_run_timeout_seconds()
         try:
-            while worker.is_alive() or not notifications.empty():
+            while worker.is_alive() or not notifications.empty() or parallel_widgets.active:
+                if parallel_widgets.stopped.is_set():raise ReasoningFrameworkError('已停止生成')
+                if error_box:raise ReasoningFrameworkError(f'DeepSeek Harness 调用失败：{error_box[0]}')
+                yield from parallel_widgets.drain()
                 yield from html_events.poll()
                 yield from activity_updates()
                 try:
@@ -2324,7 +2333,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         elif frame.get('type')=='chunk':
                             chunk=frame.get('chunk') or {}
                             channel=chunk.get('channel') or chunk.get('phase') or frame.get('channel') or frame.get('phase')
-                            yield from public_stream.chunk({**chunk,**({'channel':channel} if channel else {})})
+                            yield from parallel_widgets.hold(public_stream.chunk({**chunk,**({'channel':channel} if channel else {})}))
                         elif frame.get('type')=='end':yield 'model_activity',{'phase':'completed'}
                     continue
                 event = payload.get("event") if method == "session.event" and isinstance(payload, dict) else None
@@ -2336,7 +2345,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     event_data = event.get("data") if isinstance(event.get("data"), dict) else {}
                     chunk = event_data.get("chunk") if isinstance(event_data.get("chunk"), dict) else {}
                     if str(payload.get('sessionId') or requested_session_id)==requested_session_id and event_data.get('channel') not in {'analysis','reasoning'}:
-                        yield from public_stream.chunk({**chunk,**({'channel':event_data['channel']} if event_data.get('channel') else {})})
+                        yield from parallel_widgets.hold(public_stream.chunk({**chunk,**({'channel':event_data['channel']} if event_data.get('channel') else {})}))
                     usage = chunk.get("usage") if chunk.get("type") == "usage" and isinstance(chunk.get("usage"), dict) else {}
                     if usage:
                         try:
@@ -2437,6 +2446,12 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     if event_type == "tool/result":
                         yield from html_events.poll()
                         if name==WIDGET_TOOL:
+                            if phase=='failed':
+                                yield 'visualization',dict(id=result_call_id,discard=True,final=True,native=True)
+                                continue
+                            try:receipt=json.loads(observation) if isinstance(observation,str) else observation
+                            except (ValueError,TypeError):receipt={}
+                            if isinstance(receipt,dict) and parallel_widgets.start(result_call_id,arguments,receipt):continue
                             for module in self._html_modules_from_tool_output(observation):
                                 public_stream.artifacts.append(dict(url=module['htmlUrl'],path=str(self.generated_dir/Path(module['htmlUrl']).name),label=module.get('label',''),streamvizSource='native-streamviz'))
                                 yield 'visualization',dict(id=result_call_id,toolName=WIDGET_TOOL,htmlUrl=module['htmlUrl'],title=module.get('label',''),native=True,live=True,final=True)
@@ -2448,7 +2463,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     message = data.get("message") if isinstance(data.get("message"), dict) else data
                     if not (message.get('channel') or message.get('phase')) and (data.get('channel') or data.get('phase')):
                         message={**message,'channel':data.get('channel') or data.get('phase')}
-                    yield from public_stream.message(message)
+                    yield from parallel_widgets.hold(public_stream.message(message))
                     for key,text in public_stream.channel_candidates:
                         public_channels.request(key,text)
                     public_stream.channel_candidates.clear()
@@ -2462,11 +2477,14 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         "message": "DeepSeek 子智能体已启动" if method.endswith("started") else "DeepSeek 子智能体已完成",
                         "lang": "zh-CN",
                     }
+            yield from parallel_widgets.drain()
             yield from html_events.poll()
             yield from activity_updates(final=True)
         finally:
             activity.close()
             public_channels.close()
+            parallel_widgets.close()
+            with self._active_run_guard:self._active_widget_runs.pop(session_key,None)
         worker.join()
         with self._active_run_guard:
             if self._active_deepseek_runs.get(session_key)==harness_key:self._active_deepseek_runs.pop(session_key,None)
@@ -2491,6 +2509,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
         public_stream.artifacts.extend(html_events.artifacts)
+        public_stream.artifacts.extend(parallel_widgets.artifacts)
         if not public_stream.artifacts and self._requires_html_deliverable(question) and not re.search(
             r"\[\[AIME_CHART:[^\]\n]+\.html\]\]", answer
         ):

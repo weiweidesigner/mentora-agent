@@ -15,6 +15,8 @@ export function prepareStreamDocument(props, scripts, completeHtml) {
     // Render received deltas immediately. In particular, never animate a slice
     // of the internal scripts appended when the real generation is complete.
     smoothStreaming: false,
+    loadingMessage: '正在处理',
+    loadingMessages: ['正在处理'],
     code: props.final ? decorate(props.code) : props.code,
     exportCode: props.final ? decorate(props.exportCode) : props.exportCode,
   };

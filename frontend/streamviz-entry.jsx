@@ -31,6 +31,7 @@ function mount(container, payload = {}) {
   root.render(
     <StreamVisualization
       {...props}
+      renderIcon={() => null}
       theme={activeTheme()}
       notify={(message, variant) => {
         window.dispatchEvent(new CustomEvent("aime:streamviz-notify", { detail: { message, variant } }));

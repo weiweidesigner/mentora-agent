@@ -280,9 +280,11 @@ def stream_native_widget(
     *,
     evidence: str = "",
     theme_mode: str = "light",
+    client_override=None,
+    model_override: str = "",
 ) -> Iterator[tuple[str, dict[str, Any]]]:
     """Yield Aime SSE events from native OpenAI tool-call argument deltas."""
-    client, model = _client_from_env()
+    client, model = (client_override, model_override) if client_override is not None else _client_from_env()
     yield "status", {"stage": "native_streamviz", "message": "正在以原生流式协议构建图形", "lang": "zh-CN"}
     stream = client.chat.completions.create(
         model=model,
@@ -301,12 +303,16 @@ def stream_native_widget(
         # permission for the model to answer with prose instead.
         tool_choice={"type": "function", "function": {"name": TOOL_NAME}},
         stream=True,
+        stream_options={"include_usage": True},
         temperature=0.2,
     )
     calls: dict[int, dict[str, str]] = {}
     answer_parts: list[str] = []
 
     for chunk in stream:
+        if _attr(chunk, "usage", None):
+            from app.cost_monitor import COSTS
+            COSTS.record_response(chunk,provider='deepseek',service='StreamViz',operation='并行 HTML 渲染' if client_override is not None else '原生 HTML 渲染',model=model)
         choices = _attr(chunk, "choices", []) or []
         if not choices:
             continue

@@ -768,7 +768,37 @@ function applyRunTiming(article, eventName, data) {
   }
 }
 
-function handleStreamEvent(article, eventName, data) {
+// These chunks were genuinely generated while HTML was rendering. Give the
+// browser a paint between batches, while preserving the recorded final/event
+// order. This paces presentation only; it never fabricates model deltas.
+function queuePreparedStreamEvent(article, eventName, data) {
+  article.preparedStreamEvents ||= [];
+  article.preparedStreamEvents.push([eventName,data]);
+  if (article.preparedStreamFrame) return;
+  const advance = () => {
+    article.preparedStreamFrame = null;
+    if (article.activityEnded || !article.isConnected) { article.preparedStreamEvents = []; return; }
+    let characters = 0;
+    while (article.preparedStreamEvents.length && characters < 32) {
+      const [event,value] = article.preparedStreamEvents.shift();
+      handleStreamEvent(article,event,value,true);
+      characters += event === 'answer_text' ? String(value.delta || value.text || '').length : 0;
+    }
+    if (article.preparedStreamEvents.length) article.preparedStreamFrame = requestAnimationFrame(advance);
+  };
+  article.preparedStreamFrame = requestAnimationFrame(advance);
+}
+
+function handleStreamEvent(article, eventName, data, prepared = false) {
+  if (!prepared && eventName !== 'error' && (data?.bufferedByVisualization || article.preparedStreamEvents?.length)) {
+    queuePreparedStreamEvent(article,eventName,data);
+    return;
+  }
+  if (eventName === 'error') {
+    cancelAnimationFrame(article.preparedStreamFrame);
+    article.preparedStreamFrame = null;
+    article.preparedStreamEvents = [];
+  }
   applyRunTiming(article, eventName, data);
   showAgentIdentity(article, data?.agent);
   const lang = setArticleLanguage(article, data?.lang || article.dataset.lang || "en");

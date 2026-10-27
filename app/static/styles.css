@@ -3623,11 +3623,15 @@ p {
 .streamvizLiveLane > .streamvizArtifactHost { margin: 0; }
 
 .streamvizArtifactHost.is-live {
-  min-height: 56px;
+  min-height: 24px;
 }
 
 .streamvizArtifactHost .visualize-widget-loading-inline {
-  padding: 12px 2px;
+  padding: 0;
+  min-height: 24px;
+  font: inherit;
+  line-height: 1.5;
+  color: var(--muted);
 }
 
 /* Application theme. Generated reports receive their theme from the request;
@@ -5367,6 +5371,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .activityBody .activityNarrative>p{font-size:14px;line-height:1.55}
 .interleavedFlow{display:flex;flex-direction:column;gap:8px;min-width:0}
 .interleavedFlow>.streamAnswerPreview{margin:0;min-width:0}
+.interleavedFlow>.streamAnswerPreview>.reportInterpretation:last-child{margin-bottom:0}
 .interleavedFlow>.streamAnswerPreview:empty{display:none}
 .interleavedFlow .streamvizLiveLane{margin:0;min-width:0}
 .orderedTool{font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
