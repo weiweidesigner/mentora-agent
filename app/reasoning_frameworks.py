@@ -1090,7 +1090,12 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         intermediate_markers.add(raw)
                         break
                     resolved_markers[raw] = path
-                    artifacts.append({"path": str(path), "url": f"/generated/{path.name}"})
+                    artifact={"path":str(path),"url":f"/generated/{path.name}"}
+                    with path.open(encoding='utf-8',errors='replace') as document:
+                        header=document.read(16384)
+                    if 'data-image-search-gallery=' in header or '<title>图片搜索</title>' in header:
+                        artifact.update(contentKind='image-gallery',renderMode='iframe')
+                    artifacts.append(artifact)
                     break
         if markers and not artifacts and any(raw not in intermediate_markers for raw in markers):
             missing = ", ".join(Path(raw.strip()).name for raw in dict.fromkeys(markers))

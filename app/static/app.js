@@ -1224,6 +1224,14 @@ window.addEventListener('message',event=>{
   window.dispatchEvent(new CustomEvent('mentora:add-artifact-to-widget',{detail:{url:shell.dataset.artifactUrl,title:String(event.data.title||shell.dataset.artifactTitle||'可视化组件').slice(0,160),trigger:shell.querySelector('.artifactAddToWidget')}}));
 });
 
+function isImageGalleryArtifact(item) {
+  return item?.contentKind==='image-gallery' || item?.type==='external-image-search' || /(?:image[-_]search|photo[-_]gallery)/i.test(String(item?.url || ''));
+}
+
+function artifactLoadingMessage(item) {
+  return isImageGalleryArtifact(item)?'正在加载图片':'正在加载内容';
+}
+
 function createArtifactFallbackFrame(item, index, options = {}) {
   if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
   const loadingStartedAt = Date.now();
@@ -1235,7 +1243,7 @@ function createArtifactFallbackFrame(item, index, options = {}) {
   loading.className = "chartLoadingOverlay";
   loading.hidden = false;
   loading.setAttribute("role", "status");
-  loading.innerHTML = '<span class="chartLoadingLabel">正在加载图表</span>';
+  const loadingLabel=document.createElement('span');loadingLabel.className='chartLoadingLabel';loadingLabel.textContent=artifactLoadingMessage(item);loading.append(loadingLabel);
   const frame = document.createElement("iframe");
   frame.className = "reportDocumentFrame";
   shell.append(frame);
@@ -1247,10 +1255,11 @@ function createArtifactFallbackFrame(item, index, options = {}) {
   // Use the server-side document shell for generated HTML. It preserves the
   // artifact's scripts while applying the same width and surface tokens as the
   // surrounding conversation and share page.
-  if (source.pathname.startsWith("/generated/") && source.pathname.endsWith(".html")) {
+  if (/^\/(?:(?:mentora|veya)\/)?generated\/[^/]+\.html$/.test(source.pathname)) {
     // URL.pathname is already percent-encoded, including Chinese filenames.
     // Preserve it when switching routes so filenames are not encoded twice.
-    const artifactSource = new URL(source.pathname.replace("/generated/", "/share-artifact/"), window.location.origin);
+    const artifactSource = new URL(source.href);
+    artifactSource.pathname=source.pathname.replace('/generated/','/share-artifact/');
     artifactSource.searchParams.set("theme", currentThemeMode());
     artifactSource.searchParams.set("v", String(Date.now()));
     frame.src = artifactSource.href;
@@ -1332,7 +1341,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     exportCode: "",
     final: false,
     showActions: false,
-    loadingMessage: options.loadingMessage || "正在加载图表…",
+    loadingMessage: options.loadingMessage || artifactLoadingMessage(item),
     loadingDwellMs: 0,
   });
   artifactCode(item.url).then(async (rawCode) => {
@@ -1343,6 +1352,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       return;
     }
     if (!streamVisualizationCompatible(rawCode)) {
+      if(/data-image-search-gallery=|<title>图片搜索<\/title>/i.test(rawCode))item={...item,contentKind:'image-gallery'};
       window.AimeStreamViz?.unmount?.(host);
       host.replaceWith(createArtifactFallbackFrame(item, index));
       return;
@@ -1373,7 +1383,7 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
       exportCode: code,
       final: true,
       showActions: options.showActions === true,
-      loadingMessage: options.loadingMessage || "正在加载图表",
+      loadingMessage: options.loadingMessage || artifactLoadingMessage(item),
       loadingDwellMs: 0,
     });
     host.dataset.artifactCodeReady = "true";
@@ -5699,8 +5709,8 @@ function shareAnswerMarkup(session) {
   container.querySelectorAll(".reportDocumentFrame").forEach((frame) => {
     const url = new URL(frame.getAttribute("src") || "", window.location.origin);
     if (url.origin !== window.location.origin) return;
-    if (url.pathname.startsWith("/generated/")) url.pathname = url.pathname.replace("/generated/", "/share-artifact/");
-    if (url.pathname.startsWith("/share-artifact/")) {
+    if (/^\/(?:(?:mentora|veya)\/)?generated\//.test(url.pathname)) url.pathname = url.pathname.replace("/generated/", "/share-artifact/");
+    if (/^\/(?:(?:mentora|veya)\/)?share-artifact\//.test(url.pathname)) {
       url.searchParams.set("theme", theme);
       frame.setAttribute("src", `${url.pathname}${url.search}`);
     }
@@ -5728,12 +5738,14 @@ function buildShareAnswerDocument(session) {
   <link rel="stylesheet" href="/static/styles.css" />
   <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css" />
   <link rel="stylesheet" href="/static/share-answer.css" />
+  <link rel="stylesheet" href="/static/image-viewer.css?v=20261027-viewer5" />
 </head>
 <body style="${escapeHtml(typography.join(';'))}">
   <main class="shareAnswerDocument ${escapeHtml(contextClasses)}">
     <h1 class="shareAnswerTitle">${title}</h1>
     <section class="mixedReport">${answer}</section>
   </main>
+  <script src="/static/image-viewer.js?v=20261027-viewer5"></script>
   <script src="/static/share-chart-layout.js"></script>
 </body>
 </html>`;

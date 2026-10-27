@@ -1,5 +1,6 @@
 """Offline host/iframe viewer regressions; never request actual third-party images."""
 import tempfile
+import html
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 from app.search_images import render_gallery
@@ -20,20 +21,25 @@ def main():
     host=f'<html data-theme="dark"><head><meta charset="utf-8"><style>{app_css}</style><style>body{{margin:0;background:#101010;color:white}}h1{{margin:16px}}iframe{{width:100%;height:400px;border:0}}</style><style>{css}</style></head><body><h1>搜索结果</h1><article class="message assistant"><iframe class="reportDocumentFrame" src="/share-artifact/gallery.html?theme=dark"></iframe></article><script>{script}</script></body></html>'
     with sync_playwright() as runtime:
         browser=runtime.chromium.launch(headless=True)
-        for width in (390,1280):
+        for width,prefix in ((390,''),(1280,'/mentora'),(390,'/veya')):
             page=browser.new_page(viewport=dict(width=width,height=900),accept_downloads=True);errors=[];late=[]
             page.on('pageerror',lambda error:errors.append(str(error)))
             def route(r):
                 url=r.request.url
-                if url.startswith('https://app.test/share-artifact/'):return r.fulfill(body=document,content_type='text/html')
-                if url=='https://app.test/':return r.fulfill(body=host,content_type='text/html')
+                if '/share-artifact/' in url:return r.fulfill(body=document,content_type='text/html')
+                if url=='https://app.test'+prefix+'/':return r.fulfill(body=host.replace('src="/share-artifact/','src="'+prefix+'/share-artifact/'),content_type='text/html')
+                if url=='https://app.test'+prefix+'/nested-host':
+                    inner=host.replace('src="/share-artifact/','src="'+prefix+'/share-artifact/')
+                    outer=f'<html><head><meta charset="utf-8"><style>{css}</style></head><body style="margin:0;background:#191919"><aside style="width:25%;height:100vh;position:fixed;background:#555">侧栏</aside><iframe class="sharePreviewIframe" id="sharePreviewIframe" style="margin-left:25%;width:70%;height:360px" srcdoc="{html.escape(inner,quote=True)}"></iframe><script>{script}</script></body></html>'
+                    return r.fulfill(body=outer,content_type='text/html')
                 if url.endswith('/bad.svg'):return r.fulfill(status=404,body='')
                 if url.endswith(('/hang.svg','/late.svg')):late.append(r);return
                 return r.fulfill(body=SVG,content_type='image/svg+xml',headers={'Access-Control-Allow-Origin':'*'})
-            page.route('**/*',route);page.goto('https://app.test/')
+            page.route('**/*',route);page.goto('https://app.test'+prefix+'/')
             frame=page.frame_locator('iframe');frame.locator('.preview img.ready').first.wait_for()
             frame.locator('.preview').first.hover()
-            expect(frame.locator('.view-icon').first).to_have_css('opacity','1')
+            assert frame.locator('.view-icon').count()==0
+            expect(frame.locator('.preview').first).to_have_css('cursor','pointer')
             frame.locator('.preview').first.click();page.locator('.iv-image').wait_for()
             assert frame.locator('dialog[open]').count()==0
             bounds=page.locator('dialog[open]').bounding_box()
@@ -85,6 +91,21 @@ def main():
             if width==1280:
                 frame.locator('.preview').first.click();page.locator('.iv-image').wait_for()
                 page.screenshot(path='/tmp/mentora-image-viewer-desktop.png')
+            # A srcdoc share preview adds a second iframe level. The overlay
+            # must still cover the OUTER sidebar and viewport, not that frame.
+            page.goto('https://app.test'+prefix+'/nested-host')
+            nested=page.frame_locator('#sharePreviewIframe').frame_locator('.reportDocumentFrame')
+            nested.locator('.preview img.ready').first.wait_for()
+            nested.locator('.preview').first.click();page.locator('dialog[open] .iv-image').wait_for()
+            assert page.frame_locator('#sharePreviewIframe').locator('dialog[open]').count()==0
+            assert nested.locator('dialog[open]').count()==0
+            bounds=page.locator('dialog[open]').bounding_box()
+            assert bounds['x']==0 and bounds['y']==0 and bounds['width']==width and bounds['height']==900
+            assert page.evaluate("document.elementFromPoint(5,450).closest('dialog')!==null")
+            page.locator('.iv-close').click()
+            for request in late:
+                try:request.abort()
+                except Exception:pass
             assert not errors,errors
             page.close()
         browser.close()

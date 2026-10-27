@@ -1,12 +1,12 @@
 /* Icons: Lucide (ISC), see assets/brands/lucide-LICENSE.txt. No remote icon CDN. */
 (() => {
   if (window.MentoraImageViewer) return;
+  const ownOrigin=new URL(document.baseURI).origin;
   const icons = {
     download:'<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
     close:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
     chevron:'<path d="m6 9 6 6 6-6"/>',
     external:'<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
-    zoom:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35M11 8v6M8 11h6"/>',
     check:'<path d="M20 6 9 17l-5-5"/>',
     image:'<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'
   };
@@ -101,7 +101,7 @@
     ensureDialog();generation++;stopLoads();const token=generation;
     current={original:url,preview:publicUrl(data.preview),source:publicUrl(data.source),title:String(data.title || '').slice(0,500),sourceName:String(data.sourceName || '').slice(0,200)};
     trigger=element || document.activeElement;zoom='fit';picture=null;canvas.replaceChildren();canvas.removeAttribute('style');
-    statusText.textContent='正在载入原图';retry.hidden=true;original.hidden=true;original.href=url;download.disabled=false;
+    statusText.textContent='正在加载图片';retry.hidden=true;original.hidden=true;original.href=url;download.disabled=false;
     source.hidden=!current.source;source.removeAttribute('href');
     if(current.source){source.href=current.source;source.querySelector('span').textContent=(current.sourceName || new URL(current.source).hostname)+(current.title?' · '+current.title:'');}
     if(!dialog.open){previousOverflow=document.documentElement.style.overflow;document.documentElement.style.overflow='hidden';dialog.showModal();}
@@ -114,16 +114,33 @@
     });
     return true;
   }
+  function openOnPage(data,element) {
+    // Lift out of same-origin report/share-preview wrappers as well as the
+    // gallery itself. A dialog inside any iframe cannot cover the app sidebar.
+    let root=window,trigger=element;
+    try {
+      while(root.parent!==root) {
+        const frame=root.frameElement;
+        if(!frame?.matches('.reportDocumentFrame,.sharePreviewIframe,#sharePreviewIframe,.shareAnswerDocument iframe'))break;
+        // srcdoc inherits its parent's security origin, but location.origin
+        // itself is "null". DOM access is the reliable same-origin check.
+        void root.parent.document.documentElement;
+        trigger=frame;root=root.parent;
+      }
+      if(root!==window && root.MentoraImageViewer)return root.MentoraImageViewer.open(data,trigger);
+    } catch { /* Cross-origin external hosts cannot be covered by this app. */ }
+    return open(data,element);
+  }
   function onMessage(event) {
     if(event.data?.type!=='mentora:image-viewer-open')return;
-    if(event.origin!==location.origin && event.origin!=='null')return;
+    if(event.origin!==ownOrigin && event.origin!=='null')return;
     const frame=Array.from(document.querySelectorAll('.reportDocumentFrame,.chatArtifactShell iframe,.shareAnswerDocument iframe')).find(node=>node.contentWindow===event.source);
     if(!frame)return;
     // Only first-party generated artifact frames may request a host overlay.
-    try {const url=new URL(frame.src,location.href);if(url.origin!==location.origin || !/^\/(share-artifact|generated)\//.test(url.pathname))return;}catch{return;}
-    if(!open(event.data.image,frame))return;
+    try {const url=new URL(frame.src,document.baseURI);if(url.origin!==ownOrigin || !/^\/(?:(?:mentora|veya)\/)?(?:share-artifact|generated)\/[^/]+\.html$/.test(url.pathname))return;}catch{return;}
+    if(!openOnPage(event.data.image,frame))return;
     event.source.postMessage({type:'mentora:image-viewer-ack',requestId:event.data.requestId},event.origin==='null'?'*':event.origin);
   }
   window.addEventListener('message',onMessage);
-  window.MentoraImageViewer={open,icon};
+  window.MentoraImageViewer={open:openOnPage,icon};
 })();
