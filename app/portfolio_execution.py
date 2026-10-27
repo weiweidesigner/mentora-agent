@@ -29,7 +29,24 @@ class ExecutionMarket(MarketDataHub):
 
     def quote(self,symbol,asset='stocks',fresh=False):
         from app.hk_market_data import is_hk_symbol,normalize_hk_symbol
-        if not is_hk_symbol(symbol):return super().quote(symbol,asset,fresh)
+        if not is_hk_symbol(symbol):
+            quote=super().quote(symbol,asset,fresh)
+            if quote.get('changePct') is None and quote.get('dateOnly') and quote.get('sourceUrl')=='https://quote.ainvest.com/':
+                # The existing close-price fallback has already cached this history.
+                # Compare the same series and session; never substitute a zero or
+                # mix an intraday quote with an unrelated historical close.
+                try:
+                    rows=self.history(symbol).get('rows') or [];day=quote.get('priceDate')
+                    current=next((row for row in reversed(rows) if row.get('date')==day),None)
+                    previous=max((row for row in rows if day and row.get('date','')<day),key=lambda row:row['date'],default=None)
+                    close=number(current.get('close')) if current else None
+                    previous_close=number(previous.get('close')) if previous else None
+                    if close and close>0 and previous_close and previous_close>0 and math.isclose(close,quote['price'],rel_tol=1e-9,abs_tol=1e-8):
+                        quote=dict(quote,changePct=round((close/previous_close-1)*100,6),previousClose=previous_close,
+                                   changePctSource=quote.get('source'),changePctAsOf=day)
+                except InterruptedError:raise
+                except Exception:pass  # Keep the valid price; missing change remains unknown.
+            return quote
         symbol=normalize_hk_symbol(symbol)
         q=dict(super().favorite_quote(symbol,fresh=fresh));fx=self.hk_fx()
         native=number(q.get('nativePrice'))
@@ -73,6 +90,40 @@ class ExecutionWorkflow(PortfolioWorkflow):
     @staticmethod
     def stock_symbol(symbol):
         return bool(re.fullmatch(r'\d{4,5}\.HK',symbol or '')) or PortfolioWorkflow.stock_symbol(symbol)
+
+    def favorites(self,owner):
+        items=super().favorites(owner)
+        with self.service.db() as db:
+            cached={row['symbol']:json.loads(row['payload']) for row in db.execute('SELECT q.symbol,q.payload FROM quotes q JOIN portfolio_favorites f ON f.symbol=q.symbol WHERE f.owner=?',(owner,))}
+        for item in items:
+            quote=item.get('quote') or {};other=cached.get(item['symbol'],{})
+            if quote.get('changePct') is not None or not quote.get('priceDate') or quote['priceDate']!=other.get('priceDate'):continue
+            currency=quote.get('nativeCurrency') or quote.get('currency')
+            if currency!=(other.get('nativeCurrency') or other.get('currency')):continue
+            price=number(quote.get('nativePrice',quote.get('price')));other_price=number(other.get('nativePrice',other.get('price')))
+            change=number(other.get('changePct'))
+            if price and price>0 and other_price and other_price>0 and change is not None and math.isclose(price,other_price,rel_tol=1e-9,abs_tol=1e-8):
+                item['quote']=dict(quote,changePct=change,changePctSource=other.get('changePctSource') or other.get('source'),changePctAsOf=quote['priceDate'])
+        return items
+
+    def refresh_favorites(self,owner):
+        failures=[]
+        with self.service.db() as db:
+            rows=db.execute('SELECT symbol,payload FROM portfolio_favorites WHERE owner=?',(owner,)).fetchall()
+            known={row['symbol'] for row in db.execute('SELECT u.symbol FROM universe u JOIN portfolio_favorites f ON f.symbol=u.symbol WHERE f.owner=?',(owner,))}
+        for row in rows:
+            symbol=row['symbol'];item=json.loads(row['payload'])
+            try:
+                # Portfolio.quote resolves assetclass from the actual directory
+                # (ETF versus stock) and updates the shared quote cache as well.
+                quote=self.service.quote(symbol,True) if symbol in known or not hasattr(self.service.market,'favorite_quote') else self.service.market.favorite_quote(symbol,fresh=True)
+                item.update(quote=quote,updated=stamp())
+                if not item.get('name') and quote.get('name'):item['name']=quote['name']
+                with self.service.db() as db:
+                    db.execute('UPDATE portfolio_favorites SET payload=?,updated=? WHERE owner=? AND symbol=?',(json.dumps(item,ensure_ascii=False),item['updated'],owner,symbol))
+            except InterruptedError:raise
+            except Exception:failures.append(symbol)
+        return failures
 
     def add_favorite(self,owner,symbol,name=None):
         """Identity validation and persistence do not wait for market quotes."""
