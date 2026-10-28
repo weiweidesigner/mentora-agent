@@ -1443,6 +1443,8 @@ function orderedStreamFlow(article) {
 }
 
 function replayOrderedStream(article, blocks, container) {
+  // Restored blocks use the same spacing owner as live ordered output.
+  container.classList.add('interleavedFlow');
   article.replayBlockOrder = new Map(blocks.map((block,index) => [block.kind === 'tool_step' ? 'tool:' + (block.data?.callId || block.id) : block.id,index + 1]));
   article.nextActivityOrder = Math.max(article.nextActivityOrder || 0,blocks.length);
   const history = article.querySelector('.thinkingSteps');
