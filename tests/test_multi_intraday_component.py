@@ -51,7 +51,7 @@ def test_same_symbol_multiple_dates_render_as_one_horizontal_card_row(tmp_path: 
     assert "grid-auto-flow:column" in rendered
     assert "overflow-x:auto" in rendered
     assert "kline-canvas" in rendered
-    assert "grid-auto-columns:minmax(340px," in rendered
+    assert "grid-auto-columns:max(340px," in rendered
     assert 'data-intraday-layout="2"' in rendered
     assert "2026-09-25" in rendered and "2026-09-28" in rendered
     metadata = json.loads(summary.read_text(encoding="utf-8"))

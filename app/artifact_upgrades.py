@@ -148,7 +148,7 @@ def upgrade_native_kline_runtime(artifact: str) -> str:
 
 def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
     """Re-render legacy multi-intraday srcdocs with exactly their saved OHLCV rows."""
-    if 'class="multi-intraday"' not in artifact or 'data-intraday-layout="2"' in artifact:
+    if 'class="multi-intraday"' not in artifact or 'data-intraday-quotes="1"' in artifact:
         return artifact
     parser = _IntradayDocument()
     parser.feed(artifact)
@@ -159,11 +159,13 @@ def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
         cards = []
         zone = "America/New_York"
         indicators = ["VOL"]
+        previous_closes = {}
         for child in parser.frames:
             config = _constant(child, "config")
             if config.get("annotations"):
                 return artifact
-            rows = _constant(child, "dataByPeriod")["1m"]
+            interval = config.get("dataType", "1m")
+            rows = _constant(child, "dataByPeriod")[interval]
             if not isinstance(rows, list) or not rows:
                 return artifact
             zone = str(config.get("timeZone") or zone)
@@ -172,9 +174,22 @@ def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
                 return artifact
             indicators = config.get("subIndicators") or []
             name = re.sub(r"\s*·\s*\d{4}-\d{2}-\d{2}.*$", "", str(config.get("name") or config["code"]))
-            cards.append({"symbol": config["code"], "name": name, "date": dates.pop(),
-                          "data": rows, "source": (config.get("sources") or {}).get("1m", "saved"),
+            day=dates.pop()
+            saved_prior=previous_closes.get(config["code"])
+            prior=saved_prior[1] if saved_prior and saved_prior[0] < day else None
+            cards.append({"symbol": config["code"], "name": name, "date": day,"interval":interval,
+                          "data": rows,"previousClose":prior,
+                          "source": (config.get("sources") or {}).get(interval, "saved"),
                           "reliableVolume": "VOL" in indicators})
+            # Saved card history only establishes the following day's reference;
+            # no opening-price substitute is used for the first saved day.
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            last_time=rows[-1]["time"]
+            stamp=datetime.fromisoformat(str(last_time).replace("Z", "+00:00")) if isinstance(last_time,str) and not last_time.isdigit() else datetime.fromtimestamp(float(last_time)/(1000 if float(last_time)>1e11 else 1),ZoneInfo(zone))
+            if stamp.tzinfo: stamp=stamp.astimezone(ZoneInfo(zone))
+            if stamp.strftime("%H:%M")=="15:00":
+                previous_closes[config["code"]]=(day,rows[-1]["close"])
         columns = re.search(r"--columns\s*:\s*([1-4])", artifact)
         mobile_columns = re.search(r'data-mobile-columns=["\x27]([1-4])["\x27]', artifact)
         payload = {"type": "multi-intraday", "title": "".join(parser.title), "cards": cards,

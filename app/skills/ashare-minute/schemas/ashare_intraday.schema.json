@@ -7,7 +7,9 @@
     "days": "1..5, default 5",
     "dates": "optional comma-separated YYYY-MM-DD, restricted to returned sessions",
     "interval": "auto (default), 1m (strict), 5m (explicit)",
-    "provider": "sina (default) or eastmoney (explicit)"
+    "provider": "sina (default) or eastmoney (explicit)",
+    "columns": "optional 1..4; default component up to 3",
+    "mobileColumns": "1..4, default 1"
   },
   "cli": [
     "--symbol",
@@ -18,7 +20,9 @@
     "--theme",
     "--language",
     "--title",
-    "--output"
+    "--output",
+    "--columns",
+    "--mobile-columns"
   ],
   "dataContract": {
     "interval": "Actual source resolution: 1m or explicitly labeled 5m",
@@ -42,5 +46,11 @@
     "arbitrary historical dates outside recent five sessions",
     "other markets",
     "fabricated or interpolated minute prices"
-  ]
+  ],
+  "quoteHeader": {
+    "previousClose": "Verified preceding session close; missing reference renders no daily change. Never substitute open.",
+    "layout": "60px header; name/code left with 20px inset, close/direction/change/percent right",
+    "colors": "CN red up ↑, green down ↓, gray flat —",
+    "columns": "Explicit props.columns/--columns overrides component default up to 3; mobile default 1; no JEV call"
+  }
 }

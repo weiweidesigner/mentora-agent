@@ -129,6 +129,19 @@ def fetch_five_minute_source(symbol: str) -> dict:
     return {**data,'trends':[','.join(str(row).split(',')[:7])+',0' for row in data.get('klines',[])]}
 
 
+def fetch_sina_identity(symbol: str) -> str:
+    """Sina quote identity contract documented by easyquotation.sina.Sina."""
+    code, exchange = symbol.split('.')
+    wire_symbol=exchange.lower()+code
+    response=requests.get('https://hq.sinajs.cn/',params={'list':wire_symbol},
+                          headers={'Referer':'https://finance.sina.com.cn/'},timeout=(3,5))
+    response.raise_for_status()
+    response.encoding='gb18030'
+    match=re.fullmatch(r'\s*var\s+hq_str_'+re.escape(wire_symbol)+r'="([^"\r\n]*)";?\s*',response.text)
+    if not match or not match[1].split(',')[0].strip():raise ValueError('新浪未返回该代码的名称。')
+    return match[1].split(',')[0].strip()
+
+
 def fetch_sina_source(symbol: str, interval: str) -> dict:
     """AKShare stock_zh_a_minute's documented stock/index, unadjusted contract.
 
@@ -156,7 +169,9 @@ def fetch_sina_source(symbol: str, interval: str) -> dict:
             # Amount may be absent; never compute it from closing price.
             trends.append(','.join([stamp.strftime('%Y-%m-%d %H:%M'),*map(str,values),str(row.get('amount',0)),'0']))
         except (KeyError,ValueError,TypeError): continue
-    return {'code':code,'name':symbol,'trends':trends,'volumeScale':1}
+    try: name=fetch_sina_identity(symbol)
+    except (requests.RequestException,ValueError): name=symbol
+    return {'code':code,'name':name,'trends':trends,'volumeScale':1}
 
 
 def minute_snapshot(value: str, days: int = 5, date: str | None = None, interval: str = "auto", provider: str = "sina") -> dict:
@@ -204,13 +219,26 @@ def minute_snapshot(value: str, days: int = 5, date: str | None = None, interval
     rows = normalize_trends(source,now,days,date)
     selected = sorted({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat() for row in rows})
     grouped = {day:[row for row in rows if datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat()==day] for day in selected}
+    # Sina's 1970 returned bars include sessions preceding the requested view.
+    # Only an observed 15:00 close may be used as the next session's prior close.
+    history=normalize_trends(source,now,100)
+    history_days=sorted({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat() for row in history})
+    closes={}
+    for row in history:
+        stamp=datetime.fromtimestamp(row['time']/1000,SHANGHAI)
+        if (stamp.hour,stamp.minute)==(15,0): closes[stamp.date().isoformat()]=row['close']
+    previous={day:closes.get(history_days[i-1]) if i else None for i,day in enumerate(history_days)}
+    daily_quotes={}
+    for day in selected:
+        close=grouped[day][-1]['close'];prior=previous.get(day)
+        daily_quotes[day]={'close':close,'previousClose':prior,'change':close-prior if prior else None,'changePercent':(close/prior-1)*100 if prior else None}
     data_time = datetime.fromtimestamp(rows[-1]['time']/1000,SHANGHAI)
     behind = max(0,int((now-data_time).total_seconds()))
     return {'symbol':symbol,'name':str(source.get('name') or symbol),'source':'新浪财经' if provider=='sina' else '东方财富公开行情',
             'provider':provider,'sourceUrl':'https://finance.sina.com.cn/' if provider=='sina' else 'https://quote.eastmoney.com/',
             'adjustment':'none','volumeUnit':'source-unverified' if provider=='sina' else 'shares','reliableVolume':provider=='eastmoney',
             'fetchedAt':now.isoformat(),'dataTime':data_time.isoformat(),'availableDates':available,
-            'sourceDates':source_dates,'ohlcCoverageWarning':ohlc_warning,'dates':selected,'rowsByDate':grouped,'cachePolicy':'no-store','interval':actual,'requestedInterval':interval,'attempts':attempts,'resolutionNotice':notice,
+            'dailyQuotes':daily_quotes,'sourceDates':source_dates,'ohlcCoverageWarning':ohlc_warning,'dates':selected,'rowsByDate':grouped,'cachePolicy':'no-store','interval':actual,'requestedInterval':interval,'attempts':attempts,'resolutionNotice':notice,
             'coverageWarning':' '.join(v for v in [f'已请求最近 {days} 个交易日，仅获得 {len(selected)} 天有效数据；未获得完整请求区间的分时。' if not date and len(selected)<days else None, ohlc_warning] if v) or None,
             'dataByPeriod':{p:(list(rows) if (actual=='1m' and n==1) or (actual=='5m' and n==5) else aggregate(rows,n)) for p,n in zip(PERIODS,(1,5,15,30,60)) if actual=='1m' or n>=5},
             'status':'delayed' if session_open(now) and behind>180 else 'closed' if not session_open(now) else 'updating',

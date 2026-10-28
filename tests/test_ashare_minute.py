@@ -124,6 +124,7 @@ def test_auto_fallback_only_replaces_partial_minutes_when_more_dates_exist(monke
 
 def test_sina_default_reads_actual_jsonp_once_each_call_no_volume_guess_or_cache(monkeypatch,tmp_path):
     import json
+    monkeypatch.setattr(service,'fetch_sina_identity',lambda symbol:'上证指数')
     records=[{'day':f'2026-10-{day} 09:31:00','open':'10','close':'11','high':'12','low':'9','volume':'123','amount':'1353'} for day in (22,23,26,27,28)]
     calls=[]
     def get(url,**kwargs):
@@ -174,3 +175,20 @@ def test_eastmoney_zero_ohlc_dates_are_disclosed_instead_of_claiming_no_source_p
     assert len(result['sourceDates'])==5 and result['dates']==['2026-10-28']
     assert '缺少有效开高低收' in result['ohlcCoverageWarning']
     assert result['ohlcCoverageWarning'] in result['coverageWarning']
+
+
+def test_quote_identity_is_exact_exchange_and_decodes_name(monkeypatch):
+    response=SimpleNamespace(raise_for_status=lambda:None,text='var hq_str_sh000001="上证指数,1,2,3";')
+    monkeypatch.setattr(service.requests,'get',lambda *a,**k:response)
+    assert service.fetch_sina_identity('000001.SH')=='上证指数'
+    with pytest.raises(ValueError):service.fetch_sina_identity('000001.SZ')
+
+
+def test_daily_quote_uses_observed_previous_session_close_only(monkeypatch):
+    source=upstream()
+    monkeypatch.setattr(service,'fetch_sina_source',lambda *a:source)
+    result=service.minute_snapshot('000001.SH',5)
+    assert result['dailyQuotes']['2026-10-22']['previousClose'] is None
+    assert result['dailyQuotes']['2026-10-23']['previousClose']==11
+    source['trends']=[r for r in source['trends'] if not r.startswith('2026-10-22 15:00')]
+    assert service.minute_snapshot('000001.SH',5)['dailyQuotes']['2026-10-23']['previousClose'] is None
