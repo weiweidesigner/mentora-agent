@@ -555,7 +555,7 @@ def upgrade_politician_performance(artifact, depth=0):
         original=html.unescape(match[2]);updated=upgrade_politician_performance(original,depth+1)
         return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
     artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
-    if '<main class="politician-performance"' not in artifact or 'data-politician-layout="2"' in artifact:return artifact
+    if '<main class="politician-performance"' not in artifact or 'data-politician-layout="3"' in artifact:return artifact
     try:
         declaration=re.search(r'\bconst\s+config\s*=\s*',artifact)
         if not declaration:return artifact
