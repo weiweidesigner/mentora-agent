@@ -4636,10 +4636,11 @@ function buildResultActions(article, lang) {
   const shareButton = `<button class="resultActionButton shareResultButton" type="button" aria-label="分享" data-tip="分享">
         <span class="resultActionIcon">${SHARE_ICON}</span>
       </button>`;
+  const favoriteButton = article.classList.contains("cachedCaseAnswer") ? "" : `<button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏到我的" data-tip="收藏"><span class="resultActionIcon">${favoriteHeartIcon()}</span></button>`;
   return `
     <div class="resultActionsRow">
       ${shareButton}
-      <button class="resultActionButton favoriteResultButton" type="button" aria-label="收藏到我的" data-tip="收藏"><span class="resultActionIcon">${favoriteHeartIcon()}</span></button>
+      ${favoriteButton}
     </div>
   `;
 }
@@ -4690,7 +4691,7 @@ function buildSourceTrigger(article, lang) {
 
 function attachResultActionHandlers(article) {
   article.dataset.resultActionsReady = "true";
-  void window.MentoraCaseFavorites?.sync?.(article);
+  if (article.querySelector(".favoriteResultButton")) void window.MentoraCaseFavorites?.sync?.(article);
 }
 
 function uniqueSourcesBySite(sources) {
