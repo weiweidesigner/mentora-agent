@@ -28,6 +28,7 @@ from app.widget_library import router as widget_library_router
 from app.widget_planner import router as widget_planner_router
 from app.portfolio_ocr import router as portfolio_ocr_router
 from app.video_thumbnails import router as video_thumbnail_router
+from app.kline_history import router as kline_history_router
 try:
     from app.cost_monitor import create_router as create_cost_router
 except ModuleNotFoundError as exc:
@@ -51,6 +52,7 @@ LEGACY_ARTIFACT_REDIRECTS = {
 
 app = FastAPI(title="Mentora presentation gateway")
 app.include_router(video_thumbnail_router)
+app.include_router(kline_history_router)
 app.include_router(local_glm_router)
 app.include_router(widget_library_router)
 app.include_router(widget_planner_router)

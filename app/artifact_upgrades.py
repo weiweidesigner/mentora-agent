@@ -25,6 +25,20 @@ def compact_native_kline_layout(script: str) -> str:
     return script
 
 
+def upgrade_native_kline_data(script: str) -> str:
+    """Connect native saved/new chart closures to the host's paged data API."""
+    if 'const historyRequests = new Map();' in script:return script
+    names=('switchPeriod','visibleSlice','maybeLoadPreviousPage')
+    if any('function '+name+'(' not in script for name in names):return script
+    hook="  const tooltip = document.getElementById('kline-tooltip');"
+    if hook not in script:return script
+    for name in names:
+        script=script.replace('function '+name+'(', 'function embedded'+name[0].upper()+name[1:]+'(',1)
+    script=script.replace('Math.max(8, Number(config.zoomMinBars || 20))','Math.max(1, Number(config.zoomMinBars || 20))')
+    bridge=(Path(__file__).parent/'static/kline-data-bridge.js').read_text(encoding='utf-8')
+    return script.replace(hook,hook+'\n'+bridge,1)
+
+
 def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
     """Refresh native presentation only, including historical encoded child charts."""
     import html
@@ -38,7 +52,7 @@ def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
     def update_script(match):
         script=match[0]
         if "getElementById('kline-canvas')" not in script:return script
-        script=compact_native_kline_layout(script)
+        script=upgrade_native_kline_data(compact_native_kline_layout(script))
         return re.sub(r'(const config = \{[^\n]*?"themeMode"\s*:\s*)"(?:light|dark)"',lambda m:m[1]+json.dumps(theme),script,count=1)
     artifact=re.sub(r'<script\b[^>]*>.*?</script\s*>',update_script,artifact,flags=re.S|re.I)
     artifact=re.sub(r'<style data-kline-theme="dual">.*?</style>','',artifact,flags=re.S)
