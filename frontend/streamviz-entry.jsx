@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { StreamVisualization, normalizeStreamVisualizationPayload, completeStreamHtml } from "streamviz-react";
 import { prepareStreamDocument } from "./streamviz-document.mjs";
 import "streamviz-react/styles.css";
+import openLayout from "../app/skills/streamviz/assets/open-layout.js?raw";
 import svgTypography from "../app/skills/streamviz/assets/svg-typography.js?raw";
 import svgLabelLayout from "../app/skills/streamviz/assets/svg-label-layout.js?raw";
 import chartGeometry from "../app/skills/streamviz/assets/chart-geometry.js?raw";
@@ -26,6 +27,7 @@ function mount(container, payload = {}) {
   }
   mountedPayloads.set(container, payload);
   const props = prepareStreamDocument(normalizeStreamVisualizationPayload(payload), [
+    ['data-sv-open-layout', openLayout],
     ['data-sv-chart-geometry', chartGeometry],
     ['data-sv-svg-typography', svgTypography],
     ['data-sv-line-label-layout-v2', svgLabelLayout],
