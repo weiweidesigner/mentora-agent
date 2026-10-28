@@ -9,6 +9,22 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 
+def compact_native_kline_layout(script: str) -> str:
+    """Fit saved and newly generated K-lines without changing their data or zoom."""
+    script = script.replace(
+        'const configuredMainHeight = Number(config.mainChartHeight || 300);',
+        'const configuredMainHeight = Math.min(340, Number(config.mainChartHeight || 300));',
+    ).replace(
+        'const configuredSubHeight = Number(config.subChartHeight || 72);',
+        'const configuredSubHeight = Math.min(72, Number(config.subChartHeight || 72));',
+    )
+    # Keep room for indicator legends and value axes on both screen sizes.
+    script = script.replace('isCompact ? 90 : 112', 'isCompact ? 72 : 80')
+    script = script.replace('isCompact ? Math.round(width * 0.17) : 112', 'isCompact ? 72 : 80')
+    script = script.replace('isCompact ? Math.round(width * 0.13) : 78', 'isCompact ? Math.round(width * 0.13) : 64')
+    return script
+
+
 def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
     """Refresh native presentation only, including historical encoded child charts."""
     import html
@@ -22,6 +38,7 @@ def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
     def update_script(match):
         script=match[0]
         if "getElementById('kline-canvas')" not in script:return script
+        script=compact_native_kline_layout(script)
         return re.sub(r'(const config = \{[^\n]*?"themeMode"\s*:\s*)"(?:light|dark)"',lambda m:m[1]+json.dumps(theme),script,count=1)
     artifact=re.sub(r'<script\b[^>]*>.*?</script\s*>',update_script,artifact,flags=re.S|re.I)
     artifact=re.sub(r'<style data-kline-theme="dual">.*?</style>','',artifact,flags=re.S)
