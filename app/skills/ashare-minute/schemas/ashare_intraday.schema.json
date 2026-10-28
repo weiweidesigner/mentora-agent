@@ -8,7 +8,7 @@
     "dates": "optional comma-separated YYYY-MM-DD, restricted to returned sessions",
     "interval": "auto (default), 1m (strict), 5m (explicit)",
     "provider": "sina (default) or eastmoney (explicit)",
-    "columns": "optional 1..4; default component up to 3",
+    "columns": "optional 1..4 maximum desktop columns; JEV chooses balanced rowCounts after actual data count",
     "mobileColumns": "1..4, default 1"
   },
   "cli": [
@@ -49,8 +49,9 @@
   ],
   "quoteHeader": {
     "previousClose": "Verified preceding session close; missing reference renders no daily change. Never substitute open.",
-    "layout": "60px header; name/code left with 20px inset, close/direction/change/percent right",
+    "layout": "60px header, 20px safe insets, name/code left, quote right; no visible date suffix or scroll hint",
     "colors": "CN red up ↑, green down ↓, gray flat —",
-    "columns": "Explicit props.columns/--columns overrides component default up to 3; mobile default 1; no JEV call"
+    "columns": "Actual-count local JEV rowCounts with model receipt; mobile default 1",
+    "priceSeries": "Line, gradient area, legend and latest price marker share verified previous-close direction"
   }
 }

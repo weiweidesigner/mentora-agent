@@ -46,7 +46,7 @@ def test_already_mobile_aware_reports_receive_non_overlapping_grid_without_refet
     upgraded = upgrade_legacy_intraday(old, 'dark')
     assert 'data-intraday-layout="2"' in upgraded
     assert 'data-mobile-columns="4"' in upgraded
-    assert 'grid-auto-columns:max(340px,' in upgraded
+    assert 'grid-template-columns:repeat(12,' in upgraded
     before, after = _IntradayDocument(), _IntradayDocument()
     before.feed(old);after.feed(upgraded)
     assert len(after.frames) == len(before.frames) == 4

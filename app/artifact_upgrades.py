@@ -148,7 +148,7 @@ def upgrade_native_kline_runtime(artifact: str) -> str:
 
 def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
     """Re-render legacy multi-intraday srcdocs with exactly their saved OHLCV rows."""
-    if 'class="multi-intraday"' not in artifact or 'data-intraday-quotes="1"' in artifact:
+    if 'class="multi-intraday"' not in artifact or 'data-intraday-quotes="2"' in artifact:
         return artifact
     parser = _IntradayDocument()
     parser.feed(artifact)
@@ -177,6 +177,11 @@ def upgrade_legacy_intraday(artifact: str, theme: str) -> str:
             day=dates.pop()
             saved_prior=previous_closes.get(config["code"])
             prior=saved_prior[1] if saved_prior and saved_prior[0] < day else None
+            metadata_match=re.search(r'<script type="application/json" id="intraday-card-meta">(.*?)</script>',child,re.S)
+            if metadata_match:
+                metadata=json.loads(metadata_match[1])
+                prior=metadata.get("previousClose",prior)
+                name=str(metadata.get("name") or name)
             cards.append({"symbol": config["code"], "name": name, "date": day,"interval":interval,
                           "data": rows,"previousClose":prior,
                           "source": (config.get("sources") or {}).get(interval, "saved"),

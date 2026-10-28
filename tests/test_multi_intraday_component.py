@@ -48,10 +48,10 @@ def test_same_symbol_multiple_dates_render_as_one_horizontal_card_row(tmp_path: 
 
     rendered = output.read_text(encoding="utf-8")
     assert rendered.count('class="intraday-card"') == 2
-    assert "grid-auto-flow:column" in rendered
-    assert "overflow-x:auto" in rendered
+    assert "grid-template-columns:repeat(12,minmax(0,1fr))" in rendered
+    assert "grid-column:span var(--card-span)" in rendered
     assert "kline-canvas" in rendered
-    assert "grid-auto-columns:max(340px," in rendered
+    assert "grid-template-columns:repeat(12," in rendered
     assert 'data-intraday-layout="2"' in rendered
     assert "2026-09-25" in rendered and "2026-09-28" in rendered
     metadata = json.loads(summary.read_text(encoding="utf-8"))

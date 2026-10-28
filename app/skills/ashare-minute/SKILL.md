@@ -23,8 +23,8 @@ Use explicit exchange identity: `000001.SH` or `SSE:000001` is the Shanghai Comp
 
 Only verified volume conventions may drive a volume chart. Sina prices/OHLC are used directly; its source volume is preserved without a guessed multiplier, marked source-unverified, and the volume subchart is hidden. Missing turnover is not estimated from closing price.
 
-No server memory/disk quote cache, background collection, schedule or extra model call is created. Only the requested HTML report is written. Successful rows use the native `multi_intraday.py` renderer, one chart per trading date, Asia/Shanghai, unadjusted CNY. Verify the receipt and non-empty HTML. Use the receipt for reasoning and emit the HTML with `[[AIME_CHART:/absolute/path.html]]`; no HTML file download.
+No server memory/disk quote cache, background collection, schedule is created. After fetching the actual dates, local JEV selects a balanced row layout from the actual card count. Only the requested HTML report is written. Successful rows use the native `multi_intraday.py` renderer, one chart per trading date, Asia/Shanghai, unadjusted CNY. Verify the receipt and non-empty HTML. Use the receipt for reasoning and emit the HTML with `[[AIME_CHART:/absolute/path.html]]`; no HTML file download.
 
 Source contracts: https://akshare.akfamily.xyz/data/stock/stock_quote.html#id32 (`stock_zh_a_minute`, Sina stock/index minutes); AKShare 1.20.1 `akshare/stock/quote/stock_zh_a_sina.py`; https://github.com/akfamily/akshare/blob/main/akshare/index/index_zh_em.py (Eastmoney).
 
-分时卡片表头固定 60px，左右安全间距 20px。左侧名称、弱化代码及日期；右侧收盘价及涨跌箭头，下方展示较昨收涨跌额与涨幅。previousClose 必须来自已验证的上一交易日收盘，缺失时展示横线，不能用开盘价替代。A 股红涨 ↑、绿跌 ↓，持平灰色 —。subIndicators: [] 必须保留为空。columns 可显式指定，未指定桌面最多 3 张、手机 1 张，此选择由组件参数控制，不调用 JEV。数据来源保留在元数据，不展示来源横幅。
+分时卡片表头固定 60px，左右安全间距 20px。左侧名称、弱化代码；右侧收盘价及涨跌箭头，下方展示较昨收涨跌额与涨幅。previousClose 必须来自已验证的上一交易日收盘，缺失时展示横线，不能用开盘价替代。A 股红涨 ↑、绿跌 ↓，持平灰色 —。subIndicators: [] 必须保留为空。分时线、渐变面积、图例及末价标记与表头涨跌色一致。--columns 为每行数量上限，真实数据返回后由本地 JEV 根据实际卡片数选择 rowCounts，每行填满宽度；手机默认 1 张。不展示日期说明条、代码后的日期或滑动提示，日期保留在可访问标题及内部元数据。JEV 失败应报告失败，不能伪称固定默认值来自 JEV。数据来源保留在元数据，不展示来源横幅。

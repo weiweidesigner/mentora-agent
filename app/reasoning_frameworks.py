@@ -522,8 +522,10 @@ class LocalAgentFrameworks:
             "Laya 可视化语义计划（这是组件与叙事约束，不是数据证据）：",
             f"- 主图：{decision.primary_script}；回答维度：{decision.primary_purpose or '用户问题的核心判断'}。",
         ]
-        if any(Path(script).name in {"multi_intraday.py", "multi_kline.py"} for script in decision.selected_scripts):
+        if any(Path(script).name in {"multi_intraday.py", "multi_kline.py", "ashare_intraday.py"} for script in decision.selected_scripts):
             lines.append(f"- 多图比较移动端采用每行 {decision.mobile_columns} 张卡片的换行网格，CLI 必须传 --mobile-columns {decision.mobile_columns}；不要改成股票 tab 或横向分页。")
+        if any(Path(script).name in {"multi_intraday.py", "ashare_intraday.py"} for script in decision.selected_scripts):
+            lines.append("- 分时对比须在真实数据的卡片数量确定后调用本地 JEV plan_card_layout；按返回的 rowCounts 均衡换行，每行填满宽度，不使用固定列数或横向分页。ashare_intraday.py 内置执行此步骤，不重复请求模型。")
         if decision.supporting_script:
             lines.append(
                 f"- 辅助图：{decision.supporting_script}；补充维度："

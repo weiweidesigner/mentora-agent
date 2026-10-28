@@ -11,6 +11,17 @@ from app import ashare_live as service
 from app import kline_history
 
 
+@pytest.fixture(autouse=True)
+def local_layout_plan(monkeypatch):
+    from app.jev_visualization_router import JevVisualizationRouter
+    def plan(self, *, card_count, **kwargs):
+        # Keep data-contract tests offline; dedicated router tests verify model selection.
+        size=min(card_count,3);count=(card_count+size-1)//size;base,extra=divmod(card_count,count)
+        rows=[base+(i<extra) for i in range(count)]
+        return {'source':'jev','providerModel':'test-model','cardCount':card_count,'rowCounts':rows,'columns':max(rows),'mobileColumns':1,'confidence':.9}
+    monkeypatch.setattr(JevVisualizationRouter,'plan_card_layout',plan)
+
+
 def upstream():
     return {'code':'000001','name':'上证指数','trends':[
         f'2026-10-{day} {hour},10,11,12,9,2,220,11' for day in (22,23,26,27,28) for hour in ('09:31','09:32','13:01','15:00')]}
@@ -79,6 +90,7 @@ def test_registered_report_uses_separate_native_days_without_refetch(monkeypatch
     text=output.read_text();assert text.count('<iframe ')==5
     for date in receipt['dates']:assert date in text
     assert receipt['cachePolicy']=='no-store'
+    assert receipt['layoutDecision']['source']=='jev' and receipt['layoutDecision']['rowCounts']==[3,2]
     assert list(tmp_path.iterdir())==[output]
 
 
