@@ -2,6 +2,11 @@
 import datetime as dt
 import hashlib
 import json
+import re
+import html
+from pathlib import Path
+from html.parser import HTMLParser
+from urllib.parse import unquote,urlsplit
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -37,6 +42,65 @@ def snapshot_content(payload):
     return content
 
 
+def _body_excerpt(value):
+    text=str(value or '')
+    text=re.sub(r'```[\s\S]*?(?:```|$)','',text)
+    text=re.sub(r'\[\[(?:AIME_[A-Z_]+(?::[^\]\n]*)?|MENTORA_ANSWER)\]\]','',text)
+    text=re.sub(r'<(script|style|svg)\b[^>]*>[\s\S]*?</\1\s*>','',text,flags=re.I)
+    text=re.sub(r'<h[1-6]\b[^>]*>[\s\S]*?</h[1-6]\s*>','',text,flags=re.I)
+    text=re.sub(r'<[^>]+>',' ',text)
+    text=re.sub(r'^\s*#{1,6}\s+.*$','',text,flags=re.M)
+    text=re.sub(r'!?\[([^\]]*)\]\(([^)]*)\)',lambda m:'' if re.search(r'/(?:generated|share-artifact)/',m[2]) else m[1],text)
+    text=re.sub(r'^\s*(?:[-*>]|\d+[.)])\s+','',text,flags=re.M)
+    text=text.replace('**','').replace('__','').replace('`','')
+    return ' '.join(html.unescape(text).split())[:140]
+
+class _Paragraphs(HTMLParser):
+    def __init__(self):
+        super().__init__();self.parts=None;self.paragraphs=[];self.ignored=0
+    def handle_starttag(self,tag,attrs):
+        if tag in ('script','style','svg','head'):self.ignored+=1
+        if tag=='p' and not self.ignored:self.parts=[]
+    def handle_data(self,data):
+        if self.parts is not None and not self.ignored:self.parts.append(data)
+    def handle_endtag(self,tag):
+        if tag=='p' and self.parts is not None:
+            self.paragraphs.append(''.join(self.parts));self.parts=None
+        if tag in ('script','style','svg','head'):self.ignored=max(0,self.ignored-1)
+
+def answer_preview(answer,generated_dir=None):
+    """Use public answer prose, never the question or private tool progress."""
+    answer=answer if isinstance(answer,dict) else {}
+    text=_body_excerpt(answer.get('interpretation'))
+    if text:return text
+    blocks=answer.get('streamBlocks') if isinstance(answer.get('streamBlocks'),list) else []
+    prose=[]
+    for block in blocks:
+        if not isinstance(block,dict) or block.get('kind')!='text':continue
+        data=block.get('data') if isinstance(block.get('data'),dict) else {}
+        if not data.get('provisional'):prose.append(str(block.get('text') or data.get('text') or ''))
+    text=_body_excerpt('\n'.join(prose))
+    if text:return text
+    if generated_dir:
+        root=Path(generated_dir).resolve()
+        artifacts=answer.get('reportArtifacts') if isinstance(answer.get('reportArtifacts'),list) else []
+        for item in [*artifacts,{'url':answer.get('reportUrl')}]:
+            if not isinstance(item,dict):continue
+            url=urlsplit(str(item.get('url') or item.get('htmlUrl') or ''))
+            if url.scheme or url.netloc:continue
+            match=re.fullmatch(r'/(?:[^/]+/)?(?:generated|share-artifact)/([^/]+\.html)',url.path)
+            if not match:continue
+            path=(root/unquote(match[1])).resolve()
+            if root not in path.parents or not path.is_file():continue
+            parser=_Paragraphs()
+            try:
+                with path.open(encoding='utf-8') as handle:parser.feed(handle.read(524288))
+            except (OSError,UnicodeError):continue
+            paragraphs=[_body_excerpt(value) for value in parser.paragraphs]
+            text=next((value for value in paragraphs if len(value)>=20),next((value for value in paragraphs if value),''))
+            if text:return text
+    return ''
+
 def create_router(store):
     router = APIRouter(prefix='/api/case-favorites')
     with store.db() as db:
@@ -56,8 +120,13 @@ def create_router(store):
     def listing(request: Request, response: Response):
         user = owner(request, response)
         with store.db() as db:
-            rows = db.execute('SELECT metadata FROM case_favorites WHERE owner=? ORDER BY created DESC,id', (user,))
-            return dict(cases=[json.loads(row['metadata']) for row in rows])
+            rows = db.execute('SELECT metadata,payload FROM case_favorites WHERE owner=? ORDER BY created DESC,id', (user,))
+            cases=[]
+            for row in rows:
+                metadata=json.loads(row['metadata'])
+                metadata['preview']=answer_preview(json.loads(row['payload']).get('answer') or {},store.directory.parent/'generated')
+                cases.append(metadata)
+            return dict(cases=cases)
 
     @router.post('')
     def save(payload: FavoriteInput, request: Request, response: Response):
@@ -68,14 +137,15 @@ def create_router(store):
         key = 'favorite-' + hashlib.sha256((user + payload.category + fingerprint).encode()).hexdigest()[:32]
         now = dt.datetime.now(dt.timezone.utc).isoformat()
         metadata = dict(id=key, category=payload.category, title=payload.title.strip() or question[:40],
-                        question=question, preview=question[:140], tag='收藏',
+                        question=question, preview=answer_preview(payload.answer,store.directory.parent/'generated'), tag='收藏',
                         cachedDate=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat(),
                         conversationUrl='/api/case-favorites/' + key, personal=True,
                         fingerprint=fingerprint)
         with store.db() as db:
             db.execute('BEGIN IMMEDIATE')
             existing = db.execute('SELECT metadata FROM case_favorites WHERE owner=? AND id=?', (user, key)).fetchone()
-            if existing: return json.loads(existing['metadata'])
+            if existing:
+                saved=json.loads(existing['metadata']);saved['preview']=metadata['preview'];return saved
             db.execute('INSERT INTO case_favorites VALUES(?,?,?,?,?,?)',
                        (user, key, payload.category, json.dumps(metadata, ensure_ascii=False), content, now))
         return metadata

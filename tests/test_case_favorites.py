@@ -105,3 +105,32 @@ def test_new_favorite_defaults_to_mine_without_changing_legacy_categories(client
     row=a.post('/api/case-favorites',json=value,headers=headers).json()
     assert row['category']=='mine'
     assert a.post('/api/case-favorites',json=data('charts'),headers=headers).json()['category']=='charts'
+
+
+def test_favorite_description_uses_answer_body_and_old_rows_refresh_without_rewriting_payload(clients):
+    a,_,store=clients;value=data()
+    value['answer']['interpretation']='## 测试案例\n\n**这是正文结论**，参考[资料](https://example.com)。\n[[AIME_FILE:/generated/report.html]]'
+    result=a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=value).json()
+    expected='这是正文结论，参考资料。'
+    assert result['preview']==expected and result['title']=='测试案例'
+    with store.db() as db:
+        row=db.execute('SELECT metadata,payload FROM case_favorites WHERE id=?',(result['id'],)).fetchone()
+        import json
+        metadata=json.loads(row['metadata']);metadata['preview']=value['question']
+        db.execute('UPDATE case_favorites SET metadata=? WHERE id=?',(json.dumps(metadata),result['id']))
+        original_payload=row['payload']
+    assert a.get('/api/case-favorites').json()['cases'][0]['preview']==expected
+    assert a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=value).json()['preview']==expected
+    with store.db() as db:
+        row=db.execute('SELECT metadata,payload FROM case_favorites WHERE id=?',(result['id'],)).fetchone()
+        assert row['payload']==original_payload and json.loads(row['metadata'])['preview']==value['question']
+
+
+def test_preview_ignores_tool_progress_and_uses_verified_report_paragraphs(tmp_path):
+    from app.case_favorites import answer_preview
+    assert answer_preview({'streamBlocks':[{'kind':'progress','data':{'text':'正在取数'}},{'kind':'text','text':'公开正文结论。'}]})=='公开正文结论。'
+    report=tmp_path/'report.html';report.write_text('<html><head><style>hidden CSS</style></head><body><h2>重复标题</h2><p>月度走势</p><p>杭州二手住宅挂牌均价累计下降，近期新房和二手房走势出现分化。</p></body></html>')
+    answer={'interpretation':'[[AIME_CHART:/generated/report.html]]','reportArtifacts':[{'url':'/generated/report.html'}]}
+    assert answer_preview(answer,tmp_path)=='杭州二手住宅挂牌均价累计下降，近期新房和二手房走势出现分化。'
+    answer['reportArtifacts']=[{'url':'https://untrusted.example/generated/report.html'},{'url':'/generated/%2e%2e%2freport.html'}]
+    assert answer_preview(answer,tmp_path)==''
