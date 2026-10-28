@@ -16,6 +16,7 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "ashare_intraday.py": ("a股分时", "上证指数", "深证指数", "分时走势", "每天分时", "五日分时", "分钟行情", "沪深分时"),
     "read_market_data.py": ("行情", "报价", "价格", "走势", "美股", "投资机会", "股票机会", "quote", "market data", "stock opportunities"),
     "price_snapshot.py": (
         "a股表现", "a股行情", "市场表现", "上午行情", "午盘", "收盘",
@@ -64,6 +65,7 @@ _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
     "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),
     "flux-image": ("生成图片", "插画", "海报", "image generation"),
     "market-data": ("行情数据", "报价", "ohlcv", "market data"),
+    "ashare-minute": ("a股分时", "上证指数分时", "深证指数分时", "五日分时", "每天分时", "分钟行情"),
     "a-share-data": ("a股", "沪深", "中国股票"),
     "chart-markup": ("标注", "参考线", "事件点", "mark"),
 }

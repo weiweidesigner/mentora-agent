@@ -8,7 +8,7 @@ from collections import OrderedDict
 from concurrent.futures import Future
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 
 from app.artifact_upgrades import _native_kline
 
@@ -32,6 +32,19 @@ def timestamp(value):
 
 
 def _read_page(symbol, period, market, exchange, cursor, direction):
+    if period in {'1m','5m','15m','30m','1h'}:
+        from app.ashare_live import normalize_symbol, minute_snapshot
+        try: mainland = normalize_symbol(symbol)
+        except ValueError: mainland = None
+        if mainland:
+            snapshot = minute_snapshot(mainland,5)
+            rows = snapshot['dataByPeriod'][period]
+            if cursor:
+                rows=[row for row in rows if timestamp(row['time']) < cursor] if direction=='before' else [row for row in rows if timestamp(row['time']) > cursor]
+            page=rows[:500] if direction=='after' else rows[-500:]
+            return dict(symbol=symbol,period=period,rows=page,source='eastmoney',reliableVolume=True,
+                        hasMore=len(rows)>len(page),availableDates=snapshot['availableDates'],
+                        coverageWarning=snapshot.get('coverageWarning'),cachePolicy='no-store')
     native = _native_kline()
     now = time.time()*1000
     seconds = PERIODS[period]
@@ -70,6 +83,11 @@ def _read_page(symbol, period, market, exchange, cursor, direction):
 
 def history_page(symbol, period, market='', exchange='', cursor=None, direction='before'):
     key = (symbol, period, market, exchange, cursor, direction)
+    if period in {'1m','5m','15m','30m','1h'}:
+        from app.ashare_live import normalize_symbol
+        try: mainland=normalize_symbol(symbol)
+        except ValueError: mainland=None
+        if mainland:return _read_page(*key)
     with _lock:
         hit = _cache.get(key)
         if hit and time.monotonic()-hit[0] < 60:
@@ -95,12 +113,13 @@ def history_page(symbol, period, market='', exchange='', cursor=None, direction=
 
 
 @router.get('/history')
-def history(symbol: str = Query(min_length=1,max_length=64,pattern=r'^[A-Za-z0-9^.:/_-]+$'),
+def history(response: Response, symbol: str = Query(min_length=1,max_length=64,pattern=r'^[A-Za-z0-9^.:/_-]+$'),
             period: str = Query(pattern=r'^(1m|5m|15m|30m|1h|2h|4h|1d|1w|1M|3M)$'),
             market: str = Query(default='',max_length=24,pattern=r'^[A-Za-z0-9_-]*$'),
             exchange: str = Query(default='',max_length=24,pattern=r'^[A-Za-z0-9_-]*$'),
             cursor: float | None = Query(default=None,ge=0,le=32503680000000),
             direction: str = Query(default='before',pattern=r'^(before|after)$')):
+    response.headers['Cache-Control']='no-store'
     if "://" in symbol or ".." in symbol:
         raise HTTPException(422,"无效的标的代码")
     try:return history_page(symbol.upper(),period,market,exchange,cursor,direction)

@@ -1,0 +1,11 @@
+{
+  "script": "ashare_intraday.py",
+  "assetScope": "explicit Shanghai/Shenzhen stock, ETF or exchange index; one symbol",
+  "dataSource": "Eastmoney trends2/get; ndays 1..5, explicit secid; no provider fallback",
+  "request": {"symbol":"000001.SH|SSE:000001|399001.SZ|600519.SH", "days":"1..5, default 5", "dates":"optional comma-separated YYYY-MM-DD, restricted to returned sessions"},
+  "cli": ["--symbol","--days","--dates","--theme","--language","--title","--output"],
+  "dataContract": {"interval":"1m", "timezone":"Asia/Shanghai", "adjustment":"none", "currency":"CNY", "volumeUnit":"shares", "fields":["time","open","high","low","close","volume","amount"]},
+  "outputs": "native multi-intraday HTML with one card per actual trading date; JSON receipt preserves coverage",
+  "cachePolicy": "no server memory/disk market-data cache; only explicitly requested report artifacts",
+  "unsupported": ["arbitrary historical dates outside recent five sessions","other markets","fabricated or interpolated minute prices"]
+}

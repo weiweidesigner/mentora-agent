@@ -1,9 +1,15 @@
 [
   {
-    "name":"pine_script",
-    "script":"pine_script.py",
-    "label":"Pine Script",
-    "description":"独立原生Pine v5 Skill：自然语言生成指标/策略代码、兼容校验、对给定完整OHLCV计算plot/hline主图线条。导出.pine与版本化JSON供K线或其他组件复用，不取行情、不下单。CLI --operation generate|validate|evaluate、--kind indicator|strategy、--description、--code-file、--data-file、--period、--payload、--output、--code-output、--schema。模型已有代码时可直接校验/计算，不强制再次调用生成模型。"
+    "name": "pine_script",
+    "script": "pine_script.py",
+    "label": "Pine Script",
+    "description": "独立原生Pine v5 Skill：自然语言生成指标/策略代码、兼容校验、对给定完整OHLCV计算plot/hline主图线条。导出.pine与版本化JSON供K线或其他组件复用，不取行情、不下单。CLI --operation generate|validate|evaluate、--kind indicator|strategy、--description、--code-file、--data-file、--period、--payload、--output、--code-output、--schema。模型已有代码时可直接校验/计算，不强制再次调用生成模型。"
+  },
+  {
+    "name": "ashare_intraday",
+    "script": "ashare_intraday.py",
+    "label": "沪深股票与指数五日分时",
+    "description": "按需读取东方财富沪深股票、ETF和上证/深证指数最近五个交易日的真实一分钟分时，每天独立原生图表。--symbol 000001.SH（上证指数）或399001.SZ或600519.SH，--days 1..5默认5，--dates可选返回范围内交易日，--theme、--language、--title、--output。不做行情缓存，不用日线伪造分时。Fuyao日线或AInvest分钟返回空不代表此独立能力不可用。"
   },
   {
     "name": "read_market_data",

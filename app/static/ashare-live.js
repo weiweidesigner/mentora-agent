@@ -5,7 +5,7 @@
   const status = document.getElementById('ashareLiveStatus');
   const prefix = location.pathname.split(/\/(?:share-artifact|generated|api)\//)[0];
   // Build from the actual mount path; reverse-proxy HTML rewriting must not prefix twice.
-  const endpoint = prefix + '/' + 'api/widgets/ashare-minute?symbol=' + encodeURIComponent(meta.symbol);
+  const endpoint = prefix + '/' + 'api/widgets/ashare-minute?symbol=' + encodeURIComponent(meta.symbol) + '&days=1';
   let timer, controller, failures = 0, running = false;
   const clock = value => new Date(value).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false});
   function notify(data) {

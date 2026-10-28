@@ -52,7 +52,10 @@ def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
     def update_script(match):
         script=match[0]
         if "getElementById('kline-canvas')" not in script:return script
-        script=upgrade_native_kline_data(compact_native_kline_layout(script))
+        script=compact_native_kline_layout(script)
+        # The dedicated live widget owns its one-session refresh lifecycle.
+        if 'id="ashare-live-config"' not in artifact:
+            script=upgrade_native_kline_data(script)
         return re.sub(r'(const config = \{[^\n]*?"themeMode"\s*:\s*)"(?:light|dark)"',lambda m:m[1]+json.dumps(theme),script,count=1)
     artifact=re.sub(r'<script\b[^>]*>.*?</script\s*>',update_script,artifact,flags=re.S|re.I)
     artifact=re.sub(r'<style data-kline-theme="dual">.*?</style>','',artifact,flags=re.S)

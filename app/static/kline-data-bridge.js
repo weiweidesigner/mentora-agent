@@ -98,7 +98,7 @@
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(),90000);
         let response;
-        try {response=await fetch(`${historyApiPrefix}/api/kline/history?${params}`,{signal:controller.signal,credentials:'same-origin'});}
+        try {response=await fetch(`${historyApiPrefix}/api/kline/history?${params}`,{signal:controller.signal,credentials:'same-origin',cache:'no-store'});}
         finally {clearTimeout(timeout);}
         if (!response.ok) throw new Error('market-data-unavailable');
         const result = await response.json();
@@ -114,6 +114,8 @@
         }
         if (!historyRows(period).length) {
           historyStatus.set(period,{kind:'empty',message:historyEnglish?'No data for this period.':'该周期暂无行情数据',retry:()=>requestHistory(period,cursor,direction,initial)});
+        } else if (result.coverageWarning) {
+          historyStatus.set(period,{kind:'limited',message:result.coverageWarning});
         } else historyStatus.delete(period);
         if (period===activePeriod) draw();
         showHistoryStatus();
