@@ -20,6 +20,8 @@
       Math.abs(Number(line.getAttribute('x2'))-endX)<1 && Number(line.getAttribute('x1'))<endX) : [];
     const labels = grid.length ? [...svg.querySelectorAll('text')].filter(text =>
       untransformed(text) && typeof text.getBBox === 'function' && text.getBBox().x>=endX-1) : [];
+    let scheduled=false;
+    const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;layout();});}};
     const layout = () => {
       if (labels.length) {
         const right = Math.max(endX,...labels.map(text => { const b=text.getBBox(); return b.x+b.width+8; }));
@@ -29,17 +31,28 @@
       try { bounds = svg.getBBox(); } catch { return; }
       if (!bounds.width || !bounds.height) return;
       const [x,y,width,height] = original;
-      const left = Math.min(x,bounds.x-4), top = Math.min(y,bounds.y-4);
-      const right = Math.max(x+width,bounds.x+bounds.width+4);
+      const component=svg.closest('.card,.panel,.sv-card,[data-sv-card]');
+      const open=component?component.dataset.svUnframed==='true':Boolean(svg.closest('[data-aime-streamviz-root],[data-visualize-root]'));
+      const matrix=svg.getScreenCTM?.();
+      const scale=matrix&&Math.hypot(matrix.a,matrix.b);
+      const inset=scale?1/scale:1;
+      // A borderless plot starts at its first visible glyph, not the original
+      // viewBox's unused gutter. Preserve one pixel for antialiasing/strokes.
+      const left=open?bounds.x-inset:Math.min(x,bounds.x-4);
+      const top=Math.min(y,bounds.y-4);
+      const right=open?bounds.x+bounds.width+inset:Math.max(x+width,bounds.x+bounds.width+4);
       const bottom = Math.max(y+height,bounds.y+bounds.height+4);
-      if (left < x || top < y || right > x+width || bottom > y+height) {
-        svg.setAttribute('viewBox',[left,top,right-left,bottom-top].join(' '));
+      const next=[left,top,right-left,bottom-top];
+      const current=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);
+      if (next.some((value,index)=>Math.abs(value-current[index])>.02)) {
+        svg.setAttribute('viewBox',next.join(' '));
         svg.dataset.svLineLabelLayout = 'true';
       }
     };
     layout();
-    document.fonts?.ready.then(layout);
-    if (typeof ResizeObserver === 'function') new ResizeObserver(layout).observe(svg);
+    document.fonts?.ready.then(schedule);
+    if (typeof ResizeObserver === 'function') new ResizeObserver(schedule).observe(svg);
+    new MutationObserver(schedule).observe(svg,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
   });
   const schedule = () => requestAnimationFrame(repair);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',schedule,{once:true}); else schedule();

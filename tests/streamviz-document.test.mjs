@@ -34,3 +34,10 @@ test('final document adds helpers once, safely outside tags, with the same visib
  assert.doesNotMatch(visible(prepareStreamDocument({code:unfinished,final:true},scripts,completeStreamHtml).code),/INTERNAL_/);
  assert.equal(prepareStreamDocument({code:'',final:true},scripts,completeStreamHtml).code,'');
 });
+
+test('saved viewport helper is upgraded once rather than keeping two viewport writers',()=>{
+ const marker='data-sv-line-label-layout-v2';
+ const html='<main>正文</main><script '+marker+'>oldViewport()</script>';
+ const result=prepareStreamDocument({code:html,exportCode:html,final:true},[[marker,'newViewport()']],s=>s);
+ assert(!result.code.includes('oldViewport()'));assert(result.code.includes('newViewport()'));assert.equal(result.code.split('<script '+marker+'>').length,2);assert(result.code.includes('<main>正文</main>'));
+});

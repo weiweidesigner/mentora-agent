@@ -660,6 +660,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     if 'data-sv-svg-typography' not in artifact:
         typography = (Path(__file__).parent / 'skills/streamviz/assets/svg-typography.js').read_text(encoding='utf-8')
         runtime_theme += '<script data-sv-svg-typography>' + typography + '</script>'
+    # Upgrade this owned helper in saved artifacts; two viewport writers would
+    # otherwise fight over the old outer gutter during font/resize updates.
+    artifact = re.sub(r'<script\b(?=[^>]*\bdata-sv-line-label-layout-v2(?:\s|=|>))[^>]*>[\s\S]*?</script\s*>', '', artifact, flags=re.I)
     if 'data-sv-line-label-layout-v2' not in artifact:
         labels = (Path(__file__).parent / 'skills/streamviz/assets/svg-label-layout.js').read_text(encoding='utf-8')
         runtime_theme += '<script data-sv-line-label-layout-v2>' + labels + '</script>'

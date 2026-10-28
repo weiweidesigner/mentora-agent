@@ -5,6 +5,9 @@ export function prepareStreamDocument(props, scripts, completeHtml) {
     if (!String(source || '').trim()) return source;
     let html = completeHtml(source);
     for (const [marker, script] of scripts) {
+      if (marker === 'data-sv-line-label-layout-v2') {
+        html = html.replace(/<script\b(?=[^>]*\bdata-sv-line-label-layout-v2(?:\s|=|>))[^>]*>[\s\S]*?<\/script\s*>/gi, '');
+      }
       if (!html.includes(marker)) html += `<script ${marker}>${script}</script>`;
     }
     return html;

@@ -31,3 +31,9 @@ test('endpoint label lane belongs inside the grid and x axis, without moving dat
  assert.equal(date.getAttribute('x'),'440');assert.equal(date.textContent,'10/27');assert.equal(svg.querySelector('polyline').getAttribute('points'),'44,150 440,136.2');
  assert.equal(svg.querySelector('text:last-child').textContent,'+0.53%');assert.equal(svg.getAttribute('viewBox'),'0 0 506 302');w.close();
 });
+
+test('borderless chart crops unused horizontal canvas while retaining all marks and axis labels',()=>{
+ const d=new JSDOM('<main data-aime-streamviz-root><div data-sv-card data-sv-unframed="true"><svg viewBox="0 0 720 300"><polyline points="56,68.5 700,247.9"/><text x="48" y="44" text-anchor="end">30,500</text><text x="700" y="284">2026-10</text></svg></div></main>',{runScripts:'outside-only',pretendToBeVisual:true});
+ const w=d.window,svg=w.document.querySelector('svg'),original=svg.innerHTML;svg.getBBox=()=>({x:25,y:10,width:690,height:288});svg.getScreenCTM=()=>({a:2,b:0,c:0,d:2});w.requestAnimationFrame=fn=>fn();w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+ assert.equal(svg.getAttribute('viewBox'),'24.5 0 691 302');assert.equal(svg.innerHTML,original);d.window.close();
+});
