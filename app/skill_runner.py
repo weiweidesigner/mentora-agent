@@ -387,6 +387,8 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
         conventions = []
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:
             conventions.append("JSON 文件路径传 --payload；--data-json 只传内联 JSON，不传文件路径。")
+        if script.name == "smart_money.py":
+            conventions.append("smart money 是组件库名称。展示标题必须由模型根据当前用户问题和已取得的数据生成，通过 --title 传入；不要将组件库名称固定用作标题。表格下不添加额外说明。")
         if script.name == "kline.py":
             conventions.append("标题必须使用模型根据本次问题和证据生成的 --title 或 component.title，不用股票名称替代分析标题。带 annotations 的图表必须先运行 app/jev_kline_annotations.py 并通过 --payload 使用其真实输出；直接 --props-json 标记会被拒绝。W/M 等形态使用原生 polyline/path 的全部拐点，锚点须来自真实 OHLCV，不能只画水平线冒充形态。用户指定形态用 --selection-mode user-specified，保留完整结构；JEV 未选中或证据不足应如实说明，不得伪造回执。")
         if script.name == "code_interpreter.py":
