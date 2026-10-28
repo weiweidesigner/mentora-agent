@@ -51,7 +51,10 @@ LEGACY_ARTIFACT_REDIRECTS = {
     "/generated/native-streamviz-bf812c5bdd59.html": "/generated/deepseek-ashare-review-streamviz-20261009.html",
 }
 
+from app.business_images import router as business_image_router
+
 app = FastAPI(title="Mentora presentation gateway")
+app.include_router(business_image_router)
 app.include_router(video_thumbnail_router)
 app.include_router(kline_history_router)
 app.include_router(local_glm_router)
@@ -630,6 +633,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact=upgrade_image_gallery(artifact)
     from app.artifact_upgrades import upgrade_smart_money
     artifact = upgrade_smart_money(artifact)
+    from app.business_images import upgrade_business_images
+    artifact = upgrade_business_images(artifact)
     # The same document is served under /share-artifact/ and /generated/.
     # Preserve its original resource directory (images, styles, scripts) when
     # previewing it at the alternate route, including old FLUX documents.

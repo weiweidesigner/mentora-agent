@@ -535,6 +535,9 @@ def upgrade_smart_money(artifact):
     if 'id="smart-money-meta"' not in artifact:
         return artifact
     native = _native_rating('smart_money')
+    import html
+    artifact = re.sub(r'<td class="symbol">([^<]*)</td>', lambda match: '<td class="symbol">' + native.stock_cell(html.unescape(match[1])) + '</td>', artifact)
+    artifact = artifact.replace("querySelectorAll('.avatar img')", "querySelectorAll('.avatar img,.stock-avatar img')")
     styles = re.search(r'<style>(.*?)</style>', native.TEMPLATE, re.S).group(1)
     artifact = re.sub(r'<style>.*?</style>', lambda _: '<style>' + styles + '</style>', artifact, count=1, flags=re.S)
     artifact = re.sub(r'<p\b[^>]*class="forecast-note"[^>]*>.*?</p>', '', artifact, flags=re.S)
