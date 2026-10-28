@@ -748,7 +748,16 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page(viewport={{"width": {viewport_width}, "height": 900}}, device_scale_factor={device_scale_factor})
     page.goto({share_url!r}, wait_until="networkidle", timeout=60000)
-    page.evaluate("document.fonts.ready")
+    # The answer and its chart documents have independent FontFaceSets.
+    # Load the bundled CJK face explicitly so a missing font fails the export
+    # instead of silently producing a different Chinese typeface.
+    for frame in page.frames:
+        frame.evaluate("""async () => {{
+            if (!document.fonts) return;
+            if ([...document.fonts].some(font => font.family.replaceAll('"', '') === 'Mentora CJK'))
+                await document.fonts.load('16px "Mentora CJK"', '中文');
+            await document.fonts.ready;
+        }}""")
     answer = page.locator(".shareAnswerDocument")
     answer.wait_for(state="visible", timeout=60000)
     page.wait_for_timeout(2500)

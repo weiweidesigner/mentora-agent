@@ -1,3 +1,5 @@
+/* Self-hosted CJK fallback for Linux exports; native system fonts stay first. */
+@font-face{font-family:"Mentora CJK";src:url("/static/fonts/NotoSansSC-VF.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
 /* StreamViz owns both artifact palettes and legacy compatibility. */
 /* Compact artifact spacing: card gap 16, safe inset 12, component gap 8. */
 :is([data-aime-streamviz-root],[data-visualize-root]){--sv-card-gap:16px;--sv-card-padding:12px;--sv-component-gap:8px}
@@ -70,7 +72,7 @@
 :root:not([data-theme="dark"]){--sv-surface-primary:#ffffff;--sv-surface-secondary:#f6f7f9}
 :root:not([data-theme="dark"]){--sv-text-primary:#171b22;--sv-text-secondary:#5f6876;--sv-text-muted:#8b94a2;--sv-border-subtle:#edf0f4;--sv-chart-series-1:#4d63f6;--sv-chart-series-2:#00b899;--sv-chart-series-3:#ff2f57;--sv-status-success:#00b899;--sv-status-warning:#d97706;--sv-status-danger:#ff2f57}
 :root:not([data-theme="dark"]) *{box-sizing:border-box}
-html,body{margin:0;background:transparent!important;color:var(--sv-text-primary);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+html,body{margin:0;background:transparent!important;color:var(--sv-text-primary);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Mentora CJK",sans-serif}
 :root:not([data-theme="dark"]) [data-aime-streamviz-root]>.sv-wrap,:root:not([data-theme="dark"]) .sv-wrap{width:100%!important;max-width:none!important;margin:0!important}
 :root:not([data-theme="dark"]) .sv-muted{color:var(--sv-text-muted)}
 :root:not([data-theme="dark"]) .sv-label{color:var(--sv-text-secondary)}
