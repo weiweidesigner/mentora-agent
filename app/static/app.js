@@ -3926,10 +3926,19 @@ function fileDeliverables(data) {
       if(!/\.(?:html|pdf|docx|xlsx|pptx|csv|txt|md|json|png|jpe?g|webp|svg|zip)$/i.test(storedName))continue;
       if(/\.html$/i.test(storedName)&&!allowHtml)continue;
       const suffix=storedName.slice(storedName.lastIndexOf('.'));
-      const name=(storedName.slice(0,-suffix.length).replace(/deepseek[-_ ]*/gi,'').replace(/^[-_ .]+|[-_ .]+$/g,'')||'report')+suffix;
+      const internal=value=>/^(?:streamviz[-_]job|html[-_]render)[-_]|^[0-9a-f]{8}-[0-9a-f-]{27,}/i.test(String(value||''));
+      const report=(data.reportArtifacts||[]).find(report=>{
+        try{return new URL(report.url||report.htmlUrl,window.location.origin).pathname===url.pathname;}catch{return false;}
+      })||{};
+      const title=[item.name,item.title,item.label,report.title,report.label].find(value=>typeof value==='string'&&value.trim()&&!internal(value)&&!/^streamviz$/i.test(value));
+      const resolveName=internal(storedName)&&!title;
+      let stem=title||(!resolveName?storedName:'HTML 报告');
+      if(stem.toLowerCase().endsWith(suffix.toLowerCase()))stem=stem.slice(0,-suffix.length);
+      stem=stem.replace(/deepseek[-_ ]*/gi,'').replace(/[\x00-\x1f\x7f<>:"/\\|?*]+/g,' ').replace(/\s+/g,' ').replace(/^[-_ .]+|[-_ .]+$/g,'');
+      const name=(stem.slice(0,100)||'生成文件')+suffix;
       const theme=currentThemeMode(),type=name.split('.').at(-1).toUpperCase();
       const open=type==='HTML'?`${match[1]}share-artifact/${match[2]}?theme=${theme}`:url.pathname;
-      files.push({name,type,open,download:`${match[1]}api/artifacts/${match[2]}/download?theme=${theme}`});
+      files.push({name,type,open,resolveName,metadata:`${match[1]}api/artifacts/${match[2]}/metadata`,download:`${match[1]}api/artifacts/${match[2]}/download?theme=${theme}&name=${encodeURIComponent(name)}`});
       seen.add(url.pathname);
     }catch{/* Invalid or external paths are never exposed as generated files. */}
   }
@@ -3979,6 +3988,17 @@ function renderFileDeliverables(article,data){
     button.addEventListener('click',()=>void openGeneratedFilePreview(files[index],button));
   });
   list.querySelectorAll('.generatedFileDownload').forEach(bindGeneratedFileDownload);
+  files.forEach((file,index)=>{
+    if(!file.resolveName)return;
+    fetch(file.metadata,{credentials:'same-origin',cache:'no-store'}).then(response=>response.ok?response.json():null).then(metadata=>{
+      if(!list.isConnected||!metadata?.name)return;
+      file.name=String(metadata.name);
+      const url=new URL(file.download,window.location.origin);url.searchParams.set('name',file.name);file.download=url.pathname+url.search;
+      const card=list.children[index],label=card.querySelector('.generatedFileName'),button=card.querySelector('.generatedFileOpen'),link=card.querySelector('.generatedFileDownload');
+      label.textContent=file.name;label.title=file.name;button.setAttribute('aria-label',`预览 ${file.name}`);
+      link.href=file.download;link.download=file.name;link.setAttribute('aria-label',`下载文件 ${file.name}`);
+    }).catch(()=>{/* Keep the readable generic title if metadata is unavailable. */});
+  });
   const report=answer.querySelector('.mixedReport');
   if(report)report.after(list);else answer.append(list);
 }

@@ -686,19 +686,31 @@ def shared_streamviz_artifact_page(filename: str, theme: Literal["light", "dark"
     return share_streamviz_artifact(filename, theme)
 
 
+@app.get('/api/artifacts/{filename}/metadata')
+def generated_artifact_metadata(filename: str):
+    from app.file_artifacts import FILE_SUFFIXES,artifact_file_name
+    suffix=Path(filename).suffix.lower()
+    if suffix not in FILE_SUFFIXES:raise HTTPException(400,'unsupported generated file type')
+    path=generated_file(filename,suffix)
+    if not path.stat().st_size:raise HTTPException(404,'generated file is empty')
+    return {'name':artifact_file_name(path)}
+
+
 @app.get('/api/artifacts/{filename}/download')
-def download_generated_artifact(filename: str, theme: Literal['light','dark']='light'):
+def download_generated_artifact(filename: str, theme: Literal['light','dark']='light', name: str=''):
     from app.file_artifacts import FILE_SUFFIXES
     suffix=Path(filename).suffix.lower()
     if suffix not in FILE_SUFFIXES:raise HTTPException(400,'unsupported generated file type')
     path=generated_file(filename,suffix)
     if not path.stat().st_size:raise HTTPException(404,'generated file is empty')
+    from app.file_artifacts import artifact_file_name
+    public_name=artifact_file_name(path,name)
     if suffix=='.html':
         document=share_streamviz_artifact(path.name,theme)
         return Response(content=document.body,media_type='text/html',headers={
-            'Content-Disposition':"attachment; filename*=UTF-8''"+quote(path.name),
+            'Content-Disposition':"attachment; filename*=UTF-8''"+quote(public_name),
             'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'})
-    return FileResponse(path,filename=path.name,headers={'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'})
+    return FileResponse(path,filename=public_name,headers={'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'})
 
 
 def screenshot_base_url(request: Request) -> str:

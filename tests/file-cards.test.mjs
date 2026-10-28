@@ -160,3 +160,21 @@ test('embedded HTML reports align their nested reader with chat text without cha
  assert.equal(standalone.window.document.querySelector('[data-artifact-chat-layout]'),null);
  embedded.window.close();standalone.window.close();
 });
+
+test('generated filenames use model titles without changing preview identities',()=>{
+ const s=setup(),url='/generated/streamviz-job-12345678.html';
+ s.w.renderFileDeliverables(s.article,{selectedSkill:{key:'streamviz'},fileArtifacts:[{url,name:'streamviz-job-12345678.html'}],reportArtifacts:[{url,label:'杭州房价：月度走势'}]});
+ assert.equal(s.article.querySelector('.generatedFileName').textContent,'杭州房价：月度走势.html');
+ const link=s.article.querySelector('.generatedFileDownload');assert.equal(link.download,'杭州房价：月度走势.html');assert(link.href.includes('streamviz-job-12345678.html/download'));
+ assert.equal(new URL(link.href).searchParams.get('name'),'杭州房价：月度走势.html');s.dom.window.close();
+});
+
+test('legacy UUID files resolve the saved HTML title without flashing the job ID',async()=>{
+ const s=setup();let calls=0;
+ s.w.fetch=async url=>{calls++;assert(String(url).endsWith('/metadata'));return {ok:true,json:async()=>({name:'杭州房价：二手房仍在磨底，新房相对企稳.html'})};};
+ s.w.renderFileDeliverables(s.article,{selectedSkill:{key:'streamviz'},fileArtifacts:[{url:'/generated/streamviz-job-12345678.html'}]});
+ assert.equal(s.article.querySelector('.generatedFileName').textContent,'HTML 报告.html');
+ await new Promise(resolve=>setTimeout(resolve,0));
+ const name='杭州房价：二手房仍在磨底，新房相对企稳.html';
+ assert.equal(s.article.querySelector('.generatedFileName').textContent,name);assert.equal(s.article.querySelector('.generatedFileDownload').download,name);assert.equal(s.article.querySelector('iframe'),null);assert.equal(calls,1);s.dom.window.close();
+});
