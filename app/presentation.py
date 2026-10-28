@@ -654,6 +654,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     if 'data-sv-chart-geometry' not in artifact:
         geometry = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
         runtime_theme += '<script data-sv-chart-geometry>' + geometry + '</script>'
+    if 'data-sv-line-label-layout' not in artifact:
+        labels = (Path(__file__).parent / 'skills/streamviz/assets/svg-label-layout.js').read_text(encoding='utf-8')
+        runtime_theme += '<script data-sv-line-label-layout>' + labels + '</script>'
     # The host selects a palette; all artifact styling belongs to StreamViz.
     artifact = re.sub(
         r"<html\b([^>]*)>",
