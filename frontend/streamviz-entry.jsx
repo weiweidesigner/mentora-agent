@@ -26,7 +26,7 @@ function mount(container, payload = {}) {
   mountedPayloads.set(container, payload);
   const props = prepareStreamDocument(normalizeStreamVisualizationPayload(payload), [
     ['data-sv-chart-geometry', chartGeometry],
-    ['data-sv-line-label-layout', svgLabelLayout],
+    ['data-sv-line-label-layout-v2', svgLabelLayout],
     ['data-sv-financial-semantics', financialSemantics],
     ['data-widget-control', widgetControl],
   ], completeStreamHtml);

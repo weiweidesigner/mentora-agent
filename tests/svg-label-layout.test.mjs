@@ -19,3 +19,15 @@ test('an already fitting plot keeps its original viewport',()=>{
  const w=d.window,svg=w.document.querySelector('svg');svg.getBBox=()=>({x:20,y:10,width:460,height:280});w.requestAnimationFrame=fn=>fn();w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
  assert.equal(svg.getAttribute('viewBox'),'0 0 500 300');w.close();
 });
+
+test('endpoint label lane belongs inside the grid and x axis, without moving data or date ticks',()=>{
+ const d=new JSDOM('<svg viewBox="0 0 460 300"><g><line x1="44" x2="440" y1="20" y2="20"/><line x1="44" x2="440" y1="280" y2="280"/></g><line x1="44" x2="44" y1="20" y2="280"/><polyline points="44,150 440,136.2"/><text x="440" y="296" text-anchor="middle">10/27</text><text x="446" y="140">+0.53%</text></svg>',{runScripts:'outside-only',pretendToBeVisual:true});
+ const w=d.window,svg=w.document.querySelector('svg'),date=svg.querySelector('text');
+ date.getBBox=()=>({x:425,y:285,width:30,height:12});svg.querySelector('text:last-child').getBBox=()=>({x:446,y:128,width:48,height:14});
+ svg.getBBox=()=>({x:20,y:10,width:Math.max(494,Number(svg.querySelector('line').getAttribute('x2')))-20,height:288});
+ w.requestAnimationFrame=fn=>fn();w.eval(source);w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+ for(const line of [...svg.querySelectorAll('line')].slice(0,2))assert.equal(line.getAttribute('x2'),'502');
+ assert.equal(svg.querySelectorAll('line')[2].getAttribute('x2'),'44');
+ assert.equal(date.getAttribute('x'),'440');assert.equal(date.textContent,'10/27');assert.equal(svg.querySelector('polyline').getAttribute('points'),'44,150 440,136.2');
+ assert.equal(svg.querySelector('text:last-child').textContent,'+0.53%');assert.equal(svg.getAttribute('viewBox'),'0 0 506 302');w.close();
+});
