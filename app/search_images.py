@@ -108,7 +108,7 @@ def write_gallery(path,payload):
 
 def upgrade_image_gallery(artifact):
     """Read-only upgrade of first-party older galleries, without fetching again."""
-    if 'data-image-search-gallery="6"' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
+    if 'data-image-search-gallery="7"' in artifact or '<title>图片搜索</title>' not in artifact or 'data-original=' not in artifact or 'class="image-card"' not in artifact:return artifact
     class Parser(HTMLParser):
         def __init__(self):super().__init__();self.images=[];self.image=None;self.query='';self.capture='';self.parts=[];self.href=''
         def handle_starttag(self,tag,attrs):

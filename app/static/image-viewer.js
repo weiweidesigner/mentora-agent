@@ -39,6 +39,8 @@
     });
   }
   function layout(center=false) {
+    menu?.querySelectorAll('[data-zoom]').forEach(button=>button.setAttribute('aria-checked',String(String(zoom)===button.dataset.zoom)));
+    if(zoom!=='fit')zoomButton.querySelector('span').textContent=`${zoom}%`;
     if(!dialog?.open || !picture?.naturalWidth)return;
     const fit=Math.min(1,Math.max(1,stage.clientWidth-32)/picture.naturalWidth,Math.max(1,stage.clientHeight-24)/picture.naturalHeight);
     const scale=zoom==='fit'?fit:zoom/100,w=picture.naturalWidth*scale,h=picture.naturalHeight*scale;
@@ -46,7 +48,6 @@
     canvas.style.width=`${Math.max(stage.clientWidth,w+32)}px`;canvas.style.height=`${Math.max(stage.clientHeight,h+24)}px`;
     zoomButton.querySelector('span').textContent=`${Math.round(scale*100)}%`;
     zoomButton.title=zoom==='fit'?'缩放至适合窗口':'缩放比例';
-    menu.querySelectorAll('[data-zoom]').forEach(button=>{const selected=String(zoom)===button.dataset.zoom;button.setAttribute('aria-checked',String(selected));button.querySelector('svg').hidden=!selected;});
     if(center){stage.scrollLeft=(canvas.offsetWidth-stage.clientWidth)/2;stage.scrollTop=(canvas.offsetHeight-stage.clientHeight)/2;}
   }
   function show(image,token) {
@@ -105,7 +106,7 @@
     source.hidden=!current.source;source.removeAttribute('href');
     if(current.source){source.href=current.source;source.querySelector('span').textContent=(current.sourceName || new URL(current.source).hostname)+(current.title?' · '+current.title:'');}
     if(!dialog.open){previousOverflow=document.documentElement.style.overflow;document.documentElement.style.overflow='hidden';dialog.showModal();}
-    menu.hidden=true;zoomButton.setAttribute('aria-expanded','false');zoomButton.querySelector('span').textContent='100%';dialog.querySelector('.iv-close').focus();
+    menu.hidden=true;zoomButton.setAttribute('aria-expanded','false');zoomButton.querySelector('span').textContent='100%';dialog.querySelector('.iv-close').focus();layout();
     let originalReady=false,originalFailure='';
     if(current.preview && current.preview!==url)loadImage(current.preview,6000).then(image=>{if(!originalReady){show(image,token);if(active(token)&&originalFailure)statusText.textContent=originalFailure+'，当前显示预览图';}}).catch(()=>{});
     loadImage(url).then(image=>{if(!active(token))return;originalReady=true;show(image,token);statusText.textContent='';}).catch(error=>{
