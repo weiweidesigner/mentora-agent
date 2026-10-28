@@ -1149,5 +1149,22 @@
     ],
     "officialName": "Screener",
     "widgetGroup": "heatmaps-screeners"
+  },
+  {
+    "id": "smart_money",
+    "title": "smart money",
+    "category": "资金与回报",
+    "description": "国会交易、明星机构持仓变动与机构预测，四个 tab 查看 Smart Money。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "smart_money.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 24,
+    "defaultSymbols": []
   }
 ]

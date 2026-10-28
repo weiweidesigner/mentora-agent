@@ -395,5 +395,12 @@
     "script": "read_my_watchlist.py",
     "label": "我的自选",
     "description": "读取当前会话用户在 Mentora Deal 保存的自选股票列表及代码；只读，不添加、删除或交易。 用户说我的持仓、我的自选、持仓监控或个人看板时可直接读取，不要求手工提供代码。无参数，身份由宿主注入；失败不等于空列表。"
+  },
+  {
+    "name": "smart_money",
+    "script": "smart_money.py",
+    "label": "smart money",
+    "source": "business-charts-repository",
+    "description": "AInvest Smart Money 市场级四 tab 业务组件，无需股票代码；内置匿名访客取数，区分真实交易与机构预测，支持主题、语言、tab 和语义标题。"
   }
 ]
