@@ -37,7 +37,7 @@ def _read_page(symbol, period, market, exchange, cursor, direction):
         try: mainland = normalize_symbol(symbol)
         except ValueError: mainland = None
         if mainland:
-            snapshot = minute_snapshot(mainland,5)
+            snapshot = minute_snapshot(mainland,5,interval='1m' if period=='1m' else '5m')
             rows = snapshot['dataByPeriod'][period]
             if cursor:
                 rows=[row for row in rows if timestamp(row['time']) < cursor] if direction=='before' else [row for row in rows if timestamp(row['time']) > cursor]

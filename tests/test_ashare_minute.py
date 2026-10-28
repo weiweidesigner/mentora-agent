@@ -51,9 +51,9 @@ def test_each_call_requests_upstream_no_stale_cache_and_parameters_are_exact(mon
 def test_partial_coverage_and_missing_dates_are_explicit(monkeypatch):
     data=upstream();data['trends']=data['trends'][-4:]
     monkeypatch.setattr(service,'fetch_source',lambda *args:data)
-    result=service.minute_snapshot('000001.SH',5)
+    result=service.minute_snapshot('000001.SH',5,interval='1m')
     assert result['dates']==['2026-10-28'] and result['coverageWarning']
-    with pytest.raises(ValueError):service.minute_snapshot('000001.SH',5,'2026-10-23')
+    with pytest.raises(ValueError):service.minute_snapshot('000001.SH',5,'2026-10-23',interval='1m')
 
 
 def test_http_no_store_and_kline_route_bypasses_memory_cache(monkeypatch):
@@ -91,3 +91,32 @@ def test_live_widget_owns_refresh_and_skill_shortlist_includes_index_minutes():
     assert "'&days=1'" in document
     shortlist=CapabilityIndex(Path(__file__).resolve().parents[1]).shortlist('你把上证指数这一周的每天分时走势展示给我')
     assert 'ashare_intraday.py' in [item['script'] for item in shortlist.modules]
+
+
+def test_auto_fallback_keeps_actual_resolution_and_can_provide_five_dates(monkeypatch,tmp_path):
+    monkeypatch.setattr(service,'fetch_source',lambda *a:(_ for _ in ()).throw(requests.ConnectionError('closed')))
+    calls=[]
+    monkeypatch.setattr(service,'fetch_five_minute_source',lambda symbol:(calls.append(symbol) or upstream()))
+    data=service.minute_snapshot('000001.SH',5)
+    assert data['interval']=='5m' and '1m' not in data['dataByPeriod']
+    assert len(data['dates'])==5 and data['resolutionNotice'] and len(calls)==1
+    path=Path(__file__).parents[1]/'app/skills/ashare-minute/scripts/ashare_intraday.py'
+    spec=importlib.util.spec_from_file_location('ashare_fallback_test',path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    receipt=module.build_report('000001.SH',tmp_path/'five.html')
+    text=(tmp_path/'five.html').read_text();assert receipt['interval']=='5m' and '五分钟走势' in text
+    import html,re,json
+    children=[html.unescape(m) for m in re.findall(r'srcdoc="(.*?)"',text,re.S)]
+    assert len(children)==5
+    for child in children:
+        config=json.JSONDecoder().raw_decode(child.split('const config = ',1)[1])[0]
+        bars=json.JSONDecoder().raw_decode(child.split('const dataByPeriod = ',1)[1])[0]
+        assert config['dataType']=='5m' and set(bars)=={'5m'}
+    with pytest.raises(RuntimeError):service.minute_snapshot('000001.SH',5,interval='1m')
+
+
+def test_auto_fallback_only_replaces_partial_minutes_when_more_dates_exist(monkeypatch):
+    partial=upstream();partial['trends']=partial['trends'][-4:]
+    monkeypatch.setattr(service,'fetch_source',lambda *a:partial)
+    monkeypatch.setattr(service,'fetch_five_minute_source',lambda *a:upstream())
+    assert service.minute_snapshot('000001.SH',5)['interval']=='5m'
+    assert service.minute_snapshot('000001.SH',5,'2026-10-23')['dates']==['2026-10-23']

@@ -21,13 +21,17 @@
       const response = await fetch(endpoint,{cache:'no-store',signal:controller.signal});
       const data = await response.json();
       if (!response.ok) throw Error(data.detail || '行情暂不可用');
-      if (data.symbol !== meta.symbol || !data.dataByPeriod?.['1m']?.length) throw Error('行情数据不完整');
+      const actualPeriod=data.interval || '1m';
+      if (data.symbol !== meta.symbol || !data.dataByPeriod?.[actualPeriod]?.length) throw Error('行情数据不完整');
       root.dispatchEvent(new CustomEvent('kline-data-update',{detail:{dataByPeriod:data.dataByPeriod,name:data.name,source:'eastmoney'}}));
-      status.hidden = !['error','delayed'].includes(data.status);
-      status.textContent = data.status==='error' ? '同步暂时失败，已保留最近行情。' : data.status==='delayed' ? '行情数据有延迟。' : '';
+      const minuteButton=root.querySelector('.period-button[data-period="1m"]');
+      if(minuteButton){minuteButton.disabled=actualPeriod!=='1m';minuteButton.title=actualPeriod!=='1m'?'一分钟行情当前不可用':'';}
+      if(actualPeriod!=='1m' && root.querySelector('.period-button.active')?.dataset.period==='1m')root.querySelector(`.period-button[data-period="${actualPeriod}"]`)?.click();
+      status.hidden = !data.resolutionNotice && !['error','delayed'].includes(data.status);
+      status.textContent = data.resolutionNotice || (data.status==='error' ? '同步暂时失败，已保留最近行情。' : data.status==='delayed' ? '行情数据有延迟。' : '');
       status.dataset.state = data.status;
       root.dataset.liveDataTime = data.dataTime;
-      root.dataset.liveBarCount = String(data.dataByPeriod['1m'].length);
+      root.dataset.liveBarCount = String(data.dataByPeriod[actualPeriod].length);
       next = Math.max(30,Number(data.nextPollSeconds)||30); failures = 0;
       notify(data);
     } catch (error) {

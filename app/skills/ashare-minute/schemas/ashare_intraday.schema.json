@@ -1,11 +1,44 @@
 {
   "script": "ashare_intraday.py",
   "assetScope": "explicit Shanghai/Shenzhen stock, ETF or exchange index; one symbol",
-  "dataSource": "Eastmoney trends2/get; ndays 1..5, explicit secid; no provider fallback",
-  "request": {"symbol":"000001.SH|SSE:000001|399001.SZ|600519.SH", "days":"1..5, default 5", "dates":"optional comma-separated YYYY-MM-DD, restricted to returned sessions"},
-  "cli": ["--symbol","--days","--dates","--theme","--language","--title","--output"],
-  "dataContract": {"interval":"1m", "timezone":"Asia/Shanghai", "adjustment":"none", "currency":"CNY", "volumeUnit":"shares", "fields":["time","open","high","low","close","volume","amount"]},
+  "dataSource": "Eastmoney trends2/get (1m), at most one documented kline/get klt=5 fallback in auto mode; no alternate host/provider",
+  "request": {
+    "symbol": "000001.SH|SSE:000001|399001.SZ|600519.SH",
+    "days": "1..5, default 5",
+    "dates": "optional comma-separated YYYY-MM-DD, restricted to returned sessions",
+    "interval": "auto (default), 1m (strict), 5m (explicit)"
+  },
+  "cli": [
+    "--symbol",
+    "--interval",
+    "--days",
+    "--dates",
+    "--theme",
+    "--language",
+    "--title",
+    "--output"
+  ],
+  "dataContract": {
+    "interval": "Actual source resolution: 1m or explicitly labeled 5m",
+    "timezone": "Asia/Shanghai",
+    "adjustment": "none",
+    "currency": "CNY",
+    "volumeUnit": "shares",
+    "fields": [
+      "time",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume",
+      "amount"
+    ]
+  },
   "outputs": "native multi-intraday HTML with one card per actual trading date; JSON receipt preserves coverage",
   "cachePolicy": "no server memory/disk market-data cache; only explicitly requested report artifacts",
-  "unsupported": ["arbitrary historical dates outside recent five sessions","other markets","fabricated or interpolated minute prices"]
+  "unsupported": [
+    "arbitrary historical dates outside recent five sessions",
+    "other markets",
+    "fabricated or interpolated minute prices"
+  ]
 }

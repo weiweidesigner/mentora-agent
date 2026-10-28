@@ -115,19 +115,49 @@ def fetch_source(symbol: str, days: int = 5) -> dict:
     return data
 
 
-def minute_snapshot(value: str, days: int = 5, date: str | None = None) -> dict:
-    """One upstream request per call; no server memory/disk market-data cache."""
+def fetch_five_minute_source(symbol: str) -> dict:
+    """The documented Eastmoney 5m K-line route, distinct from trends2."""
+    code,exchange=symbol.split('.')
+    response=requests.get('https://push2his.eastmoney.com/api/qt/stock/kline/get',params={
+        'secid':('1' if exchange=='SH' else '0')+'.'+code,
+        'ut':'7eea3edcaed734bea9cbfc24409ed989','fields1':'f1,f2,f3,f4,f5,f6',
+        'fields2':'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61',
+        'klt':'5','fqt':'0','beg':'0','end':'20500000'},
+        headers={'User-Agent':'Mozilla/5.0','Referer':'https://quote.eastmoney.com/'},timeout=(3,8))
+    response.raise_for_status();payload=response.json();data=payload.get('data')
+    if not isinstance(data,dict) or str(data.get('code'))!=code:raise ValueError('五分钟行情源未返回该标的。')
+    return {**data,'trends':[','.join(str(row).split(',')[:7])+',0' for row in data.get('klines',[])]}
+
+
+def minute_snapshot(value: str, days: int = 5, date: str | None = None, interval: str = "auto") -> dict:
+    """No data cache; auto may fall back once to explicitly labeled 5m bars."""
     symbol = normalize_symbol(value)
     if days not in range(1,6):raise ValueError('days 必须为 1 至 5。')
     if date:
         try: datetime.strptime(date,'%Y-%m-%d')
         except ValueError as exc:raise ValueError('date 必须为 YYYY-MM-DD。') from exc
+    if interval not in {'auto','1m','5m'}:raise ValueError('interval 必须为 auto、1m 或 5m。')
     now = datetime.now(SHANGHAI)
-    try:
-        source = fetch_source(symbol,5 if date else days)
-        all_rows = normalize_trends(source,now,5)
-    except (requests.RequestException,ValueError,KeyError,TypeError) as exc:
-        raise RuntimeError('东方财富分钟行情源暂不可用；未使用其他数据源或缓存数据。') from exc
+    attempts=[];source=None;all_rows=[];actual='1m';error=None;notice=None
+    if interval!='5m':
+        try:
+            source=fetch_source(symbol,5 if date else days);all_rows=normalize_trends(source,now,5)
+            count=len({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date() for row in all_rows})
+            attempts.append({'interval':'1m','status':'success' if count>=days else 'partial','sessions':count})
+        except (requests.RequestException,ValueError,KeyError,TypeError) as exc:
+            error=exc;attempts.append({'interval':'1m','status':'unavailable'})
+    needs_five=interval=='5m' or (interval=='auto' and (not all_rows or (not date and attempts[-1].get('sessions',0)<days) or (date and date not in {datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat() for row in all_rows})))
+    if needs_five:
+        try:
+            alternative=fetch_five_minute_source(symbol);alternative_rows=normalize_trends(alternative,now,5)
+            count=len({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date() for row in alternative_rows})
+            attempts.append({'interval':'5m','status':'success','sessions':count})
+            if not all_rows or interval=='5m' or count>attempts[0].get('sessions',0):
+                source=alternative;all_rows=alternative_rows;actual='5m'
+                if interval=='auto':notice='一分钟分时不可用或覆盖不足，已使用真实五分钟数据。'
+        except (requests.RequestException,ValueError,KeyError,TypeError) as exc:
+            error=exc;attempts.append({'interval':'5m','status':'unavailable'})
+    if not all_rows:raise RuntimeError('东方财富行情源暂不可用；未使用缓存或拼造行情。') from error
     available = sorted({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat() for row in all_rows})
     rows = normalize_trends(source,now,days,date)
     selected = sorted({datetime.fromtimestamp(row['time']/1000,SHANGHAI).date().isoformat() for row in rows})
@@ -137,18 +167,19 @@ def minute_snapshot(value: str, days: int = 5, date: str | None = None) -> dict:
     return {'symbol':symbol,'name':str(source.get('name') or symbol),'source':'东方财富公开行情',
             'sourceUrl':'https://quote.eastmoney.com/','adjustment':'none','volumeUnit':'shares',
             'fetchedAt':now.isoformat(),'dataTime':data_time.isoformat(),'availableDates':available,
-            'dates':selected,'rowsByDate':grouped,'cachePolicy':'no-store',
+            'dates':selected,'rowsByDate':grouped,'cachePolicy':'no-store','interval':actual,'requestedInterval':interval,'attempts':attempts,'resolutionNotice':notice,
             'coverageWarning':f'已请求最近 {days} 个交易日，数据源实际仅返回 {len(selected)} 天；未获得完整请求区间的分时。' if not date and len(selected)<days else None,
-            'dataByPeriod':{p:aggregate(rows,n) for p,n in zip(PERIODS,(1,5,15,30,60))},
+            'dataByPeriod':{p:(list(rows) if (actual=='1m' and n==1) or (actual=='5m' and n==5) else aggregate(rows,n)) for p,n in zip(PERIODS,(1,5,15,30,60)) if actual=='1m' or n>=5},
             'status':'delayed' if session_open(now) and behind>180 else 'closed' if not session_open(now) else 'updating',
             'error':None,'nextPollSeconds':poll_delay(now),'delaySeconds':behind}
 
 
 @router.get('/api/widgets/ashare-minute')
 def minute_api(response: Response, symbol: str = Query(min_length=6,max_length=20),
-               days: int = Query(default=5,ge=1,le=5), date: str | None = Query(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$')):
+               days: int = Query(default=5,ge=1,le=5), date: str | None = Query(default=None,pattern=r'^\d{4}-\d{2}-\d{2}$'),
+               interval: str = Query(default='auto',pattern=r'^(auto|1m|5m)$')):
     response.headers['Cache-Control'] = 'no-store'
-    try: return minute_snapshot(symbol,days,date)
+    try: return minute_snapshot(symbol,days,date,interval)
     except ValueError as error: raise HTTPException(status_code=422,detail=str(error)) from error
     except RuntimeError as error: raise HTTPException(status_code=503,detail=str(error)) from error
 
@@ -166,7 +197,7 @@ def live_document(value: str, theme: str='dark') -> str:
     if theme not in {'dark','light'}: raise ValueError('Unsupported theme')
     component = {'type':'kline','title':symbol+' · 分钟行情','props':{
         'code':symbol,'name':symbol,'dataType':'1m','market':'CN','exchange':symbol[-2:],
-        'language':'zh-CN','timeZone':'Asia/Shanghai','themeMode':theme,'candleColors':'red_up_green_down',
+        'language':'zh-CN','timeZone':'Asia/Shanghai','themeMode':theme,'candleColors':'red_up_green_down','klineType':'line',
         'availablePeriods':list(PERIODS),'prefetchPeriods':list(PERIODS),'subIndicators':['VOL'],
         'sources':{p:'eastmoney' for p in PERIODS},
     },'dataByPeriod':{p:[] for p in PERIODS}}
