@@ -402,5 +402,12 @@
     "label": "smart money",
     "source": "business-charts-repository",
     "description": "AInvest Smart Money 市场级四 tab 业务组件，无需股票代码；内置匿名访客取数，区分真实交易与机构预测，支持主题、语言、tab 和语义标题。"
+  },
+  {
+    "name": "politician_performance",
+    "script": "politician_performance.py",
+    "label": "议员投资表现",
+    "description": "AInvest 人物资料与真实 TWRR 收益历史：头像、姓名、党派和州，区间收益、日期范围、面积曲线和 ALL/1W/1M/3M/YTD/1Y/3Y tab。适合佩洛西、国会议员、政治人物投资表现、收益曲线。通过 --name 或 --url 或 --human-id 选择人物，无需股票代码。按需匿名取数，不缓存、不轮询。--title 为模型语义标题，人物姓名保留源值。先读 politician_performance.schema.json。",
+    "source": "business-charts-repository"
   }
 ]

@@ -28,6 +28,7 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
     "trading_calendar.py": ("a股交易日", "交易日历", "休市", "开市"),
     "kline.py": ("k线", "k線", "蜡烛图", "行情图", "candlestick", "price chart"),
     "multi_kline.py": ("多k线", "多标的k线", "多周期k线", "compare candlestick"),
+    "politician_performance.py": ("议员投资表现", "佩洛西", "Nancy Pelosi", "佩洛西收益", "佩洛西投资", "议员收益曲线", "人物收益", "politician performance", "Nancy Pelosi performance"),
     "smart_money.py": ("smart money", "聪明钱", "聰明錢", "国会交易", "机构预测", "institution forecasts"),
     "multi_intraday.py": ("多股分时", "盘中对比", "intraday comparison"),
     "income_statement.py": ("利润表", "损益表", "收入利润", "income statement"),

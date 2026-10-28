@@ -1166,5 +1166,22 @@
     "width": 12,
     "height": 24,
     "defaultSymbols": []
+  },
+  {
+    "id": "politician_performance",
+    "title": "议员投资表现",
+    "category": "资金与回报",
+    "description": "指定议员姓名或 AInvest 人物链接，查看头像、党派、州和投资收益曲线。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "politician_performance.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 6,
+    "height": 16,
+    "defaultSymbols": []
   }
 ]

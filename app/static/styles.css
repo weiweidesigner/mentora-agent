@@ -5403,7 +5403,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 :is(.group-line-tooltip-portal,.bar-line-tooltip-portal,.bar-chart-tooltip-portal,.grouped-bar-tooltip-portal,.generic-local-tooltip-portal) .tooltip-arrow{border-top-color:#3b3b3b!important}
 
 /* Native Smart Money shares the surrounding narrative column and spacing. */
-:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-business-component="smart_money"]){width:100%;max-width:100%;margin:8px 0 12px}
-:is(.streamChartSlot,.chatArtifactShell):has(iframe[data-business-component="smart_money"]) :is(.chatArtifactShell,.reportFrameShell){margin:0}
-:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-business-component="smart_money"]) + hr{display:none}
-:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-business-component="smart_money"]) + .reportInterpretation>hr:first-child{display:none}
+:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe:is([data-business-component="smart_money"],[data-business-component="politician_performance"])){width:100%;max-width:100%;margin:8px 0 12px}
+:is(.streamChartSlot,.chatArtifactShell):has(iframe:is([data-business-component="smart_money"],[data-business-component="politician_performance"])) :is(.chatArtifactShell,.reportFrameShell){margin:0}
+:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe:is([data-business-component="smart_money"],[data-business-component="politician_performance"])) + hr{display:none}
+:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe:is([data-business-component="smart_money"],[data-business-component="politician_performance"])) + .reportInterpretation>hr:first-child{display:none}
