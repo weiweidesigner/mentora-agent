@@ -633,6 +633,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact=upgrade_image_gallery(artifact)
     from app.artifact_upgrades import upgrade_smart_money
     artifact = upgrade_smart_money(artifact)
+    from app.artifact_upgrades import upgrade_politician_performance
+    artifact = upgrade_politician_performance(artifact)
     from app.business_images import upgrade_business_images
     artifact = upgrade_business_images(artifact)
     # The same document is served under /share-artifact/ and /generated/.

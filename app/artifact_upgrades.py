@@ -545,3 +545,31 @@ def upgrade_smart_money(artifact):
         boot = "<script data-smart-money-embed-layout>document.documentElement.toggleAttribute('data-smart-money-embedded',window.parent!==window);</script>"
         artifact = artifact.replace('</body>', boot + '</body>')
     return artifact
+
+
+def upgrade_politician_performance(artifact, depth=0):
+    """Upgrade saved native performance tooltips while keeping the saved observations."""
+    if depth > 4: return artifact
+    import html
+    def child(match):
+        original=html.unescape(match[2]);updated=upgrade_politician_performance(original,depth+1)
+        return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
+    artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
+    if '<main class="politician-performance"' not in artifact or 'data-politician-layout="2"' in artifact:return artifact
+    try:
+        declaration=re.search(r'\bconst\s+config\s*=\s*',artifact)
+        if not declaration:return artifact
+        config=json.JSONDecoder().raw_decode(artifact[declaration.end():])[0];points=config['periods']['ALL']['points']
+        def content(pattern):
+            found=re.search(pattern,artifact,re.S)
+            return html.unescape(re.sub(r'<[^>]+>','',found[1])) if found else ''
+        name=content(r'<h3 class="person-name">(.*?)</h3>')
+        if not name or not points:return artifact
+        subtitle=content(r'<div class="person-meta">(.*?)</div>').split(' / ',1)
+        image=re.search(r'<span class="avatar">.*?<img[^>]*src="([^"]+)"',artifact,re.S)
+        metadata=re.search(r'<script[^>]*id="politician-performance-meta"[^>]*>(.*?)</script>',artifact,re.S)
+        payload=json.loads(metadata[1]) if metadata else {}
+        theme=re.search(r'data-theme="(light|dark)"',artifact);language=re.search(r'<html[^>]*lang="([^"]+)"',artifact)
+        payload.update(profile={'name':name,'party':subtitle[0],'state':subtitle[1] if len(subtitle)>1 else '', 'avatarUrl':html.unescape(image[1]) if image else ''},history=points,totalReturn=config['periods']['ALL']['returnPercent']/100,period=config['period'],theme=theme[1] if theme else 'light',language=language[1] if language else 'en',title=content(r'<h2[^>]*data-business-title[^>]*>(.*?)</h2>'))
+        return _native_rating('politician_performance').render_html(payload)
+    except (ValueError,KeyError,TypeError):return artifact

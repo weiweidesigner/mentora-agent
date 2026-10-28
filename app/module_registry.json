@@ -407,7 +407,7 @@
     "name": "politician_performance",
     "script": "politician_performance.py",
     "label": "议员投资表现",
-    "description": "AInvest 人物资料与真实 TWRR 收益历史：头像、姓名、党派和州，区间收益、日期范围、面积曲线和 ALL/1W/1M/3M/YTD/1Y/3Y tab。适合佩洛西、国会议员、政治人物投资表现、收益曲线。通过 --name 或 --url 或 --human-id 选择人物，无需股票代码。按需匿名取数，不缓存、不轮询。--title 为模型语义标题，人物姓名保留源值。先读 politician_performance.schema.json。",
+    "description": "AInvest 人物资料与真实 TWRR 收益历史：头像、姓名、党派和州，区间收益、日期范围、面积曲线和 ALL/1W/1M/3M/YTD/1Y/3Y tab。适合佩洛西、国会议员、政治人物投资表现、收益曲线。通过 --name 或 --url 或 --human-id 选择人物，无需股票代码。按需匿名取数，不缓存、不轮询。--title 为模型语义标题，人物姓名保留源值。先读 politician_performance.schema.json。 支持 --names/--human-ids/--urls 多议员同一组件对比，原生卡片独立 tab，--row-counts 由 JEV 基于数量选均衡行，--columns 和 --mobile-columns 配置最大列数/手机列数；窄屏换行，不水平分页。",
     "source": "business-charts-repository"
   }
 ]
