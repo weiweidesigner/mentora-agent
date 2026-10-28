@@ -42,7 +42,7 @@ def _read_page(symbol, period, market, exchange, cursor, direction):
             if cursor:
                 rows=[row for row in rows if timestamp(row['time']) < cursor] if direction=='before' else [row for row in rows if timestamp(row['time']) > cursor]
             page=rows[:500] if direction=='after' else rows[-500:]
-            return dict(symbol=symbol,period=period,rows=page,source='eastmoney',reliableVolume=True,
+            return dict(symbol=symbol,period=period,rows=page,source=snapshot['provider'],reliableVolume=snapshot['reliableVolume'],
                         hasMore=len(rows)>len(page),availableDates=snapshot['availableDates'],
                         coverageWarning=snapshot.get('coverageWarning'),cachePolicy='no-store')
     native = _native_kline()

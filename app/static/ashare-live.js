@@ -23,7 +23,7 @@
       if (!response.ok) throw Error(data.detail || '行情暂不可用');
       const actualPeriod=data.interval || '1m';
       if (data.symbol !== meta.symbol || !data.dataByPeriod?.[actualPeriod]?.length) throw Error('行情数据不完整');
-      root.dispatchEvent(new CustomEvent('kline-data-update',{detail:{dataByPeriod:data.dataByPeriod,name:data.name,source:'eastmoney'}}));
+      root.dispatchEvent(new CustomEvent('kline-data-update',{detail:{dataByPeriod:data.dataByPeriod,name:data.name,source:data.provider}}));
       const minuteButton=root.querySelector('.period-button[data-period="1m"]');
       if(minuteButton){minuteButton.disabled=actualPeriod!=='1m';minuteButton.title=actualPeriod!=='1m'?'一分钟行情当前不可用':'';}
       if(actualPeriod!=='1m' && root.querySelector('.period-button.active')?.dataset.period==='1m')root.querySelector(`.period-button[data-period="${actualPeriod}"]`)?.click();

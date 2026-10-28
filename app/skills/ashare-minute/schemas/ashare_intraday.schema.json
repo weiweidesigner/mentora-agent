@@ -1,15 +1,17 @@
 {
   "script": "ashare_intraday.py",
   "assetScope": "explicit Shanghai/Shenzhen stock, ETF or exchange index; one symbol",
-  "dataSource": "Eastmoney trends2/get (1m), at most one documented kline/get klt=5 fallback in auto mode; no alternate host/provider",
+  "dataSource": "Sina documented stock_zh_a_minute contract by default; explicit --provider eastmoney retains Eastmoney adapter. No silent cross-provider fallback.",
   "request": {
     "symbol": "000001.SH|SSE:000001|399001.SZ|600519.SH",
     "days": "1..5, default 5",
     "dates": "optional comma-separated YYYY-MM-DD, restricted to returned sessions",
-    "interval": "auto (default), 1m (strict), 5m (explicit)"
+    "interval": "auto (default), 1m (strict), 5m (explicit)",
+    "provider": "sina (default) or eastmoney (explicit)"
   },
   "cli": [
     "--symbol",
+    "--provider",
     "--interval",
     "--days",
     "--dates",
@@ -23,7 +25,7 @@
     "timezone": "Asia/Shanghai",
     "adjustment": "none",
     "currency": "CNY",
-    "volumeUnit": "shares",
+    "volumeUnit": "Sina: source-unverified and volume subchart hidden; Eastmoney: lots converted to shares",
     "fields": [
       "time",
       "open",

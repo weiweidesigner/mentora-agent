@@ -39,32 +39,32 @@ def test_each_call_requests_upstream_no_stale_cache_and_parameters_are_exact(mon
     def get(url,**kwargs):
         calls.append((url,kwargs));return SimpleNamespace(raise_for_status=lambda:None,json=lambda:{'data':upstream()})
     monkeypatch.setattr(service.requests,'get',get)
-    a=service.minute_snapshot('000001.SH',5);b=service.minute_snapshot('000001.SH',5)
+    a=service.minute_snapshot('000001.SH',5,provider='eastmoney');b=service.minute_snapshot('000001.SH',5,provider='eastmoney')
     assert len(calls)==2 and a['dates']==b['dates']==['2026-10-22','2026-10-23','2026-10-26','2026-10-27','2026-10-28']
     assert calls[0][1]['params']['secid']=='1.000001'
     assert calls[0][1]['params']['ndays']=='5'
     assert a['cachePolicy']=='no-store'
     monkeypatch.setattr(service.requests,'get',lambda *a,**k:(_ for _ in ()).throw(requests.ConnectionError('down')))
-    with pytest.raises(RuntimeError):service.minute_snapshot('000001.SH',5)
+    with pytest.raises(RuntimeError):service.minute_snapshot('000001.SH',5,provider='eastmoney')
 
 
 def test_partial_coverage_and_missing_dates_are_explicit(monkeypatch):
     data=upstream();data['trends']=data['trends'][-4:]
     monkeypatch.setattr(service,'fetch_source',lambda *args:data)
-    result=service.minute_snapshot('000001.SH',5,interval='1m')
+    result=service.minute_snapshot('000001.SH',5,interval='1m',provider='eastmoney')
     assert result['dates']==['2026-10-28'] and result['coverageWarning']
-    with pytest.raises(ValueError):service.minute_snapshot('000001.SH',5,'2026-10-23',interval='1m')
+    with pytest.raises(ValueError):service.minute_snapshot('000001.SH',5,'2026-10-23',interval='1m',provider='eastmoney')
 
 
 def test_http_no_store_and_kline_route_bypasses_memory_cache(monkeypatch):
     calls=[]
     def source(*args):calls.append(args);return upstream()
-    monkeypatch.setattr(service,'fetch_source',source)
+    monkeypatch.setattr(service,'fetch_sina_source',source)
     app=FastAPI();app.include_router(service.router);app.include_router(kline_history.router);client=TestClient(app)
     for _ in range(2):
         r=client.get('/api/kline/history',params={'symbol':'000001.SH','period':'1m'})
         assert r.status_code==200 and r.headers['cache-control']=='no-store'
-        assert r.json()['source']=='eastmoney' and len(r.json()['rows'])==20
+        assert r.json()['source']=='sina' and len(r.json()['rows'])==20
     assert len(calls)==2
     assert client.get('/api/widgets/ashare-minute',params={'symbol':'000001.SH','days':6}).status_code==422
 
@@ -74,7 +74,7 @@ def test_registered_report_uses_separate_native_days_without_refetch(monkeypatch
     monkeypatch.setattr(service,'fetch_source',lambda *args:(calls.append(args) or upstream()))
     path=Path(__file__).parents[1]/'app/skills/ashare-minute/scripts/ashare_intraday.py'
     spec=importlib.util.spec_from_file_location('ashare_intraday_test',path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-    output=tmp_path/'index.html';receipt=module.build_report('000001.SH',output,days=5)
+    output=tmp_path/'index.html';receipt=module.build_report('000001.SH',output,days=5,provider='eastmoney')
     assert len(calls)==1 and len(receipt['dates'])==5
     text=output.read_text();assert text.count('<iframe ')==5
     for date in receipt['dates']:assert date in text
@@ -97,12 +97,12 @@ def test_auto_fallback_keeps_actual_resolution_and_can_provide_five_dates(monkey
     monkeypatch.setattr(service,'fetch_source',lambda *a:(_ for _ in ()).throw(requests.ConnectionError('closed')))
     calls=[]
     monkeypatch.setattr(service,'fetch_five_minute_source',lambda symbol:(calls.append(symbol) or upstream()))
-    data=service.minute_snapshot('000001.SH',5)
+    data=service.minute_snapshot('000001.SH',5,provider='eastmoney')
     assert data['interval']=='5m' and '1m' not in data['dataByPeriod']
     assert len(data['dates'])==5 and data['resolutionNotice'] and len(calls)==1
     path=Path(__file__).parents[1]/'app/skills/ashare-minute/scripts/ashare_intraday.py'
     spec=importlib.util.spec_from_file_location('ashare_fallback_test',path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-    receipt=module.build_report('000001.SH',tmp_path/'five.html')
+    receipt=module.build_report('000001.SH',tmp_path/'five.html',provider='eastmoney')
     text=(tmp_path/'five.html').read_text();assert receipt['interval']=='5m' and '五分钟走势' in text
     import html,re,json
     children=[html.unescape(m) for m in re.findall(r'srcdoc="(.*?)"',text,re.S)]
@@ -111,12 +111,66 @@ def test_auto_fallback_keeps_actual_resolution_and_can_provide_five_dates(monkey
         config=json.JSONDecoder().raw_decode(child.split('const config = ',1)[1])[0]
         bars=json.JSONDecoder().raw_decode(child.split('const dataByPeriod = ',1)[1])[0]
         assert config['dataType']=='5m' and set(bars)=={'5m'}
-    with pytest.raises(RuntimeError):service.minute_snapshot('000001.SH',5,interval='1m')
+    with pytest.raises(RuntimeError):service.minute_snapshot('000001.SH',5,interval='1m',provider='eastmoney')
 
 
 def test_auto_fallback_only_replaces_partial_minutes_when_more_dates_exist(monkeypatch):
     partial=upstream();partial['trends']=partial['trends'][-4:]
     monkeypatch.setattr(service,'fetch_source',lambda *a:partial)
     monkeypatch.setattr(service,'fetch_five_minute_source',lambda *a:upstream())
-    assert service.minute_snapshot('000001.SH',5)['interval']=='5m'
-    assert service.minute_snapshot('000001.SH',5,'2026-10-23')['dates']==['2026-10-23']
+    assert service.minute_snapshot('000001.SH',5,provider='eastmoney')['interval']=='5m'
+    assert service.minute_snapshot('000001.SH',5,'2026-10-23',provider='eastmoney')['dates']==['2026-10-23']
+
+
+def test_sina_default_reads_actual_jsonp_once_each_call_no_volume_guess_or_cache(monkeypatch,tmp_path):
+    import json
+    records=[{'day':f'2026-10-{day} 09:31:00','open':'10','close':'11','high':'12','low':'9','volume':'123','amount':'1353'} for day in (22,23,26,27,28)]
+    calls=[]
+    def get(url,**kwargs):
+        calls.append((url,kwargs))
+        return SimpleNamespace(raise_for_status=lambda:None,text='/* market data */=('+json.dumps(records)+');')
+    monkeypatch.setattr(service.requests,'get',get)
+    result=service.minute_snapshot('000001.SH',5)
+    assert result['provider']=='sina' and result['interval']=='1m' and len(result['dates'])==5
+    assert result['dataByPeriod']['1m'][0]['volume']==123
+    assert not result['reliableVolume'] and result['volumeUnit']=='source-unverified'
+    assert calls[0][0]=='https://quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData'
+    assert calls[0][1]['params']=={'symbol':'sh000001','scale':'1','ma':'no','datalen':'1970'}
+    service.minute_snapshot('000001.SH',5)
+    assert len(calls)==2
+    path=Path(__file__).parents[1]/'app/skills/ashare-minute/scripts/ashare_intraday.py'
+    spec=importlib.util.spec_from_file_location('ashare_sina_test',path);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    receipt=module.build_report('000001.SH',tmp_path/'sina.html')
+    assert receipt['provider']=='sina' and receipt['interval']=='1m'
+    assert (tmp_path/'sina.html').read_text().count('<iframe ')==5
+    assert list(tmp_path.iterdir())==[tmp_path/'sina.html']
+
+
+def test_sina_does_not_execute_jsonp_or_silently_try_another_provider(monkeypatch):
+    monkeypatch.setattr(service.requests,'get',lambda *a,**k:SimpleNamespace(raise_for_status=lambda:None,text='alert("not data")'))
+    monkeypatch.setattr(service,'fetch_source',lambda *a:pytest.fail('provider must remain explicit'))
+    with pytest.raises(RuntimeError,match='新浪'):service.minute_snapshot('000001.SH',5)
+
+
+def test_sina_five_minute_identity_and_http_source_metadata(monkeypatch):
+    calls=[]
+    def source(symbol,interval):
+        calls.append((symbol,interval));return upstream()
+    monkeypatch.setattr(service,'fetch_sina_source',source)
+    app=FastAPI();app.include_router(service.router);app.include_router(kline_history.router);client=TestClient(app)
+    r=client.get('/api/widgets/ashare-minute',params={'symbol':'000001.SH','interval':'5m'})
+    assert r.status_code==200 and r.headers['cache-control']=='no-store'
+    assert r.json()['provider']=='sina' and r.json()['interval']=='5m' and '1m' not in r.json()['dataByPeriod']
+    r=client.get('/api/kline/history',params={'symbol':'000001.SH','period':'15m'})
+    assert r.json()['source']=='sina' and r.json()['reliableVolume'] is False
+    assert calls==[('000001.SH','5m'),('000001.SH','5m')]
+
+
+def test_eastmoney_zero_ohlc_dates_are_disclosed_instead_of_claiming_no_source_prices(monkeypatch):
+    raw=upstream()
+    raw['trends']=[line.replace(',10,11,12,9,',',0,11,0,0,') if not line.startswith('2026-10-28') else line for line in raw['trends']]
+    monkeypatch.setattr(service,'fetch_source',lambda *args:raw)
+    result=service.minute_snapshot('000001.SH',5,interval='1m',provider='eastmoney')
+    assert len(result['sourceDates'])==5 and result['dates']==['2026-10-28']
+    assert '缺少有效开高低收' in result['ohlcCoverageWarning']
+    assert result['ohlcCoverageWarning'] in result['coverageWarning']

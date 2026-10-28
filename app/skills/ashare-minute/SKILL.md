@@ -1,26 +1,28 @@
 ---
 name: ashare-minute
-description: Read Shanghai/Shenzhen stock and index minute prices for the most recent five trading sessions from Eastmoney, on demand without a server market-data cache; render separate native charts by trading day.
+description: Read recent Shanghai/Shenzhen stock and index minute prices on demand without a server quote cache; render native charts by trading day. Sina is the default provider.
 ---
 
 # 沪深股票与指数近五日分时
 
-Use this capability for A股分时、上证指数/深证指数分时、最近五个交易日每天分时. It is distinct from Fuyao's daily-only A-share/index history and the generic AInvest K-line source. Do not conclude that all minute data is unavailable merely because either daily/AInvest route does not provide it.
+Use for A股分时、上证/深证指数分时、最近五个交易日每天分时. This is separate from Fuyao daily data and generic AInvest K-lines.
 
-Read `schemas/ashare_intraday.schema.json`, then run the registered script:
+Read `schemas/ashare_intraday.schema.json`, then execute the registered capability:
 
 ```sh
-python3 app/skill_runner.py execute --script ashare_intraday.py -- --symbol 000001.SH --days 5 --theme dark --language zh-CN --output outputs/generated/shanghai-five-day-intraday.html
+python3 app/skill_runner.py execute --script ashare_intraday.py -- --symbol 000001.SH --days 5 --interval 1m --theme dark --language zh-CN --output outputs/generated/shanghai-five-day-intraday.html
 ```
 
-`--symbol` identifies the exchange explicitly: `000001.SH` or `SSE:000001` is the Shanghai Composite index, `399001.SZ` is the Shenzhen Component, and `600519.SH` is a stock. Bare `000001` is a Shenzhen stock; never substitute it for the Shanghai index. `.SS` is normalized to `.SH` locally without using Yahoo.
+The default `--provider sina` uses the documented Sina `stock_zh_a_minute` stock/index contract: `quotes.sina.cn/cn/api/jsonp_v2.php/=/CN_MarketDataService.getKLineData`, `symbol=sh000001`, `scale=1|5`, `ma=no`, `datalen=1970`. Parse the JSONP envelope strictly as JSON; never execute source text. No daily/adjustment fetch is needed for unadjusted prices. `auto` and `1m` use real one-minute bars; `5m` explicitly selects real five-minute bars. A failed source stays failed: no alias retries, host cycling, user-agent cycling, hidden provider substitution or fabricated prices.
 
-`--days 1..5` defaults to 5. `--dates YYYY-MM-DD,...` can select actual returned trading dates; requesting absent dates fails explicitly. Data is a rolling recent-five-session window, not arbitrary historical minute coverage, and may contain fewer sessions. The receipt preserves actual interval/dates/counts and a coverage warning. Never label fewer returned days as complete five-day coverage.
+`--provider eastmoney` explicitly selects the earlier Eastmoney adapter. Its `auto` mode may try the documented five-minute K-line route once when the one-minute route fails or has insufficient valid OHLC coverage. Strict `1m` never downgrades. Eastmoney may return historical rows with zero OHLC fields; these are not valid candles and must not be counted as absent source dates or silently repaired with invented OHLC values. The receipt distinguishes source dates from usable OHLC dates.
 
-`--interval auto|1m|5m` defaults to `auto`. Auto tries the documented `trends2/get` one-minute contract once. If it disconnects or covers fewer requested sessions, it may make one request to the documented Eastmoney `kline/get` contract (`klt=5`, unadjusted `fqt=0`). Use the five-minute result only when it adds requested session coverage or one-minute data is unavailable. The receipt preserves actual `interval`, attempts and a visible resolution notice; every five-minute card is labeled 五分钟走势. Never put 5m bars under a 1m key or interpolate missing minute prices. `--interval 1m` is strict and never downgrades; `--interval 5m` directly selects five-minute data.
+Use explicit exchange identity: `000001.SH` or `SSE:000001` is the Shanghai Composite; `399001.SZ` is Shenzhen Component; `600519.SH` is a stock. Bare `000001` is the Shenzhen stock. Never substitute its exchange when a source fails.
 
-There is no server memory/disk quote cache or alternate provider. If both documented routes fail, return the failure; do not rerun with exchange aliases or inspect/debug the network inside a research task; do not probe alternate hosts, cycle user agents, or fabricate minute paths from daily OHLC. Successful rows are composed through the existing `multi_intraday.py` native renderer, one chart per trading date, Asia/Shanghai, unadjusted CNY; volumes convert the existing source lot convention to shares. Native minute performance is relative to that day's opening price, not previous close. Lunch and separate trading dates remain distinct; no interpolation or overnight volume bucket.
+`--days 1..5` defaults to five recent returned sessions. `--dates` selects comma-separated dates from those sessions. Outside-window requests fail. Preserve the actual source, interval, returned dates and bar counts. Five returned dates do not guarantee every minute exists: do not interpolate missing bars or claim a complete tick path. Native performance uses each day's opening price, not the previous close. Keep dates and the lunch break separate when aggregating.
 
-Only the requested HTML report is written. No background collection, historical cache database, automatic schedule or extra model call is created. Use the short CLI receipt for reasoning and emit the resulting HTML through `[[AIME_CHART:/absolute/path.html]]`; do not offer non-StreamViz chart HTML as a download.
+Only verified volume conventions may drive a volume chart. Sina prices/OHLC are used directly; its source volume is preserved without a guessed multiplier, marked source-unverified, and the volume subchart is hidden. Missing turnover is not estimated from closing price.
 
-Source contract: https://github.com/akfamily/akshare/blob/master/akshare/index/index_zh_em.py (`index_zh_a_hist_min_em`, `ndays=5`).
+No server memory/disk quote cache, background collection, schedule or extra model call is created. Only the requested HTML report is written. Successful rows use the native `multi_intraday.py` renderer, one chart per trading date, Asia/Shanghai, unadjusted CNY. Verify the receipt and non-empty HTML. Use the receipt for reasoning and emit the HTML with `[[AIME_CHART:/absolute/path.html]]`; no HTML file download.
+
+Source contracts: https://akshare.akfamily.xyz/data/stock/stock_quote.html#id32 (`stock_zh_a_minute`, Sina stock/index minutes); AKShare 1.20.1 `akshare/stock/quote/stock_zh_a_sina.py`; https://github.com/akfamily/akshare/blob/main/akshare/index/index_zh_em.py (Eastmoney).

@@ -9,7 +9,7 @@
     "name": "ashare_intraday",
     "script": "ashare_intraday.py",
     "label": "沪深股票与指数五日分时",
-    "description": "按需读取东方财富沪深股票、ETF和上证/深证指数最近五个交易日的真实一分钟分时，每天独立原生图表。--symbol 000001.SH（上证指数）或399001.SZ或600519.SH，--days 1..5默认5，--dates可选返回范围内交易日，--theme、--language、--title、--output。不做行情缓存，不用日线伪造分时。Fuyao日线或AInvest分钟返回空不代表此独立能力不可用。 --interval auto|1m|5m，auto在一分钟不可用/覆盖不足时只尝试一次东方财富五分钟历史接口，并明确标注五分钟走势；不把5m冒充1m，失败不换代码重试。"
+    "description": "按需读取沪深股票、ETF及上证/深证指数最近五个交易日的真实一分钟分时，每天独立原生图表。默认新浪财经，--provider sina|eastmoney；--symbol 000001.SH（上证指数）或399001.SZ或600519.SH，--days 1..5默认5，--dates可选返回范围内交易日，--interval auto|1m|5m，--theme、--language、--title、--output。不做行情缓存或定时采集，不用日线伪造分时。保留真实来源、周期及不足覆盖警告；失败不换代码反复重试。"
   },
   {
     "name": "read_market_data",
