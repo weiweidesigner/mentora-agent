@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse, Res
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from app.screenshot_process import run_screenshot
 from app.studio_agent_client import StudioAgentClient, StudioAgentError
 from app.reasoning_frameworks import FRAMEWORKS, LocalAgentFrameworks, ReasoningFrameworkError
 from app.native_streamviz import stream_native_widget
@@ -768,10 +769,11 @@ def render_share_answer_image(
     script = f'''\
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from app.screenshot_process import chromium_launch_options
 
 output = Path({str(image_path)!r})
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(**chromium_launch_options())
     page = browser.new_page(viewport={{"width": {viewport_width}, "height": 900}}, device_scale_factor={device_scale_factor})
     page.goto({share_url!r}, wait_until="networkidle", timeout=60000)
     # The answer and its chart documents have independent FontFaceSets.
@@ -798,10 +800,7 @@ with sync_playwright() as p:
     answer.screenshot(path=str(output), {screenshot_options}animations="disabled")
     browser.close()
 '''
-    result = subprocess.run([sys.executable, "-c", script], cwd=str(ROOT), capture_output=True, text=True, timeout=90)
-    if result.returncode != 0 or not image_path.is_file():
-        detail = (result.stderr or result.stdout or "answer screenshot failed")[-600:]
-        raise HTTPException(status_code=500, detail=detail)
+    run_screenshot(script, root=ROOT, output=image_path)
     return image_path
 
 
@@ -865,19 +864,17 @@ def share_image(report: str, request: Request) -> FileResponse:
     script = f'''\
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from app.screenshot_process import chromium_launch_options
 
 output = Path({str(png_path)!r})
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(**chromium_launch_options())
     page = browser.new_page(viewport={{"width": 1320, "height": 900}}, device_scale_factor=2)
     page.goto({report_url!r}, wait_until="networkidle", timeout=60000)
     page.screenshot(path=str(output), full_page=True)
     browser.close()
 '''
-    result = subprocess.run([sys.executable, "-c", script], cwd=str(ROOT), capture_output=True, text=True, timeout=90)
-    if result.returncode != 0 or not png_path.is_file():
-        detail = (result.stderr or result.stdout or "chart screenshot failed")[-600:]
-        raise HTTPException(status_code=500, detail=f"图表截图失败：{detail}")
+    run_screenshot(script, root=ROOT, output=png_path)
     return FileResponse(png_path, media_type="image/png", filename=png_path.name)
 
 
