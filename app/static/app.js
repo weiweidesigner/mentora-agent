@@ -14,6 +14,7 @@ const reasoningStrengthSlider = document.querySelector("#reasoningStrengthSlider
 const reasoningStrengthHomeAnchor = document.createComment("reasoning selector home");
 reasoningStrengthControl?.before(reasoningStrengthHomeAnchor);
 const messages = document.querySelector("#messages");
+const generationScrollFollow = window.createGenerationScrollFollow?.(messages);
 const shell = document.querySelector(".shell");
 const conversation = document.querySelector(".conversation");
 const activityDrawer = document.querySelector("#activityDrawer");
@@ -282,17 +283,20 @@ document.addEventListener("selectstart", (event) => {
 
 messages.addEventListener('scroll', scheduleScrollHint, {passive:true});
 document.querySelector('#scrollToBottomButton')?.addEventListener('click', () => {
+  generationScrollFollow?.resume();
   scrollToLatestContent(matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 });
-// Content growth and artifact resizing update the affordance, never the reader's scroll.
+// Growth follows the current generation until the reader takes control.
 if (typeof ResizeObserver !== 'undefined') {
   const observed = new Set();
-  const resize = new ResizeObserver(scheduleScrollHint);
+  const changed = () => { scheduleScrollHint(); generationScrollFollow?.changed(); };
+  const resize = new ResizeObserver(changed);
   resize.observe(messages);
   const watch = () => {
     for (const node of observed) if (node.parentElement !== messages) { resize.unobserve(node); observed.delete(node); }
     for (const node of messages.children) if (!observed.has(node)) { observed.add(node); resize.observe(node); }
-    scheduleScrollHint();
+    messages.querySelectorAll('iframe').forEach(frame => generationScrollFollow?.watchFrame(frame));
+    changed();
   };
   new MutationObserver(watch).observe(messages, {subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['style','class','hidden','data-thinking-state']});
   watch();
@@ -733,7 +737,7 @@ function createAssistantMessage(question, options = {}) {
   updateThinkingSummary(article, "", { live: true });
   article.taskContext = options.taskContext || null;
   if (options.target) options.target.append(article);
-  else appendMessage(article, true);
+  else { generationScrollFollow?.start(article); appendMessage(article, true); }
   return article;
 }
 
@@ -6338,6 +6342,7 @@ function isNearBottom() {
 }
 
 function keepScrollPosition() {
+  generationScrollFollow?.changed();
   scheduleScrollHint();
 }
 
