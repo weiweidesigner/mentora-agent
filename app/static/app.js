@@ -1225,7 +1225,7 @@ function withArtifactWidgetControl(node,item={}){
     const doc=root.ownerDocument||root;
     const title=root.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');
     const actionHost=title?.closest('header')?.querySelector('[data-widget-title-action-anchor]')||title;
-    if(title?.textContent.trim()&&!actionHost.querySelector('[data-widget-title-action]')&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==actionHost){
+    if(title?.textContent.trim()&&!actionHost.querySelector('[data-widget-title-action]')&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==actionHost&&!button.isConnected){
       if(!doc.querySelector('[data-widget-title-button-style]')){
         const style=doc.createElement('style');style.dataset.widgetTitleButtonStyle='true';
         style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px;padding:5px 10px 5px 0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:0;pointer-events:none;transition:opacity .15s ease;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;pointer-events:auto;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
@@ -1237,6 +1237,10 @@ function withArtifactWidgetControl(node,item={}){
       title.style.overflow='visible';title.style.maxHeight='none';actionHost.append(button);
       shell.dataset.artifactTitle=title.textContent.trim();
     }
+    // One artifact owns one host action. Its outer title takes precedence over
+    // titles in nested chart documents; moving one button among those titles
+    // makes their MutationObservers move it back forever.
+    if(title?.textContent.trim())return;
     for(const frame of root.querySelectorAll('iframe')){
       const connect=()=>{
         // StreamViz keeps an opaque-origin sandbox. Its own runtime attaches the
