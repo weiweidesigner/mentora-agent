@@ -528,3 +528,17 @@ html[data-widget-canvas] #mount,html[data-widget-canvas] .tradingview-widget-con
     # adjacent hosted quote widgets, including after host theme switches.
     neutral = "if(new URLSearchParams(location.search).get('canvas')==='1'&&spec.widget==='symbol-overview')cfg.backgroundColor=theme==='dark'?'#202020':'#ffffff';\n"
     return artifact.replace("const wrapper=document.createElement('div');", neutral+"const wrapper=document.createElement('div');", 1)
+
+
+def upgrade_smart_money(artifact):
+    """Restyle saved Smart Money without fetching or changing trade rows."""
+    if 'id="smart-money-meta"' not in artifact:
+        return artifact
+    native = _native_rating('smart_money')
+    styles = re.search(r'<style>(.*?)</style>', native.TEMPLATE, re.S).group(1)
+    artifact = re.sub(r'<style>.*?</style>', lambda _: '<style>' + styles + '</style>', artifact, count=1, flags=re.S)
+    artifact = re.sub(r'<p\b[^>]*class="forecast-note"[^>]*>.*?</p>', '', artifact, flags=re.S)
+    if 'data-smart-money-embed-layout' not in artifact:
+        boot = "<script data-smart-money-embed-layout>document.documentElement.toggleAttribute('data-smart-money-embedded',window.parent!==window);</script>"
+        artifact = artifact.replace('</body>', boot + '</body>')
+    return artifact

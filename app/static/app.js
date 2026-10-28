@@ -6268,6 +6268,7 @@ function resizeReportDocumentFrame(frame) {
     const body = doc?.body;
     const root = doc?.documentElement;
     if (!body || !root) return 520;
+    if (doc.querySelector('.smart-money')) frame.dataset.businessComponent = 'smart_money';
     const canvas = doc.querySelector?.(".report-canvas");
     if (canvas) {
       const rect = canvas.getBoundingClientRect();

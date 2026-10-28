@@ -628,9 +628,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
         raise HTTPException(status_code=500, detail="cannot read generated artifact") from exc
     from app.search_images import upgrade_image_gallery
     artifact=upgrade_image_gallery(artifact)
-    # Saved Smart Money reports adopt the compact layout without refetching data.
-    if 'id="smart-money-meta"' in artifact:
-        artifact = re.sub(r'<p\b[^>]*class="forecast-note"[^>]*>.*?</p>', '', artifact, flags=re.S)
+    from app.artifact_upgrades import upgrade_smart_money
+    artifact = upgrade_smart_money(artifact)
     # The same document is served under /share-artifact/ and /generated/.
     # Preserve its original resource directory (images, styles, scripts) when
     # previewing it at the alternate route, including old FLUX documents.
