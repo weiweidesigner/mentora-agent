@@ -1319,3 +1319,21 @@ def test_deepseek_shell_nonzero_result_closes_matching_running_tool(tmp_path,mon
         'deepseek','离线软件测试',[],session_key='failed-tool-result'))
     phases=[d['phase'] for e,d in events if e=='tool_step' and d.get('callId')=='minute-test' and not d.get('semanticUpdate')]
     assert phases==['started','failed']
+
+
+def test_prompt_current_calendar_context_overrides_stale_history(tmp_path, monkeypatch):
+    import app.reasoning_frameworks as frameworks
+    from datetime import datetime
+    class Clock:
+        @classmethod
+        def now(cls, zone):
+            return datetime(2026, 10, 29, 15, 0, tzinfo=zone)
+    monkeypatch.setattr(frameworks, 'datetime', Clock)
+    generated = tmp_path / 'generated'
+    generated.mkdir()
+    client = LocalAgentFrameworks(project_root=tmp_path, generated_dir=generated)
+    for framework in ('codex', 'deepseek'):
+        prompt = client._prompt(framework, '这个月表现最差的议员都是谁', [], [{'role':'assistant','text':'2025年排名'}])
+        assert '2026-10-29T15:00:00+08:00' in prompt
+        assert '本月是本月1日至今天' in prompt
+        assert '保留问句的排序方向' in prompt

@@ -29,7 +29,7 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
     "kline.py": ("k线", "k線", "蜡烛图", "行情图", "candlestick", "price chart"),
     "multi_kline.py": ("多k线", "多标的k线", "多周期k线", "compare candlestick"),
     "suspicious_trades.py": ("可疑交易线索", "可疑交易", "议员交易关联事件", "Suspicious Trade", "suspicious_trade", "交易事件窗口"),
-    "congress_leaderboard.py": ("议员交易排行榜", "国会议员收益排名", "议员交易活跃度", "congress trade leaderboard", "congress returns ranking"),
+    "congress_leaderboard.py": ("议员交易排行榜", "国会议员收益排名", "议员交易活跃度", "这个月表现最差的议员都是谁", "本月表现最好的议员", "议员投资表现最差", "congress trade leaderboard", "congress returns ranking"),
     "congress_recent_trades.py": ("国会近期交易", "近期议员交易", "国会最新披露", "美国国会交易记录", "recent congress trades", "recent trades", "按交易日期筛选"),
     "politician_trades.py": ("议员交易", "格林交易", "佩洛西交易", "议员买卖", "政治人物交易", "季度交易金额", "交易行业", "politician trades", "top traded industry"),
     "politician_holdings.py": ("议员持仓", "议员持股", "国会议员持仓", "政治人物持仓", "佩洛西持仓", "格林持仓", "politician holdings", "top holdings", "current holdings"),

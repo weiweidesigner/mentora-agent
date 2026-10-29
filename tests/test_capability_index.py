@@ -99,3 +99,10 @@ def test_visualization_query_pre_resolves_only_streamviz_presentation(tmp_path):
     rendered = shortlist.render()
     assert "优先使用 StreamViz" in rendered
     assert "不要再读取 generic-chart" in rendered
+
+
+def test_congress_performance_ranking_questions_retrieve_native_component():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('这个月表现最差的议员都是谁', '本月表现最好的议员', '今年哪些美国议员投资收益最低', '今年以来美国议员投资表现排名'):
+        shortlist = index.shortlist(question)
+        assert 'congress_leaderboard.py' in [item['script'] for item in shortlist.modules], question
