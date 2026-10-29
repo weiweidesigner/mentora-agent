@@ -388,7 +388,7 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:
             conventions.append("JSON 文件路径传 --payload；--data-json 只传内联 JSON，不传文件路径。")
         if script.name == "politician_holdings.py":
-            conventions.append("议员持仓组件必须提供模型按当前问题与证据生成的 --title；--name/--human-id/--url 三选一，完整读取所有持仓，--page-size 仅控制表格展示，不改变总量或饼图。先读 schema，不自行推算 Other。")
+            conventions.append("议员持仓组件必须提供模型按当前问题与证据生成的 --title；--name/--human-id/--url 三选一，完整读取所有持仓并滚动展示，不显示分页按钮，不改变总量或饼图。先读 schema，不自行推算 Other。")
         if script.name == "smart_money.py":
             conventions.append("smart money 是组件库名称。展示标题必须由模型根据当前用户问题和已取得的数据生成，通过 --title 传入；不要将组件库名称固定用作标题。表格下不添加额外说明。")
         if script.name == "kline.py":

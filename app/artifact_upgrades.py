@@ -573,3 +573,27 @@ def upgrade_politician_performance(artifact, depth=0):
         payload.update(profile={'name':name,'party':subtitle[0],'state':subtitle[1] if len(subtitle)>1 else '', 'avatarUrl':html.unescape(image[1]) if image else ''},history=points,totalReturn=config['periods']['ALL']['returnPercent']/100,period=config['period'],theme=theme[1] if theme else 'light',language=language[1] if language else 'en',title=content(r'<h2[^>]*data-business-title[^>]*>(.*?)</h2>'))
         return _native_rating('politician_performance').render_html(payload)
     except (ValueError,KeyError,TypeError):return artifact
+
+
+def upgrade_politician_holdings(artifact):
+    """Unpage saved holdings from their existing rows; no market-data refetch."""
+    if 'id="politician-holdings-meta"' not in artifact or 'data-holdings-layout="2"' in artifact:return artifact
+    try:
+        native=_native_rating('politician_holdings')
+        declaration=re.search(r'\bconst\s+config\s*=\s*',artifact)
+        if not declaration:return artifact
+        config=json.JSONDecoder().raw_decode(artifact[declaration.end():])[0]
+        metadata=re.search(r'<script[^>]*id="politician-holdings-meta"[^>]*>(.*?)</script>',artifact,re.S)
+        meta=json.loads(metadata[1]) if metadata else {}
+        locale=re.search(r'<html[^>]*lang="([^"]+)"',artifact)
+        heading=native.holdings_heading(locale[1] if locale else 'en',meta.get('fetchedAt'))
+        artifact=re.sub(r'<div class="profile-name">.*?</div><div class="profile-meta">.*?</div>',lambda _:heading,artifact,count=1,flags=re.S)
+        artifact=re.sub(r'<nav class="pagination".*?</nav>','',artifact,flags=re.S)
+        artifact=re.sub(r'<tr\b[^>]*data-row="[^"]+"[^>]*>',lambda m:re.sub(r'\s+hidden(?:="[^"]*")?','',m[0]),artifact)
+        styles=re.search(r'<style>(.*?)</style>',native.TEMPLATE,re.S)[1]
+        artifact=re.sub(r'<style>.*?</style>',lambda _:'<style>'+styles+'</style>',artifact,count=1,flags=re.S)
+        boot=native.TEMPLATE.split('</script><script>',1)[1].split('</script>',1)[0]
+        boot=boot.replace('__CONFIG__',json.dumps(config,ensure_ascii=False).replace('<',chr(92)+'u003c'))
+        artifact=re.sub(r'<script>\s*const config=.*?</script>',lambda _:'<script>'+boot+'</script>',artifact,count=1,flags=re.S)
+        return artifact.replace('<main class="politician-holdings">','<main class="politician-holdings" data-holdings-layout="2">',1)
+    except (ValueError,KeyError,TypeError,IndexError):return artifact

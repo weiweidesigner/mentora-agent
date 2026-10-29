@@ -55,5 +55,17 @@ def test_endpoint_returns_compressed_media_and_rejects_redirects(monkeypatch):
 def test_holdings_center_portrait_and_stock_icons_share_compression_route():
     source='<main><img src="https://cdn.ainvest.com/icon/ownership/p.png"><img data-stock-logo src="https://cdn.ainvest.com/icon/us/AMD.png"></main><script id="politician-holdings-meta">{"total":75}</script>'
     result=m.upgrade_business_images(source)
-    assert 'size=112' in result and 'size=48' in result and '{"total":75}' in result
+    assert 'size=336' in result and 'size=48' in result and '{"total":75}' in result
     assert result==m.upgrade_business_images(result)
+
+
+def test_large_portraits_keep_high_density_and_upgrade_saved_proxy_urls():
+    image=Image.new('RGB',(600,600),(140,80,100));data=BytesIO();image.save(data,format='PNG')
+    result=m.compress_image(data.getvalue(),336)
+    assert Image.open(BytesIO(result)).size==(336,336)
+    small=Image.new('RGB',(168,181),(137,83,109));original=BytesIO();small.save(original,format='PNG')
+    portrait=Image.open(BytesIO(m.compress_image(original.getvalue(),336)))
+    assert portrait.size==(168,181) and portrait.getpixel((5,5))[:3]==(137,83,109)
+    old='<img src="../api/business-image?url=https%3A%2F%2Fcdn.ainvest.com%2Ficon%2Fownership%2Fp.png&amp;size=112"><script id="politician-holdings-meta">{}</script>'
+    upgraded=m.upgrade_business_images(old)
+    assert 'size=336' in upgraded and upgraded==m.upgrade_business_images(upgraded)

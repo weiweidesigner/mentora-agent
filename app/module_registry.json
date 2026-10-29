@@ -414,7 +414,7 @@
     "name": "politician_holdings",
     "script": "politician_holdings.py",
     "label": "议员持仓",
-    "description": "指定美国议员的当前持仓与配置占比：原生小尺寸细环饼图、中心人物头像、底部紧凑图例；下方原生分页表格含股票头像、代码、公司、股数、占比和金额。通过 --name、--human-id 或 AInvest 人物 --url 选择人物，不要求股票代码。全部分页按需获取，表格分页只控制展示、不改变饼图或持仓总量。不缓存、不轮询、不建定时任务。--title 必须由模型根据本次问题和证据生成，不用组件名称。先读 politician_holdings.schema.json。",
+    "description": "指定美国议员的当前持仓与配置占比：原生小尺寸细环饼图、中心人物头像、底部紧凑图例；下方原生滚动表格含股票头像、代码、公司、股数、占比和金额。通过 --name、--human-id 或 AInvest 人物 --url 选择人物，不要求股票代码。全部分页按需获取，表格全部行滚动展示、无分页按钮，顶部展示主要持仓与本次数据更新日期。不缓存、不轮询、不建定时任务。--title 必须由模型根据本次问题和证据生成，不用组件名称。先读 politician_holdings.schema.json。",
     "source": "business-charts-repository"
   }
 ]
