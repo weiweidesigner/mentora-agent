@@ -50,3 +50,10 @@ def test_endpoint_returns_compressed_media_and_rejects_redirects(monkeypatch):
     count=len(calls)
     assert client.get('/api/business-image',params={'url':'https://localhost/a.png'}).status_code==400
     assert len(calls)==count
+
+
+def test_holdings_center_portrait_and_stock_icons_share_compression_route():
+    source='<main><img src="https://cdn.ainvest.com/icon/ownership/p.png"><img data-stock-logo src="https://cdn.ainvest.com/icon/us/AMD.png"></main><script id="politician-holdings-meta">{"total":75}</script>'
+    result=m.upgrade_business_images(source)
+    assert 'size=112' in result and 'size=48' in result and '{"total":75}' in result
+    assert result==m.upgrade_business_images(result)

@@ -1183,5 +1183,22 @@
     "width": 6,
     "height": 16,
     "defaultSymbols": []
+  },
+  {
+    "id": "politician_holdings",
+    "title": "议员持仓",
+    "category": "资金与回报",
+    "description": "查看指定议员的持仓配置：人物头像环形图，以及带股票头像的持仓表格。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "politician_holdings.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 6,
+    "height": 24,
+    "defaultSymbols": []
   }
 ]

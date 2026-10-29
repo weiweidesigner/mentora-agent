@@ -6268,6 +6268,7 @@ function resizeReportDocumentFrame(frame) {
     const body = doc?.body;
     const root = doc?.documentElement;
     if (!body || !root) return 520;
+    if (doc.querySelector('.politician-holdings')) frame.dataset.businessComponent = 'politician_holdings';
     if (doc.querySelector('.smart-money')) frame.dataset.businessComponent = 'smart_money';
     if (doc.querySelector('.politician-performance,.multi-politician-performance')) frame.dataset.businessComponent = 'politician_performance';
     const canvas = doc.querySelector?.(".report-canvas");

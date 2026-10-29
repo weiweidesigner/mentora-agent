@@ -56,14 +56,14 @@ def business_image(url: str, size: int = Query(default=72)):
 
 def upgrade_business_images(artifact, depth=0):
     """Use public thumbnail URLs in known native cards, preserving source URLs/data."""
-    if 'id="smart-money-meta"' not in artifact and 'id="politician-performance-meta"' not in artifact:
+    if 'id="smart-money-meta"' not in artifact and 'id="politician-performance-meta"' not in artifact and 'id="politician-holdings-meta"' not in artifact:
         return artifact
     if depth > 4:return artifact
     def child(match):
         original=html.unescape(match[2]);updated=upgrade_business_images(original,depth+1)
         return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
     artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
-    portrait_size=112 if 'id="politician-performance-meta"' in artifact else 72
+    portrait_size=112 if 'id="politician-performance-meta"' in artifact or 'id="politician-holdings-meta"' in artifact else 72
     def update(match):
         tag=match[0]
         src=re.search(r'\bsrc="([^"]+)"',tag)
