@@ -38,6 +38,20 @@ from app.capability_index import CapabilityIndex
 from app.cost_monitor import COSTS
 
 
+def _tool_result_failed(data, message, observation):
+    if message.get('isError') or data.get('isError'):
+        return True
+    source=message.get('source') if isinstance(message.get('source'),dict) else {}
+    for container in (data,message,source):
+        for key in ('exitCode','exit_code'):
+            code=container.get(key)
+            if isinstance(code,int) and not isinstance(code,bool) and code!=0:return True
+    if isinstance(observation,str):
+        match=re.search(r'\[exit code:\s*(-?\d+)\]\s*$',observation)
+        if match and int(match[1])!=0:return True
+    return False
+
+
 class ReasoningFrameworkError(RuntimeError):
     pass
 
@@ -2447,6 +2461,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                             blocks = message.get("content") or []
                             observation = "\n".join(str(block.get("text") or "") for block in blocks
                                                     if isinstance(block, dict) and block.get("type") == "text")
+                    if event_type == 'tool/result' and _tool_result_failed(data,message,observation):
+                        phase='failed'
                     params_text = display_arguments if isinstance(display_arguments, str) else json.dumps(display_arguments, ensure_ascii=False)
                     tool_step = {
                         "index": tool_index, "total": tool_index, "tool": name, "script": name,

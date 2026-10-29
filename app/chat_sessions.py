@@ -101,9 +101,25 @@ class ChatSessions:
             row=db.execute('SELECT payload FROM sessions WHERE owner=? AND id=?',(run['owner'],run['session_id'])).fetchone()
             session=json.loads(row['payload']);session.update(status='running',updatedAt=time.time()*1000)
             if event in {'final','error'}:
+                prior_events=[(row['event'],json.loads(row['data'])) for row in db.execute(
+                    'SELECT event,data FROM chat_events WHERE run_id=? ORDER BY seq',(run_id,))]
+                pending={}
+                for prior_event,prior_data in prior_events:
+                    if prior_event!='tool_step' or not prior_data.get('callId'):continue
+                    call_id=prior_data['callId']
+                    if prior_data.get('phase')=='started':pending[call_id]=prior_data
+                    else:pending.pop(call_id,None)
+                for prior_data in pending.values():
+                    closed={**prior_data,'phase':'failed','semanticUpdate':False,
+                            'observation':'本轮已结束，工具未返回完成结果。',
+                            'error':{'type':'incomplete_tool_result','message':'未收到工具结束回执'}}
+                    db.execute('INSERT INTO chat_events VALUES(?,?,?,?)',
+                               (run_id,seq,'tool_step',json.dumps(closed,ensure_ascii=False)))
+                    seq+=1
+                    prior_events.append(('tool_step',closed))
                 blocks=[]
-                for prior in db.execute('SELECT event,data FROM chat_events WHERE run_id=? ORDER BY seq',(run_id,)):
-                    reduce_stream_block(blocks,prior['event'],json.loads(prior['data']))
+                for prior_event,prior_data in prior_events:
+                    reduce_stream_block(blocks,prior_event,prior_data)
                 if event=='final':
                     shown={str(block.get('data',{}).get('htmlUrl') or block.get('data',{}).get('url') or '') for block in blocks if block['kind']=='visualization'}
                     artifacts=list(data.get('reportArtifacts') or [])

@@ -1288,3 +1288,34 @@ def test_generated_file_stream_reaches_gateway_before_tool_result_and_final(tmp_
     assert rest[-1][0]=='final'
     assert rest[-1][1]['fileArtifacts'][0]['type']=='HTML'
     client.close()
+
+
+@pytest.mark.parametrize('data,message,observation,expected',[
+    ({},{'isError':True},'',True),
+    ({'exitCode':1},{},'',True),
+    ({},{'source':{'exit_code':-9}},'',True),
+    ({},{},'{"ok":false}\n[exit code: 1]',True),
+    ({},{},'finished\n[exit code: 0]',False),
+    ({},{},'discussion of exit code 1 is ordinary output',False),
+])
+def test_tool_result_failure_follows_execution_receipt(data,message,observation,expected):
+    from app.reasoning_frameworks import _tool_result_failed
+    assert _tool_result_failed(data,message,observation) is expected
+
+
+def test_deepseek_shell_nonzero_result_closes_matching_running_tool(tmp_path,monkeypatch):
+    monkeypatch.setenv('DSH_HOME',str(tmp_path/'dsh'))
+    class Harness:
+        def __init__(self,**kwargs):pass
+        def close(self):pass
+        def run(self,prompt,*,session_id,on_notification):
+            def emit(kind,data):
+                on_notification(SimpleNamespace(method='session.event',payload={'sessionId':session_id,'event':{'type':kind,'data':data}}))
+            emit('tool/call',{'callId':'minute-test','name':'bash','arguments':{'command':'offline-minute-test'}})
+            emit('tool/result',{'message':{'toolCallId':'minute-test','content':[{'type':'text','text':'{"ok":false,"error":"layout failed"}\n[exit code: 1]'}]}})
+            return SimpleNamespace(session_id=session_id,final_response='执行失败，未生成图表。',events=[],notifications=[])
+    monkeypatch.setitem(sys.modules,'deepseek_harness',SimpleNamespace(DeepSeekHarness=Harness))
+    events=list(LocalAgentFrameworks(project_root=tmp_path,generated_dir=tmp_path/'generated').stream(
+        'deepseek','离线软件测试',[],session_key='failed-tool-result'))
+    phases=[d['phase'] for e,d in events if e=='tool_step' and d.get('callId')=='minute-test' and not d.get('semanticUpdate')]
+    assert phases==['started','failed']

@@ -185,3 +185,23 @@ def test_cancel_api_invokes_runtime_termination_hook(tmp_path):
             assert cancelled==['session-example']
     finally:
         release.set();store.pool.shutdown(wait=True)
+
+
+@pytest.mark.parametrize('terminal',['final','error'])
+def test_terminal_event_closes_only_tools_missing_results_for_live_and_replay(tmp_path,terminal):
+    store=ChatSessions(tmp_path)
+    def execute(*_):
+        for call_id in ('finished','pending'):
+            yield 'tool_step',{'callId':call_id,'phase':'started','tool':'bash','params':['command']}
+        yield 'tool_step',{'callId':'finished','phase':'completed','tool':'bash','observation':'real output'}
+        yield terminal,{'interpretation':'done'} if terminal=='final' else {'detail':'failed'}
+    run=store.start('owner',Payload(question='software fixture'),execute)
+    store.pool.shutdown(wait=True)
+    events=store.activity('owner',run['runId'])['events']
+    tools=[row['data'] for row in events if row['event']=='tool_step']
+    assert tools[-1]['callId']=='pending' and tools[-1]['phase']=='failed'
+    assert [tool['phase'] for tool in tools if tool['callId']=='finished']==['started','completed']
+    replay=''.join(store.events('owner',run['runId']))
+    assert replay.index('incomplete_tool_result')<replay.index('event: '+terminal)
+    blocks=store.sessions('owner')[0]['messages'][-1]['streamBlocks']
+    assert next(b for b in blocks if b.get('id')=='pending')['data']['phase']=='failed'
