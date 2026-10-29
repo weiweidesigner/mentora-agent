@@ -63,6 +63,12 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   const headings = new WeakSet();
   const repair = doc => {
     if (!doc?.documentElement) return;
+    // Saved politician reports use the same full-height flow as new components.
+    if (doc.querySelector('.suspicious-trades .signal-list,.multi-politician-events .signal-list') && !doc.querySelector('style[data-politician-event-flow]')) {
+      const flow=doc.createElement('style');flow.dataset.politicianEventFlow='true';
+      flow.textContent=':is(.suspicious-trades,.multi-politician-events) .signal-list{height:auto!important;max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important}';
+      (doc.head||doc.documentElement).append(flow);
+    }
     if (!doc.documentElement.dataset.businessUi && !doc.querySelector('style[data-artifact-segments]')) {
       const style=doc.createElement('style');
       style.dataset.artifactSegments='true';
