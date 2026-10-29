@@ -160,6 +160,10 @@ def answer_component_tag(answer, generated_dir=None, category='mine'):
     if answer.get('videos') or any(isinstance(item,dict) and item.get('kind')=='video' for item in blocks):labels.append('视频')
     if not labels:
         labels.append({'reports':'可视化报告','charts':'金融图表','analysis':'数据分析','videos':'视频','art':'绘图'}.get(category,'图文分析'))
+    # A business card is named for its business component, not helper plots.
+    from app.widget_capabilities import GENERIC_TITLES
+    if any(label in set(_component_names().values()) for label in labels):
+        labels=[label for label in labels if label not in set(GENERIC_TITLES.values())]
     return ' · '.join(dict.fromkeys(labels))
 
 

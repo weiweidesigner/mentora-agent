@@ -160,7 +160,7 @@ def test_component_tags_use_local_rendered_evidence_and_preserve_mixed_types(tmp
     answer={'interpretation':'正文提到 AInvest 和 TradingView，不构成组件证据。','reportArtifacts':[
         {'url':'/share-artifact/business.html'},{'url':'/generated/generic.html'},
         {'url':'/share-artifact/photo.png'},{'url':'/generated/business.html'}]}
-    assert answer_component_tag(answer,tmp_path)=='议员投资表现 · 柱状图 · 图片'
+    assert answer_component_tag(answer,tmp_path)=='议员投资表现 · 图片'
     assert answer_component_tag({'interpretation':answer['interpretation']},tmp_path)=='图文分析'
     assert answer_component_tag({'reportArtifacts':[{'url':'https://external.test/generated/business.html'},{'url':'/generated/%2e%2e%2fbusiness.html'}]},tmp_path)=='图文分析'
 
@@ -180,3 +180,14 @@ def test_chinese_component_names_and_search_gallery():
         ('<main data-component-type="icon">',['图标']),
     ]
     for document,expected in fixtures:assert _document_component_names(document)==expected
+
+
+def test_business_component_label_takes_priority_over_auxiliary_chart(tmp_path):
+    from app.case_favorites import answer_component_tag
+    (tmp_path/'ranking.html').write_text('<script>const config={"type":"bar"}</script>')
+    (tmp_path/'performance.html').write_text('<main class="multi-politician-performance"></main>')
+    ranking={'url':'/generated/ranking.html'}
+    performance={'url':'/generated/performance.html'}
+    for artifacts in ([ranking,performance],[performance,ranking]):
+        assert answer_component_tag({'reportArtifacts':artifacts},tmp_path)=='议员投资表现'
+    assert answer_component_tag({'reportArtifacts':[ranking]},tmp_path)=='柱状图'
