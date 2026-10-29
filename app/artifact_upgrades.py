@@ -597,3 +597,17 @@ def upgrade_politician_holdings(artifact):
         artifact=re.sub(r'<script>\s*const config=.*?</script>',lambda _:'<script>'+boot+'</script>',artifact,count=1,flags=re.S)
         return artifact.replace('<main class="politician-holdings">','<main class="politician-holdings" data-holdings-layout="3">',1).replace('data-holdings-layout="2"','data-holdings-layout="3"')
     except (ValueError,KeyError,TypeError,IndexError):return artifact
+
+
+def upgrade_compact_generic_pie(artifact, depth=0):
+    """Trim saved generic pie whitespace/badges without touching values or geometry."""
+    if depth>4:return artifact
+    import html
+    def child(match):
+        original=html.unescape(match[2]);updated=upgrade_compact_generic_pie(original,depth+1)
+        return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
+    artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
+    if 'class="pie-component' not in artifact or 'data-generic-pie-compact="1"' in artifact or 'data-renderer-version="pie-spacing-v5"' in artifact:return artifact
+    artifact=re.sub(r'<div\b[^>]*class="pie-badge"[^>]*>.*?</div>','',artifact,flags=re.S)
+    style='<style data-generic-pie-compact="1">.pie-component{min-height:0!important;height:auto!important;padding-bottom:0!important;margin-bottom:0!important}.pie-header{grid-template-columns:minmax(0,1fr)!important}.pie-badge{display:none!important}</style>'
+    return re.sub(r'</head\s*>',lambda _:style+'</head>',artifact,count=1,flags=re.I)

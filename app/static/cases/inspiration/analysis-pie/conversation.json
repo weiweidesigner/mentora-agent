@@ -10,12 +10,12 @@
       "script": "deepseek",
       "reason": "由 DeepSeek Harness 自主规划并执行。"
     },
-    "htmlUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261015-chart-layout",
-    "reportUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261015-chart-layout",
+    "htmlUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261029-compact-pie",
+    "reportUrl": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261029-compact-pie",
     "reportArtifacts": [
       {
         "path": "case:inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html",
-        "url": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261015-chart-layout"
+        "url": "/static/cases/inspiration/analysis-pie/inspiration-real-analysis-pie-aapl-fy2025-product-revenue.html?v=20261029-compact-pie"
       }
     ],
     "payloadUrl": null,

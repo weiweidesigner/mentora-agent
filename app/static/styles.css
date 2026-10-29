@@ -5412,3 +5412,6 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .reportTooltipPortal:is([data-arrow="left"],[data-arrow="right"])::after{top:var(--report-tooltip-arrow-y,50%);bottom:auto;transform:translateY(-50%);border:0;border-top:6px solid transparent;border-bottom:6px solid transparent}
 .reportTooltipPortal[data-arrow="left"]::after{left:-6px;right:auto;border-right:6px solid var(--report-tooltip-bg)}
 .reportTooltipPortal[data-arrow="right"]::after{left:auto;right:-6px;border-left:6px solid var(--report-tooltip-bg)}
+
+:is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-generic-component="pie"]){margin-bottom:8px}
+:is(.streamChartSlot,.chatArtifactShell):has(iframe[data-generic-component="pie"]) :is(.chatArtifactShell,.reportFrameShell){margin:0}

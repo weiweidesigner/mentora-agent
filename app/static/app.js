@@ -6274,6 +6274,7 @@ function resizeReportDocumentFrame(frame) {
     const body = doc?.body;
     const root = doc?.documentElement;
     if (!body || !root) return 520;
+    if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
     if (doc.querySelector('.politician-holdings')) frame.dataset.businessComponent = 'politician_holdings';
     if (doc.querySelector('.smart-money')) frame.dataset.businessComponent = 'smart_money';
     if (doc.querySelector('.politician-performance,.multi-politician-performance')) frame.dataset.businessComponent = 'politician_performance';
@@ -6282,7 +6283,7 @@ function resizeReportDocumentFrame(frame) {
       const rect = canvas.getBoundingClientRect();
       if (rect.height > 80) return Math.ceil(rect.bottom);
     }
-    const intrinsicContainer = doc.querySelector?.('.multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
+    const intrinsicContainer = doc.querySelector?.('.pie-component, .multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
     if (intrinsicContainer) {
       const rect = intrinsicContainer.getBoundingClientRect();
       const report = frame.closest('.mixedReport');
