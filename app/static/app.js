@@ -6275,6 +6275,7 @@ function resizeReportDocumentFrame(frame) {
     const root = doc?.documentElement;
     if (!body || !root) return 520;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
+    if (doc.querySelector('.politician-trades')) frame.dataset.businessComponent = 'politician_trades';
     if (doc.querySelector('.politician-holdings')) frame.dataset.businessComponent = 'politician_holdings';
     if (doc.querySelector('.smart-money')) frame.dataset.businessComponent = 'smart_money';
     if (doc.querySelector('.politician-performance,.multi-politician-performance')) frame.dataset.businessComponent = 'politician_performance';
