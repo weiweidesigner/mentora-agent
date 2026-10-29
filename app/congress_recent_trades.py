@@ -19,13 +19,15 @@ def component():
     return module
 
 @router.get('/api/congress-recent-trades')
-def recent_trades(response:Response,cursor:int=Query(default=1,ge=1,le=100000),direction:str=Query(default='all',pattern='^(all|buy|sell)$'),from_date:str='',to_date:str=''):
+def recent_trades(response:Response,cursor:int=Query(default=1,ge=1,le=100000),direction:str=Query(default='all',pattern='^(all|buy|sell)$'),from_date:str='',to_date:str='',all_dates:bool=False):
     response.headers['Cache-Control']='no-store'
     native=component()
-    try:native.validate_filters(direction,from_date,to_date)
+    try:
+        native.validate_filters(direction,from_date,to_date)
+        if all_dates and (from_date or to_date):raise ValueError('Conflicting date scope')
     except ValueError:raise HTTPException(400,'Invalid date range') from None
     if not _workers.acquire(blocking=False):raise HTTPException(429,'Please wait for the current disclosure request')
     try:
-        return native.fetch_window(cursor,direction,from_date,to_date,timeout=6)
+        return native.fetch_window(cursor,direction,from_date,to_date,timeout=6,all_dates=all_dates)
     except (ValueError,RuntimeError,TypeError):raise HTTPException(502,'AInvest disclosures are unavailable') from None
     finally:_workers.release()

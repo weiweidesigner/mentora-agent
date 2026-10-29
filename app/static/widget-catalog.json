@@ -1222,7 +1222,7 @@
     "id": "congress_recent_trades",
     "title": "国会近期交易",
     "category": "资金与回报",
-    "description": "美国议员近期披露交易，全部/买入/卖出和交易日期范围筛选，滚动加载，无分页。",
+    "description": "美国议员近期披露交易，全部/买入/卖出，时间由问句指定，默认今年以来；滚动加载，无分页和时间控件。",
     "provider": "business",
     "inputMode": "data",
     "allowEmptySymbols": true,

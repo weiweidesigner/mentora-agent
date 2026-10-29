@@ -13,3 +13,6 @@ def test_on_demand_route_validates_filters_and_preserves_source_status(monkeypat
  assert c.get('/api/congress-recent-trades?direction=other').status_code==422
  assert c.get('/api/congress-recent-trades?cursor=0').status_code==422
  assert c.get('/api/congress-recent-trades?from_date=2026-10-29&to_date=2026-01-01').status_code==400
+
+ assert c.get('/api/congress-recent-trades?all_dates=true&from_date=2026-01-01').status_code==400
+ r=c.get('/api/congress-recent-trades?all_dates=true');assert r.status_code==200 and calls[-1][1]['all_dates'] is True
