@@ -56,7 +56,7 @@ def business_image(url: str, size: int = Query(default=72)):
 
 def upgrade_business_images(artifact, depth=0):
     """Use public thumbnail URLs in known native cards, preserving source URLs/data."""
-    if 'id="congress-leaderboard-data"' not in artifact and 'id="congress-recent-trades-data"' not in artifact and 'id="smart-money-meta"' not in artifact and 'id="politician-performance-meta"' not in artifact and 'id="politician-holdings-meta"' not in artifact and 'id="politician-trades-meta"' not in artifact:
+    if 'id="suspicious-trades-data"' not in artifact and 'id="congress-leaderboard-data"' not in artifact and 'id="congress-recent-trades-data"' not in artifact and 'id="smart-money-meta"' not in artifact and 'id="politician-performance-meta"' not in artifact and 'id="politician-holdings-meta"' not in artifact and 'id="politician-trades-meta"' not in artifact:
         return artifact
     if depth > 4:return artifact
     def child(match):

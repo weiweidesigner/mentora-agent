@@ -1251,5 +1251,22 @@
     "width": 12,
     "height": 22,
     "defaultSymbols": []
+  },
+  {
+    "id": "suspicious_trades",
+    "title": "可疑交易线索",
+    "category": "资金与回报",
+    "description": "议员交易与关联事件纵向列表，展示人物与股票头像、交易信息、事件摘要和日期，完整说明可展开；无泳道和分页。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "suspicious_trades.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 22,
+    "defaultSymbols": []
   }
 ]
