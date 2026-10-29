@@ -51,10 +51,12 @@ LEGACY_ARTIFACT_REDIRECTS = {
     "/generated/native-streamviz-bf812c5bdd59.html": "/generated/deepseek-ashare-review-streamviz-20261009.html",
 }
 
+from app.congress_recent_trades import router as congress_recent_trades_router
 from app.business_images import router as business_image_router
 
 app = FastAPI(title="Mentora presentation gateway")
 app.include_router(business_image_router)
+app.include_router(congress_recent_trades_router)
 app.include_router(video_thumbnail_router)
 app.include_router(kline_history_router)
 app.include_router(local_glm_router)

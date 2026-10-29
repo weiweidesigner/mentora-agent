@@ -423,5 +423,12 @@
     "label": "议员交易",
     "description": "指定美国议员的交易活动：左侧内部人交易风格的季度美元买卖柱子、SPY日线与范围滑块；右侧中心人物头像行业占比饼图；下方带股票头像、圆角外框和固定表头的滚动交易明细，无分页。--name/--human-id/人物--url 三选一，不要求股票代码。--years 1..5 控制左图时间范围，行业与表格保留源完整口径。--title 必须由模型生成。按需匿名取数，无缓存、轮询或定时任务。SPY不是SP500指数，披露日不是交易日。先读 politician_trades.schema.json。",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "congress_recent_trades",
+    "script": "congress_recent_trades.py",
+    "label": "国会近期交易",
+    "description": "美国国会全市场近期披露交易列表，区别 Smart Money 的 suspicious_trade 精选信号和指定议员活动。无需股票或人物代码；全部/买入/卖出中性 Tab，人物头像和党派/州、股票头像、方向、交易规模、披露日、交易日、收益率。圆角细边框固定表头滚动表格，无分页按钮；滚动按需加载。时间范围按交易日筛选，默认全部，支持 --from-date/--to-date，以及界面1M/3M/YTD/自定义。源接口仅用已验证 page/size/diff_type，通过按需扫描匹配日期，不发明日期参数；初始窗口不代表全部历史。--title必须由模型生成。无行情缓存、轮询或定时任务。先读 congress_recent_trades.schema.json。",
+    "source": "business-charts-repository"
   }
 ]
