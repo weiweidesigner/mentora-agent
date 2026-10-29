@@ -63,6 +63,15 @@ html[data-mentora-embed="chat"] :is([data-aime-streamviz-root],[data-visualize-r
   const headings = new WeakSet();
   const repair = doc => {
     if (!doc?.documentElement) return;
+    // Apply the same compact plot height to saved event charts, including old mobile CSS.
+    if (doc.defaultView?.frameElement?.classList.contains('native-price-chart') && !doc.querySelector('style[data-politician-plot-height]')) {
+      const compact=doc.createElement('style');compact.dataset.politicianPlotHeight='true';
+      compact.textContent='.group-line-component .chart-stage{height:200px!important;min-height:200px!important}';
+      (doc.head||doc.documentElement).append(compact);
+      const resize=()=>doc.defaultView?.dispatchEvent(new doc.defaultView.Event('resize'));
+      if(doc.readyState==='loading')doc.addEventListener('DOMContentLoaded',resize,{once:true});
+      else doc.defaultView.requestAnimationFrame(resize);
+    }
     // Saved politician reports use the same full-height flow as new components.
     if (doc.querySelector('.suspicious-trades .signal-list,.multi-politician-events .signal-list') && !doc.querySelector('style[data-politician-event-flow]')) {
       const flow=doc.createElement('style');flow.dataset.politicianEventFlow='true';
