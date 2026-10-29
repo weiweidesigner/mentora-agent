@@ -442,7 +442,7 @@
     "name": "suspicious_trades",
     "script": "suspicious_trades.py",
     "label": "可疑交易线索",
-    "description": "AInvest议员交易与关联事件线索，纵向列表展示头像、股票、买卖、规模、交易日、事件说明与事件日；不使用泳道，不等于认定内幕交易。标题由模型生成。无需股票输入。先读suspicious_trades.schema.json。 首行左侧议员头像姓名，右侧交易日垂直居中对齐；下一行股票/方向/金额。披露日只保留在源数据中，不展示。下方直接展示源事件标题与完整原文，事件日与上方日期共用对齐列。12px左右内边距；不展示中文概括、相隔天数、事件窗口标题或折叠入口。",
+    "description": "AInvest议员交易与关联事件线索，纵向列表展示头像、股票、买卖、规模、交易日、事件说明与事件日；不使用泳道，不等于认定内幕交易。标题由模型生成。无需股票输入。先读suspicious_trades.schema.json。 首行左侧议员头像姓名，右侧交易日垂直居中对齐；下一行股票/方向/金额。披露日只保留在源数据中，不展示。下方中性背景展示事件标题与完整说明，无顶部分割线，事件日与上方日期共用对齐列。语言跟随用户输入：中文先 --data-only 取数，模型忠实翻译原事件标题和正文，eventTranslations[row.key][zh-CN或zh-Hant]={summary,description} 通过 --payload 交接，eventLanguage 默认 auto，--language 指定语言。原始 raw/rows 保持不变，原文可切换核对；不添加事实或推断动机，保留可能/预计等语气，缺失译文回退原文。12px左右内边距；不展示额外概括、相隔天数、事件窗口标题或折叠入口。",
     "source": "business-charts-repository"
   }
 ]
