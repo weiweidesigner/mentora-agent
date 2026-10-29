@@ -4103,12 +4103,14 @@ p {
 .inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:var(--bg); }
 .inspirationTabs::-webkit-scrollbar { display:none; }
 .inspirationTabs button { flex:none;white-space:nowrap; }
-.inspirationTabs button { transition:background-color .15s ease,color .15s ease,border-color .15s ease; }
-@media(hover:hover) { .inspirationTabs button:not([aria-selected="true"]):hover { color:var(--ink);background:var(--soft);border-color:var(--line); } .inspirationTabs button[aria-selected="true"]:hover { background:var(--soft-2); } }
+.inspirationTabs button { transition:color .15s ease; }
+@media(hover:hover) { .inspirationTabs button:hover { color:var(--ink); } }
 @media(prefers-reduced-motion:reduce) { .inspirationTabs button { transition:none; } }
 .inspirationEmpty { min-height:120px; margin:0; padding:24px 0; color:var(--muted); font-size:14px; }
-.inspirationTabs button { border:1px solid transparent; background:transparent; color:var(--muted); font:inherit; font-size:14px; padding:9px 16px; border-radius:999px; cursor:pointer; }
-.inspirationTabs button[aria-selected="true"] { color:var(--ink); background:var(--panel); border-color:color-mix(in srgb,var(--ink) 36%,var(--line)); }
+.inspirationTabs button { position:relative; border:0; background:transparent; color:var(--muted); font:inherit; font-size:14px; padding:9px 16px; border-radius:0; cursor:pointer; }
+.inspirationTabs button[aria-selected="true"] { color:var(--ink); }
+.inspirationTabs button::after { content:""; position:absolute; left:16px; right:16px; bottom:0; height:2px; border-radius:1px; background:transparent; }
+.inspirationTabs button[aria-selected="true"]::after { background:currentColor; }
 .inspirationTabs button:focus-visible,.inspirationPanel:focus-visible { outline:2px solid #8a7bff; outline-offset:3px; }
 .inspirationCategory + .inspirationCategory { margin-top:36px; }
 .inspirationCategoryHeader { margin-bottom:6px; }
@@ -4132,6 +4134,7 @@ p {
   .inspirationTabs::-webkit-scrollbar { display:none; }
   .inspirationCategoryHeader { position:sticky; top:104px; z-index:4; margin:0 -12px 6px; padding:10px 12px; background:var(--bg); }
   .inspirationTabs button { flex:none; white-space:nowrap; padding:8px 12px; font-size:13px; }
+  .inspirationTabs button::after { left:12px; right:12px; }
   .inspirationGrid { gap:12px; }
   .inspirationGrid .caseCard { padding:12px; }
   .inspirationGrid .caseCard :is(h4,h5) { font-size:15px; }
