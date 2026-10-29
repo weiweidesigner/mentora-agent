@@ -442,7 +442,7 @@
     "name": "suspicious_trades",
     "script": "suspicious_trades.py",
     "label": "可疑交易线索",
-    "description": "AInvest议员交易与关联事件线索，纵向列表展示头像、股票、买卖、规模、交易日、事件说明与事件日；不使用泳道，不等于认定内幕交易。标题由模型生成。无需股票输入。先读suspicious_trades.schema.json。",
+    "description": "AInvest议员交易与关联事件线索，纵向列表展示头像、股票、买卖、规模、交易日、事件说明与事件日；不使用泳道，不等于认定内幕交易。标题由模型生成。无需股票输入。先读suspicious_trades.schema.json。 桌面左1/3交易摘要、右2/3关联事件，手机上下排列；明确交易前/当日/后的日历天数，原文默认折叠。中文标题可经显式--payload添加eventTitles[key][zh-CN]忠实翻译，保持原始事件字段不变。",
     "source": "business-charts-repository"
   }
 ]
