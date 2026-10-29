@@ -181,3 +181,5 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 ### 与正文并行生成
 
 原生工具优先传 `title` 与 `brief`：完整提供已验证事实、单位、来源、限制、布局和结论。HTML 渲染任务独立运行；主 Agent 收到 `status: rendering` 后立即继续自己的正文，不等待、不轮询。宿主缓冲后续真实文字增量，HTML 验证成功后按顺序发送，并附上生成文件。pending 回执不代表文件完成。主 Agent 的原生工具只接收 `title` 与 `brief`，不要生成 `widget_code`；精确保留已有 HTML 时使用渲染脚本的 `html` 输入。渲染器不取数、不增加事实，也不代写答复正文。
+
+- 横向条形图的各行必须共享绘图区宽度和零基准线。HTML 行使用 `data-sv-bar-row` 的三列结构（名称、绘图区、固定 64px 数值列），绘图区标记 `data-sv-bar-plot`、数值标记 `data-sv-bar-value`。全负值绘图区设置 `data-sv-bar-baseline="right"`，统一右端零线向左延伸；全正值统一左端零线；混合正负共享同一零坐标和比例尺。不得让各行数值文字的固有宽度挤动零点。

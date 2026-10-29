@@ -96,6 +96,13 @@ Treat a horizontal bar chart as a compact three-column system: reserve no more t
 SVG width for right-aligned category labels, 78% for the plotting area, and 10% for values or
 annotations. Align the left edge of the label column with the card title's content edge; do not
 insert decorative outer gutters on either side of the chart.
+For HTML horizontal bar charts, use data-sv-bar-row on every row with three shared columns:
+category, minmax(0,1fr) plot, and a fixed 64px value column. Mark plot containers with
+data-sv-bar-plot and value labels with data-sv-bar-value; all rows must use the same column widths.
+Set data-sv-bar-baseline="right" on negative-only plots and "left" on positive-only plots.
+All-negative bars share a right-side zero baseline and extend left; all-positive bars share a
+left-side zero baseline. Mixed signs share one zero coordinate and scale across every row.
+Never let each row's value text width change its plotting width or zero baseline.
 For signed horizontal bars, keep category labels in a separate left column before the entire
 negative plotting extent. Reserve measured text width outside BOTH negative and positive bar ends;
 include those complete text bounds in the viewBox. Never put category names at the zero axis where

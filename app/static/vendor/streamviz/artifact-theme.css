@@ -297,3 +297,11 @@ html{-webkit-tap-highlight-color:transparent}
 /* Borderless components share the narrative edges; framed cards keep 12px. */
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root])[data-sv-unframed="true"],
 :root[data-theme] :is([data-aime-streamviz-root],[data-visualize-root]) [data-sv-unframed="true"]{padding-inline:0!important;margin-inline:0!important}
+
+/* Horizontal comparison rows share plot and value columns; labels never resize the scale. */
+[data-sv-bar-row]{display:grid!important;grid-template-columns:minmax(0,34%) minmax(0,1fr) var(--sv-bar-value-width,64px)!important;column-gap:8px!important;align-items:center;min-width:0}
+[data-sv-bar-cells]{display:contents!important}
+[data-sv-bar-plot]{position:relative;min-width:0;box-sizing:border-box}
+[data-sv-bar-value]{width:100%;min-width:0;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+[data-sv-bar-plot][data-sv-bar-baseline="right"]{border-inline-end:1px solid var(--sv-border-subtle)}
+[data-sv-bar-plot][data-sv-bar-baseline="left"]{border-inline-start:1px solid var(--sv-border-subtle)}
