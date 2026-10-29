@@ -1100,10 +1100,10 @@ function installReportTooltipPortal(frame) {
   const attached = new WeakSet();
   const copyNode = (source) => {
     if (source.nodeType === 3) return document.createTextNode(source.textContent);
-    if (source.nodeType !== 1 || !["DIV","SPAN","B","STRONG","SMALL","BR","UL","LI","P"].includes(source.tagName)) return document.createDocumentFragment();
+    if (source.nodeType !== 1 || !["DIV","SPAN","I","B","STRONG","SMALL","BR","UL","LI","P"].includes(source.tagName)) return document.createDocumentFragment();
     const clone = document.createElement(source.tagName.toLowerCase());
     const style = win.getComputedStyle(source);
-    for (const property of ["display","box-sizing","flex-direction","flex-wrap","flex-grow","flex-shrink","flex-basis","grid-template-columns","grid-auto-flow","gap","row-gap","column-gap","align-items","align-self","justify-content","min-width","max-width","min-height","padding","margin","color","background-color","border-radius","font-size","font-weight","font-family","font-variant-numeric","font-feature-settings","letter-spacing","line-height","white-space","text-align","overflow","text-overflow"]) clone.style.setProperty(property, style.getPropertyValue(property));
+    for (const property of ["display","box-sizing","flex-direction","flex-wrap","flex-grow","flex-shrink","flex-basis","grid-template-columns","grid-auto-flow","gap","row-gap","column-gap","align-items","align-self","justify-content","min-width","max-width","min-height","padding","padding-top","padding-right","padding-bottom","padding-left","margin","margin-top","margin-right","margin-bottom","margin-left","color","background-color","border-radius","font-size","font-weight","font-family","font-variant-numeric","font-feature-settings","letter-spacing","line-height","white-space","text-align","overflow","text-overflow"]) clone.style.setProperty(property, style.getPropertyValue(property));
     if (source.matches(".tip-dot,.tooltip-dot,.swatch")) {
       clone.style.width = style.width;
       clone.style.height = style.height;
@@ -1133,7 +1133,8 @@ function installReportTooltipPortal(frame) {
         document.body.append(reportTooltipPortal);
       }
       const portal = reportTooltipPortal;
-      portal.dataset.arrow = tip.dataset.tooltipArrow === "none" ? "none" : "bottom";
+      portal.dataset.arrow = tip.dataset.tooltipArrow === "none" ? "none" : tip.dataset.side === "right" ? "left" : tip.dataset.side === "left" ? "right" : "bottom";
+      const followsTouch = portal.dataset.arrow === "bottom" && gesture?.direction === "horizontal";
       activeReportTooltip = { frame, tip };
       portal.replaceChildren(...Array.from(tip.childNodes, copyNode));
       portal.hidden = false;
@@ -1145,15 +1146,20 @@ function installReportTooltipPortal(frame) {
       portal.style.width = Math.min(box.width * scaleX, window.innerWidth - 16) + "px";
       const arrowValue = style.getPropertyValue("--arrow-x") || style.getPropertyValue("--arrow-left") || style.getPropertyValue("--tooltip-arrow-left") || "50%";
       const arrow = arrowValue.includes("%") ? box.width * parseFloat(arrowValue) / 100 : parseFloat(arrowValue);
-      const anchor = gesture?.direction==="horizontal" ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
-      const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (gesture?.direction==="horizontal" ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));
+      const anchor = followsTouch ? chart.left+gesture.currentX : chart.left + (box.left + (Number.isFinite(arrow) ? arrow : box.width / 2)) * scaleX;
+      const left = Math.max(8, Math.min(window.innerWidth - portal.offsetWidth - 8, (followsTouch ? anchor-portal.offsetWidth/2 : chart.left + box.left * scaleX)));
       portal.style.left = left + "px";
       const scaleY = chart.height / (frame.clientHeight || chart.height);
       // Preserve the native bottom/arrow anchor, as in rating charts. The portal
       // may extend above its iframe; only the outer page viewport constrains it.
-      const preferredTop = chart.top + box.bottom * scaleY - portal.offsetHeight;
+      const sideArrow = portal.dataset.arrow === "left" || portal.dataset.arrow === "right";
+      const preferredTop = sideArrow ? chart.top + box.top * scaleY : chart.top + box.bottom * scaleY - portal.offsetHeight;
       portal.style.top = Math.max(8, Math.min(window.innerHeight - portal.offsetHeight - 8, preferredTop)) + "px";
       portal.style.setProperty("--report-tooltip-arrow-x", Math.max(12, Math.min(portal.offsetWidth - 12, anchor - left)) + "px");
+      const arrowYValue = style.getPropertyValue("--arrow-y") || "50%";
+      const arrowY = arrowYValue.includes("%") ? box.height * parseFloat(arrowYValue) / 100 : parseFloat(arrowYValue);
+      const anchorY = chart.top + (box.top + (Number.isFinite(arrowY) ? arrowY : box.height / 2)) * scaleY;
+      portal.style.setProperty("--report-tooltip-arrow-y", Math.max(10, Math.min(portal.offsetHeight - 10, anchorY - parseFloat(portal.style.top))) + "px");
       // Keep native layout measurements, but only the outer portal paints the tooltip.
       if (tip.style.visibility !== "hidden" || tip.style.getPropertyPriority("visibility") !== "important") tip.style.setProperty("visibility", "hidden", "important");
     };
@@ -1177,7 +1183,7 @@ function installReportTooltipPortal(frame) {
     const dx = Math.abs(event.clientX - gesture.x), dy = Math.abs(event.clientY - gesture.y);
     if(gesture.direction==="pending"&&Math.max(dx,dy)>6)gesture.direction=dx>=dy?"horizontal":"vertical";
     gesture.currentX=event.clientX;
-    if(gesture.direction==="horizontal"&&activeReportTooltip?.frame===frame&&reportTooltipPortal&&reportTooltipPortal.dataset.arrow!=="none"){
+    if(gesture.direction==="horizontal"&&activeReportTooltip?.frame===frame&&reportTooltipPortal&&reportTooltipPortal.dataset.arrow==="bottom"){
       const anchor=frame.getBoundingClientRect().left+event.clientX,width=reportTooltipPortal.offsetWidth;
       const left=Math.max(8,Math.min(window.innerWidth-width-8,anchor-width/2));
       reportTooltipPortal.style.left=left+"px";

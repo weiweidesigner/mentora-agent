@@ -577,7 +577,7 @@ def upgrade_politician_performance(artifact, depth=0):
 
 def upgrade_politician_holdings(artifact):
     """Unpage saved holdings from their existing rows; no market-data refetch."""
-    if 'id="politician-holdings-meta"' not in artifact or 'data-holdings-layout="2"' in artifact:return artifact
+    if 'id="politician-holdings-meta"' not in artifact or 'data-holdings-layout="3"' in artifact:return artifact
     try:
         native=_native_rating('politician_holdings')
         declaration=re.search(r'\bconst\s+config\s*=\s*',artifact)
@@ -595,5 +595,5 @@ def upgrade_politician_holdings(artifact):
         boot=native.TEMPLATE.split('</script><script>',1)[1].split('</script>',1)[0]
         boot=boot.replace('__CONFIG__',json.dumps(config,ensure_ascii=False).replace('<',chr(92)+'u003c'))
         artifact=re.sub(r'<script>\s*const config=.*?</script>',lambda _:'<script>'+boot+'</script>',artifact,count=1,flags=re.S)
-        return artifact.replace('<main class="politician-holdings">','<main class="politician-holdings" data-holdings-layout="2">',1)
+        return artifact.replace('<main class="politician-holdings">','<main class="politician-holdings" data-holdings-layout="3">',1).replace('data-holdings-layout="2"','data-holdings-layout="3"')
     except (ValueError,KeyError,TypeError,IndexError):return artifact

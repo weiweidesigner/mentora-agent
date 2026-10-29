@@ -18,3 +18,15 @@ for(const arrow of ['bottom','none'])test(`lifted multi-series tooltip preserves
  }
  w.dismissReportTooltip();assert.equal(portal.hidden,true);frame.reportTooltipCleanup();dom.window.close();
 });
+for (const side of ['right','left']) test(`pie tooltip keeps dot, typography and ${side} side pointer in outer portal`,async()=>{
+ const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only',pretendToBeVisual:true});const w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
+ doc.body.innerHTML=`<div class="tooltip" data-side="${side}" style="background:#303030;padding:10px 12px"><div style="display:flex;align-items:center;gap:8px;font-weight:600"><i class="tip-dot" style="display:block;width:8px;height:8px;border-radius:50%;background:rgb(0,180,140)"></i><span>Other</span></div><div style="padding-left:16px;font-size:14px;font-weight:400">19.27%</div></div>`;
+ const tip=doc.querySelector('.tooltip');tip.getBoundingClientRect=()=>({width:160,height:70,left:40,top:80,bottom:150});frame.getBoundingClientRect=()=>({width:800,height:600,left:20,top:160,bottom:760});Object.defineProperties(frame,{clientWidth:{value:800},clientHeight:{value:600}});
+ Object.defineProperties(w.HTMLElement.prototype,{offsetWidth:{get(){return this.classList.contains('reportTooltipPortal')?160:0}},offsetHeight:{get(){return this.classList.contains('reportTooltipPortal')?70:0}}});
+ w.eval(runtime);w.installReportTooltipPortal(frame);tip.classList.add('active');await new Promise(resolve=>setTimeout(resolve,50));
+ const portal=w.document.querySelector('.reportTooltipPortal');assert.ok(portal&&!portal.hidden);assert.equal(portal.dataset.arrow,side==='right'?'left':'right');
+ const dot=portal.querySelector('i');assert.ok(dot);assert.equal(dot.style.width,'8px');assert.equal(dot.style.height,'8px');assert.equal(dot.style.backgroundColor,'rgb(0, 180, 140)');assert.equal(portal.firstElementChild.style.fontWeight,'600');assert.equal(portal.lastElementChild.style.fontWeight,'400');assert.equal(portal.lastElementChild.style.paddingLeft,'16px');
+ const left=portal.style.left;for(const [type,x] of [['pointerdown',80],['pointermove',140]]){const event=new w.Event(type,{bubbles:true});Object.assign(event,{pointerType:'touch',clientX:x,clientY:50});doc.dispatchEvent(event)}
+ assert.equal(portal.style.left,left,'side-arrow pie tip must keep its native side position while touching');
+ frame.reportTooltipCleanup();dom.window.close();
+});
