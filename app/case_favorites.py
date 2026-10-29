@@ -81,25 +81,54 @@ def answer_preview(answer,generated_dir=None):
         if not data.get('provisional'):prose.append(str(block.get('text') or data.get('text') or ''))
     text=_body_excerpt('\n'.join(prose))
     if text:return text
-    if generated_dir:
-        root=Path(generated_dir).resolve()
-        artifacts=answer.get('reportArtifacts') if isinstance(answer.get('reportArtifacts'),list) else []
-        for item in [*artifacts,{'url':answer.get('reportUrl')}]:
-            if not isinstance(item,dict):continue
-            url=urlsplit(str(item.get('url') or item.get('htmlUrl') or ''))
-            if url.scheme or url.netloc:continue
-            match=re.fullmatch(r'/(?:[^/]+/)?(?:generated|share-artifact)/([^/]+\.html)',url.path)
-            if not match:continue
-            path=(root/unquote(match[1])).resolve()
-            if root not in path.parents or not path.is_file():continue
-            parser=_Paragraphs()
-            try:
-                with path.open(encoding='utf-8') as handle:parser.feed(handle.read(524288))
-            except (OSError,UnicodeError):continue
-            paragraphs=[_body_excerpt(value) for value in parser.paragraphs]
-            text=next((value for value in paragraphs if len(value)>=20),next((value for value in paragraphs if value),''))
-            if text:return text
+    for document in _artifact_documents(answer, generated_dir):
+        parser=_Paragraphs();parser.feed(document)
+        paragraphs=[_body_excerpt(value) for value in parser.paragraphs]
+        text=next((value for value in paragraphs if len(value)>=20),next((value for value in paragraphs if value),''))
+        if text:return text
     return ''
+
+def _artifact_documents(answer, generated_dir):
+    """Inspect bounded local artifacts only; never fetch links or follow traversal."""
+    if not generated_dir:return
+    root=Path(generated_dir).resolve()
+    artifacts=answer.get('reportArtifacts') if isinstance(answer.get('reportArtifacts'),list) else []
+    seen=set()
+    for item in [*artifacts,{'url':answer.get('reportUrl')}]:
+        if not isinstance(item,dict):continue
+        url=urlsplit(str(item.get('url') or item.get('htmlUrl') or ''))
+        if url.scheme or url.netloc:continue
+        match=re.fullmatch(r'/(?:[^/]+/)?(?:generated|share-artifact)/([^/]+\.html)',url.path)
+        if not match:continue
+        path=(root/unquote(match[1])).resolve()
+        if path in seen or root not in path.parents or not path.is_file():continue
+        seen.add(path)
+        try:
+            with path.open(encoding='utf-8') as handle:yield handle.read(524288)
+        except (OSError,UnicodeError):continue
+
+
+def answer_component_tag(answer, generated_dir=None, category='mine'):
+    """Classify rendered content, independently of its personal storage category."""
+    labels=[]
+    for document in _artifact_documents(answer,generated_dir):
+        document=html.unescape(document).lower()
+        if any(marker in document for marker in ('data-business-title','smart-money-meta','politician-performance-meta','politician-holdings-meta','politician-trades-meta')):
+            labels.append('AInvest')
+        elif 'tradingview' in document and ('tv.js' in document or 'embed-widget-' in document):labels.append('TradingView')
+        elif 'chart-component' in document or 'chartname' in document:labels.append('通用图表')
+        elif 'streamviz' in document:labels.append('StreamViz')
+        elif re.search(r'data-component-type=[\"\']icon(?:s)?[\"\']',document):labels.append('Icon')
+        else:labels.append('研究报告')
+    blocks=answer.get('streamBlocks') if isinstance(answer.get('streamBlocks'),list) else []
+    artifacts=answer.get('reportArtifacts') if isinstance(answer.get('reportArtifacts'),list) else []
+    if any(isinstance(item,dict) and (item.get('kind')=='image' or re.search(r'\.(?:png|jpe?g|webp|gif)(?:[?#]|$)',str(item.get('url') or ''))) for item in [*blocks,*artifacts]):labels.append('图片')
+    if re.search(r'!\[[^\]]*\]\(|\[\[AIME_IMAGE:',str(answer.get('interpretation') or '')):labels.append('图片')
+    if answer.get('videos') or any(isinstance(item,dict) and item.get('kind')=='video' for item in blocks):labels.append('视频')
+    if not labels:
+        labels.append({'reports':'研究报告','charts':'金融图表','analysis':'数据分析','videos':'视频','art':'图片'}.get(category,'图文分析'))
+    return ' · '.join(dict.fromkeys(labels))
+
 
 def create_router(store):
     router = APIRouter(prefix='/api/case-favorites')
@@ -124,7 +153,9 @@ def create_router(store):
             cases=[]
             for row in rows:
                 metadata=json.loads(row['metadata'])
-                metadata['preview']=answer_preview(json.loads(row['payload']).get('answer') or {},store.directory.parent/'generated')
+                answer=json.loads(row['payload']).get('answer') or {}
+                metadata['preview']=answer_preview(answer,store.directory.parent/'generated')
+                metadata['tag']=answer_component_tag(answer,store.directory.parent/'generated',metadata.get('category','mine'))
                 cases.append(metadata)
             return dict(cases=cases)
 
@@ -137,7 +168,7 @@ def create_router(store):
         key = 'favorite-' + hashlib.sha256((user + payload.category + fingerprint).encode()).hexdigest()[:32]
         now = dt.datetime.now(dt.timezone.utc).isoformat()
         metadata = dict(id=key, category=payload.category, title=payload.title.strip() or question[:40],
-                        question=question, preview=answer_preview(payload.answer,store.directory.parent/'generated'), tag='收藏',
+                        question=question, preview=answer_preview(payload.answer,store.directory.parent/'generated'), tag=answer_component_tag(payload.answer,store.directory.parent/'generated',payload.category),
                         cachedDate=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat(),
                         conversationUrl='/api/case-favorites/' + key, personal=True,
                         fingerprint=fingerprint)
@@ -145,7 +176,7 @@ def create_router(store):
             db.execute('BEGIN IMMEDIATE')
             existing = db.execute('SELECT metadata FROM case_favorites WHERE owner=? AND id=?', (user, key)).fetchone()
             if existing:
-                saved=json.loads(existing['metadata']);saved['preview']=metadata['preview'];return saved
+                saved=json.loads(existing['metadata']);saved.update(preview=metadata['preview'],tag=metadata['tag']);return saved
             db.execute('INSERT INTO case_favorites VALUES(?,?,?,?,?,?)',
                        (user, key, payload.category, json.dumps(metadata, ensure_ascii=False), content, now))
         return metadata

@@ -599,7 +599,7 @@
       }
       await window.MentoraCaseFavorites?.ready;
       let personal=[...(window.MentoraCaseFavorites?.rows||[])];
-      const categories=[{id:'mine',title:'我的',subtitle:''},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];
+      const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];
       window.veyaCases=[...(window.veyaCases||[]),...[...personal,...catalog.cases].filter(row=>!(window.veyaCases||[]).some(item=>item.id===row.id))];
       let current='mine',scrollPending=false;
       const revealTab=()=>{
