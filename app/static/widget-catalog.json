@@ -1234,5 +1234,22 @@
     "width": 12,
     "height": 22,
     "defaultSymbols": []
+  },
+  {
+    "id": "congress_leaderboard",
+    "title": "议员交易排行榜",
+    "category": "资金与回报",
+    "description": "议员收益与交易活跃度排名，默认今年以来，时间由问句指定；头像、表头排序、滚动表格，无分页或时间Tab。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "congress_leaderboard.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 22,
+    "defaultSymbols": []
   }
 ]
