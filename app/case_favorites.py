@@ -108,25 +108,58 @@ def _artifact_documents(answer, generated_dir):
         except (OSError,UnicodeError):continue
 
 
+def _component_names():
+    # Share the component library's Chinese names without loading its renderers.
+    rows=json.loads((Path(__file__).parent/'static/widget-catalog.json').read_text())
+    names={row['id']:row['title'] for row in rows}
+    names.update(kline='K线图',smart_money='聪明钱',multi_intraday='多股分时',
+                 capital_structure='资本结构',key_statistics='关键统计数据')
+    return names
+
+
+def _document_component_names(document):
+    from app.widget_capabilities import GENERIC_TITLES
+    document=html.unescape(document).lower()
+    if 'data-image-search-gallery' in document:return ['搜图']
+    if 'streamviz' in document:return ['可视化报告']
+    names=_component_names()
+    # Container identities take priority over their embedded child charts.
+    for marker,key in [('multi-politician-performance','politician_performance'),
+                       ('multi-intraday','multi_intraday'),('multi-kline','multi_kline')]:
+        if re.search(r'class=["\'][^"\']*\b'+marker+r'\b',document):return [names[key]]
+    identities=[]
+    for attribute in re.findall(r'\b(?:id|class|data-component-type)=["\']([^"\']+)["\']',document):
+        for token in attribute.split():
+            token=re.sub(r'-(?:meta|component|root)$','',token).replace('-','_')
+            if token in names and not token.startswith('tv_'):identities.append(names[token])
+    if identities:return list(dict.fromkeys(identities))
+    if 'tradingview' in document:
+        for widget,name in names.items():
+            if widget.startswith('tv-') and ('embed-widget-'+widget[3:]) in document:return [name]
+        if 'tv.js' in document:return ['高级图表']
+    aliases={'bar':'bar_chart','line':'line_chart','group-line':'group_line','grouped-bar':'grouped_bar',
+             'bar-line':'bar_line','double-ring-pie':'double_ring_pie'}
+    for value in re.findall(r'["\'](?:type|chartName)["\']\s*:\s*["\']([^"\']+)["\']',document,re.I):
+        key=value.replace('-','_')
+        if key in names:return [names[key]]
+        generic=aliases.get(value,key)
+        if generic in GENERIC_TITLES:return [GENERIC_TITLES[generic]]
+    if re.search(r'data-component-type=["\']icons?["\']',document):return ['图标']
+    return ['金融图表'] if 'data-business-title' in document else ['可视化报告']
+
+
 def answer_component_tag(answer, generated_dir=None, category='mine'):
-    """Classify rendered content, independently of its personal storage category."""
+    """Name the rendered components in Chinese, independently of storage category."""
     labels=[]
     for document in _artifact_documents(answer,generated_dir):
-        document=html.unescape(document).lower()
-        if any(marker in document for marker in ('data-business-title','smart-money-meta','politician-performance-meta','politician-holdings-meta','politician-trades-meta')):
-            labels.append('AInvest')
-        elif 'tradingview' in document and ('tv.js' in document or 'embed-widget-' in document):labels.append('TradingView')
-        elif 'chart-component' in document or 'chartname' in document:labels.append('通用图表')
-        elif 'streamviz' in document:labels.append('StreamViz')
-        elif re.search(r'data-component-type=[\"\']icon(?:s)?[\"\']',document):labels.append('Icon')
-        else:labels.append('研究报告')
+        labels.extend(_document_component_names(document))
     blocks=answer.get('streamBlocks') if isinstance(answer.get('streamBlocks'),list) else []
     artifacts=answer.get('reportArtifacts') if isinstance(answer.get('reportArtifacts'),list) else []
     if any(isinstance(item,dict) and (item.get('kind')=='image' or re.search(r'\.(?:png|jpe?g|webp|gif)(?:[?#]|$)',str(item.get('url') or ''))) for item in [*blocks,*artifacts]):labels.append('图片')
     if re.search(r'!\[[^\]]*\]\(|\[\[AIME_IMAGE:',str(answer.get('interpretation') or '')):labels.append('图片')
     if answer.get('videos') or any(isinstance(item,dict) and item.get('kind')=='video' for item in blocks):labels.append('视频')
     if not labels:
-        labels.append({'reports':'研究报告','charts':'金融图表','analysis':'数据分析','videos':'视频','art':'图片'}.get(category,'图文分析'))
+        labels.append({'reports':'可视化报告','charts':'金融图表','analysis':'数据分析','videos':'视频','art':'绘图'}.get(category,'图文分析'))
     return ' · '.join(dict.fromkeys(labels))
 
 

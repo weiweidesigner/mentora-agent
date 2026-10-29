@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 HTML=re.sub(r'<script\b[^>]*>.*?</script>','',(ROOT/'app/static/index.html').read_text(),flags=re.S)
 TITLE='目前有哪些议员收益表现较好，找出来对比一下'
 ROWS=[dict(id='favorite-test',category='mine',personal=True,title=TITLE*3,question=TITLE,
-           tag='AInvest',preview='从近一年收益看，对比不同人物的投资表现与收益变化。',
+           tag='议员投资表现',preview='从近一年收益看，对比不同人物的投资表现与收益变化。',
            cachedDate='2026-10-29',conversationUrl='/api/case-favorites/favorite-test')]
 
 def route(request):
@@ -36,7 +36,7 @@ with sync_playwright() as runtime:
             page.evaluate('(theme)=>document.documentElement.dataset.theme=theme',theme)
             card=page.locator('#inspiration-section-mine .caseCard');card.wait_for()
             assert page.locator('#inspiration-section-mine .inspirationCategorySubtitle').inner_text()=='收藏你感兴趣的内容，随时回看图表、报告与灵感。'
-            assert card.locator('.caseCardTag').inner_text()=='AInvest'
+            assert card.locator('.caseCardTag').inner_text()=='议员投资表现'
             assert card.locator('h4').evaluate('(el)=>{const s=getComputedStyle(el);return s.whiteSpace==="nowrap"&&s.textOverflow==="ellipsis"&&el.scrollWidth>el.clientWidth&&el.clientHeight<=parseFloat(s.lineHeight)+1}')
             assert card.locator('p').inner_text()==ROWS[0]['preview']
             assert card.locator('p').evaluate('(el)=>el.getBoundingClientRect().top>=el.previousElementSibling.getBoundingClientRect().bottom')

@@ -139,27 +139,44 @@ def test_preview_ignores_tool_progress_and_uses_verified_report_paragraphs(tmp_p
 def test_component_tags_refresh_old_favorites_without_changing_snapshots(clients):
     a,_,store=clients
     generated=store.directory.parent/'generated';generated.mkdir(exist_ok=True)
-    (generated/'test.html').write_text('<h2 data-business-title>人物收益</h2>')
+    (generated/'test.html').write_text('<script id="politician-performance-meta"></script><h2 data-business-title>人物收益</h2>')
     row=a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=data('mine')).json()
-    assert row['tag']=='AInvest'
+    assert row['tag']=='议员投资表现'
     with store.db() as db:
         import json
         original=db.execute('SELECT metadata,payload FROM case_favorites WHERE id=?',(row['id'],)).fetchone()
         metadata=json.loads(original['metadata']);metadata['tag']='收藏'
         db.execute('UPDATE case_favorites SET metadata=? WHERE id=?',(json.dumps(metadata),row['id']))
-    assert a.get('/api/case-favorites').json()['cases'][0]['tag']=='AInvest'
-    assert a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=data('mine')).json()['tag']=='AInvest'
+    assert a.get('/api/case-favorites').json()['cases'][0]['tag']=='议员投资表现'
+    assert a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=data('mine')).json()['tag']=='议员投资表现'
     with store.db() as db:
         assert db.execute('SELECT payload FROM case_favorites WHERE id=?',(row['id'],)).fetchone()['payload']==original['payload']
 
 
 def test_component_tags_use_local_rendered_evidence_and_preserve_mixed_types(tmp_path):
     from app.case_favorites import answer_component_tag
-    (tmp_path/'business.html').write_text('<iframe srcdoc="&lt;h2 data-business-title&gt;收益&lt;/h2&gt;"></iframe>')
-    (tmp_path/'generic.html').write_text('<main class="chart-component">')
+    (tmp_path/'business.html').write_text('<iframe srcdoc="&lt;script id=&quot;politician-performance-meta&quot;&gt;&lt;/script&gt;"></iframe>')
+    (tmp_path/'generic.html').write_text('<main class="chart-component"><script>const config={"type":"bar"}</script>')
     answer={'interpretation':'正文提到 AInvest 和 TradingView，不构成组件证据。','reportArtifacts':[
         {'url':'/share-artifact/business.html'},{'url':'/generated/generic.html'},
         {'url':'/share-artifact/photo.png'},{'url':'/generated/business.html'}]}
-    assert answer_component_tag(answer,tmp_path)=='AInvest · 通用图表 · 图片'
+    assert answer_component_tag(answer,tmp_path)=='议员投资表现 · 柱状图 · 图片'
     assert answer_component_tag({'interpretation':answer['interpretation']},tmp_path)=='图文分析'
     assert answer_component_tag({'reportArtifacts':[{'url':'https://external.test/generated/business.html'},{'url':'/generated/%2e%2e%2fbusiness.html'}]},tmp_path)=='图文分析'
+
+
+def test_chinese_component_names_and_search_gallery():
+    from app.case_favorites import _document_component_names
+    fixtures=[
+        ('<main data-image-search-gallery="7"><img src="https://example.com/photo"></main>',['搜图']),
+        ('<script src="/static/streamviz-runtime.js"></script>',['可视化报告']),
+        ('<main class="multi-politician-performance"><script id="politician-performance-meta"></script></main>',['议员投资表现']),
+        ('<script id="politician-holdings-meta"></script>',['议员持仓']),
+        ('<script id="politician-trades-meta"></script>',['议员交易']),
+        ('<script id="smart-money-meta"></script>',['聪明钱']),
+        ('<main class="multi-intraday"><iframe srcdoc="&lt;main class=&quot;kline-component&quot;&gt;"></main>',['多股分时']),
+        ('<main class="kline-component">',['K线图']),
+        ('<script>const config={"type":"grouped-bar"}</script>',['分组柱状图']),
+        ('<main data-component-type="icon">',['图标']),
+    ]
+    for document,expected in fixtures:assert _document_component_names(document)==expected
