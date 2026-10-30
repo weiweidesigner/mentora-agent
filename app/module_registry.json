@@ -466,5 +466,10 @@
     "script": "market_breadth.py",
     "label": "市场涨跌分布",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "market_trackers",
+    "script": "market_trackers.py",
+    "source": "business-charts-repository"
   }
 ]
