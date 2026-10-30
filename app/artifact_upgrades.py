@@ -731,3 +731,17 @@ def upgrade_sector_performance(artifact):
         if theme:payload['theme']=theme[1]
         return _native_rating('sector_performance').render_html(payload)
     except (ValueError,TypeError,KeyError):return artifact
+
+
+def upgrade_fear_greed(artifact):
+    """Refresh saved crypto sentiment charts from their original source payload."""
+    if 'class="fear-greed"' not in artifact or 'data-fear-greed-runtime="2"' in artifact:return artifact
+    try:
+        match=re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>',artifact,re.S)
+        if not match:return artifact
+        payload=json.loads(match[1])
+        if payload.get('type')!='fear-greed':return artifact
+        theme=re.search(r'data-theme=["\'](dark|light)["\']',artifact)
+        if theme:payload['theme']=theme[1]
+        return _native_rating('fear_greed').render_html(payload)
+    except (ValueError,TypeError,KeyError):return artifact

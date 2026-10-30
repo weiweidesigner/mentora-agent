@@ -1324,7 +1324,7 @@
     "id": "fear_greed",
     "title": "恐惧与贪婪指数",
     "category": "热力图与筛选器",
-    "description": "AInvest 加密市场情绪仪表、BTC价格对照及年/月/周状态分布。",
+    "description": "AInvest 加密市场恐惧贪婪指数与BTC价格历史折线，标准tooltip与双拖柄时间轴。",
     "provider": "business",
     "inputMode": "data",
     "allowEmptySymbols": true,
@@ -1334,7 +1334,7 @@
     "requiresDataSource": false,
     "libraryVisible": true,
     "width": 12,
-    "height": 24,
+    "height": 16,
     "defaultSymbols": []
   }
 ]
