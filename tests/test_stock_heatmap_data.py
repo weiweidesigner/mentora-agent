@@ -28,7 +28,7 @@ def test_saved_stock_heatmap_upgrade_preserves_source_payload(monkeypatch):
  payload={'type':'stock-heatmap','stocks':[{'price':218.34}]}
  seen=[]
  class Native:
-  def render_html(self,p):seen.append(p);return '<main data-stock-heatmap-runtime="2"></main>'
+  def render_html(self,p):seen.append(p);return '<main data-stock-heatmap-runtime="3"></main>'
  monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
  source='<main class="stock-heatmap"></main><script id="component-data" type="application/json">'+json.dumps(payload)+'</script>'
  result=upgrades.upgrade_stock_heatmap(source)
