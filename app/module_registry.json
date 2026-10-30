@@ -494,5 +494,11 @@
     "script": "market_momentum.py",
     "label": "市场动量",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "fear_greed",
+    "script": "fear_greed.py",
+    "label": "恐惧与贪婪指数",
+    "source": "business-charts-repository"
   }
 ]

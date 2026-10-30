@@ -112,7 +112,7 @@ def test_native_capabilities_are_discoverable_by_the_shared_execution_runtime():
         assert script_path_for_filename(filename).parent.parent.name == skill
 
 
-@pytest.mark.parametrize('component_id,question',[('sector_performance','展示美股行业多周期表现'),('market_momentum','看看美股市场动量')])
+@pytest.mark.parametrize('component_id,question',[('sector_performance','展示美股行业多周期表现'),('market_momentum','看看美股市场动量'),('fear_greed','看看加密市场恐惧贪婪指数')])
 def test_source_backed_library_chart_without_symbol_input(monkeypatch,component_id,question):
     from types import SimpleNamespace
     from app import widget_library
