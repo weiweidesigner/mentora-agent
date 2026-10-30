@@ -301,6 +301,25 @@ def upgrade_heatmap_controls(artifact):
         return artifact
 
 
+def upgrade_market_index_intraday(artifact):
+    """Update saved intraday guides/tooltips without changing market observations."""
+    if 'data-intraday-tooltip="2"' in artifact:
+        return artifact
+    match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
+    if not match:
+        return artifact
+    try:
+        payload = json.loads(match[1])
+        if payload.get('type') != 'market-index-intraday':
+            return artifact
+        theme = re.search(r'<html\b[^>]*\bdata-theme="(light|dark)"', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('market_index_intraday').render_html(payload)
+    except (ValueError, KeyError, TypeError):
+        return artifact
+
+
 def upgrade_legacy_ratings(artifact, theme):
     if 'id="radar"' not in artifact or 'data-rating-layout="2"' in artifact:
         return artifact
