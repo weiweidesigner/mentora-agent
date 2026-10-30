@@ -322,7 +322,7 @@ def upgrade_market_index_intraday(artifact):
 
 def upgrade_market_breadth(artifact):
     """Refresh saved breadth geometry from its original counts, without fetching."""
-    if 'data-breadth-layout="2"' in artifact:
+    if 'data-breadth-layout="2"' in artifact and 'data-breadth-hover="off"' in artifact:
         return artifact
     match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
     if not match:
