@@ -28,10 +28,19 @@ def compact_native_kline_layout(script: str) -> str:
 def upgrade_native_kline_data(script: str) -> str:
     """Connect native saved/new chart closures to the host's paged data API."""
     bridge=(Path(__file__).parent/'static/kline-data-bridge.js').read_text(encoding='utf-8').rstrip()
+    empty_hook="    if (!all.length) {\n      drawText(labels.noData,"
+    if "if(root.getAttribute('aria-busy')==='true'" not in script:
+        script=script.replace(empty_hook,"    if (!all.length) {\n      if(root.getAttribute('aria-busy')==='true' || (activePeriod==='1m' && root.dataset.klineSessionStatus==='loading')){hideTooltip();return;}\n      drawText(labels.noData,",1)
+
     hook="  const tooltip = document.getElementById('kline-tooltip');"
     session_asset=Path(__file__).parent/'skills/business-chart-recall/assets/kline-session.js'
-    if 'Native one-minute trading-session control, version 1.' not in script and hook in script and session_asset.is_file():
-        script=script.replace(hook,hook+'\n'+session_asset.read_text(encoding='utf-8'),1)
+    if session_asset.is_file():
+        session_script=session_asset.read_text(encoding='utf-8').rstrip()
+        start=script.find('  // Native one-minute trading-session control, version ')
+        end_marker='  queueMicrotask(initIntradaySessions);'
+        end=script.find(end_marker,start) if start>=0 else -1
+        if end>=0:script=script[:start]+session_script+script[end+len(end_marker):]
+        elif hook in script:script=script.replace(hook,hook+'\n'+session_script,1)
 
     if 'const historyRequests = new Map();' in script:
         start=script.find('  // Runs in the native chart closure:')
@@ -698,7 +707,7 @@ def upgrade_stock_heatmap(artifact):
 
 def upgrade_etf_heatmap(artifact):
     """Refresh saved ETF controls; AUM loads on demand without altering saved source rows."""
-    if 'data-etf-heatmap-runtime=' not in artifact or 'data-etf-heatmap-runtime="2"' in artifact:return artifact
+    if 'data-etf-heatmap-runtime=' not in artifact or 'data-etf-heatmap-runtime="3"' in artifact:return artifact
     try:
         match=re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>',artifact,re.S)
         if not match:return artifact

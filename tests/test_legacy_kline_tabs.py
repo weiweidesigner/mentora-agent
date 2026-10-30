@@ -61,8 +61,30 @@ def test_saved_native_chart_gets_one_session_menu_without_regenerating_data():
   function maybeLoadPreviousPage() {}
 </script>"""
     updated=upgrade_native_kline_data(original)
-    assert 'Native one-minute trading-session control, version 1.' in updated
+    assert 'Native one-minute trading-session control, version 2.' in updated
     assert 'const dataByPeriod = {"1m":[{"time":100,"close":42}]};' in updated
     twice=upgrade_native_kline_data(updated)
-    assert twice.count('Native one-minute trading-session control, version 1.')==1
+    assert twice.count('Native one-minute trading-session control, version 2.')==1
     assert twice.count('const historyRequests = new Map();')==1
+
+
+def test_existing_v1_session_script_is_replaced_and_loading_never_draws_empty_text():
+    old="""  const tooltip = document.getElementById('kline-tooltip');
+  // Native one-minute trading-session control, version 1.
+  const oldSessionBug = true;
+  queueMicrotask(initIntradaySessions);
+  function switchPeriod(period) {}
+  function visibleSlice(list, layout) {}
+  function maybeLoadPreviousPage() {}
+  function draw() {
+    if (!all.length) {
+      drawText(labels.noData, 0);
+    }
+  }
+"""
+    updated=upgrade_native_kline_data(old)
+    assert 'oldSessionBug' not in updated
+    assert updated.count('Native one-minute trading-session control, version 2.')==1
+    assert "if(root.getAttribute('aria-busy')==='true'" in updated
+    assert "prefix+'/api'+'/kline/history?'" in updated
+    assert upgrade_native_kline_data(updated)==updated
