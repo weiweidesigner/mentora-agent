@@ -8,7 +8,7 @@ def test_saved_dashboard_upgrades_from_existing_payload_without_fetch(monkeypatc
  class Native:
   def render_html(self,data):
    seen.append(data)
-   return '<main class="fear-greed" data-fear-greed-runtime="3"></main>'
+   return '<main class="fear-greed" data-fear-greed-runtime="4"></main>'
  monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
  old='<html data-theme="dark"><main class="fear-greed"></main><script id="component-data" type="application/json">'+json.dumps(payload)+'</script></html>'
  result=upgrades.upgrade_fear_greed(old)
