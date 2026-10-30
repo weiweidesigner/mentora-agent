@@ -4,12 +4,18 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
+
+if __package__:
+    from .business_chart_dependency import load_registry_data
+else:
+    from business_chart_dependency import load_registry_data
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -49,8 +55,8 @@ def _parser() -> argparse.ArgumentParser:
 def _registry(project_root: Path) -> list[dict]:
     path = project_root / "app/module_registry.json"
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        value = load_registry_data(path)
+    except (OSError, ValueError, RuntimeError) as exc:
         raise ValueError("module registry is unavailable") from exc
     return [item for item in value if isinstance(item, dict)] if isinstance(value, list) else []
 
@@ -343,6 +349,12 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
                 for path in artifacts if path.is_file() and path.stat().st_size > 0
             ],
         }
+        if ok and script.name == "kline.py":
+            chart = next((path for path in artifacts if path.suffix.lower() == ".html"), None)
+            if chart is not None:
+                document = chart.read_text(encoding="utf-8")
+                config = _const_json(document, "config") or {}
+                receipt["analysisSummary"] = _kline_summary(document, config.get("dataType", "1d"))
         if annotation_receipt:receipt["jevAnnotationPlan"]=annotation_receipt
         if result.stderr.strip():
             receipt["stderr"] = result.stderr.strip()[-2000:]
@@ -361,6 +373,23 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
     except (OSError, ValueError) as exc:
         print(json.dumps({"ok": False, "script": args.script, "error": str(exc)}, ensure_ascii=False))
         return 2
+
+
+def _contract_receipt(contract: dict, project_root: Path, script: Path) -> dict:
+    """Keep actionable metadata inline; hand off verbose help/schema losslessly."""
+    encoded = json.dumps(contract, ensure_ascii=False)
+    if len(encoded) <= 4000:
+        return contract
+    path = _persist_large_observation(project_root=project_root, script=script,
+                                     stdout=encoded, parsed=contract, artifacts=[], arguments=[])
+    receipt = {key: value for key, value in contract.items() if key not in {"cliHelp", "schema"}}
+    receipt["cliOptions"] = list(dict.fromkeys(re.findall(r"(?<!\w)--[\w-]+", contract["cliHelp"])))
+    receipt.update(fullOutputPath=str(path),
+                   instruction="Use the inline capability and agent contract to select the correct asset and arguments. Full CLI help and schema are preserved at fullOutputPath; read only missing required details.")
+    if len(json.dumps(receipt, ensure_ascii=False)) > 4000:
+        receipt.pop("cliOptions")
+        receipt["cliOptionsPath"] = str(path)
+    return receipt
 
 
 def _contract(args: argparse.Namespace, project_root: Path) -> int:
@@ -383,7 +412,7 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 schema = None
-        cli_help = (result.stdout or result.stderr or "").strip()[-12000:]
+        cli_help = (result.stdout or result.stderr or "").strip()
         conventions = []
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:
             conventions.append("JSON 文件路径传 --payload；--data-json 只传内联 JSON，不传文件路径。")
@@ -406,18 +435,20 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
                 "若误把 .json 传给 --output，skill_runner 会自动改为同名 .html 回执并将原路径作为 "
                 "--payload-output。禁止让工具调用辅助模型生成代码，也不要读取工具源码。"
             )
-        print(json.dumps({
+        contract = {
             "ok": result.returncode == 0,
             "capability": str(metadata.get("name") or script.stem),
             "script": args.script,
             "skill": skill,
             "skillPath": str(skill_path.resolve()) if skill_path.is_file() else None,
             "capabilityDescription": str(metadata.get("description") or ""),
-            "cliHelp": cli_help,
+            "agentContract": schema.get("agentContract", {}) if isinstance(schema, dict) else {},
             "argumentConventions": conventions,
             "schemaPath": str(schema_path.resolve()) if schema_path.is_file() else None,
             "schema": schema,
-        }, ensure_ascii=False))
+            "cliHelp": cli_help,
+        }
+        print(json.dumps(_contract_receipt(contract, project_root, script), ensure_ascii=False))
         return 0 if result.returncode == 0 else result.returncode
     except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
         print(json.dumps({"ok": False, "script": args.script, "error": str(exc)}, ensure_ascii=False))
@@ -481,22 +512,37 @@ def _kline_summary(document: str, period: str) -> dict:
     closes = [float(row["close"]) for row in rows]
     latest = rows[-1]
     eastern = ZoneInfo("America/New_York")
+    def bar_date(row):
+        value = row.get("time")
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(value)):
+            return str(value)
+        stamp = _timestamp(value)
+        return stamp.astimezone(eastern).date().isoformat() if stamp else None
+    def bar_time(row):
+        value = row.get("time")
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(value)):
+            return str(value)
+        stamp = _timestamp(value)
+        return stamp.astimezone(eastern).isoformat() if stamp else None
     latest_time = _timestamp(latest.get("time"))
-    session_rows = rows
-    if latest_time:
-        latest_date = latest_time.astimezone(eastern).date()
-        filtered = [
-            row for row in rows
-            if (stamp := _timestamp(row.get("time"))) and stamp.astimezone(eastern).date() == latest_date
-        ]
-        if filtered:
-            session_rows = filtered
+    session_rows = [latest] if period in {"1d", "1w", "1M", "3M"} else rows
+    if latest_time and period not in {"1d", "1w", "1M", "3M"}:
+        session_rows = [row for row in rows if bar_date(row) == bar_date(latest)]
     previous_close = None
     daily = data_by_period.get("1d")
-    if isinstance(daily, list) and len(daily) >= 2:
-        previous_close = daily[-2].get("close")
+    if period in {"1d", "1w", "1M", "3M"} and len(rows) >= 2:
+        previous_close = rows[-2].get("close")
+    elif isinstance(daily, list) and bar_date(latest):
+        preceding = [row for row in daily if bar_date(row) and bar_date(row) < bar_date(latest)]
+        if preceding:
+            previous_close = preceding[-1].get("close")
     if previous_close is None and len(session_rows) < len(rows):
         previous_close = rows[-len(session_rows)-1].get("close")
+    high_row = max(rows, key=lambda row: float(row.get("high") or row["close"]))
+    close_row = max(rows, key=lambda row: float(row["close"]))
+    high = float(high_row.get("high") or high_row["close"])
+    highest_close = float(close_row["close"])
+    ma_windows = config.get("ma", [20, 50, 200]) if isinstance(config, dict) else [20, 50, 200]
     volumes = [float(row.get("volume") or 0) for row in session_rows]
     total_volume = sum(volumes)
     typical_volume = sum(
@@ -505,14 +551,16 @@ def _kline_summary(document: str, period: str) -> dict:
         for row in session_rows
     )
     split = max(1, len(session_rows) // 2)
-    start_time = _timestamp(rows[0].get("time"))
     return {
         "available": True,
+        "identity": {key: config.get(key) for key in ("code", "market", "exchange", "name")} if isinstance(config, dict) else {},
+        "period": period,
+        "rangeBasis": "All loaded OHLCV bars in this artifact; chart viewport may show a subset. Extremes use highs/lows; close peaks use closes.",
         "source": (config.get("sources") or {}).get(period) if isinstance(config, dict) else None,
         "bars": len(rows),
-        "rangeStart": start_time.astimezone(eastern).isoformat() if start_time else None,
-        "rangeEnd": latest_time.astimezone(eastern).isoformat() if latest_time else None,
-        "latestTradingDay": latest_time.astimezone(eastern).date().isoformat() if latest_time else None,
+        "rangeStart": bar_time(rows[0]),
+        "rangeEnd": bar_time(latest),
+        "latestTradingDay": bar_date(latest),
         "latest": {key: _rounded(latest.get(key)) for key in ("open", "high", "low", "close", "volume")},
         "session": {
             "bars": len(session_rows),
@@ -529,12 +577,19 @@ def _kline_summary(document: str, period: str) -> dict:
             ) if previous_close else None,
         },
         "visibleRange": {
+            "basis": "loaded bars, not current viewport",
             "low": _rounded(min(float(row.get("low") or row["close"]) for row in rows)),
             "high": _rounded(max(float(row.get("high") or row["close"]) for row in rows)),
         },
+        "peaks": {
+            "intrabarHigh": {"value": _rounded(high), "time": bar_time(high_row)},
+            "highestClose": {"value": _rounded(highest_close), "time": bar_time(close_row)},
+            "changePctFromIntrabarHigh": _rounded((float(latest["close"]) / high - 1) * 100) if high else None,
+            "changePctFromHighestClose": _rounded((float(latest["close"]) / highest_close - 1) * 100) if highest_close else None,
+        },
         "movingAverages": {
             f"ma{window}": _rounded(sum(closes[-window:]) / window)
-            for window in (20, 50, 200) if len(closes) >= window
+            for window in ma_windows if isinstance(window, int) and window > 0 and len(closes) >= window
         },
     }
 

@@ -331,3 +331,5 @@ python3 scripts/sync_pine_script.py --update
 ## Ubuntu 云端部署
 
 仓库提供 `deploy/veya-agent.service` 与 `deploy/nginx-veya.conf`，用于 systemd 常驻运行和已有 HTTPS 站点下的 `/veya/` 路由。后端仅监听本机 8000 端口，入口无需登录并保留 SSE 流式响应。部署与更新说明见 `deploy/README.md`。云端仅保存运行所需的本地 `.env`；模型权重与 Mac 专用生图环境不包含在 CPU 云部署中。
+
+能力契约交接：`app/skill_runner.py contract` 解析锁定组件仓库的正式描述。组件 schema 可用 `agentContract` 提供简明的资产身份、示例和数据口径；长 CLI/schema 无损保存到 `fullOutputPath`，内联保留能力描述、agentContract、参数名和约定，避免关键语义排在长帮助末尾。K线 `execute` 回执也返回来自同一 HTML/OHLCV 的 analysisSummary，包含身份、周期、日期范围、图中MA、盘中高点与收盘高点及对应回撤；rangeBasis 明确其是已加载数据而非当前浏览器视口。

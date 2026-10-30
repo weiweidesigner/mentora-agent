@@ -440,6 +440,56 @@ def test_contract_returns_cli_and_schema_in_one_call(tmp_path, monkeypatch, caps
     assert receipt["capabilityDescription"] == "fixture"
     assert "skillInstructions" not in receipt
 
+
+def test_long_contract_preserves_asset_guidance_and_hands_off_full_help(tmp_path, monkeypatch, capsys):
+    script = tmp_path / "app/skills/sample/scripts/sample.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    agent_contract = {"identity": "Use the requested native asset; do not substitute a proxy.",
+                      "example": "--market 89 --code 861077"}
+    schema = script.parent.parent / "schemas/sample.schema.json"
+    schema.parent.mkdir()
+    schema.write_text(json.dumps({"agentContract": agent_contract, "details": "schema" * 3000}))
+    cli_help = "usage: sample --market MARKET --code CODE\n" + "help " * 4000
+    monkeypatch.setattr(skill_runner, "_registered_script", lambda *a: (script, {"name": "sample", "description": "Canonical component metadata"}))
+    monkeypatch.setattr(skill_runner.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0, stdout=cli_help, stderr=""))
+    assert skill_runner.main(["contract", "--script", "sample.py"], project_root=tmp_path) == 0
+    encoded = capsys.readouterr().out
+    assert len(encoded) < 4000
+    receipt = json.loads(encoded)
+    assert receipt["agentContract"] == agent_contract
+    assert receipt["capabilityDescription"] == "Canonical component metadata"
+    assert receipt["cliOptions"] == ["--market", "--code"]
+    full = json.loads(Path(receipt["fullOutputPath"]).read_text())
+    assert full["schema"]["agentContract"] == agent_contract
+    assert full["cliHelp"] == cli_help.strip()
+
+
+def test_kline_execute_summarizes_the_same_artifact_and_price_bases(tmp_path, monkeypatch, capsys):
+    script = tmp_path / "app/skills/sample/scripts/kline.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("# fixture")
+    monkeypatch.setattr(skill_runner, "_registered_script", lambda *a: (script, {"name": "kline"}))
+    rows = [{"time": "2026-10-06", "open": 201, "high": 203.25, "low": 200, "close": 202, "volume": 100},
+            {"time": "2026-10-29", "open": 190, "high": 191, "low": 188, "close": 188.74, "volume": 25}]
+    config = {"code": "861077", "market": "89", "dataType": "1d", "sources": {"1d": "ainvest"}, "ma": [2]}
+    def render(command, **kwargs):
+        output = tmp_path / command[command.index("--output") + 1]
+        output.write_text("const config = " + json.dumps(config) + ";\nconst dataByPeriod = " + json.dumps({"1d": rows}) + ";")
+        return SimpleNamespace(returncode=0, stdout='{"ok":true}', stderr="")
+    monkeypatch.setattr(skill_runner.subprocess, "run", render)
+    assert skill_runner.main(["execute", "--script", "kline.py", "--", "--output", "outputs/generated/kline.html"], project_root=tmp_path) == 0
+    summary = json.loads(capsys.readouterr().out)["analysisSummary"]
+    assert summary["identity"]["market"] == "89"
+    assert summary["rangeStart"] == "2026-10-06"
+    assert summary["latestTradingDay"] == "2026-10-29"
+    assert summary["session"]["volume"] == 25
+    assert summary["peaks"]["intrabarHigh"]["value"] == 203.25
+    assert summary["peaks"]["highestClose"]["value"] == 202
+    assert round(summary["peaks"]["changePctFromHighestClose"], 2) == -6.56
+    assert round(summary["peaks"]["changePctFromIntrabarHigh"], 2) == -7.14
+    assert summary["movingAverages"] == {"ma2": 195.37}
+
 def test_kline_authored_marks_require_real_jev_handoff_before_render(tmp_path,monkeypatch,capsys):
     script=tmp_path/'app/skills/business-chart-recall/scripts/kline.py';script.parent.mkdir(parents=True);script.write_text('# fixture')
     monkeypatch.setattr(skill_runner,'_registered_script',lambda *a:(script,{'name':'kline'}))

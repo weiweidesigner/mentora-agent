@@ -40,6 +40,10 @@ def test_host_catalog_has_references_and_repository_supplies_descriptions():
     assert all(row.get('description') for row in loaded)
     canonical = {row['script']: row for row in repository_components(ROOT)}
     assert next(row for row in loaded if row['script'] == 'income_statement.py') == canonical['income_statement.py']
+    from app.skill_runner import _registered_script
+    _, metadata = _registered_script('kline.py', ROOT)
+    assert metadata == canonical['kline.py']
+    assert '861077' in metadata['description']
 
 
 def make_repository(path):
