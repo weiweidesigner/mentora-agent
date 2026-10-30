@@ -745,3 +745,26 @@ def upgrade_fear_greed(artifact):
         if theme:payload['theme']=theme[1]
         return _native_rating('fear_greed').render_html(payload)
     except (ValueError,TypeError,KeyError):return artifact
+
+
+def upgrade_bond_scatter(artifact):
+    """Refresh saved bond quadrants using their embedded observations, never refetch quotes."""
+    if 'bond-scatter' not in artifact or 'data-bond-scatter-runtime="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        saved = json.loads(match[1])
+        if not isinstance(saved, dict):
+            return artifact
+        # The native scatter stores {payload, labels, summary}; labels and medians are presentation.
+        payload = saved.get('payload', saved)
+        if not isinstance(payload, dict) or payload.get('type') != 'bond-scatter':
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('bond_scatter').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
