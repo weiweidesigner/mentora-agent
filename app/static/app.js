@@ -6275,6 +6275,14 @@ function resizeReportDocumentFrame(frame) {
     const root = doc?.documentElement;
     if (!body || !root) return 520;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
+    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth']);
+    const exploreData = doc.querySelector('script#component-data[type="application/json"]');
+    if (exploreData) {
+      try {
+        const type = JSON.parse(exploreData.textContent).type;
+        if (exploreTypes.has(type)) frame.dataset.businessComponent = type.replaceAll('-', '_');
+      } catch { /* Non-component documents retain their existing spacing. */ }
+    }
     if (doc.querySelector('.politician-trades')) frame.dataset.businessComponent = 'politician_trades';
     if (doc.querySelector('.politician-holdings')) frame.dataset.businessComponent = 'politician_holdings';
     if (doc.querySelector('.suspicious-trades')) frame.dataset.businessComponent = 'suspicious_trades';
