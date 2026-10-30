@@ -694,3 +694,17 @@ def upgrade_stock_heatmap(artifact):
         return _native_rating('stock_heatmap').render_html(payload)
     except (ValueError, KeyError, TypeError):
         return artifact
+
+
+def upgrade_etf_heatmap(artifact):
+    """Refresh saved ETF controls; AUM loads on demand without altering saved source rows."""
+    if 'data-etf-heatmap-runtime=' not in artifact or 'data-etf-heatmap-runtime="2"' in artifact:return artifact
+    try:
+        match=re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>',artifact,re.S)
+        if not match:return artifact
+        payload=json.loads(match[1])
+        if payload.get('type')!='etf-heatmap':return artifact
+        theme=re.search(r'data-theme=["\'](dark|light)["\']',artifact)
+        if theme:payload['theme']=theme[1]
+        return _native_rating('etf_heatmap').render_html(payload)
+    except (ValueError,TypeError,KeyError):return artifact
