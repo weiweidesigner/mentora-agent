@@ -171,7 +171,6 @@
     "name": "multi_kline",
     "script": "multi_kline.py",
     "label": "多K线图",
-    "description": "原生多K线卡片比较：多标的同周期、单标的多周期，复用 kline.py 的真实取数、蜡烛、均线、成交量和技术指标。通过 --symbols、--periods、--columns、--mobile-columns、--sub-indicators、--theme、--language、--title 配置；先读取 schema，不得以分时折线替代。",
     "source": "business-charts-repository"
   },
   {
@@ -400,42 +399,36 @@
     "name": "smart_money",
     "script": "smart_money.py",
     "label": "smart money",
-    "source": "business-charts-repository",
-    "description": "AInvest Smart Money 市场级四 tab 业务组件，无需股票代码；内置匿名访客取数，区分真实交易与机构预测，支持主题、语言、tab 和语义标题。"
+    "source": "business-charts-repository"
   },
   {
     "name": "politician_performance",
     "script": "politician_performance.py",
     "label": "议员投资表现",
-    "description": "AInvest 人物资料与真实 TWRR 收益历史：头像、姓名、党派和州，区间收益、日期范围、面积曲线和 ALL/1W/1M/3M/YTD/1Y/3Y tab。适合佩洛西、国会议员、政治人物投资表现、收益曲线。通过 --name 或 --url 或 --human-id 选择人物，无需股票代码。按需匿名取数，不缓存、不轮询。--title 为模型语义标题，人物姓名保留源值。先读 politician_performance.schema.json。 支持 --names/--human-ids/--urls 多议员同一组件对比，原生卡片独立 tab，--row-counts 由 JEV 基于数量选均衡行，--columns 和 --mobile-columns 配置最大列数/手机列数；窄屏换行，不水平分页。",
     "source": "business-charts-repository"
   },
   {
     "name": "politician_holdings",
     "script": "politician_holdings.py",
     "label": "议员持仓",
-    "description": "指定美国议员的当前持仓与配置占比：原生小尺寸细环饼图、中心人物头像、底部紧凑图例；下方原生滚动表格含股票头像、代码、公司、股数、占比和金额。通过 --name、--human-id 或 AInvest 人物 --url 选择人物，不要求股票代码。全部分页按需获取，表格全部行滚动展示、无分页按钮，顶部展示主要持仓与本次数据更新日期。不缓存、不轮询、不建定时任务。--title 必须由模型根据本次问题和证据生成，不用组件名称。先读 politician_holdings.schema.json。",
     "source": "business-charts-repository"
   },
   {
     "name": "politician_trades",
     "script": "politician_trades.py",
     "label": "议员交易",
-    "description": "指定美国议员的交易活动：左侧内部人交易风格的季度美元买卖柱子、SPY日线与范围滑块；右侧中心人物头像行业占比饼图；下方带股票头像、圆角外框和固定表头的滚动交易明细，无分页。--name/--human-id/人物--url 三选一，不要求股票代码。--years 1..5 控制左图时间范围，行业与表格保留源完整口径。--title 必须由模型生成。按需匿名取数，无缓存、轮询或定时任务。SPY不是SP500指数，披露日不是交易日。先读 politician_trades.schema.json。",
     "source": "business-charts-repository"
   },
   {
     "name": "congress_recent_trades",
     "script": "congress_recent_trades.py",
     "label": "国会近期交易",
-    "description": "美国国会全市场近期披露交易列表，区别 Smart Money 的 suspicious_trade 精选信号和指定议员活动。无需股票或人物代码；全部/买入/卖出中性 Tab，人物头像和党派/州、股票头像、方向、交易规模、披露日、交易日、收益率。圆角细边框固定表头滚动表格，无分页按钮；滚动按需加载。时间范围由问句指定（--from-date/--to-date），默认YTD（今年1月1日至今天）；明确全部历史用 --all-dates。界面不展示时间Tab、交易日期筛选标签或加载查找提示；全部Tab仅指交易方向。源接口仅用已验证 page/size/diff_type，通过按需扫描匹配日期，不发明日期参数；初始窗口不代表全部历史。--title必须由模型生成。无行情缓存、轮询或定时任务。先读 congress_recent_trades.schema.json。",
     "source": "business-charts-repository"
   },
   {
     "name": "congress_leaderboard",
     "script": "congress_leaderboard.py",
     "label": "议员交易排行榜",
-    "description": "美国议员投资收益及交易活跃度排名，默认YTD、时间由问句指定，标题由模型生成。无需股票/人物输入，原生外框滚动表格，无分页和时间Tab。先读congress_leaderboard.schema.json。",
     "source": "business-charts-repository"
   },
   {
@@ -448,6 +441,30 @@
     "name": "multi_politician_events",
     "script": "multi_politician_events.py",
     "label": "多议员事件对比",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "market_heatmap",
+    "script": "market_heatmap.py",
+    "label": "市场热力图",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "etf_holding_distribution",
+    "script": "etf_holding_distribution.py",
+    "label": "ETF 持仓分布",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "market_index_intraday",
+    "script": "market_index_intraday.py",
+    "label": "市场指数分时",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "market_breadth",
+    "script": "market_breadth.py",
+    "label": "市场涨跌分布",
     "source": "business-charts-repository"
   }
 ]

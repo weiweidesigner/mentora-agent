@@ -92,3 +92,15 @@ def test_skill_classification_uses_host_aliases_for_repository_links():
     assert main.skill_name_for_script_filename('valuation.py') == 'business-chart-recall'
     assert main.skill_name_for_script_filename('pie.py') == 'generic-chart'
     assert main.relative_skill_file(main.SKILLS_DIR / 'business-chart-recall/schemas/kline.schema.json') == 'business-chart-recall/schemas/kline.schema.json'
+
+
+def test_explore_components_are_independent_registered_business_scripts():
+    from app.skill_runner import _registered_script
+    loaded = {item['name']: item for item in load_registry_data(ROOT / 'app/module_registry.json')}
+    for name in ['market_heatmap', 'etf_holding_distribution', 'market_index_intraday', 'market_breadth']:
+        item = loaded[name]
+        script, _ = _registered_script(item['script'], ROOT)
+        assert script.is_file()
+        assert script.parent.parent.name == 'business-chart-recall'
+        assert (script.parent.parent / 'schemas' / (name + '.schema.json')).is_file()
+        assert item['description']
