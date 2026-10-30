@@ -1336,5 +1336,22 @@
     "width": 12,
     "height": 16,
     "defaultSymbols": []
+  },
+  {
+    "id": "bond_scatter",
+    "title": "债券收益率与期限",
+    "category": "热力图与筛选器",
+    "description": "AInvest债券样本的YTM与剩余期限散点图，四象限按样本中位数划分。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "bond_scatter.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 15,
+    "defaultSymbols": []
   }
 ]

@@ -500,5 +500,11 @@
     "script": "fear_greed.py",
     "label": "恐惧与贪婪指数",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "bond_scatter",
+    "script": "bond_scatter.py",
+    "label": "债券收益率与期限",
+    "source": "business-charts-repository"
   }
 ]

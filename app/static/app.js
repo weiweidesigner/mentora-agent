@@ -6280,7 +6280,7 @@ function resizeReportDocumentFrame(frame) {
     const root = doc?.documentElement;
     if (!body || !root) return 520;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
-    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance','market-momentum','fear-greed']);
+    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance','market-momentum','fear-greed','bond-scatter']);
     const exploreData = doc.querySelector('script#component-data[type="application/json"]');
     if (exploreData) {
       try {
