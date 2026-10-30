@@ -1,6 +1,6 @@
 import html
 import re
-from app.artifact_upgrades import sync_native_kline_theme
+from app.artifact_upgrades import sync_native_kline_theme, upgrade_native_kline_data
 
 
 def document():
@@ -35,3 +35,17 @@ def test_saved_sector_quote_strip_is_removed_without_touching_data_or_tabs():
     assert '"sectorContext":{"quote":{"price":12938.27}}' in after
     assert '<nav class="period-tabs">' in after
     assert sync_native_kline_theme(after,'dark')==after
+
+
+def test_saved_history_bridge_is_refreshed_without_duplicating_handlers():
+    old='''before();
+  // Runs in the native chart closure: reuse its bars, viewport and indicator math.
+  const historyRequests = new Map();
+  const outdatedFooterStatus = true;
+  queueMicrotask(() => {ensureHistory(activePeriod,true);showHistoryStatus();});
+after();'''
+    updated=upgrade_native_kline_data(old)
+    assert 'historyBridgeVersion = 2' in updated and 'outdatedFooterStatus' not in updated
+    assert updated.count('const historyRequests = new Map();')==1
+    assert updated.startswith('before();') and updated.endswith('after();')
+    assert upgrade_native_kline_data(updated)==updated

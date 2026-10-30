@@ -37,6 +37,22 @@ test('failure exposes retry, preserves saved data, and retry can recover',async(
  c.root.querySelector('button').click();assert.equal(calls.length,2);await respond(1,'1w',[row(1)]);
  assert.equal(c.root.dataset.klineStatus,'ready');
 });
+test('sector tabs fetch their exact period and market with a centered loading state',async()=>{
+ const {c,calls,respond}=setup({code:'861077',market:'89'});
+ for(const [index,period] of ['1m','1w','1M','1h','2h','4h'].entries()){
+  c.switchPeriod(period);
+  const url=new URL(calls[index],'https://example.com');
+  assert.equal(url.searchParams.get('market'),'89');assert.equal(url.searchParams.get('symbol'),'861077');assert.equal(url.searchParams.get('period'),period);
+  assert.equal(c.activePeriod,period);assert.equal(c.root.getAttribute('aria-busy'),'true');
+  assert.equal(c.canvas.style.visibility,'hidden');
+  const status=c.root.querySelector('.kline-data-state');
+  assert.equal(status.parentElement,c.canvas.parentElement);assert.equal(status.style.position,'absolute');
+  assert(status.querySelector('.kline-history-spinner'));assert.equal(status.textContent,'');
+  await respond(index,period,[row(index+1),row(index+2)]);
+  assert.equal(c.root.dataset.klineStatus,'ready');assert.equal(c.canvas.style.visibility,'');assert.equal(c.root.getAttribute('aria-busy'),'false');
+ }
+ c.switchPeriod('1w');assert.equal(calls.length,6);
+});
 test('date range changes initial view without filtering history or limiting merges',()=>{
  const {c}=setup({fromDate:'2026-01-10',toDate:'2026-01-11'});
  c.draw();assert.equal(c.visibleCount,2);assert.equal(c.viewEnd,1);assert.equal(c.dataByPeriod['1d'].length,3);

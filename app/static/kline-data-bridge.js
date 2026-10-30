@@ -1,4 +1,5 @@
   // Runs in the native chart closure: reuse its bars, viewport and indicator math.
+  const historyBridgeVersion = 2;
   const historyRequests = new Map();
   const historyStatus = new Map();
   const historyEnds = new Set();
@@ -17,8 +18,13 @@
   const historyNote = document.createElement('div');
   historyNote.className = 'kline-data-state';
   historyNote.setAttribute('role', 'status');
-  historyNote.style.cssText = 'display:none;align-items:center;gap:10px;padding:6px 0;font:12px/1.5 system-ui;color:inherit';
-  root.append(historyNote);
+  historyNote.style.cssText = 'display:none;position:absolute;inset:0;z-index:20;align-items:center;justify-content:center;gap:10px;font:12px/1.5 system-ui;color:var(--kl-muted,inherit)';
+  const historyHost = root.querySelector('.chart-host') || canvas.parentElement || root;
+  historyHost.style.position = 'relative';
+  historyHost.append(historyNote);
+  const historyStyle = document.createElement('style');
+  historyStyle.textContent = '@keyframes kline-history-spin{to{transform:rotate(360deg)}}.kline-history-spinner{width:20px;height:20px;border:2px solid #8883;border-top-color:currentColor;border-radius:50%;animation:kline-history-spin .8s linear infinite}@media(prefers-reduced-motion:reduce){.kline-history-spinner{animation:none}}';
+  historyHost.append(historyStyle);
   const historyEnglish = String(config.language).startsWith('en');
   const historyApiPrefix = [location.pathname, document.referrer].some(value => /\/mentora\//.test(value)) ? '/mentora' : '';
 
@@ -29,15 +35,29 @@
     root.dataset.klinePeriod = activePeriod;
     root.dataset.klineBars = String((dataByPeriod[activePeriod] || []).length);
     root.dataset.klineStatus = state?.kind || 'ready';
+    root.setAttribute('aria-busy',String(state?.kind === 'loading'));
+    const empty = !(dataByPeriod[activePeriod] || []).length;
+    // Keep the canvas dimensions, but never paint "No data" during a request.
+    canvas.style.visibility = state && empty ? 'hidden' : '';
+    historyNote.style.pointerEvents = empty ? 'auto' : 'none';
     if (!state) return;
-    const text = document.createElement('span');
-    text.textContent = state.message;
-    historyNote.append(text);
+    historyNote.setAttribute('aria-label',state.message);
+    if (state.kind === 'loading') {
+      const spinner = document.createElement('span');
+      spinner.className = 'kline-history-spinner';
+      spinner.setAttribute('aria-hidden','true');
+      historyNote.append(spinner);
+    } else {
+      const text = document.createElement('span');
+      text.textContent = state.message;
+      historyNote.append(text);
+    }
     if (state.retry) {
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = historyEnglish ? 'Retry' : '重试';
       button.style.cssText = 'font:inherit;color:inherit;background:transparent;border:1px solid #8886;border-radius:4px;padding:2px 8px;cursor:pointer';
+      button.style.pointerEvents = 'auto';
       button.addEventListener('click', state.retry);
       historyNote.append(button);
     }
@@ -85,6 +105,7 @@
   }
 
   async function requestHistory(period, cursor=null, direction='before', initial=false) {
+    initial = initial || !historyRows(period).length;
     const key = `${period}:${direction}:${cursor}`;
     if (historyRequests.has(key)) return historyRequests.get(key);
     const pending = (async () => {

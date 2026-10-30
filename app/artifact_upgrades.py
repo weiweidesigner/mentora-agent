@@ -27,7 +27,12 @@ def compact_native_kline_layout(script: str) -> str:
 
 def upgrade_native_kline_data(script: str) -> str:
     """Connect native saved/new chart closures to the host's paged data API."""
-    if 'const historyRequests = new Map();' in script:return script
+    bridge=(Path(__file__).parent/'static/kline-data-bridge.js').read_text(encoding='utf-8').rstrip()
+    if 'const historyRequests = new Map();' in script:
+        start=script.find('  // Runs in the native chart closure:')
+        end_marker='  queueMicrotask(() => {ensureHistory(activePeriod,true);showHistoryStatus();});'
+        end=script.find(end_marker,start) if start>=0 else -1
+        return script[:start]+bridge+script[end+len(end_marker):] if end>=0 else script
     names=('switchPeriod','visibleSlice','maybeLoadPreviousPage')
     if any('function '+name+'(' not in script for name in names):return script
     hook="  const tooltip = document.getElementById('kline-tooltip');"
@@ -35,7 +40,6 @@ def upgrade_native_kline_data(script: str) -> str:
     for name in names:
         script=script.replace('function '+name+'(', 'function embedded'+name[0].upper()+name[1:]+'(',1)
     script=script.replace('Math.max(8, Number(config.zoomMinBars || 20))','Math.max(1, Number(config.zoomMinBars || 20))')
-    bridge=(Path(__file__).parent/'static/kline-data-bridge.js').read_text(encoding='utf-8')
     return script.replace(hook,hook+'\n'+bridge,1)
 
 
