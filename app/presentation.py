@@ -633,6 +633,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
         raise HTTPException(status_code=500, detail="cannot read generated artifact") from exc
     from app.search_images import upgrade_image_gallery
     artifact=upgrade_image_gallery(artifact)
+    from app.artifact_upgrades import upgrade_heatmap_controls
+    artifact = upgrade_heatmap_controls(artifact)
     from app.artifact_upgrades import upgrade_smart_money
     artifact = upgrade_smart_money(artifact)
     from app.artifact_upgrades import upgrade_politician_performance

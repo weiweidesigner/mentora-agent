@@ -282,6 +282,25 @@ def _native_rating(name):
     return module
 
 
+def upgrade_heatmap_controls(artifact):
+    """Refresh saved heatmap controls using only their embedded source payload."""
+    if 'heatmap-settings-toggle' not in artifact or 'data-heatmap-menu="2"' in artifact:
+        return artifact
+    match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
+    if not match:
+        return artifact
+    try:
+        payload = json.loads(match[1])
+        if payload.get('type') != 'market-heatmap':
+            return artifact
+        theme = re.search(r'<html\b[^>]*\bdata-theme="(light|dark)"', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('market_heatmap').render_html(payload)
+    except (ValueError, KeyError, TypeError):
+        return artifact
+
+
 def upgrade_legacy_ratings(artifact, theme):
     if 'id="radar"' not in artifact or 'data-rating-layout="2"' in artifact:
         return artifact
