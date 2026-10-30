@@ -31,8 +31,11 @@ def timestamp(value):
     return instant.timestamp()*1000
 
 
+def _is_sector(symbol, market):
+    return str(market)=='89' or str(symbol).startswith('89:')
+
 def _read_page(symbol, period, market, exchange, cursor, direction):
-    if period in {'1m','5m','15m','30m','1h'}:
+    if period in {'1m','5m','15m','30m','1h'} and not _is_sector(symbol,market):
         from app.ashare_live import normalize_symbol, minute_snapshot
         try: mainland = normalize_symbol(symbol)
         except ValueError: mainland = None
@@ -83,7 +86,8 @@ def _read_page(symbol, period, market, exchange, cursor, direction):
 
 def history_page(symbol, period, market='', exchange='', cursor=None, direction='before'):
     key = (symbol, period, market, exchange, cursor, direction)
-    if period in {'1m','5m','15m','30m','1h'}:
+    if _is_sector(symbol,market):return _read_page(*key)
+    if period in {'1m','5m','15m','30m','1h'} and not _is_sector(symbol,market):
         from app.ashare_live import normalize_symbol
         try: mainland=normalize_symbol(symbol)
         except ValueError: mainland=None

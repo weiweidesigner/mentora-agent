@@ -88,3 +88,15 @@ def test_http_validation_and_retry_after_provider_failure(monkeypatch):
 
 def test_timezone_cursor_preserves_the_instant():
     assert module.timestamp('2026-01-01T08:00:00+08:00')==module.timestamp('2026-01-01T00:00:00Z')
+
+
+def test_sector_codes_use_native_provider_without_quote_cache(monkeypatch):
+    calls=[]
+    def fetch(props,symbol,period,limit):
+        calls.append((props,symbol,period));return [row('2026-10-29')],'ainvest'
+    adapter(monkeypatch,fetch)
+    for _ in range(2):
+        result=module.history_page('861077','1m',market='89')
+        assert result['rows'] and result['source']=='ainvest'
+    assert len(calls)==2 and all(c[0]['market']=='89' for c in calls)
+    assert not module._cache
