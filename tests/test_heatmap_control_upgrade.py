@@ -9,10 +9,10 @@ def test_saved_heatmap_reuses_source_data_and_current_theme(monkeypatch):
     class Native:
         def render_html(self, received):
             assert received == dict(payload, theme='dark')
-            return '<div data-heatmap-menu="2">upgraded</div>'
+            return '<div data-heatmap-menu="3">upgraded</div>'
     monkeypatch.setattr(artifact_upgrades, '_native_rating', lambda name: Native())
     upgraded = artifact_upgrades.upgrade_heatmap_controls(saved)
-    assert 'data-heatmap-menu="2"' in upgraded
+    assert 'data-heatmap-menu="3"' in upgraded
     assert artifact_upgrades.upgrade_heatmap_controls(upgraded) == upgraded
 
 

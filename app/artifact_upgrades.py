@@ -284,7 +284,7 @@ def _native_rating(name):
 
 def upgrade_heatmap_controls(artifact):
     """Refresh saved heatmap controls using only their embedded source payload."""
-    if 'heatmap-settings-toggle' not in artifact or 'data-heatmap-menu="2"' in artifact:
+    if 'heatmap-settings-toggle' not in artifact or 'data-heatmap-menu="3"' in artifact:
         return artifact
     match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
     if not match:
