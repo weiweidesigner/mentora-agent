@@ -488,5 +488,11 @@
     "script": "sector_performance.py",
     "label": "行业表现",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "market_momentum",
+    "script": "market_momentum.py",
+    "label": "市场动量",
+    "source": "business-charts-repository"
   }
 ]

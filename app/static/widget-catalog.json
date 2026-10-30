@@ -1302,5 +1302,22 @@
     "width": 12,
     "height": 20,
     "defaultSymbols": []
+  },
+  {
+    "id": "market_momentum",
+    "title": "市场动量",
+    "category": "热力图与筛选器",
+    "description": "AInvest 上涨下跌、新高新低及站上50日/200日均线的股票家数与比例。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "market_momentum.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 6,
+    "defaultSymbols": []
   }
 ]
