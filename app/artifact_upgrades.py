@@ -49,6 +49,7 @@ def sync_native_kline_theme(artifact: str, theme: str, depth: int = 0) -> str:
         return match[0] if updated==original else match[1]+html.escape(updated,quote=True)+match[3]
     artifact=re.sub(r'(\bsrcdoc=")(.*?)(")',child,artifact,flags=re.S)
     if 'id="kline-canvas"' not in artifact or 'class="kline-component"' not in artifact:return artifact
+    artifact=re.sub(r'<div class="sector-quote-summary"[^>]*>.*?</div>', '', artifact, flags=re.S)
     def update_script(match):
         script=match[0]
         if "getElementById('kline-canvas')" not in script:return script

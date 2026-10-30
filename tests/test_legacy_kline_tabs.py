@@ -25,3 +25,13 @@ def test_nested_tabs_and_theme_switch_preserve_periods_and_annotations():
     assert 'data-theme="light"' in child
     assert '"themeMode":"light"' in child
     assert '"price":781.62' in child and '"close":778.01' in child
+
+
+def test_saved_sector_quote_strip_is_removed_without_touching_data_or_tabs():
+    before=document().replace('</nav>', '</nav><div class="sector-quote-summary" style="display:flex"><span>价格 12,938.27</span><span>YTD +27.08%</span></div>')
+    before=before.replace('"themeMode":"dark"', '"themeMode":"dark","sectorContext":{"quote":{"price":12938.27}}')
+    after=sync_native_kline_theme(before,'dark')
+    assert 'sector-quote-summary' not in after and 'YTD +27.08%' not in after
+    assert '"sectorContext":{"quote":{"price":12938.27}}' in after
+    assert '<nav class="period-tabs">' in after
+    assert sync_native_kline_theme(after,'dark')==after
