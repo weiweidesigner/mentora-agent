@@ -1268,5 +1268,22 @@
     "width": 12,
     "height": 22,
     "defaultSymbols": []
+  },
+  {
+    "id": "etf_heatmap",
+    "title": "ETF 热力图",
+    "category": "热力图与筛选器",
+    "description": "按主题、行业和地区查看 ETF 涨跌与规模，支持分类下钻、盘前盘后、面积与颜色指标切换。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "etf_heatmap.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 24,
+    "defaultSymbols": []
   }
 ]
