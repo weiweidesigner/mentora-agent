@@ -1234,7 +1234,7 @@ function withArtifactWidgetControl(node,item={}){
     if(title?.textContent.trim()&&!actionHost.querySelector('[data-widget-title-action]')&&!title.querySelector('[data-widget-title-action]')&&button.parentElement!==actionHost&&!button.isConnected){
       if(!doc.querySelector('[data-widget-title-button-style]')){
         const style=doc.createElement('style');style.dataset.widgetTitleButtonStyle='true';
-        style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px;padding:5px 10px 5px 0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:0;pointer-events:none;transition:opacity .15s ease;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;pointer-events:auto;background:#8882}.artifactAddToWidget svg{display:block;width:18px;height:18px;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
+        style.textContent='.artifactAddToWidget{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px;padding:5px 10px 5px 0;border:0;border-radius:6px;background:transparent;color:inherit;opacity:0;pointer-events:none;transition:opacity .15s ease;cursor:pointer;flex-shrink:0}.artifactAddToWidget:hover,.artifactAddToWidget:focus-visible{opacity:1;pointer-events:auto;background:#8882}.artifactAddToWidget svg{position:static!important;inset:auto!important;transform:none!important;display:block;width:18px!important;height:18px!important;flex:none;fill:currentColor}.artifactAddToWidget.is-added{color:#34d399}';
         style.textContent+=(doc===document?'.chatArtifactShell:hover .artifactAddToWidget':'html:hover .artifactAddToWidget')+'{opacity:.65;pointer-events:auto}';
         doc.head.append(style);
       }
@@ -6280,7 +6280,7 @@ function resizeReportDocumentFrame(frame) {
     const root = doc?.documentElement;
     if (!body || !root) return 520;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
-    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance']);
+    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance','market-momentum','fear-greed','bond-scatter']);
     const exploreData = doc.querySelector('script#component-data[type="application/json"]');
     if (exploreData) {
       try {

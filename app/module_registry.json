@@ -490,6 +490,24 @@
     "source": "business-charts-repository"
   },
   {
+    "name": "market_momentum",
+    "script": "market_momentum.py",
+    "label": "市场动量",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "fear_greed",
+    "script": "fear_greed.py",
+    "label": "恐惧与贪婪指数",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "bond_scatter",
+    "script": "bond_scatter.py",
+    "label": "债券收益率与期限",
+    "source": "business-charts-repository"
+  },
+  {
     "name": "inflation_map",
     "script": "inflation_map.py",
     "label": "Inflation map",
