@@ -476,5 +476,11 @@
     "name": "stock_heatmap",
     "script": "stock_heatmap.py",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "etf_heatmap",
+    "script": "etf_heatmap.py",
+    "label": "ETF 热力图",
+    "source": "business-charts-repository"
   }
 ]
