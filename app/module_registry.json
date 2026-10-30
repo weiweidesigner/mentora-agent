@@ -482,5 +482,11 @@
     "script": "etf_heatmap.py",
     "label": "ETF 热力图",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "sector_performance",
+    "script": "sector_performance.py",
+    "label": "行业表现",
+    "source": "business-charts-repository"
   }
 ]

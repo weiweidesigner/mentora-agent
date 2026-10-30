@@ -1285,5 +1285,22 @@
     "width": 12,
     "height": 24,
     "defaultSymbols": []
+  },
+  {
+    "id": "sector_performance",
+    "title": "行业表现",
+    "category": "热力图与筛选器",
+    "description": "AInvest 11个行业的当日、1周、1月、6月、YTD、1年、5年与10年表现矩阵，支持排序与固定行业列。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "sector_performance.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 20,
+    "defaultSymbols": []
   }
 ]

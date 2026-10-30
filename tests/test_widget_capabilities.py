@@ -110,3 +110,17 @@ def test_native_capabilities_are_discoverable_by_the_shared_execution_runtime():
     for filename, skill in [('render_streamviz.py', 'streamviz'), ('historical_kline.py', 'a-share-data')]:
         assert filename in ALLOWED_COMPONENTS_BY_FILE
         assert script_path_for_filename(filename).parent.parent.name == skill
+
+
+def test_sector_performance_is_a_source_backed_library_chart_without_symbol_input(monkeypatch):
+    from types import SimpleNamespace
+    from app import widget_library
+    # The unrelated TradingView dependency is not needed to select a native source-backed chart.
+    monkeypatch.setattr(widget_library, "renderer", lambda: SimpleNamespace(CATALOG={}))
+    component = next(c for c in generation_catalogue() if c['id'] == 'sector_performance')
+    assert component['script'] == 'sector_performance.py'
+    assert component['sourceLabel'] == 'AInvest' and component['allowEmptySymbols']
+    assert component['libraryVisible'] and not component['requiresDataSource']
+    payload = planner.PlanningInput(message='展示美股行业多周期表现', board={'id':'b','title':'行业','cards':[]})
+    result = planner.validate_plan({'reply':'添加行业表现','actions':[{'type':'add','componentId':'sector_performance','request':'展示美股行业多周期表现'}]},payload,[])
+    assert result['actions'][0]['componentId'] == 'sector_performance'
