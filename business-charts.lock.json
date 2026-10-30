@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/us-trading-charts.git",
-  "revision": "f3b9a12ce14871700b6b02339e76e6b3474b4dec",
+  "revision": "39f3add3a06d121514bd251d648475ada8a0d3c3",
   "checkout": ".dependencies/us-trading-charts",
   "links": {
     "app/skills/business-chart-recall": "app/skills/business-chart-recall"
