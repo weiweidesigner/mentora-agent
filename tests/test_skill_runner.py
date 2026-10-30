@@ -484,6 +484,10 @@ def test_kline_execute_summarizes_the_same_artifact_and_price_bases(tmp_path, mo
     assert summary["rangeStart"] == "2026-10-06"
     assert summary["latestTradingDay"] == "2026-10-29"
     assert summary["session"]["volume"] == 25
+    assert summary["session"]["vwap"] is None
+    assert summary["session"]["vwapEstimate"] is None
+    assert summary["session"]["firstHalfVolume"] is None
+    assert summary["session"]["secondHalfVolume"] is None
     assert summary["peaks"]["intrabarHigh"]["value"] == 203.25
     assert summary["peaks"]["highestClose"]["value"] == 202
     assert round(summary["peaks"]["changePctFromHighestClose"], 2) == -6.56

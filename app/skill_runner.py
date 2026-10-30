@@ -512,6 +512,7 @@ def _kline_summary(document: str, period: str) -> dict:
     closes = [float(row["close"]) for row in rows]
     latest = rows[-1]
     eastern = ZoneInfo("America/New_York")
+    intraday = period not in {"1d", "1w", "1M", "3M"}
     def bar_date(row):
         value = row.get("time")
         if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(value)):
@@ -563,15 +564,19 @@ def _kline_summary(document: str, period: str) -> dict:
         "latestTradingDay": bar_date(latest),
         "latest": {key: _rounded(latest.get(key)) for key in ("open", "high", "low", "close", "volume")},
         "session": {
+            "basis": "latest trading session minute bars" if intraday else "latest OHLCV bar; intraday path is not available from this bar",
+            "volumeUnit": "provider volume units; not cash turnover or capital flow",
             "bars": len(session_rows),
             "open": _rounded(session_rows[0].get("open")),
             "high": _rounded(max(float(row.get("high") or row["close"]) for row in session_rows)),
             "low": _rounded(min(float(row.get("low") or row["close"]) for row in session_rows)),
             "close": _rounded(session_rows[-1].get("close")),
             "volume": _rounded(total_volume),
-            "firstHalfVolume": _rounded(sum(volumes[:split])),
-            "secondHalfVolume": _rounded(sum(volumes[split:])),
-            "vwap": _rounded(typical_volume / total_volume) if total_volume else None,
+            "firstHalfVolume": _rounded(sum(volumes[:split])) if intraday else None,
+            "secondHalfVolume": _rounded(sum(volumes[split:])) if intraday else None,
+            "vwap": None,
+            "vwapEstimate": _rounded(typical_volume / total_volume) if intraday and total_volume else None,
+            "vwapBasis": "Exact traded-value VWAP unavailable; intraday estimate, when present, uses HLC3 weighted by bar volume",
             "changePctVsPreviousClose": _rounded(
                 (float(session_rows[-1]["close"]) / float(previous_close) - 1) * 100
             ) if previous_close else None,
@@ -582,6 +587,7 @@ def _kline_summary(document: str, period: str) -> dict:
             "high": _rounded(max(float(row.get("high") or row["close"]) for row in rows)),
         },
         "peaks": {
+            "basis": "Latest close compared with peaks of loaded bars; these are not historical maximum-drawdown statistics",
             "intrabarHigh": {"value": _rounded(high), "time": bar_time(high_row)},
             "highestClose": {"value": _rounded(highest_close), "time": bar_time(close_row)},
             "changePctFromIntrabarHigh": _rounded((float(latest["close"]) / high - 1) * 100) if high else None,
