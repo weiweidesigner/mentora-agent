@@ -707,7 +707,7 @@ def upgrade_stock_heatmap(artifact):
 
 def upgrade_etf_heatmap(artifact):
     """Refresh saved ETF controls; AUM loads on demand without altering saved source rows."""
-    if 'data-etf-heatmap-runtime=' not in artifact or 'data-etf-heatmap-runtime="3"' in artifact:return artifact
+    if 'data-etf-heatmap-runtime=' not in artifact or 'data-etf-heatmap-runtime="4"' in artifact:return artifact
     try:
         match=re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>',artifact,re.S)
         if not match:return artifact
