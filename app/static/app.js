@@ -4302,6 +4302,11 @@ function sanitizeUserFacingInsight(value) {
       source = source.slice(heading);
     }
   }
+  // Model-authored dummy image URLs are not deliverable charts. Keep real
+  // image references and AIME_CHART markers intact in live and saved answers.
+  source = source.replace(/!\[[^\]\n]*\]\(\s*(?:<?placeholder>?|<?about:blank>?|#)\s*(?:["'][^"'\n]*["']\s*)?\)/gi, "");
+  // Hold incomplete image syntax until its destination is fully streamed.
+  source = source.replace(/!\[[^\]\n]*(?:\](?:\([^\n)]*)?)?$/, "");
   return source
     .replace(/[（(][^（）\n()]*\b(?:assets_total|total_debt|holder_equity_total|other_cost|requested_field_unavailable|stream_id)[^（）\n()]*[）)]/gi, "")
     .replace(/^(#{1,6}[^\n]+)$/gm, line => line.replace(/[（(][^（）\n()]*(?:本次.*(?:抓取|取数)|组件字段|组件内)[^（）\n()]*[）)]/g, ""))

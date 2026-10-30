@@ -672,7 +672,7 @@ def upgrade_compact_generic_pie(artifact, depth=0):
 
 def upgrade_stock_heatmap(artifact):
     """Refresh saved Stock Heatmap layout without refetching financial data."""
-    if 'stock-heatmap' not in artifact or 'data-stock-heatmap-runtime="3"' in artifact:
+    if 'stock-heatmap' not in artifact or 'data-stock-heatmap-runtime="4"' in artifact:
         return artifact
     match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
     if not match:
