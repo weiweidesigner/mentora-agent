@@ -14,7 +14,7 @@ def test_saved_bond_wrapper_upgrades_without_refetch_and_preserves_observations(
     original = json.loads(json.dumps(payload))
     old = '<html data-theme="dark"><script id="component-data" type="application/json">'+json.dumps({'payload':payload,'labels':{},'summary':{}})+'</script></html>'
     result = upgrades.upgrade_bond_scatter(old)
-    assert 'data-bond-scatter-runtime="2"' in result
+    assert 'data-bond-scatter-runtime="3"' in result
     assert '--qh-short:#203247' in result
     saved = json.loads(upgrades.re.search(r'id="component-data" type="application/json">(.*?)</script>',result,upgrades.re.S)[1])['payload']
     assert saved == {**original,'theme':'dark'}
@@ -27,11 +27,11 @@ def test_unrelated_invalid_and_direct_saved_payloads(monkeypatch):
     class Native:
         def render_html(self, payload):
             seen.append(payload)
-            return '<html data-bond-scatter-runtime="2"></html>'
+            return '<html data-bond-scatter-runtime="3"></html>'
     monkeypatch.setattr(upgrades, '_native_rating', lambda name: Native())
     for document in ['<main>unrelated</main>', '<main>bond-scatter</main>', '<script id="component-data">{"type":"bond-scatter",</script>', '<script id="component-data">{"type":"other","name":"bond-scatter"}</script>']:
         assert upgrades.upgrade_bond_scatter(document) == document
     old = '<script id="component-data">{"type":"bond-scatter","bonds":[]}</script>'
-    assert 'data-bond-scatter-runtime="2"' in upgrades.upgrade_bond_scatter(old)
+    assert 'data-bond-scatter-runtime="3"' in upgrades.upgrade_bond_scatter(old)
     assert seen == [{'type':'bond-scatter','bonds':[]}]
     assert 'artifact = upgrade_bond_scatter(artifact)' in (Path(__file__).parents[1]/'app/presentation.py').read_text()

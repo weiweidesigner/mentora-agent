@@ -749,7 +749,7 @@ def upgrade_fear_greed(artifact):
 
 def upgrade_bond_scatter(artifact):
     """Refresh saved bond quadrants using their embedded observations, never refetch quotes."""
-    if 'bond-scatter' not in artifact or 'data-bond-scatter-runtime="2"' in artifact:
+    if 'bond-scatter' not in artifact or 'data-bond-scatter-runtime="3"' in artifact:
         return artifact
     try:
         match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
