@@ -471,5 +471,10 @@
     "name": "market_trackers",
     "script": "market_trackers.py",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "stock_heatmap",
+    "script": "stock_heatmap.py",
+    "source": "business-charts-repository"
   }
 ]
