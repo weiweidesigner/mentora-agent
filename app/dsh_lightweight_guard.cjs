@@ -112,6 +112,8 @@ function hasStructuredRows(value, depth = 0) {
 }
 
 function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_THRESHOLD) {
+  const argumentError = toolArgumentError(exec, result);
+  if (argumentError) return argumentError;
   const text = textOf(result);
   const file=String(exec.arguments?.file_path || exec.arguments?.path || '');
   // Skill instructions and schemas are executable contracts, not datasets.
@@ -122,7 +124,8 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
   try { parsed = JSON.parse(text); } catch { /* Preserve arbitrary text as a file. */ }
   // Contracts are executable metadata, not large research datasets. Losing
   // cliHelp/schema here forces the agent to rediscover the same interface.
-  if (parsed?.capability && typeof parsed.cliHelp === 'string' && Object.hasOwn(parsed, 'schema')) {
+  if (parsed?.capability && (typeof parsed.cliHelp === 'string' && Object.hasOwn(parsed, 'schema')
+      || parsed.agentContract && Object.hasOwn(parsed, 'schemaPath') && typeof parsed.fullOutputPath === 'string')) {
     return transformedResult(result.content || [], result.isError || failed(result), result);
   }
   const structured = parsed && typeof parsed === 'object' && hasStructuredRows(parsed);
@@ -184,6 +187,8 @@ function failureKey(exec, result) {
 }
 
 function firstFailureSummary(exec, result, root) {
+  const argumentError = toolArgumentError(exec, result);
+  if (argumentError) return argumentError;
   const text = textOf(result);
   if (text.length > 1200) return compactToolResult(exec, result, root, 1200);
   const summary = JSON.stringify({
@@ -196,6 +201,20 @@ function firstFailureSummary(exec, result, root) {
     true,
     result,
   );
+}
+
+function toolArgumentError(exec, result) {
+  const match = textOf(result).trim().match(/^Error:\s*invalid arguments:\s*missing required property ["']([^"']+)["']/i);
+  if (!result.isError || !match) return null;
+  return transformedResult([{type: 'text', text: JSON.stringify({
+    failed: true,
+    failureLayer: 'tool-call-validation',
+    tool: exec.name,
+    toolExecuted: false,
+    missingProperty: match[1],
+    summary: boundedString(textOf(result), 1200),
+    handoff: `The ${exec.name} tool rejected its arguments before execution. Add the missing ${JSON.stringify(match[1])} property to the tool-call arguments and retry the intended call. Do not inspect or change the target script to repair this tool schema error.`,
+  })}], true, result);
 }
 
 function repeatedFailureObservation() {

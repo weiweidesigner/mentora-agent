@@ -64,6 +64,35 @@ test('large executable contracts retain exact CLI and schema instead of dataset 
   assert.deepEqual(JSON.parse(result.content[0].text),contract);
 });
 
+test('compact capability contracts preserve identity, all flags and detailed handoff through SDK projection', t => {
+  const {root}=setup(t);
+  const contract={ok:true,capability:'fixture',script:'fixture.py',capabilityDescription:'Native asset '.repeat(50),
+    agentContract:{identity:'Use the native sector, not an ETF proxy.'},schemaPath:'/project/schema.json',
+    cliOptions:Array.from({length:50},(_,i)=>`--option-${i}`),fullOutputPath:'/project/outputs/contract.json'};
+  const text=JSON.stringify(contract);
+  assert(text.length>1000);
+  const result=compactToolResult(shell('python3 app/skill_runner.py contract --script fixture.py'),ok(text),root);
+  assert.deepEqual(JSON.parse(result.content[0].text),contract);
+});
+
+test('tool argument rejection explains the repair without blaming or retrying the script', async t => {
+  const {root,guard}=setup(t);
+  const exec=shell('python3 target.py');delete exec.arguments.description;
+  const raw={content:[{type:'text',text:'Error: invalid arguments: missing required property "description"'}],isError:true};
+  let executed=0;
+  const result=await guard.execute(exec,async()=>{executed++;return raw;});
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.failureLayer,'tool-call-validation');
+  assert.equal(receipt.missingProperty,'description');
+  assert.equal(receipt.toolExecuted,false);
+  assert.equal(executed,1);
+  // The SDK may re-render the original error before tools/post-execute.
+  assert.deepEqual(JSON.parse(compactToolResult(exec,raw,root).content[0].text),receipt);
+  exec.arguments.description='Run the requested operation';
+  const repaired=await guard.execute(exec,async()=>{executed++;return ok('actual result');});
+  assert.equal(repaired.content[0].text,'actual result');assert.equal(executed,2);
+});
+
 test('reading a capability contract does not consume its execution stage', async t => {
   const {guard}=setup(t);let bodies=0;
   const contract=shell('python3 app/skill_runner.py contract --script code_interpreter.py');
