@@ -488,5 +488,35 @@
     "script": "sector_performance.py",
     "label": "行业表现",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "inflation_map",
+    "script": "inflation_map.py",
+    "label": "Inflation map",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "gdp_growth",
+    "script": "gdp_growth.py",
+    "label": "GDP growth, YoY",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_unemployment_rate",
+    "script": "us_unemployment_rate.py",
+    "label": "US unemployment rate",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_interest_rate",
+    "script": "us_interest_rate.py",
+    "label": "US interest rate",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_trade_balance",
+    "script": "us_trade_balance.py",
+    "label": "US trade balance",
+    "source": "business-charts-repository"
   }
 ]
