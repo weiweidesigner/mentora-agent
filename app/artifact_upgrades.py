@@ -668,3 +668,19 @@ def upgrade_compact_generic_pie(artifact, depth=0):
     artifact=re.sub(r'<div\b[^>]*class="pie-badge"[^>]*>.*?</div>','',artifact,flags=re.S)
     style='<style data-generic-pie-compact="1">.pie-component{min-height:0!important;height:auto!important;padding-bottom:0!important;margin-bottom:0!important}.pie-header{grid-template-columns:minmax(0,1fr)!important}.pie-badge{display:none!important}</style>'
     return re.sub(r'</head\s*>',lambda _:style+'</head>',artifact,count=1,flags=re.I)
+
+
+def upgrade_stock_heatmap(artifact):
+    """Refresh saved Stock Heatmap layout without refetching financial data."""
+    if 'stock-heatmap' not in artifact or 'data-stock-heatmap-runtime="2"' in artifact:
+        return artifact
+    match = re.search(r'<script\b[^>]*\bid="component-data"[^>]*>(.*?)</script>', artifact, re.S)
+    if not match:
+        return artifact
+    try:
+        payload = json.loads(match[1])
+        if payload.get('type') != 'stock-heatmap':
+            return artifact
+        return _native_rating('stock_heatmap').render_html(payload)
+    except (ValueError, KeyError, TypeError):
+        return artifact
