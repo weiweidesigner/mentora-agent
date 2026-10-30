@@ -28,6 +28,11 @@ def compact_native_kline_layout(script: str) -> str:
 def upgrade_native_kline_data(script: str) -> str:
     """Connect native saved/new chart closures to the host's paged data API."""
     bridge=(Path(__file__).parent/'static/kline-data-bridge.js').read_text(encoding='utf-8').rstrip()
+    hook="  const tooltip = document.getElementById('kline-tooltip');"
+    session_asset=Path(__file__).parent/'skills/business-chart-recall/assets/kline-session.js'
+    if 'Native one-minute trading-session control, version 1.' not in script and hook in script and session_asset.is_file():
+        script=script.replace(hook,hook+'\n'+session_asset.read_text(encoding='utf-8'),1)
+
     if 'const historyRequests = new Map();' in script:
         start=script.find('  // Runs in the native chart closure:')
         end_marker='  queueMicrotask(() => {ensureHistory(activePeriod,true);showHistoryStatus();});'

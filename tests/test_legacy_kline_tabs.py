@@ -45,7 +45,24 @@ def test_saved_history_bridge_is_refreshed_without_duplicating_handlers():
   queueMicrotask(() => {ensureHistory(activePeriod,true);showHistoryStatus();});
 after();'''
     updated=upgrade_native_kline_data(old)
-    assert 'historyBridgeVersion = 2' in updated and 'outdatedFooterStatus' not in updated
+    assert 'historyBridgeVersion = 3' in updated and 'outdatedFooterStatus' not in updated
     assert updated.count('const historyRequests = new Map();')==1
     assert updated.startswith('before();') and updated.endswith('after();')
     assert upgrade_native_kline_data(updated)==updated
+
+
+def test_saved_native_chart_gets_one_session_menu_without_regenerating_data():
+    original="""<script>
+  const config = {"code":"AAPL","dataType":"1m"};
+  const dataByPeriod = {"1m":[{"time":100,"close":42}]};
+  const tooltip = document.getElementById('kline-tooltip');
+  function switchPeriod(period) {}
+  function visibleSlice(list, layout) {}
+  function maybeLoadPreviousPage() {}
+</script>"""
+    updated=upgrade_native_kline_data(original)
+    assert 'Native one-minute trading-session control, version 1.' in updated
+    assert 'const dataByPeriod = {"1m":[{"time":100,"close":42}]};' in updated
+    twice=upgrade_native_kline_data(updated)
+    assert twice.count('Native one-minute trading-session control, version 1.')==1
+    assert twice.count('const historyRequests = new Map();')==1

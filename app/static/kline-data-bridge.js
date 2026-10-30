@@ -1,5 +1,5 @@
   // Runs in the native chart closure: reuse its bars, viewport and indicator math.
-  const historyBridgeVersion = 2;
+  const historyBridgeVersion = 3;
   const historyRequests = new Map();
   const historyStatus = new Map();
   const historyEnds = new Set();
@@ -29,6 +29,7 @@
   const historyApiPrefix = [location.pathname, document.referrer].some(value => /\/mentora\//.test(value)) ? '/mentora' : '';
 
   function showHistoryStatus() {
+    if (typeof isIntradaySessionView==='function' && isIntradaySessionView()) {historyNote.style.display='none';return;}
     const state = historyStatus.get(activePeriod);
     historyNote.replaceChildren();
     historyNote.style.display = state ? 'flex' : 'none';
@@ -155,6 +156,7 @@
   }
 
   function ensureHistory(period, initial=false) {
+    if (typeof isIntradaySessionView==='function' && isIntradaySessionView(period)) return ensureIntradaySession();
     const rows = historyRows(period);
     if (!rows.length) return requestHistory(period,historyHasRange && Number.isFinite(historyEnd)?historyEnd+1:null,'before',historyHasRange);
     if (initial && historyHasRange) {
@@ -168,6 +170,9 @@
   function switchPeriod(period) {
     historyViews.set(activePeriod,{end:viewEnd,count:visibleCount,index:activeIndex});
     embeddedSwitchPeriod(period);
+    if (typeof syncIntradaySessionControl==='function') syncIntradaySessionControl();
+    if (typeof isIntradaySessionView==='function' && isIntradaySessionView(period)) {historyNote.style.display='none';ensureIntradaySession();return;}
+    canvas.style.visibility='';
     const state=historyViews.get(period);
     if (state) {viewEnd=state.end;visibleCount=state.count;activeIndex=state.index;draw();}
     showHistoryStatus();
@@ -178,6 +183,7 @@
   }
 
   function maybeLoadPreviousPage() {
+    if (typeof isIntradaySessionView==='function' && isIntradaySessionView()) return false;
     if (embeddedMaybeLoadPreviousPage()) return true;
     const all=bars();
     if (!all.length) return false;
@@ -190,6 +196,7 @@
 
   let historyPanTimer;
   function checkHistoryEdges(event) {
+    if (typeof isIntradaySessionView==='function' && isIntradaySessionView()) return;
     if (event?.type === 'mousemove' && !isDragging) return;
     if (event?.type === 'wheel' && !event.ctrlKey) return;
     clearTimeout(historyPanTimer);

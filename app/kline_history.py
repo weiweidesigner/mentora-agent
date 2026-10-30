@@ -84,7 +84,19 @@ def _read_page(symbol, period, market, exchange, cursor, direction):
                 hasMore=bool(page) and (direction != 'after' or timestamp(page[-1]['time']) < now-seconds*1000))
 
 
-def history_page(symbol, period, market='', exchange='', cursor=None, direction='before'):
+def intraday_session_page(symbol, session, market='', exchange=''):
+    native=_native_kline()
+    props=dict(market=market,exchange=exchange,timeout=12,intradaySession=session)
+    rows=native.fetch_intraday_session(props,symbol,session,12)
+    return dict(symbol=symbol,period='1m',session=session,rows=rows,source='ainvest',
+                timeZone='America/New_York',hasMore=False,reliableVolume=True,cachePolicy='no-store',
+                coverage={'count':len(rows),'from':rows[0]['time'] if rows else None,'to':rows[-1]['time'] if rows else None})
+
+
+def history_page(symbol, period, market='', exchange='', cursor=None, direction='before', session=None):
+    if session is not None:
+        if period!='1m' or session not in {'pre_market','intraday','post_market','all'} or cursor is not None:raise ValueError('Invalid intraday session query')
+        return intraday_session_page(symbol,session,market,exchange)
     key = (symbol, period, market, exchange, cursor, direction)
     if _is_sector(symbol,market):return _read_page(*key)
     if period in {'1m','5m','15m','30m','1h'} and not _is_sector(symbol,market):
@@ -122,10 +134,12 @@ def history(response: Response, symbol: str = Query(min_length=1,max_length=64,p
             market: str = Query(default='',max_length=24,pattern=r'^[A-Za-z0-9_-]*$'),
             exchange: str = Query(default='',max_length=24,pattern=r'^[A-Za-z0-9_-]*$'),
             cursor: float | None = Query(default=None,ge=0,le=32503680000000),
-            direction: str = Query(default='before',pattern=r'^(before|after)$')):
+            direction: str = Query(default='before',pattern=r'^(before|after)$'),
+            session: str | None = Query(default=None,pattern=r'^(pre_market|intraday|post_market|all)$')):
     response.headers['Cache-Control']='no-store'
     if "://" in symbol or ".." in symbol:
         raise HTTPException(422,"无效的标的代码")
-    try:return history_page(symbol.upper(),period,market,exchange,cursor,direction)
+    if session is not None and (period!='1m' or cursor is not None):raise HTTPException(422,'时段筛选仅支持最新分时')
+    try:return history_page(symbol.upper(),period,market,exchange,cursor,direction,session)
     except Exception as exc:
         raise HTTPException(502,'行情加载失败，请点击重试') from exc

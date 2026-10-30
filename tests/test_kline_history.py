@@ -100,3 +100,17 @@ def test_sector_codes_use_native_provider_without_quote_cache(monkeypatch):
         assert result['rows'] and result['source']=='ainvest'
     assert len(calls)==2 and all(c[0]['market']=='89' for c in calls)
     assert not module._cache
+
+
+def test_intraday_sessions_use_exact_source_and_bypass_history_cache(monkeypatch):
+    calls=[]
+    native=SimpleNamespace(fetch_intraday_session=lambda props,symbol,session,timeout:(calls.append((symbol,session,props)) or [row('2026-10-29T08:00:00-04:00')]))
+    monkeypatch.setattr(module,'_native_kline',lambda:native)
+    app=FastAPI();app.include_router(module.router);client=TestClient(app)
+    for session in ['pre_market','intraday','post_market','all','pre_market']:
+        r=client.get('/api/kline/history',params={'symbol':'AAPL','period':'1m','market':'185','session':session})
+        assert r.status_code==200 and r.headers['Cache-Control']=='no-store'
+        assert r.json()['session']==session and r.json()['hasMore'] is False and r.json()['timeZone']=='America/New_York'
+    assert len(calls)==5 and not module._cache
+    for params in [{'session':'unsafe','period':'1m'},{'session':'all','period':'1d'},{'session':'pre_market','period':'1m','cursor':1000}]:
+        assert client.get('/api/kline/history',params={'symbol':'AAPL',**params}).status_code==422
