@@ -10,7 +10,7 @@
     "lucide-react": "^1.24.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "streamviz-react": "https://codeload.github.com/weiweidesigner/streamviz/tar.gz/e3a0c79741b3b26510b72e4ec1159237e77ccde0"
+    "streamviz-react": "https://codeload.github.com/weiweidesigner/streamviz/tar.gz/4c4e6734e05ed5215982f91a2f316a7d6e881ec8"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.1",
