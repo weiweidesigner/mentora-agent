@@ -675,8 +675,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_intraday(artifact, theme)
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_generic_chart_typography(artifact)
-    from app.artifact_upgrades import upgrade_compact_generic_pie
+    from app.artifact_upgrades import upgrade_compact_generic_pie, upgrade_compact_generic_line
     artifact = upgrade_compact_generic_pie(artifact)
+    artifact = upgrade_compact_generic_line(artifact)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)
     artifact = upgrade_native_kline_runtime(artifact)
     artifact = sync_native_kline_theme(artifact, theme)

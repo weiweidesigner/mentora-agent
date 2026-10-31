@@ -16,3 +16,24 @@ test('native edge allowance does not repeatedly resize an embedded chart',()=>{
   assert.equal(frame.style.height,'310px');
  }finally{w.close();}
 });
+test('line embed uses its measured labels instead of viewport-stretched document height',()=>{
+ const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe');
+ const root=frame.contentDocument.createElement('section');root.className='group-line-component';root.dataset.embedHeight='286';frame.contentDocument.body.append(root);
+ frame.style.height='520px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
+ try{
+  w.eval(source);w.resizeReportDocumentFrame(frame);
+  assert.equal(frame.dataset.genericComponent,'line');
+  assert.equal(frame.style.height,'286px');
+  root.dataset.embedHeight='248';w.resizeReportDocumentFrame(frame);
+  assert.equal(frame.style.height,'248px');
+ }finally{w.close();}
+});
+test('share preview retains the compact line height',()=>{
+ const dom=new JSDOM('<iframe class="reportDocumentFrame"></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe');
+ const root=frame.contentDocument.createElement('section');root.className='group-line-component';root.dataset.embedHeight='286';frame.contentDocument.body.append(root);
+ frame.style.height='520px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
+ try{
+  w.eval(readFileSync(new URL('../app/static/share-chart-layout.js',import.meta.url),'utf8'));w.resizeShareCharts();
+  assert.equal(frame.style.height,'286px');
+ }finally{w.close();}
+});

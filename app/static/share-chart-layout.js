@@ -8,7 +8,9 @@
       const intrinsic = doc.querySelector('.multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
       const canvasRect = canvas?.getBoundingClientRect();
       const intrinsicRect = intrinsic?.getBoundingClientRect();
-      const height = canvasRect?.height > 80 ? Math.ceil(canvasRect.bottom)
+      const lineHeight = Number(doc.querySelector('.group-line-component')?.dataset.embedHeight);
+      const height = Number.isFinite(lineHeight) && lineHeight > 80 ? Math.ceil(lineHeight)
+        : canvasRect?.height > 80 ? Math.ceil(canvasRect.bottom)
         : intrinsicRect?.height > 0 ? Math.ceil(intrinsicRect.height)
         : Math.ceil(Math.max(doc.body.scrollHeight, doc.body.offsetHeight, doc.documentElement.scrollHeight, doc.documentElement.offsetHeight));
       frame.style.minHeight = '0';

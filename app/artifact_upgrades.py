@@ -806,3 +806,39 @@ def upgrade_gdp_growth(artifact):
         return _native_rating('gdp_growth').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_compact_generic_line(artifact: str) -> str:
+    """Size saved/new line embeds to visible labels, not an unused legend reserve."""
+    if 'class="group-line-component"' not in artifact or 'data-compact-line-height' in artifact:
+        return artifact
+    start = artifact.find('function postChartHeight() {')
+    end = artifact.find("window.addEventListener('resize'", start)
+    if start < 0 or end < 0:
+        return artifact
+    runtime = '''function postChartHeight() {
+  const rootRect = root.getBoundingClientRect();
+  const legendRect = legend.getBoundingClientRect();
+  const labels = [...svg.querySelectorAll('text,.event-label-box')]
+    .filter(el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden');
+  const legendVisible = getComputedStyle(legend).display !== 'none' && legendRect.height > 0;
+  const compact = labels.length > 0 && !legendVisible && !root.classList.contains('has-event-marks');
+  const bottom = compact
+    ? Math.max(...labels.map(el => el.getBoundingClientRect().bottom)) - rootRect.top + 8
+    : Math.max(root.scrollHeight || 0, root.offsetHeight || 0, legendRect.bottom - rootRect.top);
+  const localTooltipBottom = tooltip.classList.contains('active')
+    ? tooltip.getBoundingClientRect().bottom - rootRect.top + 12 : 0;
+  const height = Math.ceil(Math.max(80, bottom, localTooltipBottom) + 2);
+  root.dataset.embedHeight = String(height);
+  try {
+    if (window.frameElement) {
+      window.frameElement.style.height = `${height}px`;
+      window.frameElement.style.minHeight = '0';
+    }
+  } catch (e) {}
+  try { parent.postMessage({type:'analysis-planner-chart-height', height}, '*'); } catch (e) {}
+}
+'''
+    artifact = artifact[:start] + runtime + artifact[end:]
+    return artifact.replace('class="group-line-component"',
+                            'class="group-line-component" data-compact-line-height="1"', 1)
