@@ -810,13 +810,20 @@ def upgrade_gdp_growth(artifact):
 
 def upgrade_compact_generic_line(artifact: str) -> str:
     """Size saved/new line embeds to visible labels, not an unused legend reserve."""
-    if 'class="group-line-component"' not in artifact or 'data-compact-line-height' in artifact:
+    if 'class="group-line-component"' not in artifact or 'data-compact-line-height="2"' in artifact:
         return artifact
+    artifact = artifact.replace(' data-compact-line-height="1"', '')
     start = artifact.find('function postChartHeight() {')
     end = artifact.find("window.addEventListener('resize'", start)
     if start < 0 or end < 0:
         return artifact
-    runtime = '''function postChartHeight() {
+    runtime = '''let compactLineHeightPending = false;
+function postChartHeight() {
+  if (compactLineHeightPending) return;
+  compactLineHeightPending = true;
+  // SVG typography/layout observers finish after render; measure settled geometry.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+  compactLineHeightPending = false;
   const rootRect = root.getBoundingClientRect();
   const legendRect = legend.getBoundingClientRect();
   const labels = [...svg.querySelectorAll('text,.event-label-box')]
@@ -837,8 +844,22 @@ def upgrade_compact_generic_line(artifact: str) -> str:
     }
   } catch (e) {}
   try { parent.postMessage({type:'analysis-planner-chart-height', height}, '*'); } catch (e) {}
+  }));
 }
 '''
     artifact = artifact[:start] + runtime + artifact[end:]
+    # Portal typography can also settle after its first paint. Keep the final
+    # tooltip inside the page viewport when the chart is scrolled near its edge.
+    artifact = artifact.replace("portal.classList.add('active');\n      postChartHeight();", '''portal.classList.add('active');
+      requestAnimationFrame(() => {
+        if (!portal.classList.contains('active')) return;
+        const settled = tooltipBounds(absoluteAnchorX, portal.offsetWidth, 0, parentWidth, 8);
+        const preferredTop = firstGridTop - portal.offsetHeight - tooltipGap + offsetY;
+        const maxTop = Math.max(8, ctx.win.innerHeight - portal.offsetHeight - 8);
+        portal.style.left = `${settled.left}px`;
+        portal.style.top = `${Math.max(8, Math.min(maxTop, preferredTop))}px`;
+        portal.style.setProperty('--arrow-left', `${settled.arrowLeft}px`);
+      });
+      postChartHeight();''', 1)
     return artifact.replace('class="group-line-component"',
-                            'class="group-line-component" data-compact-line-height="1"', 1)
+                            'class="group-line-component" data-compact-line-height="2"', 1)
