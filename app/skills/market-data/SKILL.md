@@ -1,6 +1,6 @@
 ---
 name: market-data
-description: Read-only macroeconomic JSON APIs (inflation, GDP, US unemployment, interest rates, trade balance), plus batch quotes and completed daily OHLCV for US listings, mainland stocks and explicit Hong Kong listings. Independent reads run concurrently with timestamped reuse. No account or trading service required.
+description: Read-only macroeconomic JSON APIs (US unemployment, interest rates, trade balance; inflation/GDP data for explicit data requests), plus batch quotes and completed daily OHLCV for US listings, mainland stocks and explicit Hong Kong listings. Independent reads run concurrently with timestamped reuse. No account or trading service required.
 ---
 
 # Market data
@@ -63,7 +63,7 @@ no retry. See `docs/hk-market-data.md` for source references and exact semantics
 
 ## Macroeconomic data API (World Economy)
 
-Use `scripts/read_macro_data.py` for global inflation, GDP growth/nominal GDP, US unemployment, interest rates and trade balance. Read `schemas/read_macro_data.schema.json` for the exact contract. It provides data only, with no HTML, fixed style, table, chart type or layout. Select text or the existing generic visualization skills according to the user's question. A raw JSON response is not an already-rendered table. Reuse its file for transformation/rendering rather than fetching again.
+For inflation-map and GDP-ranking display requests, use the native business components `inflation_map.py` and `gdp_growth.py` and preserve their styles; do not substitute generic visualizations. Use `scripts/read_macro_data.py` for US unemployment, interest rates and trade balance, or explicit raw-data requests for inflation/GDP. Read `schemas/read_macro_data.schema.json` for the exact contract. It provides data only, with no HTML, fixed style, table, chart type or layout. Select text or the existing generic visualization skills according to the user's question. A raw JSON response is not an already-rendered table. Reuse its file for transformation/rendering rather than fetching again.
 
 ```sh
 python3 app/skill_runner.py execute --script read_macro_data.py -- --operation inflation --output outputs/data/inflation.json

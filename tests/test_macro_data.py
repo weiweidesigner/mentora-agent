@@ -72,9 +72,10 @@ def test_schema_and_cli_are_data_only():
     assert invalid.returncode == 2
 
 
-def test_active_registry_only_exposes_macro_data_api():
+def test_active_registry_preserves_map_and_gdp_but_us_macros_are_data_only():
     registry = json.loads((ROOT/'app/module_registry.json').read_text())
     scripts = {r['script'] for r in registry}
     assert 'read_macro_data.py' in scripts
-    assert not {'inflation_map.py', 'gdp_growth.py', 'us_unemployment_rate.py',
+    assert {'inflation_map.py', 'gdp_growth.py'} <= scripts
+    assert not {'us_unemployment_rate.py',
                 'us_interest_rate.py', 'us_trade_balance.py'} & scripts

@@ -512,5 +512,17 @@
     "script": "bond_scatter.py",
     "label": "债券收益率与期限",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "inflation_map",
+    "script": "inflation_map.py",
+    "label": "Inflation map",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "gdp_growth",
+    "script": "gdp_growth.py",
+    "label": "GDP growth, YoY",
+    "source": "business-charts-repository"
   }
 ]
