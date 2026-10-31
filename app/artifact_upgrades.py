@@ -889,7 +889,7 @@ def upgrade_economic_indicators_heatmap(artifact):
 
 def upgrade_macro_indicator(artifact: str) -> str:
     """Migrate old US macro charts to the unified runtime using embedded source data only."""
-    if 'data-macro-indicator-runtime="1"' in artifact:
+    if 'data-macro-indicator-runtime="2"' in artifact:
         return artifact
     legacy={'us-unemployment-rate','us-interest-rate','us-trade-balance','macro-indicator'}
     try:
@@ -898,7 +898,7 @@ def upgrade_macro_indicator(artifact: str) -> str:
         saved=json.loads(match[1]);payload=saved.get('payload',saved)
         if payload.get('type') not in legacy:return artifact
         if not isinstance(payload.get('history'),list):return artifact
-        payload={**payload,'interactiveSource':False}
+        payload={**payload,'interactiveSource':payload.get('type')=='macro-indicator' and bool(payload.get('interactiveSource'))}
         theme=re.search(r'data-theme=["\'](dark|light)["\']',artifact)
         if theme:payload['theme']=theme[1]
         return _native_rating('macro_indicator').render_html(payload)

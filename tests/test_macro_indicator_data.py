@@ -40,7 +40,7 @@ def test_saved_legacy_chart_upgrades_without_network_or_changing_source(monkeypa
     payload={'type':'us-interest-rate','symbol':'USINTR','unit':'%','history':[{'t':123,'v':4.6,'period':'source-date'}],'source':{'provider':'AInvest','historySampling':'year earliest'}}
     before=copy.deepcopy(payload);calls=[]
     class Native:
-        def render_html(self,value):calls.append(value);return '<html data-macro-indicator-runtime="1"></html>'
+        def render_html(self,value):calls.append(value);return '<html data-macro-indicator-runtime="2"></html>'
     monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
     artifact='<html data-theme="dark"><script type="application/json" id="component-data">'+json.dumps(payload)+'</script></html>'
     result=upgrades.upgrade_macro_indicator(artifact)
@@ -48,3 +48,14 @@ def test_saved_legacy_chart_upgrades_without_network_or_changing_source(monkeypa
     assert calls[0]['history']==before['history'] and calls[0]['source']==before['source']
     assert not calls[0]['interactiveSource'] and payload==before
     assert upgrades.upgrade_macro_indicator(result)==result
+
+
+def test_previous_unified_artifact_preserves_user_selection_permission(monkeypatch):
+    calls=[]
+    class Native:
+        def render_html(self,payload):calls.append(payload);return '<html data-macro-indicator-runtime="2"></html>'
+    monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
+    payload={'type':'macro-indicator','symbol':'AUINTR','history':[],'interactiveSource':True,'catalog':{'indicators':[{'code':'INTR'}]}}
+    html='<html data-macro-indicator-runtime="1"><script id="component-data" type="application/json">'+json.dumps(payload)+'</script></html>'
+    assert upgrades.upgrade_macro_indicator(html)!=html
+    assert calls[0]['interactiveSource'] and calls[0]['catalog']==payload['catalog']

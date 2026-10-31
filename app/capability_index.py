@@ -16,7 +16,7 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
-    "macro_indicator.py": ("宏观指标走势", "各国宏观经济", "澳大利亚利率", "中国GDP走势", "美国失业率", "失业率走势", "美国利率", "政策利率", "利率变化", "美国贸易差额", "贸易逆差", "USUR", "USINTR", "USBOT", "economic indicator history", "US unemployment rate", "US interest rate", "US trade balance"),
+    "macro_indicator.py": ("宏观指标走势", "各国宏观经济", "宏观经济指标", "经济指标历史", "失业率", "利率", "贸易差额", "通胀率", "GDP同比", "政府债务", "银行资产", "美国失业率", "失业率走势", "美国利率", "政策利率", "利率变化", "美国贸易差额", "贸易逆差", "USUR", "USINTR", "USBOT", "economic indicator history", "US unemployment rate", "US interest rate", "US trade balance"),
     "economic_indicators_heatmap.py": ("全球经济指标", "各国经济指标对比", "经济指标热力图", "economic indicators heatmap"),
     "inflation_map.py": ("全球通胀", "通胀地图", "inflation map"),
     "gdp_growth.py": ("GDP", "G20", "经济增长排名", "GDP同比增长", "GDP growth"),
