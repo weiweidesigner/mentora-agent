@@ -135,6 +135,8 @@ class CapabilityShortlist:
             "原生业务组件的明确样式契约继续保留。StreamViz 负责看板布局、叙事和非标准交互；"
             "可用 chart_artifacts 嵌入已通过 chartValidation 的图表，保留其数据、坐标和交互。"
             "通用图表可用 payload.dataSource 的 path/recordsPath/fields 直接读取上游文件，避免转抄数据。"
+            "可选具体脚本：line_chart.py 折线、group_line.py 分组折线、bar_chart.py 柱状、grouped_bar.py 分组柱、bar_line.py 柱折、pie.py 饼图。"
+            "按所选脚本获取 contract --script；不存在 generic_chart.py 或 contract --skill。"
         )
         lines.append(
             "对每个最终选定的组件最多调用 contract 一次；多个独立 contract 可在同一步并行获取。"

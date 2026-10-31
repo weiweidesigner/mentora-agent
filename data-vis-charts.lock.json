@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/data-vis-charts.git",
-  "revision": "060f1ae29957b1040fcaa0fc7ac9ed956dfb3ab1",
+  "revision": "305cead4769e2dab1603350363f2f2f3c94abbaf",
   "checkout": ".dependencies/data-vis-charts",
   "links": {
     "app/skills/generic-chart": "app/skills/generic-chart"
