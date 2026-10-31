@@ -151,10 +151,18 @@ def validate(expected):
     if (received != wanted if ordered else Counter(received) != Counter(wanted)):
         raise ValueError('Chart validation failed: rendered rows/values differ from input (including missing observations); repair field mapping or missingValuePolicy')
     x = expected['xField']
-    if config.get('xScale') == 'time':
-        times = [row[x] if isinstance(row[x], (int, float)) else datetime.fromisoformat(str(row[x]).replace('Z', '+00:00')).timestamp()*1000 for row in actual]
+    scale = config.get('xScale', 'category')
+    if scale not in ('category', 'time', 'linear'):
+        raise ValueError('xScale must be category, time or linear')
+    if scale in ('time', 'linear'):
+        try:
+            times = [float(row[x]) if scale == 'linear' or isinstance(row[x], (int, float)) else datetime.fromisoformat(str(row[x]).replace('Z', '+00:00')).timestamp()*1000 for row in actual]
+        except (ValueError, TypeError, OverflowError):
+            raise ValueError('Continuous x-axis values must be valid dates or finite numbers') from None
+        if any(not math.isfinite(value) for value in times):
+            raise ValueError('Continuous x-axis values must be finite')
         if any(times[i] < times[i-1] for i in range(1, len(times))):
-            raise ValueError('Time-axis observations must be sorted; use explicit dataSource.sortBy')
+            raise ValueError('Continuous x-axis observations must be sorted; use explicit dataSource.sortBy')
     summary = {}
     definitions = {row['field']: row for key in ('series', 'columnSeries', 'lineSeries') for row in config.get(key, [])}
     for field in expected['fields']:

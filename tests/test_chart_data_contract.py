@@ -138,3 +138,11 @@ def test_pie_source_file_preserves_labels_and_amounts(tmp_path):
     assert result.returncode==0,result.stderr
     proof,_=validate(expected)
     assert proof['rowCount']==3 and proof['series']['value']['max']==5.5
+
+
+@pytest.mark.parametrize('scale',['linear','unsupported'])
+def test_invalid_continuous_x_geometry_fails_before_delivery(tmp_path,scale):
+    _,expected,_=setup_chart(tmp_path)
+    write_config(expected,lambda c:c.update(xScale=scale))
+    with pytest.raises(ValueError,match='x-axis|xScale'):
+        validate(expected)
