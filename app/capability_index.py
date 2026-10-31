@@ -16,8 +16,10 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
-    "read_macro_data.py": ("宏观数据API", "原始数据", "失业率", "利率", "贸易差额", "unemployment", "interest rate", "trade balance"),
     "economic_indicators_heatmap.py": ("全球经济指标", "各国经济指标对比", "经济指标热力图", "economic indicators heatmap"),
+    "us_unemployment_rate.py": ("美国失业率", "失业率走势", "USUR", "US unemployment rate"),
+    "us_interest_rate.py": ("美国利率", "政策利率", "利率变化", "USINTR", "US interest rate"),
+    "us_trade_balance.py": ("美国贸易差额", "贸易逆差", "USBOT", "US trade balance"),
     "inflation_map.py": ("全球通胀", "通胀地图", "inflation map"),
     "gdp_growth.py": ("GDP", "G20", "经济增长排名", "GDP同比增长", "GDP growth"),
     "ashare_intraday.py": ("a股分时", "上证指数", "深证指数", "分时走势", "每天分时", "五日分时", "分钟行情", "沪深分时"),
@@ -75,7 +77,7 @@ _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
     "custom-html-widget": ("html报告", "html页面", "html组件", "widget", "mini app"),
     "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),
     "flux-image": ("生成图片", "插画", "海报", "image generation"),
-    "market-data": ("宏观", "通胀", "GDP", "失业率", "利率", "贸易差额", "行情数据", "报价", "ohlcv", "market data"),
+    "market-data": ("行情数据", "报价", "ohlcv", "market data"),
     "ashare-minute": ("a股分时", "上证指数分时", "深证指数分时", "五日分时", "每天分时", "分钟行情"),
     "a-share-data": ("a股", "沪深", "中国股票"),
     "chart-markup": ("标注", "参考线", "事件点", "mark"),

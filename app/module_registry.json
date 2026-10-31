@@ -1,11 +1,5 @@
 [
   {
-    "name": "read_macro_data",
-    "script": "read_macro_data.py",
-    "label": "Macro Economic Data API",
-    "description": "宏观经济数据 API：全球通胀、G20 GDP同比与名义GDP、美国失业率USUR、利率USINTR、贸易差额USBOT。仅返回JSON原始数值、单位、来源和观察期，不渲染HTML或固定表格/图表。--operation countries|inflation|gdp-growth|unemployment|interest-rate|trade-balance --output JSON；可选--group、--limit，历史--years、--period day_1|month_1|year_1、--begin-time/--end-time毫秒。默认GDP完整G20而非前六。按问题复用数据交给通用可视化；先读market-data契约。"
-  },
-  {
     "name": "pine_script",
     "script": "pine_script.py",
     "label": "Pine Script",
@@ -529,6 +523,24 @@
     "name": "economic_indicators_heatmap",
     "script": "economic_indicators_heatmap.py",
     "label": "全球经济指标热力表",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_unemployment_rate",
+    "script": "us_unemployment_rate.py",
+    "label": "美国失业率",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_interest_rate",
+    "script": "us_interest_rate.py",
+    "label": "美国利率",
+    "source": "business-charts-repository"
+  },
+  {
+    "name": "us_trade_balance",
+    "script": "us_trade_balance.py",
+    "label": "美国贸易差额",
     "source": "business-charts-repository"
   }
 ]

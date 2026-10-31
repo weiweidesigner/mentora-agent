@@ -107,3 +107,16 @@ def test_congress_performance_ranking_questions_retrieve_native_component():
     for question in ('这个月表现最差的议员都是谁', '本月表现最好的议员', '今年哪些美国议员投资收益最低', '今年以来美国议员投资表现排名'):
         shortlist = index.shortlist(question)
         assert 'congress_leaderboard.py' in [item['script'] for item in shortlist.modules], question
+
+
+def test_us_macro_trends_retrieve_native_components():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question, expected in [
+        ('看看美国失业率走势', 'us_unemployment_rate.py'),
+        ('看看美国利率变化', 'us_interest_rate.py'),
+        ('看看美国贸易差额', 'us_trade_balance.py'),
+    ]:
+        shortlist = index.shortlist(question)
+        scripts = [item['script'] for item in shortlist.modules]
+        assert expected in scripts
+        assert 'read_macro_data.py' not in scripts

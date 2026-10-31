@@ -1,6 +1,6 @@
 ---
 name: market-data
-description: Read-only macroeconomic JSON APIs (US unemployment, interest rates, trade balance; inflation/GDP data for explicit data requests), plus batch quotes and completed daily OHLCV for US listings, mainland stocks and explicit Hong Kong listings. Independent reads run concurrently with timestamped reuse. No account or trading service required.
+description: Read-only batch quotes and completed daily OHLCV for US listings, mainland stocks and explicit Hong Kong listings. Independent reads run concurrently with timestamped reuse. No account or trading service required.
 ---
 
 # Market data
@@ -61,18 +61,6 @@ and historical backtests are added. No FX conversion, trade permission, provider
 guessing or automatic source fallback is introduced. Errors fail that item with
 no retry. See `docs/hk-market-data.md` for source references and exact semantics.
 
-## Macroeconomic data API (World Economy)
+## 宏观经济展示
 
-For inflation-map and GDP-ranking display requests, use the native business components `inflation_map.py` and `gdp_growth.py` and preserve their styles; do not substitute generic visualizations. Use `scripts/read_macro_data.py` for US unemployment, interest rates and trade balance, or explicit raw-data requests for inflation/GDP. Read `schemas/read_macro_data.schema.json` for the exact contract. It provides data only, with no HTML, fixed style, table, chart type or layout. Select text or the existing generic visualization skills according to the user's question. A raw JSON response is not an already-rendered table. Reuse its file for transformation/rendering rather than fetching again.
-
-```sh
-python3 app/skill_runner.py execute --script read_macro_data.py -- --operation inflation --output outputs/data/inflation.json
-python3 app/skill_runner.py execute --script read_macro_data.py -- --operation gdp-growth --output outputs/data/gdp.json
-python3 app/skill_runner.py execute --script read_macro_data.py -- --operation unemployment --years 2 --period month_1 --output outputs/data/unemployment.json
-python3 app/skill_runner.py execute --script read_macro_data.py -- --operation interest-rate --years 12 --period month_1 --output outputs/data/interest-rate.json
-python3 app/skill_runner.py execute --script read_macro_data.py -- --operation trade-balance --output outputs/data/trade-balance.json
-```
-
-`--operation countries` lists source countries; `--group` selects an exact source group. GDP defaults to the complete live G20 group, sorted by GDPYY, not global rankings or a fixed top six. `--limit` optionally limits snapshot rows. History supports `--years` (default 2), `--period day_1|month_1|year_1` (default month_1), and explicit epoch-ms `--begin-time`/`--end-time`. These request the provider's resolution, without extra month/year display sampling. Series observations preserve source timestamp, observation period, nulls and duplicates. Deduplicate/aggregate explicitly only if the user's analysis requires it.
-
-Output JSON includes rows, optional series, units, source endpoints and fetchedAt; stdout supplies a bounded summary and data path. Percentage values are already percent (4.2 = 4.2%), amounts remain raw USD. GDP region snapshot does not define a shared quarter/year; never label retrieval time as observation period. Missing values stay null, not zero. Anonymous visitor credentials remain in memory; errors stop the source route, with no fallback data. GDP uses a combined GDPYY/GDP request to avoid redundant reads. This API creates no visualization artifact.
+美国失业率、美国利率、美国贸易差额、全球通胀地图及GDP增长排名均使用 business-chart-recall 下对应的独立原生业务组件。失业率/利率/贸易差额包含蓝色折线与底部时间范围Tab，不再登记read_macro_data.py为Agent数据API入口；不要使用通用图表或StreamViz替代这些原生展示。报价和日线历史仍使用本Skill，不改变行情数据契约。
