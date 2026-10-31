@@ -526,21 +526,9 @@
     "source": "business-charts-repository"
   },
   {
-    "name": "us_unemployment_rate",
-    "script": "us_unemployment_rate.py",
-    "label": "美国失业率",
-    "source": "business-charts-repository"
-  },
-  {
-    "name": "us_interest_rate",
-    "script": "us_interest_rate.py",
-    "label": "美国利率",
-    "source": "business-charts-repository"
-  },
-  {
-    "name": "us_trade_balance",
-    "script": "us_trade_balance.py",
-    "label": "美国贸易差额",
+    "name": "macro_indicator",
+    "script": "macro_indicator.py",
+    "label": "各国宏观指标走势",
     "source": "business-charts-repository"
   }
 ]

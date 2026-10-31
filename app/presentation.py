@@ -32,6 +32,7 @@ from app.video_thumbnails import router as video_thumbnail_router
 from app.kline_history import router as kline_history_router
 from app.stock_heatmap_data import router as stock_heatmap_router
 from app.etf_heatmap_data import router as etf_heatmap_router
+from app.macro_indicator_data import router as macro_indicator_router
 try:
     from app.cost_monitor import create_router as create_cost_router
 except ModuleNotFoundError as exc:
@@ -63,6 +64,7 @@ app.include_router(video_thumbnail_router)
 app.include_router(kline_history_router)
 app.include_router(stock_heatmap_router)
 app.include_router(etf_heatmap_router)
+app.include_router(macro_indicator_router)
 app.include_router(local_glm_router)
 app.include_router(widget_library_router)
 app.include_router(widget_planner_router)
@@ -645,6 +647,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_gdp_growth(artifact)
     from app.artifact_upgrades import upgrade_inflation_map
     artifact = upgrade_inflation_map(artifact)
+    from app.artifact_upgrades import upgrade_macro_indicator
+    artifact = upgrade_macro_indicator(artifact)
     from app.artifact_upgrades import upgrade_economic_indicators_heatmap
     artifact = upgrade_economic_indicators_heatmap(artifact)
     from app.artifact_upgrades import upgrade_bond_scatter

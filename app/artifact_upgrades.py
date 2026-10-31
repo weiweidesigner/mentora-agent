@@ -885,3 +885,22 @@ def upgrade_economic_indicators_heatmap(artifact):
         return _native_rating('economic_indicators_heatmap').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_macro_indicator(artifact: str) -> str:
+    """Migrate old US macro charts to the unified runtime using embedded source data only."""
+    if 'data-macro-indicator-runtime="1"' in artifact:
+        return artifact
+    legacy={'us-unemployment-rate','us-interest-rate','us-trade-balance','macro-indicator'}
+    try:
+        match=re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>',artifact,re.S)
+        if not match:return artifact
+        saved=json.loads(match[1]);payload=saved.get('payload',saved)
+        if payload.get('type') not in legacy:return artifact
+        if not isinstance(payload.get('history'),list):return artifact
+        payload={**payload,'interactiveSource':False}
+        theme=re.search(r'data-theme=["\'](dark|light)["\']',artifact)
+        if theme:payload['theme']=theme[1]
+        return _native_rating('macro_indicator').render_html(payload)
+    except (ValueError,TypeError,KeyError,AttributeError):
+        return artifact

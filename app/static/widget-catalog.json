@@ -1370,5 +1370,22 @@
     "width": 12,
     "height": 20,
     "defaultSymbols": []
+  },
+  {
+    "id": "macro_indicator",
+    "title": "各国宏观指标走势",
+    "category": "宏观经济",
+    "description": "AInvest所有国家/地区和可用宏观指标统一历史折线，国家和指标为参数。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "macro_indicator.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 14,
+    "defaultSymbols": []
   }
 ]

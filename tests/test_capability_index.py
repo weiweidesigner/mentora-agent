@@ -112,9 +112,11 @@ def test_congress_performance_ranking_questions_retrieve_native_component():
 def test_us_macro_trends_retrieve_native_components():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question, expected in [
-        ('看看美国失业率走势', 'us_unemployment_rate.py'),
-        ('看看美国利率变化', 'us_interest_rate.py'),
-        ('看看美国贸易差额', 'us_trade_balance.py'),
+        ('看看美国失业率走势', 'macro_indicator.py'),
+        ('看看美国利率变化', 'macro_indicator.py'),
+        ('看看美国贸易差额', 'macro_indicator.py'),
+        ('看看澳大利亚利率走势', 'macro_indicator.py'),
+        ('看看中国GDP走势', 'macro_indicator.py'),
     ]:
         shortlist = index.shortlist(question)
         scripts = [item['script'] for item in shortlist.modules]
