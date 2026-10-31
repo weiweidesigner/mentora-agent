@@ -768,3 +768,22 @@ def upgrade_bond_scatter(artifact):
         return _native_rating('bond_scatter').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_inflation_map(artifact):
+    """Update saved map hover UI using embedded observations only, without a new snapshot."""
+    if 'inflation-map' not in artifact or 'data-inflation-map-ui="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        payload = json.loads(match[1])
+        if not isinstance(payload, dict) or payload.get('type') != 'inflation-map' or not isinstance(payload.get('countries'), list):
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('inflation_map').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
