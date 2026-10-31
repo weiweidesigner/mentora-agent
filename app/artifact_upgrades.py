@@ -787,3 +787,22 @@ def upgrade_inflation_map(artifact):
         return _native_rating('inflation_map').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_gdp_growth(artifact):
+    """Tighten saved GDP table title spacing from embedded data without refetching."""
+    if 'gdp-growth' not in artifact or 'data-gdp-growth-ui="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        payload = json.loads(match[1])
+        if not isinstance(payload, dict) or payload.get('type') != 'gdp-growth' or not isinstance(payload.get('rows'), list):
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('gdp_growth').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
