@@ -348,3 +348,30 @@ test('scheduler adapter only changes safe visible bash modes and restores on dis
  tools.get=()=>undefined;assert.equal(tools.executionMode(exec).kind,'exclusive');
  dispose();assert.equal(tools.executionMode,original);
 });
+
+test('compaction preserves bounded verified component evidence and table policy', t => {
+  const {root}=setup(t);
+  const displayedRows=Array.from({length:6},(_,i)=>({country:`Country ${i}`,growthRate:4.5-i*.5,nominalGdp:1000000000+i}));
+  const presentation={kind:'table',coveredFields:['country','growthRate','nominalGdp'],markdownPolicy:'Do not duplicate the displayed table.'};
+  const source={ok:true,capability:'table_fixture',script:'table_fixture.py',exitCode:0,durationMs:2300,
+    presentation,analysisSummary:{rowCount:6,displayedRows,fetchedAt:'2026-10-31T00:00:00Z'},
+    artifacts:[{path:'/project/outputs/table.html',bytes:6000,verified:true}],observation:{verbose:'x'.repeat(12000)}};
+  const result=compactToolResult(shell('python3 app/skill_runner.py execute --script table_fixture.py'),ok(JSON.stringify(source)),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.compacted,true);
+  assert.deepEqual(receipt.summary.presentation,presentation);
+  assert.deepEqual(receipt.summary.analysisSummary,source.analysisSummary);
+  assert.equal(receipt.summary.analysisSummary.displayedRows[5].growthRate,2);
+  assert.equal(receipt.summary.artifacts[0].verified,true);
+  assert.deepEqual(JSON.parse(fs.readFileSync(receipt.fullOutputPath,'utf8')),source);
+  assert.ok(JSON.stringify(receipt.summary).length<4000);
+});
+
+test('oversized component summaries still use bounded dataset compaction', t => {
+  const {root}=setup(t);
+  const source={ok:true,capability:'large_fixture',exitCode:0,analysisSummary:{rows:Array.from({length:2000},(_,i)=>({value:i}))},artifacts:[{verified:true,path:'/project/outputs/large.html'}]};
+  const result=compactToolResult(shell('python3 large.py'),ok(JSON.stringify(source)),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.summary.analysisSummary.rows.count,2000);
+  assert.equal(JSON.parse(fs.readFileSync(receipt.fullOutputPath,'utf8')).analysisSummary.rows.length,2000);
+});

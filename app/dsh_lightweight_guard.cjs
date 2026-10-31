@@ -137,9 +137,20 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
   const suffix = parsed && typeof parsed === 'object' ? '.json' : '.txt';
   const reference = path.join(directory, `${String(exec.name || 'tool').replace(/[^a-z0-9_-]+/gi, '-')}-${crypto.randomUUID()}${suffix}`);
   fs.writeFileSync(reference, parsed && typeof parsed === 'object' ? JSON.stringify(parsed) : text, {encoding: 'utf8', mode: 0o600});
-  const summary = parsed && typeof parsed === 'object'
+  let summary = parsed && typeof parsed === 'object'
     ? compactValue(parsed)
     : {characters: text.length, head: text.slice(0, 700), tail: text.slice(-240)};
+  // Verified component receipts already contain a bounded analysis handoff.
+  // Recursive dataset compaction must not erase its facts or table-display contract.
+  // Full raw observations stay in the lossless file reference above.
+  if (parsed?.ok === true && parsed.exitCode === 0 && parsed.capability
+      && parsed.analysisSummary && typeof parsed.analysisSummary === 'object'
+      && Array.isArray(parsed.artifacts) && parsed.artifacts.some(item => item?.verified === true)) {
+    const handoff = Object.fromEntries(
+      ['ok','capability','script','exitCode','durationMs','presentation','analysisSummary','timingsMs','artifacts']
+        .filter(key => Object.hasOwn(parsed,key)).map(key => [key,parsed[key]]));
+    if (JSON.stringify(handoff).length <= threshold) summary = handoff;
+  }
   const receipt = JSON.stringify({
     compacted: true,
     failed: failed(result),
