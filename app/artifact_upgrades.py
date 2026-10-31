@@ -867,7 +867,7 @@ function postChartHeight() {
 
 def upgrade_economic_indicators_heatmap(artifact):
     """Update saved heatmap scale and tooltip arrow without taking a new macro snapshot."""
-    if 'economic-indicators-heatmap' not in artifact or 'data-economic-heatmap-runtime="2"' in artifact:
+    if 'economic-indicators-heatmap' not in artifact or 'data-economic-heatmap-runtime="3"' in artifact:
         return artifact
     try:
         match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)

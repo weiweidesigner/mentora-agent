@@ -15,11 +15,11 @@ def test_saved_macro_values_periods_and_scope_survive_visual_upgrade(monkeypatch
  original=copy.deepcopy(payload)
  old='<html data-theme="dark" data-economic-heatmap-runtime="1"><script id="component-data" type="application/json">'+json.dumps({'payload':payload,'labels':{}})+'</script></html>'
  new=upgrades.upgrade_economic_indicators_heatmap(old)
- assert 'data-economic-heatmap-runtime="2"' in new
+ assert 'data-economic-heatmap-runtime="3"' in new
  result=json.loads(re.search(r'id="component-data">(.*?)</script>',new,re.S)[1])
  assert result['payload']==original
  assert result['type']=='economic-indicators-heatmap'
- assert 'class="color-legend"' in new and 'data-side="above"' in new
+ assert 'class="color-legend"' not in new and 'data-side="above"' in new
  assert upgrades.upgrade_economic_indicators_heatmap(new)==new
  for bad in ['<main>other</main>','<script id="component-data">economic-indicators-heatmap broken</script>','<script id="component-data">{"type":"other","name":"economic-indicators-heatmap"}</script>']:
   assert upgrades.upgrade_economic_indicators_heatmap(bad)==bad
