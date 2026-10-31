@@ -1,0 +1,37 @@
+{
+  "type": "macro-data",
+  "script": "read_macro_data.py",
+  "purpose": "Read-only AInvest macroeconomic JSON data, independent of visualization.",
+  "cli": {
+    "operation": [
+      "countries",
+      "inflation",
+      "gdp-growth",
+      "unemployment",
+      "interest-rate",
+      "trade-balance"
+    ],
+    "output": "required JSON path",
+    "group": "optional source country group, GDP defaults G20",
+    "limit": "optional positive snapshot row count, default all group members",
+    "years": "positive history range, default 2",
+    "period": [
+      "day_1",
+      "month_1",
+      "year_1"
+    ],
+    "begin-time": "optional epoch milliseconds",
+    "end-time": "optional epoch milliseconds"
+  },
+  "dataContract": {
+    "rows": "snapshot fields and source country identity; missing values remain null",
+    "series": "original source observations including t, v and macro_observation_period; no display downsampling",
+    "units": "percent numbers are already percent, USD raw amounts",
+    "source": "endpoints and fetchedAt; retrieval time is not observation period"
+  },
+  "agentContract": {
+    "capability": "data-only",
+    "rendered": false,
+    "output": "JSON, not a chart/table artifact. Choose generic visualization or text based on the request. No fixed style, chart type, top-six cutoff or mandatory layout. Reuse the successful data file downstream; do not fetch again merely to render."
+  }
+}

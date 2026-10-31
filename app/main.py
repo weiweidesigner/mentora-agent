@@ -84,6 +84,7 @@ RUNS_DIR = ROOT / "outputs" / "runs"
 MODULE_REGISTRY_PATH = ROOT / "app" / "module_registry.json"
 SKILLS_DIR = ROOT / "app" / "skills"
 SKILL_SCRIPT_DIRS = (
+    SKILLS_DIR / "market-data" / "scripts",
     SKILLS_DIR / "trading-view-chart" / "scripts",
     SKILLS_DIR / "generic-chart" / "scripts",
     SKILLS_DIR / "a-share-data" / "scripts",
@@ -2487,7 +2488,7 @@ BUSINESS_CHART_SCRIPT_FILES = frozenset(
     for path in (SKILLS_DIR / "business-chart-recall" / "scripts").glob("*.py")
     if path.name != "__init__.py"
 )
-NON_DISPLAY_RUN_SCRIPTS = {"code_interpreter.py", "yahoo_data.py"}
+NON_DISPLAY_RUN_SCRIPTS = {"code_interpreter.py", "yahoo_data.py", "read_macro_data.py", "read_market_data.py"}
 YAHOO_LISTING_REGION_ROUTING_RULES = (
     "Yahoo 取数工具已移除，禁止选择 yahoo-data、yahoo_data.py、yfinance 或 Yahoo 接口。"
     "使用现有非 Yahoo 数据源，无法覆盖时明确说明限制；不得用临时代码恢复已移除的工具。"

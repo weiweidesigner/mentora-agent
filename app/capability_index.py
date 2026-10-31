@@ -16,6 +16,7 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "read_macro_data.py": ("宏观", "全球通胀", "通胀地图", "GDP", "经济增长", "失业率", "利率", "贸易差额", "world economy", "inflation", "unemployment", "interest rate", "trade balance"),
     "ashare_intraday.py": ("a股分时", "上证指数", "深证指数", "分时走势", "每天分时", "五日分时", "分钟行情", "沪深分时"),
     "read_market_data.py": ("行情", "报价", "价格", "走势", "美股", "投资机会", "股票机会", "quote", "market data", "stock opportunities"),
     "price_snapshot.py": (
@@ -71,7 +72,7 @@ _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
     "custom-html-widget": ("html报告", "html页面", "html组件", "widget", "mini app"),
     "vision-chart-analyst": ("看图分析", "图片分析", "视觉检查", "multimodal"),
     "flux-image": ("生成图片", "插画", "海报", "image generation"),
-    "market-data": ("行情数据", "报价", "ohlcv", "market data"),
+    "market-data": ("宏观", "通胀", "GDP", "失业率", "利率", "贸易差额", "行情数据", "报价", "ohlcv", "market data"),
     "ashare-minute": ("a股分时", "上证指数分时", "深证指数分时", "五日分时", "每天分时", "分钟行情"),
     "a-share-data": ("a股", "沪深", "中国股票"),
     "chart-markup": ("标注", "参考线", "事件点", "mark"),
