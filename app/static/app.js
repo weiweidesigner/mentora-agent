@@ -6286,7 +6286,7 @@ function resizeReportDocumentFrame(frame) {
       const embedHeight = Number(lineRoot.dataset.embedHeight);
       if (Number.isFinite(embedHeight) && embedHeight > 80) return Math.ceil(embedHeight);
     }
-    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance','market-momentum','fear-greed','bond-scatter']);
+    const exploreTypes = new Set(['market-heatmap','etf-holding-distribution','market-index-intraday','market-breadth','market-trackers','stock-heatmap','etf-heatmap','sector-performance','market-momentum','fear-greed','bond-scatter','economic-indicators-heatmap']);
     const exploreData = doc.querySelector('script#component-data[type="application/json"]');
     if (exploreData) {
       try {

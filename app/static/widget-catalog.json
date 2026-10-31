@@ -1353,5 +1353,22 @@
     "width": 12,
     "height": 15,
     "defaultSymbols": []
+  },
+  {
+    "id": "economic_indicators_heatmap",
+    "title": "全球经济指标热力表",
+    "category": "热力图与筛选器",
+    "description": "AInvest各国/地区九项宏观经济指标热力表，原站筛选与色阶，保留每项统计期。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "economic_indicators_heatmap.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 20,
+    "defaultSymbols": []
   }
 ]
