@@ -6,3 +6,5 @@ description: Generate structured financial business charts and market overviews.
 # Veya skill bridge
 
 Before acting, read `../../../app/skills/business-chart-recall/SKILL.md` completely and follow it as the canonical instruction file. Resolve scripts, schemas, and resources relative to `app/skills/business-chart-recall/`.
+
+A component's presentation.kind=table means it already displays the full table. Do not repeat the same rows/fields/ranking as Markdown; add findings and scope instead, except for explicit plain-text-table requests or extra fields. gdp_growth.py returns a complete GDP table plus a deterministic analysis summary in one --output execution; use the receipt instead of fetching data-only, reopening JSON and rendering in separate steps.

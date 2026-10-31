@@ -349,6 +349,15 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
                 for path in artifacts if path.is_file() and path.stat().st_size > 0
             ],
         }
+        if ok and isinstance(observation, dict):
+            # Preserve component-owned display and analysis contracts in the verified receipt.
+            presentation = observation.get("presentation", metadata.get("presentation"))
+            if isinstance(presentation, dict):
+                receipt["presentation"] = presentation
+            if isinstance(observation.get("summary"), (dict, list)):
+                receipt["analysisSummary"] = observation["summary"]
+            if isinstance(observation.get("timingsMs"), dict):
+                receipt["timingsMs"] = observation["timingsMs"]
         if ok and script.name == "kline.py":
             chart = next((path for path in artifacts if path.suffix.lower() == ".html"), None)
             if chart is not None:
@@ -443,6 +452,8 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
             "skillPath": str(skill_path.resolve()) if skill_path.is_file() else None,
             "capabilityDescription": str(metadata.get("description") or ""),
             "agentContract": schema.get("agentContract", {}) if isinstance(schema, dict) else {},
+            "presentation": metadata.get("presentation") or (schema.get("presentation", {}) if isinstance(schema, dict) else {}),
+            "scopeDescription": metadata.get("scopeDescription"),
             "argumentConventions": conventions,
             "schemaPath": str(schema_path.resolve()) if schema_path.is_file() else None,
             "schema": schema,

@@ -516,3 +516,37 @@ def test_jev_kline_receipt_is_bound_to_current_period_and_marks(tmp_path):
 
 def test_plain_kline_without_annotations_does_not_require_selection(tmp_path):
     assert skill_runner._kline_annotation_receipt(['--symbol','AAPL'],tmp_path) is None
+
+
+def test_table_component_receipt_keeps_display_policy_and_analysis_without_extra_calls(tmp_path,monkeypatch,capsys):
+    registry=tmp_path/'app/module_registry.json';registry.parent.mkdir(parents=True)
+    presentation={'kind':'table','coveredFields':['country','growthRate'],'markdownPolicy':'Do not repeat the same Markdown table.'}
+    registry.write_text(json.dumps([{'name':'sample_table','script':'sample_table.py','label':'Table','description':'fixture','presentation':presentation}]))
+    script=tmp_path/'app/skills/sample/scripts/sample_table.py';script.parent.mkdir(parents=True);script.write_text('# fixture')
+    calls=[]
+    def run(command,**kwargs):
+        calls.append(command);path=tmp_path/command[command.index('--output')+1];path.parent.mkdir(parents=True,exist_ok=True);path.write_text('<html><table></table></html>')
+        return SimpleNamespace(returncode=0,stdout=json.dumps({'output':str(path),'presentation':presentation,'summary':{'rowCount':6,'leadOverSecondPp':2.36},'timingsMs':{'total':120}}),stderr='')
+    monkeypatch.setattr(skill_runner.subprocess,'run',run)
+    result=skill_runner.main(['execute','--script','sample_table.py','--','--output','outputs/generated/table.html'],project_root=tmp_path)
+    receipt=json.loads(capsys.readouterr().out)
+    assert result==0 and len(calls)==1
+    assert receipt['ok'] and receipt['artifacts'][0]['verified']
+    assert receipt['presentation']==presentation
+    assert receipt['analysisSummary']=={'rowCount':6,'leadOverSecondPp':2.36}
+    assert receipt['timingsMs']=={'total':120}
+
+
+def test_large_contract_keeps_table_identity_and_scope_inline(tmp_path,monkeypatch,capsys):
+    registry=tmp_path/'app/module_registry.json';registry.parent.mkdir(parents=True)
+    presentation={'kind':'table','coveredFields':['country','growthRate'],'markdownPolicy':'Do not repeat the same Markdown table.'}
+    registry.write_text(json.dumps([{'name':'sample_table','script':'sample_table.py','label':'Table','description':'fixture','scopeDescription':'Macroeconomic regions; no stock symbol','presentation':presentation}]))
+    script=tmp_path/'app/skills/sample/scripts/sample_table.py';script.parent.mkdir(parents=True);script.write_text('# fixture')
+    schema=script.parent.parent/'schemas/sample_table.schema.json';schema.parent.mkdir();schema.write_text(json.dumps({'agentContract':{'presentation':presentation,'execution':'Fetch and render once with --output; summary is inline.'},'details':'x'*10000}))
+    monkeypatch.setattr(skill_runner.subprocess,'run',lambda *a,**k:SimpleNamespace(returncode=0,stdout='usage: sample_table --output OUTPUT',stderr=''))
+    assert skill_runner.main(['contract','--script','sample_table.py'],project_root=tmp_path)==0
+    receipt=json.loads(capsys.readouterr().out)
+    assert receipt['presentation']==presentation
+    assert receipt['agentContract']['presentation']==presentation
+    assert receipt['scopeDescription']=='Macroeconomic regions; no stock symbol'
+    assert Path(receipt['fullOutputPath']).is_file()

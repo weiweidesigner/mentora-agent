@@ -1337,3 +1337,14 @@ def test_prompt_current_calendar_context_overrides_stale_history(tmp_path, monke
         assert '2026-10-29T15:00:00+08:00' in prompt
         assert '本月是本月1日至今天' in prompt
         assert '保留问句的排序方向' in prompt
+
+
+def test_prompt_respects_table_component_coverage_and_inline_summary(tmp_path):
+    generated=tmp_path/'generated';generated.mkdir()
+    client=LocalAgentFrameworks(project_root=tmp_path,generated_dir=generated)
+    prompt=client._prompt('deepseek','看看 G20 GDP 排名',[],[])
+    assert 'kind=table' in prompt and 'coveredFields' in prompt
+    assert '不再生成同一张 Markdown 表' in prompt
+    assert '用户明确要求纯文本表或补充组件未覆盖字段时除外' in prompt
+    assert 'analysisSummary/summary' in prompt
+    assert '不为复述表格再读取 payload' in prompt

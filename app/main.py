@@ -2023,7 +2023,9 @@ def load_module_registry() -> tuple[AllowedComponent, ...]:
         if not any((directory / script).exists() for directory in SKILL_SCRIPT_DIRS):
             continue
         if (SKILLS_DIR / "business-chart-recall" / "scripts" / script).exists():
-            if script == "kline.py":
+            if item.get("scopeDescription"):
+                description = f"[适用范围：{item['scopeDescription']}] {description}"
+            elif script == "kline.py":
                 description = f"[资产范围：股票、ETF、数字币、可识别的期权合约] {description}"
             else:
                 description = f"[市场范围：仅适用于组件契约支持的美国上市公司证券；数字币和期权禁止召回] {description}"
