@@ -144,10 +144,10 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
   // Recursive dataset compaction must not erase its facts or table-display contract.
   // Full raw observations stay in the lossless file reference above.
   if (parsed?.ok === true && parsed.exitCode === 0 && parsed.capability
-      && parsed.analysisSummary && typeof parsed.analysisSummary === 'object'
+      && ((parsed.analysisSummary && typeof parsed.analysisSummary === 'object') || (parsed.chartValidation && typeof parsed.chartValidation === 'object'))
       && Array.isArray(parsed.artifacts) && parsed.artifacts.some(item => item?.verified === true)) {
     const handoff = Object.fromEntries(
-      ['ok','capability','script','exitCode','durationMs','presentation','analysisSummary','timingsMs','artifacts']
+      ['ok','capability','script','exitCode','durationMs','presentation','analysisSummary','chartValidation','timingsMs','artifacts']
         .filter(key => Object.hasOwn(parsed,key)).map(key => [key,parsed[key]]));
     if (JSON.stringify(handoff).length <= threshold) summary = handoff;
   }

@@ -86,3 +86,16 @@ test('history preserves the native invocation position and consumes later duplic
   assert.equal(f.article.querySelectorAll('.streamChartPending').length,0);
  }finally{f.close();}
 });
+
+test('composed charts load the verified final artifact instead of the streamed empty slots',()=>{
+ const f=fixture();try{
+  let loaded='';f.w.createStreamVisualizationArtifact=item=>{loaded=item.url;return f.w.document.createElement('iframe');};
+  f.send({id:'layout',native:true,reset:true,argumentDelta:'{"widget_code":"<div data-chart-id=\\"chart-1\\"></div>"}'});
+  assert.equal(f.mounts.length,1);
+  f.send({id:'layout',native:true,final:true,composedCharts:true,htmlUrl:'/generated/verified-layout.html'});
+  assert.equal(loaded,'/generated/verified-layout.html');
+  assert.equal(f.article.querySelectorAll('iframe').length,1);
+  assert.equal(f.article.querySelector('.streamvizArtifactHost'),null);
+  assert.equal(f.mounts.length,1);
+ }finally{f.close();}
+});

@@ -1813,7 +1813,7 @@ function upsertStreamVisualization(article, data = {}) {
   // Forward real deltas immediately; its own loader handles an empty prefix.
   host.dataset.visualizationPhase = data.final ? 'completed' : 'running';
   host.classList.toggle('is-live', !data.final);
-  if (data.final && data.htmlUrl && !host.streamVisualizationCode && !host.streamVisualizationRawArguments) {
+  if (data.final && data.htmlUrl && (data.composedCharts || (!host.streamVisualizationCode && !host.streamVisualizationRawArguments))) {
     const completed = createStreamVisualizationArtifact({url:data.htmlUrl,title:data.title || ''},0);
     completed.dataset.visualizationId = key;
     host.replaceWith(completed);

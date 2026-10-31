@@ -387,7 +387,7 @@
     "name": "streamviz_render",
     "script": "render_streamviz.py",
     "label": "StreamViz 组件渲染",
-    "description": "泛化的可视化、整体视图、数据看板或未指定图表类型的视觉表达，默认优先使用 StreamViz；只有用户明确指定 K 线、柱状图、折线图等专用图表，或 StreamViz 内置结构确实无法表达时，才选择其他渲染组件。它是唯一的通用看板展示组件，无内置数据源。必须先使用匹配的数据、搜索或计算技能，或读取用户提供的数据，将核实的结构化事实通过 --input UTF-8 JSON 文件传入，--output 输出一个 standalone HTML 组件。默认复用已验证的 dashboard/comparison/timeline/flow/brief 模板，不再加载其他展示技能或手写 HTML；仅当用户明确要求定制或内置结构无法表达时使用 html。不得编造数据，不把上游数据源交付为额外组件。"
+    "description": "StreamViz 用于看板布局、叙事、概念图和非标准交互；标准数值趋势、对比、占比、分布等优先使用对应通用确定性图表渲染器，Agent 自主选型，不因用户没指定图表类型就固定使用StreamViz。不手写数值曲线SVG坐标。先用匹配的数据/搜索/计算技能取得事实，通用图表payload.dataSource可直接读文件并返回chartValidation。通过blocks的chart类型artifact字段或自定义html的chart_artifacts嵌入已验证图表，保留数据、坐标和交互；--input UTF-8 JSON、--output standalone HTML。支持dashboard/comparison/timeline/flow/brief及定制html，不编造数据或替代数据源。"
   },
   {
     "name": "read_my_holdings",

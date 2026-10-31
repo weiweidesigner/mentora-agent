@@ -80,7 +80,7 @@ def test_a_share_market_summary_resolves_data_analysis_and_chart_contracts(tmp_p
     assert "不用 --help、ls、cat、sed、grep" in rendered
 
 
-def test_visualization_query_pre_resolves_only_streamviz_presentation(tmp_path):
+def test_visualization_query_exposes_layout_without_forcing_numeric_rendering(tmp_path):
     index = _index(tmp_path)
     streamviz = tmp_path / "app/skills/streamviz/scripts/render_streamviz.py"
     streamviz.parent.mkdir(parents=True, exist_ok=True)
@@ -97,8 +97,9 @@ def test_visualization_query_pre_resolves_only_streamviz_presentation(tmp_path):
     assert "streamviz" in [item["name"] for item in shortlist.skills]
     assert "render_streamviz.py" in [item["script"] for item in shortlist.modules]
     rendered = shortlist.render()
-    assert "优先使用 StreamViz" in rendered
-    assert "不要再读取 generic-chart" in rendered
+    assert "标准数值趋势" in rendered
+    assert "优先使用 StreamViz" not in rendered
+    assert "chart_artifacts" in rendered
 
 
 def test_congress_performance_ranking_questions_retrieve_native_component():

@@ -1,6 +1,6 @@
 ---
 name: streamviz
-description: Render an evidence-backed upstream JSON payload as a StreamViz-compatible streaming HTML dashboard or relationship view; use only as a presentation stage alongside data, search, analysis, or chart Skills.
+description: Compose evidence-backed dashboards, narrative and conceptual views; embed verified numeric chart_artifacts from deterministic generic renderers without redrawing data coordinates; use only as a presentation stage alongside data, search, analysis, or chart Skills.
 ---
 
 # Veya skill bridge

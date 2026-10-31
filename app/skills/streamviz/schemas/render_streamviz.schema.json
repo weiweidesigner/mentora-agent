@@ -2,32 +2,119 @@
   "script": "render_streamviz.py",
   "purpose": "Render one standalone component from verified upstream evidence, never fetch or invent source data.",
   "builtInDataSources": [],
-  "cli": {"--input": "UTF-8 JSON file path, required", "--output": "standalone HTML path, required"},
+  "cli": {
+    "--input": "UTF-8 JSON file path, required",
+    "--output": "standalone HTML path, required"
+  },
   "payloadShape": {
     "title": "reader-facing component title",
     "layout": "dashboard | comparison | timeline | flow | brief",
     "financialMarket": "optional CN | HK | US, inherited by financial blocks and values",
     "eyebrow": "optional source period or context",
     "summary": "optional evidence-supported summary",
-    "status": [{"label": "string", "tone": "success | warning | danger | neutral"}],
-    "metrics": [{"label": "string", "value": "verified display value", "detail": "string", "change": "optional finite signed change used only for direction", "direction": "optional up | down | flat", "financialMarket": "optional local market override"}],
-    "flow": {"title": "string", "nodes": [{"id": "string", "label": "string", "detail": "string"}], "edges": [{"from": "existing node id", "to": "existing node id", "label": "string"}]},
+    "status": [
+      {
+        "label": "string",
+        "tone": "success | warning | danger | neutral"
+      }
+    ],
+    "metrics": [
+      {
+        "label": "string",
+        "value": "verified display value",
+        "detail": "string",
+        "change": "optional finite signed change used only for direction",
+        "direction": "optional up | down | flat",
+        "financialMarket": "optional local market override"
+      }
+    ],
+    "flow": {
+      "title": "string",
+      "nodes": [
+        {
+          "id": "string",
+          "label": "string",
+          "detail": "string"
+        }
+      ],
+      "edges": [
+        {
+          "from": "existing node id",
+          "to": "existing node id",
+          "label": "string"
+        }
+      ]
+    },
     "blocks": [
-      {"type": "table", "title": "string", "financialMarket": "optional CN | HK | US", "financialColumns": ["explicit change/return column only"], "columns": ["column name"], "rows": [{"column name": "value"}]},
-      {"type": "rankings", "title": "string", "financialMarket": "optional CN | HK | US", "items": [{"label": "string", "value": "value", "detail": "string", "change": "optional finite signed change", "direction": "optional up | down | flat", "financialMarket": "optional local market override"}]},
-      {"type": "timeline", "title": "string", "items": [{"time": "verified time", "label": "string", "detail": "string"}]},
-      {"type": "narrative", "title": "string", "paragraphs": ["evidence-supported text"]}
+      {
+        "type": "table",
+        "title": "string",
+        "financialMarket": "optional CN | HK | US",
+        "financialColumns": [
+          "explicit change/return column only"
+        ],
+        "columns": [
+          "column name"
+        ],
+        "rows": [
+          {
+            "column name": "value"
+          }
+        ]
+      },
+      {
+        "type": "rankings",
+        "title": "string",
+        "financialMarket": "optional CN | HK | US",
+        "items": [
+          {
+            "label": "string",
+            "value": "value",
+            "detail": "string",
+            "change": "optional finite signed change",
+            "direction": "optional up | down | flat",
+            "financialMarket": "optional local market override"
+          }
+        ]
+      },
+      {
+        "type": "timeline",
+        "title": "string",
+        "items": [
+          {
+            "time": "verified time",
+            "label": "string",
+            "detail": "string"
+          }
+        ]
+      },
+      {
+        "type": "narrative",
+        "title": "string",
+        "paragraphs": [
+          "evidence-supported text"
+        ]
+      },
+      {
+        "type": "chart",
+        "title": "string",
+        "artifact": "Verified outputs/generated/*.html with matching .chart.json manifest"
+      }
     ],
     "note": "source, data timestamp, units, coverage and limitations",
-    "html": "optional self-contained HTML/CSS/SVG/Canvas; overrides template fields; no external/local scripts or resources"
+    "html": "optional self-contained HTML/CSS/SVG/Canvas; overrides template fields; no external/local scripts or resources",
+    "chart_artifacts": "Optional verified chart HTML paths for custom html with corresponding empty data-chart-id slots"
   },
   "modelInstructions": [
-    "Prefer StreamViz for generic visualization requests, dashboards, holistic visual summaries, and requests that do not name a specific chart type. Use a specialized renderer only when the user explicitly requests that chart type or this schema cannot express the required visual semantics.",
+    "Choose standard numeric charts with deterministic generic renderers regardless of whether a chart type was named. StreamViz composes verified artifacts, dashboards, narratives and conceptual/custom views; never manually draw quantitative SVG coordinates.",
     "First obtain verified data from the appropriate data/search/calculation skill or the user's explicit input. Keep units, time scope and source attribution. No placeholders or fabricated metrics.",
     "All fields except title are optional. Omit unknown or inapplicable fields. Select only the blocks required for the requested component, not an entire dashboard wrapper.",
     "Use assets/artifact-theme.css semantic variables for custom HTML. Root background stays transparent; support light/dark and 320/390px responsive layout without page overflow.",
     "Night surfaces are neutral charcoal (#181818/#202020), borders #343434, primary text #f5f5f5 and secondary #aaaaaa. Reference shared variables, never hard-code the old navy palette.",
     "Financial rankings, KPIs and explicitly declared change/return table columns need direction semantics. Supply financialMarket and change or direction; HTML values use data-sv-direction=up/down/flat. Do not treat ordinary percentages as price changes. Zero stays neutral; success/danger are not financial direction.",
     "Render exactly one requested component; expose only its HTML in the final AIME_CHART marker, not upstream datasets, data-source cards, reports or intermediate charts."
-  ]
+  ],
+  "chartComposition": {
+    "chart_artifacts": "Optional verified HTML paths for native tool or custom html; placeholders data-chart-id=chart-1 etc; host validates manifest/hash then embeds original chart."
+  }
 }

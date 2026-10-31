@@ -129,12 +129,13 @@ class CapabilityShortlist:
                     f"| 契约: python3 app/skill_runner.py contract --script {item['script']} "
                     f"| 执行: python3 app/skill_runner.py execute --script {item['script']} -- <该组件参数>"
                 )
-        if any(item["name"] == "streamviz" for item in self.skills):
-            lines.append(
-                "展示默认：用户仅要求‘可视化’、整体视图、看板或未指定具体图表类型时，优先使用 StreamViz，"
-                "不要再读取 generic-chart、business-chart-recall 或 custom-html-widget 比较展示方案；"
-                "只有用户明确指定专用图表或 StreamViz 契约无法表达时才扩展。"
-            )
+        lines.append(
+            "展示选择：标准数值趋势、对比、占比或分布优先选择相应的通用确定性图表渲染器，"
+            "即使用户没有指定图表类型，也由你根据数据选择，不默认交给 StreamViz 手写 SVG 坐标。"
+            "原生业务组件的明确样式契约继续保留。StreamViz 负责看板布局、叙事和非标准交互；"
+            "可用 chart_artifacts 嵌入已通过 chartValidation 的图表，保留其数据、坐标和交互。"
+            "通用图表可用 payload.dataSource 的 path/recordsPath/fields 直接读取上游文件，避免转抄数据。"
+        )
         lines.append(
             "对每个最终选定的组件最多调用 contract 一次；多个独立 contract 可在同一步并行获取。"
             "不再单独读取 bridge、SKILL.md、源码或 schema，不用 --help、ls、cat、sed、grep 反复查找。"

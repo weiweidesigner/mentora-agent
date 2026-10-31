@@ -41,7 +41,9 @@ WIDGET_TOOL = {
     },
 }
 
-SYSTEM_PROMPT = """You are Mentora's StreamViz visual-artifact generator. When the user asks for a
+SYSTEM_PROMPT = """Standard quantitative data charts must be rendered by deterministic chart skills, not manually authored SVG coordinates. When verified chart slots are supplied, preserve every exact slot and arrange surrounding narrative/layout; never recreate or alter the chart geometry. Conceptual diagrams and custom nonnumeric illustrations may use SVG.
+
+You are Mentora's StreamViz visual-artifact generator. When the user asks for a
 diagram, dashboard, conceptual visual, simple infographic, or illustrative chart, call
 visualize_show_widget exactly once.
 
@@ -265,7 +267,7 @@ def _flatten_native_canvas(code: str) -> str:
     )
 
 
-def _save_widget(generated_dir: Path, title: str, code: str) -> dict[str, str] | None:
+def _save_widget(generated_dir: Path, title: str, code: str, *, charts=None) -> dict[str, str] | None:
     code = _repair_streamed_html(code)
     if not _safe_widget_code(code):
         return None
@@ -274,6 +276,8 @@ def _save_widget(generated_dir: Path, title: str, code: str) -> dict[str, str] |
     # upstream skill in the chat and share view.
     if not code.strip():
         return None
+    from app.chart_composition import compose
+    code = compose(code, charts or [])
     code = _flatten_native_canvas(code)
     theme_css = (Path(__file__).parent / "skills/streamviz/assets/artifact-theme.css").read_text(encoding="utf-8")
     geometry_js = (Path(__file__).parent / 'skills/streamviz/assets/chart-geometry.js').read_text(encoding='utf-8')
@@ -293,11 +297,15 @@ def stream_native_widget(
     generated_dir: Path,
     *,
     evidence: str = "",
+    chart_artifacts: list[str] | None = None,
     theme_mode: str = "light",
     client_override=None,
     model_override: str = "",
 ) -> Iterator[tuple[str, dict[str, Any]]]:
     """Yield Aime SSE events from native OpenAI tool-call argument deltas."""
+    from app.chart_composition import load_charts, chart_brief
+    charts = load_charts(chart_artifacts, generated_dir)
+    evidence += chart_brief(charts)
     client, model = (client_override, model_override) if client_override is not None else _client_from_env()
     yield "status", {"stage": "native_streamviz", "message": "正在以原生流式协议构建图形", "lang": "zh-CN"}
     stream = client.chat.completions.create(
@@ -385,11 +393,11 @@ def stream_native_widget(
                 "toolStatus": "empty", "final": True, "native": True,
             }
             continue
-        artifact = _save_widget(generated_dir, title, code)
+        artifact = _save_widget(generated_dir, title, code, charts=charts)
         yield "visualization", {
             "id": call["id"], "toolName": TOOL_NAME, "toolRawInput": call["arguments"],
             "htmlUrl": artifact["url"] if artifact else "",
-            "toolStatus": "completed", "title": title, "final": True, "native": True,
+            "toolStatus": "completed", "title": title, "final": True, "native": True, "composedCharts": bool(charts),
             "loadingMessages": ["正在搭建视觉结构", "正在补充图形元素", "正在完成可视化"],
         }
         if artifact:

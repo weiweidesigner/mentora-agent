@@ -375,3 +375,12 @@ test('oversized component summaries still use bounded dataset compaction', t => 
   assert.equal(receipt.summary.analysisSummary.rows.count,2000);
   assert.equal(JSON.parse(fs.readFileSync(receipt.fullOutputPath,'utf8')).analysisSummary.rows.length,2000);
 });
+
+test('verified chart validation survives receipt compaction without rereading its data file', t => {
+  const {root}=setup(t);
+  const chartValidation={ok:true,rowCount:18,xRange:['2022-03-17','2026-09-17'],series:{rate:{min:.5,max:5.5,last:{x:'2026-09-17',value:4}}}};
+  const source={ok:true,capability:'line_chart',script:'line_chart.py',exitCode:0,chartValidation,artifacts:[{verified:true,path:'/project/outputs/chart.html'}],observation:{verbose:'x'.repeat(12000)}};
+  const result=compactToolResult(shell('python3 app/skill_runner.py execute --script line_chart.py'),ok(JSON.stringify(source)),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.deepEqual(receipt.summary.chartValidation,chartValidation);
+});

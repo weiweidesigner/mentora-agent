@@ -19,6 +19,8 @@ else:
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if not __package__:
+    sys.path.insert(0, str(PROJECT_ROOT))
 KLINE_PERIODS = {"1m", "5m", "15m", "30m", "1h", "2h", "4h", "1d", "1w", "1M", "3M"}
 LANGUAGES = {"zh-CN", "zh-Hant", "en"}
 THEMES = {"light", "dark"}
@@ -267,6 +269,8 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
         if component_args[:1] == ["--"]:
             component_args = component_args[1:]
         component_args = _normalize_component_args(component_args, script, project_root)
+        from app.chart_data_contract import prepare, validate
+        component_args, expected_chart = prepare(script, component_args, project_root)
         annotation_receipt = _kline_annotation_receipt(component_args, project_root) if script.name=='kline.py' else None
         if script.name == "code_interpreter.py" and not any(
             flag in component_args for flag in ("--transform-file", "--transform-code")
@@ -290,6 +294,10 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
             check=False,
             timeout=max(1.0, min(float(args.timeout), 900.0)),
         )
+        chart_validation = None
+        if result.returncode == 0 and expected_chart is not None:
+            chart_validation, proof_path = validate(expected_chart)
+            artifacts.append(proof_path)
         missing = [str(path) for path in artifacts if not path.is_file() or path.stat().st_size <= 0]
         stdout = (result.stdout or "").strip()
         try:
@@ -364,6 +372,8 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
                 document = chart.read_text(encoding="utf-8")
                 config = _const_json(document, "config") or {}
                 receipt["analysisSummary"] = _kline_summary(document, config.get("dataType", "1d"))
+        if chart_validation is not None:
+            receipt["chartValidation"] = chart_validation
         if annotation_receipt:receipt["jevAnnotationPlan"]=annotation_receipt
         if result.stderr.strip():
             receipt["stderr"] = result.stderr.strip()[-2000:]
@@ -379,7 +389,7 @@ def _execute(args: argparse.Namespace, project_root: Path) -> int:
             "error": "capability execution timed out",
         }, ensure_ascii=False))
         return 124
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, IndexError) as exc:
         print(json.dumps({"ok": False, "script": args.script, "error": str(exc)}, ensure_ascii=False))
         return 2
 
@@ -421,6 +431,12 @@ def _contract(args: argparse.Namespace, project_root: Path) -> int:
                 schema = json.loads(schema_path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 schema = None
+        if skill == "generic-chart":
+            from app.chart_data_contract import SCRIPTS, CONTRACT
+            if script.name in SCRIPTS:
+                schema = dict(schema or {})
+                schema["fileDataContract"] = CONTRACT
+                schema["agentContract"] = {**schema.get("agentContract", {}), "fileData": CONTRACT}
         cli_help = (result.stdout or result.stderr or "").strip()
         conventions = []
         if skill == "generic-chart" and "--payload" in cli_help and "--data-json" in cli_help:

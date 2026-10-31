@@ -7,7 +7,7 @@ description: 将上游 Skill 已验证的结构化结果渲染为可在 Aime Cha
 
 StreamViz 是**展示 Skill**，不是数据源、搜索器、行情接口或分析器。它和其他 Skill 的协作顺序固定为：
 
-当用户只说“可视化”“做一个整体视图”“生成看板”，或没有明确指定 K 线、柱状图、折线图等具体图表类型时，默认优先选择 StreamViz。只有用户明确指定专用图表，或本 Skill 的内置结构确实无法表达所需视觉语义时，才切换到其他渲染 Skill；不得为了比较候选而继续扫描通用图表、业务图表目录。
+标准数值图（趋势、对比、占比、分布等）使用对应的通用确定性图表渲染器，Agent 根据数据选择图表类型；不能因为用户没指定图表类型就默认用 StreamViz 手写数值曲线的 SVG 坐标。原生业务组件的明确样式契约继续保留。StreamViz 用于看板页面编排、叙事、概念图和非标准交互，可嵌入已验证图表，保留其数据、坐标和交互。不要为只需一张标准图的请求额外生成看板。
 
 1. 先按用户问题选择并执行数据、搜索、计算、分析或图表 Skill。
 2. 核对上游产物的来源、时间和口径；将用于展示的事实压缩为一个 JSON 文件。
@@ -132,7 +132,7 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 - 标题→说明、说明→图表、标题→图表的组件间距统一为 8px，清除默认段落上下 margin，不能叠加间距。折线图顶部轴标签所需的 8px 安全空间放在图表内部 padding，不扩大标题下边距。
 - 紧凑布局统一使用卡片间距 16px、卡片内边距 12px、组件内间距 8px。HTML 折线圆点采用中心定位 `translate(-50%,-50%)`，与折线使用同一套百分比坐标，禁止用圆点左边缘对齐数据坐标。
 - 所有 Grid/Flex 子容器设置 `min-width:0`，防止内部固定宽度图表撑开整页。小指标卡桌面使用 `repeat(auto-fit,minmax(min(100%,150px),1fr))`；移动端指标组使用 `data-sv-layout="metrics"` 或 `.sv-metrics`，展示单行横向滑动的小卡片，不能把每张指标卡撑成整行纵向铺开；大图表可单列。标签换行，宽表格仅在自身容器滚动。必须核对 320px/390px 下页面没有横向溢出，图表数值不裁切。
-- 宽屏折线可使用 StreamViz 的 `sv-responsive-line` 组件：`sv-line-body` 内以 `sv-line-y-axis` 和 `sv-line-plot` 分列，SVG 只绘制线和网格，用 `preserveAspectRatio="none"` 填满固定 CSS 高度绘图区；文字在 HTML 的 `sv-line-x-axis`、`sv-line-values` 中保持像素字号。不要在折线末端把长名称和百分比塞出 viewBox；末端数值默认并入下方图例，确保名称、负号和百分号完整。不要给满宽图设置固定像素 max-width 和自动居中留白。
+- 标准数值折线、阶梯线、柱状图等必须来自通用图表渲染器；不要用手写 SVG 坐标、归一化百分比或 CSS 宽度转抄原始数据。以下 SVG 布局规范只适用于非标准概念图解。
 - 主题由 StreamViz 的 `assets/artifact-theme.css` 统一维护，同时提供 light/dark 两套配色。宿主只传递主题模式；不在项目层为看板另写颜色覆盖，不生成两份不同数据的页面。自定义 HTML 的背景、边框、文字、状态和图表系列必须使用 `--sv-surface-primary`、`--sv-surface-secondary`、`--sv-border-subtle`、`--sv-text-primary`、`--sv-text-secondary`、`--sv-status-*`、`--sv-chart-series-*` 等变量。SVG 的 fill/stroke 同样使用变量。脚本自动将两套主题打包到独立 HTML 中，旧产物由 StreamViz 兼容规则映射。
 - 窄堆叠区间不能硬塞数字：标签放不下时保留真实比例，将完整家数与占比移到图例或条外，并给区间提供可访问说明；禁止为了容纳文字而扩大区间比例。堆叠分段应禁止 flex shrink，避免标签宽度改变数据比例。
 - 普通文字与条外数据标签必须使用主题变量（如 `var(--sv-text-primary)`、`var(--sv-text-secondary)`）；不能写死深色或浅色。仅当文字位于固定颜色的柱内时，才使用与该柱色有足够对比度的固定文字色。响应式横条优先采用“分类 / 条形 / 数值”三列 Grid，为数值保留独立列。
@@ -180,6 +180,14 @@ python3 app/skills/streamviz/scripts/inspect_html.py \
 
 ### 与正文并行生成
 
-原生工具优先传 `title` 与 `brief`：完整提供已验证事实、单位、来源、限制、布局和结论。HTML 渲染任务独立运行；主 Agent 收到 `status: rendering` 后立即继续自己的正文，不等待、不轮询。宿主缓冲后续真实文字增量，HTML 验证成功后按顺序发送，并附上生成文件。pending 回执不代表文件完成。主 Agent 的原生工具只接收 `title` 与 `brief`，不要生成 `widget_code`；精确保留已有 HTML 时使用渲染脚本的 `html` 输入。渲染器不取数、不增加事实，也不代写答复正文。
+原生工具优先传 `title` 与 `brief`：完整提供已验证事实、单位、来源、限制、布局和结论。HTML 渲染任务独立运行；主 Agent 收到 `status: rendering` 后立即继续自己的正文，不等待、不轮询。宿主缓冲后续真实文字增量，HTML 验证成功后按顺序发送，并附上生成文件。pending 回执不代表文件完成。主 Agent 的原生工具接收 `title`、`brief` 和可选 `chart_artifacts`，不要生成 `widget_code`；精确保留已有 HTML 时使用渲染脚本的 `html` 输入。渲染器不取数、不增加事实，也不代写答复正文。
 
 - 横向条形图的各行必须共享绘图区宽度和零基准线。HTML 行使用 `data-sv-bar-row` 的三列结构（名称、绘图区、固定 64px 数值列），绘图区标记 `data-sv-bar-plot`、数值标记 `data-sv-bar-value`。全负值绘图区设置 `data-sv-bar-baseline="right"`，统一右端零线向左延伸；全正值统一左端零线；混合正负共享同一零坐标和比例尺。不得让各行数值文字的固有宽度挤动零点。
+
+## 嵌入已验证数值图表
+
+先通过 `skill_runner.py execute --script <具体通用图表脚本>` 渲染；直接用 payload.dataSource 的路径和字段映射交接上游数据，读取执行器 contract 的 fileData 契约。成功回执必须包含 chartValidation.ok=true，邻接 `.chart.json` 记录源值、有效/缺失数、范围、末值、来源哈希及 HTML 哈希。验证失败时按错误修正；不能改写 manifest 冒充通过。
+
+原生调用：`visualize_show_widget(title=..., brief=..., chart_artifacts=["outputs/generated/chart.html"])`。宿主按数组顺序命名 chart-1、chart-2 等。brief 要求每个图表保留一个空占位 `<div data-chart-id="chart-1"></div>`，只生成排版和周边说明，不重画数值图、不转抄数据。宿主验证文件和manifest哈希后嵌入原始交互式图表；完成时使用已组合的 HTML。未验证、修改后哈希不符、缺槽或重复槽均失败，不能用空白或手写曲线补位。
+
+模板 payload 可用 `blocks: [{"type":"chart","title":"趋势","artifact":"outputs/generated/chart.html"}]`；自定义 html 可配 `chart_artifacts` 及相同槽位。交付仍是一个 standalone HTML，数值图由原始渲染器计算。没有标准数值图的概念图、流程和复杂交互仍可自行选择合适的 SVG/HTML 表达。

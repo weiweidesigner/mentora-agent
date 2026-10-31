@@ -57,7 +57,11 @@ def iter_blocks(blocks: list[dict[str, Any]], market: Any = None):
         title = text(block.get("title"))
         block_market=block.get('financialMarket') or market
         attrs=market_attr(block_market)
-        if kind == "table":
+        if kind == "chart":
+            from app.chart_composition import load_charts, chart_frame
+            charts = load_charts([block.get('artifact')], Path(__file__).resolve().parents[4]/'outputs/generated')
+            yield f'<section class="sv-section"><h2>{title or "图表"}</h2>'+chart_frame(charts[0])+'</section>'
+        elif kind == "table":
             columns = [str(column) for column in block.get("columns", []) if text(column)]
             financial_columns=block.get('financialColumns') if isinstance(block.get('financialColumns'),list) else []
             rows = block.get("rows") if isinstance(block.get("rows"), list) else []
@@ -107,6 +111,9 @@ def render_parts(payload: dict[str, Any]):
     market=payload.get('financialMarket');market_attrs=market_attr(market)
     artifact_html = str(payload.get("html") or "").strip()
     if artifact_html:
+        from app.chart_composition import load_charts, compose
+        charts = load_charts(payload.get('chart_artifacts'), Path(__file__).resolve().parents[4]/'outputs/generated')
+        artifact_html = compose(artifact_html, charts)
         # This is intentionally an escape hatch for evidence-backed custom
         # visual language (SVG, Canvas, bespoke layouts).  StreamViz keeps it
         # sandboxed in its iframe; the skill prompt remains responsible for
@@ -169,6 +176,9 @@ def render_parts(payload: dict[str, Any]):
     if flow_html:yield flow_html
     yield from iter_blocks(records(payload.get('blocks')),market)
     if note:yield f'<p class="sv-note">{note}</p>'
+    if any(block.get('type') == 'chart' for block in records(payload.get('blocks'))):
+        from app.chart_composition import RESIZE
+        yield RESIZE
     yield '</main></body></html>'
 
 

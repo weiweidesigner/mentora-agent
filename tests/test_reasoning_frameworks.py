@@ -594,9 +594,11 @@ def test_framework_prompt_does_not_change_policy_for_expanded_scope(tmp_path: Pa
     assert "本次为扩展任务" not in prompt
     assert "本次为默认轻量任务" not in prompt
     assert "按用户问题的实际范围选择" in prompt
-    assert "默认优先选择 streamviz 作为“展示阶段” Skill" in prompt
-    assert "不要为了比较候选而读取 generic-chart" in prompt
-    assert "不能单独充当数据源、搜索或分析器" in prompt
+    assert "默认优先选择 streamviz 作为“展示阶段” Skill" not in prompt
+    assert "标准数值图" in prompt
+    assert "chart_artifacts" in prompt
+    assert "不要为了比较候选而读取 generic-chart" not in prompt
+    assert "StreamViz 不充当数据源" in prompt
 
 
 def test_artifact_payload_filters_local_and_infrastructure_source_urls(tmp_path: Path) -> None:

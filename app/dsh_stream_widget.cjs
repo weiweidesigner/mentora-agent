@@ -6,8 +6,8 @@ exports.name = 'mentora-stream-widget';
 exports.inject = ['tools'];
 exports.apply = ctx => ctx.tools.register({
   name: 'visualize_show_widget',
-  description: 'Render an evidence-backed HTML/SVG widget inline. Prefer brief: include full verified facts, layout and conclusions; a parallel renderer generates HTML while you continue your own answer. The host buffers subsequent prose until the visual finishes. No research is performed by the renderer. A rendering receipt is pending, not proof of completion; the host validates and attaches the file before final delivery.',
-  parameters: {type:'object',properties:{title:{type:'string'},brief:{type:'string',description:'Self-contained visual brief with verified data, labels, units, sources, limitations and conclusions. No research or file lookup.'}},required:['title','brief'],additionalProperties:false},
+  description: 'Arrange evidence-backed layouts and conceptual diagrams. For standard numeric charts first use deterministic generic chart scripts; pass their verified HTML paths in chart_artifacts to embed them without redrawing SVG. Prefer brief: include full verified facts, layout and conclusions; a parallel renderer generates HTML while you continue your own answer. The host buffers subsequent prose until the visual finishes. No research is performed by the renderer. A rendering receipt is pending, not proof of completion; the host validates and attaches the file before final delivery.',
+  parameters: {type:'object',properties:{chart_artifacts:{type:'array',items:{type:'string'},description:'Optional verified HTML paths under outputs/generated; the host embeds chart-1, chart-2 etc. Include matching empty div data-chart-id slots in the layout.'},title:{type:'string'},brief:{type:'string',description:'Self-contained visual brief with verified data, labels, units, sources, limitations and conclusions. No research or file lookup.'}},required:['title','brief'],additionalProperties:false},
   output: {schema:{type:'object'},render:(_args,value)=>[{type:'text',text:JSON.stringify(value)}]},
   async execute(args,exec) {
     exec.signal?.throwIfAborted();
