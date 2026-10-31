@@ -863,3 +863,25 @@ function postChartHeight() {
       postChartHeight();''', 1)
     return artifact.replace('class="group-line-component"',
                             'class="group-line-component" data-compact-line-height="2"', 1)
+
+
+def upgrade_economic_indicators_heatmap(artifact):
+    """Update saved heatmap scale and tooltip arrow without taking a new macro snapshot."""
+    if 'economic-indicators-heatmap' not in artifact or 'data-economic-heatmap-runtime="3"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        saved = json.loads(match[1])
+        if not isinstance(saved, dict):
+            return artifact
+        payload = saved.get('payload', saved)
+        if not isinstance(payload, dict) or payload.get('type') != 'economic-indicators-heatmap':
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('economic_indicators_heatmap').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact

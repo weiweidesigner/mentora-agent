@@ -6290,7 +6290,8 @@ function resizeReportDocumentFrame(frame) {
     const exploreData = doc.querySelector('script#component-data[type="application/json"]');
     if (exploreData) {
       try {
-        const type = JSON.parse(exploreData.textContent).type;
+        const explorePayload = JSON.parse(exploreData.textContent);
+        const type = explorePayload.type || explorePayload.payload?.type;
         if (exploreTypes.has(type)) frame.dataset.businessComponent = type.replaceAll('-', '_');
         if (['stock-heatmap','etf-heatmap'].includes(type)) frame.allowFullscreen = true;
       } catch { /* Non-component documents retain their existing spacing. */ }

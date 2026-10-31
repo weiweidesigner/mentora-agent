@@ -645,6 +645,8 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_gdp_growth(artifact)
     from app.artifact_upgrades import upgrade_inflation_map
     artifact = upgrade_inflation_map(artifact)
+    from app.artifact_upgrades import upgrade_economic_indicators_heatmap
+    artifact = upgrade_economic_indicators_heatmap(artifact)
     from app.artifact_upgrades import upgrade_bond_scatter
     artifact = upgrade_bond_scatter(artifact)
     from app.artifact_upgrades import upgrade_fear_greed
