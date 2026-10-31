@@ -524,5 +524,11 @@
     "script": "gdp_growth.py",
     "label": "GDP growth, YoY",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "economic_indicators_heatmap",
+    "script": "economic_indicators_heatmap.py",
+    "label": "全球经济指标热力表",
+    "source": "business-charts-repository"
   }
 ]
