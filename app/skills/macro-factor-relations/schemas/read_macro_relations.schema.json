@@ -1,0 +1,36 @@
+{
+  "type": "data-only",
+  "script": "read_macro_relations.py",
+  "cli": {
+    "operation": [
+      "factor-sets",
+      "directory",
+      "search",
+      "relations"
+    ],
+    "factor-set": "source ID, default all",
+    "factor-id": "required for relations; exact directory ID",
+    "query": "required for search; source ID/name/name_en substring",
+    "direction": [
+      "all",
+      "influencing",
+      "influenced"
+    ],
+    "pass-score-min": "0..1, default 0.8, provider threshold only",
+    "directory-input": "normalized directory file for offline search",
+    "source-input": "raw matching API envelope, no HTTP",
+    "limit": "1..100, default 20",
+    "offset": "nonnegative, default 0",
+    "output": "required JSON path under outputs/"
+  },
+  "dataContract": {
+    "source": "URL, fetchedAt, transport, score threshold",
+    "factors": "original IDs and provider metadata; names not unique",
+    "edges": "original from/to, raw corr_sign, pass_score and supplied description/delay",
+    "excluded": [
+      "history",
+      "forecast"
+    ],
+    "limitations": "not validated causality; no coefficient/confidence or numeric code mapping inferred"
+  }
+}
