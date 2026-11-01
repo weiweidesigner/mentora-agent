@@ -942,3 +942,22 @@ def upgrade_inflation_history_heatmap(artifact):
         return _native_rating('inflation_history_heatmap').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_government_debt_heatmap(artifact):
+    """Refresh debt ratio categories from saved data, without changing observations."""
+    if 'government-debt-heatmap' not in artifact or 'data-government-debt-ui="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        payload = json.loads(match[1])
+        if not isinstance(payload, dict) or payload.get('type') != 'government-debt-heatmap':
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('government_debt_heatmap').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
