@@ -122,3 +122,9 @@ def test_us_macro_trends_retrieve_native_components():
         scripts = [item['script'] for item in shortlist.modules]
         assert expected in scripts
         assert 'read_macro_data.py' not in scripts
+
+
+def test_global_economic_trends_retrieves_combined_native_component():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('看看全球经济趋势', '看看全球趋势地图', 'charts-global-trends'):
+        assert 'global_economic_trends.py' in [item['script'] for item in index.shortlist(question).modules]

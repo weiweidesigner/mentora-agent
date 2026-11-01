@@ -530,5 +530,11 @@
     "script": "macro_indicator.py",
     "label": "各国宏观指标走势",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "global_economic_trends",
+    "script": "global_economic_trends.py",
+    "label": "全球经济趋势",
+    "source": "business-charts-repository"
   }
 ]
