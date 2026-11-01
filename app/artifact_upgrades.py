@@ -904,3 +904,22 @@ def upgrade_macro_indicator(artifact: str) -> str:
         return _native_rating('macro_indicator').render_html(payload)
     except (ValueError,TypeError,KeyError,AttributeError):
         return artifact
+
+
+def upgrade_global_economic_trends(artifact):
+    """Refresh saved map labels and tooltip layout from embedded data only."""
+    if 'global-economic-trends' not in artifact or 'data-global-trends-ui="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        payload = json.loads(match[1])
+        if not isinstance(payload, dict) or payload.get('type') != 'global-economic-trends':
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('global_economic_trends').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
