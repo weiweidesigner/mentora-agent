@@ -554,5 +554,11 @@
     "script": "government_debt_heatmap.py",
     "label": "政府债务占GDP历史热力表",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "gdp_growth_history_heatmap",
+    "script": "gdp_growth_history_heatmap.py",
+    "label": "GDP同比历史热力表",
+    "source": "business-charts-repository"
   }
 ]

@@ -146,3 +146,9 @@ def test_government_debt_history_retrieves_native_heatmap():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question in ('看看政府债务占GDP历史热力表', '各国政府债务近10年', 'government debt heatmap'):
         assert 'government_debt_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
+
+
+def test_gdp_growth_history_retrieves_native_heatmap():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('看看GDP同比历史热力表', '各国GDP近10年', 'GDP growth history heatmap'):
+        assert 'gdp_growth_history_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
