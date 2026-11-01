@@ -889,7 +889,7 @@ def upgrade_economic_indicators_heatmap(artifact):
 
 def upgrade_macro_indicator(artifact: str) -> str:
     """Migrate old US macro charts to the unified runtime using embedded source data only."""
-    if 'data-macro-indicator-runtime="3"' in artifact:
+    if 'data-macro-indicator-runtime="4"' in artifact:
         return artifact
     legacy={'us-unemployment-rate','us-interest-rate','us-trade-balance','macro-indicator'}
     try:
