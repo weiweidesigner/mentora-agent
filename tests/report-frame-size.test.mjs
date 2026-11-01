@@ -37,3 +37,28 @@ test('share preview retains the compact line height',()=>{
   assert.equal(frame.style.height,'286px');
  }finally{w.close();}
 });
+
+test('custom section content can shrink below the old iframe viewport and grow again',()=>{
+ const dom=new JSDOM('<iframe></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
+ const section=doc.createElement('section');doc.body.append(section);doc.body.style.margin='0';
+ let height=348;doc.body.getBoundingClientRect=()=>({top:0,bottom:height,height});
+ Object.defineProperty(doc.body,'scrollHeight',{get:()=>height});
+ Object.defineProperty(doc.documentElement,'scrollHeight',{get:()=>parseFloat(frame.style.height)});
+ Object.defineProperty(doc.documentElement,'offsetHeight',{get:()=>parseFloat(frame.style.height)});
+ frame.style.height='1300px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
+ try{
+  w.eval(source);w.resizeReportDocumentFrame(frame);assert.equal(frame.style.height,'348px');
+  height=510;w.resizeReportDocumentFrame(frame);assert.equal(frame.style.height,'510px');
+  height=290;w.resizeReportDocumentFrame(frame);assert.equal(frame.style.height,'290px');
+ }finally{w.close();}
+});
+
+test('share export measures arbitrary normal-flow content independently of frame viewport',()=>{
+ const dom=new JSDOM('<iframe class="reportDocumentFrame"></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe'),doc=frame.contentDocument;
+ doc.body.style.margin='0';doc.body.append(doc.createElement('section'));
+ doc.body.getBoundingClientRect=()=>({top:0,bottom:360,height:360});
+ Object.defineProperty(doc.body,'scrollHeight',{value:360});
+ Object.defineProperty(doc.documentElement,'scrollHeight',{value:1400});
+ frame.style.height='1400px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
+ try{w.eval(readFileSync(new URL('../app/static/share-chart-layout.js',import.meta.url),'utf8'));w.resizeShareCharts();assert.equal(frame.style.height,'360px');}finally{w.close();}
+});

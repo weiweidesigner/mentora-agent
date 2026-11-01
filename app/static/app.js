@@ -5833,14 +5833,12 @@ function resizeSharePreviewFrame(frame) {
       frame.style.zoom=String(Math.min(1,frame.parentElement.clientWidth/frame.shareViewportWidth));
     }
     const body = frame.contentDocument?.body;
-    const root = frame.contentDocument?.documentElement;
     const content = frame.contentDocument?.querySelector(".shareAnswerDocument");
     const contentHeight = content ? Math.ceil(content.getBoundingClientRect().bottom + parseFloat(getComputedStyle(body).paddingBottom || 0)) : 0;
     const height = contentHeight || Math.max(
       body?.scrollHeight || 0,
       body?.offsetHeight || 0,
-      root?.scrollHeight || 0,
-      root?.offsetHeight || 0,
+      body?.getBoundingClientRect().bottom || 0,
       520,
     );
     frame.style.height = `${height}px`;
@@ -6325,13 +6323,16 @@ function resizeReportDocumentFrame(frame) {
       }
       if (rect.height > 0) return Math.ceil(rect.height);
     }
+    // The root scroll/offset height includes the iframe's current viewport.
+    // Using it as content height prevents a previously tall frame from shrinking.
+    const bodyRect = body.getBoundingClientRect();
+    const bodyStyle = doc.defaultView?.getComputedStyle(body);
+    const rootStyle = doc.defaultView?.getComputedStyle(root);
     return Math.ceil(Math.max(
-      body.scrollHeight || 0,
-      body.offsetHeight || 0,
-      root.scrollHeight || 0,
-      root.offsetHeight || 0,
+      (body.scrollHeight || 0) + Math.max(0, bodyRect.top || 0),
+      bodyRect.bottom || 0,
       0,
-    ));
+    ) + parseFloat(bodyStyle?.marginBottom || 0) + parseFloat(rootStyle?.paddingBottom || 0));
   };
   const resize = () => {
     try {

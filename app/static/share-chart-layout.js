@@ -9,10 +9,16 @@
       const canvasRect = canvas?.getBoundingClientRect();
       const intrinsicRect = intrinsic?.getBoundingClientRect();
       const lineHeight = Number(doc.querySelector('.group-line-component')?.dataset.embedHeight);
+      const bodyRect = doc.body.getBoundingClientRect();
+      const bodyStyle = doc.defaultView?.getComputedStyle(doc.body);
+      const rootStyle = doc.defaultView?.getComputedStyle(doc.documentElement);
+      const naturalBodyHeight = Math.ceil(Math.max(
+        doc.body.scrollHeight + Math.max(0, bodyRect.top || 0), bodyRect.bottom || 0
+      ) + parseFloat(bodyStyle?.marginBottom || 0) + parseFloat(rootStyle?.paddingBottom || 0));
       const height = Number.isFinite(lineHeight) && lineHeight > 80 ? Math.ceil(lineHeight)
         : canvasRect?.height > 80 ? Math.ceil(canvasRect.bottom)
         : intrinsicRect?.height > 0 ? Math.ceil(intrinsicRect.height)
-        : Math.ceil(Math.max(doc.body.scrollHeight, doc.body.offsetHeight, doc.documentElement.scrollHeight, doc.documentElement.offsetHeight));
+        : naturalBodyHeight;
       frame.style.minHeight = '0';
       if (Math.abs(frame.getBoundingClientRect().height - height) > 2) frame.style.height = `${height}px`;
     } catch { /* Cross-origin embeds retain their configured height. */ }
