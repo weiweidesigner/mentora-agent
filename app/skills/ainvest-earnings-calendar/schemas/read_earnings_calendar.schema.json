@@ -42,6 +42,6 @@
   "security": "Fixed read-only GET resources after one standard ephemeral AInvest visitor session POST; credentials in memory only, no personal login/account/watchlist input, retry or synthetic fallback.",
   "authenticationStatus": {
     "anonymous": "Live tested: HTTP 401",
-    "visitor": "Uses standard existing AInvest visitor flow; calendar access not yet live-verified"
+    "visitor": "Earnings events live-verified in production on 2026-11-01 with multi-page 2026-11-02..2026-11-06 results; other operations not implied verified."
   }
 }

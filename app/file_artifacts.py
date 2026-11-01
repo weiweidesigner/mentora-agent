@@ -1,5 +1,8 @@
 """Only explicitly delivered, verified generated files become download cards."""
 import re
+import hashlib
+import os
+import tempfile
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import quote,unquote,urlsplit
@@ -38,8 +41,32 @@ def artifact_file_name(path,preferred=''):
     if not title or INTERNAL_FILE_NAME.search(title):title='HTML 报告' if suffix=='.html' else '生成文件'
     return title[:100].rstrip(' .')+suffix
 
+
+def _stage_output_delivery(path, root, project_root):
+    """Promote an explicitly delivered data/document file without exposing outputs wholesale."""
+    outputs=(Path(project_root)/'outputs').resolve()
+    if (outputs not in path.parents or path.suffix.lower()=='.html'
+            or path.suffix.lower() not in FILE_SUFFIXES or not path.is_file()
+            or not path.stat().st_size):
+        raise ValueError('生成文件不存在、为空或不属于允许的交付目录')
+    root.mkdir(parents=True,exist_ok=True)
+    temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(dir=root,prefix='.delivery-',delete=False) as target:
+            temporary=Path(target.name)
+            digest=hashlib.sha256()
+            with path.open('rb') as source:
+                while chunk:=source.read(1024*1024):
+                    digest.update(chunk);target.write(chunk)
+        destination=root/(path.stem[:100]+'-'+digest.hexdigest()[:16]+path.suffix.lower())
+        os.replace(temporary,destination)
+        temporary=None
+        return destination
+    finally:
+        if temporary is not None:temporary.unlink(missing_ok=True)
+
 def collect_file_artifacts(question,answer,artifacts,generated_dir,project_root,*,allow_html=False):
-    root=Path(generated_dir).resolve();files=[];seen=set()
+    root=Path(generated_dir).resolve();files=[];seen=set();delivery_names={}
     markers=list(dict.fromkeys(re.findall(r'\[\[AIME_FILE:([^\]\n]+)\]\]',answer)))
     paths=[]
     for raw in markers:
@@ -49,6 +76,10 @@ def collect_file_artifacts(question,answer,artifacts,generated_dir,project_root,
             supplied=Path(value).expanduser()
             path=supplied if supplied.is_absolute() else Path(project_root)/supplied
         path=path.resolve()
+        if root not in path.parents:
+            original_name=path.name
+            path=_stage_output_delivery(path,root,project_root)
+            delivery_names[path]=original_name
         if root not in path.parents or path.suffix.lower() not in FILE_SUFFIXES or not path.is_file() or not path.stat().st_size:
             raise ValueError('生成文件不存在、为空或不属于允许的交付目录')
         # HTML is rendered inline for every chart, but it is a downloadable
@@ -69,7 +100,7 @@ def collect_file_artifacts(question,answer,artifacts,generated_dir,project_root,
         seen.add(path)
         metadata=next((item for item in artifacts if str(item.get('path') or '')==str(path) or unquote(urlsplit(str(item.get('url') or '')).path).endswith('/'+path.name)),{})
         title=(metadata.get('title') or metadata.get('label') or '') if INTERNAL_FILE_NAME.search(path.name) else ''
-        name=artifact_file_name(path,title)
+        name=delivery_names.get(path) or artifact_file_name(path,title)
         files.append(dict(name=name,url='/generated/'+quote(path.name),downloadUrl='/api/artifacts/'+quote(path.name)+'/download',type=path.suffix[1:].upper(),size=path.stat().st_size))
     clean=re.sub(r'\[\[AIME_FILE:[^\]\n]+\]\]','',answer).strip()
     return files,clean
