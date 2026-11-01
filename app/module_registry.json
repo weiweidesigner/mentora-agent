@@ -548,5 +548,11 @@
     "script": "industrial_production_heatmap.py",
     "label": "全球工业生产环比历史热力表",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "government_debt_heatmap",
+    "script": "government_debt_heatmap.py",
+    "label": "政府债务占GDP历史热力表",
+    "source": "business-charts-repository"
   }
 ]

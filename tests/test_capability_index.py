@@ -140,3 +140,9 @@ def test_industrial_production_history_retrieves_native_heatmap():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question in ('看看全球工业生产环比历史热力表', '各国工业生产近12个月', 'industrial production heatmap'):
         assert 'industrial_production_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
+
+
+def test_government_debt_history_retrieves_native_heatmap():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('看看政府债务占GDP历史热力表', '各国政府债务近10年', 'government debt heatmap'):
+        assert 'government_debt_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
