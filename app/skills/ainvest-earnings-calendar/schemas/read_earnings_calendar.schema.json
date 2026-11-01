@@ -1,0 +1,47 @@
+{
+  "type": "data-only",
+  "script": "read_earnings_calendar.py",
+  "cli": {
+    "operation": [
+      "events",
+      "statistics",
+      "backtest",
+      "recommendations"
+    ],
+    "date": "YYYY-MM-DD disclosure date, mutually exclusive with range",
+    "start-date/end-date": "both required for a range, start <= end",
+    "cursor": "events-only opaque startId, suffix coverage only",
+    "max-pages": "optional positive caller bound, incomplete if more possible",
+    "country-codes": "statistics only, source comma-separated codes such as USA",
+    "event-id": "backtest only, exact earning_ uniqueId from source events",
+    "symbols": "recommendations only, tickers as context from the selected event list",
+    "source-input": "optional raw API envelope(s) or event array; offline completeness unknown",
+    "output": "required JSON path under outputs/"
+  },
+  "dataContract": {
+    "events": "id,symbol,marketId,name,companyNameEn,eventDate,reportYear,reportType,disclosureTimeType,estimateEps,actualEps,estimateRevenue,actualRevenue,raw",
+    "pagination": "complete, stoppedBecause, nextCursor, pages, resumedFromCursor; complete means requested traversal completed, not verified market-wide universe",
+    "quality": "duplicateEvents, invalidNumericFields; raw originals kept",
+    "source": "fixed API URL, requested parameters, actual transport and request interval; offline fetch times null",
+    "statistics": "data[] raw startDate/endDate/statistic with earning/economic_indicator/dividend/stock_split/ipo/fda",
+    "backtest/recommendations": "raw data, optional; internal nested schema/methodology not asserted",
+    "units": "source numeric strings parsed without percentage scaling or revenue B/M conversion; currency and time-type enum not invented",
+    "missing": "null, not zero; no fabricated surprise fields"
+  },
+  "presentation": {
+    "rendered": false,
+    "contract": "JSON data only; agent selects appropriate explanation or visualization"
+  },
+  "endpoints": {
+    "base": "https://fundamental.ainvest.com/fuyao/america_financial_calendar/",
+    "events": "financialCalendar/v1/cateDataList",
+    "statistics": "financialCalendar/v1/statistic",
+    "backtest": "financialCalendar/v1/backtest",
+    "recommendations": "query/v1/recommend"
+  },
+  "security": "Fixed read-only GET resources after one standard ephemeral AInvest visitor session POST; credentials in memory only, no personal login/account/watchlist input, retry or synthetic fallback.",
+  "authenticationStatus": {
+    "anonymous": "Live tested: HTTP 401",
+    "visitor": "Uses standard existing AInvest visitor flow; calendar access not yet live-verified"
+  }
+}

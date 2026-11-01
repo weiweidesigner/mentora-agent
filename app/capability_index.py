@@ -16,6 +16,7 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "read_earnings_calendar.py": ("财报日历", "财报预告", "哪些公司公布财报", "本周财报", "财报公布日期", "财报超预期", "earnings calendar", "earnings schedule"),
     "crypto_heatmap.py": ("加密货币热力图", "数字货币热力图", "币圈热力图", "加密市场表现", "crypto heatmap", "crypto coins heatmap"),
     "read_macro_relations.py": ("宏观因子", "因子关联", "上下游关系", "影响通胀", "宏观关系图", "核心因子", "macro landscape", "factor relations", "influencing factors"),
     "gdp_growth_history_heatmap.py": ("GDP同比历史热力表", "各国GDP近10年", "GDP同比历年对比", "GDP历史热力图", "GDP growth history heatmap", "charts-economic-growth"),
@@ -76,6 +77,7 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 _SKILL_ALIASES: dict[str, tuple[str, ...]] = {
+    "ainvest-earnings-calendar": ("财报日历", "财报预告", "earnings calendar"),
     "macro-factor-relations": ("宏观因子", "因子关系", "上下游", "macro landscape"),
     "my-holdings": ("我的持仓", "持仓", "我的股票", "持仓看板", "my portfolio", "my holdings"),
     "my-watchlist": ("我的自选", "自选股", "自选", "my watchlist", "favorites"),

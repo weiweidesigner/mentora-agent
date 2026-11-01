@@ -572,5 +572,11 @@
     "script": "crypto_heatmap.py",
     "label": "加密货币热力图",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "read_earnings_calendar",
+    "script": "read_earnings_calendar.py",
+    "label": "AInvest Earnings Calendar Data",
+    "description": "只读AInvest财报日历数据：按日期/区间查询哪些公司公布财报、EPS和营收预期/实际、季度财年。自动startId游标分页，保留缺失、来源和不完整状态。operations events|statistics|backtest|recommendations；--date 或 --start-date/--end-date；可选 --max-pages/--cursor、统计country-codes、来源event-id回测。JSON数据Skill，不绑定图表，区别于宏观经济日历、完整财务报表和App页面导航。"
   }
 ]
