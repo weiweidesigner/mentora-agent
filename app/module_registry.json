@@ -542,5 +542,11 @@
     "script": "inflation_history_heatmap.py",
     "label": "全球通胀同比历史热力表",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "industrial_production_heatmap",
+    "script": "industrial_production_heatmap.py",
+    "label": "全球工业生产环比历史热力表",
+    "source": "business-charts-repository"
   }
 ]

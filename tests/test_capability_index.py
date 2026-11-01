@@ -134,3 +134,9 @@ def test_inflation_monthly_history_retrieves_native_heatmap():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question in ('看看全球通胀历史热力表', '对比各国通胀近12个月', 'inflation history heatmap'):
         assert 'inflation_history_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
+
+
+def test_industrial_production_history_retrieves_native_heatmap():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('看看全球工业生产环比历史热力表', '各国工业生产近12个月', 'industrial production heatmap'):
+        assert 'industrial_production_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
