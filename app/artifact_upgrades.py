@@ -923,3 +923,22 @@ def upgrade_global_economic_trends(artifact):
         return _native_rating('global_economic_trends').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def upgrade_inflation_history_heatmap(artifact):
+    """Apply table and semantic-color UI to saved data without new API calls."""
+    if 'inflation-history-heatmap' not in artifact or 'data-inflation-history-ui="2"' in artifact:
+        return artifact
+    try:
+        match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+        if not match:
+            return artifact
+        payload = json.loads(match[1])
+        if not isinstance(payload, dict) or payload.get('type') != 'inflation-history-heatmap':
+            return artifact
+        theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
+        if theme:
+            payload['theme'] = theme[1]
+        return _native_rating('inflation_history_heatmap').render_html(payload)
+    except (ValueError, TypeError, KeyError):
+        return artifact
