@@ -40,7 +40,7 @@ def test_saved_legacy_chart_upgrades_without_network_or_changing_source(monkeypa
     payload={'type':'us-interest-rate','symbol':'USINTR','unit':'%','history':[{'t':123,'v':4.6,'period':'source-date'}],'source':{'provider':'AInvest','historySampling':'year earliest'}}
     before=copy.deepcopy(payload);calls=[]
     class Native:
-        def render_html(self,value):calls.append(value);return '<html data-macro-indicator-runtime="4"></html>'
+        def render_html(self,value):calls.append(value);return '<html data-macro-indicator-runtime="5"></html>'
     monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
     artifact='<html data-theme="dark"><script type="application/json" id="component-data">'+json.dumps(payload)+'</script></html>'
     result=upgrades.upgrade_macro_indicator(artifact)
@@ -53,7 +53,7 @@ def test_saved_legacy_chart_upgrades_without_network_or_changing_source(monkeypa
 def test_previous_unified_artifact_preserves_user_selection_permission(monkeypatch):
     calls=[]
     class Native:
-        def render_html(self,payload):calls.append(payload);return '<html data-macro-indicator-runtime="4"></html>'
+        def render_html(self,payload):calls.append(payload);return '<html data-macro-indicator-runtime="5"></html>'
     monkeypatch.setattr(upgrades,'_native_rating',lambda name:Native())
     payload={'type':'macro-indicator','symbol':'AUINTR','history':[],'interactiveSource':True,'catalog':{'indicators':[{'code':'INTR'}]}}
     html='<html data-macro-indicator-runtime="1"><script id="component-data" type="application/json">'+json.dumps(payload)+'</script></html>'
@@ -67,10 +67,22 @@ def test_saved_chart_adopts_line_standard_and_removes_identity_ui_without_refetc
     payload={'type':'macro-indicator','symbol':'CAINTR','countryCode':'CA','country':'Canada','indicatorCode':'INTR','indicator':'Interest Rate','unit':'%','history':[{'t':1735689600000,'v':3.25,'period':'20250101'},{'t':1767225600000,'v':2.75,'period':'20260101'}],'source':{'provider':'AInvest','fetchedAt':'original-time'},'catalog':{'countries':[],'indicators':[]}}
     old='<html data-macro-indicator-runtime="3"><div class="macro-timeline"></div><circle class="macro-point"></circle><select class="macro-country"></select><span class="symbol">CAINTR</span><script id="component-data" type="application/json">'+json.dumps(payload)+'</script></html>'
     result=upgrades.upgrade_macro_indicator(old)
-    assert 'data-macro-indicator-runtime="4"' in result
+    assert 'data-macro-indicator-runtime="5"' in result
     assert '<select' not in result and 'class="symbol"' not in result and 'macro-parameters' not in result
     assert 'macro-timeline' not in result and 'macro-point' not in result and 'macro-focus' not in result
-    assert 'macro-tooltip-arrow' in result
+    assert 'macro-tooltip-arrow' in result and 'macro-localization' in result
     saved=json.loads(re.search(r'<script[^>]*id="component-data"[^>]*>(.*?)</script>',result,re.S)[1])
     assert saved['history']==payload['history'] and saved['source']==payload['source']
     assert upgrades.upgrade_macro_indicator(result)==result
+
+
+def test_saved_chinese_metric_tooltip_gets_localized_label_without_changing_source():
+    import re
+    payload={'type':'macro-indicator','symbol':'CAINTR','countryCode':'CA','country':'Canada','indicatorCode':'INTR','indicator':'Interest Rate','language':'zh-CN','unit':'%','history':[{'t':1767225600000,'v':4.25,'period':'20260101'}],'source':{'provider':'AInvest','fetchedAt':'unchanged-time'}}
+    artifact='<html data-macro-indicator-runtime="4"><script id="component-data" type="application/json">'+json.dumps(payload)+'</script></html>'
+    result=upgrades.upgrade_macro_indicator(artifact)
+    assert 'data-macro-indicator-runtime="5"' in result
+    labels=json.loads(re.search(r'<script[^>]*id="macro-localization"[^>]*>(.*?)</script>',result,re.S)[1])
+    assert labels['zh-CN']['indicator']=='利率' and labels['en']['indicator']=='Interest Rate'
+    saved=json.loads(re.search(r'<script[^>]*id="component-data"[^>]*>(.*?)</script>',result,re.S)[1])
+    assert saved['indicator']=='Interest Rate' and saved['history']==payload['history'] and saved['source']==payload['source']

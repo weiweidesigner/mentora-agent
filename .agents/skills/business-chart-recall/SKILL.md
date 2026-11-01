@@ -6,3 +6,5 @@ description: 各国经济指标九列热力表使用 economic_indicators_heatmap
 # Veya skill bridge
 
 Before acting, read `../../../app/skills/business-chart-recall/SKILL.md` completely and follow it as the canonical instruction file. Resolve scripts, schemas, and resources relative to `app/skills/business-chart-recall/`.
+
+Macro tooltip indicator names and automatic titles follow en/zh-CN/zh-Hant using bundled source-identity labels. Explicit titles stay verbatim; original names, codes, dates, units and values are never rewritten. Unknown/renamed source identities retain their original label without a translation request.
