@@ -152,3 +152,15 @@ def test_gdp_growth_history_retrieves_native_heatmap():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question in ('看看GDP同比历史热力表', '各国GDP近10年', 'GDP growth history heatmap'):
         assert 'gdp_growth_history_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]
+
+
+def test_ainvest_crypto_heatmap_is_discoverable_with_native_contract():
+    root = Path(__file__).resolve().parents[1]
+    index = CapabilityIndex(root)
+    for query in ('看看加密货币热力图', 'AInvest crypto coins heatmap', '数字货币热力图'):
+        candidate = next(m for m in index.shortlist(query).modules if m['script'] == 'crypto_heatmap.py')
+        assert candidate['skill'] == 'business-chart-recall'
+    catalog = json.loads((root / 'app/static/widget-catalog.json').read_text())
+    native = next(row for row in catalog if row['id'] == 'crypto_heatmap')
+    assert native['provider'] == 'business' and native['allowEmptySymbols']
+    assert any(row['id'] == 'tv-crypto-heatmap' for row in catalog)

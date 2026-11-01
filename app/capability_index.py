@@ -16,6 +16,7 @@ from app.business_chart_dependency import load_registry_data
 
 
 _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
+    "crypto_heatmap.py": ("加密货币热力图", "数字货币热力图", "币圈热力图", "加密市场表现", "crypto heatmap", "crypto coins heatmap"),
     "read_macro_relations.py": ("宏观因子", "因子关联", "上下游关系", "影响通胀", "宏观关系图", "核心因子", "macro landscape", "factor relations", "influencing factors"),
     "gdp_growth_history_heatmap.py": ("GDP同比历史热力表", "各国GDP近10年", "GDP同比历年对比", "GDP历史热力图", "GDP growth history heatmap", "charts-economic-growth"),
     "government_debt_heatmap.py": ("政府债务占GDP历史热力表", "各国政府债务近10年", "债务GDP历史对比", "政府债务热力表", "government debt heatmap", "charts-government-debt"),

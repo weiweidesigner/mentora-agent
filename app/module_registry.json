@@ -566,5 +566,11 @@
     "script": "read_macro_relations.py",
     "label": "AInvest Macro Factor Relations",
     "description": "只读查询 AInvest macro-landscape 宏观因子目录、核心因子、上下游关联和影响关系。operation factor-sets|directory|search|relations；先目录检索再用来源 factor-id；保留方向、关系标签、pass_score、说明和延迟，评分不等于相关系数或置信度。输出JSON，数值指标复用现有宏观数据，不包含预测或固定3D样式。"
+  },
+  {
+    "name": "crypto_heatmap",
+    "script": "crypto_heatmap.py",
+    "label": "加密货币热力图",
+    "source": "business-charts-repository"
   }
 ]

@@ -1387,5 +1387,22 @@
     "width": 12,
     "height": 14,
     "defaultSymbols": []
+  },
+  {
+    "id": "crypto_heatmap",
+    "title": "加密货币热力图",
+    "category": "热力图与筛选器",
+    "description": "AInvest 原生币种市值和24小时、多周期涨跌热力图；支持不含比特币、等面积、色深与显示设置。",
+    "provider": "business",
+    "inputMode": "data",
+    "allowEmptySymbols": true,
+    "skill": "business-chart-recall",
+    "script": "crypto_heatmap.py",
+    "sourceLabel": "AInvest",
+    "requiresDataSource": false,
+    "libraryVisible": true,
+    "width": 12,
+    "height": 24,
+    "defaultSymbols": []
   }
 ]
