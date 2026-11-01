@@ -128,3 +128,9 @@ def test_global_economic_trends_retrieves_combined_native_component():
     index = CapabilityIndex(Path(__file__).resolve().parents[1])
     for question in ('看看全球经济趋势', '看看全球趋势地图', 'charts-global-trends'):
         assert 'global_economic_trends.py' in [item['script'] for item in index.shortlist(question).modules]
+
+
+def test_inflation_monthly_history_retrieves_native_heatmap():
+    index = CapabilityIndex(Path(__file__).resolve().parents[1])
+    for question in ('看看全球通胀历史热力表', '对比各国通胀近12个月', 'inflation history heatmap'):
+        assert 'inflation_history_heatmap.py' in [item['script'] for item in index.shortlist(question).modules]

@@ -536,5 +536,11 @@
     "script": "global_economic_trends.py",
     "label": "全球经济趋势",
     "source": "business-charts-repository"
+  },
+  {
+    "name": "inflation_history_heatmap",
+    "script": "inflation_history_heatmap.py",
+    "label": "全球通胀同比历史热力表",
+    "source": "business-charts-repository"
   }
 ]
