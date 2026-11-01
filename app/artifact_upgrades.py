@@ -927,7 +927,7 @@ def upgrade_global_economic_trends(artifact):
 
 def upgrade_inflation_history_heatmap(artifact):
     """Apply table and semantic-color UI to saved data without new API calls."""
-    if 'inflation-history-heatmap' not in artifact or 'data-inflation-history-ui="2"' in artifact:
+    if 'inflation-history-heatmap' not in artifact or 'data-inflation-history-ui="3"' in artifact:
         return artifact
     try:
         match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
