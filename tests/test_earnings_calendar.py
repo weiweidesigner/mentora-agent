@@ -130,3 +130,25 @@ def test_visitor_session_uses_ephemeral_standard_headers_and_closes_on_failure(m
     session.cookies={}
     with pytest.raises(ValueError,match='authentication unavailable'):m.visitor_session()
     assert session.closed
+
+
+def test_backtest_summary_exposes_source_windows_without_recomputation():
+    data={'backtest':[{'tag':{'object':'TEST','type':'probability','value':75},'backtest_result':{'visual':{'value':{'datas':[{'Backtest Object':'TEST','Backtest Period':'source period','backtest_result':{'price_data':{'20260101':100},'target_result':{'targetEventTimes':8,'stockEventData':[{'dayIndex':30,'winRate':.75,'averageYield':2.3075,'positiveDays':6,'allDaysYield':{'x':100}}]}}}]}},'text':'Untrusted source interpretation'}},{'tag':{'type':'neutral_info','value':'No Data'},'backtest_result':{'visual':''}}],'periods':[{'date':'2026-11-02','actualValue':None,'forecastValue':2.84}]}
+    summary=m.summarize_backtest(data)
+    record=summary['scenarios'][0]['results'][0]
+    assert record['sampleCount']==8 and record['sourcePeriod']=='source period'
+    assert record['windows']==[{'dayIndex':30,'winRate':.75,'averageYield':2.3075,'positiveDays':6}]
+    assert summary['scenarios'][1]['available'] is False
+    assert summary['epsObservationCount']==1
+    assert 'price_data' not in json.dumps(summary) and 'Untrusted source interpretation' not in json.dumps(summary)
+    assert m.summarize_backtest({'changedSchema':True})['schemaInspected'] is False
+
+
+def test_backtest_decision_contract_survives_bounded_runner_receipt():
+    from app.skill_runner import _contract_receipt
+    schema=json.loads((SCRIPT.parent.parent/'schemas/read_earnings_calendar.schema.json').read_text())
+    contract={'agentContract':schema['agentContract'],'schema':schema,'cliHelp':'--operation --event-id '+'long help '*1000}
+    receipt=_contract_receipt(contract,ROOT,SCRIPT)
+    assert receipt['agentContract']==schema['agentContract']
+    assert 'backtest' in receipt['agentContract']['operations']
+    assert 'sample counts' in receipt['agentContract']['handoff']

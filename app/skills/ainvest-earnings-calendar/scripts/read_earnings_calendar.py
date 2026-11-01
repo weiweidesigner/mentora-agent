@@ -133,6 +133,32 @@ def fetch_events(fetch, params, *, cursor=None, max_pages=None):
     return rows, {'complete':complete, 'stoppedBecause':reason, 'nextCursor':next_cursor, 'pages':pages, 'resumedFromCursor':initial_cursor}
 
 
+
+def summarize_backtest(data):
+    """Expose existing source statistics without recomputing histories or model prose."""
+    if not isinstance(data,dict) or not isinstance(data.get('backtest'),list):
+        return {'schemaInspected':False,'schemaWarning':'Unrecognized backtest shape; raw data retained'}
+    scenarios=[]
+    for entry in data['backtest']:
+        if not isinstance(entry,dict):continue
+        result=entry.get('backtest_result') or {}
+        visual=result.get('visual') if isinstance(result,dict) else None
+        value=visual.get('value') if isinstance(visual,dict) else None
+        rows=value.get('datas',[]) if isinstance(value,dict) else []
+        scenario={'sourceTag':entry.get('tag'),'available':bool(rows),'results':[]}
+        for row in rows:
+            if not isinstance(row,dict):continue
+            backtest=row.get('backtest_result') or {}
+            target=backtest.get('target_result') if isinstance(backtest,dict) else None
+            if not isinstance(target,dict):continue
+            windows=[]
+            for window in target.get('stockEventData',[]):
+                if isinstance(window,dict):
+                    windows.append({key:window.get(key) for key in ('dayIndex','winRate','averageYield','positiveDays')})
+            scenario['results'].append({'object':row.get('Backtest Object'),'sourcePeriod':row.get('Backtest Period'),'sampleCount':target.get('targetEventTimes'),'windows':windows})
+        scenarios.append(scenario)
+    return {'schemaInspected':True,'scenarios':scenarios,'epsObservationCount':len(data.get('periods',[])), 'units':{'winRate':'source fraction, 0.75 = 75%','averageYield':'source percent number, 1.45 = 1.45%; do not multiply by 100','dayIndex':'source horizon label; trading/calendar-day convention not independently verified','sourceTag.value':'probability tags use percent numbers, 75 = 75%; other tag types may contain text'},'methodology':'Provider statistics, not an independent backtest. Keep sample counts; source prose may conflict with structured values.'}
+
 def make_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--operation', choices=list(PATHS), default='events')
@@ -225,7 +251,7 @@ def main():
         if args.operation=='statistics' and (not isinstance(data,list) or any(not isinstance(r,dict) or not isinstance(r.get('statistic'),dict) for r in data)):
             raise ValueError('Unexpected statistics schema')
         result['data']=data
-        summary={'recordCount':len(data) if isinstance(data,list) else None,'sample':data[:3] if args.operation=='statistics' else None,'schemaInspected':args.operation=='statistics'}
+        summary=summarize_backtest(data) if args.operation=='backtest' else {'recordCount':len(data) if isinstance(data,list) else None,'sample':data[:3] if args.operation=='statistics' else None,'schemaInspected':args.operation=='statistics'}
     result['limitations']=['Disclosure date differs from fiscal period; source timezone, complete time-type enumeration and currency metadata are not established.','No EPS/revenue surprise fields are invented; raw values and nulls are retained.','Backtest output is source material; methodology and historical performance are not independently validated.']
     output=Path(args.output);output.parent.mkdir(parents=True,exist_ok=True);output.write_text(json.dumps(result,ensure_ascii=False,allow_nan=False,indent=2),encoding='utf-8')
     print(json.dumps({'ok':True,'output':str(output),'summary':{'operation':args.operation,**summary,'source':source}},ensure_ascii=False))
