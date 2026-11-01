@@ -129,3 +129,21 @@ def test_all_mode_preserves_every_supplied_mark_without_max_marks() -> None:
     assert sum(item.get("color") == "#2563eb" for item in enhanced["items"]) == 12
     assert report["effectiveMaxMarks"] == 12
     assert report["skipped"] == []
+
+
+def test_placeholder_mark_compiles_into_native_renderer_without_filling_actual():
+    renderer_path = ROOT / 'app/skills/generic-chart/scripts/grouped_bar.py'
+    spec = importlib.util.spec_from_file_location('native_placeholder_renderer', renderer_path)
+    renderer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(renderer)
+    source = {'xField': 'period', 'series': [{'field': 'actual'}, {'field': 'estimate'}],
+              'data': [{'period': 'Pending', 'actual': None, 'estimate': 3.5}]}
+    enhanced, report = chart_markup.apply_marks(source, 'grouped_bar.py', {
+        'selectionMode': 'user-specified', 'marks': [{'type': 'bar-placeholder',
+        'target': {'series': 'actual', 'x': 'Pending'}, 'referenceSeries': 'estimate', 'label': '尚未公布'}]})
+    config = renderer.normalize_xy_series(enhanced, 'grouped-bar', 'Test', 'bar')
+    assert not report['skipped']
+    assert config['data'][0]['actual'] is None
+    assert config['barPlaceholders'][0]['referenceSeries'] == 'estimate'
+    assert config['barPlaceholders'][0]['label'] == '尚未公布'
+    assert 'bar-placeholder' in renderer.render_svg_chart(config, 'grouped-bar')

@@ -2859,6 +2859,7 @@ def jev_visual_semantics_prompt(metadata: dict[str, Any] | None) -> str:
         f"标记策略为 {mark_key}：{mark_strategy}",
         "当标记策略为 signed-direction 时，仅对单系列柱状图或柱折图输出正、负、零的语义信号；颜色由渲染器按 financialMarket 映射：CN/HK 红涨绿跌，US 绿涨红跌。多系列分组柱状图必须保留颜色用于系列与图例映射。用户明确指定的颜色优先。",
         "当标记策略为 distribution-polarity 时，柱高表示频次/频率，极性必须由 X 轴区间判断并展示 0% 分界；单系列可用红绿灰着色，多系列分组分布必须保留系列颜色，禁止让 Mark 颜色破坏图例映射。",
+        "分组柱状图原生支持斜线缺失值占位：用户请求时，将 bar-placeholder 编译为 grouped_bar.py payload.barPlaceholders（series、精确 x 或 index、referenceSeries、当地语言 label）。保留实际字段 null，引用同一行另一系列的真实值确定高度；tooltip 显示状态而非实际数字。不得为此改走 StreamViz/自定义 HTML，也不得将预期值填入实际字段。",
         "标记策略只描述应该强调什么，不提供事实坐标。只有当上游数据能唯一解析 series/category/date/index/value/range 时，才按 chart-markup 协议生成 marks；自动模式通常选 1–3 个并以 5 个作为软默认上限，但用户指定数量或要求全部事件时必须完整保留，不得截断为 5 个。无法解析的目标必须跳过，禁止猜测日期、数值、排名或事件。",
         "如果是美股或美国上市标的，优先保留业务图表的内置取数、指标口径、交互和展示逻辑；端内文本搜索与视频搜索用于补充催化剂、市场叙事和观点，不能代替结构化业务证据。",
         "先核对各组件 schema 和真实数据口径；最终让每张图支撑一个明确判断，并让对应文字解释变化、差异、构成、风险或拐点。",
