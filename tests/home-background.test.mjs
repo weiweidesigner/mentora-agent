@@ -54,7 +54,7 @@ test('the opening requests audio while the resident background remains muted',as
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
   const h=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,false);assert.equal(h.opening.hidden,false);
-  assert.match(h.opening.textContent,/点击画面，从头有声播放/);assert.equal(h.opening.dataset.sound,'blocked');h.intro.currentTime=3.5;
+  assert.equal(h.opening.querySelector('p').textContent,'欢迎来到大鲸鱼Mentora世界');assert.equal(h.opening.dataset.sound,'blocked');h.intro.currentTime=3.5;
   h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);assert.equal(h.intro.currentTime,0);assert.equal(h.opening.dataset.sound,'playing');assert.doesNotMatch(h.opening.textContent,/点击画面/);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,true);assert.equal(h.video.muted,true);assert.equal(h.video.paused,false);h.dom.window.close();
 });

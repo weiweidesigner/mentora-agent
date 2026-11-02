@@ -72,9 +72,9 @@
       if (!openingActive || attempt !== audioAttempt) return;
       if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
       // Browser permissions cannot be overridden. Make the sound action visible
-      // in the existing subtitle, without restoring a toolbar or skip button.
+      // on the existing opening, without restoring a toolbar or skip button.
       audioBlocked = true;opening.dataset.sound = 'blocked';
-      if (subtitle) subtitle.textContent = '点击画面，从头有声播放';
+      if (subtitle) subtitle.textContent = welcome;
       opening.removeAttribute('aria-hidden');
       opening.setAttribute('role', 'button');opening.setAttribute('tabindex', '0');
       opening.setAttribute('aria-label', '点击画面，从头有声播放 Mentora 开场');
