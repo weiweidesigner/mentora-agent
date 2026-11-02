@@ -20,7 +20,7 @@ def router(monkeypatch):
         def system_one(self,**kwargs):
             m,c,r,rc,s,sc=self.modes
             def answer(choice,p,others):return SimpleNamespace(choice=choice,confidence=p,probabilities={choice:p,others:1-p})
-            answers={'fit':SimpleNamespace(probabilities={'match':.95 if kwargs['questions'].get('fit') and '双手比心' in kwargs['questions']['fit'].criteria['match'] else .2}), 'delivery':answer(m,c,'text' if m=='voice' else 'voice'),'reaction':answer(r,rc,'none' if r=='add' else 'add'),'sticker':answer(s,sc,'snuggle')}
+            answers={'fit':SimpleNamespace(probabilities={'match':.95 if kwargs['questions'].get('fit') and '双手比心' in kwargs['questions']['fit'].criteria['match'] else .2}), 'delivery':answer(m,c,'text' if m=='voice' else 'voice'),'reaction':answer(r,rc,'none' if r=='add' else 'add'),'sticker':SimpleNamespace(choice=next((key for key,value in kwargs['questions'].get('sticker',SimpleNamespace(criteria={})).criteria.items() if '双手比心' in value),s),confidence=sc)}
             return SimpleNamespace(model='local-laya',answers={key:answers[key] for key in kwargs['questions']})
     monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=Client,Choice=lambda **kwargs:SimpleNamespace(**kwargs)))
     return QQExpressionRouter(draw=lambda:0),Client
@@ -30,20 +30,20 @@ def test_semantic_voice_and_catalog_reaction_with_real_scores(router):
     active,_=router
     plan=active.route('抱抱我嘛','抱抱你',[],sticker_catalog())
     assert plan['mode']=='voice' and plan['confidence']==.96
-    assert plan['sticker']=='heart' and plan['stickerConfidence']==.95
+    assert plan['sticker']=='heart' and plan['stickerConfidence']==.9
     assert plan['source']=='local-jev-laya'
 
 
-def test_formal_text_has_no_sticker(router):
+def test_formal_delivery_remains_text_without_an_extra_sticker_veto(router):
     active,client=router;client.modes=('text',.99,'none',.98,'heart',.9)
     plan=active.route('请列出今天指数数据','正式数据',[],sticker_catalog())
-    assert plan['mode']=='text' and plan['sticker'] is None
+    assert plan['mode']=='text' and plan['sticker']=='heart'
 
 
-def test_low_confidence_does_not_force_voice_or_stickers(router):
+def test_low_confidence_does_not_force_voice_or_cancel_enabled_stickers(router):
     active,client=router;client.modes=('voice',.55,'add',.6,'heart',.9)
     plan=active.route('普通问题','普通回答',[],sticker_catalog())
-    assert plan['mode']=='text' and plan['sticker'] is None and plan['confidence']==.55
+    assert plan['mode']=='text' and plan['sticker']=='heart' and plan['confidence']==.55
 
 
 def test_missing_model_or_invalid_score_falls_back_without_inventing_confidence(router,monkeypatch):
@@ -112,5 +112,39 @@ def test_equally_fitting_installed_stickers_do_not_cancel_each_other(router):
              {'id':'selected-two','description':'双手比心，表达开心和喜欢'}]
     plan=active.route('大肥鱼，我喜欢你','爸爸，我也喜欢和你聊天呀',[],catalog,sticker_probability=100)
     assert plan['sticker'] in {x['id'] for x in catalog}
-    assert plan['stickerConfidence']==.95
-    assert len(plan['stickerFitScores'])==2
+    assert plan['stickerConfidence']==.9
+    assert plan['stickerSource']=='local-jev-laya'
+
+
+def test_max_frequency_and_low_selection_score_never_cancel_the_sticker(router):
+    active,client=router
+    active.draw=lambda:99
+    client.modes=('text',.99,'none',.99,'heart',.08)
+    plan=active.route('想看表情包'*100,'来啦',[],sticker_catalog(),sticker_probability=100)
+    assert plan['sticker']=='heart' and plan['stickerConfidence']==.08
+
+
+def test_selector_outage_uses_only_enabled_catalog_without_inventing_a_score(router,monkeypatch):
+    active,_=router
+    monkeypatch.delenv('LAYA_DECISION_URL')
+    plan=active.route('发个表情','好呀',[],[{'id':'only-enabled','description':'开心'}],sticker_probability=100)
+    assert plan['sticker']=='only-enabled' and plan['stickerConfidence'] is None
+    assert plan['stickerSource']=='catalog-fallback'
+
+
+def test_large_catalog_selection_has_a_total_deadline_and_still_sends_a_catalog_image(monkeypatch):
+    monkeypatch.setenv('LAYA_DECISION_URL','http://local')
+    monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=None,Choice=lambda **kw:SimpleNamespace(**kw)))
+    clock=iter([0,1,11])
+    monkeypatch.setattr('app.qq_expression.time.monotonic',lambda:next(clock))
+    class Client:
+        calls=0
+        def __init__(self,**kw):self.timeout=kw['timeout']
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def _ask(self,**kw):Client.calls+=1
+        def system_one(self,**kw):
+            self._ask();self._ask()
+            pytest.fail('selection must stop at its total deadline')
+    plan=QQExpressionRouter(client_factory=Client).select_sticker('表情','来啦',[],[{'id':'enabled','description':'开心'}])
+    assert Client.calls==1 and plan['sticker']=='enabled' and plan['stickerSource']=='catalog-fallback'

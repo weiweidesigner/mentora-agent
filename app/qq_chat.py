@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import logging
+import threading
 import time
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class QQChat:
         from app.qq_expression import QQExpressionRouter
         self.expression = QQExpressionRouter()
         self.pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix='mentora-qq')
+        self.notices = {}
         with tasks.db() as db:
             db.executescript('''
             CREATE TABLE IF NOT EXISTS qq_chat_jobs (
@@ -57,9 +59,12 @@ class QQChat:
         with self.tasks.db() as db:
             interrupted = [(r['id'],) for r in db.execute("SELECT id,scope FROM qq_chat_jobs WHERE state='running'") if self._owns_scope(r['scope'])]
             db.executemany("UPDATE qq_chat_jobs SET state='interrupted',error='服务重启中断本轮分析，请重新提问' WHERE id=?", interrupted)
+            claimed = [(r['id'],) for r in db.execute("SELECT id,scope FROM qq_chat_jobs WHERE delivered=-1") if self._owns_scope(r['scope'])]
+            db.executemany('UPDATE qq_chat_jobs SET delivered=0 WHERE id=?', claimed)
             queued = [r['id'] for r in db.execute("SELECT id,scope FROM qq_chat_jobs WHERE state='queued' ORDER BY created")
                       if self._owns_scope(r['scope'])]
         for job_id in queued:
+            self.schedule_notice(job_id)
             self.pool.submit(self.execute, job_id)
 
     def latest(self, scope):
@@ -90,8 +95,58 @@ class QQChat:
                 return '当前分析请求较多，请稍后再试。'
             db.execute('INSERT INTO qq_chat_jobs(id,scope,kind,target,message_id,question,state,created) VALUES(?,?,?,?,?,?,?,?)',
                        (job_id, scope, kind, target, message_id, question, 'queued', time.time()))
+        self.schedule_notice(job_id)
         self.pool.submit(self.execute, job_id)
         return None
+
+    def schedule_notice(self, job_id):
+        with self.tasks.db() as db:
+            row = db.execute('SELECT * FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
+        if not row:
+            return
+        job = dict(row)
+        timer = threading.Timer(max(.1, 180-(time.time()-job['created'])), self.notify_slow, args=(job,))
+        timer.daemon = True
+        self.notices[job_id] = timer
+        timer.start()
+
+    def flush_pending(self, scope, kind, target, message_id):
+        """A fresh inbound message restores the reply window for saved results."""
+        window = 270 if kind == 'groups' else 3500
+        with self.tasks.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            reset = db.execute('SELECT reset_at FROM qq_chat_resets WHERE scope=?', (scope,)).fetchone()
+            row = db.execute("SELECT * FROM qq_chat_jobs WHERE scope=? AND state='completed' AND delivered=0 AND created<? AND created>? ORDER BY created DESC LIMIT 1",
+                             (scope, time.time()-window, reset['reset_at'] if reset else 0)).fetchone()
+            if row:
+                db.execute('UPDATE qq_chat_jobs SET delivered=-1 WHERE id=?', (row['id'],))
+        if not row:
+            return False
+        try:
+            self.client.reply(kind, target, message_id,
+                              '此前问题「'+row['question'][:120]+'」的结果：\n'+plain_answer(json.loads(row['answer'])), sequence=5)
+        except Exception:
+            log.warning('QQ saved result delivery failed for job %s', row['id'])
+            with self.tasks.db() as db:
+                db.execute('UPDATE qq_chat_jobs SET delivered=0 WHERE id=?', (row['id'],))
+            return False
+        with self.tasks.db() as db:
+            db.execute("UPDATE qq_chat_jobs SET delivered=1,error='' WHERE id=?", (row['id'],))
+        return True
+
+    def notify_slow(self, job):
+        window = 270 if job['kind'] == 'groups' else 3500
+        if time.time()-job['created'] >= window:
+            return
+        with self.tasks.db() as db:
+            row = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job['id'],)).fetchone()
+        if not row or row['state'] not in ('queued', 'running'):
+            return
+        try:
+            self.client.reply(job['kind'], job['target'], job['message_id'],
+                              '这条分析用时较长，还在处理中。若结果未在群聊回复时限内送达，@我发送“最新”可读取已保存的结果。', sequence=1)
+        except Exception:
+            log.warning('QQ slow-analysis notice failed for job %s', job['id'])
 
     def execute(self, job_id):
         with self.tasks.db() as db:
@@ -104,6 +159,10 @@ class QQChat:
             reset = db.execute('SELECT reset_at FROM qq_chat_resets WHERE scope=?', (job['scope'],)).fetchone()
             reset_at = reset['reset_at'] if reset else 0
             previous = list(db.execute("SELECT question,answer FROM qq_chat_jobs WHERE scope=? AND state='completed' AND created>? ORDER BY created DESC LIMIT 6", (job['scope'], reset_at)))
+        # Keep all outbound HTTP off the QQ callback thread.
+        window = 270 if job['kind'] == 'groups' else 3500
+        if time.time()-job['created'] < window:
+            self.flush_pending(job['scope'], job['kind'], job['target'], job['message_id'])
         history = []
         for item in reversed(previous):
             history.extend([{'role': 'user', 'text': item['question']},
@@ -120,10 +179,17 @@ class QQChat:
             content = '本轮分析未完成，请稍后重新提问。'
             with self.tasks.db() as db:
                 db.execute("UPDATE qq_chat_jobs SET state='failed',error=? WHERE id=?", (content, job_id))
+        finally:
+            notice = self.notices.pop(job_id, None)
+            if notice is not None:
+                notice.cancel()
         # Stay inside the group reply window. The result remains retrievable even
         # if synthesis took too long or QQ rejected this particular delivery.
         window = 270 if job['kind'] == 'groups' else 3500
         if time.time() - job['created'] > window:
+            with self.tasks.db() as db:
+                db.execute('UPDATE qq_chat_jobs SET error=? WHERE id=?',
+                           ('回复时限已过，结果已保存；发送“最新”或再次提问时补发。', job_id))
             return
         from app.sticker_marketplace import installed_stickers
         profile = self.characters.for_scope(job['scope'])
@@ -134,7 +200,7 @@ class QQChat:
         job['voice_instruction'] = '角色性别：'+{'female':'成年女性','male':'成年男性','neutral':'中性自然声线'}[profile['gender']]+'，年龄：'+str(profile['age'])+'，表达风格：'+profile['personality']+'。标准普通话，自然口语，清晰，语速适中。'
         with self.tasks.db() as db:
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
-        plan = self.expression.route(job['question'], content, history, catalog, sticker_probability=profile['stickerProbability']) if completed and completed['state'] == 'completed' else {'mode':'text','confidence':None,'sticker':None,'source':'analysis-failed'}
+        plan = self.expression.route(job['question'], content, history, catalog, sticker_probability=profile['stickerProbability'], select_sticker=False) if completed and completed['state'] == 'completed' else {'mode':'text','confidence':None,'sticker':None,'source':'analysis-failed'}
         plan['contextMode'] = plan['mode']
         if profile['responseMode'] in ('voice','text'):
             plan['mode'] = profile['responseMode']
@@ -146,7 +212,7 @@ class QQChat:
             db.execute('INSERT OR REPLACE INTO qq_expression_decisions VALUES(?,?)', (job_id, json.dumps(plan, ensure_ascii=False)))
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
         delivered = False
-        if completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']):
+        if completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
             try:
                 delivered = bool(self.voice.send(job, content))
                 if delivered:
@@ -169,6 +235,9 @@ class QQChat:
         if delivered:
             with self.tasks.db() as db:
                 db.execute('UPDATE qq_chat_jobs SET delivered=1 WHERE id=?', (job_id,))
+        # Primary delivery never waits for catalog selection or image uploads.
+        if completed and completed['state'] == 'completed' and delivered and plan.get('stickerPending'):
+            plan.update(self.expression.select_sticker(job['question'], content, history, catalog))
         if completed and completed['state'] == 'completed' and delivered and plan.get('sticker'):
             asset = next((x for x in catalog if x['id'] == plan['sticker']), None)
             if asset and time.time() - job['created'] <= window:

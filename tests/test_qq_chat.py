@@ -234,3 +234,91 @@ def test_recovery_never_sends_another_robots_queued_jobs(tasks):
         states={r['id']:r['state'] for r in db.execute('SELECT id,state FROM qq_chat_jobs')}
     assert states['robot-arunning']=='interrupted' and states['robot-aqueued']=='completed'
     assert states['robot-brunning']=='running' and states['robot-bqueued']=='queued'
+
+
+def test_primary_reply_is_delivered_before_sticker_selection(tasks,monkeypatch):
+    events=[]
+    client=Client()
+    client.image_reply=lambda *a,**k:events.append('image')
+    chat=QQChat(tasks,client,lambda *a:{'interpretation':'先回答问题'})
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:{'mode':'text','sticker':None,'stickerPending':True})
+    def select(*args):
+        assert client.sent[-1][3]=='先回答问题'
+        events.append('selection')
+        return {'sticker':'heart','stickerPending':False}
+    monkeypatch.setattr(chat.expression,'select_sticker',select)
+    chat.enqueue('event','scope','users','target','mid','发个表情')
+    chat.pool.shutdown(wait=True)
+    assert events==['selection','image']
+
+
+def insert_saved(tasks,job_id='saved',scope='scope',age=301):
+    with tasks.db() as db:
+        db.execute('INSERT INTO qq_chat_jobs(id,scope,kind,target,message_id,question,state,created,answer) VALUES(?,?,?,?,?,?,?,?,?)',
+                   (job_id,scope,'groups','group','expired-mid','今天大A表现如何','completed',time.time()-age,json.dumps({'interpretation':'已保存的真实结论'})))
+
+
+def test_new_group_receipt_recovers_an_expired_result_once_and_preserves_scope(tasks):
+    client=Client();chat=QQChat(tasks,client,lambda *a:{})
+    insert_saved(tasks)
+    assert not chat.flush_pending('other','groups','group','fresh-mid')
+    assert chat.flush_pending('scope','groups','group','fresh-mid')
+    assert client.sent[-1][2]=='fresh-mid' and client.sent[-1][4]==5
+    assert '今天大A表现如何' in client.sent[-1][3] and '已保存的真实结论' in client.sent[-1][3]
+    assert not chat.flush_pending('scope','groups','group','another-mid')
+    chat.pool.shutdown(wait=True)
+
+
+def test_failed_saved_delivery_is_retryable_and_reset_does_not_replay_old_answers(tasks):
+    client=Client();chat=QQChat(tasks,client,lambda *a:{})
+    insert_saved(tasks)
+    original=client.reply
+    client.reply=lambda *a,**k:(_ for _ in ()).throw(RuntimeError('offline'))
+    assert not chat.flush_pending('scope','groups','group','fresh-mid')
+    with tasks.db() as db:assert db.execute('SELECT delivered FROM qq_chat_jobs').fetchone()[0]==0
+    client.reply=original
+    chat.reset('scope')
+    assert not chat.flush_pending('scope','groups','group','fresh-mid')
+    chat.pool.shutdown(wait=True)
+
+
+def test_slow_analysis_notice_is_only_for_a_running_unexpired_job(tasks):
+    client=Client();chat=QQChat(tasks,client,lambda *a:{})
+    insert_saved(tasks,age=180)
+    with tasks.db() as db:
+        db.execute("UPDATE qq_chat_jobs SET state='running'")
+        job=dict(db.execute('SELECT * FROM qq_chat_jobs').fetchone())
+    chat.notify_slow(job)
+    assert len(client.sent)==1 and '还在处理中' in client.sent[0][3]
+    with tasks.db() as db:db.execute("UPDATE qq_chat_jobs SET state='completed'")
+    chat.notify_slow(job);assert len(client.sent)==1
+    with tasks.db() as db:db.execute("UPDATE qq_chat_jobs SET state='running'")
+    job['created']=time.time()-301
+    chat.notify_slow(job);assert len(client.sent)==1
+    chat.pool.shutdown(wait=True)
+
+
+def test_short_reply_window_uses_text_without_waiting_for_voice_synthesis(tasks,monkeypatch):
+    client=Client();chat=QQChat(tasks,client,lambda *a:{'interpretation':'已有结论'})
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:{'mode':'voice','sticker':None})
+    monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
+    monkeypatch.setattr(chat.voice,'send',lambda *a:pytest.fail('not enough reply time for synthesis'))
+    with tasks.db() as db:
+        db.execute('INSERT INTO qq_chat_jobs(id,scope,kind,target,message_id,question,state,created) VALUES(?,?,?,?,?,?,?,?)',
+                   ('late','scope','groups','group','mid','问题','queued',time.time()-200))
+    chat.execute('late');chat.pool.shutdown(wait=True)
+    assert client.sent[-1][3]=='已有结论'
+
+
+def test_new_question_sends_saved_answer_before_its_new_analysis(tasks,monkeypatch):
+    client=Client()
+    def runner(*args):
+        assert '已保存的真实结论' in client.sent[-1][3]
+        return {'interpretation':'这次的新回答'}
+    chat=QQChat(tasks,client,runner)
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:{'mode':'text','sticker':None})
+    insert_saved(tasks)
+    chat.enqueue('fresh-event','scope','groups','group','fresh-mid','新问题')
+    chat.pool.shutdown(wait=True)
+    assert [x[4] for x in client.sent]==[5,2]
+    assert client.sent[-1][3]=='这次的新回答'
