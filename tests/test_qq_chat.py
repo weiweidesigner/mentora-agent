@@ -184,6 +184,8 @@ def test_runner_uses_existing_agent_with_text_only_delivery_without_share_genera
     namespace = {'os': __import__('os'), 'ChatRequest': lambda **kwargs: SimpleNamespace(**kwargs),
                  'DAY_TASKS': SimpleNamespace(execution_preferences=lambda: {'reasoningEffort': 'high'}),
                  'durable_chat_events': events, 'normalize_chat_result': lambda data: dict(data),
+                 'CHARACTERS': SimpleNamespace(for_scope=lambda scope: __import__('app.character_settings',fromlist=['CharacterProfile']).CharacterProfile().model_dump()),
+                 'character_context': __import__('app.character_settings',fromlist=['character_context']).character_context,
                  'save_share_session': lambda payload: shared.append(payload.session),
                  'ShareSessionRequest': lambda **kwargs: SimpleNamespace(**kwargs)}
     exec(compile(ast.Module(body=[fn], type_ignores=[]), '<qq-runner>', 'exec'), namespace)
@@ -202,7 +204,7 @@ def test_voice_failure_keeps_text_answer_delivered(tasks,monkeypatch):
     client=Client()
     chat=QQChat(tasks,client,lambda *a:{'interpretation':'文字回答'})
     monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
-    monkeypatch.setattr(chat.expression,'route',lambda *a:{'mode':'voice','confidence':.95,'sticker':None})
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:{'mode':'voice','confidence':.95,'sticker':None})
     called=threading.Event()
     def fail(*a):
         called.set()

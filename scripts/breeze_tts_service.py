@@ -35,6 +35,7 @@ app = FastAPI(lifespan=lifespan)
 
 class Speech(BaseModel):
     text: str = Field(min_length=1, max_length=300)
+    instruction: str | None = Field(default=None, max_length=300)
 
 
 @app.get('/health')
@@ -51,7 +52,7 @@ def speech(payload: Speech, request: Request):
     if not lock.acquire(blocking=False):
         raise HTTPException(409, 'Speech worker busy')
     try:
-        return model_pool.submit(synthesize, payload.text).result()
+        return model_pool.submit(synthesize, payload.text, payload.instruction).result()
     except Exception as exc:
         print('Breeze synthesis failed:', type(exc).__name__, flush=True)
         raise HTTPException(503, 'Speech synthesis failed') from None
@@ -59,11 +60,11 @@ def speech(payload: Speech, request: Request):
         lock.release()
 
 
-def synthesize(text):
+def synthesize(text, instruction=None):
     import numpy as np
     import pilk
     chunks = []
-    for chunk in model.generate(text=text, instruct=VOICE, cfg_scale=4, max_tokens=1800):
+    for chunk in model.generate(text=text, instruct=instruction or VOICE, cfg_scale=4, max_tokens=1800):
         audio = np.asarray(chunk.audio).reshape(-1)
         chunks.append(audio)
     if not chunks:

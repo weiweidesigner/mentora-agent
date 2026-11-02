@@ -8,10 +8,12 @@ CATALOG = Path(__file__).parent / 'static/assets/qq-fish/catalog.json'
 
 
 class QQExpressionRouter:
-    def __init__(self, client_factory=None):
+    def __init__(self, client_factory=None, draw=None):
         self.client_factory = client_factory
+        import secrets
+        self.draw = draw or (lambda: secrets.randbelow(100))
 
-    def route(self, question, answer, history, catalog):
+    def route(self, question, answer, history, catalog, *, sticker_probability=50):
         fallback = {'mode': 'text', 'confidence': None, 'sticker': None, 'source': 'fallback'}
         endpoint = os.getenv('QQ_EXPRESSION_URL') or os.getenv('LAYA_DECISION_URL', '')
         if not endpoint or len(question) > 450:
@@ -43,7 +45,9 @@ class QQExpressionRouter:
                         'source': 'local-jev-laya', 'sticker': None,
                         'reactionChoice': reaction.choice, 'reactionConfidence': reaction_score,
                         'reactionProbabilities': dict(reaction.probabilities)}
-                if reaction.choice == 'add' and reaction_score >= .75 and catalog:
+                probability = max(0, min(100, int(sticker_probability)))
+                plan['stickerProbability'] = probability
+                if reaction.choice == 'add' and probability > 0 and reaction_score >= .9 - .003*probability and catalog and self.draw() < probability:
                     fits = {}
                     for asset in catalog:
                         fit = client.system_one(state=state, questions={'fit': Choice(

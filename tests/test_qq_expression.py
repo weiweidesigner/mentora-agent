@@ -23,7 +23,7 @@ def router(monkeypatch):
             answers={'fit':SimpleNamespace(probabilities={'match':.95 if kwargs['questions'].get('fit') and '双手比心' in kwargs['questions']['fit'].criteria['match'] else .2}), 'delivery':answer(m,c,'text' if m=='voice' else 'voice'),'reaction':answer(r,rc,'none' if r=='add' else 'add'),'sticker':answer(s,sc,'snuggle')}
             return SimpleNamespace(model='local-laya',answers={key:answers[key] for key in kwargs['questions']})
     monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=Client,Choice=lambda **kwargs:SimpleNamespace(**kwargs)))
-    return QQExpressionRouter(),Client
+    return QQExpressionRouter(draw=lambda:0),Client
 
 
 def test_semantic_voice_and_catalog_reaction_with_real_scores(router):
@@ -68,7 +68,7 @@ def test_contextual_voice_is_exclusive_with_text_fallback_and_no_ack(tmp_path,mo
     client=SimpleNamespace(reply=lambda *a,**k:texts.append(a[-1]),image_reply=lambda *a,**k:images.append(a[-1]))
     chat=QQChat(tasks,client,lambda *a:{'interpretation':'抱抱你呀'})
     plan={'mode':'voice','confidence':.98,'sticker':'heart','stickerConfidence':.94}
-    monkeypatch.setattr(chat.expression,'route',lambda *a:plan)
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:plan)
     monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
     def send(*a):
         voices.append(True)
@@ -90,9 +90,17 @@ def test_formal_reply_does_not_synthesize_or_send_reaction(tmp_path,monkeypatch)
     tasks=DayTasks(tmp_path,lambda *a:{})
     sent=[]
     chat=QQChat(tasks,SimpleNamespace(reply=lambda *a,**k:sent.append(a[-1])),lambda *a:{'interpretation':'正式答复'})
-    monkeypatch.setattr(chat.expression,'route',lambda *a:{'mode':'text','confidence':.99,'sticker':None})
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**k:{'mode':'text','confidence':.99,'sticker':None})
     monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
     monkeypatch.setattr(chat.voice,'send',lambda *a:pytest.fail('formal answer must not synthesize'))
     chat.enqueue('event','scope','users','target','mid','请正式答复')
     chat.pool.shutdown(wait=True)
     assert sent==['正式答复']
+
+
+def test_sticker_probability_zero_disables_and_higher_values_allow_more(router):
+    active,_=router
+    assert active.route('贴贴','贴贴',[],sticker_catalog(),sticker_probability=0)['sticker'] is None
+    active.draw=lambda:80
+    assert active.route('贴贴','贴贴',[],sticker_catalog(),sticker_probability=50)['sticker'] is None
+    assert active.route('贴贴','贴贴',[],sticker_catalog(),sticker_probability=100)['sticker']=='heart'

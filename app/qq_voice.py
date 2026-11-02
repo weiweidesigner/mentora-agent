@@ -46,7 +46,10 @@ class QQVoice:
 
     def send(self, job, text):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')
-        response = requests.post(endpoint + '/speech', json={'text': speech_text(text)},
+        payload = {'text': speech_text(text)}
+        if job.get('voice_instruction'):
+            payload['instruction'] = job['voice_instruction'][:300]
+        response = requests.post(endpoint + '/speech', json=payload,
                                  headers={'Authorization': 'Bearer ' + os.environ['QQ_BREEZE_TOKEN']},
                                  timeout=(5, 120), allow_redirects=False)
         response.raise_for_status()

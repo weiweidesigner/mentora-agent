@@ -24,6 +24,8 @@ class QQChat:
         self.tasks, self.client, self.runner = tasks, client, runner
         from app.qq_voice import QQVoice
         self.voice = QQVoice(tasks, client)
+        from app.character_settings import CharacterStore
+        self.characters = CharacterStore(tasks)
         from app.qq_expression import QQExpressionRouter
         self.expression = QQExpressionRouter()
         self.pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix='mentora-qq')
@@ -110,10 +112,19 @@ class QQChat:
         if time.time() - job['created'] > window:
             return
         from app.qq_expression import sticker_catalog
-        catalog = sticker_catalog()
+        profile = self.characters.for_scope(job['scope'])
+        catalog = self.characters.stickers(self.characters.owner_for_scope(job['scope'])) + sticker_catalog()
+        job['voice_instruction'] = '角色性别：'+{'female':'成年女性','male':'成年男性','neutral':'中性自然声线'}[profile['gender']]+'，年龄：'+str(profile['age'])+'，表达风格：'+profile['personality']+'。标准普通话，自然口语，清晰，语速适中。'
         with self.tasks.db() as db:
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
-        plan = self.expression.route(job['question'], content, history, catalog) if completed and completed['state'] == 'completed' else {'mode':'text','confidence':None,'sticker':None,'source':'analysis-failed'}
+        plan = self.expression.route(job['question'], content, history, catalog, sticker_probability=profile['stickerProbability']) if completed and completed['state'] == 'completed' else {'mode':'text','confidence':None,'sticker':None,'source':'analysis-failed'}
+        plan['contextMode'] = plan['mode']
+        if profile['responseMode'] in ('voice','text'):
+            plan['mode'] = profile['responseMode']
+        elif profile['responseMode'] == 'random':
+            import secrets
+            plan['mode'] = 'voice' if secrets.randbelow(2) else 'text'
+        plan['preferenceMode'] = profile['responseMode']
         plan['deliveredMode'] = None
         plan['stickerSent'] = False
         with self.tasks.db() as db:
@@ -126,6 +137,12 @@ class QQChat:
                 delivered = bool(self.voice.send(job, content))
                 if delivered:
                     plan['deliveredMode'] = 'voice'
+                    if len(content) > 140:
+                        try:
+                            self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=2)
+                            plan['deliveredMode'] = 'voice+text'
+                        except Exception:
+                            log.warning('QQ long-answer text supplement failed for job %s', job_id)
             except Exception:
                 log.warning('QQ contextual voice failed for job %s; falling back to text', job_id)
         if not delivered:
@@ -142,7 +159,8 @@ class QQChat:
             asset = next((x for x in catalog if x['id'] == plan['sticker']), None)
             if asset and time.time() - job['created'] <= window:
                 import os
-                url = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/') + '/static/assets/qq-fish/' + asset['file']
+                path = asset.get('url') or '/static/assets/qq-fish/' + asset['file']
+                url = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/') + path
                 try:
                     self.client.image_reply(job['kind'], job['target'], job['message_id'], url, sequence=4)
                     plan['stickerSent'] = True

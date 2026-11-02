@@ -975,6 +975,9 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
 
 DAY_TASKS = DayTasks(Path(os.getenv('VEYA_DAY_DATA_DIR', str(ROOT / 'outputs' / 'day-tasks'))), run_daily_research)
 app.include_router(create_day_router(DAY_TASKS))
+from app.character_settings import CharacterStore, character_context, create_router as create_character_router
+CHARACTERS = CharacterStore(DAY_TASKS)
+app.include_router(create_character_router(CHARACTERS))
 
 
 def run_qq_chat(scope, question, history):
@@ -996,6 +999,8 @@ def run_qq_chat(scope, question, history):
         '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息；'
         '不要假设能访问网页用户的私人账户。\n\n用户消息：'
     )
+    profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
+    context = context.removesuffix('用户消息：') + character_context(profile) + '用户消息：'
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')

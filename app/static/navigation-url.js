@@ -2,7 +2,7 @@
   if (window.MentoraNavigation) return;
   // Each workspace owns its route parameters. Preserve unrelated host options.
   const owned = ['tab', 'board', 'portfolioView', 'task', 'run', 'dayResult', 'dayShare', 'case'];
-  const fields = {home: [], widgets: ['board'], portfolio: ['portfolioView'], tasks: ['task', 'run', 'dayShare'], costs: []};
+  const fields = {home: [], widgets: ['board'], portfolio: ['portfolioView'], tasks: ['task', 'run', 'dayShare'], costs: [], character: []};
   function url(target, state = {}, base = location.href) {
     if (!Object.hasOwn(fields, target)) throw new Error('Unknown navigation target');
     const result = new URL(base);

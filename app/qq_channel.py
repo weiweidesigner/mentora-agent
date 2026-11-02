@@ -121,8 +121,23 @@ class QQChannel:
 
     def content(self, scope, text):
         text = re.sub(r'<@!?[^>]+>', '', text).strip()
+        if self.chat and text.startswith('绑定角色 '):
+            result = self.chat.characters.bind(scope, text[5:].strip())
+            if result.startswith('角色已绑定'):
+                self.chat.reset(scope)
+            return result
+        if self.chat and text == '解绑角色':
+            self.chat.reset(scope)
+            return self.chat.characters.unbind(scope)
         if self.chat and text in ('开启语音', '关闭语音'):
-            return self.chat.voice.setting(scope, text == '开启语音')
+            result = self.chat.voice.setting(scope, text == '开启语音')
+            owner = self.chat.characters.owner_for_scope(scope)
+            if owner:
+                from app.character_settings import CharacterProfile
+                profile = self.chat.characters.get(owner)
+                profile['responseMode'] = 'auto' if text == '开启语音' else 'text'
+                self.chat.characters.save(owner, CharacterProfile(**profile))
+            return result
         if self.chat and text == '新对话':
             return self.chat.reset(scope)
         if self.chat and text in ('最新', '结果'):
@@ -185,7 +200,7 @@ class QQChannel:
             text = re.sub(r'<@!?[^>]+>', '', data['content']).strip()
             if not text or len(text) > 6000:
                 reply = '请发送 1 至 6000 字的问题。'
-            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话', '开启语音', '关闭语音') and not re.match(r'^查看\s+https?://', text):
+            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话', '开启语音', '关闭语音', '解绑角色') and not text.startswith('绑定角色 ') and not re.match(r'^查看\s+https?://', text):
                 reply = self.chat.enqueue(event_id, scope, kind, target, message_id, text)
             else:
                 reply = self.content(scope, text)

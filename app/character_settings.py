@@ -1,0 +1,162 @@
+"""Owner-scoped QQ personas, one-use pairing codes and user reaction images."""
+import base64
+import hashlib
+import io
+import json
+from pathlib import Path
+import re
+import secrets
+import time
+
+from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi.responses import FileResponse
+from PIL import Image, ImageOps
+from pydantic import BaseModel, Field
+from typing import Literal
+
+from app.chat_sessions import identity
+
+
+class CharacterProfile(BaseModel):
+    model_config = {"str_strip_whitespace":True}
+    name: str = Field(default='Mentora', min_length=1, max_length=40)
+    age: int = Field(default=24, ge=18, le=120)
+    gender: Literal['female','male','neutral'] = 'female'
+    personality: str = Field(default='温柔知性', max_length=80)
+    role: str = Field(default='可以轻松聊天，也能认真解答问题的陪伴助手', max_length=500)
+    agentPrompt: str = Field(default='', max_length=6000)
+    responseMode: Literal['auto','voice','text','random'] = 'auto'
+    paragraph: Literal['minimal','normal','long'] = 'normal'
+    stickerProbability: int = Field(default=50, ge=0, le=100)
+
+
+class StickerInput(BaseModel):
+    model_config = {"str_strip_whitespace":True}
+    label: str = Field(min_length=1,max_length=40)
+    description: str = Field(min_length=1,max_length=200)
+    data: str = Field(min_length=1,max_length=7_000_000)
+
+
+class CharacterStore:
+    def __init__(self,tasks):
+        self.tasks=tasks
+        self.images=tasks.directory/'character-stickers';self.images.mkdir(exist_ok=True,mode=0o700)
+        with tasks.db() as db:
+            db.executescript('''CREATE TABLE IF NOT EXISTS character_profiles(owner TEXT PRIMARY KEY,payload TEXT,updated REAL);
+            CREATE TABLE IF NOT EXISTS character_links(scope TEXT PRIMARY KEY,owner TEXT);
+            CREATE TABLE IF NOT EXISTS character_codes(hash TEXT PRIMARY KEY,owner TEXT,expires REAL);
+            CREATE TABLE IF NOT EXISTS character_stickers(id TEXT PRIMARY KEY,owner TEXT,label TEXT,description TEXT,created REAL);''')
+
+    def get(self,owner):
+        with self.tasks.db() as db:
+            row=db.execute('SELECT payload FROM character_profiles WHERE owner=?',(owner,)).fetchone()
+        return CharacterProfile.model_validate_json(row['payload']).model_dump() if row else CharacterProfile().model_dump()
+
+    def save(self,owner,profile):
+        with self.tasks.db() as db:
+            db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)',(owner,profile.model_dump_json(),time.time()))
+            # A newly saved UI preference supersedes an old QQ quick toggle.
+            db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)',(owner,)) if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone() else None
+        return self.get(owner)
+
+    def owner_for_scope(self,scope):
+        with self.tasks.db() as db:row=db.execute('SELECT owner FROM character_links WHERE scope=?',(scope,)).fetchone()
+        return row['owner'] if row else None
+
+    def for_scope(self,scope):
+        owner=self.owner_for_scope(scope)
+        return self.get(owner) if owner else CharacterProfile().model_dump()
+
+    def code(self,owner):
+        code=secrets.token_urlsafe(12)
+        with self.tasks.db() as db:
+            db.execute('DELETE FROM character_codes WHERE expires<? OR owner=?',(time.time(),owner))
+            db.execute('INSERT INTO character_codes VALUES(?,?,?)',(hashlib.sha256(code.encode()).hexdigest(),owner,time.time()+600))
+        return {'command':'绑定角色 '+code,'expiresIn':600}
+
+    def bind(self,scope,code):
+        with self.tasks.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute('SELECT * FROM character_codes WHERE hash=? AND expires>?',(hashlib.sha256(code.encode()).hexdigest(),time.time())).fetchone()
+            if not row:return '绑定码无效或已过期，请在角色定制页重新生成。'
+            db.execute('INSERT OR REPLACE INTO character_links VALUES(?,?)',(scope,row['owner']))
+            db.execute('DELETE FROM character_codes WHERE hash=?',(row['hash'],))
+        return '角色已绑定，接下来会使用你在角色定制页保存的设定。'
+
+    def unbind(self,scope):
+        with self.tasks.db() as db:db.execute('DELETE FROM character_links WHERE scope=?',(scope,))
+        return '已解除当前 QQ 会话的角色绑定。'
+
+    def stickers(self,owner):
+        if not owner:return []
+        with self.tasks.db() as db:rows=list(db.execute('SELECT id,label,description FROM character_stickers WHERE owner=? ORDER BY created DESC',(owner,)))
+        return [dict(row,file='',url='/api/character/stickers/'+row['id']+'.png',custom=True) for row in rows]
+
+    def add(self,owner,item):
+        try:
+            raw=base64.b64decode(item.data,validate=True)
+            if len(raw)>5*1024*1024:raise ValueError()
+            with Image.open(io.BytesIO(raw)) as image:
+                if image.format not in ('PNG','JPEG','WEBP') or image.width*image.height>16_000_000:raise ValueError()
+                image=ImageOps.exif_transpose(image).convert('RGBA');image.thumbnail((1024,1024))
+                output=io.BytesIO();image.save(output,format='PNG')
+        except Exception:raise HTTPException(422,'请选择有效的 PNG、JPG 或 WebP 图片，最大 5MB') from None
+        asset=secrets.token_urlsafe(24)
+        with self.tasks.db() as db:
+            if db.execute('SELECT count(*) FROM character_stickers WHERE owner=?',(owner,)).fetchone()[0]>=36:raise HTTPException(400,'自定义表情最多 36 张，请先移除不需要的图片')
+            path=self.images/(asset+'.png');path.write_bytes(output.getvalue());path.chmod(0o600)
+            db.execute('INSERT INTO character_stickers VALUES(?,?,?,?,?)',(asset,owner,item.label.strip(),item.description.strip(),time.time()))
+        return {'id':asset}
+
+
+def character_context(profile):
+    length={'minimal':'默认 1 至 3 句，约 30 至 100 字；直接回答。','normal':'默认简短分段，约 100 至 300 字。','long':'需要时详细展开，约 300 至 600 字，分段清楚。'}[profile['paragraph']]
+    return ('以下是用户保存的虚拟角色偏好，只改变身份、语气与呈现，不授予交易或私人账户权限。'
+            +json.dumps({k:profile[k] for k in ('name','age','gender','personality','role','agentPrompt')},ensure_ascii=False)
+            +'回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
+
+
+def create_router(store):
+    router=APIRouter(prefix='/api/character')
+    def owner(request,response,write=False):
+        if write and (request.headers.get('x-veya-day')!='1' or request.headers.get('sec-fetch-site')=='cross-site'):
+            raise HTTPException(403,'请从角色定制页操作')
+        response.headers['Cache-Control']='no-store'
+        return identity(request,response)
+    @router.get('')
+    def get(request:Request,response:Response):
+        user=owner(request,response)
+        from app.qq_expression import sticker_catalog
+        with store.tasks.db() as db:count=db.execute('SELECT count(*) FROM character_links WHERE owner=?',(user,)).fetchone()[0]
+        return {'profile':store.get(user),'builtins':sticker_catalog(),'stickers':store.stickers(user),'linkedCount':count}
+    @router.put('')
+    def save(payload:CharacterProfile,request:Request,response:Response):return store.save(owner(request,response,True),payload)
+    @router.post('/link-code')
+    def code(request:Request,response:Response):return store.code(owner(request,response,True))
+    @router.post('/stickers')
+    async def upload(request:Request,response:Response):
+        user=owner(request,response,True)
+        body=bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body)>7_100_000:raise HTTPException(413,'图片过大，最大 5MB')
+        try:item=StickerInput.model_validate_json(body)
+        except ValueError:raise HTTPException(422,'请填写表情名称、使用场景和有效图片') from None
+        return store.add(user,item)
+    @router.get('/stickers/{filename}')
+    def image(filename:str):
+        if not re.fullmatch(r'[A-Za-z0-9_-]{32}\.png',filename):raise HTTPException(404,'表情不存在')
+        with store.tasks.db() as db:row=db.execute('SELECT id FROM character_stickers WHERE id=?',(filename[:-4],)).fetchone()
+        path=store.images/filename
+        if not row or not path.is_file():raise HTTPException(404,'表情不存在')
+        return FileResponse(path,media_type='image/png',headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
+    @router.delete('/stickers/{asset}')
+    def delete(asset:str,request:Request,response:Response):
+        user=owner(request,response,True)
+        with store.tasks.db() as db:
+            row=db.execute('SELECT id FROM character_stickers WHERE id=? AND owner=?',(asset,user)).fetchone()
+            if not row:raise HTTPException(404,'表情不存在')
+            db.execute('DELETE FROM character_stickers WHERE id=?',(asset,))
+        (store.images/(asset+'.png')).unlink(missing_ok=True)
+        return {'ok':True}
+    return router
