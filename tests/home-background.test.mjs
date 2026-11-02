@@ -10,7 +10,7 @@ function setup({reduced=false,opening=false,failIntro=false,autoplayBlocked=fals
   let allowAudio=!autoplayBlocked, autoplayReject, introAttempts=0;
   const listeners=new Map();w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(name,fn){listeners.set(q,fn)}});
   const timers=new Map();let next=1;w.setTimeout=(fn,ms)=>{const id=next++;timers.set(id,{fn,ms});return id};w.clearTimeout=id=>timers.delete(id);
-  for(const media of d.querySelectorAll('video')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(media.id==='mentoraOpeningVideo'&&++introAttempts===1&&deferAutoplay)return new Promise((resolve,reject)=>{autoplayReject=reject});if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;return Promise.resolve()};}
+  for(const media of d.querySelectorAll('video,audio')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(media.id==='mentoraOpeningVideo'&&++introAttempts===1&&deferAutoplay)return new Promise((resolve,reject)=>{autoplayReject=reject});if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;return Promise.resolve()};}
   if(!opening)d.querySelector('#mentoraOpening').remove();
   w.sessionStorage.setItem('mentora:opening:20261102-audio','played');
   d.documentElement.dataset.theme='dark';w.eval(script);
@@ -49,7 +49,7 @@ test('refreshing another workspace also plays the opening and retains its destin
 
 
 test('the opening requests audio while the resident background remains muted',async()=>{
-  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-welcome\.mp4$/);assert.equal(h.video.muted,true);
+  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-audio\.mp4$/);assert.equal(h.video.muted,true);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.paused,true);assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
@@ -102,4 +102,20 @@ test('the welcome reveal waits for actual video playback and is cancelled when t
   reveal.fn();assert.equal(h.opening.classList.contains('is-revealed'),false);
   assert.ok(html.indexOf('/static/home-background.js')<html.indexOf('/static/app.js'));
   h.dom.window.close();
+});
+
+test('formal welcome plays only after the opening fades and the home is visible',async()=>{
+ const h=setup({opening:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');assert.equal(voice.paused,true);assert.equal(voice.getAttribute('src'),null);
+ h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(voice.paused,true);
+ [...h.timers.values()].find(t=>t.ms===650).fn();await tick();assert.equal(h.opening.hidden,true);assert.equal(voice.paused,false);assert.match(voice.getAttribute('src'),/welcome-back-formal\.mp3$/);
+ h.w.dispatchEvent(new h.w.Event('pagehide'));assert.equal(voice.paused,true);h.dom.window.close();
+});
+test('welcome never plays on another workspace or after interrupted opening',async()=>{
+ for(const target of ['workspace','hidden','error']){
+  const h=setup({opening:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');
+  if(target==='workspace'){h.shell.classList.add('character-view');h.intro.dispatchEvent(new h.w.Event('ended'));}
+  if(target==='hidden'){Object.defineProperty(h.d,'hidden',{configurable:true,value:true});h.d.dispatchEvent(new h.w.Event('visibilitychange'));}
+  if(target==='error')h.intro.dispatchEvent(new h.w.Event('error'));
+  for(const t of h.timers.values())if(t.ms===650)t.fn();await tick();assert.equal(voice.paused,true);assert.equal(voice.getAttribute('src'),null);h.dom.window.close();
+ }
 });
