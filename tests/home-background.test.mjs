@@ -43,8 +43,8 @@ test('background pauses while the page is hidden and resumes when visible',async
 test('opening is decorative only and preserves the original home and chat controls',()=>{
   const h=setup({opening:true});assert.equal(h.opening.querySelectorAll('button,img,input').length,0);assert.equal(h.opening.querySelector('h1').textContent,'Mentora');for(const id of ['chatForm','messages','homeCases','inspirationTabs','appSidebar'])assert.ok(h.d.getElementById(id));assert.doesNotMatch(html,/重播开场|查看背景|暂停动态|跳过开场|从哪里开始？/);h.dom.window.close();
 });
-test('opening does not cover a direct link to another workspace',()=>{
-  const h=setup({opening:true,tab:'?tab=portfolio'});assert.equal(h.opening.hidden,true);assert.notEqual(h.shell.inert,true);h.dom.window.close();
+test('refreshing another workspace also plays the opening and retains its destination',async()=>{
+  const h=setup({opening:true,tab:'?tab=portfolio'});h.shell.classList.add('portfolio-view');await tick();assert.equal(h.opening.hidden,false);assert.equal(h.shell.inert,true);assert.equal(h.w.location.search,'?tab=portfolio');h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.shell.dataset.mentoraMotion,'inactive');h.dom.window.close();
 });
 
 

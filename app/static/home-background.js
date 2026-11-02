@@ -86,9 +86,7 @@
     });
   }
   function startOpening() {
-    if (!opening || !intro || !chatVisible() || document.hidden || motion.matches || saveData()) return;
-    const route = new URL(location.href).searchParams.get('tab');
-    if (route && route !== 'home' && route !== 'chat') return;
+    if (!opening || !intro || document.hidden || motion.matches || saveData()) return;
     returnFocus = document.activeElement;
     openingActive = true;previousInert = shell.inert;shell.inert = true;
     opening.hidden = false;opening.classList.add('is-playing');
@@ -103,7 +101,6 @@
     enableOpeningAudio();
   }
   new MutationObserver(() => {
-    if (openingActive && !chatVisible()) finishOpening();
     sync();
   }).observe(shell, {attributes:true, attributeFilter:['class']});
   new MutationObserver(sync).observe(conversation, {attributes:true, attributeFilter:['hidden']});
