@@ -1,3 +1,4 @@
+@import url("./action-cards.css?v=20261102-action-cards");
 /* Self-hosted CJK fallback for Linux exports; native system fonts stay first. */
 @font-face{font-family:"Mentora CJK";src:url("/static/fonts/NotoSansSC-VF.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
 :root {
@@ -730,18 +731,8 @@ textarea {
 .generatedFileList{display:flex;flex-direction:column;gap:10px;margin:8px 0 8px;min-width:0}
 .finalAnswer.has-generated-files>.mixedReport>.reportFrameShell:last-child{margin-bottom:4px}
 .finalAnswer.has-generated-files>.generatedFileList{margin-top:4px}
-.generatedFileCard{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;width:min(100%,420px);max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);min-width:0}
-.generatedFileIcon{width:20px;height:20px;flex:none;pointer-events:none}
 .generatedFileOpen{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:inherit;text-align:left;border:0;padding:0;background:transparent;font:inherit;cursor:pointer}
 .generatedFileOpen::after{content:'';position:absolute;inset:0;border-radius:inherit}
-.generatedFileName{display:block;max-width:100%;font-size:14px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.generatedFileType{font-size:12px;line-height:1.4;color:var(--muted)}
-.generatedFileDownload{position:relative;z-index:1;width:36px;height:36px;flex:none;display:grid;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:transparent;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease,background .12s ease}
-.generatedFileCard:hover .generatedFileDownload,.generatedFileCard:focus-within .generatedFileDownload{opacity:1;visibility:visible;pointer-events:auto}
-.generatedFileDownload svg{width:21px;height:21px}
-.generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
-.generatedFileDownload:hover,.generatedFileDownload:focus-visible{background:var(--soft-2)}
-@media(max-width:640px){.generatedFileCard{width:100%;padding:12px;gap:10px}.generatedFileName{font-size:14px}}
 
 .shareActions {
   display: flex;

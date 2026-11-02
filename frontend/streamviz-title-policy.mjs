@@ -1,5 +1,6 @@
 // Self-contained: this function also runs inside StreamViz's sandboxed iframe.
 export function hasAuthoredReportTitle(fragment, title) {
+  if (fragment.querySelector('.mentoraNavigationCard')) return true;
   const normalize = value => String(value || '').normalize('NFKC').replace(/[\s\u200b]+/g, '').toLocaleLowerCase();
   const expected = normalize(title);
   for (const heading of fragment.querySelectorAll('h1,h2,h3,h4,h5,h6,[role="heading"]')) {

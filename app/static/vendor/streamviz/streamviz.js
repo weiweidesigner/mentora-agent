@@ -9171,7 +9171,7 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	return s;
 };
 //#endregion
-//#region node_modules/streamviz-react/src/core/completeStreamHtml.ts
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/core/completeStreamHtml.ts
 function S(e) {
 	let t = String(e || "");
 	if (!t.includes("<")) return t;
@@ -9230,10 +9230,10 @@ function S(e) {
 	return a ? t.slice(0, a) + o.map((e) => `</${e}>`).join("") : "";
 }
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
 var re = (e) => e?.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
 function C(e, t, n = []) {
 	if (t == null) throw Error("[lucide]: iconNode is required when icon name is used");
 	return {
@@ -9244,7 +9244,7 @@ function C(e, t, n = []) {
 	};
 }
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
 var ie = (e) => {
 	let t = "", n = !1;
 	for (let r of e) {
@@ -9270,7 +9270,7 @@ var ie = (e) => {
 	"stroke-linejoin": "round"
 };
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
 function se(e) {
 	return e != null;
 }
@@ -9307,7 +9307,7 @@ function ce(e, t = {}) {
 	];
 }
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
 function le(e, t = {}) {
 	return ce(e, {
 		...t,
@@ -9322,7 +9322,7 @@ function le(e, t = {}) {
 	});
 }
 //#endregion
-//#region node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
 var ue = (e) => {
 	for (let t in e) if (t.startsWith("aria-") || t === "role" || t === "title") return !0;
 	return !1;
@@ -9348,7 +9348,7 @@ var ue = (e) => {
 	}, [...x.map(([e, t]) => (0, T.createElement)(e, t)), ...Array.isArray(c) ? c : [c]]);
 });
 //#endregion
-//#region node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/createLucideIcon.mjs
 function me(e, t = [], n = []) {
 	let r = typeof e == "string" ? C(e, t, n) : e, i = (0, T.forwardRef)(({ className: e, ...t }, n) => (0, T.createElement)(pe, {
 		ref: n,
@@ -9359,7 +9359,7 @@ function me(e, t = [], n = []) {
 	return r.name && (i.displayName = ae(r.name)), i;
 }
 //#endregion
-//#region node_modules/lucide-react/dist/esm/icons/check.mjs
+//#region ../mentora-title-dedup-20261102/node_modules/lucide-react/dist/esm/icons/check.mjs
 var he = {
 	name: "check",
 	size: 24,
@@ -9571,7 +9571,7 @@ var Se = me(xe), Ce = (e) => String(e || "visualize-widget").replace(/[\\/:*?"<>
 	return n ? `${t}:${n};` : "";
 }).join("");
 //#endregion
-//#region node_modules/streamviz-react/src/react/reconcileArtifactDom.ts
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/reconcileArtifactDom.ts
 function Ne(e, t) {
 	let n = (e, t) => {
 		let r = Array.from(e.childNodes).filter((e) => !(e instanceof Element && e.hasAttribute("data-visualize-platform-normalize"))), i = Array.from(t.childNodes);
@@ -9592,7 +9592,7 @@ function Ne(e, t) {
 	n(e, t);
 }
 //#endregion
-//#region node_modules/streamviz-react/src/react/normalizeChartViewport.ts
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/normalizeChartViewport.ts
 function Pe(e) {
 	e?.querySelectorAll("svg[viewBox]").forEach((e) => {
 		if (e.closest("svg svg") || !e.querySelector("text") || !e.querySelector("rect,polyline,path,line,circle")) return;
@@ -9610,7 +9610,7 @@ function Pe(e) {
 	".t,.ts,.th{}"
 ].join("");
 //#endregion
-//#region node_modules/streamviz-react/src/react/runtimeDocument.ts
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/runtimeDocument.ts
 var Fe = ":root,\n[data-theme=\"light\"] {\n  color-scheme: light;\n  --sv-slate-1: #fcfcfd;\n  --sv-slate-2: #f9f9fb;\n  --sv-slate-3: #f0f0f3;\n  --sv-slate-6: #d9d9e0;\n  --sv-slate-7: #cdced6;\n  --sv-slate-8: #b9bbc6;\n  --sv-slate-11: #60646c;\n  --sv-slate-12: #1c2024;\n  --sv-indigo-3: #edf2fe;\n  --sv-indigo-7: #abbdf9;\n  --sv-indigo-9: #3e63dd;\n  --sv-indigo-11: #3a5bc7;\n  --sv-jade-3: #e6f4ea;\n  --sv-jade-7: #92ceac;\n  --sv-jade-9: #29a383;\n  --sv-jade-11: #208368;\n  --sv-amber-3: #fff3d0;\n  --sv-amber-7: #e8c36a;\n  --sv-amber-9: #f5b31b;\n  --sv-amber-11: #915930;\n  --sv-red-3: #feebec;\n  --sv-red-7: #f3aeaf;\n  --sv-red-9: #e5484d;\n  --sv-red-11: #ce2c31;\n  --sv-bg-page: var(--sv-slate-3);\n  --sv-bg-surface: var(--sv-slate-1);\n  --sv-bg-elevated: var(--sv-slate-2);\n  --sv-bg-muted: var(--sv-slate-3);\n  --sv-bg-info: var(--sv-indigo-3);\n  --sv-bg-success: var(--sv-jade-3);\n  --sv-bg-warning: var(--sv-amber-3);\n  --sv-bg-danger: var(--sv-red-3);\n  --sv-text-primary: var(--sv-slate-12);\n  --sv-text-secondary: var(--sv-slate-11);\n  --sv-text-muted: #6f737c;\n  --sv-text-info: var(--sv-indigo-11);\n  --sv-text-success: var(--sv-jade-11);\n  --sv-text-warning: var(--sv-amber-11);\n  --sv-text-danger: var(--sv-red-11);\n  --sv-border-subtle: var(--sv-slate-6);\n  --sv-border-default: var(--sv-slate-7);\n  --sv-border-strong: var(--sv-slate-8);\n  --sv-border-info: var(--sv-indigo-7);\n  --sv-border-success: var(--sv-jade-7);\n  --sv-border-warning: var(--sv-amber-7);\n  --sv-border-danger: var(--sv-red-7);\n  --sv-accent: var(--sv-indigo-9);\n  --sv-status-info: var(--sv-indigo-9);\n  --sv-status-success: var(--sv-jade-9);\n  --sv-status-warning: var(--sv-amber-9);\n  --sv-status-danger: var(--sv-red-9);\n  --sv-radius-md: 8px;\n  --sv-radius-lg: 12px;\n  --sv-radius-xl: 16px;\n  --sv-space-1: 4px;\n  --sv-space-2: 8px;\n  --sv-space-3: 12px;\n  --sv-space-4: 16px;\n  --sv-space-5: 20px;\n  --sv-space-6: 24px;\n  --sv-font-sans: ui-sans-serif, system-ui, sans-serif;\n  --sv-font-serif: ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif;\n  --sv-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  --color-background-primary: var(--sv-bg-surface);\n  --color-background-secondary: var(--sv-bg-elevated);\n  --color-background-tertiary: var(--sv-bg-page);\n  --color-background-muted: var(--sv-bg-muted);\n  --color-background-info: var(--sv-bg-info);\n  --color-background-danger: var(--sv-bg-danger);\n  --color-background-success: var(--sv-bg-success);\n  --color-background-warning: var(--sv-bg-warning);\n  --color-text-primary: var(--sv-text-primary);\n  --color-text-secondary: var(--sv-text-secondary);\n  --color-text-tertiary: var(--sv-text-muted);\n  --color-text-info: var(--sv-text-info);\n  --color-text-danger: var(--sv-text-danger);\n  --color-text-success: var(--sv-text-success);\n  --color-text-warning: var(--sv-text-warning);\n  --color-border-primary: var(--sv-border-strong);\n  --color-border-secondary: var(--sv-border-default);\n  --color-border-tertiary: var(--sv-border-subtle);\n  --color-border-info: var(--sv-border-info);\n  --color-border-danger: var(--sv-border-danger);\n  --color-border-success: var(--sv-border-success);\n  --color-border-warning: var(--sv-border-warning);\n  --sem-bg-page: var(--sv-bg-page);\n  --sem-bg-surface: var(--sv-bg-surface);\n  --sem-bg-card: var(--sv-bg-elevated);\n  --sem-bg-muted: var(--sv-bg-muted);\n  --sem-border-subtle: var(--sv-border-subtle);\n  --sem-border-default: var(--sv-border-default);\n  --sem-border-strong: var(--sv-border-strong);\n  --sem-text-primary: var(--sv-text-primary);\n  --sem-text-secondary: var(--sv-text-secondary);\n  --sem-text-tertiary: var(--sv-text-muted);\n  --sem-accent-primary: var(--sv-accent);\n  --sem-status-info: var(--sv-status-info);\n  --sem-status-success: var(--sv-status-success);\n  --sem-status-warning: var(--sv-status-warning);\n  --sem-status-danger: var(--sv-status-danger);\n  --sv-chart-series-1: #3e63dd;\n  --sv-chart-series-2: #12a594;\n  --sv-chart-series-3: #8e4ec6;\n  --sv-chart-series-4: #e5484d;\n  --sv-chart-series-5: #f5b31b;\n  --sv-chart-series-6: #0090ff;\n  --sv-chart-series-7: #ab4aba;\n  --sv-chart-series-8: #46a758;\n  --chart-series-1: var(--sv-chart-series-1);\n  --chart-series-2: var(--sv-chart-series-2);\n  --chart-series-3: var(--sv-chart-series-3);\n  --chart-series-4: var(--sv-chart-series-4);\n  --chart-series-5: var(--sv-chart-series-5);\n  --chart-series-6: var(--sv-chart-series-6);\n  --chart-series-7: var(--sv-chart-series-7);\n  --chart-series-8: var(--sv-chart-series-8);\n  --border-radius-md: var(--sv-radius-md);\n  --border-radius-lg: var(--sv-radius-lg);\n  --border-radius-xl: var(--sv-radius-xl);\n  --font-sans: var(--sv-font-sans);\n  --font-serif: var(--sv-font-serif);\n  --font-mono: var(--sv-font-mono);\n}\n\n[data-theme=\"dark\"] {\n  color-scheme: dark;\n  --sv-slate-1: #111113;\n  --sv-slate-2: #18191b;\n  --sv-slate-3: #212225;\n  --sv-slate-6: #363a3f;\n  --sv-slate-7: #43484e;\n  --sv-slate-8: #5a6169;\n  --sv-slate-11: #b0b4ba;\n  --sv-slate-12: #edeef0;\n  --sv-indigo-3: #182449;\n  --sv-indigo-7: #3a4f97;\n  --sv-indigo-9: #3e63dd;\n  --sv-indigo-11: #9eb1ff;\n  --sv-jade-3: #132d21;\n  --sv-jade-7: #1b5745;\n  --sv-jade-9: #29a383;\n  --sv-jade-11: #7ce2bd;\n  --sv-amber-3: #35290f;\n  --sv-amber-7: #6a4f0b;\n  --sv-amber-9: #f5b31b;\n  --sv-amber-11: #facf72;\n  --sv-red-3: #3b1219;\n  --sv-red-7: #7e2e33;\n  --sv-red-9: #e5484d;\n  --sv-red-11: #ff9592;\n  --sv-text-muted: #7b7f88;\n  --sv-chart-series-1: #9eb1ff;\n  --sv-chart-series-2: #0bd8b6;\n  --sv-chart-series-3: #d19dff;\n  --sv-chart-series-4: #ff9592;\n  --sv-chart-series-5: #facf72;\n  --sv-chart-series-6: #70b8ff;\n  --sv-chart-series-7: #e796f3;\n  --sv-chart-series-8: #7ce2bd;\n}\n\n/* Preserve meaning when the operating system owns the color palette. */\n@media (forced-colors: active) {\n  :root,\n  [data-theme=\"light\"],\n  [data-theme=\"dark\"] {\n    --sv-bg-page: Canvas;\n    --sv-bg-surface: Canvas;\n    --sv-bg-elevated: ButtonFace;\n    --sv-bg-muted: ButtonFace;\n    --sv-bg-info: Canvas;\n    --sv-bg-success: Canvas;\n    --sv-bg-warning: Canvas;\n    --sv-bg-danger: Canvas;\n    --sv-text-primary: CanvasText;\n    --sv-text-secondary: CanvasText;\n    --sv-text-muted: GrayText;\n    --sv-text-info: LinkText;\n    --sv-text-success: CanvasText;\n    --sv-text-warning: CanvasText;\n    --sv-text-danger: CanvasText;\n    --sv-border-subtle: GrayText;\n    --sv-border-default: ButtonText;\n    --sv-border-strong: CanvasText;\n    --sv-border-info: LinkText;\n    --sv-border-success: CanvasText;\n    --sv-border-warning: CanvasText;\n    --sv-border-danger: CanvasText;\n    --sv-accent: Highlight;\n    --sv-status-info: LinkText;\n    --sv-status-success: CanvasText;\n    --sv-status-warning: CanvasText;\n    --sv-status-danger: CanvasText;\n  }\n\n  a {\n    color: LinkText;\n  }\n\n  button,\n  input,\n  select,\n  textarea {\n    forced-color-adjust: auto;\n  }\n}\n\nhtml,\nbody {\n  margin: 0;\n  padding: 0;\n  overflow: hidden;\n  background: transparent;\n  color: var(--color-text-primary);\n  font: 400 16px/1.7 var(--font-sans, ui-sans-serif, system-ui, sans-serif);\n}\n\n#root {\n  min-height: 1px;\n  margin: 0;\n  padding: 0;\n  overflow: visible;\n  background: transparent;\n  color: inherit;\n  font: inherit;\n}\n\n*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}\n\nimg,\nsvg,\ncanvas,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n[data-visualize-root] {\n  width: 100%;\n  max-width: 100%;\n  color: var(--color-text-primary);\n}\n\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border: 0;\n}\n\nh1,\nh2,\nh3,\nh4,\np,\nul,\nol,\nfigure,\ntable,\nsvg {\n  margin-block-start: 0;\n}\n\nh1 {\n  margin: 0 0 16px;\n  color: var(--color-text-primary);\n  font-size: 22px;\n  line-height: 1.3;\n  font-weight: 500;\n}\n\nh2 {\n  margin: 0 0 12px;\n  color: var(--color-text-primary);\n  font-size: 18px;\n  line-height: 1.35;\n  font-weight: 500;\n}\n\nh3 {\n  margin: 16px 0 8px;\n  color: var(--color-text-primary);\n  font-size: 16px;\n  line-height: 1.4;\n  font-weight: 500;\n}\n\np,\nul,\nol {\n  color: var(--color-text-secondary);\n}\n\np {\n  margin: 0 0 1rem;\n}\n\nul,\nol {\n  margin: 0 0 1rem;\n  padding-inline-start: 1.25rem;\n}\n\nli {\n  margin: 0 0 0.5rem;\n}\n\n.grid,\n.cards,\n.metrics,\n.metric-grid,\n.status-grid,\n.status-board,\n.board,\n.columns,\n.kpi-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\n  gap: 12px;\n}\n\n.card,\n.panel,\n.metric,\n.metric-card,\n.kpi,\n.status,\n.item,\n.column,\n.lane,\n.check-item {\n  border: 0.5px solid var(--color-border-tertiary);\n  background: var(--color-background-primary);\n  border-radius: var(--border-radius-lg);\n  padding: 1rem 1.25rem;\n}\n\n.metric,\n.metric-card,\n.kpi {\n  display: grid;\n  gap: 4px;\n  border: 0;\n  background: var(--color-background-secondary);\n  border-radius: var(--border-radius-md);\n  padding: 1rem;\n}\n\n.metric > :is(span, small, .label),\n.metric-card > :is(span, small, .label),\n.kpi > :is(span, small, .label) {\n  color: var(--color-text-secondary);\n  font-size: 13px;\n  line-height: 1.35;\n}\n\n.metric > :is(strong, .value),\n.metric-card > :is(strong, .value),\n.kpi > :is(strong, .value) {\n  color: var(--color-text-primary);\n  font-size: 24px;\n  line-height: 1.15;\n  font-weight: 500;\n}\n\n.chip,\n.badge,\n.pill,\n.tag {\n  display: inline-flex;\n  align-items: center;\n  gap: 6px;\n  border: 0.5px solid var(--color-border-tertiary);\n  border-radius: var(--border-radius-md);\n  padding: 4px 12px;\n  color: var(--color-text-primary);\n  background: var(--color-background-secondary);\n}\n\nbutton,\ninput,\nselect,\ntextarea {\n  font: inherit;\n  color: var(--color-text-primary);\n  border: 0.5px solid var(--color-border-secondary);\n  background: transparent;\n  border-radius: var(--border-radius-md);\n}\n\ninput,\nselect,\ntextarea {\n  display: block;\n  width: 100%;\n  max-width: 100%;\n  min-height: 36px;\n  margin: 6px 0 10px;\n  padding: 6px 10px;\n}\n\nlabel {\n  display: block;\n  margin: 0;\n  color: var(--color-text-secondary);\n  font-size: 13px;\n  line-height: 1.35;\n}\n\ntextarea {\n  min-height: 80px;\n  resize: var(--sem-resize-y);\n}\n\nbutton {\n  min-height: 32px;\n  padding: 6px 12px;\n  cursor: var(--sem-cursor-pointer);\n}\n\nbutton:hover,\ninput:hover,\nselect:hover,\ntextarea:hover {\n  background: var(--color-background-secondary);\n}\n\nbutton:active {\n  transform: scale(var(--sem-scale-98));\n}\n\nbutton:focus-visible,\ninput:focus-visible,\nselect:focus-visible,\ntextarea:focus-visible {\n  outline: none;\n  box-shadow: 0 0 0 2px var(--color-border-info);\n}\n\ninput[type=\"range\"] {\n  height: 18px;\n  padding: 0;\n  accent-color: var(--color-border-info);\n  border: 0;\n  background: transparent;\n}\n\ntable {\n  width: 100%;\n  border-collapse: var(--sem-table-border-collapse);\n  border: 0.5px solid var(--color-border-tertiary);\n  border-radius: var(--border-radius-lg);\n  overflow: hidden;\n  background: var(--color-background-primary);\n}\n\nth,\ntd {\n  padding: 8px 12px;\n  border-bottom: 0.5px solid var(--color-border-tertiary);\n  text-align: left;\n  vertical-align: top;\n}\n\nth {\n  color: var(--color-text-primary);\n  background: var(--color-background-secondary);\n  font-weight: 500;\n}\n\ntd {\n  color: var(--color-text-secondary);\n}\n\nsvg {\n  display: block;\n  max-width: 100%;\n  height: auto;\n  color: var(--color-text-secondary);\n}\n\nsvg text,\nsvg tspan {\n  fill: var(--color-text-secondary);\n}\n\n.t {\n  color: var(--color-text-primary);\n  fill: var(--color-text-primary);\n}\n\n.ts {\n  color: var(--color-text-secondary);\n  fill: var(--color-text-secondary);\n}\n\n.th {\n  color: var(--color-text-tertiary);\n  fill: var(--color-text-tertiary);\n}\n\n:root,\n[data-theme=\"light\"] {\n  --c-purple-fill: #eeedfe;\n  --c-purple-stroke: #534ab7;\n  --c-purple-title: #3c3489;\n  --c-purple-subtitle: #534ab7;\n  --c-teal-fill: #e1f5ee;\n  --c-teal-stroke: #0f6e56;\n  --c-teal-title: #085041;\n  --c-teal-subtitle: #0f6e56;\n  --c-coral-fill: #faece7;\n  --c-coral-stroke: #993c1d;\n  --c-coral-title: #712b13;\n  --c-coral-subtitle: #993c1d;\n  --c-pink-fill: #fbeaf0;\n  --c-pink-stroke: #993556;\n  --c-pink-title: #72243e;\n  --c-pink-subtitle: #993556;\n  --c-gray-fill: #f1efe8;\n  --c-gray-stroke: #5f5e5a;\n  --c-gray-title: #444441;\n  --c-gray-subtitle: #5f5e5a;\n  --c-blue-fill: #e6f1fb;\n  --c-blue-stroke: #185fa5;\n  --c-blue-title: #0c447c;\n  --c-blue-subtitle: #185fa5;\n  --c-green-fill: #eaf3de;\n  --c-green-stroke: #3b6d11;\n  --c-green-title: #27500a;\n  --c-green-subtitle: #3b6d11;\n  --c-amber-fill: #faeeda;\n  --c-amber-stroke: #854f0b;\n  --c-amber-title: #633806;\n  --c-amber-subtitle: #854f0b;\n  --c-red-fill: #fcebeb;\n  --c-red-stroke: #a32d2d;\n  --c-red-title: #791f1f;\n  --c-red-subtitle: #a32d2d;\n}\n\n[data-theme=\"dark\"] {\n  --c-purple-fill: #3c3489;\n  --c-purple-stroke: #afa9ec;\n  --c-purple-title: #cecbf6;\n  --c-purple-subtitle: #afa9ec;\n  --c-teal-fill: #085041;\n  --c-teal-stroke: #5dcaa5;\n  --c-teal-title: #9fe1cb;\n  --c-teal-subtitle: #5dcaa5;\n  --c-coral-fill: #712b13;\n  --c-coral-stroke: #f0997b;\n  --c-coral-title: #f5c4b3;\n  --c-coral-subtitle: #f0997b;\n  --c-pink-fill: #72243e;\n  --c-pink-stroke: #ed93b1;\n  --c-pink-title: #f4c0d1;\n  --c-pink-subtitle: #ed93b1;\n  --c-gray-fill: #444441;\n  --c-gray-stroke: #b4b2a9;\n  --c-gray-title: #d3d1c7;\n  --c-gray-subtitle: #b4b2a9;\n  --c-blue-fill: #0c447c;\n  --c-blue-stroke: #85b7eb;\n  --c-blue-title: #b5d4f4;\n  --c-blue-subtitle: #85b7eb;\n  --c-green-fill: #27500a;\n  --c-green-stroke: #97c459;\n  --c-green-title: #c0dd97;\n  --c-green-subtitle: #97c459;\n  --c-amber-fill: #633806;\n  --c-amber-stroke: #ef9f27;\n  --c-amber-title: #fac775;\n  --c-amber-subtitle: #ef9f27;\n  --c-red-fill: #791f1f;\n  --c-red-stroke: #f09595;\n  --c-red-title: #f7c1c1;\n  --c-red-subtitle: #f09595;\n}\n\n.c-purple {\n  --c-fill: var(--c-purple-fill);\n  --c-stroke: var(--c-purple-stroke);\n  --c-title: var(--c-purple-title);\n  --c-subtitle: var(--c-purple-subtitle);\n}\n\n.c-teal {\n  --c-fill: var(--c-teal-fill);\n  --c-stroke: var(--c-teal-stroke);\n  --c-title: var(--c-teal-title);\n  --c-subtitle: var(--c-teal-subtitle);\n}\n\n.c-coral {\n  --c-fill: var(--c-coral-fill);\n  --c-stroke: var(--c-coral-stroke);\n  --c-title: var(--c-coral-title);\n  --c-subtitle: var(--c-coral-subtitle);\n}\n\n.c-pink {\n  --c-fill: var(--c-pink-fill);\n  --c-stroke: var(--c-pink-stroke);\n  --c-title: var(--c-pink-title);\n  --c-subtitle: var(--c-pink-subtitle);\n}\n\n.c-gray {\n  --c-fill: var(--c-gray-fill);\n  --c-stroke: var(--c-gray-stroke);\n  --c-title: var(--c-gray-title);\n  --c-subtitle: var(--c-gray-subtitle);\n}\n\n.c-blue {\n  --c-fill: var(--c-blue-fill);\n  --c-stroke: var(--c-blue-stroke);\n  --c-title: var(--c-blue-title);\n  --c-subtitle: var(--c-blue-subtitle);\n}\n\n.c-green {\n  --c-fill: var(--c-green-fill);\n  --c-stroke: var(--c-green-stroke);\n  --c-title: var(--c-green-title);\n  --c-subtitle: var(--c-green-subtitle);\n}\n\n.c-amber {\n  --c-fill: var(--c-amber-fill);\n  --c-stroke: var(--c-amber-stroke);\n  --c-title: var(--c-amber-title);\n  --c-subtitle: var(--c-amber-subtitle);\n}\n\n.c-red {\n  --c-fill: var(--c-red-fill);\n  --c-stroke: var(--c-red-stroke);\n  --c-title: var(--c-red-title);\n  --c-subtitle: var(--c-red-subtitle);\n}\n\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) {\n  color: var(--c-title);\n}\n\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red):is(rect, circle, ellipse, polygon),\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) :is(rect, circle, ellipse, polygon) {\n  fill: var(--c-fill);\n  stroke: var(--c-stroke);\n}\n\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) :is(text, tspan),\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) .t {\n  fill: var(--c-title);\n  color: var(--c-title);\n}\n\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) .ts,\n:is(.c-purple, .c-teal, .c-coral, .c-pink, .c-gray, .c-blue, .c-green, .c-amber, .c-red) .th {\n  fill: var(--c-subtitle);\n  color: var(--c-subtitle);\n}\n\n.ti {\n  display: inline-block;\n  min-width: 1em;\n  font-style: normal;\n  line-height: 1;\n  text-align: center;\n}\n\n.ti::before {\n  content: \"□\";\n}\n\n.ti-home::before { content: \"⌂\"; }\n.ti-settings::before { content: \"⚙\"; }\n.ti-user::before { content: \"◯\"; }\n.ti-search::before { content: \"⌕\"; }\n.ti-x::before { content: \"×\"; }\n.ti-check::before { content: \"✓\"; }\n.ti-plus::before { content: \"+\"; }\n.ti-trash::before { content: \"⌫\"; }\n.ti-edit::before { content: \"✎\"; }\n.ti-download::before { content: \"↓\"; }\n.ti-upload::before { content: \"↑\"; }\n.ti-file::before { content: \"□\"; }\n.ti-folder::before { content: \"▱\"; }\n.ti-chart-bar::before { content: \"▥\"; }\n.ti-calendar::before { content: \"▦\"; }\n.ti-clock::before { content: \"◷\"; }\n.ti-arrow-right::before { content: \"→\"; }\n.ti-arrow-left::before { content: \"←\"; }\n.ti-chevron-down::before { content: \"⌄\"; }\n.ti-external-link::before { content: \"↗\"; }\n.ti-copy::before { content: \"⧉\"; }\n.ti-refresh::before { content: \"↻\"; }\n.ti-player-play::before { content: \"▷\"; }\n.ti-player-pause::before { content: \"Ⅱ\"; }\n.ti-heart::before { content: \"♡\"; }\n.ti-star::before { content: \"☆\"; }\n.ti-bell::before { content: \"◌\"; }\n.ti-mail::before { content: \"✉\"; }\n.ti-lock::before { content: \"⌐\"; }\n.ti-eye::before { content: \"◉\"; }\n.ti-menu-2::before { content: \"☰\"; }", Ie = "/* StreamViz authoring primitives. Keep this set small, semantic, and stable. */\n.sv-stack {\n  display: grid;\n  gap: var(--sv-space-3);\n}\n\n.sv-cluster {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: center;\n  gap: var(--sv-space-2);\n}\n\n.sv-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));\n  gap: var(--sv-space-3);\n}\n\n.sv-card {\n  min-width: 0;\n  padding: var(--sv-space-4) var(--sv-space-5);\n  border: 0.5px solid var(--sv-border-subtle);\n  border-radius: var(--sv-radius-lg);\n  background: var(--sv-bg-surface);\n  color: var(--sv-text-primary);\n}\n\n.sv-card-muted {\n  background: var(--sv-bg-elevated);\n}\n\n.sv-card-accent {\n  border-color: var(--sv-border-info);\n  background: var(--sv-bg-info);\n}\n\n.sv-metric {\n  display: grid;\n  min-width: 0;\n  gap: var(--sv-space-1);\n  padding: var(--sv-space-4);\n  border: 0;\n  border-radius: var(--sv-radius-md);\n  background: var(--sv-bg-elevated);\n}\n\n.sv-label,\n.sv-kicker {\n  margin: 0;\n  color: var(--sv-text-secondary);\n  font-size: 13px;\n  line-height: 1.35;\n  font-weight: 400;\n}\n\n.sv-value {\n  margin: 0;\n  color: var(--sv-text-primary);\n  font-size: 24px;\n  line-height: 1.15;\n  font-weight: 500;\n  font-variant-numeric: tabular-nums;\n}\n\n.sv-muted {\n  color: var(--sv-text-muted);\n}\n\n.sv-badge {\n  display: inline-flex;\n  width: fit-content;\n  align-items: center;\n  gap: var(--sv-space-1);\n  padding: 4px 10px;\n  border: 0.5px solid var(--sv-border-subtle);\n  border-radius: var(--sv-radius-md);\n  background: var(--sv-bg-elevated);\n  color: var(--sv-text-primary);\n  font-size: 12px;\n  line-height: 1.3;\n}\n\n.sv-badge-info {\n  border-color: var(--sv-border-info);\n  background: var(--sv-bg-info);\n  color: var(--sv-text-info);\n}\n\n.sv-badge-success {\n  border-color: var(--sv-border-success);\n  background: var(--sv-bg-success);\n  color: var(--sv-text-success);\n}\n\n.sv-badge-warning {\n  border-color: var(--sv-border-warning);\n  background: var(--sv-bg-warning);\n  color: var(--sv-text-warning);\n}\n\n.sv-badge-danger {\n  border-color: var(--sv-border-danger);\n  background: var(--sv-bg-danger);\n  color: var(--sv-text-danger);\n}\n\n.sv-divider {\n  height: 0.5px;\n  margin: var(--sv-space-3) 0;\n  border: 0;\n  background: var(--sv-border-subtle);\n}\n\n.sv-action {\n  display: inline-flex;\n  min-height: 36px;\n  align-items: center;\n  justify-content: center;\n  gap: var(--sv-space-2);\n  padding: 8px 14px;\n  border: 0.5px solid var(--sv-border-default);\n  border-radius: var(--sv-radius-md);\n  background: var(--sv-bg-surface);\n  color: var(--sv-text-primary);\n  font: 500 13px/1.3 var(--sv-font-sans);\n  cursor: pointer;\n}\n\n.sv-action:hover {\n  border-color: var(--sv-border-info);\n  background: var(--sv-bg-info);\n  color: var(--sv-text-info);\n}\n\n.sv-action:focus-visible {\n  outline: none;\n  box-shadow: 0 0 0 2px var(--sv-border-info);\n}\n\n.sv-chart-frame {\n  position: relative;\n  width: 100%;\n  min-height: 240px;\n}\n\n@media (max-width: 520px) {\n  .sv-card {\n    padding: var(--sv-space-4);\n  }\n}\n\n@media (prefers-reduced-motion: reduce) {\n  .sv-action {\n    transition: none;\n  }\n}", Le = (e) => {
 	let t = `
 (() => {
@@ -10139,6 +10139,7 @@ var Fe = ":root,\n[data-theme=\"light\"] {\n  color-scheme: light;\n  --sv-slate
 //#endregion
 //#region frontend/streamviz-title-policy.mjs
 function Re(e, t) {
+	if (e.querySelector(".mentoraNavigationCard")) return !0;
 	let n = (e) => String(e || "").normalize("NFKC").replace(/[\s\u200b]+/g, "").toLocaleLowerCase(), r = n(t);
 	for (let t of e.querySelectorAll("h1,h2,h3,h4,h5,h6,[role=\"heading\"]")) {
 		if (t.closest("template,svg,pre,code,[data-visualize-title],[hidden],[aria-hidden=\"true\"],.sr-only,.visually-hidden")) continue;
@@ -10158,11 +10159,50 @@ function ze(e) {
 	return e.replace(t, () => `if (reportTitle && !(${Re.toString()})(fragment.content, reportTitle)) {`);
 }
 //#endregion
-//#region frontend/streamviz-runtime.mjs
-var Be = (e) => ze(Le(e));
+//#region frontend/action-card-policy.mjs
+var Be = g();
+function Ve(e, t) {
+	let n = e.ownerDocument || e, r = [...e.querySelectorAll("a.entry,button.entry")].filter((e) => {
+		if (e.localName === "button") return e.hasAttribute("data-ainvest-feature");
+		try {
+			let t = new URL(e.getAttribute("href"));
+			return t.protocol === "https:" && !t.username && !t.password && !t.port && [
+				"ainvest.com",
+				"www.ainvest.com",
+				"news.ainvest.com",
+				"chart.ainvest.com",
+				"crypto.ainvest.com",
+				"community.ainvest.com",
+				"contact.ainvest.com",
+				"affiliate.ainvest.com"
+			].includes(t.hostname);
+		} catch {
+			return !1;
+		}
+	});
+	if (!r.length) return !1;
+	for (let e of r) {
+		e.classList.add("mentoraNavigationCard");
+		let t = e.querySelector("svg.arrow,svg.entry-arrow");
+		if (t && !t.parentElement.classList.contains("mentoraActionDirection")) {
+			let e = n.createElement("span");
+			e.className = "mentoraActionDirection", e.setAttribute("aria-hidden", "true"), t.replaceWith(e), e.append(t);
+		}
+	}
+	let i = e.querySelector("[data-mentora-action-cards]");
+	return i || (i = n.createElement("style"), i.setAttribute("data-mentora-action-cards", ""), (e.head || e).append(i)), i.textContent !== t && (i.textContent = t), !0;
+}
+function He(e, t) {
+	let n = "fragment.innerHTML = nextHtml;";
+	if (e.split(n).length !== 2) throw Error("StreamViz fragment insertion changed; review action-card integration");
+	return e.replace(n, () => `${n}\n(${Ve.toString()})(fragment.content, ${JSON.stringify(t)});`);
+}
 //#endregion
-//#region node_modules/streamviz-react/src/react/useStreamingCode.ts
-function Ve(e, t, n) {
+//#region app/static/action-cards.css?raw
+var Ue = "/* Shared by file deliverables and navigation documents, including saved cards. */\n:root{--action-card-bg:#f6f6f6;--action-card-line:#e8e8e8;--action-card-ink:#242424;--action-card-muted:#858585}\n@media(prefers-color-scheme:dark){:root:not([data-theme=\"light\"]){--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}}\n:root[data-theme=\"dark\"]{--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}\n.generatedFileCard,.mentoraNavigationCard{box-sizing:border-box!important;position:relative;display:flex!important;align-items:center!important;gap:10px!important;width:min(100%,420px)!important;max-width:100%!important;height:60px!important;min-height:60px!important;padding:10px 12px!important;margin:0!important;border:1px solid var(--action-card-line)!important;border-radius:12px!important;background:var(--action-card-bg)!important;color:var(--action-card-ink)!important;text-align:left;text-decoration:none!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",\"Microsoft YaHei\",sans-serif!important;font-size:14px;line-height:20px;min-width:0}\n.generatedFileIcon,.mentoraNavigationCard :is(.icon,.entry-icon){width:20px!important;height:20px!important;flex:0 0 20px!important;color:var(--action-card-ink)!important;stroke-width:1.5;pointer-events:none}\n.generatedFileName,.mentoraNavigationCard :is(.name,.entry-name){display:block;min-width:0;max-width:100%;font-size:14px!important;line-height:20px!important;font-weight:500!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;overflow-wrap:normal!important}\n.mentoraNavigationCard :is(.name,.entry-name){flex:1}\n.generatedFileType{font-size:12px;line-height:16px;color:var(--action-card-muted)}\n.generatedFileDownload,.mentoraActionDirection{position:relative;z-index:1;box-sizing:border-box;width:36px!important;height:36px!important;flex:0 0 36px!important;display:grid!important;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:transparent!important;opacity:0!important;visibility:hidden;pointer-events:none;transition:opacity .12s ease}\n.generatedFileDownload svg,.mentoraActionDirection svg{width:18px!important;height:18px!important;opacity:1!important;flex:none}\n.generatedFileCard:is(:hover,:focus-within) .generatedFileDownload,.mentoraNavigationCard:is(:hover,:focus-visible) .mentoraActionDirection{opacity:1!important;visibility:visible;pointer-events:auto}\n.generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible,.mentoraNavigationCard:focus-visible{outline:2px solid #2563eb;outline-offset:3px}\n@media(prefers-reduced-motion:reduce){.generatedFileDownload,.mentoraActionDirection{transition:none}}\n", We = (e) => He(ze(Le(e)), Ue);
+//#endregion
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/useStreamingCode.ts
+function Ge(e, t, n) {
 	let r = (0, T.useRef)(!t), i = (0, T.useRef)(e);
 	i.current = e, t || (r.current = !0);
 	let [a, o] = (0, T.useState)(t ? e : ""), s = (0, T.useRef)(a);
@@ -10186,8 +10226,8 @@ function Ve(e, t, n) {
 	};
 }
 //#endregion
-//#region node_modules/react/cjs/react-jsx-runtime.production.js
-var He = /* @__PURE__ */ o(((e) => {
+//#region ../mentora-title-dedup-20261102/node_modules/react/cjs/react-jsx-runtime.production.js
+var Ke = /* @__PURE__ */ o(((e) => {
 	var t = Symbol.for("react.transitional.element");
 	function n(e, n, r) {
 		var i = null;
@@ -10202,23 +10242,23 @@ var He = /* @__PURE__ */ o(((e) => {
 		};
 	}
 	e.jsx = n, e.jsxs = n;
-})), Ue = (/* @__PURE__ */ o(((e, t) => {
-	t.exports = He();
-})))(), We = (e) => e * 4, Ge = 1e3, Ke = We(12), qe = "正在生成可视化代码", Je = 1e3, Ye = 8e3, Xe = (e, t) => /* @__PURE__ */ (0, Ue.jsx)(e === "check" ? ge : e === "copy" ? be : e === "download" ? Se : ve, {
+})), qe = (/* @__PURE__ */ o(((e, t) => {
+	t.exports = Ke();
+})))(), Je = (e) => e * 4, Ye = 1e3, Xe = Je(12), Ze = "正在生成可视化代码", Qe = 1e3, $e = 8e3, et = (e, t) => /* @__PURE__ */ (0, qe.jsx)(e === "check" ? ge : e === "copy" ? be : e === "download" ? Se : ve, {
 	className: t.className || "visualize-widget-action-icon",
 	"aria-hidden": "true",
 	strokeWidth: 1.75
 });
-function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessages: i, loadingDwellMs: a = Je, final: o, smoothStreaming: s = !1, showActions: c = !0, onSendPrompt: l, renderIcon: u = Xe, notify: d, writeImageToClipboard: f, theme: p, getTheme: m, cssVarNames: h = Oe }) {
-	let { code: g, final: _ } = Ve(t, o, s), v = (0, T.useRef)(null), x = (0, T.useRef)(null), te = (0, T.useRef)(`visualize-widget-${Math.random().toString(36).slice(2)}`), [ne, re] = (0, T.useState)(""), C = (0, T.useMemo)(() => y(n || g), [g, n]), ie = String(g || "").trim().length > 0, ae = (0, T.useMemo)(() => _ ? g : S(g), [g, _]), oe = (0, T.useMemo)(() => De(ae), [ae]), [w, se] = (0, T.useState)(() => b(C) || Ke), [ce, le] = (0, T.useState)(!1), [ue, de] = (0, T.useState)(!1), [fe, pe] = (0, T.useState)(!1), [me, he] = (0, T.useState)(!1), [ge, _e] = (0, T.useState)(0), [ve, ye] = (0, T.useState)(() => !!(_ && ie)), [be, xe] = (0, T.useState)(null), Se = (0, T.useRef)(""), O = (0, T.useRef)({
+function tt({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessages: i, loadingDwellMs: a = Qe, final: o, smoothStreaming: s = !1, showActions: c = !0, onSendPrompt: l, renderIcon: u = et, notify: d, writeImageToClipboard: f, theme: p, getTheme: m, cssVarNames: h = Oe }) {
+	let { code: g, final: _ } = Ge(t, o, s), v = (0, T.useRef)(null), x = (0, T.useRef)(null), te = (0, T.useRef)(`visualize-widget-${Math.random().toString(36).slice(2)}`), [ne, re] = (0, T.useState)(""), C = (0, T.useMemo)(() => y(n || g), [g, n]), ie = String(g || "").trim().length > 0, ae = (0, T.useMemo)(() => _ ? g : S(g), [g, _]), oe = (0, T.useMemo)(() => De(ae), [ae]), [w, se] = (0, T.useState)(() => b(C) || Xe), [ce, le] = (0, T.useState)(!1), [ue, de] = (0, T.useState)(!1), [fe, pe] = (0, T.useState)(!1), [me, he] = (0, T.useState)(!1), [ge, _e] = (0, T.useState)(0), [ve, ye] = (0, T.useState)(() => !!(_ && ie)), [be, xe] = (0, T.useState)(null), Se = (0, T.useRef)(""), O = (0, T.useRef)({
 		code: "",
 		final: !1
 	}), k = (0, T.useRef)(null), ke = (0, T.useRef)(""), Ne = (0, T.useRef)(_);
 	Ne.current = _;
-	let Pe = (0, T.useRef)(null), Fe = (0, T.useMemo)(() => Be(te.current), []), Ie = (0, T.useMemo)(() => Ae(p), [p]), Le = je(p, m), Re = (0, T.useMemo)(() => {
+	let Pe = (0, T.useRef)(null), Fe = (0, T.useMemo)(() => We(te.current), []), Ie = (0, T.useMemo)(() => Ae(p), [p]), Le = je(p, m), Re = (0, T.useMemo)(() => {
 		let e = Array.isArray(i) ? i.map((e) => String(e || "").trim()).filter(Boolean) : [], t = String(r || "").trim();
-		return !e.length && t && t !== qe && e.push(t), Array.from(new Set(e));
-	}, [r, i]), ze = (0, T.useMemo)(() => Re.length ? Re : [qe], [Re]), He = be || ze, We = He[ge % He.length] || qe, Ze = ve ? ae : "", Qe = String(Ze || "").trim().length > 0, $e = !Qe, et = c && _ && ue && Qe, tt = () => {
+		return !e.length && t && t !== Ze && e.push(t), Array.from(new Set(e));
+	}, [r, i]), ze = (0, T.useMemo)(() => Re.length ? Re : [Ze], [Re]), Be = be || ze, Ve = Be[ge % Be.length] || Ze, He = ve ? ae : "", Ue = String(He || "").trim().length > 0, Ke = !Ue, Je = c && _ && ue && Ue, tt = () => {
 		let t = x.current?.contentWindow;
 		t && t.postMessage({
 			type: "visualize-widget:update",
@@ -10239,13 +10279,13 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 		le(!1), de(!1);
 	}, [Fe]), (0, T.useEffect)(() => {
 		_e(0);
-	}, [He]), (0, T.useEffect)(() => {
+	}, [Be]), (0, T.useEffect)(() => {
 		if (!be) {
 			if (Re.length) {
 				xe(Re);
 				return;
 			}
-			ie && xe([qe]);
+			ie && xe([Ze]);
 		}
 	}, [
 		ie,
@@ -10269,22 +10309,22 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 			return;
 		}
 		if (ve) return;
-		let e = a * He.length, t = window.setTimeout(() => ye(!0), e);
+		let e = a * Be.length, t = window.setTimeout(() => ye(!0), e);
 		return () => window.clearTimeout(t);
 	}, [
-		He.length,
+		Be.length,
 		_,
 		ie,
 		oe,
 		a,
 		ve
 	]), (0, T.useEffect)(() => {
-		if (!$e || He.length <= 1) return;
+		if (!Ke || Be.length <= 1) return;
 		let e = window.setInterval(() => {
 			_e((e) => e + 1);
-		}, Je);
+		}, Qe);
 		return () => window.clearInterval(e);
-	}, [He.length, $e]), (0, T.useEffect)(() => {
+	}, [Be.length, Ke]), (0, T.useEffect)(() => {
 		let e = (e) => {
 			if (e.source !== x.current?.contentWindow) return;
 			let t = e.data || {};
@@ -10315,11 +10355,11 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 			}
 			if (t.type !== "visualize-widget:size") return;
 			if (t.hasContent === !1) {
-				k.current = null, ke.current = "", Ne.current || se((e) => e > Ke ? Ke : e);
+				k.current = null, ke.current = "", Ne.current || se((e) => e > Xe ? Xe : e);
 				return;
 			}
-			let n = Te(Number(t.height) || 0, Ke);
-			k.current = n, ke.current = y(O.current.code), C && n > Ke && ee(C, n), se((e) => Math.abs(e - n) <= 2 ? e : n);
+			let n = Te(Number(t.height) || 0, Xe);
+			k.current = n, ke.current = y(O.current.code), C && n > Xe && ee(C, n), se((e) => Math.abs(e - n) <= 2 ? e : n);
 		};
 		return window.addEventListener("message", e), () => window.removeEventListener("message", e);
 	}, [
@@ -10331,9 +10371,9 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 		let e = Pe.current;
 		e && (window.clearTimeout(e.timer), Pe.current = null, e.reject(/* @__PURE__ */ Error("snapshot cancelled")));
 	}, []), (0, T.useEffect)(() => {
-		if (Ne.current = _, !Qe || !ue) {
-			_ || se((e) => e === Ke ? e : Ke), Qe || de(!1), Qe || (k.current = null, ke.current = ""), O.current = {
-				code: Ze,
+		if (Ne.current = _, !Ue || !ue) {
+			_ || se((e) => e === Xe ? e : Xe), Ue || de(!1), Ue || (k.current = null, ke.current = ""), O.current = {
+				code: He,
 				final: _
 			}, tt();
 			let e = window.requestAnimationFrame(tt), t = [
@@ -10345,9 +10385,9 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 				window.cancelAnimationFrame(e), t.forEach((e) => window.clearTimeout(e));
 			};
 		}
-		let e = y(Ze), t = ke.current === e ? k.current : null, n = C ? b(C) : null, r = t || k.current || n || Ee(Ze, _);
-		se((e) => Math.abs(e - r) <= 2 ? e : r), Qe || de(!1), O.current = {
-			code: Ze,
+		let e = y(He), t = ke.current === e ? k.current : null, n = C ? b(C) : null, r = t || k.current || n || Ee(He, _);
+		se((e) => Math.abs(e - r) <= 2 ? e : r), Ue || de(!1), O.current = {
+			code: He,
 			final: _
 		}, tt();
 		let i = window.requestAnimationFrame(tt), a = [
@@ -10360,10 +10400,10 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 		};
 	}, [
 		ne,
-		Ze,
+		He,
 		n,
 		_,
-		Qe,
+		Ue,
 		ce,
 		ue,
 		Le,
@@ -10376,7 +10416,7 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 	}, rt = async (e) => new Promise((t, n) => {
 		let r = window.setTimeout(() => {
 			Pe.current &&= null, n(/* @__PURE__ */ Error("snapshot timeout"));
-		}, Ye);
+		}, $e);
 		Pe.current = {
 			resolve: t,
 			reject: n,
@@ -10386,14 +10426,14 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 			id: te.current
 		}, "*");
 	});
-	return /* @__PURE__ */ (0, Ue.jsxs)("div", {
+	return /* @__PURE__ */ (0, qe.jsxs)("div", {
 		ref: v,
-		className: `visualize-widget-block${$e ? " is-loading" : " is-ready"}${_ ? " is-final" : " is-streaming"}`,
+		className: `visualize-widget-block${Ke ? " is-loading" : " is-ready"}${_ ? " is-final" : " is-streaming"}`,
 		"data-source-key": C,
-		children: [et ? /* @__PURE__ */ (0, Ue.jsxs)("div", {
+		children: [Je ? /* @__PURE__ */ (0, qe.jsxs)("div", {
 			className: "visualize-widget-actions",
 			"aria-label": "可视化预览操作",
-			children: [/* @__PURE__ */ (0, Ue.jsx)("button", {
+			children: [/* @__PURE__ */ (0, qe.jsx)("button", {
 				className: `visualize-widget-action${fe ? " is-copied" : ""}`,
 				type: "button",
 				"aria-label": "复制可视化截图",
@@ -10410,7 +10450,7 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 						let t = await rt(e);
 						if (!t) throw Error("empty snapshot");
 						if (!await D(t, f)) throw Error("clipboard unavailable");
-						pe(!0), d?.("已复制到剪贴板", "success"), window.setTimeout(() => pe(!1), Ge);
+						pe(!0), d?.("已复制到剪贴板", "success"), window.setTimeout(() => pe(!1), Ye);
 					} catch {
 						d?.("复制截图失败", "error");
 					} finally {
@@ -10418,7 +10458,7 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 					}
 				},
 				children: u(fe ? "check" : "copy", {})
-			}), /* @__PURE__ */ (0, Ue.jsx)("button", {
+			}), /* @__PURE__ */ (0, qe.jsx)("button", {
 				className: "visualize-widget-action",
 				type: "button",
 				"aria-label": "导出 HTML",
@@ -10426,20 +10466,20 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 				onClick: nt,
 				children: u("download", {})
 			})]
-		}) : null, $e ? /* @__PURE__ */ (0, Ue.jsxs)("div", {
+		}) : null, Ke ? /* @__PURE__ */ (0, qe.jsxs)("div", {
 			className: "visualize-widget-loading-inline",
 			"aria-live": "polite",
-			children: [u("code-xml", { className: "visualize-widget-loading-icon" }), /* @__PURE__ */ (0, Ue.jsx)("span", {
+			children: [u("code-xml", { className: "visualize-widget-loading-icon" }), /* @__PURE__ */ (0, qe.jsx)("span", {
 				className: "visualize-widget-loading-text",
-				children: We
+				children: Ve
 			})]
-		}) : /* @__PURE__ */ (0, Ue.jsx)("div", {
+		}) : /* @__PURE__ */ (0, qe.jsx)("div", {
 			className: "visualize-widget-panel",
 			style: {
 				"--runtime-visualize-widget-height": `${w}px`,
 				"--visualize-widget-height": `${w}px`
 			},
-			children: /* @__PURE__ */ (0, Ue.jsx)("iframe", {
+			children: /* @__PURE__ */ (0, qe.jsx)("iframe", {
 				ref: x,
 				className: "visualize-widget-frame",
 				title: e || "可视化预览",
@@ -10453,11 +10493,11 @@ function Ze({ title: e, code: t, exportCode: n, loadingMessage: r, loadingMessag
 	});
 }
 //#endregion
-//#region node_modules/streamviz-react/src/react/payload.ts
-function Qe(e) {
+//#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/payload.ts
+function nt(e) {
 	return String(e || "").replace(/<(div|section|article|main|header|footer|span|p|h[1-6]|ul|ol|li|svg|g|rect|circle|path|line|polyline|text|tspan)(?=(?:class|style|id|role|aria-|data-|xmlns|viewBox|width|height|fill|stroke|points|font-size|font-weight|x|y|x1|y1|x2|y2|cx|cy|r|d)=)/gi, "<$1 ").replace(/<(marker)(?=id=)/gi, "<$1 ").replace(/(["'])(?=[A-Za-z_:][-A-Za-z0-9_:.]*=)/g, "$1 ").replace(/\bsv-badge(?=sv-badge-)/g, "sv-badge ").replace(/(\d|px|rem|%)(solid|dashed|dotted)(?=\b|var\()/gi, "$1 $2").replace(/(solid|dashed|dotted)(?=var\()/gi, "$1 ").replace(/viewBox=(["'])00(\d{2})(\d{2})\1/gi, (e, t, n, r) => `viewBox=${t}0 0 ${n} ${r}${t}`).replace(/viewBox=(["'])00(\d{3})(\d{3})\1/gi, (e, t, n, r) => `viewBox=${t}0 0 ${n} ${r}${t}`).replace(/viewBox=(["'])00(\d{4})(\d{3})\1/gi, (e, t, n, r) => `viewBox=${t}0 0 ${n} ${r}${t}`).replace(/(?<=,\d{3})(?=\d{3},)/g, " ").replace(/(?<=,\d{2})(?=\d{3},)/g, " ").replace(/(?<=,\d)(?=\d{3},)/g, " ").replace(/(\d+(?:px|rem|em|%))(?=\d+(?:px|rem|em|%|;|\b))/gi, "$1 ").replace(/(?<=[:\s])0(?=auto\b)/gi, "0 ").replace(/(?<=[:\s])0(?=\d+(?:px|rem|em|%))/gi, "0 ").replace(/(?<=[:\s])00(?=[;\s"'])/g, "0 0");
 }
-function $e(e, t) {
+function rt(e, t) {
 	let n = String(t || "").toUpperCase();
 	if ([
 		"CN",
@@ -10470,17 +10510,17 @@ function $e(e, t) {
 	let i = /A\s*股|A-shares?\b|\b\d{6}\.(?:SH|SZ|BJ)\b/i.test(e), a = /港股|Hong Kong stocks?|\b\d{4,5}\.HK\b/i.test(e), o = /美股|US stocks?|U\.S\. stocks?/i.test(e);
 	if (!(o && (i || a))) return i ? "CN" : a ? "HK" : o ? "US" : void 0;
 }
-function et(e, t) {
+function it(e, t) {
 	if (!e.trim() || /^<style data-financial-market=/.test(e)) return e;
-	let n = $e(e, t);
+	let n = rt(e, t);
 	return n ? `<style data-financial-market="${n}">:root{--sv-price-up:var(${n === "US" ? "--sv-gain" : "--sv-loss"})!important;--sv-price-down:var(${n === "US" ? "--sv-loss" : "--sv-gain"})!important}</style>` + e : e;
 }
-function tt(e = {}) {
-	let t = String(e.toolRawInput || e.rawArguments || ""), n = t ? te(t, "widget_code") : "", r = t ? te(t, "title") : "", i = t ? ne(t, "loading_messages") : [], a = et(Qe(e.code || e.widgetCode || e.widget_code || n || ""), e.financialMarket);
+function at(e = {}) {
+	let t = String(e.toolRawInput || e.rawArguments || ""), n = t ? te(t, "widget_code") : "", r = t ? te(t, "title") : "", i = t ? ne(t, "loading_messages") : [], a = it(nt(e.code || e.widgetCode || e.widget_code || n || ""), e.financialMarket);
 	return {
 		title: String(e.title || r || ""),
 		code: a,
-		exportCode: et(String(e.exportCode || e.export_code || a), e.financialMarket),
+		exportCode: it(String(e.exportCode || e.export_code || a), e.financialMarket),
 		loadingMessage: String(e.loadingMessage || e.loading_message || "正在生成可视化"),
 		loadingMessages: Array.isArray(e.loadingMessages) ? e.loadingMessages.map(String) : Array.isArray(e.loading_messages) ? e.loading_messages.map(String) : i,
 		loadingDwellMs: Number.isFinite(Number(e.loadingDwellMs)) ? Number(e.loadingDwellMs) : 0,
@@ -10491,8 +10531,7 @@ function tt(e = {}) {
 }
 //#endregion
 //#region frontend/streamviz-document.mjs
-var nt = g();
-function rt(e, t, n) {
+function ot(e, t, n) {
 	let r = (e) => {
 		if (!String(e || "").trim()) return e;
 		let r = n(e);
@@ -10510,26 +10549,26 @@ function rt(e, t, n) {
 }
 //#endregion
 //#region app/skills/streamviz/assets/open-layout.js?raw
-var it = "/* Visible framing, rather than a legacy card class, determines safe insets. */\n(() => {\n  const roots='[data-aime-streamviz-root],[data-visualize-root]';\n  const components='.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-metric,[data-sv-metric]';\n  const transparent=color=>!color||color==='transparent'||/rgba\\([^)]*,\\s*0(?:\\.0+)?\\)$|\\/\\s*0(?:\\.0+)?%?\\s*\\)$/.test(color);\n  const repair=()=>document.querySelectorAll(roots).forEach(root=>{\n    const nodes=[...(root.matches(components)?[root]:[]),...root.querySelectorAll(components)];\n    for(const node of nodes){\n      const style=getComputedStyle(node);\n      const border=['Top','Right','Bottom','Left'].some(side=>\n        parseFloat(style['border'+side+'Width'])>0&&!['none','hidden'].includes(style['border'+side+'Style'])&&!transparent(style['border'+side+'Color']));\n      const open=!border&&transparent(style.backgroundColor)&&(!style.backgroundImage||style.backgroundImage==='none')&&(!style.boxShadow||style.boxShadow==='none');\n      if(open){if(node.dataset.svUnframed!=='true')node.dataset.svUnframed='true';}\n      else if(node.hasAttribute('data-sv-unframed'))node.removeAttribute('data-sv-unframed');\n    }\n  });\n  let scheduled=false;\n  const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;repair();});}};\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n  document.fonts?.ready.then(schedule);\n  new MutationObserver(records=>{\n    if(records.some(record=>record.type==='attributes'?record.target.matches?.(components):\n      [...record.addedNodes].some(node=>node.nodeType===1&&(node.matches?.(components+',style,link')||node.querySelector?.(components)))))schedule();\n  }).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});\n})();\n", at = "/* SVG viewBox scales shapes; chart text retains its authored CSS-pixel size. */\n(() => {\n  const tracked=new WeakSet();\n  const repair=()=>document.querySelectorAll('svg[viewBox]').forEach(svg=>{\n    if(tracked.has(svg)||!svg.querySelector('polyline[points],rect')||typeof svg.getScreenCTM!=='function')return;\n    const texts=[...svg.querySelectorAll('text')];\n    if(!texts.length)return;\n    tracked.add(svg);\n    const labels=[...svg.querySelectorAll('text,tspan[font-size],tspan[style*=\"font-size\"]')].map(node=>({node,size:Math.max(11,parseFloat(getComputedStyle(node).fontSize)||11)}));\n    const originalMin=parseFloat(svg.style.minWidth)||0;\n    const rows=new Map();\n    const box=svg.viewBox.baseVal;\n    for(const text of texts){\n      const x=Number(text.getAttribute('x')),y=Number(text.getAttribute('y'));\n      if(!text.hasAttribute('x')||!text.hasAttribute('y')||text.closest('[transform]')||!Number.isFinite(x+y)||y<box.y+box.height*.75)continue;\n      const key=Math.round(y);if(!rows.has(key))rows.set(key,[]);rows.get(key).push({text,x});\n    }\n    let scheduled=false;\n    const layout=()=>{\n      scheduled=false;\n      for(const {node,size} of labels){\n        const matrix=node.getScreenCTM?.();\n        const scale=matrix&&Math.hypot(matrix.c,matrix.d);\n        if(!scale||!Number.isFinite(scale))continue;\n        const value=size/scale;\n        if(Math.abs(parseFloat(node.style.fontSize)-value)>.01||!node.style.fontSize)node.style.setProperty('font-size',value.toFixed(4)+'px','important');\n      }\n      // Keep every date tick. Dense axes scroll locally instead of overlapping\n      // labels or making the page wider on mobile.\n      let minimum=originalMin;\n      for(const row of rows.values()){\n        if(row.length<3)continue;\n        row.sort((a,b)=>a.x-b.x);\n        for(let i=1;i<row.length;i++){\n          const a=row[i-1],b=row[i],gap=b.x-a.x;if(gap<=0)continue;\n          const anchor=t=>getComputedStyle(t).textAnchor;\n          const aw=a.text.getBoundingClientRect().width,bw=b.text.getBoundingClientRect().width;\n          const right=anchor(a.text)==='end'?0:anchor(a.text)==='middle'?aw/2:aw;\n          const left=anchor(b.text)==='start'?0:anchor(b.text)==='middle'?bw/2:bw;\n          minimum=Math.max(minimum,(right+left+8)/gap*svg.viewBox.baseVal.width);\n        }\n      }\n      if(minimum>originalMin){\n        const value=Math.ceil(minimum)+'px';if(svg.style.minWidth!==value)svg.style.minWidth=value;\n        if(svg.parentElement){svg.parentElement.style.minWidth='0';svg.parentElement.style.overflowX='auto';}\n      }\n    };\n    const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(layout);}};\n    layout();document.fonts?.ready.then(schedule);\n    if(typeof ResizeObserver==='function')new ResizeObserver(schedule).observe(svg);\n  });\n  const schedule=()=>requestAnimationFrame(repair);\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n})();\n", ot = "/* Include endpoint labels inside the line plot, extending its grid and axes. */\n(() => {\n  const tracked = new WeakSet();\n  const repair = () => document.querySelectorAll('svg[viewBox]').forEach(svg => {\n    if (tracked.has(svg) || !svg.querySelector('polyline') || !svg.querySelector('text') || typeof svg.getBBox !== 'function') return;\n    const original = svg.getAttribute('viewBox').trim().split(/[ ,]+/).map(Number);\n    if (original.length !== 4 || !original.every(Number.isFinite) || original[2] <= 0 || original[3] <= 0) return;\n    tracked.add(svg);\n    // Only extend a shared horizontal plot boundary. Series coordinates and\n    // date ticks keep their original positions; the new space is a label lane.\n    const polylines = [...svg.querySelectorAll('polyline[points]')];\n    const series = polylines.map(line => line.getAttribute('points').trim().split(/[,\\s]+/).map(Number));\n    const endX = series[0]?.at(-2);\n    const sharedEnd = Number.isFinite(endX) && series.every(points =>\n      points.length >= 4 && points.every(Number.isFinite) && Math.abs(points.at(-2)-endX)<1 &&\n      points.filter((_,i)=>i%2===0).every(x=>x<=endX+1));\n    const untransformed = node => !node.closest('[transform]');\n    const grid = sharedEnd ? [...svg.querySelectorAll('line')].filter(line =>\n      untransformed(line) && Math.abs(Number(line.getAttribute('y1'))-Number(line.getAttribute('y2')))<0.01 &&\n      Math.abs(Number(line.getAttribute('x2'))-endX)<1 && Number(line.getAttribute('x1'))<endX) : [];\n    const labels = grid.length ? [...svg.querySelectorAll('text')].filter(text =>\n      untransformed(text) && typeof text.getBBox === 'function' && text.getBBox().x>=endX-1) : [];\n    let scheduled=false;\n    const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;layout();});}};\n    const layout = () => {\n      if (labels.length) {\n        const right = Math.max(endX,...labels.map(text => { const b=text.getBBox(); return b.x+b.width+8; }));\n        for (const line of grid) line.setAttribute('x2',String(right));\n      }\n      let bounds;\n      try { bounds = svg.getBBox(); } catch { return; }\n      if (!bounds.width || !bounds.height) return;\n      const [x,y,width,height] = original;\n      const component=svg.closest('.card,.panel,.sv-card,[data-sv-card]');\n      const open=component?component.dataset.svUnframed==='true':Boolean(svg.closest('[data-aime-streamviz-root],[data-visualize-root]'));\n      const matrix=svg.getScreenCTM?.();\n      const scale=matrix&&Math.hypot(matrix.a,matrix.b);\n      const inset=scale?1/scale:1;\n      // A borderless plot starts at its first visible glyph, not the original\n      // viewBox's unused gutter. Preserve one pixel for antialiasing/strokes.\n      const left=open?bounds.x-inset:Math.min(x,bounds.x-4);\n      const top=Math.min(y,bounds.y-4);\n      const right=open?bounds.x+bounds.width+inset:Math.max(x+width,bounds.x+bounds.width+4);\n      const bottom = Math.max(y+height,bounds.y+bounds.height+4);\n      const next=[left,top,right-left,bottom-top];\n      const current=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);\n      if (next.some((value,index)=>Math.abs(value-current[index])>.02)) {\n        svg.setAttribute('viewBox',next.join(' '));\n        svg.dataset.svLineLabelLayout = 'true';\n      }\n    };\n    layout();\n    document.fonts?.ready.then(schedule);\n    if (typeof ResizeObserver === 'function') new ResizeObserver(schedule).observe(svg);\n    new MutationObserver(schedule).observe(svg,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});\n  });\n  const schedule = () => requestAnimationFrame(repair);\n  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',schedule,{once:true}); else schedule();\n})();\n", st = "/* Keep SVG geometry responsive while labels and endpoint markers retain pixel dimensions. */\n(() => {\n  const repair = () => document.querySelectorAll('.chartbox svg[viewBox][preserveAspectRatio=\"none\"]:not([data-sv-geometry])').forEach(svg => {\n    if (!svg.matches('.line,.hist,.xlab')) return;\n    const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);\n    if(original.length!==4||!original.every(Number.isFinite))return;\n    svg.dataset.svGeometry='true';\n    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';\n    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';\n    const wrap=document.createElement('div');wrap.className='sv-geometry';\n    Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});\n    svg.before(wrap);wrap.append(svg);\n    svg.closest('.chartbox').style.overflowX='auto';\n    const labels=[...svg.querySelectorAll(':scope > text')].map(text=>{\n      const label=document.createElement('span');label.textContent=text.textContent;\n      const anchor=text.getAttribute('text-anchor')||'start';\n      Object.assign(label.style,{position:'absolute',fontSize:parseFloat(text.getAttribute('font-size')||'12')+'px',lineHeight:'1',whiteSpace:'nowrap',pointerEvents:'none',color:text.getAttribute('fill')||'var(--sv-text-secondary)',transform:`translate(${anchor==='middle'?'-50%':anchor==='end'?'-100%':'0'},-80%)`});\n      wrap.append(label);text.remove();return {label,x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))};\n    });\n    const dots=[...svg.querySelectorAll(':scope > circle')].map(circle=>{\n      const dot=document.createElement('span');Object.assign(dot.style,{position:'absolute',width:'7px',height:'7px',borderRadius:'50%',background:circle.getAttribute('fill'),transform:'translate(-50%,-50%)',pointerEvents:'none'});\n      wrap.append(dot);circle.remove();return {label:dot,x:Number(circle.getAttribute('cx')),y:Number(circle.getAttribute('cy'))};\n    });\n    let minY=original[1];\n    for(const line of svg.querySelectorAll('polyline[points]'))for(const point of line.getAttribute('points').trim().split(/\\s+/)){const y=Number(point.split(',')[1]);if(Number.isFinite(y))minY=Math.min(minY,y);}\n    // The saved report's x labels are siblings rather than children of .xl.\n    const external=svg.matches('.line')?svg.closest('.chartbox').nextElementSibling:null;\n    const xlabels=external?.matches('.xl')?[...external.querySelectorAll('span')].map(label=>({label,x:parseFloat(label.style.left)/100*original[2]})):[];\n    const layout=()=>{\n      const rect=svg.getBoundingClientRect();if(!rect.width||!rect.height)return;\n      const dx=5*original[2]/rect.width,dy=svg.matches('.xlab')?0:8*original[3]/rect.height;\n      const box=[original[0]-dx,minY-dy,original[2]+2*dx,original[1]+original[3]-minY+2*dy];\n      svg.setAttribute('viewBox',box.join(' '));\n      for(const {label,x,y} of [...labels,...dots]){label.style.left=(x-box[0])/box[2]*100+'%';label.style.top=(y-box[1])/box[3]*100+'%';}\n      for(const {label,x} of xlabels)label.style.left=(x-box[0])/box[2]*100+'%';\n    };\n    layout();if(typeof ResizeObserver==='function')new ResizeObserver(layout).observe(wrap);\n  });\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();\n})();\n\n\n// Repair confidently identified ranked bars, including legacy generated SVGs.\n// Keep every supplied mark/value; change only text placement and canvas bounds.\n(() => {\n  const repair = () => document.querySelectorAll('svg[viewBox]:not([data-sv-bar-layout])').forEach(svg => {\n    if (typeof svg.getBBox !== 'function') return;\n    const box=svg.viewBox.baseVal;\n    if (!box.width || !box.height) return;\n    const bars=[...svg.querySelectorAll('rect')].filter(r=>r.width.baseVal.value>0 && r.height.baseVal.value>0);\n    if (bars.length<3 || bars.some(r=>r.height.baseVal.value>box.height/5)) return;\n    const rows=bars.map(bar=>({bar,x:bar.x.baseVal.value,y:bar.y.baseVal.value,w:bar.width.baseVal.value,h:bar.height.baseVal.value}));\n    if (rows.some((r,i)=>rows.some((q,j)=>j!==i && Math.abs(r.y-q.y)<Math.max(r.h,q.h)))) return;\n    const zero=[rows[0].x,rows[0].x+rows[0].w].find(x=>rows.every(r=>Math.abs(r.x-x)<1 || Math.abs(r.x+r.w-x)<1));\n    if (zero===undefined) return;\n    const texts=[...svg.querySelectorAll('text')];\n    for (const row of rows) {\n      const near=texts.filter(t=>{const y=t.y.baseVal[0]?.value;return y>=row.y && y<=row.y+row.h+2;});\n      // A shared category column just before zero plus one value per row.\n      row.category=near.find(t=>Math.abs((t.x.baseVal[0]?.value??Infinity)-(zero-10))<8);\n      row.value=near.find(t=>t!==row.category);\n      if (!row.category || !row.value || near.length!==2) return;\n    }\n    svg.dataset.svBarLayout='true';\n    let left=Math.min(...rows.map(r=>r.x));\n    for (const row of rows) {\n      const positive=Math.abs(row.x-zero)<1;\n      row.value.setAttribute('x',String(positive?row.x+row.w+8:row.x-8));\n      row.value.setAttribute('text-anchor',positive?'start':'end');\n      const bounds=row.value.getBBox();left=Math.min(left,bounds.x);\n    }\n    for (const row of rows) row.category.setAttribute('x',String(left-12));\n    const bounds=svg.getBBox();\n    if (bounds.width>0 && bounds.height>0) {\n      const x=Math.min(box.x,bounds.x-8),y=Math.min(box.y,bounds.y-8);\n      const right=Math.max(box.x+box.width,bounds.x+bounds.width+8),bottom=Math.max(box.y+box.height,bounds.y+bounds.height+8);\n      svg.setAttribute('viewBox',[x,y,right-x,bottom-y].join(' '));\n      // On narrow screens scroll the chart locally rather than shrink labels.\n      svg.style.minWidth=Math.ceil(right-x)+'px';\n      if(svg.parentElement){svg.parentElement.style.minWidth='0';svg.parentElement.style.overflowX='auto';}\n\n    }\n  });\n  const schedule=()=>requestAnimationFrame(repair);\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n  document.fonts?.ready.then(schedule);\n})();\n", ct = "/* Direction metadata is authoritative. Legacy repair is confined to financial\n   template values, never arbitrary percentages, prose, rankings or status text. */\n(() => {\n  if(window.__svFinancialSemantics)return;window.__svFinancialSemantics=true;\n  const repair=()=>{\n    document.querySelectorAll('.sv-rank>strong,.sv-metric>strong').forEach(node=>{\n      if(node.querySelector('[data-sv-direction]') || (node.hasAttribute('data-sv-direction')&&node.dataset.svDirectionOrigin!=='compat'))return;\n      const region=node.closest('[data-financial-market]');\n      const heading=node.closest('.sv-section')?.querySelector(':scope>h2')?.textContent||'';\n      const label=node.closest('.sv-metric')?.querySelector(':scope>p')?.textContent||'';\n      if(!region&&!/涨跌|涨幅|跌幅|领涨|领跌|强势行业|弱势行业|收益率|return|price change/i.test(heading+' '+label))return;\n      const raw=node.textContent.trim().replace(/−/g,'-').replace(/％/g,'%');\n      if(!/^[+-]?(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?%$/.test(raw))return;\n      const value=Number(raw.slice(0,-1).replace(/,/g,''));\n      if(!Number.isFinite(value))return;\n      if(value!==0&&!/^[+-]/.test(raw))return;\n      node.dataset.svDirection=value>0?'up':value<0?'down':'flat';node.dataset.svDirectionOrigin='compat';\n    });\n  };\n  let pending=false;\n  const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;repair()})};\n  const start=()=>{repair();new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true})};\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();\n})();\n", lt = "(() => {\n  if(window.parent===window)return;\n  let enabled=Boolean(window.frameElement?.classList.contains(\"reportDocumentFrame\"));\n  const attach=()=>{\n    if(!enabled||!document?.documentElement)return;\n    const title=document.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');\n    if(!title?.textContent.trim())return;\n    let style=document.querySelector('[data-widget-title-action-style]');\n    if(!style){style=document.createElement('style');style.dataset.widgetTitleActionStyle='true';document.head.append(style);}\n    const actionStyle='[data-widget-title-action]{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start!important;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px!important;padding:5px 10px 5px 0!important;border:0;border-radius:6px;background:transparent;color:inherit;opacity:0;pointer-events:none;transition:opacity .15s ease;cursor:pointer;flex-shrink:0}html:hover [data-widget-title-action]{opacity:.65;pointer-events:auto}[data-widget-title-action]:hover,[data-widget-title-action]:focus-visible{opacity:1;pointer-events:auto;background:#8882}[data-widget-title-action] svg{position:static!important;inset:auto!important;transform:none!important;display:block;width:18px!important;height:18px!important;flex:none;fill:currentColor}';\n    if(style.textContent!==actionStyle)style.textContent=actionStyle;\n    const actionHost=title.closest('header')?.querySelector('[data-widget-title-action-anchor]')||title;\n    const existing=actionHost.querySelector('.artifactAddToWidget,[data-widget-title-action]')||title.querySelector('.artifactAddToWidget,[data-widget-title-action]');\n    if(existing){if(existing.parentElement!==actionHost)actionHost.append(existing);return;}\n    const button=document.createElement('button');button.type='button';button.dataset.widgetTitleAction='true';button.title='添加到 Widget';button.setAttribute('aria-label','添加到 Widget');\n    button.innerHTML=\"<svg viewBox=\\\"0 0 1024 1024\\\" aria-hidden=\\\"true\\\"><path d=\\\"M960 224a32 32 0 0 0-32-32h-832a32 32 0 0 0-31.488 26.24L64 224v704a32 32 0 0 0 26.24 31.488L96 960H512a32 32 0 1 1 0 64H96a96 96 0 0 1-95.552-86.784L0 928v-704a96 96 0 0 1 86.784-95.552L96 128h832a96 96 0 0 1 95.552 86.784L1024 224V512a32 32 0 1 1-64 0V224zM801.92 576c16.64 0 30.08 13.44 30.08 30.08V768l161.92 0.064c16.64 0 30.08 13.44 30.08 30.08v3.84c0 16.64-13.44 30.08-30.08 30.08L832 831.936v161.92c0 16.64-13.44 30.144-30.08 30.144h-3.84A30.08 30.08 0 0 1 768 993.92V831.936L606.08 832A30.08 30.08 0 0 1 576 801.92v-3.84c0-16.64 13.44-30.08 30.08-30.08l161.92-.064V606.08c0-16.64 13.44-30.08 30.08-30.08h3.84zM736 0a32 32 0 1 1 0 64h-448a32 32 0 0 1 0-64h448z\\\"/></svg>\";\n    button.addEventListener('click',event=>{\n      event.stopPropagation();\n      const detail={title:title.textContent.trim()};\n      try{\n        const shell=window.frameElement?.closest('.chatArtifactShell');\n        if(shell){parent.dispatchEvent(new parent.CustomEvent('mentora:add-artifact-to-widget',{detail:{...detail,url:shell.dataset.artifactUrl,trigger:button}}));return;}\n      }catch{}\n      parent.postMessage({type:'mentora:add-widget',...detail},'*');\n    });\n    title.style.overflow='visible';title.style.maxHeight='none';actionHost.append(button);\n  };\n  window.addEventListener('message',event=>{if(event.source===parent&&event.data?.type==='mentora:widget-control'){enabled=true;attach();}});\n  attach();\n  parent.postMessage({type:'mentora:widget-ready'},'*');\n  new MutationObserver(attach).observe(document.documentElement,{childList:true,subtree:true});\n})();\n", ut = /* @__PURE__ */ new WeakMap(), dt = /* @__PURE__ */ new Map();
-function ft() {
+var st = "/* Visible framing, rather than a legacy card class, determines safe insets. */\n(() => {\n  const roots='[data-aime-streamviz-root],[data-visualize-root]';\n  const components='.sv-native-canvas,.card,.panel,.sv-card,[data-sv-card],.sv-metric,[data-sv-metric]';\n  const transparent=color=>!color||color==='transparent'||/rgba\\([^)]*,\\s*0(?:\\.0+)?\\)$|\\/\\s*0(?:\\.0+)?%?\\s*\\)$/.test(color);\n  const repair=()=>document.querySelectorAll(roots).forEach(root=>{\n    const nodes=[...(root.matches(components)?[root]:[]),...root.querySelectorAll(components)];\n    for(const node of nodes){\n      const style=getComputedStyle(node);\n      const border=['Top','Right','Bottom','Left'].some(side=>\n        parseFloat(style['border'+side+'Width'])>0&&!['none','hidden'].includes(style['border'+side+'Style'])&&!transparent(style['border'+side+'Color']));\n      const open=!border&&transparent(style.backgroundColor)&&(!style.backgroundImage||style.backgroundImage==='none')&&(!style.boxShadow||style.boxShadow==='none');\n      if(open){if(node.dataset.svUnframed!=='true')node.dataset.svUnframed='true';}\n      else if(node.hasAttribute('data-sv-unframed'))node.removeAttribute('data-sv-unframed');\n    }\n  });\n  let scheduled=false;\n  const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;repair();});}};\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n  document.fonts?.ready.then(schedule);\n  new MutationObserver(records=>{\n    if(records.some(record=>record.type==='attributes'?record.target.matches?.(components):\n      [...record.addedNodes].some(node=>node.nodeType===1&&(node.matches?.(components+',style,link')||node.querySelector?.(components)))))schedule();\n  }).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});\n})();\n", ct = "/* SVG viewBox scales shapes; chart text retains its authored CSS-pixel size. */\n(() => {\n  const tracked=new WeakSet();\n  const repair=()=>document.querySelectorAll('svg[viewBox]').forEach(svg=>{\n    if(tracked.has(svg)||!svg.querySelector('polyline[points],rect')||typeof svg.getScreenCTM!=='function')return;\n    const texts=[...svg.querySelectorAll('text')];\n    if(!texts.length)return;\n    tracked.add(svg);\n    const labels=[...svg.querySelectorAll('text,tspan[font-size],tspan[style*=\"font-size\"]')].map(node=>({node,size:Math.max(11,parseFloat(getComputedStyle(node).fontSize)||11)}));\n    const originalMin=parseFloat(svg.style.minWidth)||0;\n    const rows=new Map();\n    const box=svg.viewBox.baseVal;\n    for(const text of texts){\n      const x=Number(text.getAttribute('x')),y=Number(text.getAttribute('y'));\n      if(!text.hasAttribute('x')||!text.hasAttribute('y')||text.closest('[transform]')||!Number.isFinite(x+y)||y<box.y+box.height*.75)continue;\n      const key=Math.round(y);if(!rows.has(key))rows.set(key,[]);rows.get(key).push({text,x});\n    }\n    let scheduled=false;\n    const layout=()=>{\n      scheduled=false;\n      for(const {node,size} of labels){\n        const matrix=node.getScreenCTM?.();\n        const scale=matrix&&Math.hypot(matrix.c,matrix.d);\n        if(!scale||!Number.isFinite(scale))continue;\n        const value=size/scale;\n        if(Math.abs(parseFloat(node.style.fontSize)-value)>.01||!node.style.fontSize)node.style.setProperty('font-size',value.toFixed(4)+'px','important');\n      }\n      // Keep every date tick. Dense axes scroll locally instead of overlapping\n      // labels or making the page wider on mobile.\n      let minimum=originalMin;\n      for(const row of rows.values()){\n        if(row.length<3)continue;\n        row.sort((a,b)=>a.x-b.x);\n        for(let i=1;i<row.length;i++){\n          const a=row[i-1],b=row[i],gap=b.x-a.x;if(gap<=0)continue;\n          const anchor=t=>getComputedStyle(t).textAnchor;\n          const aw=a.text.getBoundingClientRect().width,bw=b.text.getBoundingClientRect().width;\n          const right=anchor(a.text)==='end'?0:anchor(a.text)==='middle'?aw/2:aw;\n          const left=anchor(b.text)==='start'?0:anchor(b.text)==='middle'?bw/2:bw;\n          minimum=Math.max(minimum,(right+left+8)/gap*svg.viewBox.baseVal.width);\n        }\n      }\n      if(minimum>originalMin){\n        const value=Math.ceil(minimum)+'px';if(svg.style.minWidth!==value)svg.style.minWidth=value;\n        if(svg.parentElement){svg.parentElement.style.minWidth='0';svg.parentElement.style.overflowX='auto';}\n      }\n    };\n    const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(layout);}};\n    layout();document.fonts?.ready.then(schedule);\n    if(typeof ResizeObserver==='function')new ResizeObserver(schedule).observe(svg);\n  });\n  const schedule=()=>requestAnimationFrame(repair);\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n})();\n", lt = "/* Include endpoint labels inside the line plot, extending its grid and axes. */\n(() => {\n  const tracked = new WeakSet();\n  const repair = () => document.querySelectorAll('svg[viewBox]').forEach(svg => {\n    if (tracked.has(svg) || !svg.querySelector('polyline') || !svg.querySelector('text') || typeof svg.getBBox !== 'function') return;\n    const original = svg.getAttribute('viewBox').trim().split(/[ ,]+/).map(Number);\n    if (original.length !== 4 || !original.every(Number.isFinite) || original[2] <= 0 || original[3] <= 0) return;\n    tracked.add(svg);\n    // Only extend a shared horizontal plot boundary. Series coordinates and\n    // date ticks keep their original positions; the new space is a label lane.\n    const polylines = [...svg.querySelectorAll('polyline[points]')];\n    const series = polylines.map(line => line.getAttribute('points').trim().split(/[,\\s]+/).map(Number));\n    const endX = series[0]?.at(-2);\n    const sharedEnd = Number.isFinite(endX) && series.every(points =>\n      points.length >= 4 && points.every(Number.isFinite) && Math.abs(points.at(-2)-endX)<1 &&\n      points.filter((_,i)=>i%2===0).every(x=>x<=endX+1));\n    const untransformed = node => !node.closest('[transform]');\n    const grid = sharedEnd ? [...svg.querySelectorAll('line')].filter(line =>\n      untransformed(line) && Math.abs(Number(line.getAttribute('y1'))-Number(line.getAttribute('y2')))<0.01 &&\n      Math.abs(Number(line.getAttribute('x2'))-endX)<1 && Number(line.getAttribute('x1'))<endX) : [];\n    const labels = grid.length ? [...svg.querySelectorAll('text')].filter(text =>\n      untransformed(text) && typeof text.getBBox === 'function' && text.getBBox().x>=endX-1) : [];\n    let scheduled=false;\n    const schedule=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;layout();});}};\n    const layout = () => {\n      if (labels.length) {\n        const right = Math.max(endX,...labels.map(text => { const b=text.getBBox(); return b.x+b.width+8; }));\n        for (const line of grid) line.setAttribute('x2',String(right));\n      }\n      let bounds;\n      try { bounds = svg.getBBox(); } catch { return; }\n      if (!bounds.width || !bounds.height) return;\n      const [x,y,width,height] = original;\n      const component=svg.closest('.card,.panel,.sv-card,[data-sv-card]');\n      const open=component?component.dataset.svUnframed==='true':Boolean(svg.closest('[data-aime-streamviz-root],[data-visualize-root]'));\n      const matrix=svg.getScreenCTM?.();\n      const scale=matrix&&Math.hypot(matrix.a,matrix.b);\n      const inset=scale?1/scale:1;\n      // A borderless plot starts at its first visible glyph, not the original\n      // viewBox's unused gutter. Preserve one pixel for antialiasing/strokes.\n      const left=open?bounds.x-inset:Math.min(x,bounds.x-4);\n      const top=Math.min(y,bounds.y-4);\n      const right=open?bounds.x+bounds.width+inset:Math.max(x+width,bounds.x+bounds.width+4);\n      const bottom = Math.max(y+height,bounds.y+bounds.height+4);\n      const next=[left,top,right-left,bottom-top];\n      const current=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);\n      if (next.some((value,index)=>Math.abs(value-current[index])>.02)) {\n        svg.setAttribute('viewBox',next.join(' '));\n        svg.dataset.svLineLabelLayout = 'true';\n      }\n    };\n    layout();\n    document.fonts?.ready.then(schedule);\n    if (typeof ResizeObserver === 'function') new ResizeObserver(schedule).observe(svg);\n    new MutationObserver(schedule).observe(svg,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});\n  });\n  const schedule = () => requestAnimationFrame(repair);\n  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',schedule,{once:true}); else schedule();\n})();\n", ut = "/* Keep SVG geometry responsive while labels and endpoint markers retain pixel dimensions. */\n(() => {\n  const repair = () => document.querySelectorAll('.chartbox svg[viewBox][preserveAspectRatio=\"none\"]:not([data-sv-geometry])').forEach(svg => {\n    if (!svg.matches('.line,.hist,.xlab')) return;\n    const original=svg.getAttribute('viewBox').split(/[ ,]+/).map(Number);\n    if(original.length!==4||!original.every(Number.isFinite))return;\n    svg.dataset.svGeometry='true';\n    if(svg.matches('.hist'))svg.style.height='clamp(260px,26vw,360px)';\n    if(svg.matches('.line'))svg.style.height='clamp(260px,28vw,380px)';\n    const wrap=document.createElement('div');wrap.className='sv-geometry';\n    Object.assign(wrap.style,{position:'relative',width:'100%',minWidth:svg.closest('.chartbox').querySelector('.hist')?'624px':'0'});\n    svg.before(wrap);wrap.append(svg);\n    svg.closest('.chartbox').style.overflowX='auto';\n    const labels=[...svg.querySelectorAll(':scope > text')].map(text=>{\n      const label=document.createElement('span');label.textContent=text.textContent;\n      const anchor=text.getAttribute('text-anchor')||'start';\n      Object.assign(label.style,{position:'absolute',fontSize:parseFloat(text.getAttribute('font-size')||'12')+'px',lineHeight:'1',whiteSpace:'nowrap',pointerEvents:'none',color:text.getAttribute('fill')||'var(--sv-text-secondary)',transform:`translate(${anchor==='middle'?'-50%':anchor==='end'?'-100%':'0'},-80%)`});\n      wrap.append(label);text.remove();return {label,x:Number(text.getAttribute('x')),y:Number(text.getAttribute('y'))};\n    });\n    const dots=[...svg.querySelectorAll(':scope > circle')].map(circle=>{\n      const dot=document.createElement('span');Object.assign(dot.style,{position:'absolute',width:'7px',height:'7px',borderRadius:'50%',background:circle.getAttribute('fill'),transform:'translate(-50%,-50%)',pointerEvents:'none'});\n      wrap.append(dot);circle.remove();return {label:dot,x:Number(circle.getAttribute('cx')),y:Number(circle.getAttribute('cy'))};\n    });\n    let minY=original[1];\n    for(const line of svg.querySelectorAll('polyline[points]'))for(const point of line.getAttribute('points').trim().split(/\\s+/)){const y=Number(point.split(',')[1]);if(Number.isFinite(y))minY=Math.min(minY,y);}\n    // The saved report's x labels are siblings rather than children of .xl.\n    const external=svg.matches('.line')?svg.closest('.chartbox').nextElementSibling:null;\n    const xlabels=external?.matches('.xl')?[...external.querySelectorAll('span')].map(label=>({label,x:parseFloat(label.style.left)/100*original[2]})):[];\n    const layout=()=>{\n      const rect=svg.getBoundingClientRect();if(!rect.width||!rect.height)return;\n      const dx=5*original[2]/rect.width,dy=svg.matches('.xlab')?0:8*original[3]/rect.height;\n      const box=[original[0]-dx,minY-dy,original[2]+2*dx,original[1]+original[3]-minY+2*dy];\n      svg.setAttribute('viewBox',box.join(' '));\n      for(const {label,x,y} of [...labels,...dots]){label.style.left=(x-box[0])/box[2]*100+'%';label.style.top=(y-box[1])/box[3]*100+'%';}\n      for(const {label,x} of xlabels)label.style.left=(x-box[0])/box[2]*100+'%';\n    };\n    layout();if(typeof ResizeObserver==='function')new ResizeObserver(layout).observe(wrap);\n  });\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repair,{once:true});else repair();\n})();\n\n\n// Repair confidently identified ranked bars, including legacy generated SVGs.\n// Keep every supplied mark/value; change only text placement and canvas bounds.\n(() => {\n  const repair = () => document.querySelectorAll('svg[viewBox]:not([data-sv-bar-layout])').forEach(svg => {\n    if (typeof svg.getBBox !== 'function') return;\n    const box=svg.viewBox.baseVal;\n    if (!box.width || !box.height) return;\n    const bars=[...svg.querySelectorAll('rect')].filter(r=>r.width.baseVal.value>0 && r.height.baseVal.value>0);\n    if (bars.length<3 || bars.some(r=>r.height.baseVal.value>box.height/5)) return;\n    const rows=bars.map(bar=>({bar,x:bar.x.baseVal.value,y:bar.y.baseVal.value,w:bar.width.baseVal.value,h:bar.height.baseVal.value}));\n    if (rows.some((r,i)=>rows.some((q,j)=>j!==i && Math.abs(r.y-q.y)<Math.max(r.h,q.h)))) return;\n    const zero=[rows[0].x,rows[0].x+rows[0].w].find(x=>rows.every(r=>Math.abs(r.x-x)<1 || Math.abs(r.x+r.w-x)<1));\n    if (zero===undefined) return;\n    const texts=[...svg.querySelectorAll('text')];\n    for (const row of rows) {\n      const near=texts.filter(t=>{const y=t.y.baseVal[0]?.value;return y>=row.y && y<=row.y+row.h+2;});\n      // A shared category column just before zero plus one value per row.\n      row.category=near.find(t=>Math.abs((t.x.baseVal[0]?.value??Infinity)-(zero-10))<8);\n      row.value=near.find(t=>t!==row.category);\n      if (!row.category || !row.value || near.length!==2) return;\n    }\n    svg.dataset.svBarLayout='true';\n    let left=Math.min(...rows.map(r=>r.x));\n    for (const row of rows) {\n      const positive=Math.abs(row.x-zero)<1;\n      row.value.setAttribute('x',String(positive?row.x+row.w+8:row.x-8));\n      row.value.setAttribute('text-anchor',positive?'start':'end');\n      const bounds=row.value.getBBox();left=Math.min(left,bounds.x);\n    }\n    for (const row of rows) row.category.setAttribute('x',String(left-12));\n    const bounds=svg.getBBox();\n    if (bounds.width>0 && bounds.height>0) {\n      const x=Math.min(box.x,bounds.x-8),y=Math.min(box.y,bounds.y-8);\n      const right=Math.max(box.x+box.width,bounds.x+bounds.width+8),bottom=Math.max(box.y+box.height,bounds.y+bounds.height+8);\n      svg.setAttribute('viewBox',[x,y,right-x,bottom-y].join(' '));\n      // On narrow screens scroll the chart locally rather than shrink labels.\n      svg.style.minWidth=Math.ceil(right-x)+'px';\n      if(svg.parentElement){svg.parentElement.style.minWidth='0';svg.parentElement.style.overflowX='auto';}\n\n    }\n  });\n  const schedule=()=>requestAnimationFrame(repair);\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();\n  document.fonts?.ready.then(schedule);\n})();\n", dt = "/* Direction metadata is authoritative. Legacy repair is confined to financial\n   template values, never arbitrary percentages, prose, rankings or status text. */\n(() => {\n  if(window.__svFinancialSemantics)return;window.__svFinancialSemantics=true;\n  const repair=()=>{\n    document.querySelectorAll('.sv-rank>strong,.sv-metric>strong').forEach(node=>{\n      if(node.querySelector('[data-sv-direction]') || (node.hasAttribute('data-sv-direction')&&node.dataset.svDirectionOrigin!=='compat'))return;\n      const region=node.closest('[data-financial-market]');\n      const heading=node.closest('.sv-section')?.querySelector(':scope>h2')?.textContent||'';\n      const label=node.closest('.sv-metric')?.querySelector(':scope>p')?.textContent||'';\n      if(!region&&!/涨跌|涨幅|跌幅|领涨|领跌|强势行业|弱势行业|收益率|return|price change/i.test(heading+' '+label))return;\n      const raw=node.textContent.trim().replace(/−/g,'-').replace(/％/g,'%');\n      if(!/^[+-]?(?:\\d{1,3}(?:,\\d{3})+|\\d+)(?:\\.\\d+)?%$/.test(raw))return;\n      const value=Number(raw.slice(0,-1).replace(/,/g,''));\n      if(!Number.isFinite(value))return;\n      if(value!==0&&!/^[+-]/.test(raw))return;\n      node.dataset.svDirection=value>0?'up':value<0?'down':'flat';node.dataset.svDirectionOrigin='compat';\n    });\n  };\n  let pending=false;\n  const schedule=()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;repair()})};\n  const start=()=>{repair();new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true,characterData:true})};\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();\n})();\n", ft = "(() => {\n  if(window.parent===window)return;\n  let enabled=Boolean(window.frameElement?.classList.contains(\"reportDocumentFrame\"));\n  const attach=()=>{\n    if(!enabled||!document?.documentElement)return;\n    const title=document.querySelector('.kline-title strong[data-business-title],.chart-title,.waterfall-title,.treemap-title,.pie-title,.card-title,#title,h1,h2');\n    if(!title?.textContent.trim())return;\n    let style=document.querySelector('[data-widget-title-action-style]');\n    if(!style){style=document.createElement('style');style.dataset.widgetTitleActionStyle='true';document.head.append(style);}\n    const actionStyle='[data-widget-title-action]{display:inline-flex!important;position:static!important;vertical-align:middle;align-items:center;justify-content:flex-start!important;box-sizing:border-box;width:28px;height:28px;margin:0 0 0 6px!important;padding:5px 10px 5px 0!important;border:0;border-radius:6px;background:transparent;color:inherit;opacity:0;pointer-events:none;transition:opacity .15s ease;cursor:pointer;flex-shrink:0}html:hover [data-widget-title-action]{opacity:.65;pointer-events:auto}[data-widget-title-action]:hover,[data-widget-title-action]:focus-visible{opacity:1;pointer-events:auto;background:#8882}[data-widget-title-action] svg{position:static!important;inset:auto!important;transform:none!important;display:block;width:18px!important;height:18px!important;flex:none;fill:currentColor}';\n    if(style.textContent!==actionStyle)style.textContent=actionStyle;\n    const actionHost=title.closest('header')?.querySelector('[data-widget-title-action-anchor]')||title;\n    const existing=actionHost.querySelector('.artifactAddToWidget,[data-widget-title-action]')||title.querySelector('.artifactAddToWidget,[data-widget-title-action]');\n    if(existing){if(existing.parentElement!==actionHost)actionHost.append(existing);return;}\n    const button=document.createElement('button');button.type='button';button.dataset.widgetTitleAction='true';button.title='添加到 Widget';button.setAttribute('aria-label','添加到 Widget');\n    button.innerHTML=\"<svg viewBox=\\\"0 0 1024 1024\\\" aria-hidden=\\\"true\\\"><path d=\\\"M960 224a32 32 0 0 0-32-32h-832a32 32 0 0 0-31.488 26.24L64 224v704a32 32 0 0 0 26.24 31.488L96 960H512a32 32 0 1 1 0 64H96a96 96 0 0 1-95.552-86.784L0 928v-704a96 96 0 0 1 86.784-95.552L96 128h832a96 96 0 0 1 95.552 86.784L1024 224V512a32 32 0 1 1-64 0V224zM801.92 576c16.64 0 30.08 13.44 30.08 30.08V768l161.92 0.064c16.64 0 30.08 13.44 30.08 30.08v3.84c0 16.64-13.44 30.08-30.08 30.08L832 831.936v161.92c0 16.64-13.44 30.144-30.08 30.144h-3.84A30.08 30.08 0 0 1 768 993.92V831.936L606.08 832A30.08 30.08 0 0 1 576 801.92v-3.84c0-16.64 13.44-30.08 30.08-30.08l161.92-.064V606.08c0-16.64 13.44-30.08 30.08-30.08h3.84zM736 0a32 32 0 1 1 0 64h-448a32 32 0 0 1 0-64h448z\\\"/></svg>\";\n    button.addEventListener('click',event=>{\n      event.stopPropagation();\n      const detail={title:title.textContent.trim()};\n      try{\n        const shell=window.frameElement?.closest('.chatArtifactShell');\n        if(shell){parent.dispatchEvent(new parent.CustomEvent('mentora:add-artifact-to-widget',{detail:{...detail,url:shell.dataset.artifactUrl,trigger:button}}));return;}\n      }catch{}\n      parent.postMessage({type:'mentora:add-widget',...detail},'*');\n    });\n    title.style.overflow='visible';title.style.maxHeight='none';actionHost.append(button);\n  };\n  window.addEventListener('message',event=>{if(event.source===parent&&event.data?.type==='mentora:widget-control'){enabled=true;attach();}});\n  attach();\n  parent.postMessage({type:'mentora:widget-ready'},'*');\n  new MutationObserver(attach).observe(document.documentElement,{childList:true,subtree:true});\n})();\n", pt = /* @__PURE__ */ new WeakMap(), mt = /* @__PURE__ */ new Map();
+function ht() {
 	return { mode: document.documentElement.dataset.theme === "dark" ? "dark" : "light" };
 }
-function pt(e, t = {}) {
+function gt(e, t = {}) {
 	if (!(e instanceof Element)) return null;
-	let n = ut.get(e);
-	n || (n = (0, nt.createRoot)(e), ut.set(e, n)), dt.set(e, t);
-	let r = rt(tt(t), [
-		["data-sv-open-layout", it],
-		["data-sv-chart-geometry", st],
-		["data-sv-svg-typography", at],
-		["data-sv-line-label-layout-v2", ot],
-		["data-sv-financial-semantics", ct],
-		["data-widget-control", lt]
+	let n = pt.get(e);
+	n || (n = (0, Be.createRoot)(e), pt.set(e, n)), mt.set(e, t);
+	let r = ot(at(t), [
+		["data-sv-open-layout", st],
+		["data-sv-chart-geometry", ut],
+		["data-sv-svg-typography", ct],
+		["data-sv-line-label-layout-v2", lt],
+		["data-sv-financial-semantics", dt],
+		["data-widget-control", ft]
 	], S);
-	return n.render(/* @__PURE__ */ (0, Ue.jsx)(Ze, {
+	return n.render(/* @__PURE__ */ (0, qe.jsx)(tt, {
 		...r,
 		renderIcon: () => null,
-		theme: ft(),
+		theme: ht(),
 		notify: (e, t) => {
 			window.dispatchEvent(new CustomEvent("aime:streamviz-notify", { detail: {
 				message: e,
@@ -10541,16 +10580,17 @@ function pt(e, t = {}) {
 		}
 	})), e;
 }
-function mt(e) {
-	let t = ut.get(e);
-	t && (t.unmount(), ut.delete(e), dt.delete(e));
+function _t(e) {
+	let t = pt.get(e);
+	t && (t.unmount(), pt.delete(e), mt.delete(e));
 }
 window.AimeStreamViz = Object.freeze({
-	mount: pt,
-	update: pt,
-	unmount: mt
+	mount: gt,
+	update: gt,
+	unmount: _t,
+	styleActionCards: (e) => Ve(e, Ue)
 }), window.addEventListener("aime:theme-change", () => {
-	dt.forEach((e, t) => pt(t, e));
+	mt.forEach((e, t) => gt(t, e));
 }), window.dispatchEvent(new CustomEvent("aime:streamviz-ready"));
 //#endregion
 

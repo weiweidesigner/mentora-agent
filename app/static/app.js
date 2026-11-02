@@ -1327,6 +1327,11 @@ function createArtifactFallbackFrame(item, index, options = {}) {
       if (root) root.dataset.theme = new URL(frame.src).searchParams.get("theme") || currentThemeMode();
     }
     const doc = frame.contentDocument;
+    const styleCards = () => {
+      if (doc && frame.contentDocument === doc && window.AimeStreamViz?.styleActionCards?.(doc)) resizeReportDocumentFrame(frame);
+    };
+    styleCards();
+    if (!window.AimeStreamViz) window.addEventListener('aime:streamviz-ready', styleCards, {once: true});
     if (doc?.head && !doc.documentElement.dataset.businessUi && !doc.querySelector('[data-case-palette]')) {
       const sharedControls = doc.createElement('script');
       const runtimeScript = document.querySelector('script[src*="/static/app.js"]');

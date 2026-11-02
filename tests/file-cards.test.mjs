@@ -11,13 +11,13 @@ function setup(){
  w.fetch=async()=>({ok:true});w.closeActivityDrawer=()=>{};w.setSidebarCollapsed=value=>w.document.querySelector('.shell').classList.toggle('sidebar-collapsed',value);
  w.eval(source.slice(start,end));return {dom,w,article:w.document.querySelector('article')};
 }
-test('generated file cards use compact spacing and a slightly wider desktop row',()=>{
+test('navigation and file cards share their fixed compact geometry and hover-only actions',()=>{
+ const cards=readFileSync(new URL('../app/static/action-cards.css',import.meta.url),'utf8');
  assert.match(styles,/\.generatedFileList\{[^}]*margin:8px 0 8px;/);
- assert.match(styles,/\.generatedFileCard\{[^}]*width:min\(100%,420px\);max-width:100%;/);
- assert.match(styles,/\.generatedFileCard\{[^}]*border:1px solid var\(--line\);[^}]*background:var\(--soft\);/);
- assert.match(styles,/\.generatedFileDownload\{[^}]*background:transparent;[^}]*opacity:0;/);
- assert.match(styles,/\.generatedFileDownload:hover,\.generatedFileDownload:focus-visible\{background:var\(--soft-2\)\}/);
- assert.match(styles,/@media\(max-width:640px\)\{\.generatedFileCard\{width:100%;/);
+ assert.match(styles,/@import url\("\.\/action-cards\.css/);
+ assert.match(cards,/\.generatedFileCard,\.mentoraNavigationCard\{[^}]*width:min\(100%,420px\)!important;[^}]*height:60px!important;/);
+ assert.match(cards,/opacity:0!important;visibility:hidden/);
+ assert.match(cards,/\.mentoraNavigationCard:is\(:hover,:focus-visible\) \.mentoraActionDirection\{opacity:1!important/);
 });
 test('activity file names underline only on hover and inline diffs keep their own card',()=>{
  assert.match(styles,/\.activityFileChangeName\{[^}]*text-decoration:none/);

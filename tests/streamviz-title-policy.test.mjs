@@ -77,3 +77,14 @@ test('saved HTML keeps its heading and heading-free charts keep the generated ti
 test('runtime adapter fails explicitly if an upstream upgrade changes the insertion point', () => {
   assert.throws(() => applyStreamTitlePolicy('unrelated runtime'), /review the pinned runtime/);
 });
+
+test('saved navigation cards are normalized inside the real runtime without a second card title', async () => {
+  const f=fixture();
+  try {
+    await f.update('<main><a class="entry" href="https://www.ainvest.com/market/calendar/earnings/" target="_blank" rel="noopener noreferrer"><svg class="icon"></svg><span class="name">财报日历</span><svg class="arrow"></svg></a></main>',true,'财报日历');
+    assert.equal(f.root.querySelectorAll('.mentoraNavigationCard').length,1);
+    assert.equal(f.root.querySelectorAll('.mentoraActionDirection').length,1);
+    assert.equal(f.root.querySelectorAll('[data-visualize-title]').length,0);
+    assert.equal(f.root.querySelectorAll('[data-mentora-action-cards]').length,1);
+  } finally {f.w.close();}
+});

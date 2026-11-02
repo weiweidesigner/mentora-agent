@@ -2,6 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { StreamVisualization, normalizeStreamVisualizationPayload, completeStreamHtml } from "streamviz-react";
 import { prepareStreamDocument } from "./streamviz-document.mjs";
+import { styleNavigationCards } from './action-card-policy.mjs';
+import actionCardCss from '../app/static/action-cards.css?raw';
 import "streamviz-react/styles.css";
 import openLayout from "../app/skills/streamviz/assets/open-layout.js?raw";
 import svgTypography from "../app/skills/streamviz/assets/svg-typography.js?raw";
@@ -58,7 +60,7 @@ function unmount(container) {
   mountedPayloads.delete(container);
 }
 
-window.AimeStreamViz = Object.freeze({ mount, update: mount, unmount });
+window.AimeStreamViz = Object.freeze({ mount, update: mount, unmount, styleActionCards: root => styleNavigationCards(root, actionCardCss) });
 window.addEventListener("aime:theme-change", () => {
   mountedPayloads.forEach((payload, container) => mount(container, payload));
 });
