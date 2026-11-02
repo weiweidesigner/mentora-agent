@@ -44,6 +44,16 @@ class QQVoice:
             db.execute('INSERT OR REPLACE INTO qq_voice_preferences VALUES(?,?)', (scope, int(enabled)))
         return '已允许语音，之后会按语境选择语音或文字。' if enabled else '已关闭语音，之后只回复文字。'
 
+    def send_song(self, job, receipt):
+        from app.qq_singing import validate
+        if not validate(receipt,folder=self.directory):return False
+        window = 270 if job['kind'] == 'groups' else 3500
+        if time.time()-job['created']>window:return False
+        base = os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')
+        self.client.voice_reply(job['kind'],job['target'],job['message_id'],
+                               base+'/api/qq/voice/'+receipt['id']+'.silk',sequence=3)
+        return True
+
     def send(self, job, text, *, proactive=False, before_send=None):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')
         payload = {'text': speech_text(text)}

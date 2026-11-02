@@ -988,6 +988,10 @@ app.include_router(create_character_router(CHARACTERS))
 
 def run_qq_chat(scope, question, history):
     import hashlib
+    import secrets
+    from app.qq_singing import context as singing_context, receipt_from_event
+    delivery_key = secrets.token_hex(16)
+    song_receipt = None
     from app.delivery_preferences import plain_text_delivery
     owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
     context = (
@@ -997,7 +1001,7 @@ def run_qq_chat(scope, question, history):
         '语音和现成表情由 QQ 通道自动处理，你只写自然的回复正文；不要宣称不能发语音或表情，也不要用字符画或素材文件名代替表情。'
         '按正常 Agent 流程判断是否需要项目技能查询数据或检索来源，保持证据真实、必要分析完整。'
         'QQ 不支持 HTML 或交互可视化：跳过可视化与报告渲染步骤，不调用图表、表格组件、'
-        'StreamViz、页面、HTML、PDF、图片或其他文件生成工具；不生成图表标记、附件、报告或分享页面。'
+        'StreamViz、页面、HTML、PDF、图片或报告文件生成工具；不生成图表标记、附件、报告或分享页面。'
         '即使资料或历史回答包含图表，也只提炼文字结论；用户问趋势、对比、财务或列表时，用简短文字表达。'
         '直接回答问题，默认约 100 至 300 字；简单闲聊用一两句，用户明确要求展开时再增加细节。'
         '先说结论，再给少量关键事实，必要时用 1 至 3 个简短条目；不写长篇报告、大标题、Markdown 表格、代码或渲染语法。'
@@ -1007,19 +1011,25 @@ def run_qq_chat(scope, question, history):
         '不要假设能访问网页用户的私人账户。\n\n用户消息：'
     )
     profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
-    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + '用户消息：'
+    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + singing_context(delivery_key) + '用户消息：'
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')
     answer = None
     with plain_text_delivery():
         for event, data in durable_chat_events(payload, owner):
+            if event == 'tool_step':
+                found = receipt_from_event(data, delivery_key)
+                if found: song_receipt = found
             if event == 'error':
                 raise RuntimeError('QQ research returned an error')
             if event == 'final':
                 answer = normalize_chat_result(data)
     if answer is None:
         raise RuntimeError('QQ research returned no final answer')
+    answer.pop('qqSong', None)
+    if song_receipt:
+        answer['qqSong'] = song_receipt
     return answer
 
 

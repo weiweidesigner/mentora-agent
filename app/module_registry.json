@@ -1,5 +1,11 @@
 [
   {
+    "name": "singing_render",
+    "script": "singing_render.py",
+    "label": "QQ 点歌与歌声转换",
+    "description": "用户明确要求唱歌/点歌时，查询真实本地曲库并使用 Seed-VC 生成固定角色声线的歌声片段。先 --operation catalog，再 --operation render --song-id 实际ID --voice-id companion --delivery-key 当前QQ轮次key --output JSON路径。未收录歌曲不得冒充可唱。生成真实SILK和签名回执交给QQ通道发送，不生成图表、HTML，不执行发送工具，不从任意URL抓音源。"
+  },
+  {
     "name": "pine_script",
     "script": "pine_script.py",
     "label": "Pine Script",

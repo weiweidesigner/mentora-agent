@@ -1,0 +1,18 @@
+{
+  "repository": "https://github.com/Plachtaa/seed-vc",
+  "revision": "51383efd921027683c89e5348211d93ff12ac2a8",
+  "python": "3.10",
+  "task": "f0-conditioned singing voice conversion",
+  "model": "Plachta/Seed-VC/DiT_seed_v2_uvit_whisper_base_f0_44k_bigvgan_pruned_ft_ema_v2.pth",
+  "config": "Plachta/Seed-VC/config_dit_mel_seed_uvit_whisper_base_f0_44k.yml",
+  "vocoder": "nvidia/bigvgan_v2_44khz_128band_512x",
+  "tokenizer": "openai/whisper-small",
+  "upstreamLicense": "GPL-3.0; external checkout and models are not vendored",
+  "validatedSnapshots": {
+    "lj1995/VoiceConversionWebUI": "e6d0c1a17da07c33557852f9dfa2bd44cc75737d",
+    "Plachta/Seed-VC": "257283f9f41585055e8f858fba4fd044e5caed6e",
+    "funasr/campplus": "e4b6ede7ce16997aff4ae69fbca1f0175e2afede",
+    "openai/whisper-small": "973afd24965f72e36ca33b3055d56a652f456b4d",
+    "nvidia/bigvgan_v2_44khz_128band_512x": "95a9d1dcb12906c03edd938d77b9333d6ded7dfb"
+  }
+}

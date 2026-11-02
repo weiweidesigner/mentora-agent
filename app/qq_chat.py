@@ -169,7 +169,7 @@ class QQChat:
                             {'role': 'assistant', 'text': str(json.loads(item['answer']).get('interpretation') or '')[:10000]}])
         try:
             answer = self.runner(job['scope'] + ':' + str(reset_at), job['question'], history)
-            if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
+            if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts') or answer.get('qqSong')):
                 raise ValueError('empty answer')
             with self.tasks.db() as db:
                 db.execute("UPDATE qq_chat_jobs SET state='completed',answer=? WHERE id=?", (json.dumps(answer, ensure_ascii=False), job_id))
@@ -212,7 +212,18 @@ class QQChat:
             db.execute('INSERT OR REPLACE INTO qq_expression_decisions VALUES(?,?)', (job_id, json.dumps(plan, ensure_ascii=False)))
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
         delivered = False
-        if completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
+        if completed and completed['state'] == 'completed' and answer.get('qqSong'):
+            try:
+                delivered = self.voice.send_song(job,answer['qqSong'])
+                if delivered:plan['deliveredMode'] = 'singing'
+                else:
+                    content = '歌声片段已生成，但本次 QQ 语音未能确认送达，请稍后重试。'
+                    plan['mode'] = 'text'
+            except Exception:
+                log.warning('QQ singing delivery failed for job %s',job_id)
+                content = '歌声片段已生成，但本次 QQ 语音未能确认送达，请稍后重试。'
+                plan['mode'] = 'text'
+        if not delivered and completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
             try:
                 delivered = bool(self.voice.send(job, content))
                 if delivered:
