@@ -75,3 +75,9 @@ test('keyboard activation starts sound from the beginning and slow loading gets 
   h.intro.currentTime=4;h.allowAudio();h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Tab',bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.currentTime,4);
   h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.currentTime,0);h.dom.window.close();
 });
+
+
+test('opt-in audio diagnostics preserve the original browser error without changing default UI',async()=>{
+  const ordinary=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(ordinary.d.querySelector('#mentoraOpeningDebug'),null);ordinary.dom.window.close();
+  const h=setup({opening:true,autoplayBlocked:true,tab:'?openingDebug=1'});await tick();const report=JSON.parse(h.d.querySelector('#mentoraOpeningDebug').textContent);const denied=report.events.find(e=>e.event==='audible-rejected');assert.equal(denied.error.name,'NotAllowedError');assert.equal(denied.error.message,'User gesture required');assert.equal(h.intro.muted,true);h.dom.window.close();
+});
