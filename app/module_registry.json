@@ -577,6 +577,6 @@
     "name": "read_earnings_calendar",
     "script": "read_earnings_calendar.py",
     "label": "AInvest Earnings Calendar Data",
-    "description": "AInvest财报日历与现成历史回测数据：财报超预期/不及预期后的历史胜率、收益、样本数和窗口用 --operation backtest --event-id <已发现事件ID>，一个事件ID可返回历史样本统计，不必搜集所有历史披露日。events 按日期/区间查日程及EPS/营收预期实际；statistics 日数量；recommendations 可选提问。JSON数据Skill，无固定图表。用户自定义样本/交易规则超出来源口径时可独立计算。"
+    "description": "财报日程数据：今天/明天/本周哪些公司公布财报、业绩披露日期及EPS/营收预期与实际；无需指定AInvest。events 按日期/区间读取，JSON可交给思维导图等任意组件。混合财经事件查询仅覆盖财报，宏观经济发布日程不支持；statistics 只是数量，时段枚举未确认。backtest 用已发现事件ID返回历史超预期/不及预期胜率、收益、样本数及窗口；不必搜集每次历史披露日，自定义交易规则可独立计算。"
   }
 ]

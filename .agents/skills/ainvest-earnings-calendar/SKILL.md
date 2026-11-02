@@ -1,5 +1,5 @@
 ---
 name: ainvest-earnings-calendar
-description: AInvest 财报日历数据查询：按公布日期或范围读取财报预告、EPS及营收预期/实际、每日事件数量，支持游标分页；backtest提供超预期/不及预期后的历史胜率、收益及样本数，一个来源事件ID锚定历史统计。输出JSON，不绑定图表样式。
+description: 查询今天/明天/本周哪些公司公布财报、业绩披露日程、EPS与营收预期/实际，以及财报后历史胜率收益。无需提及AInvest；混合财经事件查询可处理财报部分，宏观数据发布日程不在此接口范围。JSON数据，无固定图表。
 ---
 Read `../../../app/skills/ainvest-earnings-calendar/SKILL.md` completely. Scripts and schemas are relative to that canonical directory.

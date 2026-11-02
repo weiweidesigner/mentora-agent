@@ -1,6 +1,6 @@
 ---
 name: ainvest-earnings-calendar
-description: Query AInvest earnings disclosure calendars by date/range, expected and actual EPS/revenue, daily event counts, and source historical post-earnings beat/miss win rates and returns. Returns JSON with cursor coverage; no fixed visualization.
+description: 查询今天、明天、本周哪些公司公布财报及EPS/营收预期与实际；支持财报日程、披露日期范围和历史超预期/不及预期后的胜率收益。无需用户指定AInvest。混合财经事件问题可用它处理财报部分；不提供宏观经济数据发布日程。输出JSON，不绑定图表。
 ---
 
 # AInvest earnings calendar data
@@ -8,6 +8,20 @@ description: Query AInvest earnings disclosure calendars by date/range, expected
 Use for company earnings schedules, date/range calendars, and reported versus expected earnings/revenue. This is disclosure-event data, not complete financial statements or the macroeconomic release calendar. Read `schemas/read_earnings_calendar.schema.json` for CLI and field details.
 
 Run through `python app/skill_runner.py execute --script read_earnings_calendar.py -- <arguments>`.
+
+## Natural requests and coverage
+
+Users need not name AInvest, a skill, or an API. Requests such as “今天哪些美股公司公布财报”, “本周有哪些业绩发布” or “which companies report earnings tomorrow” describe this capability directly. For a schedule question, the `events` operation supplies structured disclosure records; news search serves a different purpose, such as market context or explaining an event. Rendering a mind map or table does not change the data capability needed.
+
+A request may combine company reports with economic releases, policy meetings or other market events. Use this skill for the earnings portion when relevant, and choose other available capabilities for the remaining scope. This script currently has **no macroeconomic release-list operation**: `statistics.economic_indicator` is a count, not an event list with publication times, previous values or forecasts. Neither macro history nor macro-factor relations substitutes for a release calendar. Do not invent an unsupported operation or eventType. If another source is used for macro schedules, attribute that portion separately; if the user requires AInvest-only data, state the unsupported coverage and return the available earnings portion. A successful earnings call does not validate the entire combined answer.
+
+## Dates, disclosure times and status
+
+State the requested disclosure-date window and its date basis. “Today” in the user's timezone and a US market date may differ; use the conversation's date/time context to resolve the intended scope and state the chosen basis. The source timezone is not fully established, so do not describe `eventDate` as verified US Eastern time or convert it into an exact Beijing clock time without additional evidence. Date-only events should remain date-only.
+
+`disclosureTimeType` currently has no verified enum mapping in this contract. Preserve its raw value; do not infer premarket/after-hours labels or counts from it. Use “披露时段未确认” where needed. Exact times or session labels obtained from another verified source need their own attribution. Evaluate actual/forecast availability per event and per metric: a batch can contain both published and pending results; never label every actual value as pending just because most are missing. Keep missing values null.
+
+Report counts for the returned scope, using confirmed market identities when filtering. Completed pagination means the requested source traversal completed, not that the universe is verified to contain every US-listed company. Expose incomplete pagination and avoid presenting category statistics as the fetched event count. Prefer bounded summaries and file handoff to repeated full-file reads; fetch backtests only when the question needs historical reactions.
 
 Examples (dates are user-selected, not fixed defaults):
 
