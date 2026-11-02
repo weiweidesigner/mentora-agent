@@ -36,7 +36,7 @@
       debugPanel.style.cssText = 'position:fixed;z-index:3000;right:12px;bottom:12px;max-width:min(680px,calc(100vw - 24px));max-height:65vh;overflow:auto;margin:0;padding:16px;border:1px solid #52606f;border-radius:8px;background:#101820f5;color:#e3f1ff;font:12px/1.5 monospace;white-space:pre-wrap;overflow-wrap:anywhere';
       document.body.append(debugPanel);
     }
-    debugPanel.textContent = JSON.stringify({browser:navigator.userAgent,
+    debugPanel.textContent = JSON.stringify({lastRejection:debugEvents.filter(e=>e.error).at(-1)?.error ?? null,browser:navigator.userAgent,
       conditions:{visible:document.visibilityState,focused:document.hasFocus(),topFrame:window.top===window,
         autoplayFeatureAllowed:allowed,autoplayPolicy:policy,
         userActive:navigator.userActivation?.isActive ?? null,
