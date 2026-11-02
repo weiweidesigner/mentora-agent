@@ -4042,7 +4042,7 @@ p {
 .caseOverlayPanel:has(>.activityDrawer.is-open){grid-template-columns:minmax(0,1fr) 410px}
 .caseOverlayPanel>.conversation.is-case{position:relative;inset:auto;height:100%;width:100%;min-height:0;border-radius:12px 12px 0 0;overflow:hidden;padding:0;z-index:auto;animation:none}
 .caseOverlayPanel:has(>.activityDrawer.is-open)>.conversation.is-case{border-top-right-radius:0}
-.caseOverlayPanel>.conversation.is-case,.caseOverlayPanel .messages,.caseOverlayPanel .caseDetailHeader{background:transparent}
+.caseOverlayPanel>.conversation.is-case,.caseOverlayPanel>.conversation.is-case .messages,.caseOverlayPanel .caseDetailHeader{background:transparent}
 .caseOverlayPanel .caseDetailHeader{min-height:56px;border-radius:12px 12px 0 0}
 .caseOverlayPanel .caseCacheDate{grid-column:1 / -1}
 .caseOverlayPanel>.activityDrawer{height:100%;width:100%;border-radius:0 30px 0 0;display:none;overflow:visible;z-index:2}
