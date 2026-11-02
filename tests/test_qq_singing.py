@@ -114,3 +114,17 @@ def test_real_agent_loop_receipt_attaches_but_final_text_cannot_forge_audio(sing
     observations.clear()
     result=namespace['run_qq_chat']('scope:0','普通问题',[])
     assert 'qqSong' not in result and len(calls)==2
+
+
+def test_singing_is_discoverable_by_the_runtime_script_registry():
+    import ast
+    from dataclasses import make_dataclass
+    source=ast.parse(Path('app/main.py').read_text())
+    dirs=next(x for x in source.body if isinstance(x,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='SKILL_SCRIPT_DIRS' for t in x.targets))
+    load=next(x for x in source.body if isinstance(x,ast.FunctionDef) and x.name=='load_module_registry')
+    metadata=next(x for x in json.loads(Path('app/module_registry.json').read_text()) if x.get('script')=='singing_render.py')
+    component=make_dataclass('SingingComponent',['key','label','filename','description'])
+    ns={'SKILLS_DIR':Path('app/skills'),'ROOT':Path('.'),'MODULE_REGISTRY_PATH':Path('app/module_registry.json'),
+        'AllowedComponent':component,'json':json,'load_registry_data':lambda p:[metadata]}
+    exec(compile(ast.Module(body=[dirs,load],type_ignores=[]),'<singing-registry>','exec'),ns)
+    assert [c.filename for c in ns['load_module_registry']()]==['singing_render.py']

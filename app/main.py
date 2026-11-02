@@ -84,6 +84,7 @@ RUNS_DIR = ROOT / "outputs" / "runs"
 MODULE_REGISTRY_PATH = ROOT / "app" / "module_registry.json"
 SKILLS_DIR = ROOT / "app" / "skills"
 SKILL_SCRIPT_DIRS = (
+    SKILLS_DIR / "singing" / "scripts",
     SKILLS_DIR / "ainvest-earnings-calendar" / "scripts",
     SKILLS_DIR / "macro-factor-relations" / "scripts",
     SKILLS_DIR / "market-data" / "scripts",
