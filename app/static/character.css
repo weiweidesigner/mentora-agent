@@ -28,3 +28,7 @@
 .chPresetRow button[aria-pressed=true]{color:var(--ink);border-color:color-mix(in srgb,var(--ink) 55%,var(--line));background:var(--soft-2)}
 
 .characterWorkspace .chPrimary:hover,.characterWorkspace .chPrimary:focus-visible{background:color-mix(in srgb,var(--ink) 90%,var(--bg));color:var(--bg);border-color:var(--ink)}.characterWorkspace .chPrimary:focus-visible{outline:2px solid var(--muted);outline-offset:3px}.characterWorkspace .chPrimary:disabled{background:var(--ink);color:var(--bg)}
+
+/* The wide whale needs a little more canvas than square navigation glyphs. */
+#railCharacter svg.characterWhaleIcon{display:block;width:22px;height:22px;flex:none;stroke:none}
+#navCharacter svg.characterWhaleIcon{display:block;width:20px;height:20px;flex:none;stroke:none}
