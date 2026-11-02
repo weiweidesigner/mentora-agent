@@ -204,3 +204,14 @@ def test_group_chats_do_not_enter_private_memory_worker(env,monkeypatch):
     with e.tasks.db() as db:db.execute('INSERT INTO character_links VALUES(?,?)',(group,'owner'))
     monkeypatch.setattr(e.service.pool,'submit',lambda *a:pytest.fail('group memory must remain separate from private user memory'))
     e.service.observe(group)
+
+
+def test_existing_authenticated_private_chats_attach_to_configured_bot_only(env):
+    e=env;add_chat(e)
+    other=json.dumps(['999999','users','bob','bob']);add_chat(e,'other-bot',scope=other)
+    group=json.dumps(['123456','groups','group','alice']);add_chat(e,'group',scope=group)
+    with e.tasks.db() as db:db.execute('DELETE FROM character_links')
+    e.characters.qq.attach_history('owner')
+    assert e.characters.owner_for_scope(e.scope)=='owner'
+    assert e.characters.owner_for_scope(other) is None
+    assert e.characters.owner_for_scope(group) is None

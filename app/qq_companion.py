@@ -204,6 +204,8 @@ class QQCompanion:
 
     def start(self):
         if self.thread:return
+        with self.tasks.db() as db:owners=[r[0] for r in db.execute("SELECT owner FROM character_qq_connections")]
+        for owner in owners:self.characters.qq.attach_history(owner)
         with self.tasks.db() as db:
             db.execute("UPDATE qq_companion_plans SET state='retry',retry=0 WHERE state='planning'")
             # Delivery claimed before a crash is never blindly repeated.

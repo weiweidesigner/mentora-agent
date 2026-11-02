@@ -143,7 +143,22 @@ class QQConnectionStore:
                 db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)', (owner,payload.profile.model_dump_json(),time.time()))
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone():
                     db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)', (owner,))
+        self.attach_history(owner)
         return self.public(owner)
+
+    def attach_history(self, owner):
+        """Recover authenticated C2C recipients when a bot was configured after their chats."""
+        connection=self.row(owner)
+        if not connection:return
+        with self.tasks.db() as db:
+            if not all(db.execute("SELECT 1 FROM sqlite_master WHERE name=?",(name,)).fetchone() for name in ("qq_chat_jobs","character_links")):return
+            rows=list(db.execute("SELECT DISTINCT scope FROM qq_chat_jobs WHERE state='completed' AND delivered=1"))
+            for row in rows:
+                try:
+                    parts=json.loads(row["scope"])
+                    if len(parts)!=4 or parts[0]!=connection["app_id"] or parts[1]!="users" or parts[2]!=parts[3]:continue
+                except (ValueError,TypeError):continue
+                db.execute("INSERT OR IGNORE INTO character_links VALUES(?,?)",(row["scope"],owner))
 
     def attach(self, scope, app_id, secret):
         with self.tasks.db() as db:
