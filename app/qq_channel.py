@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-HELP = '发送“查看 任务分享链接”获取结果并绑定任务；之后发送“最新”查看更新，发送“解绑”取消绑定。请使用 Mentora 定时任务的分享链接。QQ 官方机器人不支持定时主动推送。'
+HELP = '直接发送问题即可调用 Mentora 分析，支持连续追问。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
 IDENTIFIER = re.compile(r'[A-Za-z0-9_-]{1,128}')
 
 
@@ -56,24 +56,27 @@ class QQClient:
             self.cached = (app_id, secret, data['access_token'], time.monotonic() + max(0, int(data['expires_in']) - 60))
             return data['access_token']
 
-    def reply(self, kind, target, message_id, content):
+    def reply(self, kind, target, message_id, content, *, sequence=1):
         if kind not in ('users', 'groups') or not IDENTIFIER.fullmatch(target):
             raise QQChannelError('QQ 消息目标无效')
         response = requests.post(f'https://api.sgroup.qq.com/v2/{kind}/{target}/messages',
                                  headers={'Authorization': 'QQBot ' + self.token()},
-                                 json={'msg_type': 0, 'content': content, 'msg_id': message_id, 'msg_seq': 1},
+                                 json={'msg_type': 0, 'content': content, 'msg_id': message_id, 'msg_seq': sequence},
                                  timeout=15, allow_redirects=False)
         if response.status_code not in (200, 201, 202) or not response.json().get('id'):
             raise QQChannelError('QQ 回复失败，请检查消息权限、URL 配置及回复时限')
 
 
 class QQChannel:
-    def __init__(self, tasks, client=None):
+    def __init__(self, tasks, client=None, chat_runner=None):
         self.tasks = tasks
         self.client = client or QQClient()
         with tasks.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS qq_bindings (scope TEXT PRIMARY KEY, token TEXT NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS qq_events (id TEXT PRIMARY KEY, state TEXT NOT NULL, updated REAL NOT NULL)')
+
+        from app.qq_chat import QQChat
+        self.chat = QQChat(tasks, self.client, chat_runner) if chat_runner else None
 
     def result(self, token):
         with self.tasks.db() as db:
@@ -93,6 +96,14 @@ class QQChannel:
 
     def content(self, scope, text):
         text = re.sub(r'<@!?[^>]+>', '', text).strip()
+        if self.chat and text == '新对话':
+            return self.chat.reset(scope)
+        if self.chat and text in ('最新', '结果'):
+            latest = self.chat.latest(scope)
+            if latest:
+                return latest
+        if text == '任务最新':
+            text = '查看'
         if text == '解绑':
             with self.tasks.db() as db:
                 db.execute('DELETE FROM qq_bindings WHERE scope=?', (scope,))
@@ -144,8 +155,15 @@ class QQChannel:
                 return
             db.execute('INSERT OR REPLACE INTO qq_events VALUES(?,?,?)', (event_id, 'processing', now))
         try:
-            reply = self.content(scope, data['content'])
-            self.client.reply(kind, target, message_id, reply)
+            text = re.sub(r'<@!?[^>]+>', '', data['content']).strip()
+            if not text or len(text) > 6000:
+                reply = '请发送 1 至 6000 字的问题。'
+            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话') and not re.match(r'^查看\s+https?://', text):
+                reply = self.chat.enqueue(event_id, scope, kind, target, message_id, text)
+            else:
+                reply = self.content(scope, text)
+            if reply is not None:
+                self.client.reply(kind, target, message_id, reply)
         except Exception:
             with self.tasks.db() as db:
                 db.execute("UPDATE qq_events SET state='failed' WHERE id=?", (event_id,))
@@ -154,9 +172,12 @@ class QQChannel:
             db.execute("UPDATE qq_events SET state='sent' WHERE id=?", (event_id,))
 
 
-def create_router(tasks):
-    channel = QQChannel(tasks)
+def create_router(tasks, chat_runner=None):
+    channel = QQChannel(tasks, chat_runner=chat_runner)
     router = APIRouter()
+    if channel.chat:
+        router.add_event_handler('startup', channel.chat.recover)
+        router.add_event_handler('shutdown', lambda: channel.chat.pool.shutdown(wait=False, cancel_futures=True))
 
     @router.post('/api/qq/webhook')
     async def callback(request: Request):

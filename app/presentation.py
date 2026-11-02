@@ -975,7 +975,33 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
 
 DAY_TASKS = DayTasks(Path(os.getenv('VEYA_DAY_DATA_DIR', str(ROOT / 'outputs' / 'day-tasks'))), run_daily_research)
 app.include_router(create_day_router(DAY_TASKS))
-app.include_router(create_qq_router(DAY_TASKS))
+
+
+def run_qq_chat(scope, question, history):
+    import hashlib
+    import uuid
+    owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
+    context = ('这是 QQ 中的 Mentora 研究对话。按正常 Agent 流程选择项目技能获取真实证据，支持连续追问。'
+               '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息。'
+               '不要假设能访问网页用户的私人账户。注明数据截至时间和来源，数据缺失时如实说明。\n\n')
+    effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
+    payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
+                          reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')
+    answer = None
+    for event, data in durable_chat_events(payload, owner):
+        if event == 'error':
+            raise RuntimeError('QQ research returned an error')
+        if event == 'final':
+            answer = normalize_chat_result(data)
+    if answer is None:
+        raise RuntimeError('QQ research returned no final answer')
+    share_id = 'qq-' + uuid.uuid4().hex
+    save_share_session(ShareSessionRequest(session={**answer, 'id': share_id, 'question': question, 'themeMode': 'light'}))
+    answer['qqShareUrl'] = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/') + '/share/' + share_id
+    return answer
+
+
+app.include_router(create_qq_router(DAY_TASKS, chat_runner=run_qq_chat))
 
 
 @app.on_event('startup')
