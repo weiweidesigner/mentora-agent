@@ -3,24 +3,8 @@
 if(document.getElementById('characterWorkspace'))return;
 const $=id=>document.getElementById(id),shell=document.querySelector('.shell');if(!shell)return;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const icon=`<!-- @license lucide-static v1.66.0 - ISC -->
-<svg
-  class="lucide lucide-user-round-pen"
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
->
-  <path d="M2 21a8 8 0 0 1 10.821-7.487" />
-  <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
-  <circle cx="10" cy="8" r="5" />
-</svg>
-`;
+// Phosphor Icons core 2.1.1, MIT: regular and fill weights share one glyph.
+const icon=`<svg class="navigationIcon navigationOutline phosphor-user-gear" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M144,157.68a68,68,0,1,0-71.9,0c-20.65,6.76-39.23,19.39-54.17,37.17a8,8,0,1,0,12.24,10.3C50.25,181.19,77.91,168,108,168s57.75,13.19,77.87,37.15a8,8,0,0,0,12.26-10.3C183.18,177.07,164.6,164.44,144,157.68ZM56,100a52,52,0,1,1,52,52A52.06,52.06,0,0,1,56,100Zm196.25,43.07-4.66-2.69a23.6,23.6,0,0,0,0-8.76l4.66-2.69a8,8,0,1,0-8-13.86l-4.67,2.7a23.92,23.92,0,0,0-7.58-4.39V108a8,8,0,0,0-16,0v5.38a23.92,23.92,0,0,0-7.58,4.39l-4.67-2.7a8,8,0,1,0-8,13.86l4.66,2.69a23.6,23.6,0,0,0,0,8.76l-4.66,2.69a8,8,0,0,0,8,13.86l4.67-2.7a23.92,23.92,0,0,0,7.58,4.39V164a8,8,0,0,0,16,0v-5.38a23.92,23.92,0,0,0,7.58-4.39l4.67,2.7a7.92,7.92,0,0,0,4,1.07,8,8,0,0,0,4-14.93ZM216,136a8,8,0,1,1,8,8A8,8,0,0,1,216,136Z"/></svg><svg class="navigationIcon navigationSolid phosphor-user-gear" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M198.13,194.85A8,8,0,0,1,192,208H24a8,8,0,0,1-6.12-13.15c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.9,0C164.6,164.44,183.18,177.07,198.13,194.85ZM255.18,154a8,8,0,0,1-6.94,4,7.92,7.92,0,0,1-4-1.07l-4.67-2.7a23.92,23.92,0,0,1-7.58,4.39V164a8,8,0,0,1-16,0v-5.38a23.92,23.92,0,0,1-7.58-4.39l-4.67,2.7a7.92,7.92,0,0,1-4,1.07,8,8,0,0,1-4-14.93l4.66-2.69a23.6,23.6,0,0,1,0-8.76l-4.66-2.69a8,8,0,1,1,8-13.86l4.67,2.7a23.92,23.92,0,0,1,7.58-4.39V108a8,8,0,0,1,16,0v5.38a23.92,23.92,0,0,1,7.58,4.39l4.67-2.7a8,8,0,1,1,8,13.86l-4.66,2.69a23.6,23.6,0,0,1,0,8.76l4.66,2.69A8,8,0,0,1,255.18,154ZM224,144a8,8,0,1,0-8-8A8,8,0,0,0,224,144Z"/></svg>`;
 for(const [id,anchor,cls] of [['railCharacter','railPortfolio','railButton desktopNavRail'],['navCharacter','navPortfolio','sidebarAction taskNavLink']]){
  const b=document.createElement('button');b.id=id;b.className=cls;b.type='button';b.setAttribute('aria-label','角色定制');b.dataset.tip='角色定制';b.innerHTML=icon+(id==='navCharacter'?'<span>角色定制</span>':'');($(anchor)||$(id==='railCharacter'?'railWidgets':'navWidgets'))?.after(b);
 }
@@ -34,7 +18,7 @@ workspace.innerHTML=`<div class="chPage"><header class="chHeader"><div><p class=
 const form=$('characterForm'),presets={female:['甜妹','御姐','温柔知性','活泼元气'],male:['阳光少年','成熟稳重','温柔绅士','清冷克制'],neutral:['温柔陪伴','幽默风趣','理性克制','活泼可爱']};let data=null,gallery='builtin',internal=false,loaded=false,squareCategory='全部';
 function status(text){$('chStatus').textContent=text;}
 async function api(path='',method='GET',body){const r=await fetch('/api/character'+path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json','X-Veya-Day':'1'},...(body===undefined?{}:{body:JSON.stringify(body)})});const d=await r.json();if(!r.ok)throw Error(typeof d.detail==='string'?d.detail:'操作失败，请检查输入后重试');return d;}
-function sync(){for(const group of form.querySelectorAll('[data-field]'))for(const b of group.querySelectorAll('button')){const active=b.dataset.value===form.elements[group.dataset.field].value;b.setAttribute('aria-pressed',String(active));}const n=form.elements;$('chProbabilityValue').value=n.stickerProbability.value+'%';$('chPreviewName').textContent=n.name.value||'未命名角色';$('chPreviewMeta').textContent=`${n.age.value||'—'} 岁 · ${n.personality.value||'自由设定'}`;$('chPreviewRole').textContent=n.role.value;$('chPreviewTags').innerHTML=[{auto:'智能回复',voice:'语音回复',text:'文字回复',random:'随机回复'}[n.responseMode.value],{minimal:'极简',normal:'一般长度',long:'较长回复'}[n.paragraph.value],`表情 ${n.stickerProbability.value}%`].map(x=>`<span>${esc(x||'')}</span>`).join('');}
+function sync(){for(const group of form.querySelectorAll('[data-field]'))for(const b of group.querySelectorAll('button')){const active=b.dataset.value===form.elements[group.dataset.field].value;b.setAttribute('aria-pressed',String(active));}const n=form.elements;$('chProbabilityValue').value=n.stickerProbability.value+'%';$('chProbability').style.setProperty('--ch-progress',n.stickerProbability.value+'%');$('chProbability').setAttribute('aria-valuetext',n.stickerProbability.value+'%');$('chPreviewName').textContent=n.name.value||'未命名角色';$('chPreviewMeta').textContent=`${n.age.value||'—'} 岁 · ${n.personality.value||'自由设定'}`;$('chPreviewRole').textContent=n.role.value;$('chPreviewTags').innerHTML=[{auto:'智能回复',voice:'语音回复',text:'文字回复',random:'随机回复'}[n.responseMode.value],{minimal:'极简',normal:'一般长度',long:'较长回复'}[n.paragraph.value],`表情 ${n.stickerProbability.value}%`].map(x=>`<span>${esc(x||'')}</span>`).join('');}
 function showPresets(){const list=Object.values(presets).flat();$('chPersonalities').innerHTML=list.map(x=>`<option value="${esc(x)}">`).join('');$('chPresetRow').innerHTML=list.map(x=>`<button type="button" data-ch-personality="${esc(x)}">${esc(x)}</button>`).join('');}
 function fill(profile){for(const [key,value]of Object.entries(profile))if(form.elements[key])form.elements[key].value=String(value);showPresets();sync();}
 function packCard(pack,square=false){return `<article class="chPack"><button type="button" class="chPackCover" data-ch-preview="${esc(pack.id)}" aria-label="预览 ${esc(pack.name)}">${pack.previews.map(url=>`<img loading="lazy" src="${esc(url)}" alt="" />`).join('')}</button><h3>${esc(pack.name)}</h3><p>${esc(pack.description)}</p><div class="chPackMeta"><span>${pack.count} 张 · ${esc(pack.tags.join(' / '))}</span></div><div class="chPackActions"><button type="button" data-ch-preview="${esc(pack.id)}">预览</button>${square?`<button type="button" data-ch-install="${esc(pack.id)}" ${pack.installed?'disabled':''}>${pack.installed?'已添加':'＋ 添加整套'}</button>`:`<button type="button" data-ch-uninstall="${esc(pack.id)}">移除合集</button>`}</div></article>`;}
