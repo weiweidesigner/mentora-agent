@@ -979,11 +979,19 @@ app.include_router(create_day_router(DAY_TASKS))
 
 def run_qq_chat(scope, question, history):
     import hashlib
-    import uuid
     owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
-    context = ('这是 QQ 中的 Mentora 研究对话。按正常 Agent 流程选择项目技能获取真实证据，支持连续追问。'
-               '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息。'
-               '不要假设能访问网页用户的私人账户。注明数据截至时间和来源，数据缺失时如实说明。\n\n')
+    context = (
+        '这是 QQ 渠道的 Mentora 轻聊天，用户已选择纯文本交付。支持连续追问。'
+        '按正常 Agent 流程判断是否需要项目技能查询数据或检索来源，保持证据真实、必要分析完整。'
+        'QQ 不支持 HTML 或交互可视化：跳过可视化与报告渲染步骤，不调用图表、表格组件、'
+        'StreamViz、页面、HTML、PDF、图片或其他文件生成工具；不生成图表标记、附件、报告或分享页面。'
+        '即使资料或历史回答包含图表，也只提炼文字结论；用户问趋势、对比、财务或列表时，用简短文字表达。'
+        '直接回答问题，默认约 100 至 300 字；简单闲聊用一两句，用户明确要求展开时再增加细节。'
+        '先说结论，再给少量关键事实，必要时用 1 至 3 个简短条目；不写长篇报告、大标题、Markdown 表格、代码或渲染语法。'
+        '金融行情注明关键数据的截至时间和必要的来源名称；数据缺失如实说明，不编造。'
+        '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息；'
+        '不要假设能访问网页用户的私人账户。\n\n用户消息：'
+    )
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')
@@ -995,9 +1003,6 @@ def run_qq_chat(scope, question, history):
             answer = normalize_chat_result(data)
     if answer is None:
         raise RuntimeError('QQ research returned no final answer')
-    share_id = 'qq-' + uuid.uuid4().hex
-    save_share_session(ShareSessionRequest(session={**answer, 'id': share_id, 'question': question, 'themeMode': 'light'}))
-    answer['qqShareUrl'] = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/') + '/share/' + share_id
     return answer
 
 

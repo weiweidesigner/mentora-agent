@@ -16,8 +16,7 @@ def plain_answer(answer):
     text = re.sub(r'\[([^\]]+)\]\([^\n)]+\)', r'\1', text)
     text = re.sub(r'https?://\S+', '', text)
     text = re.sub(r'(?m)^#{1,6}\s*', '', text).replace('**', '').replace('`', '').strip()
-    suffix = '\n\n完整回答与图表：' + answer['qqShareUrl'] if answer.get('qqShareUrl') else ''
-    return (text[:1400] + ('…' if len(text) > 1400 else '') or '分析已完成，请打开完整结果查看。') + suffix
+    return (text[:1400] + ('…' if len(text) > 1400 else '') or '这次没有生成可用的文字回答，请换个问法再试。')
 
 
 class QQChat:

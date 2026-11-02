@@ -136,7 +136,8 @@ def test_expired_group_reply_is_saved_without_late_send(tasks):
 def test_plain_text_preserves_conclusion_and_hides_artifact_paths():
     result = plain_answer({'interpretation': '## 结论\n**上涨** [来源](https://source.example)\n[[AIME_CHART:/private/file.html]]', 'qqShareUrl': 'https://example.com/share/id'})
     assert '上涨' in result and '/private/' not in result and 'AIME_CHART' not in result
-    assert 'https://example.com/share/id' in result
+    assert 'https://example.com/share/id' not in result
+    assert '完整回答与图表' not in result
 
 
 def test_signed_callback_starts_chat_without_waiting_for_inference(tasks, monkeypatch):
@@ -169,7 +170,7 @@ def test_signed_callback_starts_chat_without_waiting_for_inference(tasks, monkey
     assert '普通问题已接入' in sent[-1][0][-1]
 
 
-def test_runner_uses_existing_agent_and_keeps_shareable_complete_answer(monkeypatch):
+def test_runner_uses_existing_agent_with_text_only_delivery_without_share_generation(monkeypatch):
     import ast
     from pathlib import Path
     source = ast.parse(Path('app/presentation.py').read_text())
@@ -191,6 +192,7 @@ def test_runner_uses_existing_agent_and_keeps_shareable_complete_answer(monkeypa
     assert captured[0][0].history[0]['text'] == '之前的问题'
     assert '今天A股市场表现' in captured[0][0].question
     assert 'private-qq-scope' not in captured[0][1]
-    assert shared[0]['question'] == '今天A股市场表现'
-    assert shared[0]['reportArtifacts'][0]['url'] == '/generated/figure.html'
-    assert result['qqShareUrl'].startswith('https://example.com/mentora/share/qq-')
+    assert '纯文本' in captured[0][0].question
+    assert '跳过可视化' in captured[0][0].question
+    assert shared == []
+    assert 'qqShareUrl' not in result
