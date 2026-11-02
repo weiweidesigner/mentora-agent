@@ -961,3 +961,25 @@ def upgrade_government_debt_heatmap(artifact):
         return _native_rating('government_debt_heatmap').render_html(payload)
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+@lru_cache(maxsize=1)
+def _native_mind_map():
+    script = Path(__file__).parent / 'skills/generic-chart/scripts/mind_map.py'
+    spec = importlib.util.spec_from_file_location('saved_native_mind_map', script)
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_mind_map(artifact: str, theme: str) -> str:
+    """Refresh only the native saved map shell; keep its embedded Markdown exactly."""
+    if 'data-mind-map-container="true"' not in artifact or 'data-mind-map-version="3"' in artifact:
+        return artifact
+    match = re.search(r'document\.getElementById\("mm"\)\.textContent\s*=\s*', artifact)
+    if not match: return artifact
+    try:
+        markdown, _ = json.JSONDecoder().raw_decode(artifact[match.end():])
+        if not isinstance(markdown, str): return artifact
+        return _native_mind_map().build_html({'data': {'content': markdown}, 'theme': theme})
+    except (ValueError, TypeError, ImportError, OSError):
+        return artifact

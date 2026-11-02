@@ -62,3 +62,15 @@ test('share export measures arbitrary normal-flow content independently of frame
  frame.style.height='1400px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
  try{w.eval(readFileSync(new URL('../app/static/share-chart-layout.js',import.meta.url),'utf8'));w.resizeShareCharts();assert.equal(frame.style.height,'360px');}finally{w.close();}
 });
+
+test('mind map frames grant fullscreen in chat and sharing',()=>{
+ for(const shared of [false,true]){
+  const dom=new JSDOM('<iframe class="reportDocumentFrame"></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe');
+  frame.contentDocument.body.innerHTML='<div data-mind-map-container="true"></div>';
+  try{
+   if(shared){w.eval(readFileSync(new URL('../app/static/share-chart-layout.js',import.meta.url),'utf8'));w.resizeShareCharts();}
+   else{w.eval(source);w.resizeReportDocumentFrame(frame);}
+   assert.equal(frame.allowFullscreen,true);
+  }finally{w.close();}
+ }
+});

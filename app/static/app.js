@@ -6277,6 +6277,7 @@ function resizeReportDocumentFrame(frame) {
     const body = doc?.body;
     const root = doc?.documentElement;
     if (!body || !root) return 520;
+    if (doc.querySelector('[data-mind-map-container]')) frame.allowFullscreen = true;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
     const lineRoot = doc.querySelector('.group-line-component');
     if (lineRoot) {

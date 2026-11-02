@@ -123,7 +123,7 @@
     "name": "aime_mind_map",
     "script": "mind_map.py",
     "label": "Aime Mind Map",
-    "description": "通用 Aime mind_map 思维导图组件，适合新闻/网页/视频检索结果归纳、文章论点拆解、概念关系、研究框架、产业链影响和多层级要点总结。生成内容应由模型基于用户问题与前序 observation 提炼，不要写死在搜索或视频组件里。优先输出 3-5 个一级主题，每个主题下展开具体事件、关键实体、数字/日期、原因、影响、分歧与后续观察点；层级建议达到 3-4 层，节点短但信息密度高，避免“机会/风险/市场驱动因素”等空泛占位。支持主题模式参数：--theme 或 --theme-mode，可选 light/浅色模式、dark/暗夜模式，也支持 --dark。cli_args 可使用 --payload、--data-json、--data、--title、--theme、--theme-mode、--dark、--payload-output；data 可传 {\"content\":\"# 主题\\n## 一级主题\\n- 具体事件/实体\\n  - 关键数字/原因/影响\"}。"
+    "description": "思维导图：支持画布右上角全屏、拖动、缩放。大量结构化JSON使用小型payload.dataSource（path、recordsPath、groupBy、labelFields）按字段确定性生成全部节点，不用模型转抄全部数据；树结构用treePath；已有Markdown文件用 --content-file。--payload可读取本地JSON配置；摘要模式仍可由模型提炼Markdown。支持theme light/dark。文件映射不自动总结、不静默截断，输出含来源哈希和记录数。"
   },
   {
     "name": "aime_flowchart",

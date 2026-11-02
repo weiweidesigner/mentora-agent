@@ -4,6 +4,7 @@
     try {
       const doc = frame.contentDocument;
       if (!doc?.body) return;
+      if (doc.querySelector('[data-mind-map-container]')) frame.allowFullscreen = true;
       const canvas = doc.querySelector('.report-canvas');
       const intrinsic = doc.querySelector('.multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
       const canvasRect = canvas?.getBoundingClientRect();
