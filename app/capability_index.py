@@ -68,6 +68,7 @@ _SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
     "treemap.py": ("矩形图", "树图", "treemap"),
     "timeline.py": ("时间线", "timeline"),
     "flowchart.py": ("流程图", "flowchart"),
+    "data_table.py": ("用表格", "表格展示", "表格呈现", "数据表格", "完整记录", "明细表", "清单", "筛选结果", "data table", "tabular", "show in a table", "as a table"),
     "mind_map.py": ("思维导图", "脑图", "mind map"),
     "external_info_search.py": ("联网搜索", "外部搜索", "最新新闻", "为什么", "原因", "解释", "kimi", "web search", "latest news", "搜图", "搜索图片", "找图片", "找照片", "image search", "photos"),
     "render_streamviz.py": ("可视化", "看板", "仪表盘", "dashboard", "visualization"),
@@ -144,6 +145,7 @@ class CapabilityShortlist:
         lines.append(
             "展示选择：标准数值趋势、对比、占比或分布优先选择相应的通用确定性图表渲染器，"
             "即使用户没有指定图表类型，也由你根据数据选择，不默认交给 StreamViz 手写 SVG 坐标。"
+            "结构化记录、排行、清单或筛选结果要求表格展示时，优先考虑 data_table.py，通过 dataSource.path/recordsPath 和 columns 映射交接文件，无需用户说不要 Markdown；明确要求 Markdown/纯文本时遵循用户，少量文字对照可用 Markdown。成功表格回执覆盖的记录不重复生成 Markdown 表。"
             "原生业务组件的明确样式契约继续保留。StreamViz 负责看板布局、叙事和非标准交互；"
             "可用 chart_artifacts 嵌入已通过 chartValidation 的图表，保留其数据、坐标和交互。"
             "通用图表可用 payload.dataSource 的 path/recordsPath/fields 直接读取上游文件，避免转抄数据。"

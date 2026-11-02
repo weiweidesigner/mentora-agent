@@ -583,7 +583,12 @@
     "name": "data_table",
     "script": "data_table.py",
     "label": "完整数据表格",
-    "description": "通用完整数据表格：从本地 JSON 文件或结构化 rows 读取全部记录，columns 精确映射字段。固定表头、文本左对齐和数值右对齐、窗口内横纵滚动、全屏查看、全量排序；大数据虚拟滚动不截断源行。支持 --payload、--data-json、--output、--schema。用于明细、清单、完整记录表，不重复生成同一份 Markdown 表格。"
+    "description": "通用数据表格：结构化记录、排行、筛选结果、清单和明细要求用表格展示时优先考虑，无需指定组件或排除 Markdown。文件交接读取 JSON，columns 映射，固定表头、滚动窗口、全屏、全量排序。明确要求 Markdown/纯文本时遵循用户；少量文字概念对照可用 Markdown。成功回执 presentation.kind=table，正文不重复同一张表。保留输入范围和上游覆盖限制，不额外扩大取数。",
+    "presentation": {
+      "kind": "table",
+      "markdownPolicy": "The table component already presents these input records and selected fields. Do not repeat them as a Markdown table, row-by-row list or duplicate title. Add conclusions, comparisons and material limitations in prose. Honor an explicit user request for Markdown or plain text.",
+      "scope": "Input records and selected fields only; rendering a file does not prove that upstream pagination is complete."
+    }
   },
   {
     "name": "ainvest_screener",
