@@ -4,15 +4,19 @@
   const video = document.querySelector('#homeBackdropVideo');
   const conversation = document.querySelector('section.conversation');
   if (!shell || !backdrop || !video || !conversation) return;
+  if (backdrop.dataset.motionInitialized === 'true') return;
+  backdrop.dataset.motionInitialized = 'true';
   video.muted = true;
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const opening = document.querySelector('#mentoraOpening');
   const intro = document.querySelector('#mentoraOpeningVideo');
-  const openingKey = 'mentora:opening:20261102-audio';
+  const subtitle = opening?.querySelector('.mentoraOpeningTitle p');
+  const welcome = subtitle?.textContent || '';
+  let audioBlocked = false;
   const excluded = ['tasks-view', 'widgets-view', 'portfolio-view', 'character-view', 'case-overlay-open'];
   const chatVisible = () => !conversation.hidden && !excluded.some(name => shell.classList.contains(name));
   let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0;
-  let previousInert = false, audioAttempt = 0;
+  let previousInert = false, audioAttempt = 0, returnFocus = null;
   const saveData = () => Boolean(navigator.connection?.saveData);
   function sync() {
     const visible = chatVisible();
@@ -37,18 +41,44 @@
     document.removeEventListener('keydown', enableOpeningAudio, true);
     opening.classList.remove('is-playing', 'is-revealed');
     shell.inert = previousInert;
+    opening.setAttribute('aria-hidden', 'true');
+    opening.removeAttribute('role');opening.removeAttribute('tabindex');
+    if (subtitle) subtitle.textContent = welcome;
+    if (document.activeElement === opening) returnFocus?.focus?.({preventScroll:true});
     hideTimer = setTimeout(() => { opening.hidden = true; }, 650);
     sync();
   }
-  function enableOpeningAudio() {
+  function resetDeadline() {
+    clearTimeout(deadline);
+    deadline = setTimeout(finishOpening, 8500);
+  }
+  function enableOpeningAudio(event) {
     if (!openingActive) return;
+    if (event?.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+    if (event?.type === 'keydown') event.preventDefault();
     const attempt = ++audioAttempt;
+    if (audioBlocked && event) {
+      intro.currentTime = 0;
+      resetDeadline();
+    }
     intro.muted = false;
-    intro.play().catch(error => {
+    intro.play().then(() => {
+      if (!openingActive || attempt !== audioAttempt) return;
+      audioBlocked = false;opening.dataset.sound = 'playing';
+      if (subtitle) subtitle.textContent = welcome;
+      opening.setAttribute('aria-hidden', 'true');
+      opening.removeAttribute('role');opening.removeAttribute('tabindex');
+    }).catch(error => {
       if (!openingActive || attempt !== audioAttempt) return;
       if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
-      // Keep the picture moving when sound needs a real click/key gesture.
-      // A newer gesture must win over a pending autoplay permission result.
+      // Browser permissions cannot be overridden. Make the sound action visible
+      // in the existing subtitle, without restoring a toolbar or skip button.
+      audioBlocked = true;opening.dataset.sound = 'blocked';
+      if (subtitle) subtitle.textContent = '点击画面，从头有声播放';
+      opening.removeAttribute('aria-hidden');
+      opening.setAttribute('role', 'button');opening.setAttribute('tabindex', '0');
+      opening.setAttribute('aria-label', '点击画面，从头有声播放 Mentora 开场');
+      opening.focus({preventScroll:true});
       intro.muted = true;
       intro.play().catch(() => {
         if (openingActive && attempt === audioAttempt) finishOpening();
@@ -59,16 +89,14 @@
     if (!opening || !intro || !chatVisible() || document.hidden || motion.matches || saveData()) return;
     const route = new URL(location.href).searchParams.get('tab');
     if (route && route !== 'home' && route !== 'chat') return;
-    try {
-      if (sessionStorage.getItem(openingKey)) return;
-      sessionStorage.setItem(openingKey, 'played');
-    } catch { /* A blocked store must not prevent opening the application. */ }
+    returnFocus = document.activeElement;
     openingActive = true;previousInert = shell.inert;shell.inert = true;
     opening.hidden = false;opening.classList.add('is-playing');
     intro.src = intro.dataset.src;intro.muted = false;intro.volume = .8;
     document.addEventListener('click', enableOpeningAudio, true);
     document.addEventListener('keydown', enableOpeningAudio, true);
-    deadline = setTimeout(finishOpening, 8500);
+    resetDeadline();
+    intro.addEventListener('playing', () => { if (openingActive) resetDeadline(); }, {once:true});
     revealTimer = setTimeout(() => opening.classList.add('is-revealed'), 1100);
     intro.addEventListener('ended', finishOpening, {once:true});
     intro.addEventListener('error', finishOpening, {once:true});
@@ -94,6 +122,7 @@
   window.addEventListener('pagehide', () => {
     finishOpening();clearTimeout(hideTimer);video.pause();
   });
-  // No replay/skip controls or sample content: these are decorative app layers.
+  // Every page load starts its opening; route switches do not restart it.
+  // No replay/skip controls or sample content are added to the page.
   startOpening();sync();
 })();

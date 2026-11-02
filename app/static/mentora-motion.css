@@ -13,7 +13,7 @@
 .shell > #homeBackdrop .homeBackdropMask {
   background:linear-gradient(90deg,rgba(255,255,255,.97),rgba(255,255,255,.82) 42%,rgba(255,255,255,.52)),linear-gradient(0deg,rgba(255,255,255,.8),transparent 40%);
 }
-:root[data-theme="dark"] .shell > #homeBackdrop video {opacity:.78;filter:none}
+:root[data-theme="dark"] .shell > #homeBackdrop video {opacity:.86;filter:none}
 :root[data-theme="dark"] .shell > #homeBackdrop .homeBackdropMask {
   background:linear-gradient(90deg,#101010 0%,rgba(16,16,16,.91) 32%,rgba(16,16,16,.6) 58%,rgba(16,16,16,.18) 90%),linear-gradient(0deg,rgba(16,16,16,.7),transparent 40%);
 }
@@ -38,3 +38,6 @@
   .mentoraOpeningTitle p {font-size:11px}
 }
 @media(prefers-reduced-motion:reduce) {.mentoraOpening {display:none!important}.mentoraOpening,.mentoraOpeningTitle {transition:none}}
+
+.mentoraOpening[data-sound="blocked"] {cursor:pointer}
+.mentoraOpening[data-sound="blocked"] .mentoraOpeningTitle p {letter-spacing:.12em;color:#d8ecfa}

@@ -11,22 +11,23 @@ function setup({reduced=false,opening=false,failIntro=false,autoplayBlocked=fals
   const listeners=new Map();w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(name,fn){listeners.set(q,fn)}});
   const timers=new Map();let next=1;w.setTimeout=(fn,ms)=>{const id=next++;timers.set(id,{fn,ms});return id};w.clearTimeout=id=>timers.delete(id);
   for(const media of d.querySelectorAll('video')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(media.id==='mentoraOpeningVideo'&&++introAttempts===1&&deferAutoplay)return new Promise((resolve,reject)=>{autoplayReject=reject});if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;return Promise.resolve()};}
-  if(!opening)w.sessionStorage.setItem('mentora:opening:20261102-audio','played');
+  if(!opening)d.querySelector('#mentoraOpening').remove();
+  w.sessionStorage.setItem('mentora:opening:20261102-audio','played');
   d.documentElement.dataset.theme='dark';w.eval(script);
   return {dom,w,d,timers,allowAudio:()=>{allowAudio=true},rejectAutoplay:()=>autoplayReject(new w.DOMException('User gesture required','NotAllowedError')),video:d.querySelector('#homeBackdropVideo'),intro:d.querySelector('#mentoraOpeningVideo'),shell:d.querySelector('.shell'),opening:d.querySelector('#mentoraOpening')};
 }
 test('the same background continues through home scrolling and active chat',async()=>{
-  const h=setup();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background.mp4');assert.equal(h.video.paused,false);
+  const h=setup();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background-hq.mp4');assert.equal(h.video.paused,false);
   const conversation=h.d.querySelector('.conversation');conversation.scrollTop=800;conversation.dispatchEvent(new h.w.Event('scroll'));
   conversation.classList.remove('is-empty');await tick();assert.equal(h.video.paused,false);assert.equal(h.shell.dataset.mentoraMotion,'active');assert.equal(h.d.querySelector('#homeBackdrop').style.transform,'');
-  h.d.documentElement.dataset.theme='light';await tick();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background.mp4');
+  h.d.documentElement.dataset.theme='light';await tick();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background-hq.mp4');
   for(const view of ['tasks-view','widgets-view','portfolio-view','character-view','case-overlay-open']){h.shell.classList.add(view);await tick();assert.equal(h.video.paused,true);assert.equal(h.shell.dataset.mentoraMotion,'inactive');h.shell.classList.remove(view);await tick();assert.equal(h.video.paused,false);}
   h.dom.window.close();
 });
 test('reduced motion keeps a local poster and loads neither video',()=>{
-  const h=setup({reduced:true,opening:true});assert.equal(h.video.getAttribute('src'),null);assert.equal(h.intro.getAttribute('src'),null);assert.equal(h.video.getAttribute('poster'),'/static/assets/mentora-motion/poster.jpg');assert.equal(h.video.paused,true);assert.equal(h.opening.hidden,true);h.dom.window.close();
+  const h=setup({reduced:true,opening:true});assert.equal(h.video.getAttribute('src'),null);assert.equal(h.intro.getAttribute('src'),null);assert.equal(h.video.getAttribute('poster'),'/static/assets/mentora-motion/poster-hq.jpg');assert.equal(h.video.paused,true);assert.equal(h.opening.hidden,true);h.dom.window.close();
 });
-test('the opening runs once per tab, restores the page and starts the chat background',async()=>{
+test('each fresh page starts its opening despite the previous played record, while duplicate initialization is ignored',async()=>{
   const h=setup({opening:true});assert.equal(h.opening.hidden,false);assert.equal(h.shell.inert,true);assert.equal(h.video.paused,true);assert.equal(h.intro.paused,false);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.video.paused,false);
   assert.equal(h.w.sessionStorage.getItem('mentora:opening:20261102-audio'),'played');
@@ -53,7 +54,8 @@ test('the opening requests audio while the resident background remains muted',as
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
   const h=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,false);assert.equal(h.opening.hidden,false);
-  h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);
+  assert.match(h.opening.textContent,/点击画面，从头有声播放/);assert.equal(h.opening.dataset.sound,'blocked');h.intro.currentTime=3.5;
+  h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);assert.equal(h.intro.currentTime,0);assert.equal(h.opening.dataset.sound,'playing');assert.doesNotMatch(h.opening.textContent,/点击画面/);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,true);assert.equal(h.video.muted,true);assert.equal(h.video.paused,false);h.dom.window.close();
 });
 
@@ -62,4 +64,14 @@ test('an early user gesture wins over a late autoplay permission rejection',asyn
   const h=setup({opening:true,autoplayBlocked:true,deferAutoplay:true});
   h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);
   h.rejectAutoplay();await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);h.dom.window.close();
+});
+
+
+test('a second page refresh starts a new opening even with a previous played record',()=>{
+  for(let i=0;i<2;i++){const h=setup({opening:true});assert.equal(h.opening.hidden,false);assert.equal(h.intro.paused,false);h.dom.window.close();}
+});
+test('keyboard activation starts sound from the beginning and slow loading gets a complete playback window',async()=>{
+  const h=setup({opening:true,autoplayBlocked:true});await tick();const before=[...h.timers.keys()];h.intro.dispatchEvent(new h.w.Event('playing'));assert.ok(before.some(id=>!h.timers.has(id)));
+  h.intro.currentTime=4;h.allowAudio();h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Tab',bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.currentTime,4);
+  h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.currentTime,0);h.dom.window.close();
 });
