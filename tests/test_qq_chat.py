@@ -217,3 +217,20 @@ def test_voice_failure_keeps_text_answer_delivered(tasks,monkeypatch):
         row=db.execute('SELECT state,delivered FROM qq_chat_jobs').fetchone()
     assert row['state']=='completed' and row['delivered']==1
     assert '文字回答' in chat.latest('scope')
+
+
+def test_recovery_never_sends_another_robots_queued_jobs(tasks):
+    import json
+    client=Client()
+    client.credentials=lambda:('robot-a','secret')
+    chat=QQChat(tasks,client,lambda *a:{'interpretation':'恢复'})
+    with tasks.db() as db:
+        for bot in ('robot-a','robot-b'):
+            for state in ('running','queued'):
+                db.execute('INSERT INTO qq_chat_jobs(id,scope,kind,target,message_id,question,state,created) VALUES(?,?,?,?,?,?,?,?)',
+                           (bot+state,json.dumps([bot,'users','alice','alice']),'users','alice',bot+state,'问题',state,time.time()))
+    chat.recover();chat.pool.shutdown(wait=True)
+    with tasks.db() as db:
+        states={r['id']:r['state'] for r in db.execute('SELECT id,state FROM qq_chat_jobs')}
+    assert states['robot-arunning']=='interrupted' and states['robot-aqueued']=='completed'
+    assert states['robot-brunning']=='running' and states['robot-bqueued']=='queued'

@@ -40,11 +40,24 @@ class QQChat:
             CREATE TABLE IF NOT EXISTS qq_chat_resets (scope TEXT PRIMARY KEY, reset_at REAL);
             ''')
 
+    def _owns_scope(self, scope):
+        try:
+            app_id = json.loads(scope)[0]
+        except (ValueError, TypeError):
+            return True
+        from app.qq_channel import QQChannelError
+        try:
+            return app_id == self.client.credentials()[0]
+        except QQChannelError:
+            return False
+
     def recover(self):
         # Never silently repeat interrupted model/tool executions.
         with self.tasks.db() as db:
-            db.execute("UPDATE qq_chat_jobs SET state='interrupted',error='服务重启中断本轮分析，请重新提问' WHERE state='running'")
-            queued = [r['id'] for r in db.execute("SELECT id FROM qq_chat_jobs WHERE state='queued' ORDER BY created")]
+            interrupted = [(r['id'],) for r in db.execute("SELECT id,scope FROM qq_chat_jobs WHERE state='running'") if self._owns_scope(r['scope'])]
+            db.executemany("UPDATE qq_chat_jobs SET state='interrupted',error='服务重启中断本轮分析，请重新提问' WHERE id=?", interrupted)
+            queued = [r['id'] for r in db.execute("SELECT id,scope FROM qq_chat_jobs WHERE state='queued' ORDER BY created")
+                      if self._owns_scope(r['scope'])]
         for job_id in queued:
             self.pool.submit(self.execute, job_id)
 
@@ -113,7 +126,10 @@ class QQChat:
             return
         from app.qq_expression import sticker_catalog
         profile = self.characters.for_scope(job['scope'])
-        catalog = self.characters.stickers(self.characters.owner_for_scope(job['scope'])) + sticker_catalog()
+        builtins = sticker_catalog()
+        catalog = self.characters.stickers(self.characters.owner_for_scope(job['scope'])) + builtins
+        if profile['stickerIds'] is not None:
+            catalog = [asset for asset in catalog if asset['id'] in profile['stickerIds']]
         job['voice_instruction'] = '角色性别：'+{'female':'成年女性','male':'成年男性','neutral':'中性自然声线'}[profile['gender']]+'，年龄：'+str(profile['age'])+'，表达风格：'+profile['personality']+'。标准普通话，自然口语，清晰，语速适中。'
         with self.tasks.db() as db:
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()

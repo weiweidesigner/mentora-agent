@@ -28,6 +28,69 @@ class CharacterProfile(BaseModel):
     responseMode: Literal['auto','voice','text','random'] = 'auto'
     paragraph: Literal['minimal','normal','long'] = 'normal'
     stickerProbability: int = Field(default=50, ge=0, le=100)
+    stickerIds: list[str] | None = Field(default=None, max_length=48)
+
+
+class QQConnectionInput(BaseModel):
+    model_config = {"str_strip_whitespace": True}
+    appId: str = Field(pattern=r'^[0-9]{5,20}$')
+    appSecret: str = Field(default='', max_length=256)
+
+
+class QQConnectionStore:
+    def __init__(self, tasks):
+        self.tasks = tasks
+        with tasks.db() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS character_qq_connections(id TEXT PRIMARY KEY,owner TEXT UNIQUE,app_id TEXT UNIQUE,secret TEXT,updated REAL)')
+
+    def row(self, owner):
+        with self.tasks.db() as db:
+            row = db.execute('SELECT * FROM character_qq_connections WHERE owner=?', (owner,)).fetchone()
+        return dict(row) if row else None
+
+    def credentials(self, connection):
+        from app.qq_channel import QQChannelError
+        with self.tasks.db() as db:
+            row = db.execute('SELECT * FROM character_qq_connections WHERE id=?', (connection,)).fetchone()
+        if not row:
+            raise QQChannelError('QQ 连接不存在')
+        return row['app_id'], self.tasks.cipher.decrypt(row['secret'].encode()).decode()
+
+    def public(self, owner):
+        import os
+        row = self.row(owner)
+        base = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')
+        return {'configured': bool(row), 'appId': row['app_id'] if row else '',
+                'hasSecret': bool(row), 'webhookUrl': base+'/api/qq/webhook/'+row['id'] if row else ''}
+
+    def save(self, owner, payload):
+        from app.qq_channel import QQClient
+        old = self.row(owner)
+        secret = payload.appSecret
+        if not secret and old and old['app_id'] == payload.appId:
+            secret = self.credentials(old['id'])[1]
+        if not secret:
+            raise HTTPException(422, '请填写 AppSecret')
+        client = QQClient(credentials_provider=lambda: (payload.appId, secret))
+        try:
+            client.token()
+        except Exception:
+            raise HTTPException(422, 'QQ 鉴权失败，请检查 AppID 和 AppSecret 后重试') from None
+        with self.tasks.db() as db:
+            existing = db.execute('SELECT owner FROM character_qq_connections WHERE app_id=?', (payload.appId,)).fetchone()
+            if existing and existing['owner'] != owner:
+                raise HTTPException(409, '此机器人已连接其他角色设置，请使用原浏览器管理')
+            connection = old['id'] if old else secrets.token_urlsafe(24)
+            encrypted = self.tasks.cipher.encrypt(secret.encode()).decode()
+            db.execute('INSERT INTO character_qq_connections VALUES(?,?,?,?,?) ON CONFLICT(owner) DO UPDATE SET app_id=excluded.app_id,secret=excluded.secret,updated=excluded.updated',
+                       (connection, owner, payload.appId, encrypted, time.time()))
+        return self.public(owner)
+
+    def attach(self, scope, app_id, secret):
+        with self.tasks.db() as db:
+            row = db.execute('SELECT * FROM character_qq_connections WHERE app_id=?', (app_id,)).fetchone()
+            if row and secrets.compare_digest(self.tasks.cipher.decrypt(row['secret'].encode()).decode(), secret):
+                db.execute('INSERT INTO character_links VALUES(?,?) ON CONFLICT(scope) DO UPDATE SET owner=excluded.owner', (scope, row['owner']))
 
 
 class StickerInput(BaseModel):
@@ -40,6 +103,7 @@ class StickerInput(BaseModel):
 class CharacterStore:
     def __init__(self,tasks):
         self.tasks=tasks
+        self.qq = QQConnectionStore(tasks)
         self.images=tasks.directory/'character-stickers';self.images.mkdir(exist_ok=True,mode=0o700)
         with tasks.db() as db:
             db.executescript('''CREATE TABLE IF NOT EXISTS character_profiles(owner TEXT PRIMARY KEY,payload TEXT,updated REAL);
@@ -128,9 +192,12 @@ def create_router(store):
         user=owner(request,response)
         from app.qq_expression import sticker_catalog
         with store.tasks.db() as db:count=db.execute('SELECT count(*) FROM character_links WHERE owner=?',(user,)).fetchone()[0]
-        return {'profile':store.get(user),'builtins':sticker_catalog(),'stickers':store.stickers(user),'linkedCount':count}
+        return {'profile':store.get(user),'builtins':sticker_catalog(),'stickers':store.stickers(user),'linkedCount':count,'qq':store.qq.public(user)}
     @router.put('')
     def save(payload:CharacterProfile,request:Request,response:Response):return store.save(owner(request,response,True),payload)
+    @router.put('/qq')
+    def save_qq(payload:QQConnectionInput,request:Request,response:Response):
+        return store.qq.save(owner(request,response,True),payload)
     @router.post('/link-code')
     def code(request:Request,response:Response):return store.code(owner(request,response,True))
     @router.post('/stickers')

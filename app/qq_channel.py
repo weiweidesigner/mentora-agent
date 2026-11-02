@@ -30,11 +30,14 @@ def signing_key(secret):
 
 
 class QQClient:
-    def __init__(self):
+    def __init__(self, credentials_provider=None):
+        self.credentials_provider = credentials_provider
         self.lock = threading.Lock()
         self.cached = None
 
     def credentials(self):
+        if self.credentials_provider:
+            return self.credentials_provider()
         app_id = os.getenv('QQ_BOT_APP_ID', '').strip()
         secret = os.getenv('QQ_BOT_APP_SECRET', '').strip()
         if not app_id or not secret:
@@ -185,8 +188,10 @@ class QQChannel:
                 or not isinstance(message_id, str) or not 0 < len(message_id) <= 1024
                 or not isinstance(data.get('content'), str)):
             raise HTTPException(400, 'QQ 消息格式无效')
-        app_id, _ = self.client.credentials()
+        app_id, secret = self.client.credentials()
         scope = json.dumps([app_id, kind, target, sender])
+        if self.chat:
+            self.chat.characters.qq.attach(scope, app_id, secret)
         event_id = json.dumps([app_id, kind, target, message_id])
         now = time.time()
         with self.tasks.db() as db:
@@ -218,7 +223,6 @@ def create_router(tasks, chat_runner=None):
     channel = QQChannel(tasks, chat_runner=chat_runner)
     router = APIRouter()
     if channel.chat:
-        router.add_event_handler('startup', channel.chat.recover)
         router.add_event_handler('shutdown', lambda: channel.chat.pool.shutdown(wait=False, cancel_futures=True))
 
     @router.get('/api/qq/voice/{filename}')
@@ -231,8 +235,7 @@ def create_router(tasks, chat_runner=None):
             raise HTTPException(404, '语音已过期')
         return FileResponse(path, media_type='audio/silk', headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
 
-    @router.post('/api/qq/webhook')
-    async def callback(request: Request):
+    async def handle_callback(request: Request, channel):
         try:
             _, secret = channel.client.credentials()
         except QQChannelError:
@@ -263,5 +266,51 @@ def create_router(tasks, chat_runner=None):
             raise HTTPException(401, 'QQ 回调签名无效') from None
         await run_in_threadpool(channel.dispatch, payload)
         return {'op': 12}
+
+    @router.post('/api/qq/webhook')
+    async def callback(request: Request):
+        return await handle_callback(request, channel)
+
+    from app.character_settings import QQConnectionStore
+    connections = QQConnectionStore(tasks)
+    channels = {}
+    channel_lock = threading.Lock()
+
+    def connected_channel(connection):
+        try:
+            connections.credentials(connection)
+        except QQChannelError:
+            raise HTTPException(404, 'QQ 连接不存在') from None
+        with channel_lock:
+            if connection not in channels:
+                client = QQClient(credentials_provider=lambda: connections.credentials(connection))
+                channels[connection] = QQChannel(tasks, client=client, chat_runner=chat_runner)
+            return channels[connection]
+
+    @router.on_event('startup')
+    def recover_connected_channels():
+        with tasks.db() as db:
+            rows = [dict(row) for row in db.execute('SELECT id,app_id FROM character_qq_connections')]
+        for row in rows:
+            item = connected_channel(row['id'])
+            if item.chat:
+                item.chat.recover()
+        if channel.chat:
+            try:
+                app_id = channel.client.credentials()[0]
+            except QQChannelError:
+                app_id = None
+            if not any(row['app_id'] == app_id for row in rows):
+                channel.chat.recover()
+
+    @router.post('/api/qq/webhook/{connection}')
+    async def connected_callback(connection: str, request: Request):
+        return await handle_callback(request, connected_channel(connection))
+
+    @router.on_event('shutdown')
+    def stop_connected_channels():
+        for item in channels.values():
+            if item.chat:
+                item.chat.pool.shutdown(wait=False, cancel_futures=True)
 
     return router
