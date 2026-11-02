@@ -22,6 +22,8 @@ def plain_answer(answer):
 class QQChat:
     def __init__(self, tasks, client, runner):
         self.tasks, self.client, self.runner = tasks, client, runner
+        from app.qq_voice import QQVoice
+        self.voice = QQVoice(tasks, client)
         self.pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix='mentora-qq')
         with tasks.db() as db:
             db.executescript('''
@@ -115,3 +117,13 @@ class QQChat:
                 db.execute('UPDATE qq_chat_jobs SET delivered=1 WHERE id=?', (job_id,))
         except Exception:
             log.warning('QQ chat result delivery failed for job %s; result retained', job_id)
+
+        if self.voice.enabled(job['scope']):
+            with self.tasks.db() as db:
+                completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
+            if completed and completed['state'] == 'completed':
+                try:
+                    if self.voice.send(job, content):
+                        log.info('QQ voice delivered for job %s', job_id)
+                except Exception:
+                    log.warning('QQ voice delivery failed for job %s; text result retained', job_id)

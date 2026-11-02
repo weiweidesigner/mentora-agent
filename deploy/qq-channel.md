@@ -75,3 +75,28 @@ node --test tests/task-workspace.test.mjs
 自由对话、用户/群隔离、连续追问、上下文重置、异步回调、重复回调、失败恢复、
 回复超时保存、原有任务推送等使用隔离测试验证。QQ 平台回调与鉴权此前已联通。
 真实模型和平台收发在部署后分别验证，不能仅凭测试结果声称已收到 QQ 最终回复。
+
+## Breeze 语音回复
+
+QQ 自由对话默认先发文字，随后补发 Breeze TTS 2 语音。发送“关闭语音”只收文字，
+发送“开启语音”恢复，偏好按 QQ 用户与会话独立保存。
+长回答只朗读前面完整句子（约 140 字），并提示查看文字，避免长语音。
+
+Breeze MLX 8bit 在 Mac 上运行，使用 `scripts/breeze_tts_service.py`，常驻加载模型，
+通过 MLX 生成 24 kHz PCM，再由 pilk 编码为腾讯 SILK。
+Mac worker 与 SSH 反向隧道由 LaunchAgent 启动并重连：
+
+- 本机只监听 `127.0.0.1:8768`；服务器通过 `127.0.0.1:18768` 访问。
+- `/speech` 要求 Bearer 令牌，令牌保存在用户私有文件和服务器私有环境，不能入库。
+- 服务配置 `QQ_BREEZE_ENDPOINT=http://127.0.0.1:18768`、`QQ_BREEZE_TOKEN`、`QQ_VOICE_DEFAULT=1`。
+- Mac 配置 `BREEZE_MODEL_PATH`、`BREEZE_TOKEN_FILE`，`BREEZE_VOICE` 可调整自然语言音色描述。
+- 依赖为 Apple Silicon Python、mlx-audio、FastAPI、uvicorn、pilk；服务器不安装 MLX。
+
+合成后服务器暂存随机 URL 的 SILK 文件，15 分钟后拒绝读取，并在后续合成时清理旧文件。
+QQ `/files` 使用 `file_type=3,srv_send_msg=false` 获取资源信息，再通过原消息的
+`msg_id` 和 `msg_seq=3` 被动回复语音。不会使用主动发送接口。
+Mac 离线、语音失败或超过回复时限均保留已有文字结果，不把语音失败算作分析失败。
+语音文件上传依赖腾讯从公网 HTTPS 拉取资源。
+
+Breeze 权重与自部署输出受上游研究和非商业许可约束；具体内容见模型附带 LICENSE。
+本机睡眠、关机或断网会使语音不可用，文字仍由云端服务发送。

@@ -1,0 +1,6 @@
+# Install only on the Apple Silicon speech worker, not the Linux web server.
+mlx-audio[tts]==0.6.3
+mlx==0.32.4
+fastapi==0.162.0
+uvicorn==0.54.0
+pilk==0.2.4

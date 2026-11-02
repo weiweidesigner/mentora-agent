@@ -196,3 +196,21 @@ def test_runner_uses_existing_agent_with_text_only_delivery_without_share_genera
     assert '跳过可视化' in captured[0][0].question
     assert shared == []
     assert 'qqShareUrl' not in result
+
+
+def test_voice_failure_keeps_text_answer_delivered(tasks,monkeypatch):
+    client=Client()
+    chat=QQChat(tasks,client,lambda *a:{'interpretation':'文字回答'})
+    monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
+    called=threading.Event()
+    def fail(*a):
+        called.set()
+        raise RuntimeError('offline Mac')
+    monkeypatch.setattr(chat.voice,'send',fail)
+    chat.enqueue('voice','scope','users','target','mid','问题')
+    assert called.wait(2)
+    chat.pool.shutdown(wait=True)
+    with tasks.db() as db:
+        row=db.execute('SELECT state,delivered FROM qq_chat_jobs').fetchone()
+    assert row['state']=='completed' and row['delivered']==1
+    assert '文字回答' in chat.latest('scope')

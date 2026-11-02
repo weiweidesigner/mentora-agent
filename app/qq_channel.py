@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-HELP = '直接发送问题即可调用 Mentora 分析，支持连续追问。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
+HELP = '直接发送问题即可调用 Mentora 分析，支持连续追问。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
 IDENTIFIER = re.compile(r'[A-Za-z0-9_-]{1,128}')
 
 
@@ -67,6 +67,25 @@ class QQClient:
             raise QQChannelError('QQ 回复失败，请检查消息权限、URL 配置及回复时限')
 
 
+    def voice_reply(self, kind, target, message_id, audio_url, *, sequence=3):
+        if kind not in ('users', 'groups') or not IDENTIFIER.fullmatch(target):
+            raise QQChannelError('QQ 消息目标无效')
+        headers = {'Authorization': 'QQBot ' + self.token()}
+        base = f'https://api.sgroup.qq.com/v2/{kind}/{target}'
+        response = requests.post(base + '/files', headers=headers,
+                                 json={'file_type': 3, 'url': audio_url, 'srv_send_msg': False},
+                                 timeout=30, allow_redirects=False)
+        if response.status_code not in (200, 201) or not response.json().get('file_info'):
+            raise QQChannelError('QQ 语音上传失败')
+        info = response.json()['file_info']
+        response = requests.post(base + '/messages', headers=headers,
+                                 json={'msg_type': 7, 'content': ' ', 'media': {'file_info': info},
+                                       'msg_id': message_id, 'msg_seq': sequence},
+                                 timeout=15, allow_redirects=False)
+        if response.status_code not in (200, 201, 202) or not response.json().get('id'):
+            raise QQChannelError('QQ 语音发送失败')
+
+
 class QQChannel:
     def __init__(self, tasks, client=None, chat_runner=None):
         self.tasks = tasks
@@ -96,6 +115,8 @@ class QQChannel:
 
     def content(self, scope, text):
         text = re.sub(r'<@!?[^>]+>', '', text).strip()
+        if self.chat and text in ('开启语音', '关闭语音'):
+            return self.chat.voice.setting(scope, text == '开启语音')
         if self.chat and text == '新对话':
             return self.chat.reset(scope)
         if self.chat and text in ('最新', '结果'):
@@ -158,7 +179,7 @@ class QQChannel:
             text = re.sub(r'<@!?[^>]+>', '', data['content']).strip()
             if not text or len(text) > 6000:
                 reply = '请发送 1 至 6000 字的问题。'
-            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话') and not re.match(r'^查看\s+https?://', text):
+            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话', '开启语音', '关闭语音') and not re.match(r'^查看\s+https?://', text):
                 reply = self.chat.enqueue(event_id, scope, kind, target, message_id, text)
             else:
                 reply = self.content(scope, text)
@@ -178,6 +199,16 @@ def create_router(tasks, chat_runner=None):
     if channel.chat:
         router.add_event_handler('startup', channel.chat.recover)
         router.add_event_handler('shutdown', lambda: channel.chat.pool.shutdown(wait=False, cancel_futures=True))
+
+    @router.get('/api/qq/voice/{filename}')
+    def voice_resource(filename: str):
+        from fastapi.responses import FileResponse
+        if not re.fullmatch(r'[A-Za-z0-9_-]{32}\.silk', filename):
+            raise HTTPException(404, '语音不存在')
+        path = tasks.directory / 'qq-voice' / filename
+        if not path.is_file() or time.time() - path.stat().st_mtime > 900:
+            raise HTTPException(404, '语音已过期')
+        return FileResponse(path, media_type='audio/silk', headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
 
     @router.post('/api/qq/webhook')
     async def callback(request: Request):
