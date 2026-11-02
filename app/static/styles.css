@@ -4037,12 +4037,11 @@ p {
 }
 
 /* Full-width replay sheet follows portfolio-site's project detail overlay. */
-.caseOverlay{position:fixed;inset:0;z-index:124;box-sizing:border-box;display:flex;align-items:stretch;justify-content:center;padding:48px 0 0;background:rgba(31,34,42,.28);backdrop-filter:blur(2px);overscroll-behavior:contain}
-.caseOverlayPanel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 0;grid-template-rows:minmax(0,1fr);width:100%;height:calc(100dvh - 48px);min-width:0;min-height:0;border:0;border-radius:12px 12px 0 0;background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 28px 80px rgba(16,21,34,.16);transition:grid-template-columns .22s ease}
+.caseOverlay{position:fixed;inset:0;z-index:124;box-sizing:border-box;display:flex;align-items:stretch;justify-content:center;padding:48px 0 0;background:rgba(31,34,42,.62);backdrop-filter:blur(2px);overscroll-behavior:contain}
+.caseOverlayPanel{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 0;grid-template-rows:minmax(0,1fr);width:100%;height:calc(100dvh - 48px);min-width:0;min-height:0;border:0;border-radius:12px 12px 0 0;background:var(--bg);box-shadow:0 28px 80px rgba(16,21,34,.16);transition:grid-template-columns .22s ease}
 .caseOverlayPanel:has(>.activityDrawer.is-open){grid-template-columns:minmax(0,1fr) 410px}
 .caseOverlayPanel>.conversation.is-case{position:relative;inset:auto;height:100%;width:100%;min-height:0;border-radius:12px 12px 0 0;overflow:hidden;padding:0;z-index:auto;animation:none}
 .caseOverlayPanel:has(>.activityDrawer.is-open)>.conversation.is-case{border-top-right-radius:0}
-.caseOverlayPanel>.conversation.is-case,.caseOverlayPanel>.conversation.is-case .messages,.caseOverlayPanel .caseDetailHeader{background:transparent}
 .caseOverlayPanel .caseDetailHeader{min-height:56px;border-radius:12px 12px 0 0}
 .caseOverlayPanel .caseCacheDate{grid-column:1 / -1}
 .caseOverlayPanel>.activityDrawer{height:100%;width:100%;border-radius:0 30px 0 0;display:none;overflow:visible;z-index:2}
