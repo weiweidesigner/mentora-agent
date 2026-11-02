@@ -1384,6 +1384,38 @@ async function artifactCode(url) {
   return streamVisualizationCodeCache.get(absoluteUrl);
 }
 
+function createNavigationArtifact(code, item = {}) {
+  const doc = new DOMParser().parseFromString(String(code || ""), "text/html");
+  const entries = [...doc.querySelectorAll("a.entry.mentoraNavigationCard")];
+  if (!entries.length) return null;
+  const allowed = new Set(["ainvest.com", "www.ainvest.com", "news.ainvest.com", "chart.ainvest.com", "crypto.ainvest.com", "community.ainvest.com", "contact.ainvest.com", "affiliate.ainvest.com"]);
+  const links = entries.map(entry => {
+    const label = entry.querySelector(".name,.entry-name")?.textContent.trim();
+    try {
+      const url = new URL(entry.getAttribute("href"));
+      if (!label || url.protocol !== "https:" || !allowed.has(url.hostname) || url.username || url.password || url.port) return null;
+      return {label, url: url.href};
+    } catch { return null; }
+  });
+  if (links.some(link => !link)) return null;
+  const host = document.createElement("div");
+  host.className = "streamvizArtifactHost nativeNavigationArtifact";
+  host.dataset.artifactUrl = String(item.url || "");
+  host.dataset.artifactReady = "true";
+  host.dataset.streamvizRendered = "true";
+  for (const {label, url} of links) {
+    const card = document.createElement("a");
+    card.className = "entry mentoraNavigationCard";
+    card.href = url;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+    card.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18"/></svg><span class="name"></span><span class="mentoraActionDirection" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 5 7 7-7 7"/></svg></span>';
+    card.querySelector(".name").textContent = label;
+    host.append(card);
+  }
+  return host;
+}
+
 function createStreamVisualizationArtifact(item, index, options = {}) {
   item = canonicalArtifact(item);
   if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
@@ -1406,6 +1438,12 @@ function createStreamVisualizationArtifact(item, index, options = {}) {
     if (/<main\b[^>]*\bdata-artifact-type\s*=\s*["'](?:data-transform|execution-receipt)["']/i.test(rawCode)) {
       window.AimeStreamViz?.unmount?.(host);
       host.remove();
+      return;
+    }
+    const navigation = createNavigationArtifact(rawCode, item);
+    if (navigation) {
+      window.AimeStreamViz?.unmount?.(host);
+      host.replaceWith(navigation);
       return;
     }
     if (!streamVisualizationCompatible(rawCode)) {

@@ -5422,3 +5422,6 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 .conversation.is-empty .composerHint{line-height:1.35;text-wrap:balance}
 .composerHint .homeWelcomeTitle{display:block;font-size:clamp(24px,2.4vw,28px);font-weight:680;overflow-wrap:anywhere}
 .composerHint .homeWelcomeSubtitle{display:block;margin-top:12px;color:var(--muted);font-size:clamp(14px,1.4vw,17px);font-weight:400;line-height:1.6;overflow-wrap:anywhere}
+
+/* Navigation documents are compact actions, without a chart viewport. */
+.nativeNavigationArtifact{display:grid;gap:8px;min-height:0}
