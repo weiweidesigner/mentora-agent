@@ -15,7 +15,7 @@ Also use it for finding existing images, photos, logos or reference pictures, no
 
 ## Routing Notes
 
-For calendar-like requests, distinguish scheduled company disclosures from news context and macroeconomic releases. The available `ainvest-earnings-calendar` skill provides structured company earnings dates and estimates without requiring the user to name AInvest. It does not yet provide macro release schedules. Combine capabilities according to the requested scope and attribute each portion separately; a web result about an economic event is not evidence that an AInvest calendar API was called.
+For calendar-like requests, distinguish scheduled company disclosures from news context and macroeconomic releases. The available `ainvest-earnings-calendar` skill provides structured company earnings dates and estimates without requiring the user to name AInvest. It also provides structured macro release schedules through events --event-type economic_indicator, with --country-codes USA for US releases. Calendar categories also include dividends, splits, IPOs and holidays. Combine capabilities according to the requested scope and attribute each portion separately; a web result about an economic event is not evidence that an AInvest calendar API was called.
 
 Use `external_info_search.py` for web discovery, current facts, event dates, news, announcements, and non-AInvest sources. Downstream reasoning consumes payload `answer` and uses `articles` as traceable source metadata.
 

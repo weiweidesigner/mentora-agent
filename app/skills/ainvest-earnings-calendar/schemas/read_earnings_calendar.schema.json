@@ -10,16 +10,17 @@
     ],
     "date": "YYYY-MM-DD disclosure date, mutually exclusive with range",
     "start-date/end-date": "both required for a range, start <= end",
-    "cursor": "events-only opaque startId, suffix coverage only",
-    "max-pages": "optional positive caller bound, incomplete if more possible",
-    "country-codes": "statistics only, source comma-separated codes such as USA",
+    "cursor": "events-only opaque startId; exactly one category for resume",
+    "max-pages": "optional positive caller bound per category; incomplete if more possible",
+    "country-codes": "statistics or economic_indicator events only; source IDs such as USA. In mixed events applies only to economic_indicator.",
     "event-id": "backtest only, exact earning_ uniqueId from source events",
     "symbols": "recommendations only, tickers as context from the selected event list",
-    "source-input": "optional raw API envelope(s) or event array; offline completeness unknown",
-    "output": "required JSON path under outputs/"
+    "source-input": "raw API envelope(s) or raw event array, one category per offline file; coverage unknown",
+    "output": "required JSON path under outputs/",
+    "event-type": "events only: one or more of earning economic_indicator dividend stock_split ipo holiday; default earning"
   },
   "dataContract": {
-    "events": "id,symbol,marketId,name,companyNameEn,eventDate,reportYear,reportType,disclosureTimeType,estimateEps,actualEps,estimateRevenue,actualRevenue,raw",
+    "events": "Common id,eventType,eventDate,symbol,marketId,name,raw; earning retains original EPS/revenue fields. Other categories preserve non-null source objects in details. Economic events additionally name,country,releaseTime,releaseTimezone(null),periodEnd,frequency,importance,indicatorId,actual/forecast/prior numeric nullable and corresponding Raw strings.",
     "pagination": "complete, stoppedBecause, nextCursor, pages, resumedFromCursor; complete means requested traversal completed, not verified market-wide universe",
     "quality": "duplicateEvents, invalidNumericFields; raw originals kept",
     "source": "fixed API URL, requested parameters, actual transport and request interval; offline fetch times null",
@@ -27,7 +28,8 @@
     "backtest/recommendations": "raw data, optional; internal nested schema/methodology not asserted",
     "units": "source numeric strings parsed without percentage scaling or revenue B/M conversion; currency and time-type enum not invented",
     "missing": "null, not zero; no fabricated surprise fields",
-    "backtest": "data.backtest[].backtest_result.visual.value.datas[].backtest_result.target_result has targetEventTimes and stockEventData[] with dayIndex,winRate,averageYield,positiveDays; data.periods holds EPS actual/estimate history. Raw data preserved; summary omits large price arrays."
+    "backtest": "data.backtest[].backtest_result.visual.value.datas[].backtest_result.target_result has targetEventTimes and stockEventData[] with dayIndex,winRate,averageYield,positiveDays; data.periods holds EPS actual/estimate history. Raw data preserved; summary omits large price arrays.",
+    "categoryResults": "Live events: per-category eventType, parameters, eventCount, pagination and optional errorType. Combined complete is true only if all requested categories completed. Failed categories differ from successful empty lists. Each cursor is category-bound."
   },
   "presentation": {
     "rendered": false,
@@ -43,18 +45,19 @@
   "security": "Fixed read-only GET resources after one standard ephemeral AInvest visitor session POST; credentials in memory only, no personal login/account/watchlist input, retry or synthetic fallback.",
   "authenticationStatus": {
     "anonymous": "Live tested: HTTP 401",
-    "visitor": "Events and one event-ID backtest live-verified in production on 2026-11-01; other operations not implied verified."
+    "visitor": "All six category GETs verified with standard visitor transport; 2026-11-02 nonempty economic/dividend/IPO and prior earnings, empty stock_split/holiday. Backtest remains earnings-only."
   },
   "agentContract": {
     "capability": "data-only; choose operations by question scope, not keyword routing",
     "coverage": {
-      "naturalRequests": "Today/tomorrow/week company earnings, who reports results, expected vs actual EPS/revenue; user need not name AInvest. For mixed financial events, this capability covers the earnings portion only. Visualization choice does not replace source selection.",
-      "unsupported": "No macroeconomic release-list operation. statistics.economic_indicator is a count, not dated event records. Macro histories/relations are not release schedules. Use another suitable source with separate attribution, or disclose the unavailable scope for AInvest-only requests.",
-      "dates": "State disclosure-date scope and its date basis, resolving today from conversation context. Source timezone and disclosureTimeType enum are not verified: do not infer premarket/after-hours counts, exact clock times or timezone conversions.",
-      "status": "Preserve nulls and assess actual-vs-pending per event and metric, not once for the whole batch. Complete pagination is source traversal, not proof of a complete US-listed universe."
+      "naturalRequests": "Economic releases, company earnings, dividends, stock splits, IPOs and holidays, including combined daily/weekly schedules. User need not name AInvest.",
+      "categories": "events --event-type earning economic_indicator dividend stock_split ipo holiday; choose the required subset. Default remains earning for compatibility.",
+      "countries": "--country-codes source IDs e.g. USA is supported for economic_indicator events and statistics. In mixed queries other categories are unfiltered, not an assumed US-only universe.",
+      "dates": "State calendar-date scope and basis. releaseTime preserves source publicTime; UI labels ET but API lacks timezone/offset. releaseTimezone null: verify before converting. Earnings disclosureTimeType enum is still not fully verified.",
+      "sourceStatus": "Per-event actual/forecast/prior nulls preserved. Empty successful category and failed/incomplete category must be distinguished. Source traversal completion is not a market-wide completeness guarantee."
     },
     "operations": {
-      "events": "Company earnings schedules and EPS/revenue estimates/actuals by disclosure date/range. --date D or --start-date A --end-date B. Output includes id for backtest.",
+      "events": "Economic/earnings/dividend/split/IPO/holiday event lists by --date D or --start-date A --end-date B; --event-type accepts multiple categories. Economic values are nullable, country/time/period remain explicit; use --country-codes USA only for economic events. Each category independently paginated.",
       "backtest": "Existing provider historical beat/miss win rates and returns, NOT only the selected event outcome. --operation backtest --event-id <source uniqueId> --output <JSON>. One event identity anchors a historical sample snapshot: it is not necessary to collect every historical earnings date. Obtain an appropriate source ID from available earnings-calendar observations; never fabricate it.",
       "statistics": "Daily counts of calendar categories. --start-date A --end-date B, optional --country-codes source IDs.",
       "recommendations": "Optional suggested questions, not numerical evidence."
@@ -63,5 +66,5 @@
     "handoff": "backtest summary exposes sample counts, source periods and windows(dayIndex,winRate,averageYield,positiveDays). data retains full source backtest and periods (EPS actual/estimate history). Reuse these files instead of fetching price history merely to recreate already-available source statistics.",
     "units": "winRate is 0..1; averageYield already percent; sourceTag probability value already percent. Source prose is unverified and may contradict structured numbers."
   },
-  "purpose": "Company earnings disclosure schedules, dates and EPS/revenue actuals/estimates, selected from natural requests without requiring AInvest by name; optional historical post-earnings statistics. Not a macroeconomic release calendar."
+  "purpose": "Structured AInvest economic releases, earnings, dividends, splits, IPO and holiday events; natural queries need not name AInvest. Optional earnings-only historical backtests."
 }

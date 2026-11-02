@@ -111,7 +111,7 @@ def test_new_skill_discovered_without_forced_routing():
     from app.capability_index import CapabilityIndex
     from app.skill_runner import _registered_script
     assert _registered_script(SCRIPT.name,ROOT)[0]==SCRIPT
-    for query in ('下周哪些公司公布财报','看看本周财报日历','AInvest earnings calendar'):
+    for query in ('下周哪些公司公布财报','看看本周财报日历','AInvest earnings calendar','今天有哪些美国经济数据发布','本周分红和IPO日程'):
         assert SCRIPT.name in [r['script'] for r in CapabilityIndex(ROOT).shortlist(query).modules]
 
 
@@ -152,3 +152,75 @@ def test_backtest_decision_contract_survives_bounded_runner_receipt():
     assert receipt['agentContract']==schema['agentContract']
     assert 'backtest' in receipt['agentContract']['operations']
     assert 'sample counts' in receipt['agentContract']['handoff']
+
+
+def economic_row(i=1):
+    return {'uniqueId':f'economic_indicator_{i}', 'eventType':'economic_indicator', 'eventDate':'2026-11-02',
+            'startId':f'cursor_{i}', 'economicIndicator':{'indexName':'Synthetic release', 'country':'USA',
+            'publicTime':'2026-11-02 10:00:00','endDate':'2026-10-31','importance':'3','dataFrequency':'M',
+            'indexId':'TEST','actualValue':None,'forecastValue':'0','priorValue':'-1.5'}}
+
+
+def test_economic_normalization_preserves_source_time_raw_values_and_nulls():
+    source=economic_row();source['economicIndicator']['actualValue']='N/A'
+    events,quality=m.normalize_events([source],'economic_indicator')
+    event=events[0]
+    assert event['name']=='Synthetic release' and event['country']=='USA'
+    assert event['releaseTime']=='2026-11-02 10:00:00' and event['releaseTimezone'] is None
+    assert event['forecast']==0 and event['prior']==-1.5
+    assert event['actual'] is None and event['actualRaw']=='N/A'
+    assert quality['invalidNumericFields']==1 and event['raw']==source
+
+
+@pytest.mark.parametrize('category',['dividend','stock_split','ipo','holiday'])
+def test_category_specific_unknown_fields_are_not_dropped(category):
+    source={'uniqueId':category+'_1','eventType':category,'eventDate':'2026-11-02','customBody':{'newField':'source text'}}
+    events,quality=m.normalize_events([source],category)
+    assert events[0]['details']=={'customBody':{'newField':'source text'}}
+    assert events[0]['raw']==source and quality['invalidNumericFields']==0
+    with pytest.raises(ValueError):m.normalize_events([source],'earning')
+
+
+def test_mixed_categories_keep_independent_cursors_and_country_scope():
+    calls=[]
+    def fetch(path,params):
+        calls.append(dict(params));kind=params['eventType']
+        if kind=='earning':
+            data=[row(i) for i in range(60)] if 'startId' not in params else [row(60)]
+        else:data=[economic_row()]
+        return {'data':data},'https://source/calendar'
+    rows,paging,categories=m.fetch_categories(fetch,{'countryCodes':'USA'},['earning','economic_indicator'])
+    assert len(rows)==62 and paging['complete'] and paging['nextCursor'] is None
+    assert 'countryCodes' not in calls[0] and 'countryCodes' not in calls[1]
+    assert calls[1]['startId']=='opaque_59' and calls[2]['countryCodes']=='USA' and 'startId' not in calls[2]
+    assert categories[0]['eventCount']==61 and categories[1]['eventCount']==1
+
+
+def test_failed_category_is_not_empty_and_other_results_survive():
+    calls=[]
+    def fetch(path,params):
+        calls.append(params['eventType'])
+        if params['eventType']=='economic_indicator':raise requests.HTTPError('403')
+        return {'data':[row(1)]},'https://source/calendar'
+    rows,paging,categories=m.fetch_categories(fetch,{},['earning','economic_indicator'])
+    assert len(rows)==1 and not paging['complete']
+    assert categories[1]['pagination']['stoppedBecause']=='source_error'
+    assert categories[1]['errorType']=='HTTPError' and len(calls)==2
+    with pytest.raises(ValueError,match='All requested'):m.fetch_categories(fetch,{},['economic_indicator'])
+    _,empty,coverage=m.fetch_categories(lambda *args:({'data':[]},'source'),{},['holiday'])
+    assert empty['complete'] and 'errorType' not in coverage[0]
+
+
+def test_economic_offline_cli_and_invalid_category_filters(tmp_path):
+    source=tmp_path/'source.json';source.write_text(json.dumps({'data':[economic_row()]}))
+    out=tmp_path/'out.json'
+    command=[sys.executable,str(SCRIPT),'--date','2026-11-02','--event-type','economic_indicator',
+             '--country-codes','USA','--source-input',str(source),'--output',str(out)]
+    result=subprocess.run(command,capture_output=True,text=True)
+    assert result.returncode==0,result.stdout+result.stderr
+    data=json.loads(out.read_text());assert data['events'][0]['forecast']==0 and data['source']['completedAt'] is None
+    parser=m.make_parser()
+    for args in [ ['--operation','backtest','--event-type','holiday','--event-id','earning_1'],
+                  ['--date','2026-11-02','--event-type','dividend','--country-codes','USA'],
+                  ['--date','2026-11-02','--event-type','earning','economic_indicator','--cursor','opaque'] ]:
+        with pytest.raises(SystemExit):m.arguments(parser,parser.parse_args(args+['--output',str(out)]))

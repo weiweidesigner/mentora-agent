@@ -576,7 +576,7 @@
   {
     "name": "read_earnings_calendar",
     "script": "read_earnings_calendar.py",
-    "label": "AInvest Earnings Calendar Data",
-    "description": "财报日程数据：今天/明天/本周哪些公司公布财报、业绩披露日期及EPS/营收预期与实际；无需指定AInvest。events 按日期/区间读取，JSON可交给思维导图等任意组件。混合财经事件查询仅覆盖财报，宏观经济发布日程不支持；statistics 只是数量，时段枚举未确认。backtest 用已发现事件ID返回历史超预期/不及预期胜率、收益、样本数及窗口；不必搜集每次历史披露日，自定义交易规则可独立计算。"
+    "label": "AInvest Financial Calendar Data",
+    "description": "财经日历：今天/本周经济数据发布、哪些公司公布财报、分红、拆股、IPO和假期。events --event-type 可组合 earning economic_indicator dividend stock_split ipo holiday（默认earning）；经济日程用 --country-codes USA，返回来源时间、国家、前值/预期/实际；财报返回EPS/营收。按类别独立分页及覆盖说明。backtest使用来源财报事件ID返回历史胜率收益。JSON数据，无固定图表，无需提及AInvest。"
   }
 ]

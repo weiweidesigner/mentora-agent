@@ -1,0 +1,9 @@
+# Verified category list contract
+
+Observed 2026-11-02 in official Chrome Network by selecting visible tabs. GET `https://fundamental.ainvest.com/fuyao/america_financial_calendar/financialCalendar/v1/cateDataList` uses startDate/endDate, size=60 and source startId for continuation. UI mappings: Earnings=earning, Economic=economic_indicator, Dividends=dividend, Splits=stock_split, IPO=ipo, Holidays=holiday. Economic also sends countryCodes with source IDs; subset USA was live-verified. Other category country filtering is not established.
+
+All observed lists return a source envelope with data[] and uniqueId/eventType/eventDate/startId. Economic object economicIndicator carries country, publicTime, indexName, endDate, indexId, dataFrequency, importance, actualValue/forecastValue/priorValue and type. Raw numeric formats and nulls are preserved; no currency/unit or timezone is invented. UI displays ET; the API publicTime string has no offset.
+
+Dividend object dividend contains declareDate, dividendDate (payment), exRightsDate, dividendMoney, dividendStock, priorDividendMoney, priorDividendStock, yieldTtm and items. Do not equate payment, declaration and ex-rights dates. IPO object ipo contains stockName, offeringPriceLow/High, floorPrice, ceilingPrice, actualPrice, sharesOffered, exchangeName. Source details remain unscaled/uninterpreted until the question needs them. Split and holiday returned valid empty arrays in the validation date: non-empty body semantics are not asserted and are preserved under details/raw.
+
+Visitor live verification for 2026-11-02: economic_indicator with countryCodes=USA returned 10 rows, dividend 7, ipo 1, stock_split 0 and holiday 0, with all selected traversals complete. These are verification observations, not permanent counts or a fixed request date. The API request parameters are confirmed; source contents may change.
