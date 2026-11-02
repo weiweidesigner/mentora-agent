@@ -3,7 +3,7 @@ import {JSDOM} from 'jsdom';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const code=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8');
+const code=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8'));
 const catalog=JSON.parse(readFileSync(new URL('../app/static/widget-catalog.json',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,20));
 function setup(cards=[],plan={reply:'已完成',actions:[{type:'rename_board',title:'新看板'}]}){

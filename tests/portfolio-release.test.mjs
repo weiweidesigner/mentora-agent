@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 
-const source=readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8'));
 test('trading and board refresh controls share their glyph and borderless style',()=>{
  const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
  const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');

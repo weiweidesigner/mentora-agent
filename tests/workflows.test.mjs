@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const code=readFileSync(new URL('../app/static/workflows.js',import.meta.url),'utf8');
-const day=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
+const day=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,30));
 const kinds=['start','watchlist','profile','model','condition','output','watchlist_update'].map(id=>({id,label:id,description:id}));
 const graph={version:1,nodes:[{id:'input',kind:'start',title:'输入',x:90,y:140,arguments:{score:3}},{id:'out',kind:'output',title:'输出',x:440,y:140}],edges:[{source:'input',target:'out',when:'always'}]};

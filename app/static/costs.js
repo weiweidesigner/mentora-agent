@@ -83,7 +83,7 @@
     if (!shell) { void load(); return; }
     delete document.documentElement.dataset.entryView;
     internal = true;
-    try { window.dispatchEvent(new CustomEvent('veya:chat-navigate')); } finally { internal = false; }
+    try { window.dispatchEvent(new CustomEvent('veya:chat-navigate',{detail:{workspace:'costs'}})); } finally { internal = false; }
     shell.classList.remove('tasks-view', 'widgets-view', 'portfolio-view');
     shell.classList.add('cost-view');
     for (const id of ['taskWorkspace', 'taskSidebar', 'widgetWorkspace', 'widgetSidebar', 'portfolioWorkspace']) if ($(id)) $(id).hidden = true;
@@ -95,7 +95,7 @@
       $(id)?.classList.add(id === 'railCosts' ? 'is-active' : 'is-selected'); $(id)?.setAttribute('aria-current', 'page');
     }
     if (typeof setSidebarCollapsed === 'function') setSidebarCollapsed(true);
-    const url = new URL(location.href); url.search = ''; url.searchParams.set('tab', 'costs');
+    const url = window.MentoraNavigation.url('costs');
     if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
     void load();
   }

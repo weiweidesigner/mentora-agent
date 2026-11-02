@@ -3,7 +3,7 @@ import {JSDOM} from 'jsdom';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const source=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8'));
 const key='mentora-widget-boards-v1';
 const defaults={version:1,boards:['stocks','crypto','forex'].map(id=>({id:'starter-'+id,title:id,messages:[],cards:[{id:id+'-chart',title:id,component:'tv-advanced-chart',status:'ready',url:'/generated/'+id+'.html',x:0,y:0,w:12,h:24}]}))};
 async function setup(storage,response=defaults){

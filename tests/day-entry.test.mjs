@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 
 const html = readFileSync(new URL('../app/static/index.html', import.meta.url), 'utf8');
-const daySource = readFileSync(new URL('../app/static/day-tasks.js', import.meta.url), 'utf8');
+const daySource = (readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/day-tasks.js', import.meta.url), 'utf8'));
 const tick = () => new Promise(resolve => setTimeout(resolve, 25));
 
 for (const width of [390, 760, 1280]) {

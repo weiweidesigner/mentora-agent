@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-const script=readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8');
+const script=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8'));
 async function render(watchlist){
  const dom=new JSDOM('<main class="shell"><nav><button id="railHome"></button><button id="railWidgets"></button><button id="navWidgets"></button></nav><section id="taskWorkspace"></section><section id="widgetWorkspace"></section></main>',{url:'https://example.com/mentora/?tab=portfolio',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.setInterval=()=>1;w.clearInterval=()=>{};

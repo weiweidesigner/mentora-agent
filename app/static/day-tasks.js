@@ -267,23 +267,19 @@
     $('taskRecommendations').innerHTML=recommendations.filter(matchesScene).map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
   }
   function writeUrl(taskId='', replace=false, keepShare=false, runId='') {
-    const url=new URL(location.href);
-    ['case','dayResult'].forEach(key=>url.searchParams.delete(key));
-    if (!keepShare) url.searchParams.delete('dayShare');
-    url.searchParams.set('tab','tasks');
-    if(taskId)url.searchParams.set('task',taskId);else url.searchParams.delete('task');
-    if(runId)url.searchParams.set('run',runId);else url.searchParams.delete('run');
+    const url=window.MentoraNavigation.url('tasks',{task:taskId,run:runId,dayShare:keepShare?new URL(location.href).searchParams.get('dayShare'):''});
     history[replace?'replaceState':'pushState']({tab:'tasks',task:taskId},'',url);
   }
   function shellMode(active) {
+    const homeActive=!active&&!['widgets','portfolio','costs'].includes(new URL(location.href).searchParams.get('tab'));
     if(!active){stopFollowup();stopRun();}
     document.querySelector('.shell').classList.toggle('tasks-view',active);
     workspace.hidden=!active;
     $('taskSidebar').hidden=!active;
     document.querySelector('.historyBlock').hidden=active&&!mobile();
-    $('navHome').classList.toggle('is-selected',!active);$('navTasks').classList.toggle('is-selected',active);
-    $('railHome').classList.toggle('is-active',!active);$('railTasks').classList.toggle('is-active',active);
-    for(const [id,current] of [['navHome',!active],['navTasks',active],['railHome',!active],['railTasks',active]]){if(current)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}
+    $('navHome').classList.toggle('is-selected',homeActive);$('navTasks').classList.toggle('is-selected',active);
+    $('railHome').classList.toggle('is-active',homeActive);$('railTasks').classList.toggle('is-active',active);
+    for(const [id,current] of [['navHome',homeActive],['navTasks',active],['railHome',homeActive],['railTasks',active]]){if(current)$(id).setAttribute('aria-current','page');else $(id).removeAttribute('aria-current');}
     if (mobile() && typeof setSidebarCollapsed==='function') setSidebarCollapsed(true);
   }
   function enterWorkspace() {
@@ -715,7 +711,12 @@
   });
   dialog.addEventListener('close',()=>{if(!dialog.open)workflowScheduleSave=null;});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  window.addEventListener('veya:chat-navigate',()=>{closeTaskMenu();if(internalNavigation)return;shellMode(false);viewVersion++;selectedId='';const url=new URL(location.href);['tab','task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));history.replaceState(null,'',url);});
+  window.addEventListener('veya:chat-navigate',event=>{
+    closeTaskMenu();if(internalNavigation)return;
+    // Workspace entry owns the next history write; do not overwrite its source.
+    if(!event.detail?.workspace)history.replaceState(null,'',window.MentoraNavigation.url('home'));
+    shellMode(false);viewVersion++;selectedId='';
+  });
   window.addEventListener('popstate',()=>{const p=new URLSearchParams(location.search);if(p.get('dayShare'))openShared(p.get('dayShare')).catch(e=>message(e.message));else if(p.get('tab')==='tasks'){if(p.get('task'))selectTask(p.get('task'),{updateUrl:false,runId:p.get('run')||''}).catch(e=>message(e.message));else showLanding(false);}else shellMode(false);});
   window.matchMedia('(max-width: 760px)').addEventListener?.('change',()=>{if(!workspace.hidden)shellMode(true);});
   if(initialTask){enterWorkspace();workspace.dataset.taskView='loading';$('taskLanding').hidden=true;$('taskDetail').hidden=false;$('taskWizard').hidden=true;$('taskChatForm').hidden=true;}

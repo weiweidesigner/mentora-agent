@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 
-const source=readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8'));
 test('position assets link to TradingView with market-aware symbols and safe new-tab navigation',async()=>{
  const dom=new JSDOM('<main class="shell"><button id="railHome"></button><button id="railWidgets"></button><button id="navWidgets"></button><section id="taskWorkspace"></section><section id="widgetWorkspace"></section></main>',{url:'https://example.com/mentora/?tab=portfolio&portfolioView=positions',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;w.setInterval=()=>1;w.clearInterval=()=>{};

@@ -43,6 +43,7 @@
   }
   let selectedCardId="", openIds=[], editingCardId='', draggingTab='', pendingArtifact=null;
   let defaultsVersion=0,defaultsLoading=false,initialEmptyId='';
+  let pendingBoardId='';
   let generationCatalog=[],generationCatalogLoaded=false;
   const refreshingBoards=new Set(), pageRefreshedAt=new Date();
   const refreshTime=value=>`${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')} ${String(value.getHours()).padStart(2,'0')}:${String(value.getMinutes()).padStart(2,'0')}`;
@@ -145,22 +146,26 @@
   }
   function overlaps(a,b) { return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
   async function ensureDefaultBoards(){
-    if(defaultsLoading||(defaultsVersion>=1&&[...systemBoardIds].every(id=>boards.some(board=>board.id===id))))return;
+    if(defaultsLoading||(defaultsVersion>=1&&!pendingBoardId))return;
     defaultsLoading=true;
     try{
       const response=await fetch('/api/widgets/default-boards'),data=await response.json();
-      if(!response.ok||data.version!==1||!Array.isArray(data.boards)||data.boards.length!==3)return;
-      if(data.boards.some(b=>!b.id||!Array.isArray(b.cards)||!b.cards.length||b.cards.some(c=>!safeUrl(c.url))))return;
+      if(!response.ok||data.version!==1||!Array.isArray(data.boards)||data.boards.length!==3)throw Error('系统看板暂时无法加载');
+      if(data.boards.some(b=>!b.id||!Array.isArray(b.cards)||!b.cards.length||b.cards.some(c=>!safeUrl(c.url))))throw Error('系统看板配置不可用');
       const placeholder=boards.find(b=>b.id===initialEmptyId),replaceEmpty=placeholder&&placeholder.title==='我的 Widget'&&!placeholder.cards.length&&!placeholder.messages.length;
-      if(boards.length-(replaceEmpty?1:0)+data.boards.filter(b=>!boards.some(old=>old.id===b.id)).length>40)return;
+      if(boards.length-(replaceEmpty?1:0)+data.boards.filter(b=>!boards.some(old=>old.id===b.id)).length>40)throw Error('看板数量已达到上限');
       const selectDefault=replaceEmpty&&activeId===initialEmptyId;
       if(replaceEmpty){boards=boards.filter(b=>b!==placeholder);openIds=openIds.filter(id=>id!==placeholder.id);}
       for(const board of data.boards){if(boards.some(b=>b.id===board.id))continue;boards.push(board);openIds.push(board.id);}
       defaultsVersion=1;
-      if(selectDefault)activeId=data.boards[0].id;
+      if(pendingBoardId && boards.some(board=>board.id===pendingBoardId)){activeId=pendingBoardId;if(!openIds.includes(activeId))openIds.push(activeId);}else if(selectDefault)activeId=data.boards[0].id;
+      pendingBoardId='';
       save();
       if(!workspace.hidden){route(false);render();}
-    }catch{/* A failed load leaves existing boards usable and can retry on the next visit. */}
+    }catch{
+      // Keep existing boards usable without advertising an unresolved destination.
+      if(pendingBoardId){pendingBoardId='';if(!workspace.hidden){route(false);render();notice('目标看板暂时无法加载，已显示现有看板，请稍后重试。');}}
+    }
     finally{defaultsLoading=false;}
   }
   function settle(board, anchor) {
@@ -312,12 +317,12 @@
     applyLayout();notice(progressByBoard.get(activeId)||'');
   }
   function route(push=true) {
-    const url=new URL(location.href);['task','run','dayResult','dayShare'].forEach(k=>url.searchParams.delete(k));url.searchParams.set('tab','widgets');url.searchParams.set('board',activeId);history[push?'pushState':'replaceState'](null,'',url);
+    const url=window.MentoraNavigation.url('widgets',{board:pendingBoardId||activeId});history[push?'pushState':'replaceState'](null,'',url);
   }
   function enter(push=true) {
     if(typeof closeActivityDrawer==='function')closeActivityDrawer();
     internal=true;
-    try {window.dispatchEvent(new CustomEvent('veya:chat-navigate'));} finally {internal=false;}
+    try {window.dispatchEvent(new CustomEvent('veya:chat-navigate',{detail:{workspace:'widgets'}}));} finally {internal=false;}
     shell.classList.remove('tasks-view');$('taskWorkspace').hidden=true;$('taskSidebar').hidden=true;
     shell.classList.add('widgets-view');workspace.hidden=false;$('widgetSidebar').hidden=true;
     for(const id of ['navHome','navTasks','railHome','railTasks']){$(id)?.classList.remove('is-selected','is-active');$(id)?.removeAttribute('aria-current');}
@@ -725,7 +730,7 @@
     selectedCardId='';if(nameAction==='new'){const board={id:uid(),title,cards:[],messages:[]};boards.push(board);openIds.push(board.id);activeId=board.id;}else if(current())current().title=title;
     save();route();render();if(mobile()&&typeof setSidebarCollapsed==='function')setSidebarCollapsed(true);
   });
-  function activateBoard(id){if(!boards.some(b=>b.id===id))return;if(!openIds.includes(id))openIds.push(id);activeId=id;selectedCardId='';save();route();render();}
+  function activateBoard(id){if(!boards.some(b=>b.id===id))return;pendingBoardId='';if(!openIds.includes(id))openIds.push(id);activeId=id;selectedCardId='';save();route();render();}
   function closeTab(id){const index=openIds.indexOf(id);openIds=openIds.filter(value=>value!==id);if(activeId===id)activeId=openIds[Math.min(index,openIds.length-1)]||'';selectedCardId='';save();route();render();}
   function deleteBoard(id){const board=boards.find(b=>b.id===id);if(!board||isSystemBoard(board))return;if(!confirm(`删除「${board.title}」及其中的图表？`))return;jobs.get(id)?.abort();commandControllers.get(id)?.abort();boards=boards.filter(b=>b.id!==id);closeTab(id);renderManager();}
   function renderManager(){$('widgetManagerList').innerHTML=boards.length?boards.map(board=>`<div class="widgetManagerRow"><button type="button" data-manage-open="${esc(board.id)}"><strong>${esc(board.title)}${isSystemBoard(board)?'（系统看板）':''}</strong><small>${board.cards.length} 张图表${openIds.includes(board.id)?' · 已打开':''}</small></button>${isSystemBoard(board)?'':`<button type="button" data-manage-delete="${esc(board.id)}" aria-label="删除 ${esc(board.title)}" title="删除">${trashIcon}</button>`}</div>`).join(''):'<p>还没有保存的 Widget</p>';}
@@ -860,11 +865,11 @@
   });
   window.addEventListener('mentora:add-artifact-to-widget',event=>openArtifactDialog(event.detail));
   document.addEventListener('click',event=>{if(event.target.closest('#navWidgets,#railWidgets'))enter();else if(event.target.closest('#navTasks,#railTasks,#dayCustomizeTasks'))leave();});
-  window.addEventListener('veya:chat-navigate',()=>{if(!internal)leave();});
-  window.addEventListener('popstate',()=>{if(new URL(location.href).searchParams.get('tab')==='widgets'){const id=new URL(location.href).searchParams.get('board');if(boards.some(b=>b.id===id)){activeId=id;if(!openIds.includes(id))openIds.push(id);}enter(false);}else leave();});
+  window.addEventListener('veya:chat-navigate',()=>{if(!internal){pendingBoardId='';leave();}});
+  window.addEventListener('popstate',()=>{if(new URL(location.href).searchParams.get('tab')==='widgets'){const id=new URL(location.href).searchParams.get('board');pendingBoardId=systemBoardIds.has(id)?id:'';if(boards.some(b=>b.id===id)){pendingBoardId='';activeId=id;if(!openIds.includes(id))openIds.push(id);}enter(false);}else leave();});
   new ResizeObserver(()=>applyLayout()).observe(canvas);
   new MutationObserver(()=>{for(const frame of canvas.querySelectorAll('iframe')){const card=current()?.cards.find(c=>c.id===frame.closest('[data-card]').dataset.card);if(card)frame.src=frameUrl(card);}}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   load();
   if(repairBoardTitles())save();
-  if(new URL(location.href).searchParams.get('tab')==='widgets'){const id=new URL(location.href).searchParams.get('board');if(boards.some(b=>b.id===id)){activeId=id;if(!openIds.includes(id))openIds.push(id);}enter(false);}
+  if(new URL(location.href).searchParams.get('tab')==='widgets'){const id=new URL(location.href).searchParams.get('board');pendingBoardId=systemBoardIds.has(id)?id:'';if(boards.some(b=>b.id===id)){pendingBoardId='';activeId=id;if(!openIds.includes(id))openIds.push(id);}enter(false);}
 })();

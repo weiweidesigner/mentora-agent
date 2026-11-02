@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
-const source=readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/portfolio.js',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,20));
 const code='//@version=5\nstrategy("Test")\nstrategy.entry("L", strategy.long)';
 const old='def signal(context):\n    return "hold"';

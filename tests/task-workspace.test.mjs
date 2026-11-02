@@ -6,7 +6,7 @@ const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf
 const editorSource=readFileSync(new URL('../app/static/task-editor.js',import.meta.url),'utf8');
 const appSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const savedAnswerSource=appSource.slice(appSource.indexOf('async function renderSavedAssistantAnswer('),appSource.indexOf('function restoreSession(sessionId)'));
-const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8'));
 const userMessageSource=appSource.slice(appSource.indexOf('function renderUserMessage('),appSource.indexOf('async function addImageFiles('));
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,20));

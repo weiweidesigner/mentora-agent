@@ -3,7 +3,7 @@ import {JSDOM} from 'jsdom';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const source=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8'));
 const homeSource=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 const catalog=JSON.parse(readFileSync(new URL('../app/static/widget-catalog.json',import.meta.url),'utf8'));
 const tick=()=>new Promise(r=>setTimeout(r,15));

@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const source=readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8');
+const source=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/day-tasks.js',import.meta.url),'utf8'));
 const css=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const now='2026-10-21T02:48:58Z';
 const base={market:'CN',stage:'live',scene:'live',resultScene:'live',assetType:'index',enabled:true,

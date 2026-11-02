@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const code=readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8');
+const code=(readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/widgets.js',import.meta.url),'utf8'));
 const library=JSON.parse(readFileSync(new URL('../app/static/widget-catalog.json',import.meta.url),'utf8'));
 const generic={id:'generic-bar_chart',title:'柱状图',provider:'generic',skill:'generic-chart',script:'bar_chart.py',inputMode:'data',requiresDataSource:true,libraryVisible:false};
 const streamviz={...generic,id:'streamviz',title:'StreamVis组件',provider:'streamviz',skill:'streamviz',script:'render_streamviz.py'};
