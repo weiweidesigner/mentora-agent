@@ -9,7 +9,11 @@ description: 美股和美国上市 ETF 的条件筛选数据工具。按行业�
 
 根据用户的自然语言选择参数，无需用户说“使用 ainvest-screener”。“用表格展示”是筛选结果的交付格式，仍由本工具取数；按需用普通表格展示，不需要先取热力图数据。市场范围为美股及美国上市 ETF；股票和 ETF 分别选择 asset。用户要求选股/筛选 ETF 时，直接查询符合条件的证券，无需先全量获取市场或热力图数据。
 
-先读取与当前条件有关的 fields / metrics / strategies，组合条件后执行 query。已确认的字段和指标可直接复用，无需每次浏览器取证、读取源码或重建 API。只按用户要求选列和分页；保留总匹配数。显示行业、费用率、成交量、规模时，可用 columns：55,ext_metric_sector_1_name,国际北美etf@Expense Ratio,13,国际北美etf@Assets Under Management(Latest)。若行业返回缺失，应如实显示，不能用组合条件推断每只 ETF 的行业。
+参数已明确时直接 query；只在缺少参数定义时读取与当前条件有关的 fields / metrics / strategies，组合条件后执行 query。已确认的字段和指标可直接复用，无需每次浏览器取证、读取源码或重建 API。只按用户要求选列和分页；保留总匹配数。显示行业、费用率、成交量、规模时，可用 columns：55,ext_metric_sector_1_name,国际北美etf@Expense Ratio,13,国际北美etf@Assets Under Management(Latest)。若行业返回缺失，应如实显示，不能用组合条件推断每只 ETF 的行业。
+
+保留用户要求的证券范围和排名口径。未提出额外限制时，不自行剔除杠杆、反向、小规模或低成交量产品；可以在结果中标注风险。用户明确限定“非杠杆”“成交量至少…”时才增加对应条件，使用已确认的结构化字段，不根据名称正则猜产品分类。表格请求按结果列交付表格，不额外生成其他图表。已有数据满足问题后直接回答；仅当用户要求的字段或覆盖范围缺失时再补取。
+
+涨幅榜可直接执行 query --asset etf --strategy ranking-top-gainers --top 20 --limit 20 --output outputs/data/etf-gainers.json，不需先读取其他筛选器。常规日涨幅、盘前涨幅和取数日期是不同口径；没有交易日期时披露该限制，不把取数日期写成报价所属交易日。来源引用采用查询结果 sources，不把技能说明或开发库文档当成数据来源。
 
 通过 app/skill_runner.py execute --script screen.py -- 执行；参数发现命令 fields / metrics / strategies 也使用同一入口。脚本位于本文件旁的 scripts/screen.py，按网页流程初始化匿名游客会话，再请求已观察的只读 POST 快照接口，使用 Python 标准库。
 

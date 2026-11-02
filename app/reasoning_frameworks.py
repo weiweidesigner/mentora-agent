@@ -981,16 +981,20 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         }
 
     @classmethod
-    def _sources_from_value(cls, value: Any) -> list[dict[str, str]]:
+    def _sources_from_value(cls, value: Any, *, include_markdown: bool = True) -> list[dict[str, str]]:
         """Extract the legacy frontend source shape from agent answers/tool results."""
         collected: list[dict[str, str]] = []
 
         def visit(current: Any) -> None:
             if isinstance(current, dict):
+                if not include_markdown and (current.get("ok") is False or current.get("status") in ("failed", "declined")):
+                    return
                 normalized = cls._normalize_source(current)
                 if normalized:
                     collected.append(normalized)
-                for nested in current.values():
+                for name, nested in current.items():
+                    if not include_markdown and name in {"arguments", "input", "params", "agentContract", "cliHelp", "schema", "capabilityDescription"}:
+                        continue
                     visit(nested)
                 return
             if isinstance(current, (list, tuple)):
@@ -1005,6 +1009,8 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     visit(json.loads(text))
                 except json.JSONDecodeError:
                     pass
+            if not include_markdown:
+                return
             for match in re.finditer(r"\[([^\]\n]+)\]\((https?://[^\s)]+)\)", current):
                 title, url = match.groups()
                 line_start = current.rfind("\n", 0, match.start()) + 1
@@ -2010,7 +2016,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                 # separate StreamViz skill or registration command is needed.
                 for module in self._html_modules_from_tool_output(tool_output):
                     yield "module", module
-                runtime_sources.extend(self._sources_from_value(tool_output))
+                runtime_sources.extend(self._sources_from_value(tool_output, include_markdown=False))
                 command_text = item.get("command")
                 if isinstance(command_text, list):
                     command_text = " ".join(str(part) for part in command_text)
@@ -2413,7 +2419,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                         pending_public_text = ""
                     tool_index += 1
                     data = event.get("data") if isinstance(event.get("data"), dict) else {}
-                    runtime_sources.extend(self._sources_from_value(data))
+                    runtime_sources.extend(self._sources_from_value(data, include_markdown=False))
                     call_id = str(data.get("callId") or "")
                     message = data.get("message") if isinstance(data.get("message"), dict) else {}
                     source = message.get("source") if isinstance(message.get("source"), dict) else {}
@@ -2614,7 +2620,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "engine": FRAMEWORKS["deepseek"], "agent": "Root Agent", "phase": "run", "status": "completed",
             "runId": run_id, "message": f"DeepSeek Harness · {selected_model} 已完成", "lang": "zh-CN",
         }
-        runtime_sources.extend(self._sources_from_value(vars(result) if hasattr(result, "__dict__") else {}))
+        runtime_sources.extend(self._sources_from_value(vars(result) if hasattr(result, "__dict__") else {}, include_markdown=False))
         final_payload = self._artifact_payload(
             "deepseek", question, answer, run_id, actual_session_id, runtime_sources, selected_model
         )

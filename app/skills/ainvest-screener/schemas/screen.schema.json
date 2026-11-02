@@ -1,0 +1,26 @@
+{
+  "agentContract": {
+    "purpose": "筛选美股和美国上市 ETF；返回符合用户条件的证券数据。",
+    "execution": "python3 app/skill_runner.py execute --script screen.py -- query [参数]",
+    "arguments": {
+      "--asset": "stock|etf（默认 etf）",
+      "--strategy": "ETF 预设 ID；涨幅排名 ranking-top-gainers，跌幅排名 ranking-top-losers",
+      "--filters-json": "JSON 数组；field 加 value、min/max 或 option；周期字段加 period。同字段 OR，不同字段 AND。只加入用户要求的条件。",
+      "--columns": "逗号分隔指标 ID；默认名称55、价格10、日涨幅199112、成交量13、ETF规模AUM/股票市值及PE",
+      "--sort": "排序指标 ID 或准确名称；ETF规模 AUM，股票市值 total_market_value",
+      "--order": "asc|desc，默认 desc",
+      "--top": "排名候选数量，与 --limit 不同",
+      "--limit": "返回页大小1..1000（默认40）",
+      "--offset": "返回页偏移，默认0",
+      "--output": "JSON 输出路径；--csv 可选导出 CSV"
+    },
+    "examples": {
+      "gainers": "query --asset etf --strategy ranking-top-gainers --top 20 --limit 20 --output outputs/data/etf-gainers.json",
+      "conditions": "query --asset etf --filters-json '[{\"field\":\"sector\",\"value\":[\"Technology\",\"Energy\"]},{\"field\":\"expenseRatio\",\"max\":\"0.5%\"},{\"field\":\"dailyVolume\",\"min\":\"100K\"}]' --sort AUM --limit 40 --output outputs/data/etfs.json"
+    },
+    "discovery": "参数已明确时直接 query；否则用 fields/metrics/strategies --asset stock|etf --search TERM --detail 查询相关项，不扫描全部目录或改用其他筛选器。",
+    "scope": "保留用户的筛选范围。未要求时不排除杠杆/反向产品，不加成交量、资产规模等门槛；可标注产品风险。不用名称正则代替结构化分类。只要求表格时交付结果表，不额外改画柱状图。",
+    "provenance": "无需登录，自动游客初始化；sources 是本次实际数据来源。retrieved_at 是取数时间，不能当作交易时间；常规日涨幅不代表盘前涨幅。",
+    "output": "JSON含 rows、page.total、applied_filters、indicator_metadata、sources；--output stdout含文件路径、匹配数和来源。已有结果覆盖用户要求时直接展示，缺必需字段才补取。"
+  }
+}

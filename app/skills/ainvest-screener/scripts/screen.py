@@ -10,6 +10,7 @@ from urllib.error import HTTPError, URLError
 
 ROOT=Path(__file__).resolve().parents[1]
 ENDPOINT='https://extquote.ainvest.com/index_api/indicator/v2/snapshot'
+SOURCES=[{'siteName':'AInvest','title':'AInvest 股票与 ETF 筛选器','url':'https://www.ainvest.com/screener/','summary':'本次通过 AInvest 筛选器指标快照接口获取；取数时间不代表交易时间。'}]
 
 def load(name):return json.loads((ROOT/'references'/name).read_text())
 def key(value):return re.sub(r'[\W_]+','',str(value).casefold())
@@ -225,7 +226,7 @@ def result(plan,data,client):
    rid=m.get('req_unique_id',m['id']);values=entry.get('value',[]);value=values[i] if i<len(values) else None
    row[plan['labels'].get(rid,rid)]=value.get('v') if isinstance(value,dict) else value
   rows.append(row)
- return {'ok':True,'source':'AInvest screener snapshot API','endpoint':ENDPOINT,'retrieved_at':dt.datetime.now(dt.timezone.utc).isoformat(),'asset':plan['asset'],'strategy':plan['strategy'],'applied_filters':plan['filters'],'ranking':plan['ranking'],'page':{**data.get('page',{}),'begin':plan['request']['page']['begin'],'count':len(rows),'requested_count':plan['request']['page']['count']},'rows':rows,'indicator_metadata':metadata,'request_count':len(client.calls),'data_mode':'live','access_mode':getattr(client,'access_mode','test_fixture'),'note':'Raw API result units are preserved; filter bounds using % are converted to fractions. Retrieval time is not quote/trade time.'}
+ return {'ok':True,'source':'AInvest screener snapshot API','endpoint':ENDPOINT,'retrieved_at':dt.datetime.now(dt.timezone.utc).isoformat(),'asset':plan['asset'],'strategy':plan['strategy'],'applied_filters':plan['filters'],'ranking':plan['ranking'],'page':{**data.get('page',{}),'begin':plan['request']['page']['begin'],'count':len(rows),'requested_count':plan['request']['page']['count']},'rows':rows,'indicator_metadata':metadata,'request_count':len(client.calls),'data_mode':'live','sources':copy.deepcopy(SOURCES),'access_mode':getattr(client,'access_mode','test_fixture'),'note':'Raw API result units are preserved; filter bounds using % are converted to fractions. Retrieval time is not quote/trade time.'}
 
 def write_json(path,value):
  path=Path(path).expanduser().resolve();path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value,ensure_ascii=False,indent=2,allow_nan=False)+'\n');return str(path)
@@ -261,7 +262,7 @@ def main():
    with path.open('w',newline='',encoding='utf-8-sig') as f:
     keys=list(dict.fromkeys(k for row in output['rows'] for k in row));writer=csv.DictWriter(f,fieldnames=keys);writer.writeheader();writer.writerows(output['rows'])
  if a.output:
-  path=write_json(a.output,output);print(json.dumps({'ok':True,'output':path,**({'total':output['page'].get('total'),'returned':len(output['rows']),'data_mode':output['data_mode']} if 'rows' in output else {'mode':'plan'})},ensure_ascii=False))
+  path=write_json(a.output,output);print(json.dumps({'ok':True,'output':path,**({'total':output['page'].get('total'),'returned':len(output['rows']),'data_mode':output['data_mode'],'sources':output['sources']} if 'rows' in output else {'mode':'plan'})},ensure_ascii=False))
  else:print(json.dumps(output,ensure_ascii=False,indent=2,allow_nan=False))
 if __name__=='__main__':
  try:main()

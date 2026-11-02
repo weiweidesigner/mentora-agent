@@ -19,6 +19,7 @@ def test_screener_script_is_registered():
 @pytest.mark.parametrize('question', [
     '帮我筛选科技或能源行业的 ETF，费率不超过0.5%、日成交量至少10万，按资产规模从大到小，用表格展示',
     '帮我选市盈率低于20、ROE至少15%的美股',
+    '今天涨的比较好的ETF有哪些？用表格展示给我',
     '使用 ainvest-screener，筛选科技或能源行业的 ETF',
 ])
 def test_natural_language_screening_discovers_data_tool(tmp_path, question):
