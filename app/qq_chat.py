@@ -24,6 +24,8 @@ class QQChat:
         self.tasks, self.client, self.runner = tasks, client, runner
         from app.qq_voice import QQVoice
         self.voice = QQVoice(tasks, client)
+        from app.qq_expression import QQExpressionRouter
+        self.expression = QQExpressionRouter()
         self.pool = ThreadPoolExecutor(max_workers=2, thread_name_prefix='mentora-qq')
         with tasks.db() as db:
             db.executescript('''
@@ -91,10 +93,6 @@ class QQChat:
             history.extend([{'role': 'user', 'text': item['question']},
                             {'role': 'assistant', 'text': str(json.loads(item['answer']).get('interpretation') or '')[:10000]}])
         try:
-            try:
-                self.client.reply(job['kind'], job['target'], job['message_id'], '收到，正在调用 Mentora 分析，请稍候。', sequence=1)
-            except Exception:
-                log.warning('QQ chat acknowledgement failed for job %s', job_id)
             answer = self.runner(job['scope'] + ':' + str(reset_at), job['question'], history)
             if not isinstance(answer, dict) or not (answer.get('interpretation') or answer.get('reportArtifacts')):
                 raise ValueError('empty answer')
@@ -111,19 +109,44 @@ class QQChat:
         window = 270 if job['kind'] == 'groups' else 3500
         if time.time() - job['created'] > window:
             return
-        try:
-            self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=2)
+        from app.qq_expression import sticker_catalog
+        catalog = sticker_catalog()
+        with self.tasks.db() as db:
+            completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
+        plan = self.expression.route(job['question'], content, history, catalog) if completed and completed['state'] == 'completed' else {'mode':'text','confidence':None,'sticker':None,'source':'analysis-failed'}
+        plan['deliveredMode'] = None
+        plan['stickerSent'] = False
+        with self.tasks.db() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS qq_expression_decisions(job_id TEXT PRIMARY KEY,payload TEXT NOT NULL)')
+            db.execute('INSERT OR REPLACE INTO qq_expression_decisions VALUES(?,?)', (job_id, json.dumps(plan, ensure_ascii=False)))
+            completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
+        delivered = False
+        if completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']):
+            try:
+                delivered = bool(self.voice.send(job, content))
+                if delivered:
+                    plan['deliveredMode'] = 'voice'
+            except Exception:
+                log.warning('QQ contextual voice failed for job %s; falling back to text', job_id)
+        if not delivered:
+            try:
+                self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=2)
+                delivered = True
+                plan['deliveredMode'] = 'text'
+            except Exception:
+                log.warning('QQ chat result delivery failed for job %s; result retained', job_id)
+        if delivered:
             with self.tasks.db() as db:
                 db.execute('UPDATE qq_chat_jobs SET delivered=1 WHERE id=?', (job_id,))
-        except Exception:
-            log.warning('QQ chat result delivery failed for job %s; result retained', job_id)
-
-        if self.voice.enabled(job['scope']):
-            with self.tasks.db() as db:
-                completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
-            if completed and completed['state'] == 'completed':
+        if completed and completed['state'] == 'completed' and delivered and plan.get('sticker'):
+            asset = next((x for x in catalog if x['id'] == plan['sticker']), None)
+            if asset and time.time() - job['created'] <= window:
+                import os
+                url = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/') + '/static/assets/qq-fish/' + asset['file']
                 try:
-                    if self.voice.send(job, content):
-                        log.info('QQ voice delivered for job %s', job_id)
+                    self.client.image_reply(job['kind'], job['target'], job['message_id'], url, sequence=4)
+                    plan['stickerSent'] = True
                 except Exception:
-                    log.warning('QQ voice delivery failed for job %s; text result retained', job_id)
+                    log.warning('QQ reaction delivery failed for job %s; primary answer retained', job_id)
+        with self.tasks.db() as db:
+            db.execute('UPDATE qq_expression_decisions SET payload=? WHERE job_id=?', (json.dumps(plan, ensure_ascii=False), job_id))

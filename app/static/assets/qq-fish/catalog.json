@@ -1,0 +1,74 @@
+[
+  {
+    "id": "smug",
+    "file": "smug.png",
+    "description": "轻松得意、可爱地看着对方，蓝发女仆 Q 版微笑。不用于正式答复。",
+    "source": "user-provided reference"
+  },
+  {
+    "id": "heart",
+    "file": "heart.jpg",
+    "description": "双手比心卖萌、开心表达喜欢与亲近。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "shy",
+    "file": "shy.jpg",
+    "description": "害羞捂脸、脸红，不好意思，回应轻松亲近或夸奖。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "meow",
+    "file": "meow.jpg",
+    "description": "猫爪手势、俏皮卖萌，小虎牙笑脸。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "yay",
+    "file": "yay.jpg",
+    "description": "得意闭眼握拳，好耶，庆祝开心小事。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "praise",
+    "file": "praise.jpg",
+    "description": "眨眼竖大拇指，认可、点赞、轻松答应。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "lazy",
+    "file": "lazy.jpg",
+    "description": "摸鱼躺平，半睁眼，想休息或下班。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "sleep",
+    "file": "sleep.jpg",
+    "description": "抱枕睡觉，困了、晚安和休息。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "hello",
+    "file": "hello.jpg",
+    "description": "挥手打招呼，早上好、你好和欢迎。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "eat",
+    "file": "eat.jpg",
+    "description": "捧碗干饭，饿了、想吃饭、饭点的轻松日常。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "confused",
+    "file": "confused.jpg",
+    "description": "疑惑举手、头顶问号，轻松表达困惑。不用于严肃危机。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  },
+  {
+    "id": "pout",
+    "file": "pout.jpg",
+    "description": "哭着双手合十求饶，玩笑式委屈、认错或道歉。不用于安慰重大痛苦。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001"
+  }
+]

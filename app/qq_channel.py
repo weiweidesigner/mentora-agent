@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-HELP = '直接发送问题即可调用 Mentora 分析，支持连续追问。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
+HELP = '直接发问题就可以聊天，支持连续追问。会按语境选择文字、语音和表情。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
 IDENTIFIER = re.compile(r'[A-Za-z0-9_-]{1,128}')
 
 
@@ -68,22 +68,28 @@ class QQClient:
 
 
     def voice_reply(self, kind, target, message_id, audio_url, *, sequence=3):
+        return self.media_reply(kind, target, message_id, audio_url, file_type=3, sequence=sequence)
+
+    def image_reply(self, kind, target, message_id, image_url, *, sequence=4):
+        return self.media_reply(kind, target, message_id, image_url, file_type=1, sequence=sequence)
+
+    def media_reply(self, kind, target, message_id, audio_url, *, file_type, sequence):
         if kind not in ('users', 'groups') or not IDENTIFIER.fullmatch(target):
             raise QQChannelError('QQ 消息目标无效')
         headers = {'Authorization': 'QQBot ' + self.token()}
         base = f'https://api.sgroup.qq.com/v2/{kind}/{target}'
         response = requests.post(base + '/files', headers=headers,
-                                 json={'file_type': 3, 'url': audio_url, 'srv_send_msg': False},
+                                 json={'file_type': file_type, 'url': audio_url, 'srv_send_msg': False},
                                  timeout=30, allow_redirects=False)
         if response.status_code not in (200, 201) or not response.json().get('file_info'):
-            raise QQChannelError('QQ 语音上传失败')
+            raise QQChannelError('QQ 媒体上传失败')
         info = response.json()['file_info']
         response = requests.post(base + '/messages', headers=headers,
                                  json={'msg_type': 7, 'content': ' ', 'media': {'file_info': info},
                                        'msg_id': message_id, 'msg_seq': sequence},
                                  timeout=15, allow_redirects=False)
         if response.status_code not in (200, 201, 202) or not response.json().get('id'):
-            raise QQChannelError('QQ 语音发送失败')
+            raise QQChannelError('QQ 媒体发送失败')
 
 
 class QQChannel:

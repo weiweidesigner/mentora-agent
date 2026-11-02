@@ -63,7 +63,7 @@ def test_free_question_async_dedup_and_followup(tasks):
     release.set()
     wait_job(tasks)
     channel.chat.pool.shutdown(wait=True)
-    assert [m[4] for m in client.sent if m[2] == 'message1'] == [1, 2]
+    assert [m[4] for m in client.sent if m[2] == 'message1'] == [2]
     assert '真实分析结果' in client.sent[-1][3]
     assert calls[0][1] == '今天A股市场表现' and calls[0][2] == []
     channel.dispatch(payload('最新', 'message3'))
@@ -202,6 +202,7 @@ def test_voice_failure_keeps_text_answer_delivered(tasks,monkeypatch):
     client=Client()
     chat=QQChat(tasks,client,lambda *a:{'interpretation':'文字回答'})
     monkeypatch.setattr(chat.voice,'enabled',lambda scope:True)
+    monkeypatch.setattr(chat.expression,'route',lambda *a:{'mode':'voice','confidence':.95,'sticker':None})
     called=threading.Event()
     def fail(*a):
         called.set()

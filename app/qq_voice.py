@@ -42,7 +42,7 @@ class QQVoice:
             return '语音服务暂未配置，仍会以文字回复。'
         with self.tasks.db() as db:
             db.execute('INSERT OR REPLACE INTO qq_voice_preferences VALUES(?,?)', (scope, int(enabled)))
-        return '已开启语音，之后会先回复文字，再补发语音。' if enabled else '已关闭语音，之后只回复文字。'
+        return '已允许语音，之后会按语境选择语音或文字。' if enabled else '已关闭语音，之后只回复文字。'
 
     def send(self, job, text):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')

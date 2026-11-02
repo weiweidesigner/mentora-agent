@@ -982,7 +982,9 @@ def run_qq_chat(scope, question, history):
     from app.delivery_preferences import plain_text_delivery
     owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
     context = (
-        '这是 QQ 渠道的 Mentora 轻聊天，用户已选择纯文本交付。支持连续追问。'
+        '这是 QQ 渠道的 Mentora 轻聊天，用户已选择纯文本内容交付（外部服务可朗读成语音）。支持连续追问。'
+        '日常聊天、玩笑、亲近或撒娇请求用自然友好的口语回应，别把每句话都写成研究报告；正式问题保持准确。'
+        '不要输出“收到，正在分析”之类固定处理回执，不解释内部情绪分类、置信度或回复媒介决策。'
         '按正常 Agent 流程判断是否需要项目技能查询数据或检索来源，保持证据真实、必要分析完整。'
         'QQ 不支持 HTML 或交互可视化：跳过可视化与报告渲染步骤，不调用图表、表格组件、'
         'StreamViz、页面、HTML、PDF、图片或其他文件生成工具；不生成图表标记、附件、报告或分享页面。'
