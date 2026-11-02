@@ -1,0 +1,42 @@
+[
+  {
+    "id": "dafeiyu-companion",
+    "name": "大肥鱼 · 陪伴日常",
+    "description": "比心、害羞、打招呼和晚安，轻松陪伴常用。",
+    "tags": [
+      "可爱",
+      "日常"
+    ],
+    "source": "用户素材 / yyh-001/dsh-meme"
+  },
+  {
+    "id": "dafeiyu-reactions",
+    "name": "大肥鱼 · 情绪反应",
+    "description": "震惊、无语、偷看、拒绝，聊天里的小情绪。",
+    "tags": [
+      "可爱",
+      "情绪"
+    ],
+    "source": "yyh-001/dsh-meme"
+  },
+  {
+    "id": "dafeiyu-banter",
+    "name": "大肥鱼 · 上班嘴替",
+    "description": "加钱、摸鱼、吃白饭，打工人的玩笑与吐槽。",
+    "tags": [
+      "玩梗",
+      "日常"
+    ],
+    "source": "梗鲸 GengJing 社区精选"
+  },
+  {
+    "id": "dafeiyu-daily-memes",
+    "name": "大肥鱼 · 快乐玩梗",
+    "description": "捧腹大笑、求投喂、生活吐槽，接住日常梗。",
+    "tags": [
+      "玩梗",
+      "情绪"
+    ],
+    "source": "梗鲸 GengJing 社区精选"
+  }
+]

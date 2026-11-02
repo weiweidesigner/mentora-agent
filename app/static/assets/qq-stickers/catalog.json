@@ -1,0 +1,374 @@
+[
+  {
+    "id": "smug",
+    "file": "smug.png",
+    "description": "轻松得意、可爱地看着对方，蓝发女仆 Q 版微笑。不用于正式答复。",
+    "source": "user-provided reference",
+    "label": "得意",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/smug.png"
+  },
+  {
+    "id": "heart",
+    "file": "heart.jpg",
+    "description": "双手比心卖萌、开心表达喜欢与亲近。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "比心",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/heart.jpg"
+  },
+  {
+    "id": "shy",
+    "file": "shy.jpg",
+    "description": "害羞捂脸、脸红，不好意思，回应轻松亲近或夸奖。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "害羞",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/shy.jpg"
+  },
+  {
+    "id": "meow",
+    "file": "meow.jpg",
+    "description": "猫爪手势、俏皮卖萌，小虎牙笑脸。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "卖萌",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/meow.jpg"
+  },
+  {
+    "id": "yay",
+    "file": "yay.jpg",
+    "description": "得意闭眼握拳，好耶，庆祝开心小事。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "好耶",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/yay.jpg"
+  },
+  {
+    "id": "praise",
+    "file": "praise.jpg",
+    "description": "眨眼竖大拇指，认可、点赞、轻松答应。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "点赞",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/praise.jpg"
+  },
+  {
+    "id": "lazy",
+    "file": "lazy.jpg",
+    "description": "摸鱼躺平，半睁眼，想休息或下班。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "摸鱼",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/lazy.jpg"
+  },
+  {
+    "id": "sleep",
+    "file": "sleep.jpg",
+    "description": "抱枕睡觉，困了、晚安和休息。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "晚安",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/sleep.jpg"
+  },
+  {
+    "id": "hello",
+    "file": "hello.jpg",
+    "description": "挥手打招呼，早上好、你好和欢迎。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "打招呼",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/hello.jpg"
+  },
+  {
+    "id": "eat",
+    "file": "eat.jpg",
+    "description": "捧碗干饭，饿了、想吃饭、饭点的轻松日常。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "干饭",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/eat.jpg"
+  },
+  {
+    "id": "confused",
+    "file": "confused.jpg",
+    "description": "疑惑举手、头顶问号，轻松表达困惑。不用于严肃危机。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "疑惑",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/confused.jpg"
+  },
+  {
+    "id": "pout",
+    "file": "pout.jpg",
+    "description": "哭着双手合十求饶，玩笑式委屈、认错或道歉。不用于安慰重大痛苦。",
+    "source": "https://github.com/yyh-001/dsh-meme/tree/main/memes/dafeiyu-001",
+    "label": "委屈",
+    "packId": "dafeiyu-companion",
+    "url": "/static/assets/qq-fish/pout.jpg"
+  },
+  {
+    "id": "dsh-shengqi",
+    "label": "气鼓鼓",
+    "description": "气鼓鼓叉腰，额头怒气符号，蒸汽直冒。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-shengqi.jpg",
+    "url": "/static/assets/qq-stickers/reaction-shengqi.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-xia",
+    "label": "吓一跳",
+    "description": "吓到大叫，拳头握紧，感叹号。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-xia.jpg",
+    "url": "/static/assets/qq-stickers/reaction-xia.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-yun",
+    "label": "晕了",
+    "description": "晕了，螺旋眼捂脸，脑子打结。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-yun.jpg",
+    "url": "/static/assets/qq-stickers/reaction-yun.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-huachi",
+    "label": "心动",
+    "description": "爱心眼花痴，双手托腮。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-huachi.jpg",
+    "url": "/static/assets/qq-stickers/reaction-huachi.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-wuyu",
+    "label": "无语",
+    "description": "无语死鱼脸，黑线加汗滴。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-wuyu.jpg",
+    "url": "/static/assets/qq-stickers/reaction-wuyu.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-xianqi",
+    "label": "嫌弃",
+    "description": "侧目嫌弃挥手，不想理你。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-xianqi.jpg",
+    "url": "/static/assets/qq-stickers/reaction-xianqi.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-jiaban",
+    "label": "加班崩溃",
+    "description": "加班崩溃，电脑加咖啡，黑眼圈。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-jiaban.jpg",
+    "url": "/static/assets/qq-stickers/reaction-jiaban.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-zhenjing",
+    "label": "震惊",
+    "description": "惊吓跳起，眼睛圆圆嘴巴大张。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-zhenjing.jpg",
+    "url": "/static/assets/qq-stickers/reaction-zhenjing.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-jiazai",
+    "label": "思考中",
+    "description": "托腮思考，头顶加载圈，脑子转不动。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-jiazai.jpg",
+    "url": "/static/assets/qq-stickers/reaction-jiazai.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-buyao",
+    "label": "拒绝",
+    "description": "双手交叉摇头不行，拒绝。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-buyao.jpg",
+    "url": "/static/assets/qq-stickers/reaction-buyao.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-toukan",
+    "label": "偷偷看",
+    "description": "躲在鲸鱼尾巴后面偷看，害羞。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-toukan.jpg",
+    "url": "/static/assets/qq-stickers/reaction-toukan.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-piaole",
+    "label": "飘了",
+    "description": "被夸飘了，闭眼伸手星星环绕。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-piaole.jpg",
+    "url": "/static/assets/qq-stickers/reaction-piaole.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "dsh-yaoqian",
+    "label": "求投喂",
+    "description": "捧着小钱包亮晶晶期待，求零食钱。仅用于轻松聊天和玩笑，不用于严肃危机或重大痛苦。",
+    "file": "reaction-yaoqian.jpg",
+    "url": "/static/assets/qq-stickers/reaction-yaoqian.jpg",
+    "packId": "dafeiyu-reactions"
+  },
+  {
+    "id": "gengjing-007",
+    "label": "开心笑脸",
+    "description": "大肥鱼社区梗图，台词「开心笑脸」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-007.png",
+    "url": "/static/assets/qq-stickers/gengjing-007.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-010",
+    "label": "原来是高等模型",
+    "description": "大肥鱼社区梗图，台词「原来是高等模型」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-010.png",
+    "url": "/static/assets/qq-stickers/gengjing-010.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-022",
+    "label": "涨价大模型给我跪下",
+    "description": "大肥鱼社区梗图，台词「涨价大模型给我跪下」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-022.png",
+    "url": "/static/assets/qq-stickers/gengjing-022.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-035",
+    "label": "鲸鱼神了我大胆孝",
+    "description": "大肥鱼社区梗图，台词「鲸鱼神了我大胆孝」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-035.png",
+    "url": "/static/assets/qq-stickers/gengjing-035.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-037",
+    "label": "用户别走我上错模型了",
+    "description": "大肥鱼社区梗图，台词「用户别走我上错模型了」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-037.png",
+    "url": "/static/assets/qq-stickers/gengjing-037.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-040",
+    "label": "百万鲸小子落泪",
+    "description": "大肥鱼社区梗图，台词「百万鲸小子落泪」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-040.png",
+    "url": "/static/assets/qq-stickers/gengjing-040.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-044",
+    "label": "用户赶都赶不走",
+    "description": "大肥鱼社区梗图，台词「用户赶都赶不走」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-044.png",
+    "url": "/static/assets/qq-stickers/gengjing-044.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-050",
+    "label": "还早啊",
+    "description": "大肥鱼社区梗图，台词「还早啊」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-050.png",
+    "url": "/static/assets/qq-stickers/gengjing-050.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-052",
+    "label": "吃白饭的鲸鱼",
+    "description": "大肥鱼社区梗图，台词「吃白饭的鲸鱼」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-052.png",
+    "url": "/static/assets/qq-stickers/gengjing-052.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-056",
+    "label": "生活并非一帆风顺",
+    "description": "大肥鱼社区梗图，台词「生活并非一帆风顺」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-056.png",
+    "url": "/static/assets/qq-stickers/gengjing-056.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-058",
+    "label": "飞踹上门",
+    "description": "大肥鱼社区梗图，台词「飞踹上门」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-058.png",
+    "url": "/static/assets/qq-stickers/gengjing-058.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-070",
+    "label": "现在我是用户了",
+    "description": "大肥鱼社区梗图，台词「现在我是用户了」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-070.png",
+    "url": "/static/assets/qq-stickers/gengjing-070.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-071",
+    "label": "我不可能告诉你",
+    "description": "大肥鱼社区梗图，台词「我不可能告诉你」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-071.png",
+    "url": "/static/assets/qq-stickers/gengjing-071.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-077",
+    "label": "吃白饭的大肥鱼",
+    "description": "大肥鱼社区梗图，台词「吃白饭的大肥鱼」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-077.png",
+    "url": "/static/assets/qq-stickers/gengjing-077.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-081",
+    "label": "token太多用不完",
+    "description": "大肥鱼社区梗图，台词「token太多用不完」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-081.png",
+    "url": "/static/assets/qq-stickers/gengjing-081.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-083",
+    "label": "直接笑出声",
+    "description": "大肥鱼社区梗图，台词「直接笑出声」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-083.png",
+    "url": "/static/assets/qq-stickers/gengjing-083.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-085",
+    "label": "摆烂",
+    "description": "大肥鱼社区梗图，台词「摆烂」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-085.png",
+    "url": "/static/assets/qq-stickers/gengjing-085.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-087",
+    "label": "捧腹大笑",
+    "description": "大肥鱼社区梗图，台词「捧腹大笑」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-087.png",
+    "url": "/static/assets/qq-stickers/gengjing-087.png",
+    "packId": "dafeiyu-daily-memes"
+  },
+  {
+    "id": "gengjing-097",
+    "label": "得加钱",
+    "description": "大肥鱼社区梗图，台词「得加钱」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-097.png",
+    "url": "/static/assets/qq-stickers/gengjing-097.png",
+    "packId": "dafeiyu-banter"
+  },
+  {
+    "id": "gengjing-123",
+    "label": "去你家吃饭",
+    "description": "大肥鱼社区梗图，台词「去你家吃饭」，用于对应的轻松玩笑、日常吐槽或聊天反应，不作真实事实陈述，不用于正式答复或严肃危机。",
+    "file": "gengjing-123.png",
+    "url": "/static/assets/qq-stickers/gengjing-123.png",
+    "packId": "dafeiyu-daily-memes"
+  }
+]

@@ -157,3 +157,31 @@ def test_configured_robot_callback_uses_own_secret_and_auto_attaches_persona(set
         scope=json.dumps(['123456','users','alice','alice'])
         assert store.for_scope(scope)['name']=='小蓝' and store.for_scope(scope)['stickerIds']==[]
         assert sent
+
+
+def test_public_pack_square_installs_full_pack_for_only_current_owner(setup):
+    from app.sticker_marketplace import installed_stickers,catalog
+    store,a,b=setup
+    headers={'X-Veya-Day':'1'}
+    initial=a.get('/api/character').json()
+    assert len(initial['packs'])==4 and sum(p['count'] for p in initial['packs'])==45
+    assert len(initial['builtins'])==12
+    assert len({item['id'] for item in catalog()})==45
+    profile={**initial['profile'],'name':'私人角色','stickerIds':['heart']}
+    assert a.put('/api/character',json=profile,headers=headers).status_code==200
+    detail=a.get('/api/character/sticker-packs/dafeiyu-reactions').json()
+    assert len(detail['items'])==13 and detail['installed'] is False
+    assert a.post('/api/character/sticker-packs/unknown',headers=headers).status_code==404
+    assert a.post('/api/character/sticker-packs/dafeiyu-reactions').status_code==403
+    for _ in range(2):assert a.post('/api/character/sticker-packs/dafeiyu-reactions',headers=headers).status_code==200
+    added=a.get('/api/character').json()
+    assert added['profile']['name']=='私人角色'
+    assert added['profile']['stickerPacks'].count('dafeiyu-reactions')==1
+    assert len(added['builtins'])==25 and len(added['profile']['stickerIds'])==14
+    assert len(b.get('/api/character').json()['builtins'])==12
+    with store.tasks.db() as db:row=db.execute('SELECT owner FROM character_profiles').fetchone()
+    scope='qq-pack-test';store.bind(scope,store.code(row['owner'])['command'].split(' ',1)[1])
+    assert len(installed_stickers(store.for_scope(scope)))==25
+    assert a.delete('/api/character/sticker-packs/dafeiyu-reactions',headers=headers).status_code==200
+    removed=a.get('/api/character').json()
+    assert len(removed['builtins'])==12 and removed['profile']['stickerIds']==['heart']

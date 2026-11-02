@@ -28,7 +28,8 @@ class CharacterProfile(BaseModel):
     responseMode: Literal['auto','voice','text','random'] = 'auto'
     paragraph: Literal['minimal','normal','long'] = 'normal'
     stickerProbability: int = Field(default=50, ge=0, le=100)
-    stickerIds: list[str] | None = Field(default=None, max_length=48)
+    stickerIds: list[str] | None = Field(default=None, max_length=96)
+    stickerPacks: list[str] = Field(default_factory=lambda:['dafeiyu-companion'], max_length=24)
 
 
 class QQConnectionInput(BaseModel):
@@ -190,11 +191,41 @@ def create_router(store):
     @router.get('')
     def get(request:Request,response:Response):
         user=owner(request,response)
-        from app.qq_expression import sticker_catalog
+        from app.sticker_marketplace import packs, installed_stickers
         with store.tasks.db() as db:count=db.execute('SELECT count(*) FROM character_links WHERE owner=?',(user,)).fetchone()[0]
-        return {'profile':store.get(user),'builtins':sticker_catalog(),'stickers':store.stickers(user),'linkedCount':count,'qq':store.qq.public(user)}
+        profile=store.get(user)
+        return {'profile':profile,'builtins':installed_stickers(profile),'packs':packs(profile),'stickers':store.stickers(user),'linkedCount':count,'qq':store.qq.public(user)}
     @router.put('')
     def save(payload:CharacterProfile,request:Request,response:Response):return store.save(owner(request,response,True),payload)
+    @router.get('/sticker-packs/{pack_id}')
+    def pack_detail(pack_id:str,request:Request,response:Response):
+        user=owner(request,response)
+        from app.sticker_marketplace import catalog,packs
+        pack=next((p for p in packs(store.get(user)) if p['id']==pack_id),None)
+        if not pack:raise HTTPException(404,'表情包不存在')
+        return {**pack,'items':[x for x in catalog() if x['packId']==pack_id]}
+
+    def change_pack(pack_id,request,response,enabled):
+        user=owner(request,response,True)
+        from app.sticker_marketplace import catalog,packs
+        profile=store.get(user)
+        if pack_id not in {p['id'] for p in packs(profile)}:raise HTTPException(404,'表情包不存在')
+        members=[x['id'] for x in catalog() if x['packId']==pack_id]
+        if enabled:
+            if pack_id not in profile['stickerPacks']:profile['stickerPacks'].append(pack_id)
+            if profile['stickerIds'] is not None:profile['stickerIds']=list(dict.fromkeys(profile['stickerIds']+members))
+        else:
+            profile['stickerPacks']=[p for p in profile['stickerPacks'] if p!=pack_id]
+            if profile['stickerIds'] is not None:profile['stickerIds']=[i for i in profile['stickerIds'] if i not in members]
+        store.save(user,CharacterProfile(**profile))
+        return {'ok':True}
+
+    @router.post('/sticker-packs/{pack_id}')
+    def install_pack(pack_id:str,request:Request,response:Response):return change_pack(pack_id,request,response,True)
+
+    @router.delete('/sticker-packs/{pack_id}')
+    def remove_pack(pack_id:str,request:Request,response:Response):return change_pack(pack_id,request,response,False)
+
     @router.put('/qq')
     def save_qq(payload:QQConnectionInput,request:Request,response:Response):
         return store.qq.save(owner(request,response,True),payload)

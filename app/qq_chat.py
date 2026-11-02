@@ -124,9 +124,9 @@ class QQChat:
         window = 270 if job['kind'] == 'groups' else 3500
         if time.time() - job['created'] > window:
             return
-        from app.qq_expression import sticker_catalog
+        from app.sticker_marketplace import installed_stickers
         profile = self.characters.for_scope(job['scope'])
-        builtins = sticker_catalog()
+        builtins = installed_stickers(profile)
         catalog = self.characters.stickers(self.characters.owner_for_scope(job['scope'])) + builtins
         if profile['stickerIds'] is not None:
             catalog = [asset for asset in catalog if asset['id'] in profile['stickerIds']]
