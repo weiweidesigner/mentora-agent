@@ -132,7 +132,13 @@ def download_output_workspace_file(path: str) -> FileResponse:
 @app.middleware("http")
 async def disable_static_cache(request: Request, call_next):
     response = await call_next(request)
-    if request.url.path.startswith(("/static/", "/generated/", "/share-artifact/")):
+    # Only packaged public motion media is reusable; generated/user content and
+    # application code retain their no-store policy.
+    if (response.status_code in (200, 206, 304)
+            and request.url.path.startswith("/static/assets/mentora-motion/")
+            and request.url.path.endswith((".mp4", ".jpg"))):
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    elif request.url.path.startswith(("/static/", "/generated/", "/share-artifact/")):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
