@@ -688,8 +688,9 @@ def share_streamviz_artifact(filename: str, theme: Literal["light", "dark"] = "l
     artifact = upgrade_legacy_grouped_bar(artifact, theme)
     artifact = upgrade_generic_chart_typography(artifact)
     from app.artifact_upgrades import upgrade_compact_generic_pie, upgrade_compact_generic_line
-    from app.artifact_upgrades import upgrade_mind_map
+    from app.artifact_upgrades import upgrade_mind_map, upgrade_data_table
     artifact = upgrade_mind_map(artifact, theme)
+    artifact = upgrade_data_table(artifact, theme)
     artifact = upgrade_compact_generic_pie(artifact)
     artifact = upgrade_compact_generic_line(artifact)
     artifact = upgrade_legacy_mobile_charts(artifact, theme)

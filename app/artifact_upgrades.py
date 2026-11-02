@@ -983,3 +983,28 @@ def upgrade_mind_map(artifact: str, theme: str) -> str:
         return _native_mind_map().build_html({'data': {'content': markdown}, 'theme': theme})
     except (ValueError, TypeError, ImportError, OSError):
         return artifact
+
+
+@lru_cache(maxsize=1)
+def _native_data_table():
+    script = Path(__file__).parent / 'skills/generic-chart/scripts/data_table.py'
+    spec = importlib.util.spec_from_file_location('saved_native_data_table', script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def upgrade_data_table(artifact: str, theme: str) -> str:
+    """Refresh saved native tables from embedded records, without reopening their source."""
+    if 'data-data-table-version="1"' not in artifact:
+        return artifact
+    match = re.search(r'<script\b[^>]*id=["\']table-data["\'][^>]*>(.*?)</script>', artifact, re.S)
+    if not match:
+        return artifact
+    try:
+        config = json.loads(match[1])
+        if not isinstance(config, dict) or config.get('type') != 'data-table':
+            return artifact
+        return _native_data_table().build_html({**config, 'theme': theme})
+    except (ValueError, TypeError, KeyError, ImportError, OSError):
+        return artifact
