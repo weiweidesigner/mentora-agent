@@ -5,12 +5,12 @@ import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const script=readFileSync(new URL('../app/static/home-background.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
-function setup({reduced=false,opening=false,failIntro=false,autoplayBlocked=false,deferAutoplay=false,tab=''}={}) {
+function setup({reduced=false,opening=false,failIntro=false,autoplayBlocked=false,deferAutoplay=false,holdGreeting=false,tab=''}={}) {
   const dom=new JSDOM(html,{url:'https://example.com/mentora/'+tab,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
   let allowAudio=!autoplayBlocked, autoplayReject, introAttempts=0;
   const listeners=new Map();w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(name,fn){listeners.set(q,fn)}});
   const timers=new Map();let next=1;w.setTimeout=(fn,ms)=>{const id=next++;timers.set(id,{fn,ms});return id};w.clearTimeout=id=>timers.delete(id);
-  for(const media of d.querySelectorAll('video,audio')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(media.id==='mentoraOpeningVideo'&&++introAttempts===1&&deferAutoplay)return new Promise((resolve,reject)=>{autoplayReject=reject});if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;return Promise.resolve()};}
+  for(const media of d.querySelectorAll('video,audio')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(media.id==='mentoraOpeningVideo'&&++introAttempts===1&&deferAutoplay)return new Promise((resolve,reject)=>{autoplayReject=reject});if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;if(media.id==='mentoraWelcomeAudio'&&!holdGreeting)queueMicrotask(()=>media.dispatchEvent(new w.Event('ended')));return Promise.resolve()};}
   if(!opening)d.querySelector('#mentoraOpening').remove();
   w.sessionStorage.setItem('mentora:opening:20261102-audio','played');
   d.documentElement.dataset.theme='dark';w.eval(script);
@@ -104,11 +104,20 @@ test('the welcome reveal waits for actual video playback and is cancelled when t
   h.dom.window.close();
 });
 
-test('welcome voice plays only after the opening fades and the home is visible',async()=>{
- const h=setup({opening:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');assert.equal(voice.paused,true);assert.equal(voice.getAttribute('src'),null);
- h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(voice.paused,true);
- [...h.timers.values()].find(t=>t.ms===650).fn();await tick();assert.equal(h.opening.hidden,true);assert.equal(voice.paused,false);assert.match(voice.getAttribute('src'),/welcome-back-oneesan\.mp3$/);
- h.w.dispatchEvent(new h.w.Event('pagehide'));assert.equal(voice.paused,true);h.dom.window.close();
+test('welcome finishes before the opening fades into the home',async()=>{
+ const h=setup({opening:true,holdGreeting:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');assert.equal(voice.paused,true);
+ h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(voice.paused,false);assert.equal(h.opening.hidden,false);assert.equal(h.shell.inert,true);assert.equal([...h.timers.values()].some(t=>t.ms===650),false);
+ voice.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(voice.paused,true);assert.notEqual(h.shell.inert,true);
+ [...h.timers.values()].find(t=>t.ms===650).fn();assert.equal(h.opening.hidden,true);h.dom.window.close();
+});
+test('failed or stalled welcome never blocks entry to the home',async()=>{
+ for(const failure of ['reject','stall']){
+  const h=setup({opening:true,holdGreeting:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');
+  if(failure==='reject')voice.play=()=>Promise.reject(new h.w.DOMException('Blocked','NotAllowedError'));
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();
+  if(failure==='stall')[...h.timers.values()].find(t=>t.ms===5000).fn();
+  await tick();assert.notEqual(h.shell.inert,true);assert.equal(voice.paused,true);h.dom.window.close();
+ }
 });
 test('welcome never plays on another workspace or after interrupted opening',async()=>{
  for(const target of ['workspace','hidden','error']){

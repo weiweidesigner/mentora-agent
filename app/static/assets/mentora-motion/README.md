@@ -14,3 +14,5 @@ opening-welcome.mp4 copies the opening-audio.mp4 video stream without re-encodin
 The active opening now uses opening-audio.mp4 again. welcome-back-formal.mp3 is a separate locally generated Breeze TTS 2 voice with a restrained, professional adult female delivery. It plays once after the opening has fully faded (650 ms after its ended event), only when the empty home is visible; navigation, page hiding and interrupted openings suppress or stop it. The prior opening-welcome.mp4 remains an earlier media revision and is no longer loaded. Browser autoplay permissions still apply.
 
 welcome-back-oneesan.mp3 supersedes the formal welcome voice. It is locally generated with Breeze TTS 2 using an adult female low-register, magnetic, relaxed delivery with slight breathiness and restrained teasing warmth. Playback remains after the opening has fully faded and the empty home is visible.
+
+The welcome-back-oneesan.mp3 phrase now plays at the end of the opening, before revealing the home. The opening stays visible during the phrase, then fades out after audio ended. Audio rejection, failure or a five-second timeout proceeds to the home without a delayed greeting.

@@ -76,20 +76,29 @@
       if (!chatVisible() || document.hidden || motion.matches || saveData() || openingActive) video.pause();
     }).catch(() => { /* The local poster remains visible if autoplay is unavailable. */ });
   }
-  function playHomeGreeting() {
+  function playOpeningGreeting() {
     if (!greeting || greetingPlayed || document.hidden || motion.matches || saveData()
-        || !chatVisible() || !conversation.classList.contains('is-empty')) return;
+        || !chatVisible() || !conversation.classList.contains('is-empty')) return false;
     greetingPlayed = true;
     greeting.src = greeting.dataset.src;greeting.volume = .75;
-    // The same browser sound permission applies; never queue a late surprise greeting.
-    greeting.play().catch(() => {});
+    clearTimeout(deadline);
+    document.removeEventListener('click', enableOpeningAudio, true);
+    document.removeEventListener('keydown', enableOpeningAudio, true);
+    const done = () => finishOpening();
+    greeting.addEventListener('ended', done, {once:true});
+    greeting.addEventListener('error', done, {once:true});
+    // Keep the opening visible until the phrase finishes; failure never blocks entry.
+    deadline = setTimeout(done, 5000);
+    greeting.play().catch(done);
+    return true;
   }
   function finishOpening(playGreeting = false) {
     if (!openingActive) return;
+    if (playGreeting && playOpeningGreeting()) return;
     traceOpening('finish');
     openingActive = false;++audioAttempt;
     clearTimeout(deadline);clearTimeout(revealTimer);
-    intro.pause();intro.muted = true;
+    intro.pause();intro.muted = true;greeting?.pause();
     document.removeEventListener('click', enableOpeningAudio, true);
     document.removeEventListener('keydown', enableOpeningAudio, true);
     opening.classList.remove('is-playing', 'is-revealed');
@@ -98,10 +107,7 @@
     opening.removeAttribute('role');opening.removeAttribute('tabindex');
     if (subtitle) subtitle.textContent = welcome;
     if (document.activeElement === opening) returnFocus?.focus?.({preventScroll:true});
-    hideTimer = setTimeout(() => {
-      opening.hidden = true;
-      if (playGreeting) playHomeGreeting();
-    }, 650);
+    hideTimer = setTimeout(() => { opening.hidden = true; }, 650);
     sync();
   }
   function resetDeadline() {
