@@ -1,5 +1,52 @@
 [
   {
+    "id": "naiwa-companion",
+    "name": "奶蛙 · 轻松陪伴",
+    "description": "截图同款黄色小家伙：摊手、比心、疑惑、气鼓鼓与大笑，含动态表情。",
+    "tags": [
+      "可爱",
+      "日常",
+      "玩梗",
+      "奶蛙",
+      "奶龙",
+      "小黄鸟"
+    ],
+    "source": "用户原图 / 奶蛙艺术圣殿素材库"
+  },
+  {
+    "id": "genshin-daily",
+    "name": "原神 · 日常反应",
+    "description": "派蒙、旅行者与伙伴们的日常吐槽和可爱反应。",
+    "tags": [
+      "二次元",
+      "日常",
+      "情绪"
+    ],
+    "source": "ChineseEmoji / ChineseBQB 社区整理"
+  },
+  {
+    "id": "aqua-reactions",
+    "name": "阿库娅 · 女神日常",
+    "description": "惊讶、开心、委屈，阿库娅的戏剧化小情绪。",
+    "tags": [
+      "二次元",
+      "可爱",
+      "情绪"
+    ],
+    "source": "ChineseEmoji / ChineseBQB 社区整理"
+  },
+  {
+    "id": "kaguya-reactions",
+    "name": "辉夜大小姐 · 轻松互动",
+    "description": "傲娇、开心、惊慌和书记舞，轻松聊天常用。",
+    "tags": [
+      "二次元",
+      "可爱",
+      "玩梗"
+    ],
+    "source": "ChineseEmoji / ChineseBQB 社区整理"
+  },
+  {
     "id": "dafeiyu-companion",
     "name": "大肥鱼 · 陪伴日常",
     "description": "比心、害羞、打招呼和晚安，轻松陪伴常用。",

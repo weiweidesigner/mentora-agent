@@ -28,7 +28,7 @@ class CharacterProfile(BaseModel):
     responseMode: Literal['auto','voice','text','random'] = 'auto'
     paragraph: Literal['minimal','normal','long'] = 'normal'
     stickerProbability: int = Field(default=50, ge=0, le=100)
-    stickerIds: list[str] | None = Field(default=None, max_length=96)
+    stickerIds: list[str] | None = Field(default=None, max_length=160)
     stickerPacks: list[str] = Field(default_factory=lambda:['dafeiyu-companion'], max_length=24)
 
 

@@ -164,9 +164,9 @@ def test_public_pack_square_installs_full_pack_for_only_current_owner(setup):
     store,a,b=setup
     headers={'X-Veya-Day':'1'}
     initial=a.get('/api/character').json()
-    assert len(initial['packs'])==4 and sum(p['count'] for p in initial['packs'])==45
+    assert len(initial['packs'])==8 and sum(p['count'] for p in initial['packs'])==90
     assert len(initial['builtins'])==12
-    assert len({item['id'] for item in catalog()})==45
+    assert len({item['id'] for item in catalog()})==90
     profile={**initial['profile'],'name':'私人角色','stickerIds':['heart']}
     assert a.put('/api/character',json=profile,headers=headers).status_code==200
     detail=a.get('/api/character/sticker-packs/dafeiyu-reactions').json()
@@ -185,3 +185,19 @@ def test_public_pack_square_installs_full_pack_for_only_current_owner(setup):
     assert a.delete('/api/character/sticker-packs/dafeiyu-reactions',headers=headers).status_code==200
     removed=a.get('/api/character').json()
     assert len(removed['builtins'])==12 and removed['profile']['stickerIds']==['heart']
+
+
+@pytest.mark.parametrize('pack_id,count',[('naiwa-companion',17),('genshin-daily',12),('aqua-reactions',8),('kaguya-reactions',8)])
+def test_new_character_packs_are_real_distinct_assets_and_installable(setup,pack_id,count):
+    from app.sticker_marketplace import ROOT
+    store,a,b=setup
+    data=a.get('/api/character/sticker-packs/'+pack_id).json()
+    assert data['count']==count and len(data['items'])==count
+    for item in data['items']:
+        assert (ROOT/item['file']).is_file()
+        assert item['description'] and item['label']
+    if pack_id=='naiwa-companion':
+        assert any(item['id']=='naiwa-reference' for item in data['items'])
+        assert any(item['file'].endswith('.gif') for item in data['items'])
+    assert a.post('/api/character/sticker-packs/'+pack_id,headers={'X-Veya-Day':'1'}).status_code==200
+    assert len(a.get('/api/character').json()['builtins'])==12+count
