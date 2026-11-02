@@ -262,7 +262,15 @@ def main():
    with path.open('w',newline='',encoding='utf-8-sig') as f:
     keys=list(dict.fromkeys(k for row in output['rows'] for k in row));writer=csv.DictWriter(f,fieldnames=keys);writer.writeheader();writer.writerows(output['rows'])
  if a.output:
-  path=write_json(a.output,output);print(json.dumps({'ok':True,'output':path,**({'total':output['page'].get('total'),'returned':len(output['rows']),'data_mode':output['data_mode'],'sources':output['sources']} if 'rows' in output else {'mode':'plan'})},ensure_ascii=False))
+  path=write_json(a.output,output)
+  receipt={'ok':True,'output':path}
+  if 'rows' in output:
+   receipt.update(total=output['page'].get('total'),returned=len(output['rows']),data_mode=output['data_mode'],sources=output['sources'])
+   summary={k:output[k] for k in ['rows','page','retrieved_at','applied_filters','ranking','indicator_metadata','note']}
+   summary['quote_time_status']='Not provided by the API; do not infer a confirmed trade date or closing time from retrieval time.'
+   if len(json.dumps(summary,ensure_ascii=False))<=9000:receipt['summary']=summary
+  else:receipt['mode']='plan'
+  print(json.dumps(receipt,ensure_ascii=False))
  else:print(json.dumps(output,ensure_ascii=False,indent=2,allow_nan=False))
 if __name__=='__main__':
  try:main()

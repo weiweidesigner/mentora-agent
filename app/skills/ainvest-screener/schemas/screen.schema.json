@@ -21,6 +21,6 @@
     "discovery": "参数已明确时直接 query；否则用 fields/metrics/strategies --asset stock|etf --search TERM --detail 查询相关项，不扫描全部目录或改用其他筛选器。",
     "scope": "保留用户的筛选范围。未要求时不排除杠杆/反向产品，不加成交量、资产规模等门槛；可标注产品风险。不用名称正则代替结构化分类。只要求表格时交付结果表，不额外改画柱状图。",
     "provenance": "无需登录，自动游客初始化；sources 是本次实际数据来源。retrieved_at 是取数时间，不能当作交易时间；常规日涨幅不代表盘前涨幅。",
-    "output": "JSON含 rows、page.total、applied_filters、indicator_metadata、sources；--output stdout含文件路径、匹配数和来源。已有结果覆盖用户要求时直接展示，缺必需字段才补取。"
+    "output": "JSON含 rows、page.total、applied_filters、indicator_metadata、sources；--output 回执在小页时直接提供 summary（完整本页数据、取数时间和单位），据此交付，不重复读文件；大页或缺少必需字段时再读取文件。接口未提供交易时间时，只称最新快照，不断言最近收盘或具体交易日期。"
   }
 }

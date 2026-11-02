@@ -43,3 +43,25 @@ def test_screener_contract_delivers_query_arguments_inline(capsys):
     assert '--asset' in agent['arguments']
     assert 'ranking-top-gainers' in agent['examples']['gainers']
     assert 'scope' in agent and 'provenance' in agent
+
+
+def test_small_query_receipt_supplies_rows_and_time_without_a_file_read(tmp_path, monkeypatch, capsys):
+    import importlib.util
+    import sys
+    script = Path(__file__).resolve().parents[1] / 'app/skills/ainvest-screener/scripts/screen.py'
+    spec = importlib.util.spec_from_file_location('screener_receipt_check', script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    output = {'ok': True, 'rows': [{'symbol': 'ABC', 'Change %': 2.5}],
+              'page': {'total': 1}, 'retrieved_at': '2026-11-02T08:00:00+00:00',
+              'applied_filters': [], 'ranking': None, 'indicator_metadata': [],
+              'note': 'Retrieval time is not trade time.', 'sources': SOURCES, 'data_mode': 'live'}
+    monkeypatch.setattr(module, 'Client', lambda *a: object())
+    monkeypatch.setattr(module, 'execute', lambda *a: output)
+    monkeypatch.setattr(sys, 'argv', ['screen.py', 'query', '--output', str(tmp_path / 'rows.json')])
+    module.main()
+    receipt = json.loads(capsys.readouterr().out)
+    assert receipt['summary']['rows'] == output['rows']
+    assert receipt['summary']['retrieved_at'] == output['retrieved_at']
+    assert 'Not provided' in receipt['summary']['quote_time_status']
+    assert receipt['sources'] == SOURCES
