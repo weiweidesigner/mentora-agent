@@ -4,10 +4,11 @@
   const video = document.querySelector('#homeBackdropVideo');
   const conversation = document.querySelector('section.conversation');
   if (!shell || !backdrop || !video || !conversation) return;
+  video.muted = true;
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const opening = document.querySelector('#mentoraOpening');
   const intro = document.querySelector('#mentoraOpeningVideo');
-  const openingKey = 'mentora:opening:20261102';
+  const openingKey = 'mentora:opening:20261102-audio';
   const excluded = ['tasks-view', 'widgets-view', 'portfolio-view', 'character-view', 'case-overlay-open'];
   const chatVisible = () => !conversation.hidden && !excluded.some(name => shell.classList.contains(name));
   let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0;
@@ -31,10 +32,22 @@
     if (!openingActive) return;
     openingActive = false;
     clearTimeout(deadline);clearTimeout(revealTimer);
-    intro.pause();opening.classList.remove('is-playing', 'is-revealed');
+    intro.pause();intro.muted = true;
+    document.removeEventListener('click', enableOpeningAudio, true);
+    document.removeEventListener('keydown', enableOpeningAudio, true);
+    opening.classList.remove('is-playing', 'is-revealed');
     shell.inert = previousInert;
     hideTimer = setTimeout(() => { opening.hidden = true; }, 650);
     sync();
+  }
+  function enableOpeningAudio() {
+    if (!openingActive || !intro.muted) return;
+    intro.muted = false;
+    intro.play().catch(() => {
+      if (!openingActive) return;
+      intro.muted = true;
+      intro.play().catch(finishOpening);
+    });
   }
   function startOpening() {
     if (!opening || !intro || !chatVisible() || document.hidden || motion.matches || saveData()) return;
@@ -46,12 +59,21 @@
     } catch { /* A blocked store must not prevent opening the application. */ }
     openingActive = true;previousInert = shell.inert;shell.inert = true;
     opening.hidden = false;opening.classList.add('is-playing');
-    intro.src = intro.dataset.src;intro.muted = true;
+    intro.src = intro.dataset.src;intro.muted = false;intro.volume = .8;
+    document.addEventListener('click', enableOpeningAudio, true);
+    document.addEventListener('keydown', enableOpeningAudio, true);
     deadline = setTimeout(finishOpening, 8500);
     revealTimer = setTimeout(() => opening.classList.add('is-revealed'), 1100);
     intro.addEventListener('ended', finishOpening, {once:true});
     intro.addEventListener('error', finishOpening, {once:true});
-    intro.play().catch(finishOpening);
+    intro.play().catch(error => {
+      if (!openingActive) return;
+      if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
+      // Autoplay permissions belong to the browser. Keep the picture moving,
+      // then enable sound within a real click/key gesture on the opening.
+      intro.muted = true;
+      intro.play().catch(finishOpening);
+    });
   }
   new MutationObserver(() => {
     if (openingActive && !chatVisible()) finishOpening();

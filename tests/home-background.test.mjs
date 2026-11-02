@@ -5,14 +5,15 @@ import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const script=readFileSync(new URL('../app/static/home-background.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
-function setup({reduced=false,opening=false,failIntro=false,tab=''}={}) {
+function setup({reduced=false,opening=false,failIntro=false,autoplayBlocked=false,tab=''}={}) {
   const dom=new JSDOM(html,{url:'https://example.com/mentora/'+tab,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
+  let allowAudio=!autoplayBlocked;
   const listeners=new Map();w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(name,fn){listeners.set(q,fn)}});
   const timers=new Map();let next=1;w.setTimeout=(fn,ms)=>{const id=next++;timers.set(id,{fn,ms});return id};w.clearTimeout=id=>timers.delete(id);
-  for(const media of d.querySelectorAll('video')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));paused=false;return Promise.resolve()};}
-  if(!opening)w.sessionStorage.setItem('mentora:opening:20261102','played');
+  for(const media of d.querySelectorAll('video')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));if(media.id==='mentoraOpeningVideo'&&!media.muted&&!allowAudio)return Promise.reject(new w.DOMException('User gesture required','NotAllowedError'));paused=false;return Promise.resolve()};}
+  if(!opening)w.sessionStorage.setItem('mentora:opening:20261102-audio','played');
   d.documentElement.dataset.theme='dark';w.eval(script);
-  return {dom,w,d,timers,video:d.querySelector('#homeBackdropVideo'),intro:d.querySelector('#mentoraOpeningVideo'),shell:d.querySelector('.shell'),opening:d.querySelector('#mentoraOpening')};
+  return {dom,w,d,timers,allowAudio:()=>{allowAudio=true},video:d.querySelector('#homeBackdropVideo'),intro:d.querySelector('#mentoraOpeningVideo'),shell:d.querySelector('.shell'),opening:d.querySelector('#mentoraOpening')};
 }
 test('the same background continues through home scrolling and active chat',async()=>{
   const h=setup();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background.mp4');assert.equal(h.video.paused,false);
@@ -28,7 +29,7 @@ test('reduced motion keeps a local poster and loads neither video',()=>{
 test('the opening runs once per tab, restores the page and starts the chat background',async()=>{
   const h=setup({opening:true});assert.equal(h.opening.hidden,false);assert.equal(h.shell.inert,true);assert.equal(h.video.paused,true);assert.equal(h.intro.paused,false);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.video.paused,false);
-  assert.equal(h.w.sessionStorage.getItem('mentora:opening:20261102'),'played');
+  assert.equal(h.w.sessionStorage.getItem('mentora:opening:20261102-audio'),'played');
   for(const {fn,ms} of [...h.timers.values()])if(ms===650)fn();assert.equal(h.opening.hidden,true);
   h.w.eval(script);assert.equal(h.opening.hidden,true);h.dom.window.close();
 });
@@ -43,4 +44,15 @@ test('opening is decorative only and preserves the original home and chat contro
 });
 test('opening does not cover a direct link to another workspace',()=>{
   const h=setup({opening:true,tab:'?tab=portfolio'});assert.equal(h.opening.hidden,true);assert.notEqual(h.shell.inert,true);h.dom.window.close();
+});
+
+
+test('the opening requests audio while the resident background remains muted',async()=>{
+  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-audio\.mp4$/);assert.equal(h.video.muted,true);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.paused,true);assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
+});
+test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
+  const h=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,false);assert.equal(h.opening.hidden,false);
+  h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,true);assert.equal(h.video.muted,true);assert.equal(h.video.paused,false);h.dom.window.close();
 });
