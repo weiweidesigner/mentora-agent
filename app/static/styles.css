@@ -5417,3 +5417,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 /* Line embeds already include axis-label clearance; keep the following prose close. */
 :is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-generic-component="line"]){margin-bottom:8px}
 :is(.streamChartSlot,.chatArtifactShell):has(iframe[data-generic-component="line"]) :is(.chatArtifactShell,.reportFrameShell){margin:0}
+
+/* Keep the longer home greeting readable without changing the composer layout. */
+.conversation.is-empty .composerHint{font-size:clamp(20px,2.4vw,26px);line-height:1.4;text-wrap:balance}
+.composerHint .homeWelcomePhrase{display:inline-block;max-width:100%;overflow-wrap:anywhere}
