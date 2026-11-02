@@ -104,10 +104,10 @@ test('the welcome reveal waits for actual video playback and is cancelled when t
   h.dom.window.close();
 });
 
-test('formal welcome plays only after the opening fades and the home is visible',async()=>{
+test('welcome voice plays only after the opening fades and the home is visible',async()=>{
  const h=setup({opening:true});const voice=h.d.querySelector('#mentoraWelcomeAudio');assert.equal(voice.paused,true);assert.equal(voice.getAttribute('src'),null);
  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(voice.paused,true);
- [...h.timers.values()].find(t=>t.ms===650).fn();await tick();assert.equal(h.opening.hidden,true);assert.equal(voice.paused,false);assert.match(voice.getAttribute('src'),/welcome-back-formal\.mp3$/);
+ [...h.timers.values()].find(t=>t.ms===650).fn();await tick();assert.equal(h.opening.hidden,true);assert.equal(voice.paused,false);assert.match(voice.getAttribute('src'),/welcome-back-oneesan\.mp3$/);
  h.w.dispatchEvent(new h.w.Event('pagehide'));assert.equal(voice.paused,true);h.dom.window.close();
 });
 test('welcome never plays on another workspace or after interrupted opening',async()=>{
