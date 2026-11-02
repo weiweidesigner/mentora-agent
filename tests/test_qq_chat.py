@@ -184,7 +184,7 @@ def test_runner_uses_existing_agent_with_text_only_delivery_without_share_genera
     namespace = {'os': __import__('os'), 'ChatRequest': lambda **kwargs: SimpleNamespace(**kwargs),
                  'DAY_TASKS': SimpleNamespace(execution_preferences=lambda: {'reasoningEffort': 'high'}),
                  'durable_chat_events': events, 'normalize_chat_result': lambda data: dict(data),
-                 'CHARACTERS': SimpleNamespace(for_scope=lambda scope: __import__('app.character_settings',fromlist=['CharacterProfile']).CharacterProfile().model_dump()),
+                 'CHARACTERS': SimpleNamespace(memory_context=lambda scope:'',for_scope=lambda scope: __import__('app.character_settings',fromlist=['CharacterProfile']).CharacterProfile().model_dump()),
                  'character_context': __import__('app.character_settings',fromlist=['character_context']).character_context,
                  'save_share_session': lambda payload: shared.append(payload.session),
                  'ShareSessionRequest': lambda **kwargs: SimpleNamespace(**kwargs)}

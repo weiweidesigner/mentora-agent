@@ -44,7 +44,7 @@ class QQVoice:
             db.execute('INSERT OR REPLACE INTO qq_voice_preferences VALUES(?,?)', (scope, int(enabled)))
         return '已允许语音，之后会按语境选择语音或文字。' if enabled else '已关闭语音，之后只回复文字。'
 
-    def send(self, job, text):
+    def send(self, job, text, *, proactive=False, before_send=None):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')
         payload = {'text': speech_text(text)}
         if job.get('voice_instruction'):
@@ -70,5 +70,9 @@ class QQVoice:
         path.write_bytes(audio); path.chmod(0o600)
         base = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')
         url = base + '/api/qq/voice/' + name
-        self.client.voice_reply(job['kind'], job['target'], job['message_id'], url, sequence=3)
+        if before_send is not None and not before_send():return False
+        if proactive:
+            self.client.proactive_media(job['target'],url,file_type=3)
+        else:
+            self.client.voice_reply(job['kind'], job['target'], job['message_id'], url, sequence=3)
         return True

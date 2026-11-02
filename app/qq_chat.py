@@ -22,6 +22,7 @@ def plain_answer(answer):
 class QQChat:
     def __init__(self, tasks, client, runner):
         self.tasks, self.client, self.runner = tasks, client, runner
+        self.companion = None
         from app.qq_voice import QQVoice
         self.voice = QQVoice(tasks, client)
         from app.character_settings import CharacterStore
@@ -181,3 +182,6 @@ class QQChat:
                     log.warning('QQ reaction delivery failed for job %s; primary answer retained', job_id)
         with self.tasks.db() as db:
             db.execute('UPDATE qq_expression_decisions SET payload=? WHERE job_id=?', (json.dumps(plan, ensure_ascii=False), job_id))
+
+        if completed and completed['state'] == 'completed' and delivered and self.companion:
+            self.companion.observe(job['scope'])

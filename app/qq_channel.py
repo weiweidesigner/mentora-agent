@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-HELP = '直接发问题就可以聊天，支持连续追问。会按语境选择文字、语音和表情。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。QQ 官方机器人不支持定时主动推送。'
+HELP = '直接发问题就可以聊天，支持连续追问。会按语境选择文字、语音和表情。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。可在角色定制页设置主动性，主动问候仅用于 QQ 私聊，需 QQ 允许接收。'
 IDENTIFIER = re.compile(r'[A-Za-z0-9_-]{1,128}')
 
 
@@ -89,6 +89,18 @@ class QQClient:
             raise QQChannelError('QQ 回复失败，请检查消息权限、URL 配置及回复时限')
 
 
+    def proactive(self, target, content):
+        if not IDENTIFIER.fullmatch(target) or not content.strip():
+            raise QQChannelError('QQ 消息目标或内容无效')
+        response = requests.post(f'https://api.sgroup.qq.com/v2/users/{target}/messages',
+                                headers={'Authorization':'QQBot '+self.token()},
+                                json={'msg_type':0,'content':content}, timeout=15, allow_redirects=False)
+        if response.status_code not in (200,201,202) or not response.json().get('id'):
+            raise QQChannelError('QQ 主动消息未能确认送达')
+
+    def proactive_media(self, target, url, *, file_type=3):
+        return self.media_reply('users', target, None, url, file_type=file_type, sequence=1)
+
     def voice_reply(self, kind, target, message_id, audio_url, *, sequence=3):
         return self.media_reply(kind, target, message_id, audio_url, file_type=3, sequence=sequence)
 
@@ -108,7 +120,7 @@ class QQClient:
         info = response.json()['file_info']
         response = requests.post(base + '/messages', headers=headers,
                                  json={'msg_type': 7, 'content': ' ', 'media': {'file_info': info},
-                                       'msg_id': message_id, 'msg_seq': sequence},
+                                       **({'msg_id': message_id, 'msg_seq': sequence} if message_id is not None else {})},
                                  timeout=15, allow_redirects=False)
         if response.status_code not in (200, 201, 202) or not response.json().get('id'):
             raise QQChannelError('QQ 媒体发送失败')
@@ -241,6 +253,14 @@ class QQChannel:
 def create_router(tasks, chat_runner=None):
     channel = QQChannel(tasks, chat_runner=chat_runner)
     router = APIRouter()
+    companion = None
+    if channel.chat:
+        from app.qq_companion import QQCompanion
+        companion = QQCompanion(tasks, channel.chat.characters, chat_runner)
+        channel.chat.companion = companion
+        if os.getenv('VEYA_QQ_COMPANION_SCHEDULER','1') == '1':
+            router.add_event_handler('startup', companion.start)
+        router.add_event_handler('shutdown', companion.close)
     if channel.chat:
         router.add_event_handler('shutdown', lambda: channel.chat.pool.shutdown(wait=False, cancel_futures=True))
 
@@ -304,6 +324,8 @@ def create_router(tasks, chat_runner=None):
             if connection not in channels:
                 client = QQClient(credentials_provider=lambda: connections.credentials(connection))
                 channels[connection] = QQChannel(tasks, client=client, chat_runner=chat_runner)
+                if channels[connection].chat:
+                    channels[connection].chat.companion = companion
             return channels[connection]
 
     @router.on_event('startup')

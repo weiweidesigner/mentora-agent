@@ -1000,7 +1000,7 @@ def run_qq_chat(scope, question, history):
         '不要假设能访问网页用户的私人账户。\n\n用户消息：'
     )
     profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
-    context = context.removesuffix('用户消息：') + character_context(profile) + '用户消息：'
+    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + '用户消息：'
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')

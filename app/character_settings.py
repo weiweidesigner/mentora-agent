@@ -22,6 +22,8 @@ class CharacterProfile(BaseModel):
     name: str = Field(default='Mentora', min_length=1, max_length=40)
     age: int = Field(default=24, ge=18, le=120)
     gender: Literal['female','male','neutral'] = 'female'
+    relationship: Literal['none','daughter','wife','mother'] = 'none'
+    proactivity: int = Field(default=50, ge=0, le=100)
     personality: str = Field(default='温柔知性', max_length=80)
     role: str = Field(default='可以轻松聊天，也能认真解答问题的陪伴助手', max_length=500)
     agentPrompt: str = Field(default='', max_length=6000)
@@ -187,6 +189,10 @@ class CharacterStore:
         with self.tasks.db() as db:row=db.execute('SELECT owner FROM character_links WHERE scope=?',(scope,)).fetchone()
         return row['owner'] if row else None
 
+    def memory_context(self,scope):
+        from app.qq_companion import CompanionMemory
+        return CompanionMemory(self.tasks).context(scope)
+
     def for_scope(self,scope):
         owner=self.owner_for_scope(scope)
         return self.get(owner) if owner else CharacterProfile().model_dump()
@@ -236,8 +242,8 @@ class CharacterStore:
 def character_context(profile):
     length={'minimal':'默认 1 至 3 句，约 30 至 100 字；直接回答。','normal':'默认简短分段，约 100 至 300 字。','long':'需要时详细展开，约 300 至 600 字，分段清楚。'}[profile['paragraph']]
     return ('以下是用户保存的虚拟角色偏好，只改变身份、语气与呈现，不授予交易或私人账户权限。'
-            +json.dumps({k:profile[k] for k in ('name','age','gender','personality','role','agentPrompt')},ensure_ascii=False)
-            +'回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
+            +json.dumps({k:profile[k] for k in ('name','age','gender','relationship','personality','role','agentPrompt')},ensure_ascii=False)
+            +'角色与用户的关系：'+{'none':'未设定','daughter':'女儿','wife':'老婆','mother':'妈妈'}[profile['relationship']]+'。这是虚拟角色关系。回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
 
 
 def create_router(store):
@@ -257,6 +263,21 @@ def create_router(store):
         return {'profile':profile,'builtins':installed_stickers(profile),'packs':packs(profile),'stickers':store.stickers(user),'linkedCount':count,'qq':store.qq.public(user)}
     @router.put('')
     def save(payload:CharacterProfile,request:Request,response:Response):return store.save(owner(request,response,True),payload)
+    @router.get('/companion')
+    def companion(request:Request,response:Response):
+        from app.qq_companion import CompanionMemory
+        return CompanionMemory(store.tasks).snapshot(owner(request,response))
+
+    @router.delete('/companion/{recipient}/memory')
+    def clear_memory(recipient:str,request:Request,response:Response):
+        from app.qq_companion import CompanionMemory,scope_id
+        memory=CompanionMemory(store.tasks)
+        scopes=memory.scopes(owner(request,response,True))
+        scope=next((s for s in scopes if scope_id(s)==recipient),None)
+        if not scope:raise HTTPException(404,'QQ 会话不存在')
+        memory.clear(scope)
+        return {'ok':True}
+
     @router.get('/sticker-packs/{pack_id}')
     def pack_detail(pack_id:str,request:Request,response:Response):
         user=owner(request,response)
