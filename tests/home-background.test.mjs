@@ -5,6 +5,42 @@ import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
 const script=readFileSync(new URL('../app/static/home-background.js',import.meta.url),'utf8');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
-function setup(reduced=false){const dom=new JSDOM(html,{url:'https://example.com/veya/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(){}});const video=d.querySelector('#homeBackdropVideo');let paused=true;Object.defineProperty(video,'paused',{get:()=>paused});video.pause=()=>{paused=true;};video.play=()=>{paused=false;return Promise.resolve();};video.load=()=>{paused=true;};Object.defineProperty(d.querySelector('#homeBackdrop'),'offsetHeight',{get:()=>720});d.documentElement.dataset.theme='light';w.eval(script);return {dom,w,d,video};}
-test('home background follows theme, scroll and task navigation',async()=>{const h=setup();assert.equal(h.video.getAttribute('src'),'/static/assets/home-light-background.mp4');assert.equal(h.video.getAttribute('poster'),'/static/assets/home-light-background.jpg');h.d.documentElement.dataset.theme='dark';await tick();assert.equal(h.video.getAttribute('src'),'/static/assets/home-market-background.mp4');h.d.querySelector('.shell').classList.add('tasks-view');await tick();assert.equal(h.video.paused,true);h.d.querySelector('.shell').classList.remove('tasks-view');await tick();assert.equal(h.video.paused,false);const conversation=h.d.querySelector('section.conversation');conversation.scrollTop=800;conversation.dispatchEvent(new h.w.Event('scroll'));assert.equal(h.video.paused,true);assert.match(h.d.querySelector('#homeBackdrop').style.transform,/-800px/);h.dom.window.close();});
-test('reduced motion uses the selected theme poster without loading video',()=>{const h=setup(true);assert.equal(h.video.getAttribute('src'),null);assert.equal(h.video.getAttribute('poster'),'/static/assets/home-light-background.jpg');assert.equal(h.video.paused,true);h.dom.window.close();});
+function setup({reduced=false,opening=false,failIntro=false,tab=''}={}) {
+  const dom=new JSDOM(html,{url:'https://example.com/mentora/'+tab,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
+  const listeners=new Map();w.matchMedia=q=>({matches:q.includes('reduced-motion')?reduced:true,addEventListener(name,fn){listeners.set(q,fn)}});
+  const timers=new Map();let next=1;w.setTimeout=(fn,ms)=>{const id=next++;timers.set(id,{fn,ms});return id};w.clearTimeout=id=>timers.delete(id);
+  for(const media of d.querySelectorAll('video')){let paused=true;Object.defineProperty(media,'paused',{get:()=>paused});media.pause=()=>{paused=true};media.play=()=>{if(failIntro&&media.id==='mentoraOpeningVideo')return Promise.reject(new Error('unsupported'));paused=false;return Promise.resolve()};}
+  if(!opening)w.sessionStorage.setItem('mentora:opening:20261102','played');
+  d.documentElement.dataset.theme='dark';w.eval(script);
+  return {dom,w,d,timers,video:d.querySelector('#homeBackdropVideo'),intro:d.querySelector('#mentoraOpeningVideo'),shell:d.querySelector('.shell'),opening:d.querySelector('#mentoraOpening')};
+}
+test('the same background continues through home scrolling and active chat',async()=>{
+  const h=setup();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background.mp4');assert.equal(h.video.paused,false);
+  const conversation=h.d.querySelector('.conversation');conversation.scrollTop=800;conversation.dispatchEvent(new h.w.Event('scroll'));
+  conversation.classList.remove('is-empty');await tick();assert.equal(h.video.paused,false);assert.equal(h.shell.dataset.mentoraMotion,'active');assert.equal(h.d.querySelector('#homeBackdrop').style.transform,'');
+  h.d.documentElement.dataset.theme='light';await tick();assert.equal(h.video.getAttribute('src'),'/static/assets/mentora-motion/background.mp4');
+  for(const view of ['tasks-view','widgets-view','portfolio-view','character-view','case-overlay-open']){h.shell.classList.add(view);await tick();assert.equal(h.video.paused,true);assert.equal(h.shell.dataset.mentoraMotion,'inactive');h.shell.classList.remove(view);await tick();assert.equal(h.video.paused,false);}
+  h.dom.window.close();
+});
+test('reduced motion keeps a local poster and loads neither video',()=>{
+  const h=setup({reduced:true,opening:true});assert.equal(h.video.getAttribute('src'),null);assert.equal(h.intro.getAttribute('src'),null);assert.equal(h.video.getAttribute('poster'),'/static/assets/mentora-motion/poster.jpg');assert.equal(h.video.paused,true);assert.equal(h.opening.hidden,true);h.dom.window.close();
+});
+test('the opening runs once per tab, restores the page and starts the chat background',async()=>{
+  const h=setup({opening:true});assert.equal(h.opening.hidden,false);assert.equal(h.shell.inert,true);assert.equal(h.video.paused,true);assert.equal(h.intro.paused,false);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.video.paused,false);
+  assert.equal(h.w.sessionStorage.getItem('mentora:opening:20261102'),'played');
+  for(const {fn,ms} of [...h.timers.values()])if(ms===650)fn();assert.equal(h.opening.hidden,true);
+  h.w.eval(script);assert.equal(h.opening.hidden,true);h.dom.window.close();
+});
+test('unavailable or stalled opening video cannot leave the page inert',async()=>{
+  for(const failIntro of [true,false]){const h=setup({opening:true,failIntro});if(!failIntro){[...h.timers.values()].find(x=>x.ms===8500).fn();}await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.video.paused,false);h.dom.window.close();}
+});
+test('background pauses while the page is hidden and resumes when visible',async()=>{
+  const h=setup();Object.defineProperty(h.d,'hidden',{configurable:true,value:true});h.d.dispatchEvent(new h.w.Event('visibilitychange'));assert.equal(h.video.paused,true);Object.defineProperty(h.d,'hidden',{configurable:true,value:false});h.d.dispatchEvent(new h.w.Event('visibilitychange'));await tick();assert.equal(h.video.paused,false);h.dom.window.close();
+});
+test('opening is decorative only and preserves the original home and chat controls',()=>{
+  const h=setup({opening:true});assert.equal(h.opening.querySelectorAll('button,img,input').length,0);assert.equal(h.opening.querySelector('h1').textContent,'Mentora');for(const id of ['chatForm','messages','homeCases','inspirationTabs','appSidebar'])assert.ok(h.d.getElementById(id));assert.doesNotMatch(html,/重播开场|查看背景|暂停动态|跳过开场|从哪里开始？/);h.dom.window.close();
+});
+test('opening does not cover a direct link to another workspace',()=>{
+  const h=setup({opening:true,tab:'?tab=portfolio'});assert.equal(h.opening.hidden,true);assert.notEqual(h.shell.inert,true);h.dom.window.close();
+});

@@ -1,41 +1,78 @@
 (() => {
+  const shell = document.querySelector('.shell');
   const backdrop = document.querySelector('#homeBackdrop');
   const video = document.querySelector('#homeBackdropVideo');
-  if (!backdrop || !video) return;
   const conversation = document.querySelector('section.conversation');
-  const desktop = matchMedia('(min-width: 761px)');
+  if (!shell || !backdrop || !video || !conversation) return;
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  let playVersion = 0;
-  const shouldPlay = () => !document.hidden && !motion.matches && !navigator.connection?.saveData
-    && conversation?.classList.contains('is-empty') && conversation.scrollTop < backdrop.offsetHeight
-    && !document.querySelector('.shell')?.classList.contains('tasks-view')
-    && !document.querySelector('.shell')?.classList.contains('case-overlay-open');
+  const opening = document.querySelector('#mentoraOpening');
+  const intro = document.querySelector('#mentoraOpeningVideo');
+  const openingKey = 'mentora:opening:20261102';
+  const excluded = ['tasks-view', 'widgets-view', 'portfolio-view', 'character-view', 'case-overlay-open'];
+  const chatVisible = () => !conversation.hidden && !excluded.some(name => shell.classList.contains(name));
+  let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0;
+  let previousInert = false;
+  const saveData = () => Boolean(navigator.connection?.saveData);
   function sync() {
-    backdrop.style.transform = `translateY(${-Math.max(0, conversation.scrollTop)}px)`;
-    const light = document.documentElement.dataset.theme === 'light';
-    const source = light ? (video.dataset.lightSrc || video.dataset.src) : video.dataset.src;
-    const poster = light ? (video.dataset.lightPoster || video.dataset.darkPoster) : video.dataset.darkPoster;
-    if (poster && video.getAttribute('poster') !== poster) video.poster = poster;
-    if (video.getAttribute('src') && video.getAttribute('src') !== source) {
-      video.pause();video.src = source;video.load();
+    const visible = chatVisible();
+    shell.dataset.mentoraMotion = visible ? 'active' : 'inactive';
+    // The background belongs to the viewport throughout home scrolling and chat.
+    if (!visible || document.hidden || motion.matches || saveData() || openingActive) {
+      video.pause();
+      return;
     }
-    const version = ++playVersion;
-    if (!shouldPlay()) { video.pause(); return; }
-    if (!video.getAttribute('src')) video.src = source;
+    if (!video.getAttribute('src')) video.src = video.dataset.src;
     video.muted = true;
-    if (!video.paused) return;
-    video.play().then(() => {
-      if (version !== playVersion && !shouldPlay()) video.pause();
-    }).catch(() => { /* Keep the poster when autoplay is unavailable. */ });
+    if (video.paused) video.play().then(() => {
+      if (!chatVisible() || document.hidden || motion.matches || saveData() || openingActive) video.pause();
+    }).catch(() => { /* The local poster remains visible if autoplay is unavailable. */ });
   }
-  const stateObserver = new MutationObserver(sync);
-  stateObserver.observe(document.querySelector('.shell'), {attributes:true, attributeFilter:['class']});
-  stateObserver.observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-  stateObserver.observe(conversation, {attributes:true, attributeFilter:['class']});
-  conversation.addEventListener('scroll', sync, {passive:true});
-  document.addEventListener('visibilitychange', sync);
-  desktop.addEventListener('change', sync);
-  motion.addEventListener('change', sync);
-  navigator.connection?.addEventListener('change', sync);
-  sync();
+  function finishOpening() {
+    if (!openingActive) return;
+    openingActive = false;
+    clearTimeout(deadline);clearTimeout(revealTimer);
+    intro.pause();opening.classList.remove('is-playing', 'is-revealed');
+    shell.inert = previousInert;
+    hideTimer = setTimeout(() => { opening.hidden = true; }, 650);
+    sync();
+  }
+  function startOpening() {
+    if (!opening || !intro || !chatVisible() || document.hidden || motion.matches || saveData()) return;
+    const route = new URL(location.href).searchParams.get('tab');
+    if (route && route !== 'home' && route !== 'chat') return;
+    try {
+      if (sessionStorage.getItem(openingKey)) return;
+      sessionStorage.setItem(openingKey, 'played');
+    } catch { /* A blocked store must not prevent opening the application. */ }
+    openingActive = true;previousInert = shell.inert;shell.inert = true;
+    opening.hidden = false;opening.classList.add('is-playing');
+    intro.src = intro.dataset.src;intro.muted = true;
+    deadline = setTimeout(finishOpening, 8500);
+    revealTimer = setTimeout(() => opening.classList.add('is-revealed'), 1100);
+    intro.addEventListener('ended', finishOpening, {once:true});
+    intro.addEventListener('error', finishOpening, {once:true});
+    intro.play().catch(finishOpening);
+  }
+  new MutationObserver(() => {
+    if (openingActive && !chatVisible()) finishOpening();
+    sync();
+  }).observe(shell, {attributes:true, attributeFilter:['class']});
+  new MutationObserver(sync).observe(conversation, {attributes:true, attributeFilter:['hidden']});
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && openingActive) finishOpening();
+    sync();
+  });
+  motion.addEventListener('change', () => {
+    if (motion.matches) finishOpening();
+    sync();
+  });
+  navigator.connection?.addEventListener('change', () => {
+    if (saveData()) finishOpening();
+    sync();
+  });
+  window.addEventListener('pagehide', () => {
+    finishOpening();clearTimeout(hideTimer);video.pause();
+  });
+  // No replay/skip controls or sample content: these are decorative app layers.
+  startOpening();sync();
 })();
