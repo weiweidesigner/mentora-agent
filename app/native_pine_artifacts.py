@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
-from app.artifact_upgrades import upgrade_native_kline_pine, sync_native_kline_theme, upgrade_mind_map, upgrade_data_table
+from app.artifact_upgrades import upgrade_native_kline_pine, sync_native_kline_theme, upgrade_mind_map, upgrade_data_table, upgrade_macro_indicator
 from urllib.parse import parse_qs
 
 
@@ -32,6 +32,7 @@ class NativePineStaticFiles(StaticFiles):
         original=artifact
         artifact=upgrade_mind_map(artifact,theme)
         artifact=upgrade_data_table(artifact,theme)
+        artifact=upgrade_macro_indicator(artifact)
         artifact=sync_native_kline_theme(artifact,theme)
         artifact = upgrade_native_kline_pine(artifact)
         if 'root.dataset.pineBridge' not in artifact:
