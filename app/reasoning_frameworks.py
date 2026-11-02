@@ -278,7 +278,8 @@ class LocalAgentFrameworks:
         # sees the evidence (including uploaded images) both blocks its first
         # event and prematurely constrains its plan. The agent discovers chart
         # skills when needed; theme requirements do not require inference.
-        visualization_guidance = self._theme_visualization_guidance(visualization_theme)
+        from app.delivery_preferences import plain_text_requested
+        visualization_guidance = '' if plain_text_requested.get() else self._theme_visualization_guidance(visualization_theme)
         if framework == "codex":
             events = self._stream_codex(
                 question, images, session_key, engine_session_id, history or [], inference_model,
@@ -1556,6 +1557,9 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
     @staticmethod
     def _requires_html_deliverable(question: str) -> bool:
         """Detect an explicit HTML deliverable, not a generic request for analysis."""
+        from app.delivery_preferences import plain_text_requested
+        if plain_text_requested.get():
+            return False
         text = str(question or "")
         return bool(re.search(
             r"(?:生成|制作|创建|做|导出|交付|给我).{0,32}(?:HTML|html)(?:页面|报告|组件|文件|仪表盘|看板)?"

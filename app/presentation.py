@@ -979,6 +979,7 @@ app.include_router(create_day_router(DAY_TASKS))
 
 def run_qq_chat(scope, question, history):
     import hashlib
+    from app.delivery_preferences import plain_text_delivery
     owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
     context = (
         '这是 QQ 渠道的 Mentora 轻聊天，用户已选择纯文本交付。支持连续追问。'
@@ -996,11 +997,12 @@ def run_qq_chat(scope, question, history):
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')
     answer = None
-    for event, data in durable_chat_events(payload, owner):
-        if event == 'error':
-            raise RuntimeError('QQ research returned an error')
-        if event == 'final':
-            answer = normalize_chat_result(data)
+    with plain_text_delivery():
+        for event, data in durable_chat_events(payload, owner):
+            if event == 'error':
+                raise RuntimeError('QQ research returned an error')
+            if event == 'final':
+                answer = normalize_chat_result(data)
     if answer is None:
         raise RuntimeError('QQ research returned no final answer')
     return answer
