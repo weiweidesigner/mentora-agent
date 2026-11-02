@@ -973,7 +973,7 @@ def _native_mind_map():
 
 def upgrade_mind_map(artifact: str, theme: str) -> str:
     """Refresh only the native saved map shell; keep its embedded Markdown exactly."""
-    if 'data-mind-map-container="true"' not in artifact or 'data-mind-map-version="4"' in artifact:
+    if 'data-mind-map-container="true"' not in artifact or 'data-mind-map-version="5"' in artifact:
         return artifact
     match = re.search(r'document\.getElementById\("mm"\)\.textContent\s*=\s*', artifact)
     if not match: return artifact
