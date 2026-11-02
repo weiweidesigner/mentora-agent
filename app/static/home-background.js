@@ -10,8 +10,6 @@
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const opening = document.querySelector('#mentoraOpening');
   const intro = document.querySelector('#mentoraOpeningVideo');
-  const greeting = document.querySelector('#mentoraWelcomeAudio');
-  let greetingPlayed = false;
   const subtitle = opening?.querySelector('.mentoraOpeningTitle p');
   const welcome = subtitle?.textContent || '';
   let audioBlocked = false;
@@ -63,7 +61,6 @@
   if (debugEnabled && intro) for (const name of ['loadedmetadata','playing','ended','error']) intro.addEventListener(name, () => traceOpening(name));
   function sync() {
     const visible = chatVisible();
-    if (!visible || !conversation.classList.contains('is-empty') || document.hidden) greeting?.pause();
     shell.dataset.mentoraMotion = visible ? 'active' : 'inactive';
     // The background belongs to the viewport throughout home scrolling and chat.
     if (!visible || document.hidden || motion.matches || saveData() || openingActive) {
@@ -76,29 +73,12 @@
       if (!chatVisible() || document.hidden || motion.matches || saveData() || openingActive) video.pause();
     }).catch(() => { /* The local poster remains visible if autoplay is unavailable. */ });
   }
-  function playOpeningGreeting() {
-    if (!greeting || greetingPlayed || document.hidden || motion.matches || saveData()
-        || !chatVisible() || !conversation.classList.contains('is-empty')) return false;
-    greetingPlayed = true;
-    greeting.src = greeting.dataset.src;greeting.volume = .75;
-    clearTimeout(deadline);
-    document.removeEventListener('click', enableOpeningAudio, true);
-    document.removeEventListener('keydown', enableOpeningAudio, true);
-    const done = () => finishOpening();
-    greeting.addEventListener('ended', done, {once:true});
-    greeting.addEventListener('error', done, {once:true});
-    // Keep the opening visible until the phrase finishes; failure never blocks entry.
-    deadline = setTimeout(done, 5000);
-    greeting.play().catch(done);
-    return true;
-  }
-  function finishOpening(playGreeting = false) {
+  function finishOpening() {
     if (!openingActive) return;
-    if (playGreeting && playOpeningGreeting()) return;
     traceOpening('finish');
     openingActive = false;++audioAttempt;
     clearTimeout(deadline);clearTimeout(revealTimer);
-    intro.pause();intro.muted = true;greeting?.pause();
+    intro.pause();intro.muted = true;
     document.removeEventListener('click', enableOpeningAudio, true);
     document.removeEventListener('keydown', enableOpeningAudio, true);
     opening.classList.remove('is-playing', 'is-revealed');
@@ -168,7 +148,7 @@
         if (openingActive) opening.classList.add('is-revealed');
       }, 1100);
     }, {once:true});
-    intro.addEventListener('ended', () => finishOpening(true), {once:true});
+    intro.addEventListener('ended', () => finishOpening(), {once:true});
     intro.addEventListener('error', () => finishOpening(), {once:true});
     enableOpeningAudio();
   }
@@ -189,7 +169,7 @@
     sync();
   });
   window.addEventListener('pagehide', () => {
-    finishOpening();clearTimeout(hideTimer);video.pause();greeting?.pause();
+    finishOpening();clearTimeout(hideTimer);video.pause();
   });
   // Every page load starts its opening; route switches do not restart it.
   // No replay/skip controls or sample content are added to the page.

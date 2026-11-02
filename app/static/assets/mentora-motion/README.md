@@ -16,3 +16,5 @@ The active opening now uses opening-audio.mp4 again. welcome-back-formal.mp3 is 
 welcome-back-oneesan.mp3 supersedes the formal welcome voice. It is locally generated with Breeze TTS 2 using an adult female low-register, magnetic, relaxed delivery with slight breathiness and restrained teasing warmth. Playback remains after the opening has fully faded and the empty home is visible.
 
 The welcome-back-oneesan.mp3 phrase now plays at the end of the opening, before revealing the home. The opening stays visible during the phrase, then fades out after audio ended. Audio rejection, failure or a five-second timeout proceeds to the home without a delayed greeting.
+
+The active opening is now opening-oneesan.mp4: the original opening-audio.mp4 video stream is copied unchanged, and the existing welcome-back-oneesan.mp3 phrase is mixed into its audio at 5.25 seconds. The original audio bed ducks to 25% during the phrase. Duration stays at approximately 7.04 seconds; there is no separate greeting player or wait before the existing opening fade. Earlier standalone welcome revisions are no longer loaded.
