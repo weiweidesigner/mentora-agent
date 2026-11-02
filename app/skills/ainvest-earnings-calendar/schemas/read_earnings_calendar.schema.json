@@ -52,7 +52,7 @@
     "coverage": {
       "naturalRequests": "Economic releases, company earnings, dividends, stock splits, IPOs and holidays, including combined daily/weekly schedules. User need not name AInvest.",
       "categories": "events --event-type earning economic_indicator dividend stock_split ipo holiday; choose the required subset. Default remains earning for compatibility.",
-      "countries": "--country-codes source IDs e.g. USA is supported for economic_indicator events and statistics. In mixed queries other categories are unfiltered, not an assumed US-only universe.",
+      "countries": "--country-codes source IDs e.g. USA is supported for economic_indicator events and statistics. In mixed queries other categories are unfiltered, not an assumed US-only universe. Omitted countryCodes uses provider defaults, not verified global coverage; inspect summary.returnedEconomicCountries and pass explicit source country IDs for the requested scope.",
       "dates": "State calendar-date scope and basis. releaseTime preserves source publicTime; UI labels ET but API lacks timezone/offset. releaseTimezone null: verify before converting. Earnings disclosureTimeType enum is still not fully verified.",
       "sourceStatus": "Per-event actual/forecast/prior nulls preserved. Empty successful category and failed/incomplete category must be distinguished. Source traversal completion is not a market-wide completeness guarantee."
     },

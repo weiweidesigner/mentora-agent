@@ -303,7 +303,7 @@ def main():
             for key in quality:quality[key]+=counts[key]
         result.update(events=events,pagination=paging,quality=quality,categoryResults=category_results)
         result['source']['parameters']=category_results[0]['parameters'] if len(category_results)==1 else {**params,'eventTypes':event_types}
-        summary={'eventCount':len(events),'categoryCounts':{t:sum(e['eventType']==t for e in events) for t in event_types},
+        summary={'returnedEconomicCountries':sorted({str(e['country']) for e in events if e.get('country')}),'eventCount':len(events),'categoryCounts':{t:sum(e['eventType']==t for e in events) for t in event_types},
                  'complete':paging['complete'],'stoppedBecause':paging['stoppedBecause'],'nextCursor':paging['nextCursor'],
                  'pageCount':len(paging['pages']),'quality':quality,'categoryResults':category_results,
                  'missing':{k:sum(e.get(k) is None for e in events if e['eventType']=='earning') for k in ('estimateEps','actualEps','estimateRevenue','actualRevenue')},
