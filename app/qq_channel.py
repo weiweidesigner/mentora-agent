@@ -69,6 +69,9 @@ class QQClient:
         name = str(data.get('username') or '').strip()[:40]
         avatar = str(data.get('avatar') or '').strip()
         parsed = urlparse(avatar)
+        if parsed.scheme == 'http' and parsed.hostname and (parsed.hostname == 'qlogo.cn' or parsed.hostname.endswith('.qlogo.cn')):
+            parsed = parsed._replace(scheme='https')
+            avatar = parsed.geturl()
         if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or len(avatar)>2048:
             avatar = ''
         if not name:

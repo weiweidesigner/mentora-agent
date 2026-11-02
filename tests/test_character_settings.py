@@ -274,5 +274,9 @@ def test_qq_profile_api_uses_bot_token_and_rejects_unsafe_avatar(monkeypatch):
         return SimpleNamespace(status_code=200,json=lambda:profile)
     monkeypatch.setattr(module.requests,'get',get)
     assert QQClient().me()=={'name':'QQ 名称','avatar':'https://q.qlogo.cn/profile.png'}
+    profile['avatar']='http://thirdqq.qlogo.cn/profile.png'
+    assert QQClient().me()['avatar']=='https://thirdqq.qlogo.cn/profile.png'
+    profile['avatar']='http://untrusted.example/profile.png'
+    assert QQClient().me()['avatar']==''
     profile['avatar']='javascript:alert(1)'
     assert QQClient().me()['avatar']==''
