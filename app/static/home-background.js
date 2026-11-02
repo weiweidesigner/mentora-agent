@@ -12,7 +12,7 @@
   const excluded = ['tasks-view', 'widgets-view', 'portfolio-view', 'character-view', 'case-overlay-open'];
   const chatVisible = () => !conversation.hidden && !excluded.some(name => shell.classList.contains(name));
   let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0;
-  let previousInert = false;
+  let previousInert = false, audioAttempt = 0;
   const saveData = () => Boolean(navigator.connection?.saveData);
   function sync() {
     const visible = chatVisible();
@@ -30,7 +30,7 @@
   }
   function finishOpening() {
     if (!openingActive) return;
-    openingActive = false;
+    openingActive = false;++audioAttempt;
     clearTimeout(deadline);clearTimeout(revealTimer);
     intro.pause();intro.muted = true;
     document.removeEventListener('click', enableOpeningAudio, true);
@@ -41,12 +41,18 @@
     sync();
   }
   function enableOpeningAudio() {
-    if (!openingActive || !intro.muted) return;
+    if (!openingActive) return;
+    const attempt = ++audioAttempt;
     intro.muted = false;
-    intro.play().catch(() => {
-      if (!openingActive) return;
+    intro.play().catch(error => {
+      if (!openingActive || attempt !== audioAttempt) return;
+      if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
+      // Keep the picture moving when sound needs a real click/key gesture.
+      // A newer gesture must win over a pending autoplay permission result.
       intro.muted = true;
-      intro.play().catch(finishOpening);
+      intro.play().catch(() => {
+        if (openingActive && attempt === audioAttempt) finishOpening();
+      });
     });
   }
   function startOpening() {
@@ -66,14 +72,7 @@
     revealTimer = setTimeout(() => opening.classList.add('is-revealed'), 1100);
     intro.addEventListener('ended', finishOpening, {once:true});
     intro.addEventListener('error', finishOpening, {once:true});
-    intro.play().catch(error => {
-      if (!openingActive) return;
-      if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
-      // Autoplay permissions belong to the browser. Keep the picture moving,
-      // then enable sound within a real click/key gesture on the opening.
-      intro.muted = true;
-      intro.play().catch(finishOpening);
-    });
+    enableOpeningAudio();
   }
   new MutationObserver(() => {
     if (openingActive && !chatVisible()) finishOpening();
