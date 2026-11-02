@@ -6,7 +6,7 @@
       "--asset": "stock|etf（默认 etf）",
       "--strategy": "ETF 预设 ID；涨幅排名 ranking-top-gainers，跌幅排名 ranking-top-losers",
       "--filters-json": "JSON 数组；field 加 value、min/max 或 option；周期字段加 period。同字段 OR，不同字段 AND。只加入用户要求的条件。",
-      "--columns": "逗号分隔指标 ID；默认名称55、价格10、日涨幅199112、成交量13、ETF规模AUM/股票市值及PE",
+      "--columns": "默认列已满足名称、价格、日涨幅、成交量、规模，直接省略此参数。自定义时仅传真实指标 ID 的逗号列表，例如 55,10,199112,13；不把中文名称与 ID 拼接成“名称55”。",
       "--sort": "排序指标 ID 或准确名称；ETF规模 AUM，股票市值 total_market_value",
       "--order": "asc|desc，默认 desc",
       "--top": "排名候选数量，与 --limit 不同",

@@ -9,6 +9,7 @@ const inject = ['tools'];
 const READ_TOOLS = new Set(['read', 'skill', 'web_fetch', 'web_search']);
 const DEFAULT_COMPACTION_THRESHOLD = 4000;
 const STRUCTURED_FILE_THRESHOLD = 1000;
+const VERIFIED_HANDOFF_THRESHOLD = 10000;
 const EXTERNAL_CALL_TIMEOUT_MS = 10000;
 const EXTERNAL_BATCH_TIMEOUT_MS = 30000;
 const JOB_POLL_TIMEOUT_MS = 8000;
@@ -147,9 +148,14 @@ function compactToolResult(exec, result, root, threshold = DEFAULT_COMPACTION_TH
       && ((parsed.analysisSummary && typeof parsed.analysisSummary === 'object') || (parsed.chartValidation && typeof parsed.chartValidation === 'object'))
       && Array.isArray(parsed.artifacts) && parsed.artifacts.some(item => item?.verified === true)) {
     const handoff = Object.fromEntries(
-      ['ok','capability','script','exitCode','durationMs','presentation','analysisSummary','chartValidation','timingsMs','artifacts']
+      ['ok','capability','script','exitCode','durationMs','presentation','analysisSummary','chartValidation','timingsMs','sources','artifacts']
         .filter(key => Object.hasOwn(parsed,key)).map(key => [key,parsed[key]]));
-    if (JSON.stringify(handoff).length <= threshold) summary = handoff;
+    if (JSON.stringify(handoff).length <= Math.max(threshold, VERIFIED_HANDOFF_THRESHOLD)) summary = handoff;
+  }
+  // Component provenance must survive even when the dataset itself is summarized.
+  if (parsed?.ok === true && parsed.exitCode === 0 && parsed.capability) {
+    const sources = parsed.sources || parsed.observation?.sources;
+    if (Array.isArray(sources) && JSON.stringify(sources).length <= 2000) summary.sources = sources;
   }
   const receipt = JSON.stringify({
     compacted: true,

@@ -384,3 +384,24 @@ test('verified chart validation survives receipt compaction without rereading it
   const receipt=JSON.parse(result.content[0].text);
   assert.deepEqual(receipt.summary.chartValidation,chartValidation);
 });
+
+test('verified small page handoffs retain all rows and provenance through compaction', t => {
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'guard-page-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const rows=Array.from({length:20},(_,i)=>({symbol:`ETF${i}`,name:'Example fund '.repeat(10),change:i}));
+  const sources=[{url:'https://www.ainvest.com/screener/',title:'AInvest'}];
+  const source={ok:true,capability:'page_fixture',exitCode:0,analysisSummary:{rows},observation:{sources},artifacts:[{verified:true,path:'/project/outputs/page.json'}]};
+  const result=compactToolResult(shell('python3 app/skill_runner.py execute --script page.py'),ok(JSON.stringify(source)),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.equal(receipt.summary.analysisSummary.rows.length,20);
+  assert.deepEqual(receipt.summary.sources,sources);
+});
+
+test('oversized successful datasets preserve actual source URLs beside the file reference', t => {
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'guard-source-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+  const sources=[{url:'https://www.ainvest.com/screener/',title:'AInvest'}];
+  const source={ok:true,capability:'large_fixture',exitCode:0,observation:{sources},analysisSummary:{rows:Array.from({length:2000},(_,i)=>({symbol:`ETF${i}`}))},artifacts:[{verified:true,path:'/project/outputs/page.json'}]};
+  const result=compactToolResult(shell('python3 app/skill_runner.py execute --script large.py'),ok(JSON.stringify(source)),root);
+  const receipt=JSON.parse(result.content[0].text);
+  assert.deepEqual(receipt.summary.sources,sources);
+  assert.equal(receipt.summary.analysisSummary.rows.count,2000);
+});
