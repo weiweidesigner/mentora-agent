@@ -1279,6 +1279,13 @@ function artifactLoadingMessage(item) {
   return isImageGalleryArtifact(item)?'正在加载图片':'正在加载内容';
 }
 
+function installMindMapWheelBoundary(doc) {
+  doc?.addEventListener("wheel", (event) => {
+    if (!doc.fullscreenElement && !doc.body?.classList.contains("is-fullscreen") &&
+        event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
+  }, { capture: true, passive: true });
+}
+
 function createArtifactFallbackFrame(item, index, options = {}) {
   if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
   const loadingStartedAt = Date.now();
@@ -1327,9 +1334,7 @@ function createArtifactFallbackFrame(item, index, options = {}) {
       sharedControls.addEventListener('load', () => resizeReportDocumentFrame(frame), {once:true});
       doc.head.append(sharedControls);
     }
-    doc?.addEventListener("wheel", (event) => {
-      if (event.target?.closest?.("svg.markmap") && !event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
-    }, { capture: true, passive: true });
+    installMindMapWheelBoundary(doc);
     window.installTradingViewSurface?.(frame);
     resizeReportDocumentFrame(frame);
     installReportTooltipPortal(frame);

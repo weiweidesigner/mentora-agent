@@ -6,13 +6,19 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
-from app.artifact_upgrades import upgrade_native_kline_pine, sync_native_kline_theme
+from app.artifact_upgrades import upgrade_native_kline_pine, sync_native_kline_theme, upgrade_mind_map
 from urllib.parse import parse_qs
 
 
 class NativePineStaticFiles(StaticFiles):
     async def get_response(self, path, scope):
         response = await super().get_response(path, scope)
+        original_response = response
+        if path.startswith('cases/') and path.endswith('.html') and response.status_code == 304:
+            # The file may be unchanged while its runtime shell has been upgraded.
+            fresh_scope = {**scope, 'headers': [(k, v) for k, v in scope.get('headers', [])
+                                              if k.lower() not in {b'if-none-match', b'if-modified-since'}]}
+            response = await super().get_response(path, fresh_scope)
         if not (path.startswith('cases/') and path.endswith('.html') and
                 response.status_code == 200 and isinstance(response, FileResponse)):
             return response
@@ -21,11 +27,16 @@ class NativePineStaticFiles(StaticFiles):
         theme=parse_qs(scope.get('query_string',b'').decode()).get('theme',[''])[0]
         if theme not in {'dark','light'}:
             match=re.search(r'<html\b[^>]*data-theme=["\'](dark|light)',artifact,re.I)
+            if not match: match=re.search(r'<body\b[^>]*class=["\'][^"\']*theme-(dark|light)',artifact,re.I)
             theme=match[1] if match else 'light'
+        original=artifact
+        artifact=upgrade_mind_map(artifact,theme)
         artifact=sync_native_kline_theme(artifact,theme)
         artifact = upgrade_native_kline_pine(artifact)
         if 'root.dataset.pineBridge' not in artifact:
-            return response
+            if artifact!=original:
+                return HTMLResponse(artifact, headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
+            return original_response
         adapter = (Path(__file__).parent/'static/kline-pine.js').read_text(encoding='utf-8')
         script = '<script data-kline-pine-host>'+adapter+'</script>'
         artifact = re.sub(r'</body\s*>', lambda _:script+'</body>', artifact, count=1, flags=re.I) if re.search(r'</body\s*>', artifact, re.I) else artifact+script
