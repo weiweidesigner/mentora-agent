@@ -49,7 +49,7 @@ test('refreshing another workspace also plays the opening and retains its destin
 
 
 test('the opening requests audio while the resident background remains muted',async()=>{
-  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-audio\.mp4$/);assert.equal(h.video.muted,true);
+  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-welcome\.mp4$/);assert.equal(h.video.muted,true);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.paused,true);assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
