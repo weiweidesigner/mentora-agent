@@ -996,7 +996,7 @@ def _native_data_table():
 
 def upgrade_data_table(artifact: str, theme: str) -> str:
     """Refresh saved native tables from embedded records, without reopening their source."""
-    if not re.search(r'data-data-table-version=["\'][12]["\']', artifact):
+    if not re.search(r'data-data-table-version=["\'][123]["\']', artifact):
         return artifact
     match = re.search(r'<script\b[^>]*id=["\']table-data["\'][^>]*>(.*?)</script>', artifact, re.S)
     if not match:
