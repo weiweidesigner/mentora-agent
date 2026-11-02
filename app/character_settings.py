@@ -11,7 +11,7 @@ import time
 from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from PIL import Image, ImageOps
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
 from app.chat_sessions import identity
@@ -25,11 +25,17 @@ class CharacterProfile(BaseModel):
     personality: str = Field(default='温柔知性', max_length=80)
     role: str = Field(default='可以轻松聊天，也能认真解答问题的陪伴助手', max_length=500)
     agentPrompt: str = Field(default='', max_length=6000)
-    responseMode: Literal['auto','voice','text','random'] = 'auto'
+    responseMode: Literal['auto','voice','text'] = 'auto'
     paragraph: Literal['minimal','normal','long'] = 'normal'
     stickerProbability: int = Field(default=50, ge=0, le=100)
     stickerIds: list[str] | None = Field(default=None, max_length=160)
     stickerPacks: list[str] = Field(default_factory=lambda:['dafeiyu-companion'], max_length=24)
+
+
+    @field_validator('responseMode', mode='before')
+    @classmethod
+    def migrate_random_mode(cls, value):
+        return 'auto' if value == 'random' else value
 
 
 class QQConnectionInput(BaseModel):
@@ -279,6 +285,15 @@ def create_router(store):
 
     @router.delete('/sticker-packs/{pack_id}')
     def remove_pack(pack_id:str,request:Request,response:Response):return change_pack(pack_id,request,response,False)
+
+    @router.get('/qq/secret')
+    def saved_qq_secret(request:Request,response:Response):
+        user=owner(request,response,True)
+        row=store.qq.row(user)
+        if not row:raise HTTPException(404,'尚未保存 QQ 连接')
+        response.headers['Pragma']='no-cache'
+        response.headers['Vary']='Cookie'
+        return {'appSecret':store.qq.credentials(row['id'])[1]}
 
     @router.put('/qq')
     def save_qq(payload:QQConnectionInput,request:Request,response:Response):

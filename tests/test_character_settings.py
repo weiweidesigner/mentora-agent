@@ -32,7 +32,7 @@ def test_profiles_scoped_and_validated(setup):
     profile=a.get('/api/character').json()['profile']
     assert profile['name']=='Mentora'
     assert a.put('/api/character',json=profile).status_code==403
-    profile.update(name='小蓝',age=25,personality='御姐',responseMode='random',paragraph='long',stickerProbability=85)
+    profile.update(name='小蓝',age=25,personality='御姐',responseMode='voice',paragraph='long',stickerProbability=85)
     assert a.put('/api/character',json=profile,headers={'X-Veya-Day':'1'}).status_code==200
     assert a.get('/api/character').json()['profile']==profile
     assert b.get('/api/character').json()['profile']['name']=='Mentora'
@@ -280,3 +280,25 @@ def test_qq_profile_api_uses_bot_token_and_rejects_unsafe_avatar(monkeypatch):
     assert QQClient().me()['avatar']==''
     profile['avatar']='javascript:alert(1)'
     assert QQClient().me()['avatar']==''
+
+
+def test_saved_qq_secret_is_explicit_owner_only_and_never_cached(setup,monkeypatch):
+    from app.qq_channel import QQClient
+    store,a,b=setup
+    monkeypatch.setattr(QQClient,'token',lambda self:'token')
+    a.get('/api/character');b.get('/api/character')
+    headers={'X-Veya-Day':'1'}
+    a.put('/api/character/qq',json={'appId':'123456','appSecret':'private-owner-secret'},headers=headers)
+    assert 'private-owner-secret' not in a.get('/api/character').text
+    assert a.get('/api/character/qq/secret').status_code==403
+    assert a.get('/api/character/qq/secret',headers={**headers,'Sec-Fetch-Site':'cross-site'}).status_code==403
+    assert b.get('/api/character/qq/secret',headers=headers).status_code==404
+    revealed=a.get('/api/character/qq/secret',headers=headers)
+    assert revealed.json()=={'appSecret':'private-owner-secret'}
+    assert revealed.headers['Cache-Control']=='no-store' and revealed.headers['Pragma']=='no-cache'
+
+
+def test_legacy_random_delivery_is_normalized_to_smart_and_combined_personalities_are_kept():
+    profile=CharacterProfile.model_validate({'responseMode':'random','personality':'甜妹、温柔知性、幽默风趣'})
+    assert profile.responseMode=='auto'
+    assert '甜妹、温柔知性、幽默风趣' in character_context(profile.model_dump())

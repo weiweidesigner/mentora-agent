@@ -137,9 +137,6 @@ class QQChat:
         plan['contextMode'] = plan['mode']
         if profile['responseMode'] in ('voice','text'):
             plan['mode'] = profile['responseMode']
-        elif profile['responseMode'] == 'random':
-            import secrets
-            plan['mode'] = 'voice' if secrets.randbelow(2) else 'text'
         plan['preferenceMode'] = profile['responseMode']
         plan['deliveredMode'] = None
         plan['stickerSent'] = False
