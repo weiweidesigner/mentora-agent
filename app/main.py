@@ -2506,9 +2506,10 @@ GENERIC_CHART_PAYLOAD_SCRIPTS = {
     "double_ring_pie.py",
     "treemap.py",
     "waterfall.py",
+    "data_table.py",
     *AIME_GENERIC_CHART_SCRIPTS,
 }
-COORDINATE_GENERIC_CHART_SCRIPTS = GENERIC_CHART_PAYLOAD_SCRIPTS - LOGIC_CHART_SCRIPTS
+COORDINATE_GENERIC_CHART_SCRIPTS = GENERIC_CHART_PAYLOAD_SCRIPTS - LOGIC_CHART_SCRIPTS - {"data_table.py"}
 PREFERRED_FINANCIAL_VIEWS = ("quarterly", "cumulative", "annual")
 
 
@@ -7301,6 +7302,7 @@ def legacy_route_with_model(question: str) -> dict[str, Any]:
         "- 当用户询问 AInvest 端内 Shorts/短视频模块时，使用 ainvest_video_search.py，并设置 cli_args 为 --category shorts；用户询问 Videos、Featured YouTube Videos、YouTube 视频模块、长视频或截图中 Videos 模块时，使用 ainvest_video_search.py，并设置 --category videos。\n"
         "- 当用户询问某个标的/公司围绕主题、战略、投资、AI、合作、展望、催化剂、技术走势或市场反应的问题时，如果 AInvest Videos/Featured YouTube Videos 可能提供相关视频证据，可额外选择 ainvest_video_search.py；--query 必须基于用户问题语义生成，包含标的和真实主题，不要只照抄整句或只搜“video”。\n"
         "- ainvest_news_search.py 的 cli_args 可使用 --query、--topic、--keyword、--source、--category、--symbol、--asset-type、--limit、--start-date、--end-date、--semantic、--no-topic-filter；不要使用 --output 或 --format。\n"
+        "- 通用完整记录表格可选择 data_table.py：使用小型 payload 的 dataSource.path/recordsPath 和 columns 字段映射直接读取上游 JSON 全部记录，不把大表转抄到模型上下文。组件支持普通窗口滚动、全屏和全量排序；已有组件呈现的记录不再重复为 Markdown 表格。渲染完整性只针对输入文件，不能代替上游分页取全或数据核验。\n"
         "- 通用图表库脚本（bar_line.py、group_line.py、bar_chart.py、line_chart.py、grouped_bar.py、pie.py、double_ring_pie.py、treemap.py、waterfall.py，以及 Aime 通用组件 dynamic_line.py、dynamic_bar.py、dynamic_bubble.py、mind_map.py、flowchart.py、timeline.py、journey.py）用于用户要求自定义数据可视化或通用图表组件；cli_args 必须以各脚本 schema 和 --help 为准。用户要图表案例/示例时，必须由规划步骤或 code_interpreter.py 产出 schema-valid 示例数据，不要让后端兜底补数据。主题参数只在用户明确要求 dark/暗夜/深色模式时才添加 --theme dark；默认主题不要添加 --theme、--theme-mode、--dark，也绝对不要传 --theme default 或 --theme-mode default。\n"
         "- 用户说“矩形图/矩形树图/树图/treemap/tree map”时，图表类型必须是 treemap，执行脚本必须是 treemap.py，不是 bar_chart.py；payload 必须遵守 treemap.schema.json：{type:'treemap', props:{title, items:[{label,value,displayValue,children?}]}} 或兼容的 {title,items:[...]}。矩形面积绑定 value。\n"
         "- 如果用户明确要求脑图/思维导图/mind map/markmap 来总结新闻、消息、主题或文本内容，正确计划通常是先调用搜索脚本获取文本 observation，再直接调用 mind_map.py，并让执行器基于前序搜索结果补全脑图内容；不要在中间插入 code_interpreter.py，也不要把脑图降级为 line_chart.py 或任何坐标系图表。若用户问的是泛市场、行业、新闻主题、盘面表现、热点梳理等没有明确单一可交易 symbol 的主题总结，应优先把它理解为文本证据归纳任务，而不是行情序列取数任务；只有用户明确要求数值时间序列/K线/涨跌幅/成交量等坐标图时，才先选择结构化行情数据源。\n"
@@ -12102,6 +12104,8 @@ def search_chart_payload_is_valid(payload: dict[str, Any], script: str) -> bool:
     if script == "journey.py":
         stages = payload.get("stages")
         return isinstance(stages, list) and any(isinstance(stage, dict) and str(stage.get("title") or "").strip() for stage in stages)
+    if script == "data_table.py":
+        return bool(payload.get("columns")) and (isinstance(payload.get("rows"), list) or isinstance(payload.get("dataSource"), dict))
     if script == "mind_map.py":
         data = payload.get("data")
         content = data.get("content") if isinstance(data, dict) else data
@@ -22891,7 +22895,7 @@ function contentHeight(doc){{
     const rect = dynamicLineWrap.getBoundingClientRect();
     if (rect.height > 120) return Math.ceil(rect.height);
   }}
-  const mindMapContainer = doc.querySelector("[data-mind-map-container='true']");
+  const mindMapContainer = doc.querySelector("[data-mind-map-container='true'], .data-table-component");
   if (mindMapContainer) {{
     const rect = mindMapContainer.getBoundingClientRect();
     if (rect.height > 80) return Math.ceil(rect.height);

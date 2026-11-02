@@ -6282,7 +6282,7 @@ function resizeReportDocumentFrame(frame) {
     const body = doc?.body;
     const root = doc?.documentElement;
     if (!body || !root) return 520;
-    if (doc.querySelector('[data-mind-map-container]')) frame.allowFullscreen = true;
+    if (doc.querySelector('[data-mind-map-container], .data-table-component')) frame.allowFullscreen = true;
     if (doc.querySelector('.pie-component')) frame.dataset.genericComponent = 'pie';
     const lineRoot = doc.querySelector('.group-line-component');
     if (lineRoot) {
@@ -6312,7 +6312,7 @@ function resizeReportDocumentFrame(frame) {
       const rect = canvas.getBoundingClientRect();
       if (rect.height > 80) return Math.ceil(rect.bottom);
     }
-    const intrinsicContainer = doc.querySelector?.('.pie-component, .multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
+    const intrinsicContainer = doc.querySelector?.('.data-table-component, .pie-component, .multi-kline, .kline-component, [data-timeline-container="true"], #wrap, .component-root, .chart-container, main');
     if (intrinsicContainer) {
       const rect = intrinsicContainer.getBoundingClientRect();
       const report = frame.closest('.mixedReport');

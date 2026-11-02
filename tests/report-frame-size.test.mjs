@@ -74,3 +74,14 @@ test('mind map frames grant fullscreen in chat and sharing',()=>{
   }finally{w.close();}
  }
 });
+
+for (const shared of [false,true]) test(`complete table uses its bounded height and enables fullscreen (share=${shared})`,()=>{
+ const dom=new JSDOM('<iframe class="reportDocumentFrame"></iframe>',{runScripts:'outside-only'}),w=dom.window,frame=w.document.querySelector('iframe');
+ const root=frame.contentDocument.createElement('section');root.className='data-table-component';frame.contentDocument.body.append(root);
+ root.getBoundingClientRect=()=>({height:426});frame.style.height='1600px';frame.getBoundingClientRect=()=>({height:parseFloat(frame.style.height)});
+ try{
+  if(shared){w.eval(readFileSync(new URL('../app/static/share-chart-layout.js',import.meta.url),'utf8'));w.resizeShareCharts();}
+  else{w.eval(source);w.resizeReportDocumentFrame(frame);}
+  assert.equal(frame.allowFullscreen,true);assert.equal(frame.style.height,'426px');
+ }finally{w.close();}
+});
