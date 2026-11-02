@@ -13,7 +13,9 @@ from app.character_settings import CharacterStore, CharacterProfile, character_c
 
 
 @pytest.fixture
-def setup(tmp_path):
+def setup(tmp_path,monkeypatch):
+    from app.qq_channel import QQClient
+    monkeypatch.setattr(QQClient,'me',lambda self:{'name':'','avatar':''})
     tasks=DayTasks(tmp_path,lambda *a:{})
     store=CharacterStore(tasks)
     app=FastAPI();app.include_router(create_router(store))
@@ -231,3 +233,46 @@ def test_managed_qq_one_confirmation_saves_profile_and_uses_existing_callback(se
     bad=a.put('/api/character/qq',json={'appId':'123456','appSecret':'bad','profile':{**profile.model_dump(),'name':'不应保存'}},headers=headers)
     assert bad.status_code==422
     assert a.get('/api/character').json()['profile']['name']=='一次确认角色'
+
+
+def test_qq_identity_syncs_on_confirm_refreshes_and_stays_owner_scoped(setup,monkeypatch):
+    from app.qq_channel import QQClient,QQChannelError
+    store,a,b=setup
+    calls=[];version={'name':'QQ 机器人'}
+    monkeypatch.setattr(QQClient,'token',lambda self:'token')
+    def me(client):
+        calls.append(client.credentials()[0])
+        return {'name':version['name'],'avatar':'https://q.qlogo.cn/test-avatar.png'}
+    monkeypatch.setattr(QQClient,'me',me)
+    h={'X-Veya-Day':'1'};a.get('/api/character');b.get('/api/character')
+    profile=CharacterProfile(name='临时名字',personality='甜妹')
+    result=a.put('/api/character/qq',json={'appId':'123456','appSecret':'secret','profile':profile.model_dump()},headers=h).json()
+    assert result['botName']=='QQ 机器人' and result['profile']['name']=='QQ 机器人'
+    assert result['avatarUrl']=='https://q.qlogo.cn/test-avatar.png'
+    assert a.get('/api/character').json()['profile']['name']=='QQ 机器人' and len(calls)==1
+    assert b.get('/api/character').json()['qq']['botName']==''
+    version['name']='QQ 新名字'
+    with store.tasks.db() as db:db.execute('UPDATE character_qq_profiles SET fetched=0')
+    refreshed=a.get('/api/character').json()
+    assert refreshed['profile']['name']=='QQ 新名字' and refreshed['qq']['botName']=='QQ 新名字'
+    assert len(calls)==2
+    with store.tasks.db() as db:db.execute('UPDATE character_qq_profiles SET fetched=0')
+    monkeypatch.setattr(QQClient,'me',lambda self:(_ for _ in ()).throw(QQChannelError('unavailable')))
+    fallback=a.get('/api/character').json()
+    assert fallback['qq']['botName']=='QQ 新名字' and fallback['qq']['avatarUrl']==refreshed['qq']['avatarUrl']
+
+
+def test_qq_profile_api_uses_bot_token_and_rejects_unsafe_avatar(monkeypatch):
+    from types import SimpleNamespace
+    from app.qq_channel import QQClient
+    import app.qq_channel as module
+    monkeypatch.setattr(QQClient,'token',lambda self:'test-access-token')
+    profile={'username':' QQ 名称 ','avatar':'https://q.qlogo.cn/profile.png'}
+    def get(url,**kwargs):
+        assert url=='https://api.sgroup.qq.com/users/@me'
+        assert kwargs['headers']['Authorization']=='QQBot test-access-token' and kwargs['allow_redirects'] is False
+        return SimpleNamespace(status_code=200,json=lambda:profile)
+    monkeypatch.setattr(module.requests,'get',get)
+    assert QQClient().me()=={'name':'QQ 名称','avatar':'https://q.qlogo.cn/profile.png'}
+    profile['avatar']='javascript:alert(1)'
+    assert QQClient().me()['avatar']==''

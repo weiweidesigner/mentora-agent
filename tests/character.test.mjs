@@ -7,9 +7,9 @@ const source=readFileSync(new URL('../app/static/character.js',import.meta.url),
 const navigation=readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8');
 const defaults={stickerPacks:['companion'],stickerIds:null,name:'Mentora',age:24,gender:'female',personality:'温柔知性',role:'陪伴助手',agentPrompt:'',responseMode:'auto',paragraph:'normal',stickerProbability:50};
 const tick=()=>new Promise(r=>setTimeout(r,25));
-function setup(){
+function setup(qqMetadata={}){
  const dom=new JSDOM(html,{url:'https://example.com/?tab=character',runScripts:'outside-only'}),w=dom.window,requests=[];
- let profile={...defaults,stickerPacks:[...defaults.stickerPacks]},stickers=[];
+ let profile={...defaults,stickerPacks:[...defaults.stickerPacks]},stickers=[],qq={};
  const members=[{id:'shy',label:'害羞',file:'shy.jpg',description:'害羞脸红',url:'/static/assets/qq-fish/shy.jpg',packId:'companion'},{id:'surprise',label:'震惊',url:'/static/assets/qq-stickers/surprise.jpg',packId:'reactions'}];
  const packs=[{id:'companion',name:'大肥鱼陪伴',description:'可爱日常',tags:['日常','可爱'],source:'community',count:1,previews:[members[0].url]},{id:'reactions',name:'大肥鱼情绪',description:'震惊无语',tags:['情绪'],source:'community',count:1,previews:[members[1].url]}];
  const currentPacks=()=>packs.map(p=>({...p,installed:profile.stickerPacks.includes(p.id)}));
@@ -17,11 +17,11 @@ function setup(){
  w.fetch=async(path,options={})=>{
   const body=options.body?JSON.parse(options.body):undefined;requests.push({path,method:options.method||'GET',body});let result;
   if(path.includes('/sticker-packs/')){const id=path.split('/').at(-1);if(options.method==='POST'){if(!profile.stickerPacks.includes(id))profile.stickerPacks.push(id);result={ok:true};}else if(options.method==='DELETE'){profile.stickerPacks=profile.stickerPacks.filter(p=>p!==id);result={ok:true};}else result={...currentPacks().find(p=>p.id===id),items:members.filter(x=>x.packId===id)};}
-  else if(path.endsWith('/qq')){profile={...(body.profile||profile)};result={configured:true,appId:body.appId,hasSecret:true,ready:true,requiresWebhookSetup:false,profile,webhookUrl:'https://example.com/api/qq/webhook/demo'};}
+  else if(path.endsWith('/qq')){profile={...(body.profile||profile),...(qqMetadata.botName?{name:qqMetadata.botName}:{})};result=qq={...qqMetadata,configured:true,appId:body.appId,hasSecret:true,ready:true,requiresWebhookSetup:false,profile,webhookUrl:'https://example.com/api/qq/webhook/demo'};}
   else if(options.method==='PUT'){profile={...body};result=profile;}
   else if(options.method==='POST'&&path.endsWith('/stickers')){stickers.push({id:'sample',label:body.label,description:body.description,url:'/api/character/stickers/sample.png'});result={id:'sample'};}
   else if(options.method==='DELETE'){stickers=[];result={ok:true};}
-  else result={profile:{...profile},packs:currentPacks(),builtins:members.filter(x=>profile.stickerPacks.includes(x.packId)),stickers,linkedCount:0};
+  else result={qq,profile:{...profile},packs:currentPacks(),builtins:members.filter(x=>profile.stickerPacks.includes(x.packId)),stickers,linkedCount:0};
   return{ok:true,json:async()=>result};
  };w.eval(navigation);w.eval(source);return{dom,w,d:w.document,requests};
 }
@@ -39,3 +39,5 @@ test('square browses whole packs, filters and installs without losing unsaved id
 });
 test('custom upload includes semantic description and switches gallery',async()=>{const h=setup();await tick();h.d.querySelector('#chAddSticker').click();h.d.querySelector('#chPickerUpload').click();const f=h.d.querySelector('#chUploadForm');assert.equal(f.hidden,false);f.elements.label.value='好耶';f.elements.description.value='开心庆祝';Object.defineProperty(h.d.querySelector('#chStickerFile'),'files',{value:[new h.w.File(['image'],'test.png',{type:'image/png'})]});f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();await tick();assert.ok(h.requests.some(r=>r.method==='POST'&&r.body.description==='开心庆祝'&&r.body.data));assert.match(h.d.querySelector('#chGallery').textContent,/好耶/);h.dom.window.close();});
 test('other workspace navigation hides character settings',async()=>{const h=setup();await tick();h.w.dispatchEvent(new h.w.CustomEvent('veya:chat-navigate',{detail:{workspace:'portfolio'}}));assert.equal(h.d.querySelector('#characterWorkspace').hidden,true);assert.equal(h.d.querySelector('.shell').classList.contains('character-view'),false);h.dom.window.close();});
+
+test('QQ identity replaces preview image and name automatically on confirmation',async()=>{const h=setup({botName:'QQ 角色名',avatarUrl:'https://q.qlogo.cn/bot.png'});await tick();const f=h.d.querySelector('#chQQForm');f.elements.appId.value='123456';f.elements.appSecret.value='test';f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.d.querySelector('#chAvatar').src,'https://q.qlogo.cn/bot.png');assert.equal(h.d.querySelector('#chPreviewName').textContent,'QQ 角色名');assert.equal(h.d.querySelector('[name=name]').value,'QQ 角色名');assert.equal(h.d.querySelector('[name=name]').readOnly,true);assert.match(h.d.querySelector('#chIdentityHint').textContent,/与 QQ/);h.dom.window.close();});

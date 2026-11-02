@@ -44,6 +44,7 @@ class QQConnectionStore:
         self.tasks = tasks
         with tasks.db() as db:
             db.execute('CREATE TABLE IF NOT EXISTS character_qq_connections(id TEXT PRIMARY KEY,owner TEXT UNIQUE,app_id TEXT UNIQUE,secret TEXT,updated REAL)')
+            db.execute('CREATE TABLE IF NOT EXISTS character_qq_profiles(connection TEXT PRIMARY KEY,name TEXT,avatar TEXT,fetched REAL)')
 
     def row(self, owner):
         with self.tasks.db() as db:
@@ -57,6 +58,24 @@ class QQConnectionStore:
         if not row:
             raise QQChannelError('QQ 连接不存在')
         return row['app_id'], self.tasks.cipher.decrypt(row['secret'].encode()).decode()
+
+    def bot_profile(self, owner):
+        with self.tasks.db() as db:
+            row=db.execute('SELECT p.* FROM character_qq_profiles p JOIN character_qq_connections c ON c.id=p.connection WHERE c.owner=?',(owner,)).fetchone()
+        return dict(row) if row else None
+
+    def refresh_profile(self, owner):
+        from app.qq_channel import QQClient
+        row=self.row(owner)
+        if not row:return
+        cached=self.bot_profile(owner)
+        if cached and time.time()-cached['fetched']<300:return
+        try:
+            data=QQClient(credentials_provider=lambda:self.credentials(row['id'])).me()
+        except Exception:
+            data=cached or {'name':'','avatar':''}
+        with self.tasks.db() as db:
+            db.execute('INSERT OR REPLACE INTO character_qq_profiles VALUES(?,?,?,?)',(row['id'],data['name'],data['avatar'],time.time()))
 
     def public(self, owner):
         import os
@@ -76,7 +95,8 @@ class QQConnectionStore:
                                     break
                             except (ValueError, TypeError, IndexError):
                                 continue
-        return {'configured': bool(row), 'appId': row['app_id'] if row else '',
+        bot=self.bot_profile(owner) or {}
+        return {'botName':bot.get('name',''),'avatarUrl':bot.get('avatar',''),'configured': bool(row), 'appId': row['app_id'] if row else '',
                 'hasSecret': bool(row), 'ready': ready, 'requiresWebhookSetup': bool(row) and not ready,
                 'webhookUrl': base+'/api/qq/webhook/'+row['id'] if row else ''}
 
@@ -93,6 +113,10 @@ class QQConnectionStore:
             client.token()
         except Exception:
             raise HTTPException(422, 'QQ 鉴权失败，请检查 AppID 和 AppSecret 后重试') from None
+        try:
+            bot=client.me()
+        except Exception:
+            bot=self.bot_profile(owner) if old and old['app_id']==payload.appId else None
         with self.tasks.db() as db:
             existing = db.execute('SELECT owner FROM character_qq_connections WHERE app_id=?', (payload.appId,)).fetchone()
             if existing and existing['owner'] != owner:
@@ -101,7 +125,13 @@ class QQConnectionStore:
             encrypted = self.tasks.cipher.encrypt(secret.encode()).decode()
             db.execute('INSERT INTO character_qq_connections VALUES(?,?,?,?,?) ON CONFLICT(owner) DO UPDATE SET app_id=excluded.app_id,secret=excluded.secret,updated=excluded.updated',
                        (connection, owner, payload.appId, encrypted, time.time()))
+            if bot:
+                db.execute('INSERT OR REPLACE INTO character_qq_profiles VALUES(?,?,?,?)',(connection,bot['name'],bot['avatar'],time.time()))
+            elif old and old['app_id']!=payload.appId:
+                db.execute('DELETE FROM character_qq_profiles WHERE connection=?',(connection,))
             if payload.profile is not None:
+                if bot and bot.get('name'):
+                    payload.profile=payload.profile.model_copy(update={'name':bot['name']})
                 db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)', (owner,payload.profile.model_dump_json(),time.time()))
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone():
                     db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)', (owner,))
@@ -135,7 +165,10 @@ class CharacterStore:
     def get(self,owner):
         with self.tasks.db() as db:
             row=db.execute('SELECT payload FROM character_profiles WHERE owner=?',(owner,)).fetchone()
-        return CharacterProfile.model_validate_json(row['payload']).model_dump() if row else CharacterProfile().model_dump()
+        profile=CharacterProfile.model_validate_json(row['payload']).model_dump() if row else CharacterProfile().model_dump()
+        bot=self.qq.bot_profile(owner)
+        if bot and bot.get('name'):profile['name']=bot['name']
+        return profile
 
     def save(self,owner,profile):
         with self.tasks.db() as db:
@@ -211,6 +244,7 @@ def create_router(store):
     @router.get('')
     def get(request:Request,response:Response):
         user=owner(request,response)
+        store.qq.refresh_profile(user)
         from app.sticker_marketplace import packs, installed_stickers
         with store.tasks.db() as db:count=db.execute('SELECT count(*) FROM character_links WHERE owner=?',(user,)).fetchone()[0]
         profile=store.get(user)

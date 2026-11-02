@@ -59,6 +59,22 @@ class QQClient:
             self.cached = (app_id, secret, data['access_token'], time.monotonic() + max(0, int(data['expires_in']) - 60))
             return data['access_token']
 
+    def me(self):
+        response = requests.get('https://api.sgroup.qq.com/users/@me',
+                                headers={'Authorization':'QQBot '+self.token()},
+                                timeout=10, allow_redirects=False)
+        if response.status_code != 200:
+            raise QQChannelError('QQ 机器人资料暂时无法读取')
+        data = response.json()
+        name = str(data.get('username') or '').strip()[:40]
+        avatar = str(data.get('avatar') or '').strip()
+        parsed = urlparse(avatar)
+        if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or len(avatar)>2048:
+            avatar = ''
+        if not name:
+            raise QQChannelError('QQ 未返回机器人名称')
+        return {'name':name,'avatar':avatar}
+
     def reply(self, kind, target, message_id, content, *, sequence=1):
         if kind not in ('users', 'groups') or not IDENTIFIER.fullmatch(target):
             raise QQChannelError('QQ 消息目标无效')

@@ -151,3 +151,12 @@ API 返回 ready / requiresWebhookSetup 区分可直接生效与尚待首次接�
 
 奶蛙来源 Nailong-Studio/NaiWa-Wallpaper，二次元素材来自 ChineseEmoji 社区仓库。
 逐图来源说明、原始路径和许可注记随素材保存；GIF 保留原动画。关闭按钮使用 Lucide x 图标（ISC），并支持深浅色主题。
+
+## 同步 QQ 机器人名称与头像
+
+确认连接后使用同一个 AppID/AppSecret 换取的 QQBot token 调用 `GET /users/@me`，读取 username/avatar。
+接口文档：https://bot.q.qq.com/wiki/develop/api-v2/autogen/api/users_me.get.html
+资料缓存于 character_qq_profiles，不返回 AppSecret 或访问 token；头像仅接受无用户凭据的 HTTPS URL。
+每次确认连接强制读取最新资料，已有连接在打开角色页时自动同步（最多五分钟缓存）；读取失败保留已有资料。
+QQ 名称用于角色名、预览及后续 QQ 对话身份，名称输入框显示为只读并注明与 QQ 同步。
+头像加载失败时使用原默认示意图；身份、性格、提示词和其他偏好仍可编辑。
