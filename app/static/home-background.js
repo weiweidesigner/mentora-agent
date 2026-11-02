@@ -19,7 +19,12 @@
   let previousInert = false, audioAttempt = 0, returnFocus = null;
   const saveData = () => Boolean(navigator.connection?.saveData);
   // Opt-in, local-only diagnostics. No telemetry or account data is collected.
-  const debugEnabled = new URL(location.href).searchParams.get('openingDebug') === '1';
+  const debugUrl = new URL(location.href);
+  let debugEnabled = debugUrl.searchParams.get('openingDebug') === '1';
+  if (debugEnabled) {
+    debugUrl.searchParams.delete('openingDebug');
+    history.replaceState(history.state, '', debugUrl.href);
+  }
   let debugPanel = null;
   const debugEvents = [];
   function traceOpening(event, error) {
@@ -31,10 +36,18 @@
       time:Number(intro.currentTime.toFixed(2)), ready:intro.readyState,
       error:error ? {name:error.name, message:error.message, code:error.code} : null});
     if (!debugPanel) {
+      const panel = document.createElement('aside');panel.id = 'mentoraOpeningDebugPanel';
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');summary.textContent = '开场声音诊断';summary.style.cursor = 'pointer';
+      const close = document.createElement('button');close.type = 'button';close.setAttribute('aria-label', '关闭声音诊断');
+      close.style.cssText = 'float:right;margin-left:12px;padding:2px;border:0;background:transparent;cursor:pointer';
+      const icon = document.createElement('img');icon.src = '/static/assets/character-x.svg';icon.alt = '';icon.width = 16;icon.height = 16;icon.style.filter = 'invert(1)';
+      close.append(icon);close.addEventListener('click', () => {debugEnabled = false;panel.remove();});
       debugPanel = document.createElement('pre');debugPanel.id = 'mentoraOpeningDebug';
+      debugPanel.style.cssText = 'margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere';
       debugPanel.setAttribute('aria-label', '开场声音诊断');
-      debugPanel.style.cssText = 'position:fixed;z-index:3000;right:12px;bottom:12px;max-width:min(680px,calc(100vw - 24px));max-height:65vh;overflow:auto;margin:0;padding:16px;border:1px solid #52606f;border-radius:8px;background:#101820f5;color:#e3f1ff;font:12px/1.5 monospace;white-space:pre-wrap;overflow-wrap:anywhere';
-      document.body.append(debugPanel);
+      panel.style.cssText = 'position:fixed;z-index:3000;right:12px;bottom:12px;max-width:min(680px,calc(100vw - 24px));max-height:65vh;overflow:auto;margin:0;padding:16px;border:1px solid #52606f;border-radius:8px;background:#101820f5;color:#e3f1ff;font:12px/1.5 monospace;white-space:pre-wrap;overflow-wrap:anywhere';
+      details.append(summary,debugPanel);panel.append(close,details);document.body.append(panel);
     }
     debugPanel.textContent = JSON.stringify({lastRejection:debugEvents.filter(e=>e.error).at(-1)?.error ?? null,browser:navigator.userAgent,
       conditions:{visible:document.visibilityState,focused:document.hasFocus(),topFrame:window.top===window,

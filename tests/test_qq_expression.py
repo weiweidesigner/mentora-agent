@@ -104,3 +104,13 @@ def test_sticker_probability_zero_disables_and_higher_values_allow_more(router):
     active.draw=lambda:80
     assert active.route('贴贴','贴贴',[],sticker_catalog(),sticker_probability=50)['sticker'] is None
     assert active.route('贴贴','贴贴',[],sticker_catalog(),sticker_probability=100)['sticker']=='heart'
+
+
+def test_equally_fitting_installed_stickers_do_not_cancel_each_other(router):
+    active,_=router
+    catalog=[{'id':'selected-one','description':'双手比心，亲切表达喜欢'},
+             {'id':'selected-two','description':'双手比心，表达开心和喜欢'}]
+    plan=active.route('大肥鱼，我喜欢你','爸爸，我也喜欢和你聊天呀',[],catalog,sticker_probability=100)
+    assert plan['sticker'] in {x['id'] for x in catalog}
+    assert plan['stickerConfidence']==.95
+    assert len(plan['stickerFitScores'])==2

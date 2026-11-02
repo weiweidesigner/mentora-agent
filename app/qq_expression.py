@@ -61,8 +61,9 @@ class QQExpressionRouter:
                     ranked = sorted(fits, key=fits.get, reverse=True)
                     best = ranked[0]
                     plan.update(stickerConfidence=fits[best], stickerFitScores=fits)
-                    margin = fits[best] - fits[ranked[1]] if len(ranked) > 1 else 1
-                    if fits[best] >= .75 and margin >= .03:
+                    # Several installed pictures can express the same fitting emotion.
+                    # A close runner-up is not evidence that the best image is unsuitable.
+                    if fits[best] >= .75:
                         plan['sticker'] = best
                 return plan
         except Exception:

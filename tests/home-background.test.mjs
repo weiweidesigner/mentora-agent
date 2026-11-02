@@ -81,3 +81,11 @@ test('opt-in audio diagnostics preserve the original browser error without chang
   const ordinary=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(ordinary.d.querySelector('#mentoraOpeningDebug'),null);ordinary.dom.window.close();
   const h=setup({opening:true,autoplayBlocked:true,tab:'?openingDebug=1'});await tick();const report=JSON.parse(h.d.querySelector('#mentoraOpeningDebug').textContent);const denied=report.events.find(e=>e.event==='audible-rejected');assert.equal(denied.error.name,'NotAllowedError');assert.equal(denied.error.message,'User gesture required');assert.equal(h.intro.muted,true);h.dom.window.close();
 });
+
+test('diagnostics are collapsed, dismissible and removed from the refresh URL',async()=>{
+ const h=setup({opening:true,autoplayBlocked:true,tab:'?tab=character&openingDebug=1#keep'});await tick();
+ const panel=h.d.querySelector('#mentoraOpeningDebugPanel');assert.ok(panel);assert.equal(panel.querySelector('details').open,false);
+ assert.equal(h.w.location.search,'?tab=character');assert.equal(h.w.location.hash,'#keep');
+ panel.querySelector('button[aria-label="关闭声音诊断"]').click();assert.equal(h.d.querySelector('#mentoraOpeningDebugPanel'),null);
+ h.intro.dispatchEvent(new h.w.Event('playing'));assert.equal(h.d.querySelector('#mentoraOpeningDebugPanel'),null);h.dom.window.close();
+});
