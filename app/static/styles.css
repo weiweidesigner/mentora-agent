@@ -5418,6 +5418,7 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 :is(.streamChartSlot,.chatArtifactShell,.reportFrameShell):has(iframe[data-generic-component="line"]){margin-bottom:8px}
 :is(.streamChartSlot,.chatArtifactShell):has(iframe[data-generic-component="line"]) :is(.chatArtifactShell,.reportFrameShell){margin:0}
 
-/* Keep the longer home greeting readable without changing the composer layout. */
-.conversation.is-empty .composerHint{font-size:clamp(20px,2.4vw,26px);line-height:1.4;text-wrap:balance}
-.composerHint .homeWelcomePhrase{display:inline-block;max-width:100%;overflow-wrap:anywhere}
+/* Two-level home greeting, kept above the existing composer. */
+.conversation.is-empty .composerHint{line-height:1.35;text-wrap:balance}
+.composerHint .homeWelcomeTitle{display:block;font-size:clamp(24px,2.4vw,28px);font-weight:680;overflow-wrap:anywhere}
+.composerHint .homeWelcomeSubtitle{display:block;margin-top:12px;color:var(--muted);font-size:clamp(14px,1.4vw,17px);font-weight:400;line-height:1.6;overflow-wrap:anywhere}
