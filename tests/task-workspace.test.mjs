@@ -238,7 +238,7 @@ test('sidebar dates use Beijing time and failed or queued runs never get a compl
 
 test('more menu opens separately from the task and exposes pause, run, edit, share and delete',async()=>{
  const h=setup({url:'https://example.com/veya/?tab=tasks'});await tick();const d=h.w.document;
- d.querySelector('[data-task-more="live"]').click();assert.equal(d.querySelector('#taskMoreMenu').hidden,false);assert.equal(d.querySelector('#taskDetail').hidden,true);assert.equal(new URL(h.w.location).searchParams.get('task'),null);assert.deepEqual([...d.querySelectorAll('#taskMoreMenu [data-task-action]')].map(b=>b.dataset.taskAction),['toggle','run','edit','share','delete']);
+ d.querySelector('[data-task-more="live"]').click();assert.equal(d.querySelector('#taskMoreMenu').hidden,false);assert.equal(d.querySelector('#taskDetail').hidden,true);assert.equal(new URL(h.w.location).searchParams.get('task'),null);assert.deepEqual([...d.querySelectorAll('#taskMoreMenu [data-task-action]')].map(b=>b.dataset.taskAction),['toggle','run','edit','share','qq','delete']);
  d.querySelector('[data-task-action="toggle"]').click();await tick();assert.ok(h.requests.some(r=>r.method==='PUT'));assert.match(d.querySelector('#taskSidebarList small').textContent,/已暂停/);
  d.querySelector('[data-task-more="live"]').click();assert.match(d.querySelector('[data-task-action="toggle"]').textContent,/开启/);d.querySelector('[data-task-action="edit"]').click();assert.equal(d.querySelector('#dayDialog').open,true);assert.equal(d.querySelector('#dayForm').elements.title.value,base.title);d.querySelector('#dayClose').click();
  d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="run"]').click();await tick();assert.equal(h.requests.filter(r=>r.method==='POST'&&r.path.endsWith('/run')).length,1);d.querySelector('[data-task-more="live"]').click();assert.equal(d.querySelector('[data-task-action="run"]').disabled,true);assert.equal(d.querySelector('[data-task-action="delete"]').disabled,true);
@@ -454,4 +454,16 @@ test('public preset offers personal delete and cancel keeps it intact',async()=>
  d.querySelector('#taskDeleteCancel').click();assert.equal(h.requests.some(r=>r.method==='DELETE'),false);
  d.querySelector('[data-task-more="public-preset"]').click();d.querySelector('[data-task-action="delete"]').click();d.querySelector('#taskDeleteConfirm').click();await tick();
  assert.ok(h.requests.some(r=>r.method==='DELETE'&&r.path.endsWith('/public-preset')));assert.equal(d.querySelector('#taskSidebarList [data-task-open="public-preset"]'),null);h.dom.window.close();
+});
+
+test('QQ connection copies a task command and reports missing server configuration',async()=>{
+ const h=setup();await tick();const d=h.w.document;let copied='';
+ Object.defineProperty(h.w.navigator,'clipboard',{value:{writeText:async text=>{copied=text;}}});
+ const original=h.w.fetch;
+ h.w.fetch=async(path,options={})=>path.endsWith('/qq-link')?{ok:true,json:async()=>({command:'查看 https://example.com/mentora/?dayShare=task-token'})}:original(path,options);
+ d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="qq"]').click();await tick();
+ assert.equal(copied,'查看 https://example.com/mentora/?dayShare=task-token');assert.match(d.querySelector('#taskMessage').textContent,/已复制连接指令/);
+ h.w.fetch=async(path,options={})=>path.endsWith('/qq-link')?{ok:false,json:async()=>({detail:'QQ 渠道尚未配置'})}:original(path,options);
+ d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="qq"]').click();await tick();
+ assert.match(d.querySelector('#taskMessage').textContent,/QQ 渠道尚未配置/);h.dom.window.close();
 });

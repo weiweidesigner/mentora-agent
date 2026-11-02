@@ -935,6 +935,7 @@ with sync_playwright() as p:
 
 # Daily research uses exactly the same skill-based execution path as chat.
 from app.day_tasks import DayTasks, create_router as create_day_router, MARKETS
+from app.qq_channel import create_router as create_qq_router
 
 
 def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
@@ -974,6 +975,7 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
 
 DAY_TASKS = DayTasks(Path(os.getenv('VEYA_DAY_DATA_DIR', str(ROOT / 'outputs' / 'day-tasks'))), run_daily_research)
 app.include_router(create_day_router(DAY_TASKS))
+app.include_router(create_qq_router(DAY_TASKS))
 
 
 @app.on_event('startup')

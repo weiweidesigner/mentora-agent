@@ -1064,6 +1064,22 @@ def create_router(service):
             answer = json.loads(row['answer'])
             return {'question': task_result_question(task['owner'],service.unpack(task['config']),config,answer), 'answer': answer, 'cachedDate': row['finished']}
 
+    @router.post('/tasks/{task_id}/qq-link')
+    def qq_link(task_id: str, request: Request, response: Response):
+        from app.qq_channel import QQClient, QQChannelError
+        user = writer(request, response)
+        try:
+            QQClient().credentials()
+        except QQChannelError:
+            raise HTTPException(503, 'QQ 渠道尚未配置，请先配置服务器机器人凭据') from None
+        with service.db() as db:
+            service.owned(db, user, task_id)
+            row = db.execute('SELECT token FROM result_links WHERE task_id=?', (task_id,)).fetchone()
+        if not row:
+            raise HTTPException(404, '任务分享链接不存在')
+        base = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')
+        return {'command': f"查看 {base}/?dayShare={row['token']}"}
+
     @router.get('/shared/{token}')
     def shared(token: str, request: Request, response: Response):
         response.headers['Cache-Control'] = 'no-store'
