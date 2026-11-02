@@ -201,3 +201,33 @@ def test_new_character_packs_are_real_distinct_assets_and_installable(setup,pack
         assert any(item['file'].endswith('.gif') for item in data['items'])
     assert a.post('/api/character/sticker-packs/'+pack_id,headers={'X-Veya-Day':'1'}).status_code==200
     assert len(a.get('/api/character').json()['builtins'])==12+count
+
+
+def test_managed_qq_one_confirmation_saves_profile_and_uses_existing_callback(setup,monkeypatch):
+    import json
+    from app.qq_channel import QQClient,QQChannelError,create_router as qq_router,signing_key
+    store,a,b=setup
+    monkeypatch.setenv('QQ_BOT_APP_ID','123456');monkeypatch.setenv('QQ_BOT_APP_SECRET','saved-secret')
+    def token(client):
+        if client.credentials()[1]!='saved-secret':raise QQChannelError('invalid secret')
+        return 'token'
+    monkeypatch.setattr(QQClient,'token',token)
+    monkeypatch.setattr(QQClient,'reply',lambda *a,**kw:None)
+    a.get('/api/character');headers={'X-Veya-Day':'1'}
+    profile=CharacterProfile(name='一次确认角色',personality='甜妹',responseMode='text',paragraph='minimal',stickerProbability=85)
+    response=a.put('/api/character/qq',json={'appId':'123456','appSecret':'saved-secret','profile':profile.model_dump()},headers=headers)
+    assert response.status_code==200
+    assert response.json()['ready'] is True and response.json()['requiresWebhookSetup'] is False
+    assert response.json()['profile']==profile.model_dump()
+    assert a.get('/api/character').json()['profile']==profile.model_dump()
+    app=FastAPI();app.include_router(qq_router(store.tasks,chat_runner=lambda *a:{'interpretation':'你好'}))
+    with TestClient(app) as client:
+        event={'op':0,'t':'C2C_MESSAGE_CREATE','d':{'id':'existing-route','author':{'user_openid':'alice'},'content':'帮助'}}
+        raw=json.dumps(event).encode();ts=str(int(time.time()))
+        signed={'X-Signature-Timestamp':ts,'X-Signature-Ed25519':signing_key('saved-secret').sign(ts.encode()+raw).hex()}
+        assert client.post('/api/qq/webhook',content=raw,headers=signed).status_code==200
+    scope=json.dumps(['123456','users','alice','alice'])
+    assert store.for_scope(scope)==profile.model_dump()
+    bad=a.put('/api/character/qq',json={'appId':'123456','appSecret':'bad','profile':{**profile.model_dump(),'name':'不应保存'}},headers=headers)
+    assert bad.status_code==422
+    assert a.get('/api/character').json()['profile']['name']=='一次确认角色'

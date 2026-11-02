@@ -36,6 +36,7 @@ class QQConnectionInput(BaseModel):
     model_config = {"str_strip_whitespace": True}
     appId: str = Field(pattern=r'^[0-9]{5,20}$')
     appSecret: str = Field(default='', max_length=256)
+    profile: CharacterProfile | None = None
 
 
 class QQConnectionStore:
@@ -61,8 +62,23 @@ class QQConnectionStore:
         import os
         row = self.row(owner)
         base = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')
+        ready = False
+        if row:
+            app_id, secret = self.credentials(row['id'])
+            ready = app_id == os.getenv('QQ_BOT_APP_ID', '').strip() and secrets.compare_digest(secret, os.getenv('QQ_BOT_APP_SECRET', '').strip())
+            if not ready:
+                with self.tasks.db() as db:
+                    if db.execute("SELECT 1 FROM sqlite_master WHERE name='character_links'").fetchone():
+                        for link in db.execute('SELECT scope FROM character_links WHERE owner=?', (owner,)):
+                            try:
+                                if json.loads(link['scope'])[0] == app_id:
+                                    ready = True
+                                    break
+                            except (ValueError, TypeError, IndexError):
+                                continue
         return {'configured': bool(row), 'appId': row['app_id'] if row else '',
-                'hasSecret': bool(row), 'webhookUrl': base+'/api/qq/webhook/'+row['id'] if row else ''}
+                'hasSecret': bool(row), 'ready': ready, 'requiresWebhookSetup': bool(row) and not ready,
+                'webhookUrl': base+'/api/qq/webhook/'+row['id'] if row else ''}
 
     def save(self, owner, payload):
         from app.qq_channel import QQClient
@@ -85,6 +101,10 @@ class QQConnectionStore:
             encrypted = self.tasks.cipher.encrypt(secret.encode()).decode()
             db.execute('INSERT INTO character_qq_connections VALUES(?,?,?,?,?) ON CONFLICT(owner) DO UPDATE SET app_id=excluded.app_id,secret=excluded.secret,updated=excluded.updated',
                        (connection, owner, payload.appId, encrypted, time.time()))
+            if payload.profile is not None:
+                db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)', (owner,payload.profile.model_dump_json(),time.time()))
+                if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone():
+                    db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)', (owner,))
         return self.public(owner)
 
     def attach(self, scope, app_id, secret):
@@ -228,7 +248,8 @@ def create_router(store):
 
     @router.put('/qq')
     def save_qq(payload:QQConnectionInput,request:Request,response:Response):
-        return store.qq.save(owner(request,response,True),payload)
+        user=owner(request,response,True)
+        return {**store.qq.save(user,payload),'profile':store.get(user)}
     @router.post('/link-code')
     def code(request:Request,response:Response):return store.code(owner(request,response,True))
     @router.post('/stickers')
