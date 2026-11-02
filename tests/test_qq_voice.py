@@ -111,3 +111,28 @@ def test_local_breeze_worker_auth_busy_and_silk_output(monkeypatch):
         assert client.post('/speech',json={'text':'你好'},headers={'Authorization':'Bearer test-token'}).status_code==409
     finally:worker.lock.release()
     assert client.post('/speech',json={'text':'长'*301},headers={'Authorization':'Bearer test-token'}).status_code==422
+
+
+def test_breeze_model_load_and_generation_share_one_gpu_thread(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    import sys,threading
+    import numpy as np
+    from scripts import breeze_tts_service as worker
+    threads=[]
+    class Model:
+        def generate(self,**kwargs):
+            threads.append(threading.get_ident())
+            yield SimpleNamespace(audio=np.zeros(2400),sample_rate=24000)
+    def load(path):
+        threads.append(threading.get_ident())
+        return Model()
+    monkeypatch.setenv('BREEZE_MODEL_PATH','test-model')
+    monkeypatch.setattr(worker,'TOKEN','test-token')
+    monkeypatch.setattr(worker,'model_pool',ThreadPoolExecutor(max_workers=1))
+    monkeypatch.setitem(sys.modules,'mlx_audio',SimpleNamespace(tts=SimpleNamespace(load=load)))
+    monkeypatch.setitem(sys.modules,'mlx_audio.tts',SimpleNamespace(load=load))
+    monkeypatch.setitem(sys.modules,'pilk',SimpleNamespace(encode=lambda source,target,**kwargs:Path(target).write_bytes(b'\x02#!SILK_V3encoded')))
+    with TestClient(worker.app) as client:
+        response=client.post('/speech',json={'text':'你好'},headers={'Authorization':'Bearer test-token'})
+    assert response.status_code==200
+    assert len(threads)==2 and threads[0]==threads[1] and threads[0]!=threading.get_ident()
