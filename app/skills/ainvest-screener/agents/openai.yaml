@@ -1,0 +1,4 @@
+interface:
+  display_name: "美股与美股 ETF 筛选"
+  short_description: "按行业、财务和技术条件筛选美股与美国上市 ETF，支持标签、排序和数据导出"
+  default_prompt: "使用 $ainvest-screener，按我的条件筛选美股或美国上市 ETF，并展示结果。"

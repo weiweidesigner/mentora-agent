@@ -1,0 +1,961 @@
+[
+  {
+    "id": "ranking-top-gainers",
+    "name": "Top Gainers ETF",
+    "description": "Top 20 ETFs. Highest regular-session price changes.",
+    "query": "ETF Ranking: Top Gainers (Top 20)",
+    "view": "overview",
+    "column": "overview.2",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "intraday"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-top-losers",
+    "name": "Top Losers ETF",
+    "description": "Top 20 ETFs. Lowest regular-session price changes.",
+    "query": "ETF Ranking: Top Losers (Top 20)",
+    "view": "overview",
+    "column": "overview.2",
+    "order": "asc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "intraday"
+        }
+      },
+      "order": "asc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-largest-aum",
+    "name": "Largest AUM ETF",
+    "description": "Top 20 ETFs. Largest assets under management.",
+    "query": "ETF Ranking: Largest AUM (Top 20)",
+    "view": "overview",
+    "column": "overview.0",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "国际北美etf@Assets Under Management(Latest)",
+        "attr": {}
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-most-traded",
+    "name": "Most Traded ETF",
+    "description": "Top 20 ETFs. Highest regular-session trading volume.",
+    "query": "ETF Ranking: Most Traded (Top 20)",
+    "view": "overview",
+    "column": "overview.5",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "13",
+        "attr": {
+          "trade_class": "intraday"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-best-1w",
+    "name": "Best Performing (1W) ETF",
+    "description": "Top 20 ETFs. Highest one-week market-price returns.",
+    "query": "ETF Ranking: Best Performing (1W) (Top 20)",
+    "view": "performance",
+    "column": "performance.2",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "inr-open_price_change_ratio_pct-sum",
+        "attr": {
+          "trade_class": "intraday",
+          "time_period": "week_1",
+          "period_type": "rolling2"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-ytd",
+    "name": "YTD ETF",
+    "description": "Top 20 ETFs. Highest year-to-date market-price returns.",
+    "query": "ETF Ranking: YTD (Top 20)",
+    "view": "performance",
+    "column": "performance.6",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "inr-open_price_change_ratio_pct-sum",
+        "attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-pre-market-gainers",
+    "name": "Pre-Market Gainers ETF",
+    "description": "Top 20 ETFs. Highest pre-market price changes.",
+    "query": "ETF Ranking: Pre-Market Gainers (Top 20)",
+    "view": "extendedHours",
+    "column": "extendedHours.1",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "pre_market"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-pre-market-losers",
+    "name": "Pre-Market Losers ETF",
+    "description": "Top 20 ETFs. Lowest pre-market price changes.",
+    "query": "ETF Ranking: Pre-Market Losers (Top 20)",
+    "view": "extendedHours",
+    "column": "extendedHours.1",
+    "order": "asc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "pre_market"
+        }
+      },
+      "order": "asc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-post-market-gainers",
+    "name": "Post-Market Gainers ETF",
+    "description": "Top 20 ETFs. Highest post-market price changes.",
+    "query": "ETF Ranking: Post-Market Gainers (Top 20)",
+    "view": "extendedHours",
+    "column": "extendedHours.15",
+    "order": "desc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "post_market"
+        }
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-post-market-losers",
+    "name": "Post-Market Losers ETF",
+    "description": "Top 20 ETFs. Lowest post-market price changes.",
+    "query": "ETF Ranking: Post-Market Losers (Top 20)",
+    "view": "extendedHours",
+    "column": "extendedHours.15",
+    "order": "asc",
+    "prompt": null,
+    "ranking": {
+      "indicator": {
+        "id": "199112",
+        "attr": {
+          "trade_class": "post_market"
+        }
+      },
+      "order": "asc",
+      "limit": 20,
+      "prompt_id": null
+    }
+  },
+  {
+    "id": "ranking-52w-high",
+    "name": "52W High ETF",
+    "description": "Top 20 ETFs. ETFs reaching their 52w high, ranked by AUM.",
+    "query": "ETF Ranking: 52W High (Top 20)",
+    "view": "overview",
+    "column": "overview.0",
+    "order": "desc",
+    "prompt": "6773b01f675f40603f7a0aa0",
+    "ranking": {
+      "indicator": {
+        "id": "国际北美etf@Assets Under Management(Latest)",
+        "attr": {}
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": "6773b01f675f40603f7a0aa0"
+    }
+  },
+  {
+    "id": "ranking-52w-low",
+    "name": "52W Low ETF",
+    "description": "Top 20 ETFs. ETFs reaching their 52w low, ranked by AUM.",
+    "query": "ETF Ranking: 52W Low (Top 20)",
+    "view": "overview",
+    "column": "overview.0",
+    "order": "desc",
+    "prompt": "6773b0d2675f40603f7a0aa1",
+    "ranking": {
+      "indicator": {
+        "id": "国际北美etf@Assets Under Management(Latest)",
+        "attr": {}
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": "6773b0d2675f40603f7a0aa1"
+    }
+  },
+  {
+    "id": "ranking-all-time-high",
+    "name": "All-Time High ETF",
+    "description": "Top 20 ETFs. ETFs reaching their all-time high, ranked by AUM.",
+    "query": "ETF Ranking: All-Time High (Top 20)",
+    "view": "overview",
+    "column": "overview.0",
+    "order": "desc",
+    "prompt": "690c98ad8738843bb3ba86b3",
+    "ranking": {
+      "indicator": {
+        "id": "国际北美etf@Assets Under Management(Latest)",
+        "attr": {}
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": "690c98ad8738843bb3ba86b3"
+    }
+  },
+  {
+    "id": "ranking-all-time-low",
+    "name": "All-Time Low ETF",
+    "description": "Top 20 ETFs. ETFs reaching their all-time low, ranked by AUM.",
+    "query": "ETF Ranking: All-Time Low (Top 20)",
+    "view": "overview",
+    "column": "overview.0",
+    "order": "desc",
+    "prompt": "690c991f069a48065f1593d3",
+    "ranking": {
+      "indicator": {
+        "id": "国际北美etf@Assets Under Management(Latest)",
+        "attr": {}
+      },
+      "order": "desc",
+      "limit": 20,
+      "prompt_id": "690c991f069a48065f1593d3"
+    }
+  },
+  {
+    "id": "spotlight-sector-technology",
+    "name": "Technology ETF",
+    "description": "Up to 50 Technology ETFs, ranked by AUM.",
+    "query": "ETF Sector: Technology; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-healthcare",
+    "name": "Healthcare ETF",
+    "description": "Up to 50 Healthcare ETFs, ranked by AUM.",
+    "query": "ETF Sector: Healthcare; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-utilities",
+    "name": "Utilities ETF",
+    "description": "Up to 50 Utilities ETFs, ranked by AUM.",
+    "query": "ETF Sector: Utilities; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-energy",
+    "name": "Energy ETF",
+    "description": "Up to 50 Energy ETFs, ranked by AUM.",
+    "query": "ETF Sector: Energy; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-real-estate",
+    "name": "Real Estate ETF",
+    "description": "Up to 50 Real Estate ETFs, ranked by AUM.",
+    "query": "ETF Sector: Real Estate; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-industrials",
+    "name": "Industrials ETF",
+    "description": "Up to 50 Industrials ETFs, ranked by AUM.",
+    "query": "ETF Sector: Industrials; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-materials",
+    "name": "Materials ETF",
+    "description": "Up to 50 Materials ETFs, ranked by AUM.",
+    "query": "ETF Sector: Materials; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-consumer-discretionary",
+    "name": "Consumer Discretionary ETF",
+    "description": "Up to 50 Consumer Discretionary ETFs, ranked by AUM.",
+    "query": "ETF Sector: Consumer Discretionary; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-telecom",
+    "name": "Telecom ETF",
+    "description": "Up to 50 Telecom ETFs, ranked by AUM.",
+    "query": "ETF Sector: Telecom; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-sector-consumer-staples",
+    "name": "Consumer Staples ETF",
+    "description": "Up to 50 Consumer Staples ETFs, ranked by AUM.",
+    "query": "ETF Sector: Consumer Staples; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-semiconductor",
+    "name": "Semiconductor ETF",
+    "description": "Up to 50 Semiconductor ETFs, ranked by AUM.",
+    "query": "ETF Theme: Semiconductor ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-gold",
+    "name": "Gold ETF",
+    "description": "Up to 50 Gold ETFs, ranked by AUM.",
+    "query": "ETF Theme: Gold ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-biotech",
+    "name": "Biotech ETF",
+    "description": "Up to 50 Biotech ETFs, ranked by AUM.",
+    "query": "ETF Theme: Biotechnology ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-government-bond",
+    "name": "Government Bond ETF",
+    "description": "Up to 50 Government Bond ETFs, ranked by AUM.",
+    "query": "ETF Theme: Government Bonds ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-reits",
+    "name": "REITs ETF",
+    "description": "Up to 50 REITs ETFs, ranked by AUM.",
+    "query": "ETF Theme: Reits ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-internet",
+    "name": "Internet ETF",
+    "description": "Up to 50 Internet ETFs, ranked by AUM.",
+    "query": "ETF Theme: Internet ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-ai",
+    "name": "AI ETF",
+    "description": "Up to 50 AI ETFs, ranked by AUM.",
+    "query": "ETF Theme: AI ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-crude-oil",
+    "name": "Crude Oil ETF",
+    "description": "Up to 50 Crude Oil ETFs, ranked by AUM.",
+    "query": "ETF Theme: Crude Oil ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-robotics",
+    "name": "Robotics ETF",
+    "description": "Up to 50 Robotics ETFs, ranked by AUM.",
+    "query": "ETF Theme: Robotics ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-rare-metal",
+    "name": "Rare Metal ETF",
+    "description": "Up to 50 Rare Metal ETFs, ranked by AUM.",
+    "query": "ETF Theme: Rare Metal ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "spotlight-theme-treasury",
+    "name": "Treasury ETF",
+    "description": "Up to 50 Treasury ETFs, ranked by AUM.",
+    "query": "ETF Theme: Treasury ETFs; ETF Ranking: AUM (Top 50)"
+  },
+  {
+    "id": "low-cost-core",
+    "name": "Low Cost Core ETF",
+    "description": "Passive equity ETFs with annual expenses of 0.10% or less.",
+    "query": "ETF Asset Class: Equity; ETF Management Style: Passive; ETF Expense Ratio: 0% to 0.1%"
+  },
+  {
+    "id": "monthly-income",
+    "name": "Monthly Income ETFs",
+    "description": "ETFs paying monthly dividends with an indicated yield between 4% and 10%.",
+    "query": "ETF Dividend Frequency: Monthly; ETF Dividend Yield % (Indicated): 4% to 10%"
+  },
+  {
+    "id": "quarterly-dividends",
+    "name": "Quarterly Dividend ETFs",
+    "description": "Equity ETFs paying quarterly dividends with indicated yields between 2% and 6%.",
+    "query": "ETF Asset Class: Equity; ETF Dividend Frequency: Quarterly; ETF Dividend Yield % (Indicated): 2% to 6%"
+  },
+  {
+    "id": "liquid-momentum",
+    "name": "Liquid Momentum ETFs",
+    "description": "ETFs gaining 5% to 30% over one month, trading at least one million shares daily.",
+    "query": "ETF Performance % (1m): 5% to 30%; ETF Daily Volume: 1M to 999999999999"
+  },
+  {
+    "id": "unusual-volume",
+    "name": "Unusual Volume ETFs",
+    "description": "ETFs with relative volume of 2 to 999 times average and a positive daily return up to 20%.",
+    "query": "ETF RVOL: 2 to 999; ETF Performance % (1d): 0% to 20%"
+  },
+  {
+    "id": "inflation-bonds",
+    "name": "Inflation Linked Bonds ETF",
+    "description": "Bond ETFs focused on inflation-protected securities, with expenses of 0.5% or less.",
+    "query": "ETF Asset Class: Bond; ETF Theme: TIPS ETFs; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "us-passive",
+    "name": "United States Equity ETF",
+    "description": "Equity ETFs with United States geographic exposure.",
+    "query": "ETF Region: U.S.; ETF Asset Class: Equity"
+  },
+  {
+    "id": "japan-equity",
+    "name": "Japan Equity ETF",
+    "description": "Equity ETFs with Japan geographic exposure.",
+    "query": "ETF Region: Japan; ETF Asset Class: Equity"
+  },
+  {
+    "id": "diversified-equity",
+    "name": "Diversified Equity ETFs",
+    "description": "Equity ETFs with no more than 20% in their top ten holdings and expenses up to 0.5%.",
+    "query": "ETF Asset Class: Equity; ETF Top 10 Holdings Weight: 0% to 20%; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "low-beta",
+    "name": "Lower Beta Equity ETF",
+    "description": "Equity ETFs with beta from 0 to 0.8 and daily volatility no greater than 20%.",
+    "query": "ETF Asset Class: Equity; ETF Beta: 0 to 0.8; ETF Volatility: 0% to 20%"
+  },
+  {
+    "id": "schwab-passive",
+    "name": "Schwab Passive ETFs",
+    "description": "Passive ETFs issued by Charles Schwab Investment Management, Inc. with expenses up to 0.2%.",
+    "query": "ETF Issuer: Charles Schwab Investment Management, Inc.; ETF Management Style: Passive; ETF Expense Ratio: 0% to 0.2%"
+  },
+  {
+    "id": "macd-volume",
+    "name": "MACD Volume Signal ETF",
+    "description": "ETFs showing a MACD golden cross and trading at least 500,000 shares daily.",
+    "query": "ETF MACD Signal: Golden Cross; ETF Daily Volume: 500K to 999999999999"
+  },
+  {
+    "id": "water-equity",
+    "name": "Water Equity ETFs",
+    "description": "Water-themed equity ETFs with annual expenses of 0.75% or less.",
+    "query": "ETF Theme: Water ETFs; ETF Asset Class: Equity; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "small-cap-core",
+    "name": "Small Cap Core ETF",
+    "description": "Passive small-cap equity ETFs with annual expenses of 0.3% or less.",
+    "query": "ETF Asset Class: Equity; ETF Asset Size: Small-Cap; ETF Management Style: Passive; ETF Expense Ratio: 0% to 0.3%"
+  },
+  {
+    "id": "short-bond-income",
+    "name": "Short Bond Income ETF",
+    "description": "Short-term government bond ETFs paying monthly dividends, with expenses up to 0.3%.",
+    "query": "ETF Theme: Short-Term Government Bond ETFs; ETF Dividend Frequency: Monthly; ETF Expense Ratio: 0% to 0.3%"
+  },
+  {
+    "id": "long-bond-momentum",
+    "name": "Long Bond Momentum ETF",
+    "description": "Unleveraged long-term government bond ETFs gaining 1% to 20% over three months.",
+    "query": "ETF Theme: Long-Term Government Bond ETFs; ETF Leverage Ratio: 1x; ETF Performance % (3m): 1% to 20%"
+  },
+  {
+    "id": "autonomous-vehicle",
+    "name": "Autonomous Vehicle ETFs",
+    "description": "Unleveraged autonomous-vehicle ETFs with annual expenses up to 0.8%.",
+    "query": "ETF Theme: Autonomous Vehicle ETFs; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.8%"
+  },
+  {
+    "id": "financials-volume",
+    "name": "Financials Volume ETFs",
+    "description": "Unleveraged financials ETFs with relative volume from 1.5 to 10 times average.",
+    "query": "ETF Sector: Financials; ETF Leverage Ratio: 1x; ETF RVOL: 1.5 to 10"
+  },
+  {
+    "id": "uk-passive",
+    "name": "United Kingdom Equity ETF",
+    "description": "Equity ETFs with United Kingdom geographic exposure.",
+    "query": "ETF Region: United Kingdom; ETF Asset Class: Equity"
+  },
+  {
+    "id": "active-diversified",
+    "name": "Active Diversified Equity ETF",
+    "description": "Active equity ETFs with top-ten holdings at 40% or less and expenses up to 1%.",
+    "query": "ETF Management Style: Active; ETF Asset Class: Equity; ETF Top 10 Holdings Weight: 0% to 40%; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "regional-china",
+    "name": "China Equity ETF",
+    "description": "Equity ETFs with China geographic exposure.",
+    "query": "ETF Region: China; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-brazil",
+    "name": "Brazil Equity ETF",
+    "description": "Equity ETFs with Brazil geographic exposure.",
+    "query": "ETF Region: Brazil; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-germany",
+    "name": "Germany Equity ETF",
+    "description": "Equity ETFs with Germany geographic exposure.",
+    "query": "ETF Region: Germany; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-australia",
+    "name": "Australia Equity ETF",
+    "description": "Equity ETFs with Australia geographic exposure.",
+    "query": "ETF Region: Australia; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-mexico",
+    "name": "Mexico Equity ETF",
+    "description": "Equity ETFs with Mexico geographic exposure.",
+    "query": "ETF Region: Mexico; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-south-korea",
+    "name": "South Korea Equity ETF",
+    "description": "Equity ETFs with South Korea geographic exposure.",
+    "query": "ETF Region: South Korea; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-switzerland",
+    "name": "Switzerland Equity ETF",
+    "description": "Equity ETFs with Switzerland geographic exposure.",
+    "query": "ETF Region: Switzerland; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-indonesia",
+    "name": "Indonesia Equity ETF",
+    "description": "Equity ETFs with Indonesia geographic exposure.",
+    "query": "ETF Region: Indonesia; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-vietnam",
+    "name": "Vietnam Equity ETF",
+    "description": "Equity ETFs with Vietnam geographic exposure.",
+    "query": "ETF Region: Vietnam; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-thailand",
+    "name": "Thailand Equity ETF",
+    "description": "Equity ETFs with Thailand geographic exposure.",
+    "query": "ETF Region: Thailand; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-denmark",
+    "name": "Denmark Equity ETF",
+    "description": "Equity ETFs with Denmark geographic exposure.",
+    "query": "ETF Region: Denmark; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-netherlands",
+    "name": "Netherlands Equity ETF",
+    "description": "Equity ETFs with Netherlands geographic exposure.",
+    "query": "ETF Region: Netherlands; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-italy",
+    "name": "Italy Equity ETF",
+    "description": "Equity ETFs with Italy geographic exposure.",
+    "query": "ETF Region: Italy; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-new-zealand",
+    "name": "New Zealand Equity ETF",
+    "description": "Equity ETFs with New Zealand geographic exposure.",
+    "query": "ETF Region: New Zealand; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-malaysia",
+    "name": "Malaysia Equity ETF",
+    "description": "Equity ETFs with Malaysia geographic exposure.",
+    "query": "ETF Region: Malaysia; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-philippines",
+    "name": "Philippines Equity ETF",
+    "description": "Equity ETFs with Philippines geographic exposure.",
+    "query": "ETF Region: Philippines; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-chile",
+    "name": "Chile Equity ETF",
+    "description": "Equity ETFs with Chile geographic exposure.",
+    "query": "ETF Region: Chile; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-peru",
+    "name": "Peru Equity ETF",
+    "description": "Equity ETFs with Peru geographic exposure.",
+    "query": "ETF Region: Peru; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-saudi-arabia",
+    "name": "Saudi Arabia Equity ETF",
+    "description": "Equity ETFs with Saudi Arabia geographic exposure.",
+    "query": "ETF Region: Saudi Arabia; ETF Asset Class: Equity"
+  },
+  {
+    "id": "regional-united-arab-emirates",
+    "name": "United Arab Emirates Equity ETF",
+    "description": "Equity ETFs with United Arab Emirates geographic exposure.",
+    "query": "ETF Region: United Arab Emirates; ETF Asset Class: Equity"
+  },
+  {
+    "id": "financials-steady-income",
+    "name": "Financials Income ETFs",
+    "description": "Unleveraged financials ETFs with indicated yields of 1% to 6% and expenses up to 0.75%.",
+    "query": "ETF Sector: Financials; ETF Leverage Ratio: 1x; ETF Dividend Yield % (Indicated): 1% to 6%; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "financials-quarter-momentum",
+    "name": "Financials Quarterly Momentum ETF",
+    "description": "Financials ETFs gaining 3% to 35% over three months, trading at least 50,000 shares daily.",
+    "query": "ETF Sector: Financials; ETF Performance % (3m): 3% to 35%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "theme-steady-income",
+    "name": "Theme Income ETFs",
+    "description": "Unleveraged theme ETFs with indicated yields of 1% to 6% and expenses up to 0.75%.",
+    "query": "ETF Sector: Theme; ETF Leverage Ratio: 1x; ETF Dividend Yield % (Indicated): 1% to 6%; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "theme-quarter-momentum",
+    "name": "Theme Quarterly Momentum ETF",
+    "description": "Theme ETFs gaining 3% to 35% over three months, trading at least 50,000 shares daily.",
+    "query": "ETF Sector: Theme; ETF Performance % (3m): 3% to 35%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "theme-liquid-active-equity",
+    "name": "Active Equity Liquid ETFs",
+    "description": "Unleveraged active equity ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Active Equity ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-passive-equity",
+    "name": "Passive Equity Liquid ETFs",
+    "description": "Unleveraged passive equity ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Passive Equity ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-small-cap",
+    "name": "Small Cap Liquid ETFs",
+    "description": "Unleveraged small cap ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Small Cap ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-bitcoin",
+    "name": "Bitcoin Liquid ETFs",
+    "description": "Unleveraged bitcoin ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Bitcoin ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-crypto",
+    "name": "Crypto Liquid ETFs",
+    "description": "Unleveraged crypto ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Crypto ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-water",
+    "name": "Water Liquid ETFs",
+    "description": "Unleveraged water ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Water ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-inflation-bonds",
+    "name": "Inflation Bonds Liquid ETFs",
+    "description": "Unleveraged inflation bonds ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: TIPS ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-asia-pacific",
+    "name": "Asia Pacific Liquid ETFs",
+    "description": "Unleveraged asia pacific ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Emerging Asia Pacific ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-autonomous-vehicles",
+    "name": "Autonomous Vehicles Liquid ETFs",
+    "description": "Unleveraged autonomous vehicles ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Autonomous Vehicle ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-nvidia-related",
+    "name": "NVIDIA Related Liquid ETFs",
+    "description": "Unleveraged nvidia related ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Nvidia Related ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "theme-liquid-magnificent-seven",
+    "name": "Magnificent Seven Liquid ETFs",
+    "description": "Unleveraged magnificent seven ETFs trading at least 100,000 shares daily, with annual expenses up to 1%.",
+    "query": "ETF Theme: Magnificent 7 ETFs; ETF Leverage Ratio: 1x; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 1%"
+  },
+  {
+    "id": "issuer-proshares",
+    "name": "ProShares Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by ProShare Advisors, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: ProShare Advisors; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-wisdomtree",
+    "name": "WisdomTree Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by WisdomTree Asset Management, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: WisdomTree Asset Management; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-global-x",
+    "name": "Global X Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Global X Management Company LLC, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Global X Management Company LLC; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-first-trust",
+    "name": "First Trust Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by First Trust Advisors L.P., with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: First Trust Advisors L.P.; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-schwab",
+    "name": "Schwab Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Charles Schwab Investment Management, Inc., with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Charles Schwab Investment Management, Inc.; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-victory-capital",
+    "name": "Victory Capital Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Victory Capital, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Victory Capital; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-nuveen",
+    "name": "Nuveen Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Nuveen Fund Advisors, LLC, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Nuveen Fund Advisors, LLC; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-clearshares",
+    "name": "ClearShares Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by ClearShares LLC, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: ClearShares LLC; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-hartford",
+    "name": "Hartford Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Hartford Funds Management Company, LLC, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Hartford Funds Management Company, LLC; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-franklin-templeton",
+    "name": "Franklin Templeton Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Franklin Templeton Investment Management Limited, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Franklin Templeton Investment Management Limited; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-capital-group",
+    "name": "Capital Group Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by Capital Research and Management Company, with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: Capital Research and Management Company; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "issuer-alliancebernstein",
+    "name": "AllianceBernstein Unleveraged ETFs",
+    "description": "Unleveraged ETFs issued by AllianceBernstein L.P., with annual expenses up to 0.75%.",
+    "query": "ETF Issuer: AllianceBernstein L.P.; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "signal-gap-volume",
+    "name": "Gap Volume ETFs",
+    "description": "ETFs showing a daily gap up and relative volume of 1.5 to 10, unleveraged.",
+    "query": "ETF Gap Signal: Gap Up; ETF RVOL: 1.5 to 10; ETF Leverage Ratio: 1x"
+  },
+  {
+    "id": "signal-gap-volume-low-cost",
+    "name": "Gap Volume Low Cost ETF",
+    "description": "ETFs showing a daily gap up and relative volume of 1.5 to 10, with expenses up to 0.5%.",
+    "query": "ETF Gap Signal: Gap Up; ETF RVOL: 1.5 to 10; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "signal-gap-volume-us",
+    "name": "Gap Volume US ETFs",
+    "description": "ETFs showing a daily gap up and relative volume of 1.5 to 10, with U.S. exposure.",
+    "query": "ETF Gap Signal: Gap Up; ETF RVOL: 1.5 to 10; ETF Region: U.S."
+  },
+  {
+    "id": "signal-dmi-liquid",
+    "name": "DMI Liquid ETFs",
+    "description": "ETFs showing a DMI buy signal and at least 100,000 shares in daily volume, unleveraged.",
+    "query": "ETF DMI Signal: Buy Signal; ETF Daily Volume: 100K to 999999999999; ETF Leverage Ratio: 1x"
+  },
+  {
+    "id": "signal-dmi-liquid-low-cost",
+    "name": "DMI Liquid Low Cost ETF",
+    "description": "ETFs showing a DMI buy signal and at least 100,000 shares in daily volume, with expenses up to 0.5%.",
+    "query": "ETF DMI Signal: Buy Signal; ETF Daily Volume: 100K to 999999999999; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "signal-dmi-liquid-us",
+    "name": "DMI Liquid US ETFs",
+    "description": "ETFs showing a DMI buy signal and at least 100,000 shares in daily volume, with U.S. exposure.",
+    "query": "ETF DMI Signal: Buy Signal; ETF Daily Volume: 100K to 999999999999; ETF Region: U.S."
+  },
+  {
+    "id": "signal-macd-equity",
+    "name": "MACD Equity ETFs",
+    "description": "ETFs showing a MACD golden cross and equity exposure, unleveraged.",
+    "query": "ETF MACD Signal: Golden Cross; ETF Asset Class: Equity; ETF Leverage Ratio: 1x"
+  },
+  {
+    "id": "signal-macd-equity-low-cost",
+    "name": "MACD Equity Low Cost ETF",
+    "description": "ETFs showing a MACD golden cross and equity exposure, with expenses up to 0.5%.",
+    "query": "ETF MACD Signal: Golden Cross; ETF Asset Class: Equity; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "signal-macd-equity-us",
+    "name": "MACD Equity US ETFs",
+    "description": "ETFs showing a MACD golden cross and equity exposure, with U.S. exposure.",
+    "query": "ETF MACD Signal: Golden Cross; ETF Asset Class: Equity; ETF Region: U.S."
+  },
+  {
+    "id": "signal-cci-volume",
+    "name": "CCI Volume ETFs",
+    "description": "ETFs showing a CCI buy signal and relative volume of 1 to 5, unleveraged.",
+    "query": "ETF CCI Signal: Buy Signal; ETF RVOL: 1 to 5; ETF Leverage Ratio: 1x"
+  },
+  {
+    "id": "signal-cci-volume-low-cost",
+    "name": "CCI Volume Low Cost ETF",
+    "description": "ETFs showing a CCI buy signal and relative volume of 1 to 5, with expenses up to 0.5%.",
+    "query": "ETF CCI Signal: Buy Signal; ETF RVOL: 1 to 5; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "signal-cci-volume-us",
+    "name": "CCI Volume US ETFs",
+    "description": "ETFs showing a CCI buy signal and relative volume of 1 to 5, with U.S. exposure.",
+    "query": "ETF CCI Signal: Buy Signal; ETF RVOL: 1 to 5; ETF Region: U.S."
+  },
+  {
+    "id": "allocation-preferred-income",
+    "name": "Preferred Income ETFs",
+    "description": "Preferred-stock ETFs yielding 4% to 9%, with expenses up to 0.75%.",
+    "query": "ETF Asset Class: Preferred Stock; ETF Dividend Yield % (Indicated): 4% to 9%; ETF Expense Ratio: 0% to 0.75%"
+  },
+  {
+    "id": "allocation-bond-low-beta",
+    "name": "Bond Lower Beta ETF",
+    "description": "Bond ETFs with beta from -0.2 to 0.5 and expenses up to 0.5%.",
+    "query": "ETF Asset Class: Bond; ETF Beta: -0.2 to 0.5; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-multi-asset-cost",
+    "name": "Low Cost Multi-Asset ETF",
+    "description": "Unleveraged multi-asset ETFs with expenses up to 0.5%.",
+    "query": "ETF Asset Class: Multi-Asset; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-multi-asset-momentum",
+    "name": "Multi-Asset Momentum ETFs",
+    "description": "Multi-Asset ETFs gaining 1% to 15% over one month, trading at least 50,000 shares daily.",
+    "query": "ETF Asset Class: Multi-Asset; ETF Performance % (1m): 1% to 15%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "allocation-commodity-cost",
+    "name": "Low Cost Commodity ETF",
+    "description": "Unleveraged commodity ETFs with expenses up to 0.5%.",
+    "query": "ETF Asset Class: Commodity; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-commodity-momentum",
+    "name": "Commodity Momentum ETFs",
+    "description": "Commodity ETFs gaining 1% to 15% over one month, trading at least 50,000 shares daily.",
+    "query": "ETF Asset Class: Commodity; ETF Performance % (1m): 1% to 15%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "allocation-currency-cost",
+    "name": "Low Cost Currency ETF",
+    "description": "Unleveraged currency ETFs with expenses up to 0.5%.",
+    "query": "ETF Asset Class: Currency; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-currency-momentum",
+    "name": "Currency Momentum ETFs",
+    "description": "Currency ETFs gaining 1% to 15% over one month, trading at least 50,000 shares daily.",
+    "query": "ETF Asset Class: Currency; ETF Performance % (1m): 1% to 15%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "allocation-alternatives-cost",
+    "name": "Low Cost Alternatives ETF",
+    "description": "Unleveraged alternatives ETFs with expenses up to 0.5%.",
+    "query": "ETF Asset Class: Alternatives; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-alternatives-momentum",
+    "name": "Alternatives Momentum ETFs",
+    "description": "Alternatives ETFs gaining 1% to 15% over one month, trading at least 50,000 shares daily.",
+    "query": "ETF Asset Class: Alternatives; ETF Performance % (1m): 1% to 15%; ETF Daily Volume: 50K to 999999999999"
+  },
+  {
+    "id": "allocation-real-estate-cost",
+    "name": "Low Cost Real Estate ETF",
+    "description": "Unleveraged real estate ETFs with expenses up to 0.5%.",
+    "query": "ETF Asset Class: Real Estate; ETF Leverage Ratio: 1x; ETF Expense Ratio: 0% to 0.5%"
+  },
+  {
+    "id": "allocation-real-estate-momentum",
+    "name": "Real Estate Momentum ETFs",
+    "description": "Real Estate ETFs gaining 1% to 15% over one month, trading at least 50,000 shares daily.",
+    "query": "ETF Asset Class: Real Estate; ETF Performance % (1m): 1% to 15%; ETF Daily Volume: 50K to 999999999999"
+  }
+]

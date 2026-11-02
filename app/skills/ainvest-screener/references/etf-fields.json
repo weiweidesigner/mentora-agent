@@ -1,0 +1,3210 @@
+[
+  {
+    "key": "assetClass",
+    "prompt_id": "6a68616f5656a1493f5b2de2",
+    "label": "Asset Class",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Preferred Stock",
+        "value": "Preferred Stock"
+      },
+      {
+        "label": "Bond",
+        "value": "Bond"
+      },
+      {
+        "label": "Real Estate",
+        "value": "Real Estate"
+      },
+      {
+        "label": "Commodity",
+        "value": "Commodity"
+      },
+      {
+        "label": "Multi-Asset",
+        "value": "Multi-Asset"
+      },
+      {
+        "label": "Volatility",
+        "value": "Volatility"
+      },
+      {
+        "label": "Alternatives",
+        "value": "Alternatives"
+      },
+      {
+        "label": "Currency",
+        "value": "Currency"
+      },
+      {
+        "label": "Equity",
+        "value": "Equity"
+      }
+    ],
+    "description": "ETF asset class"
+  },
+  {
+    "key": "assetSize",
+    "prompt_id": "6a686fc31bf1ae4851280445",
+    "label": "Asset Size",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Mega-Cap",
+        "value": "Mega-Cap"
+      },
+      {
+        "label": "Large-Cap",
+        "value": "Large-Cap"
+      },
+      {
+        "label": "Mid-Cap",
+        "value": "Mid-Cap"
+      },
+      {
+        "label": "Small-Cap",
+        "value": "Small-Cap"
+      },
+      {
+        "label": "Micro-Cap",
+        "value": "Micro-Cap"
+      },
+      {
+        "label": "Multi-Cap",
+        "value": "Multi-Cap"
+      }
+    ],
+    "description": "Fund size by market capitalization"
+  },
+  {
+    "key": "sector",
+    "prompt_id": "6a6870aa1bf1ae4851280446",
+    "label": "Sector",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Technology",
+        "value": "Technology"
+      },
+      {
+        "label": "Healthcare",
+        "value": "Healthcare"
+      },
+      {
+        "label": "Financials",
+        "value": "Financials"
+      },
+      {
+        "label": "Theme",
+        "value": "Theme"
+      },
+      {
+        "label": "Utilities",
+        "value": "Utilities"
+      },
+      {
+        "label": "Telecom",
+        "value": "Telecom"
+      },
+      {
+        "label": "Consumer Staples",
+        "value": "Consumer Staples"
+      },
+      {
+        "label": "Energy",
+        "value": "Energy"
+      },
+      {
+        "label": "Consumer Discretionary",
+        "value": "Consumer Discretionary"
+      },
+      {
+        "label": "Real Estate",
+        "value": "Real Estate"
+      },
+      {
+        "label": "Industrials",
+        "value": "Industrials"
+      },
+      {
+        "label": "Materials",
+        "value": "Materials"
+      }
+    ],
+    "description": "Primary sector exposure"
+  },
+  {
+    "key": "theme",
+    "prompt_id": "6a689d3a5656a1493f5b2de5",
+    "label": "Theme",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Active Equity ETFs",
+        "value": "Active Equity ETFs"
+      },
+      {
+        "label": "Semiconductor ETFs",
+        "value": "Semiconductor ETFs"
+      },
+      {
+        "label": "Single Stock ETFs",
+        "value": "Single Stock ETFs"
+      },
+      {
+        "label": "Passive Equity ETFs",
+        "value": "Passive Equity ETFs"
+      },
+      {
+        "label": "Small Cap ETFs",
+        "value": "Small Cap ETFs"
+      },
+      {
+        "label": "Gold ETFs",
+        "value": "Gold ETFs"
+      },
+      {
+        "label": "Bitcoin ETFs",
+        "value": "Bitcoin ETFs"
+      },
+      {
+        "label": "Fed Rate Cut Beneficiaries ETFs",
+        "value": "Fed Rate Cut Beneficiaries ETFs"
+      },
+      {
+        "label": "Crypto ETFs",
+        "value": "Crypto ETFs"
+      },
+      {
+        "label": "Water ETFs",
+        "value": "Water ETFs"
+      },
+      {
+        "label": "SOL ETFs",
+        "value": "SOL ETFs"
+      },
+      {
+        "label": "Biotechnology ETFs",
+        "value": "Biotechnology ETFs"
+      },
+      {
+        "label": "TIPS ETFs",
+        "value": "TIPS ETFs"
+      },
+      {
+        "label": "Government Bonds ETFs",
+        "value": "Government Bonds ETFs"
+      },
+      {
+        "label": "Long-Term Government Bond ETFs",
+        "value": "Long-Term Government Bond ETFs"
+      },
+      {
+        "label": "Emerging Asia Pacific ETFs",
+        "value": "Emerging Asia Pacific ETFs"
+      },
+      {
+        "label": "Autonomous Vehicle ETFs",
+        "value": "Autonomous Vehicle ETFs"
+      },
+      {
+        "label": "XRP ETFs",
+        "value": "XRP ETFs"
+      },
+      {
+        "label": "Japan ETFs",
+        "value": "Japan ETFs"
+      },
+      {
+        "label": "Reits ETFs",
+        "value": "Reits ETFs"
+      },
+      {
+        "label": "Internet ETFs",
+        "value": "Internet ETFs"
+      },
+      {
+        "label": "AI ETFs",
+        "value": "AI ETFs"
+      },
+      {
+        "label": "Nvidia Related ETFs",
+        "value": "Nvidia Related ETFs"
+      },
+      {
+        "label": "Magnificent 7 ETFs",
+        "value": "Magnificent 7 ETFs"
+      },
+      {
+        "label": "Crude Oil ETFs",
+        "value": "Crude Oil ETFs"
+      },
+      {
+        "label": "Robotics ETFs",
+        "value": "Robotics ETFs"
+      },
+      {
+        "label": "Rare Metal ETFs",
+        "value": "Rare Metal ETFs"
+      },
+      {
+        "label": "ETH ETFs",
+        "value": "ETH ETFs"
+      },
+      {
+        "label": "Treasury ETFs",
+        "value": "Treasury ETFs"
+      },
+      {
+        "label": "Short-Term Government Bond ETFs",
+        "value": "Short-Term Government Bond ETFs"
+      },
+      {
+        "label": "Cannabis ETFs",
+        "value": "Cannabis ETFs"
+      }
+    ],
+    "description": "Thematic strategy or exposure",
+    "allowCustomValue": true,
+    "customValueMode": "text"
+  },
+  {
+    "key": "issuer",
+    "prompt_id": "6a688c2b1bf1ae4851280447",
+    "label": "Issuer",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "ProShare Advisors",
+        "value": "ProShare Advisors"
+      },
+      {
+        "label": "WisdomTree Asset Management",
+        "value": "WisdomTree Asset Management"
+      },
+      {
+        "label": "Global X Management Company LLC",
+        "value": "Global X Management Company LLC"
+      },
+      {
+        "label": "First Trust Advisors L.P.",
+        "value": "First Trust Advisors L.P."
+      },
+      {
+        "label": "Charles Schwab Investment Management, Inc.",
+        "value": "Charles Schwab Investment Management, Inc."
+      },
+      {
+        "label": "Victory Capital",
+        "value": "Victory Capital"
+      },
+      {
+        "label": "Nuveen Fund Advisors, LLC",
+        "value": "Nuveen Fund Advisors, LLC"
+      },
+      {
+        "label": "ClearShares LLC",
+        "value": "ClearShares LLC"
+      },
+      {
+        "label": "Hartford Funds Management Company, LLC",
+        "value": "Hartford Funds Management Company, LLC"
+      },
+      {
+        "label": "Franklin Templeton Investment Management Limited",
+        "value": "Franklin Templeton Investment Management Limited"
+      },
+      {
+        "label": "The Leuthold Group, LLC",
+        "value": "The Leuthold Group, LLC"
+      },
+      {
+        "label": "Alger",
+        "value": "Alger"
+      },
+      {
+        "label": "Davis Advisers",
+        "value": "Davis Advisers"
+      },
+      {
+        "label": "Empowered Funds, LLC",
+        "value": "Empowered Funds, LLC"
+      },
+      {
+        "label": "Community Capital Management, LLC",
+        "value": "Community Capital Management, LLC"
+      },
+      {
+        "label": "Infrastructure Capital Advisors, LLC",
+        "value": "Infrastructure Capital Advisors, LLC"
+      },
+      {
+        "label": "Valkyrie Funds LLC",
+        "value": "Valkyrie Funds LLC"
+      },
+      {
+        "label": "Capital Research and Management Company",
+        "value": "Capital Research and Management Company"
+      },
+      {
+        "label": "SEI Investments Management Corporation",
+        "value": "SEI Investments Management Corporation"
+      },
+      {
+        "label": "Logan Capital Management Inc.",
+        "value": "Logan Capital Management Inc."
+      },
+      {
+        "label": "AllianceBernstein L.P.",
+        "value": "AllianceBernstein L.P."
+      },
+      {
+        "label": "Client First Investment Management LLC",
+        "value": "Client First Investment Management LLC"
+      },
+      {
+        "label": "Morgan Stanley Investment Management Inc.",
+        "value": "Morgan Stanley Investment Management Inc."
+      },
+      {
+        "label": "Envestnet",
+        "value": "Envestnet"
+      },
+      {
+        "label": "AmeriLife",
+        "value": "AmeriLife"
+      },
+      {
+        "label": "PlanRock Investment Management, LLC.",
+        "value": "PlanRock Investment Management, LLC."
+      },
+      {
+        "label": "Estate Counselors LLC",
+        "value": "Estate Counselors LLC"
+      },
+      {
+        "label": "IronHorse Holdings",
+        "value": "IronHorse Holdings"
+      },
+      {
+        "label": "MFS",
+        "value": "MFS"
+      },
+      {
+        "label": "Parnassus Investments, LLC",
+        "value": "Parnassus Investments, LLC"
+      },
+      {
+        "label": "Indexperts, LLC",
+        "value": "Indexperts, LLC"
+      },
+      {
+        "label": "Hill Investment Group Partners, LLC",
+        "value": "Hill Investment Group Partners, LLC"
+      },
+      {
+        "label": "Vontobel Asset Management, Inc.",
+        "value": "Vontobel Asset Management, Inc."
+      },
+      {
+        "label": "Wedbush Fund Advisers, LLC",
+        "value": "Wedbush Fund Advisers, LLC"
+      },
+      {
+        "label": "Warren Capital Group",
+        "value": "Warren Capital Group"
+      },
+      {
+        "label": "Carillon Tower Advisers, Inc.",
+        "value": "Carillon Tower Advisers, Inc."
+      },
+      {
+        "label": "Capital Impact Advisors, LLC",
+        "value": "Capital Impact Advisors, LLC"
+      },
+      {
+        "label": "FD Funds Management LLC",
+        "value": "FD Funds Management LLC"
+      },
+      {
+        "label": "SWP Investment Management, LLC",
+        "value": "SWP Investment Management, LLC"
+      },
+      {
+        "label": "Reckoner Capital Management LLC",
+        "value": "Reckoner Capital Management LLC"
+      },
+      {
+        "label": "Fortuna Funds, LLC",
+        "value": "Fortuna Funds, LLC"
+      },
+      {
+        "label": "GQG Partners LLC",
+        "value": "GQG Partners LLC"
+      },
+      {
+        "label": "Arlington Partners, LLC",
+        "value": "Arlington Partners, LLC"
+      },
+      {
+        "label": "Distribution Cognizant LLC",
+        "value": "Distribution Cognizant LLC"
+      },
+      {
+        "label": "Milliman Financial Risk Management LLC",
+        "value": "Milliman Financial Risk Management LLC"
+      },
+      {
+        "label": "Framework Digital Advisors LLC",
+        "value": "Framework Digital Advisors LLC"
+      },
+      {
+        "label": "Pictet Asset Management Ltd.",
+        "value": "Pictet Asset Management Ltd."
+      },
+      {
+        "label": "Highland Capital Management, LLC",
+        "value": "Highland Capital Management, LLC"
+      },
+      {
+        "label": "Measured Risk Portfolios, Inc.",
+        "value": "Measured Risk Portfolios, Inc."
+      },
+      {
+        "label": "Langar Investment Management, LLC",
+        "value": "Langar Investment Management, LLC"
+      },
+      {
+        "label": "Brookmont Capital Management, LLC",
+        "value": "Brookmont Capital Management, LLC"
+      },
+      {
+        "label": "Rafferty Asset Management, LLC",
+        "value": "Rafferty Asset Management, LLC"
+      },
+      {
+        "label": "Barclays Capital Inc.",
+        "value": "Barclays Capital Inc."
+      },
+      {
+        "label": "Lattice Strategies LLC",
+        "value": "Lattice Strategies LLC"
+      },
+      {
+        "label": "AGF",
+        "value": "AGF"
+      },
+      {
+        "label": "Goldman Sachs Asset Management, L.P.",
+        "value": "Goldman Sachs Asset Management, L.P."
+      },
+      {
+        "label": "GraniteShares Advisors LLC",
+        "value": "GraniteShares Advisors LLC"
+      },
+      {
+        "label": "Krane Funds Advisors, LLC",
+        "value": "Krane Funds Advisors, LLC"
+      },
+      {
+        "label": "Innovator",
+        "value": "Innovator"
+      },
+      {
+        "label": "ProcureAM",
+        "value": "ProcureAM"
+      },
+      {
+        "label": "Advisors Asset Management, Inc.",
+        "value": "Advisors Asset Management, Inc."
+      },
+      {
+        "label": "Timothy Partners, Ltd.",
+        "value": "Timothy Partners, Ltd."
+      },
+      {
+        "label": "Swan Capital Management, LLC",
+        "value": "Swan Capital Management, LLC"
+      },
+      {
+        "label": "Guinness Atkinson Asset Management, Inc.",
+        "value": "Guinness Atkinson Asset Management, Inc."
+      },
+      {
+        "label": "T. Rowe Price Associates, Inc.",
+        "value": "T. Rowe Price Associates, Inc."
+      },
+      {
+        "label": "AXS Investments LLC",
+        "value": "AXS Investments LLC"
+      },
+      {
+        "label": "Volatility Shares LLC",
+        "value": "Volatility Shares LLC"
+      },
+      {
+        "label": "Kingsbarn Capital Management LLC",
+        "value": "Kingsbarn Capital Management LLC"
+      },
+      {
+        "label": "ShariaPortfolio, Inc.",
+        "value": "ShariaPortfolio, Inc."
+      },
+      {
+        "label": "Ocean Park Asset Management LLC",
+        "value": "Ocean Park Asset Management LLC"
+      },
+      {
+        "label": "Grantham, Mayo, Van Otterloo & Co. LLC",
+        "value": "Grantham, Mayo, Van Otterloo & Co. LLC"
+      },
+      {
+        "label": "Tweedy, Browne Company Llc",
+        "value": "Tweedy, Browne Company Llc"
+      },
+      {
+        "label": "Hotchkis & Wiley Capital Management, LLC",
+        "value": "Hotchkis & Wiley Capital Management, LLC"
+      },
+      {
+        "label": "Praxis Investment Management, Inc.",
+        "value": "Praxis Investment Management, Inc."
+      },
+      {
+        "label": "Horizon Kinetics Asset Management LLC",
+        "value": "Horizon Kinetics Asset Management LLC"
+      },
+      {
+        "label": "Obra Fund Management, LLC",
+        "value": "Obra Fund Management, LLC"
+      },
+      {
+        "label": "SSGA Funds Management, Inc.",
+        "value": "SSGA Funds Management, Inc."
+      },
+      {
+        "label": "Core Alternative Capital, LLC",
+        "value": "Core Alternative Capital, LLC"
+      },
+      {
+        "label": "Templeton Investment Counsel, LLC",
+        "value": "Templeton Investment Counsel, LLC"
+      },
+      {
+        "label": "ETF Series Solutions",
+        "value": "ETF Series Solutions"
+      },
+      {
+        "label": "Grant/GrossMendelsohn LLC",
+        "value": "Grant/GrossMendelsohn LLC"
+      },
+      {
+        "label": "Franklin Holdings, LLC",
+        "value": "Franklin Holdings, LLC"
+      },
+      {
+        "label": "Tapp Finance, Inc.",
+        "value": "Tapp Finance, Inc."
+      },
+      {
+        "label": "Alexis Investment Partners LLC",
+        "value": "Alexis Investment Partners LLC"
+      },
+      {
+        "label": "iM Global Partner Fund Management",
+        "value": "iM Global Partner Fund Management"
+      },
+      {
+        "label": "DBX Advisors LLC",
+        "value": "DBX Advisors LLC"
+      },
+      {
+        "label": "Transamerica Asset Management, Inc.",
+        "value": "Transamerica Asset Management, Inc."
+      },
+      {
+        "label": "Archer Investment Corporation",
+        "value": "Archer Investment Corporation"
+      },
+      {
+        "label": "Hexis Capital Management Limited",
+        "value": "Hexis Capital Management Limited"
+      },
+      {
+        "label": "Polen Capital Management, LLC",
+        "value": "Polen Capital Management, LLC"
+      },
+      {
+        "label": "Guggenheim Partners Investment Management, LLC",
+        "value": "Guggenheim Partners Investment Management, LLC"
+      },
+      {
+        "label": "Federated Investment Management Company.",
+        "value": "Federated Investment Management Company."
+      },
+      {
+        "label": "Harding Loevner",
+        "value": "Harding Loevner"
+      },
+      {
+        "label": "Wasatch Advisors LP",
+        "value": "Wasatch Advisors LP"
+      },
+      {
+        "label": "Alaia Capital, LLC",
+        "value": "Alaia Capital, LLC"
+      },
+      {
+        "label": "Westwood Management Corp.",
+        "value": "Westwood Management Corp."
+      },
+      {
+        "label": "State Street Global Advisors",
+        "value": "State Street Global Advisors"
+      },
+      {
+        "label": "BlackRock Fund Advisors",
+        "value": "BlackRock Fund Advisors"
+      },
+      {
+        "label": "DWS",
+        "value": "DWS"
+      },
+      {
+        "label": "Vanguard",
+        "value": "Vanguard"
+      },
+      {
+        "label": "Principal Global Investors, LLC",
+        "value": "Principal Global Investors, LLC"
+      },
+      {
+        "label": "Amplify Investments",
+        "value": "Amplify Investments"
+      },
+      {
+        "label": "Pacer Advisors, Inc.",
+        "value": "Pacer Advisors, Inc."
+      },
+      {
+        "label": "J.P. Morgan Investment Management Inc.",
+        "value": "J.P. Morgan Investment Management Inc."
+      },
+      {
+        "label": "Franklin Templeton Fund Adviser, LLC",
+        "value": "Franklin Templeton Fund Adviser, LLC"
+      },
+      {
+        "label": "Virtus Investment Advisers, LLC",
+        "value": "Virtus Investment Advisers, LLC"
+      },
+      {
+        "label": "Van Eck Absolute Return Advisers Corporation",
+        "value": "Van Eck Absolute Return Advisers Corporation"
+      },
+      {
+        "label": "Roundhill Financial Inc.",
+        "value": "Roundhill Financial Inc."
+      },
+      {
+        "label": "Simplify Asset Management Inc.",
+        "value": "Simplify Asset Management Inc."
+      },
+      {
+        "label": "Pettee Investors",
+        "value": "Pettee Investors"
+      },
+      {
+        "label": "Bondbloxx Investment Management LLC",
+        "value": "Bondbloxx Investment Management LLC"
+      },
+      {
+        "label": "NEOS Investment Management, LLC",
+        "value": "NEOS Investment Management, LLC"
+      },
+      {
+        "label": "John Hancock Investment Management LLC",
+        "value": "John Hancock Investment Management LLC"
+      },
+      {
+        "label": "PMV Capital Advisers LLC",
+        "value": "PMV Capital Advisers LLC"
+      },
+      {
+        "label": "Toews Corporation",
+        "value": "Toews Corporation"
+      },
+      {
+        "label": "Madison Investment Holdings, Inc.",
+        "value": "Madison Investment Holdings, Inc."
+      },
+      {
+        "label": "DoubleLine ETF Adviser LP",
+        "value": "DoubleLine ETF Adviser LP"
+      },
+      {
+        "label": "Allianz Investment Management LLC",
+        "value": "Allianz Investment Management LLC"
+      },
+      {
+        "label": "Virtus Alternative Investment Advisers, LLC",
+        "value": "Virtus Alternative Investment Advisers, LLC"
+      },
+      {
+        "label": "Stone Ridge Holdings Group LP",
+        "value": "Stone Ridge Holdings Group LP"
+      },
+      {
+        "label": "Atlas Capital Team, Inc.",
+        "value": "Atlas Capital Team, Inc."
+      },
+      {
+        "label": "Harris Associates L.P.",
+        "value": "Harris Associates L.P."
+      },
+      {
+        "label": "Pacific Capital Partners Limited",
+        "value": "Pacific Capital Partners Limited"
+      },
+      {
+        "label": "Polen Capital Credit, LLC",
+        "value": "Polen Capital Credit, LLC"
+      },
+      {
+        "label": "Delaware Management Company",
+        "value": "Delaware Management Company"
+      },
+      {
+        "label": "Tortoise Capital Advisors, L.L.C.",
+        "value": "Tortoise Capital Advisors, L.L.C."
+      },
+      {
+        "label": "Pictet Asset Management S.A.",
+        "value": "Pictet Asset Management S.A."
+      },
+      {
+        "label": "US Global Investors",
+        "value": "US Global Investors"
+      },
+      {
+        "label": "Reflection Asset Management, LLC",
+        "value": "Reflection Asset Management, LLC"
+      },
+      {
+        "label": "Subversive LLC",
+        "value": "Subversive LLC"
+      },
+      {
+        "label": "Eldridge Structured Credit Advisers, LLC",
+        "value": "Eldridge Structured Credit Advisers, LLC"
+      },
+      {
+        "label": "CastleArk Management LLC",
+        "value": "CastleArk Management LLC"
+      },
+      {
+        "label": "Ballast Asset Management, LP",
+        "value": "Ballast Asset Management, LP"
+      },
+      {
+        "label": "Beyond Investing LLC",
+        "value": "Beyond Investing LLC"
+      },
+      {
+        "label": "Digital Currency Group, Inc.",
+        "value": "Digital Currency Group, Inc."
+      },
+      {
+        "label": "Tremblant Capital",
+        "value": "Tremblant Capital"
+      },
+      {
+        "label": "Prospera Funds Inc.",
+        "value": "Prospera Funds Inc."
+      },
+      {
+        "label": "Founder ETFs, LLC",
+        "value": "Founder ETFs, LLC"
+      },
+      {
+        "label": "Impax Asset Management LLC",
+        "value": "Impax Asset Management LLC"
+      },
+      {
+        "label": "Vega Capital Partners LLC",
+        "value": "Vega Capital Partners LLC"
+      },
+      {
+        "label": "CresAlta Investment Management, Inc.",
+        "value": "CresAlta Investment Management, Inc."
+      },
+      {
+        "label": "Pabrai Wagons Advisors",
+        "value": "Pabrai Wagons Advisors"
+      },
+      {
+        "label": "Fuller & Thaler Asset Management, Inc.",
+        "value": "Fuller & Thaler Asset Management, Inc."
+      },
+      {
+        "label": "Schroder Investment Management North America Inc.",
+        "value": "Schroder Investment Management North America Inc."
+      },
+      {
+        "label": "Main Management ETF Advisors, LLC",
+        "value": "Main Management ETF Advisors, LLC"
+      },
+      {
+        "label": "William Blair Investment Management, LLC",
+        "value": "William Blair Investment Management, LLC"
+      },
+      {
+        "label": "Van Eck Associates Corporation",
+        "value": "Van Eck Associates Corporation"
+      },
+      {
+        "label": "Invesco Capital Management LLC",
+        "value": "Invesco Capital Management LLC"
+      },
+      {
+        "label": "Millington Securities, LLC",
+        "value": "Millington Securities, LLC"
+      },
+      {
+        "label": "Northern Trust Investments, Inc.",
+        "value": "Northern Trust Investments, Inc."
+      },
+      {
+        "label": "Cambria",
+        "value": "Cambria"
+      },
+      {
+        "label": "Distillate Capital",
+        "value": "Distillate Capital"
+      },
+      {
+        "label": "Oneascent Holdings LLC",
+        "value": "Oneascent Holdings LLC"
+      },
+      {
+        "label": "Matthews International Capital Management",
+        "value": "Matthews International Capital Management"
+      },
+      {
+        "label": "F/m Investments LLC",
+        "value": "F/m Investments LLC"
+      },
+      {
+        "label": "Summit Global Investments, LLC",
+        "value": "Summit Global Investments, LLC"
+      },
+      {
+        "label": "Running Oak Capital LLC",
+        "value": "Running Oak Capital LLC"
+      },
+      {
+        "label": "Tuttle Capital Management, LLC",
+        "value": "Tuttle Capital Management, LLC"
+      },
+      {
+        "label": "Mason Capital Partners",
+        "value": "Mason Capital Partners"
+      },
+      {
+        "label": "Westwood Management Corp",
+        "value": "Westwood Management Corp"
+      },
+      {
+        "label": "Grayscale Investments, LLC",
+        "value": "Grayscale Investments, LLC"
+      },
+      {
+        "label": "Defiance ETFs, LLC",
+        "value": "Defiance ETFs, LLC"
+      },
+      {
+        "label": "Palmer Square Capital Management LLC",
+        "value": "Palmer Square Capital Management LLC"
+      },
+      {
+        "label": "Brown Advisory LLC",
+        "value": "Brown Advisory LLC"
+      },
+      {
+        "label": "Consulting Group Advisory Services LLC",
+        "value": "Consulting Group Advisory Services LLC"
+      },
+      {
+        "label": "Horizon Investments, LLC",
+        "value": "Horizon Investments, LLC"
+      },
+      {
+        "label": "Hashdex Asset Management Ltd.",
+        "value": "Hashdex Asset Management Ltd."
+      },
+      {
+        "label": "Thrivent Asset Management, LLC",
+        "value": "Thrivent Asset Management, LLC"
+      },
+      {
+        "label": "Deutsche Bank AG",
+        "value": "Deutsche Bank AG"
+      },
+      {
+        "label": "Merk Investments LLC",
+        "value": "Merk Investments LLC"
+      },
+      {
+        "label": "Mairs & Power, Inc.",
+        "value": "Mairs & Power, Inc."
+      },
+      {
+        "label": "Applied Finance Advisors, LLC",
+        "value": "Applied Finance Advisors, LLC"
+      },
+      {
+        "label": "Little Harbor Advisors",
+        "value": "Little Harbor Advisors"
+      },
+      {
+        "label": "Hypatia Capital Advisors LLC",
+        "value": "Hypatia Capital Advisors LLC"
+      },
+      {
+        "label": "Retireful LLC",
+        "value": "Retireful LLC"
+      },
+      {
+        "label": "Bitwise Investment Manager, LLC",
+        "value": "Bitwise Investment Manager, LLC"
+      },
+      {
+        "label": "Paralel Technologies LLC",
+        "value": "Paralel Technologies LLC"
+      },
+      {
+        "label": "DoubleLine Alternatives LP",
+        "value": "DoubleLine Alternatives LP"
+      },
+      {
+        "label": "VanEck Digital Assets, LLC",
+        "value": "VanEck Digital Assets, LLC"
+      },
+      {
+        "label": "SanJac Alpha LP",
+        "value": "SanJac Alpha LP"
+      },
+      {
+        "label": "Thornburg Investment Management, Inc.",
+        "value": "Thornburg Investment Management, Inc."
+      },
+      {
+        "label": "Crossmark",
+        "value": "Crossmark"
+      },
+      {
+        "label": "Scharf Investments, LLC",
+        "value": "Scharf Investments, LLC"
+      },
+      {
+        "label": "Arrow Investment Advisors, LLC",
+        "value": "Arrow Investment Advisors, LLC"
+      },
+      {
+        "label": "Yorkville America Equities, LLC",
+        "value": "Yorkville America Equities, LLC"
+      },
+      {
+        "label": "Split Rock Private Trading & Wealth Management LLC",
+        "value": "Split Rock Private Trading & Wealth Management LLC"
+      },
+      {
+        "label": "WealthTrust Asset Management, LLC",
+        "value": "WealthTrust Asset Management, LLC"
+      },
+      {
+        "label": "LSV Asset Management",
+        "value": "LSV Asset Management"
+      },
+      {
+        "label": "WEBs Investments Inc.",
+        "value": "WEBs Investments Inc."
+      },
+      {
+        "label": "Rayliant Asset Management",
+        "value": "Rayliant Asset Management"
+      },
+      {
+        "label": "Myriad Asset Management Advisors LLC",
+        "value": "Myriad Asset Management Advisors LLC"
+      },
+      {
+        "label": "BBH&Co.",
+        "value": "BBH&Co."
+      },
+      {
+        "label": "Opal Capital LLC",
+        "value": "Opal Capital LLC"
+      },
+      {
+        "label": "Acuitas Investments, LLC",
+        "value": "Acuitas Investments, LLC"
+      },
+      {
+        "label": "Pzena Investments Management, LLC",
+        "value": "Pzena Investments Management, LLC"
+      },
+      {
+        "label": "Saturna Capital Corporation",
+        "value": "Saturna Capital Corporation"
+      },
+      {
+        "label": "Teucrium Asset Management, LLC",
+        "value": "Teucrium Asset Management, LLC"
+      },
+      {
+        "label": "ICE Data Indices, LLC",
+        "value": "ICE Data Indices, LLC"
+      },
+      {
+        "label": "Lone Peak Global Investors, LLC",
+        "value": "Lone Peak Global Investors, LLC"
+      },
+      {
+        "label": "Millburn Ridgefield LLC",
+        "value": "Millburn Ridgefield LLC"
+      },
+      {
+        "label": "World Gold Council",
+        "value": "World Gold Council"
+      },
+      {
+        "label": "Columbia Management Investment Advisers, LLC",
+        "value": "Columbia Management Investment Advisers, LLC"
+      },
+      {
+        "label": "Exchange Traded Concepts, LLC",
+        "value": "Exchange Traded Concepts, LLC"
+      },
+      {
+        "label": "BNY Mellon ETF Investment Adviser, LLC",
+        "value": "BNY Mellon ETF Investment Adviser, LLC"
+      },
+      {
+        "label": "Howard Capital Management, LLC",
+        "value": "Howard Capital Management, LLC"
+      },
+      {
+        "label": "Rareview Capital LLC",
+        "value": "Rareview Capital LLC"
+      },
+      {
+        "label": "Inspire Investing LLC",
+        "value": "Inspire Investing LLC"
+      },
+      {
+        "label": "Adaptive Investments",
+        "value": "Adaptive Investments"
+      },
+      {
+        "label": "Motley Fool Asset Management, LLC",
+        "value": "Motley Fool Asset Management, LLC"
+      },
+      {
+        "label": "Federated Hermes, Inc.",
+        "value": "Federated Hermes, Inc."
+      },
+      {
+        "label": "Touchstone Advisors, Inc.",
+        "value": "Touchstone Advisors, Inc."
+      },
+      {
+        "label": "Soundwatch Capital LLC",
+        "value": "Soundwatch Capital LLC"
+      },
+      {
+        "label": "Q3 Asset Management Corporation",
+        "value": "Q3 Asset Management Corporation"
+      },
+      {
+        "label": "Tema Global Ltd.",
+        "value": "Tema Global Ltd."
+      },
+      {
+        "label": "Kurv Investment Management LLC",
+        "value": "Kurv Investment Management LLC"
+      },
+      {
+        "label": "CYBER HORNET ETFs, LLC",
+        "value": "CYBER HORNET ETFs, LLC"
+      },
+      {
+        "label": "Bitwise Investment Advisers, LLC",
+        "value": "Bitwise Investment Advisers, LLC"
+      },
+      {
+        "label": "Miller Value Partners LLC",
+        "value": "Miller Value Partners LLC"
+      },
+      {
+        "label": "Nightview Capital LLC",
+        "value": "Nightview Capital LLC"
+      },
+      {
+        "label": "Counterpoint Mutual Funds LLC",
+        "value": "Counterpoint Mutual Funds LLC"
+      },
+      {
+        "label": "First Pacific Advisors LP",
+        "value": "First Pacific Advisors LP"
+      },
+      {
+        "label": "Angel Oak Capital Advisors, LLC",
+        "value": "Angel Oak Capital Advisors, LLC"
+      },
+      {
+        "label": "HTAA, LLC",
+        "value": "HTAA, LLC"
+      },
+      {
+        "label": "Precidian Funds LLC",
+        "value": "Precidian Funds LLC"
+      },
+      {
+        "label": "First Eagle Investment Management, LLC",
+        "value": "First Eagle Investment Management, LLC"
+      },
+      {
+        "label": "Russell Investment Management, LLC",
+        "value": "Russell Investment Management, LLC"
+      },
+      {
+        "label": "TCW Investment Management Company LLC",
+        "value": "TCW Investment Management Company LLC"
+      },
+      {
+        "label": "OTG Asset Management, Ltd.",
+        "value": "OTG Asset Management, Ltd."
+      },
+      {
+        "label": "Eventide Asset Management, LLC",
+        "value": "Eventide Asset Management, LLC"
+      },
+      {
+        "label": "Alternative Access Funds, LLC",
+        "value": "Alternative Access Funds, LLC"
+      },
+      {
+        "label": "Faith Investor Services, LLC",
+        "value": "Faith Investor Services, LLC"
+      },
+      {
+        "label": "Shelton Capital Management",
+        "value": "Shelton Capital Management"
+      },
+      {
+        "label": "Calamos Antetokounmpo Asset Management LLC",
+        "value": "Calamos Antetokounmpo Asset Management LLC"
+      },
+      {
+        "label": "X-Square Capital",
+        "value": "X-Square Capital"
+      },
+      {
+        "label": "Texas Capital Bancshares, Inc.",
+        "value": "Texas Capital Bancshares, Inc."
+      },
+      {
+        "label": "LionShares LLC",
+        "value": "LionShares LLC"
+      },
+      {
+        "label": "Canary Capital Group LLC",
+        "value": "Canary Capital Group LLC"
+      },
+      {
+        "label": "Absolute Investment Advisers LLC",
+        "value": "Absolute Investment Advisers LLC"
+      },
+      {
+        "label": "Goose Hollow Capital Management LLC",
+        "value": "Goose Hollow Capital Management LLC"
+      },
+      {
+        "label": "Cullen Capital Management LLC",
+        "value": "Cullen Capital Management LLC"
+      },
+      {
+        "label": "Corgi Strategies, LLC",
+        "value": "Corgi Strategies, LLC"
+      },
+      {
+        "label": "Tema ETFs LLC",
+        "value": "Tema ETFs LLC"
+      },
+      {
+        "label": "Federated Global Investment Management Corp",
+        "value": "Federated Global Investment Management Corp"
+      },
+      {
+        "label": "ALPS Advisors, Inc.",
+        "value": "ALPS Advisors, Inc."
+      },
+      {
+        "label": "Franklin Advisory Services, LLC",
+        "value": "Franklin Advisory Services, LLC"
+      },
+      {
+        "label": "PGIM Investments LLC",
+        "value": "PGIM Investments LLC"
+      },
+      {
+        "label": "TrueMark Investments, LLC",
+        "value": "TrueMark Investments, LLC"
+      },
+      {
+        "label": "Dimensional Fund Advisors LP",
+        "value": "Dimensional Fund Advisors LP"
+      },
+      {
+        "label": "USCF Advisers LLC",
+        "value": "USCF Advisers LLC"
+      },
+      {
+        "label": "Harbor Capital Advisors, Inc.",
+        "value": "Harbor Capital Advisors, Inc."
+      },
+      {
+        "label": "Beacon Capital Management, Inc.",
+        "value": "Beacon Capital Management, Inc."
+      },
+      {
+        "label": "Calamos Advisors LLC",
+        "value": "Calamos Advisors LLC"
+      },
+      {
+        "label": "Strategas Asset Management, LLC",
+        "value": "Strategas Asset Management, LLC"
+      },
+      {
+        "label": "North Square Investments, LLC",
+        "value": "North Square Investments, LLC"
+      },
+      {
+        "label": "Day Hagan Asset Management",
+        "value": "Day Hagan Asset Management"
+      },
+      {
+        "label": "Lazard Asset Management LLC",
+        "value": "Lazard Asset Management LLC"
+      },
+      {
+        "label": "Hedgeye Asset Management, LLC",
+        "value": "Hedgeye Asset Management, LLC"
+      },
+      {
+        "label": "The Future Fund, LLC",
+        "value": "The Future Fund, LLC"
+      },
+      {
+        "label": "Collaborative Fund Advisors, LLC",
+        "value": "Collaborative Fund Advisors, LLC"
+      },
+      {
+        "label": "Man Solutions LLC",
+        "value": "Man Solutions LLC"
+      },
+      {
+        "label": "IDX Advisors, LLC",
+        "value": "IDX Advisors, LLC"
+      },
+      {
+        "label": "Jensen Investment Management, Inc.",
+        "value": "Jensen Investment Management, Inc."
+      },
+      {
+        "label": "KKM Financial LLC",
+        "value": "KKM Financial LLC"
+      },
+      {
+        "label": "Hennessy Advisors, Inc.",
+        "value": "Hennessy Advisors, Inc."
+      },
+      {
+        "label": "Grayscale Investments Sponsors, LLC",
+        "value": "Grayscale Investments Sponsors, LLC"
+      },
+      {
+        "label": "AMG Funds LLC",
+        "value": "AMG Funds LLC"
+      },
+      {
+        "label": "Harrison Street Private Wealth LLC",
+        "value": "Harrison Street Private Wealth LLC"
+      },
+      {
+        "label": "M.D. Sass, LLC",
+        "value": "M.D. Sass, LLC"
+      },
+      {
+        "label": "T. Rowe Price Sponsor LLC",
+        "value": "T. Rowe Price Sponsor LLC"
+      },
+      {
+        "label": "Manteio Scalable Technologies LLC",
+        "value": "Manteio Scalable Technologies LLC"
+      },
+      {
+        "label": "AdvisorShares",
+        "value": "AdvisorShares"
+      },
+      {
+        "label": "Teucrium Trading, LLC",
+        "value": "Teucrium Trading, LLC"
+      },
+      {
+        "label": "United States Commodity Funds LLC",
+        "value": "United States Commodity Funds LLC"
+      },
+      {
+        "label": "Sprott Asset Management USA, Inc.",
+        "value": "Sprott Asset Management USA, Inc."
+      },
+      {
+        "label": "Main Management",
+        "value": "Main Management"
+      },
+      {
+        "label": "New York Life Investment Management LLC",
+        "value": "New York Life Investment Management LLC"
+      },
+      {
+        "label": "American Century Investment Management, Inc.",
+        "value": "American Century Investment Management, Inc."
+      },
+      {
+        "label": "Natixis Advisors",
+        "value": "Natixis Advisors"
+      },
+      {
+        "label": "Redwood",
+        "value": "Redwood"
+      },
+      {
+        "label": "One Capital Management, LLC",
+        "value": "One Capital Management, LLC"
+      },
+      {
+        "label": "THOR Financial Technologies, LLC",
+        "value": "THOR Financial Technologies, LLC"
+      },
+      {
+        "label": "Zacks Investment Management, Inc.",
+        "value": "Zacks Investment Management, Inc."
+      },
+      {
+        "label": "REX Advisers, LLC",
+        "value": "REX Advisers, LLC"
+      },
+      {
+        "label": "Vert Asset Management LLC",
+        "value": "Vert Asset Management LLC"
+      },
+      {
+        "label": "Themes Management Company, LLC",
+        "value": "Themes Management Company, LLC"
+      },
+      {
+        "label": "Public Trust Advisors LLC",
+        "value": "Public Trust Advisors LLC"
+      },
+      {
+        "label": "Sound Capital Solutions LLC",
+        "value": "Sound Capital Solutions LLC"
+      },
+      {
+        "label": "Kensington Asset Management, LLC",
+        "value": "Kensington Asset Management, LLC"
+      },
+      {
+        "label": "3EDGE Asset Management LP",
+        "value": "3EDGE Asset Management LP"
+      },
+      {
+        "label": "Teucrium Investment Advisors, LLC",
+        "value": "Teucrium Investment Advisors, LLC"
+      },
+      {
+        "label": "Abacus FCF Advisors LLC",
+        "value": "Abacus FCF Advisors LLC"
+      },
+      {
+        "label": "3Fourteen Research, LLC",
+        "value": "3Fourteen Research, LLC"
+      },
+      {
+        "label": "Regan Capital, LLC",
+        "value": "Regan Capital, LLC"
+      },
+      {
+        "label": "COtwo Advisors LLC",
+        "value": "COtwo Advisors LLC"
+      },
+      {
+        "label": "OBP Capital, LLC",
+        "value": "OBP Capital, LLC"
+      },
+      {
+        "label": "Water Island Capital",
+        "value": "Water Island Capital"
+      },
+      {
+        "label": "Focus Financial Partners",
+        "value": "Focus Financial Partners"
+      },
+      {
+        "label": "21Shares US LLC",
+        "value": "21Shares US LLC"
+      },
+      {
+        "label": "Fidelity Diversifying Solutions LLC",
+        "value": "Fidelity Diversifying Solutions LLC"
+      },
+      {
+        "label": "Elm Partners Management LLC",
+        "value": "Elm Partners Management LLC"
+      },
+      {
+        "label": "Symmetry Partners, LLC",
+        "value": "Symmetry Partners, LLC"
+      },
+      {
+        "label": "M2 Financial LLC",
+        "value": "M2 Financial LLC"
+      },
+      {
+        "label": "iM Global Partner Fund Management, LLC",
+        "value": "iM Global Partner Fund Management, LLC"
+      },
+      {
+        "label": "Build Asset Management LLC",
+        "value": "Build Asset Management LLC"
+      },
+      {
+        "label": "Cary Street Partners Asset Management LLC",
+        "value": "Cary Street Partners Asset Management LLC"
+      },
+      {
+        "label": "Brandes Worldwide Holdings",
+        "value": "Brandes Worldwide Holdings"
+      },
+      {
+        "label": "Eagle Capital Management, LLC",
+        "value": "Eagle Capital Management, LLC"
+      },
+      {
+        "label": "Akre Capital Management, LLC",
+        "value": "Akre Capital Management, LLC"
+      },
+      {
+        "label": "Gladius Capital Management LP",
+        "value": "Gladius Capital Management LP"
+      },
+      {
+        "label": "BAMCO",
+        "value": "BAMCO"
+      },
+      {
+        "label": "TimesSquare Capital Management, LLC",
+        "value": "TimesSquare Capital Management, LLC"
+      },
+      {
+        "label": "Norris Perne and French LLP d/b/a NPF Investment Advisors",
+        "value": "Norris Perne and French LLP d/b/a NPF Investment Advisors"
+      },
+      {
+        "label": "Wellesley Asset Management, Inc",
+        "value": "Wellesley Asset Management, Inc"
+      },
+      {
+        "label": "Baillie Gifford Overseas Limited",
+        "value": "Baillie Gifford Overseas Limited"
+      },
+      {
+        "label": "Fidelity Management & Research Company LLC",
+        "value": "Fidelity Management & Research Company LLC"
+      },
+      {
+        "label": "Vident Asset Management",
+        "value": "Vident Asset Management"
+      },
+      {
+        "label": "PIMCO",
+        "value": "PIMCO"
+      },
+      {
+        "label": "Credit Suisse Group AG",
+        "value": "Credit Suisse Group AG"
+      },
+      {
+        "label": "UBS",
+        "value": "UBS"
+      },
+      {
+        "label": "abrdn Inc.",
+        "value": "abrdn Inc."
+      },
+      {
+        "label": "Franklin Advisers, Inc.",
+        "value": "Franklin Advisers, Inc."
+      },
+      {
+        "label": "ARK Investment Management LLC",
+        "value": "ARK Investment Management LLC"
+      },
+      {
+        "label": "Rational Advisors Inc.",
+        "value": "Rational Advisors Inc."
+      },
+      {
+        "label": "BMO",
+        "value": "BMO"
+      },
+      {
+        "label": "Aptus Capital Advisors, LLC",
+        "value": "Aptus Capital Advisors, LLC"
+      },
+      {
+        "label": "Tidal Investments LLC",
+        "value": "Tidal Investments LLC"
+      },
+      {
+        "label": "Gabelli Funds, LLC",
+        "value": "Gabelli Funds, LLC"
+      },
+      {
+        "label": "Janus Henderson Investors US LLC",
+        "value": "Janus Henderson Investors US LLC"
+      },
+      {
+        "label": "Kingsview Wealth Management, LLC",
+        "value": "Kingsview Wealth Management, LLC"
+      },
+      {
+        "label": "Neuberger Berman Investment Advisers LLC",
+        "value": "Neuberger Berman Investment Advisers LLC"
+      },
+      {
+        "label": "First Manhattan Co. LLC",
+        "value": "First Manhattan Co. LLC"
+      },
+      {
+        "label": "American Beacon Advisors, Inc.",
+        "value": "American Beacon Advisors, Inc."
+      },
+      {
+        "label": "Putnam Investment Management, LLC",
+        "value": "Putnam Investment Management, LLC"
+      },
+      {
+        "label": "Segall Bryant & Hamill, LLC",
+        "value": "Segall Bryant & Hamill, LLC"
+      },
+      {
+        "label": "Bahl & Gaynor, Inc.",
+        "value": "Bahl & Gaynor, Inc."
+      },
+      {
+        "label": "Sovereign's Capital Management LLC",
+        "value": "Sovereign's Capital Management LLC"
+      },
+      {
+        "label": "Congress Asset Management Company, LLP",
+        "value": "Congress Asset Management Company, LLP"
+      },
+      {
+        "label": "Liquid Strategies, LLC",
+        "value": "Liquid Strategies, LLC"
+      },
+      {
+        "label": "Frontier Asset Management, LLC",
+        "value": "Frontier Asset Management, LLC"
+      },
+      {
+        "label": "Twin Oak ETF Company",
+        "value": "Twin Oak ETF Company"
+      },
+      {
+        "label": "Grayscale Advisors, LLC",
+        "value": "Grayscale Advisors, LLC"
+      },
+      {
+        "label": "Allspring Funds Management, LLC",
+        "value": "Allspring Funds Management, LLC"
+      },
+      {
+        "label": "Clearbrook Investment Consulting, LLC",
+        "value": "Clearbrook Investment Consulting, LLC"
+      },
+      {
+        "label": "Golden Eagle Strategies, LLC",
+        "value": "Golden Eagle Strategies, LLC"
+      },
+      {
+        "label": "Liberty One Investment Management, LLC",
+        "value": "Liberty One Investment Management, LLC"
+      },
+      {
+        "label": "Wahed Invest LLC",
+        "value": "Wahed Invest LLC"
+      },
+      {
+        "label": "Clough Capital Partners L.P.",
+        "value": "Clough Capital Partners L.P."
+      },
+      {
+        "label": "Convergence Investment Partners, LLC",
+        "value": "Convergence Investment Partners, LLC"
+      },
+      {
+        "label": "Cambiar Holdings",
+        "value": "Cambiar Holdings"
+      },
+      {
+        "label": "Foreside Fund Services, LLC",
+        "value": "Foreside Fund Services, LLC"
+      },
+      {
+        "label": "Cohen & Steers Capital Management, Inc.",
+        "value": "Cohen & Steers Capital Management, Inc."
+      },
+      {
+        "label": "Sterling Capital Management LLC",
+        "value": "Sterling Capital Management LLC"
+      },
+      {
+        "label": "Advent Capital Management, LLC",
+        "value": "Advent Capital Management, LLC"
+      },
+      {
+        "label": "Weitz Investment Management, Inc.",
+        "value": "Weitz Investment Management, Inc."
+      },
+      {
+        "label": "Diamond Hill Capital Management, Inc.",
+        "value": "Diamond Hill Capital Management, Inc."
+      },
+      {
+        "label": "Renaissance Capital",
+        "value": "Renaissance Capital"
+      },
+      {
+        "label": "Ridgeline Research LLC",
+        "value": "Ridgeline Research LLC"
+      },
+      {
+        "label": "Spear Advisors LLC",
+        "value": "Spear Advisors LLC"
+      },
+      {
+        "label": "Cultivar Capital, Inc.",
+        "value": "Cultivar Capital, Inc."
+      },
+      {
+        "label": "Peakshares LLC",
+        "value": "Peakshares LLC"
+      },
+      {
+        "label": "Teramo Advisors, LLC",
+        "value": "Teramo Advisors, LLC"
+      },
+      {
+        "label": "Donoghue Forlines LLC",
+        "value": "Donoghue Forlines LLC"
+      },
+      {
+        "label": "Wellington Management Company LLP",
+        "value": "Wellington Management Company LLP"
+      },
+      {
+        "label": "Fundsmith Investment Services Limited",
+        "value": "Fundsmith Investment Services Limited"
+      },
+      {
+        "label": "Formidable Asset Management, LLC",
+        "value": "Formidable Asset Management, LLC"
+      },
+      {
+        "label": "iShares Delaware Trust Sponsor LLC",
+        "value": "iShares Delaware Trust Sponsor LLC"
+      },
+      {
+        "label": "Wisdom Fixed Income Management, LLC",
+        "value": "Wisdom Fixed Income Management, LLC"
+      },
+      {
+        "label": "Aristotle Investment Services, LLC",
+        "value": "Aristotle Investment Services, LLC"
+      },
+      {
+        "label": "Ai Funds, Inc.",
+        "value": "Ai Funds, Inc."
+      }
+    ],
+    "description": "Fund issuer or sponsor",
+    "allowCustomValue": true,
+    "customValueMode": "text"
+  },
+  {
+    "key": "region",
+    "prompt_id": "6a688e091bf1ae4851280448",
+    "label": "Region",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "China",
+        "value": "China"
+      },
+      {
+        "label": "Brazil",
+        "value": "Brazil"
+      },
+      {
+        "label": "Canada",
+        "value": "Canada"
+      },
+      {
+        "label": "Greece",
+        "value": "Greece"
+      },
+      {
+        "label": "Saudi Arabia",
+        "value": "Saudi Arabia"
+      },
+      {
+        "label": "U.S.",
+        "value": "U.S."
+      },
+      {
+        "label": "Germany",
+        "value": "Germany"
+      },
+      {
+        "label": "EAFE",
+        "value": "EAFE"
+      },
+      {
+        "label": "India",
+        "value": "India"
+      },
+      {
+        "label": "Australia",
+        "value": "Australia"
+      },
+      {
+        "label": "Mexico",
+        "value": "Mexico"
+      },
+      {
+        "label": "Broad",
+        "value": "Broad"
+      },
+      {
+        "label": "South Korea",
+        "value": "South Korea"
+      },
+      {
+        "label": "New Zealand",
+        "value": "New Zealand"
+      },
+      {
+        "label": "Taiwan(China)",
+        "value": "Taiwan(China)"
+      },
+      {
+        "label": "Italy",
+        "value": "Italy"
+      },
+      {
+        "label": "Argentina",
+        "value": "Argentina"
+      },
+      {
+        "label": "Switzerland",
+        "value": "Switzerland"
+      },
+      {
+        "label": "Indonesia",
+        "value": "Indonesia"
+      },
+      {
+        "label": "Vietnam",
+        "value": "Vietnam"
+      },
+      {
+        "label": "Chile",
+        "value": "Chile"
+      },
+      {
+        "label": "Japan",
+        "value": "Japan"
+      },
+      {
+        "label": "Qatar",
+        "value": "Qatar"
+      },
+      {
+        "label": "United Arab Emirates",
+        "value": "United Arab Emirates"
+      },
+      {
+        "label": "Thailand",
+        "value": "Thailand"
+      },
+      {
+        "label": "Denmark",
+        "value": "Denmark"
+      },
+      {
+        "label": "Ireland",
+        "value": "Ireland"
+      },
+      {
+        "label": "Philippines",
+        "value": "Philippines"
+      },
+      {
+        "label": "Peru",
+        "value": "Peru"
+      },
+      {
+        "label": "Netherlands",
+        "value": "Netherlands"
+      },
+      {
+        "label": "Pacific ex-Japan",
+        "value": "Pacific ex-Japan"
+      },
+      {
+        "label": "Malaysia",
+        "value": "Malaysia"
+      },
+      {
+        "label": "Israel",
+        "value": "Israel"
+      },
+      {
+        "label": "United Kingdom",
+        "value": "United Kingdom"
+      },
+      {
+        "label": "Colombia",
+        "value": "Colombia"
+      }
+    ],
+    "description": "Primary geographic exposure",
+    "allowCustomValue": true,
+    "customValueMode": "text"
+  },
+  {
+    "key": "leverageRatio",
+    "prompt_id": "6a6891e95656a1493f5b2de3",
+    "label": "Leverage Ratio",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "1x",
+        "value": "1"
+      },
+      {
+        "label": "1.5x",
+        "value": "1.5"
+      },
+      {
+        "label": "2x",
+        "value": "2"
+      },
+      {
+        "label": "3x",
+        "value": "3"
+      },
+      {
+        "label": "-1x",
+        "value": "-1"
+      },
+      {
+        "label": "-2x",
+        "value": "-2"
+      },
+      {
+        "label": "-3x",
+        "value": "-3"
+      }
+    ],
+    "description": "Leverage or inverse exposure"
+  },
+  {
+    "key": "managementStyle",
+    "prompt_id": "6a6892a35656a1493f5b2de4",
+    "label": "Management Style",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Active",
+        "value": "Active"
+      },
+      {
+        "label": "Passive",
+        "value": "Passive"
+      }
+    ],
+    "description": "Active or passive management"
+  },
+  {
+    "key": "specificHolding",
+    "prompt_id": "6a69da1c1bf1ae485128044c",
+    "label": "Specific Holding",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Apple",
+        "value": "AAPL"
+      },
+      {
+        "label": "Microsoft",
+        "value": "MSFT"
+      },
+      {
+        "label": "NVIDIA",
+        "value": "NVDA"
+      },
+      {
+        "label": "Amazon",
+        "value": "AMZN"
+      },
+      {
+        "label": "Meta",
+        "value": "META"
+      },
+      {
+        "label": "Alphabet",
+        "value": "GOOGL"
+      },
+      {
+        "label": "Tesla",
+        "value": "TSLA"
+      }
+    ],
+    "description": "Selected holding in the fund",
+    "allowCustomValue": true,
+    "customValueMode": "symbol"
+  },
+  {
+    "key": "top10Weight",
+    "prompt_id": "6a69f8b41bf1ae4851280453",
+    "label": "Top 10 Holdings Weight",
+    "category": "basic",
+    "type": "range",
+    "options": [
+      {
+        "label": "Below 20%",
+        "min": 0,
+        "max": 0.2
+      },
+      {
+        "label": "20% to 40%",
+        "min": 0.2,
+        "max": 0.4
+      },
+      {
+        "label": "40% to 60%",
+        "min": 0.4,
+        "max": 0.6
+      },
+      {
+        "label": "60% to 80%",
+        "min": 0.6,
+        "max": 0.8
+      },
+      {
+        "label": "Above 80%",
+        "min": 0.8,
+        "max": 99
+      }
+    ],
+    "description": "Weight of the top 10 holdings"
+  },
+  {
+    "key": "expenseRatio",
+    "prompt_id": "6a68a1c15656a1493f5b2de6",
+    "label": "Expense Ratio",
+    "category": "basic",
+    "type": "range",
+    "options": [
+      {
+        "label": "0.10% or below",
+        "min": 0,
+        "max": 0.001
+      },
+      {
+        "label": "0.10% to 0.20%",
+        "min": 0.001,
+        "max": 0.002
+      },
+      {
+        "label": "0.20% to 0.50%",
+        "min": 0.002,
+        "max": 0.005
+      },
+      {
+        "label": "0.50% to 1.00%",
+        "min": 0.005,
+        "max": 0.01
+      },
+      {
+        "label": "1.00% to 2.00%",
+        "min": 0.01,
+        "max": 0.02
+      },
+      {
+        "label": "Above 2.00%",
+        "min": 0.02,
+        "max": 99
+      }
+    ],
+    "description": "Annual fund expense"
+  },
+  {
+    "key": "dividendFrequency",
+    "prompt_id": "6a69fa035656a1493f5b2df9",
+    "label": "Dividend Frequency",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Weekly",
+        "value": "Weekly"
+      },
+      {
+        "label": "Biweekly",
+        "value": "Biweekly"
+      },
+      {
+        "label": "Monthly",
+        "value": "Monthly"
+      },
+      {
+        "label": "Quarterly",
+        "value": "Quarterly"
+      },
+      {
+        "label": "Semi-Annually",
+        "value": "Semi-Annually"
+      },
+      {
+        "label": "Annually",
+        "value": "Annually"
+      }
+    ],
+    "description": "How often dividends are paid"
+  },
+  {
+    "key": "dividendTreatment",
+    "prompt_id": "6a69fab05656a1493f5b2dfa",
+    "label": "Dividend Treatment",
+    "category": "basic",
+    "type": "value",
+    "options": [
+      {
+        "label": "Distributing",
+        "value": "distributes"
+      },
+      {
+        "label": "Accumulating / Reinvesting",
+        "value": "reinvests"
+      }
+    ],
+    "description": "How dividends are handled"
+  },
+  {
+    "key": "dailyVolume",
+    "prompt_id": "6a689eef1bf1ae4851280449",
+    "label": "Daily Volume",
+    "category": "market",
+    "type": "range",
+    "options": [
+      {
+        "label": "Below 100K",
+        "min": 0,
+        "max": 100000
+      },
+      {
+        "label": "100K to 500K",
+        "min": 100000,
+        "max": 500000
+      },
+      {
+        "label": "500K to 1M",
+        "min": 500000,
+        "max": 1000000
+      },
+      {
+        "label": "1M to 5M",
+        "min": 1000000,
+        "max": 5000000
+      },
+      {
+        "label": "5M to 10M",
+        "min": 5000000,
+        "max": 10000000
+      },
+      {
+        "label": "Above 10M",
+        "min": 10000000,
+        "max": 999999999999
+      }
+    ],
+    "description": "Current trading day"
+  },
+  {
+    "key": "rvol",
+    "prompt_id": "6a6b04bb5656a1493f5b2e02",
+    "label": "RVOL",
+    "category": "market",
+    "type": "range",
+    "options": [
+      {
+        "label": "Below 0.5x",
+        "min": 0,
+        "max": 0.5
+      },
+      {
+        "label": "0.5x to 1.0x",
+        "min": 0.5,
+        "max": 1
+      },
+      {
+        "label": "1.0x to 1.5x",
+        "min": 1,
+        "max": 1.5
+      },
+      {
+        "label": "1.5x to 2.0x",
+        "min": 1.5,
+        "max": 2
+      },
+      {
+        "label": "2.0x to 3.0x",
+        "min": 2,
+        "max": 3
+      },
+      {
+        "label": "Above 3.0x",
+        "min": 3,
+        "max": 999
+      }
+    ],
+    "description": "Current volume versus 20-day average"
+  },
+  {
+    "key": "volatility",
+    "prompt_id": "6a68a4de5656a1493f5b2de7",
+    "label": "Volatility",
+    "category": "market",
+    "type": "range",
+    "options": [
+      {
+        "label": "10% or below",
+        "min": 0,
+        "max": 0.1
+      },
+      {
+        "label": "10% to 20%",
+        "min": 0.1,
+        "max": 0.2
+      },
+      {
+        "label": "20% to 30%",
+        "min": 0.2,
+        "max": 0.3
+      },
+      {
+        "label": "30% to 40%",
+        "min": 0.3,
+        "max": 0.4
+      },
+      {
+        "label": "40% to 60%",
+        "min": 0.4,
+        "max": 0.6
+      },
+      {
+        "label": "Above 60%",
+        "min": 0.6,
+        "max": 99
+      }
+    ],
+    "description": "Fixed 1D calculation"
+  },
+  {
+    "key": "performance",
+    "prompt_id": "6a69c3f65656a1493f5b2dea",
+    "label": "Performance %",
+    "category": "market",
+    "type": "range",
+    "description": "Return over the selected period",
+    "periods": [
+      {
+        "label": "1D",
+        "value": "1d",
+        "description": "Current trading day",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "1W",
+        "value": "1w",
+        "description": "Past 1 week",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "1M",
+        "value": "1m",
+        "description": "Past 1 month",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "3M",
+        "value": "3m",
+        "description": "Past 3 months",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "YTD",
+        "value": "0y",
+        "description": "Year to date",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "1Y",
+        "value": "1y",
+        "description": "Past 1 year",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "5Y",
+        "value": "5y",
+        "description": "Past 5 years",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      }
+    ],
+    "options": [
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "1d",
+        "prompt_id": "6a69c3f65656a1493f5b2dea"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "1w",
+        "prompt_id": "6a71d8375656a1493f5b2e26"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "1m",
+        "prompt_id": "6a71d87f1bf1ae4851280483"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "3m",
+        "prompt_id": "6a71d9505656a1493f5b2e28"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "0y",
+        "prompt_id": "6a71d8ba1bf1ae4851280484"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "1y",
+        "prompt_id": "6a71d9155656a1493f5b2e27"
+      },
+      {
+        "label": "-10% or below",
+        "min": -999,
+        "max": -0.1,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      },
+      {
+        "label": "-10% to -5%",
+        "min": -0.1,
+        "max": -0.05,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      },
+      {
+        "label": "-5% to 0%",
+        "min": -0.05,
+        "max": 0,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      },
+      {
+        "label": "0% to 5%",
+        "min": 0,
+        "max": 0.05,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      },
+      {
+        "label": "5% to 10%",
+        "min": 0.05,
+        "max": 0.1,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      },
+      {
+        "label": "10% or above",
+        "min": 0.1,
+        "max": 999,
+        "axisValue": "5y",
+        "prompt_id": "6a71d9811bf1ae4851280485"
+      }
+    ]
+  },
+  {
+    "key": "dividendYield",
+    "prompt_id": "6a6ade311bf1ae4851280459",
+    "label": "Dividend Yield % (Indicated)",
+    "category": "market",
+    "type": "range",
+    "options": [
+      {
+        "label": "0% to 2%",
+        "min": 0,
+        "max": 0.02
+      },
+      {
+        "label": "2% to 4%",
+        "min": 0.02,
+        "max": 0.04
+      },
+      {
+        "label": "4% to 6%",
+        "min": 0.04,
+        "max": 0.06
+      },
+      {
+        "label": "6% to 10%",
+        "min": 0.06,
+        "max": 0.1
+      },
+      {
+        "label": "Above 10%",
+        "min": 0.1,
+        "max": 99
+      }
+    ],
+    "description": "Trailing twelve months"
+  },
+  {
+    "key": "maximumDrawdown",
+    "prompt_id": "6a69fc201bf1ae4851280455",
+    "label": "Maximum Drawdown",
+    "category": "market",
+    "type": "range",
+    "description": "Largest peak-to-trough decline",
+    "periods": [
+      {
+        "label": "1Y",
+        "value": "1y",
+        "description": "Past 1 year",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "3Y",
+        "value": "3y",
+        "description": "Past 3 years",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      }
+    ],
+    "options": [
+      {
+        "label": "Below 10%",
+        "min": 0,
+        "max": 0.1,
+        "axisValue": "1y",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "10% to 20%",
+        "min": 0.1,
+        "max": 0.2,
+        "axisValue": "1y",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "20% to 30%",
+        "min": 0.2,
+        "max": 0.3,
+        "axisValue": "1y",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "30% to 50%",
+        "min": 0.3,
+        "max": 0.5,
+        "axisValue": "1y",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "Above 50%",
+        "min": 0.5,
+        "max": 99,
+        "axisValue": "1y",
+        "prompt_id": "6a69fc201bf1ae4851280455"
+      },
+      {
+        "label": "Below 10%",
+        "min": 0,
+        "max": 0.1,
+        "axisValue": "3y",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      },
+      {
+        "label": "10% to 20%",
+        "min": 0.1,
+        "max": 0.2,
+        "axisValue": "3y",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      },
+      {
+        "label": "20% to 30%",
+        "min": 0.2,
+        "max": 0.3,
+        "axisValue": "3y",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      },
+      {
+        "label": "30% to 50%",
+        "min": 0.3,
+        "max": 0.5,
+        "axisValue": "3y",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      },
+      {
+        "label": "Above 50%",
+        "min": 0.5,
+        "max": 99,
+        "axisValue": "3y",
+        "prompt_id": "6a69fb721bf1ae4851280454"
+      }
+    ]
+  },
+  {
+    "key": "beta",
+    "prompt_id": "6a69fc9d5656a1493f5b2dfb",
+    "label": "Beta",
+    "category": "market",
+    "type": "range",
+    "options": [
+      {
+        "label": "Below 0.5",
+        "min": -999,
+        "max": 0.5
+      },
+      {
+        "label": "0.5 to 0.8",
+        "min": 0.5,
+        "max": 0.8
+      },
+      {
+        "label": "0.8 to 1.0",
+        "min": 0.8,
+        "max": 1
+      },
+      {
+        "label": "1.0 to 1.2",
+        "min": 1,
+        "max": 1.2
+      },
+      {
+        "label": "1.2 to 1.5",
+        "min": 1.2,
+        "max": 1.5
+      },
+      {
+        "label": "Above 1.5",
+        "min": 1.5,
+        "max": 999
+      }
+    ],
+    "description": "Sensitivity to broad market moves"
+  },
+  {
+    "key": "gapSignal",
+    "prompt_id": "6a69f2d31bf1ae4851280452",
+    "label": "Gap Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Fixed 1D signal",
+    "options": [
+      {
+        "label": "Gap Up",
+        "prompt_id": "6a69f2d31bf1ae4851280452"
+      },
+      {
+        "label": "Gap Down",
+        "prompt_id": "6a69f1ce5656a1493f5b2df4"
+      }
+    ]
+  },
+  {
+    "key": "dmiSignal",
+    "prompt_id": "6a6a05d31bf1ae4851280457",
+    "label": "DMI Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Directional movement signal",
+    "options": [
+      {
+        "label": "Buy Signal",
+        "prompt_id": "6a6a05d31bf1ae4851280457"
+      },
+      {
+        "label": "Sell Signal",
+        "prompt_id": "6a6a06481bf1ae4851280458"
+      }
+    ]
+  },
+  {
+    "key": "ema",
+    "prompt_id": "6a6b13761bf1ae485128045e",
+    "label": "EMA",
+    "category": "technical",
+    "type": "comparison",
+    "description": "Exponential moving-average comparisons",
+    "axis": [
+      {
+        "label": "5",
+        "value": "5"
+      },
+      {
+        "label": "10",
+        "value": "10"
+      },
+      {
+        "label": "20",
+        "value": "20"
+      },
+      {
+        "label": "50",
+        "value": "50"
+      },
+      {
+        "label": "100",
+        "value": "100"
+      },
+      {
+        "label": "200",
+        "value": "200"
+      }
+    ],
+    "options": [
+      {
+        "label": "Price above EMA 5",
+        "axisValue": "5",
+        "value": "closing_price",
+        "min": "expma_5"
+      },
+      {
+        "label": "Price below EMA 5",
+        "axisValue": "5",
+        "value": "closing_price",
+        "max": "expma_5"
+      },
+      {
+        "label": "Price above EMA 10",
+        "axisValue": "10",
+        "value": "closing_price",
+        "min": "expma_10"
+      },
+      {
+        "label": "Price below EMA 10",
+        "axisValue": "10",
+        "value": "closing_price",
+        "max": "expma_10"
+      },
+      {
+        "label": "Price above EMA 20",
+        "axisValue": "20",
+        "value": "closing_price",
+        "min": "expma_20"
+      },
+      {
+        "label": "Price below EMA 20",
+        "axisValue": "20",
+        "value": "closing_price",
+        "max": "expma_20"
+      },
+      {
+        "label": "Price above EMA 50",
+        "axisValue": "50",
+        "value": "closing_price",
+        "min": "expma_50"
+      },
+      {
+        "label": "Price below EMA 50",
+        "axisValue": "50",
+        "value": "closing_price",
+        "max": "expma_50"
+      },
+      {
+        "label": "Price above EMA 100",
+        "axisValue": "100",
+        "value": "closing_price",
+        "min": "expma_100"
+      },
+      {
+        "label": "Price below EMA 100",
+        "axisValue": "100",
+        "value": "closing_price",
+        "max": "expma_100"
+      },
+      {
+        "label": "Price above EMA 200",
+        "axisValue": "200",
+        "value": "closing_price",
+        "min": "expma_200"
+      },
+      {
+        "label": "Price below EMA 200",
+        "axisValue": "200",
+        "value": "closing_price",
+        "max": "expma_200"
+      },
+      {
+        "label": "EMA 5 above EMA 20",
+        "axisValue": "crossovers",
+        "value": "expma_5",
+        "min": "expma_20"
+      },
+      {
+        "label": "EMA 5 below EMA 20",
+        "axisValue": "crossovers",
+        "value": "expma_5",
+        "max": "expma_20"
+      },
+      {
+        "label": "EMA 20 above EMA 50",
+        "axisValue": "crossovers",
+        "value": "expma_20",
+        "min": "expma_50"
+      },
+      {
+        "label": "EMA 20 below EMA 50",
+        "axisValue": "crossovers",
+        "value": "expma_20",
+        "max": "expma_50"
+      },
+      {
+        "label": "EMA 50 above EMA 200",
+        "axisValue": "crossovers",
+        "value": "expma_50",
+        "min": "expma_200"
+      },
+      {
+        "label": "EMA 50 below EMA 200",
+        "axisValue": "crossovers",
+        "value": "expma_50",
+        "max": "expma_200"
+      }
+    ]
+  },
+  {
+    "key": "ma",
+    "prompt_id": "6a6b13761bf1ae485128045e",
+    "label": "MA",
+    "category": "technical",
+    "type": "comparison",
+    "description": "Simple moving-average comparisons",
+    "axis": [
+      {
+        "label": "5",
+        "value": "5"
+      },
+      {
+        "label": "10",
+        "value": "10"
+      },
+      {
+        "label": "20",
+        "value": "20"
+      },
+      {
+        "label": "50",
+        "value": "50"
+      },
+      {
+        "label": "100",
+        "value": "100"
+      },
+      {
+        "label": "200",
+        "value": "200"
+      }
+    ],
+    "options": [
+      {
+        "label": "Price above MA 5",
+        "axisValue": "5",
+        "value": "closing_price",
+        "min": "ma_5"
+      },
+      {
+        "label": "Price below MA 5",
+        "axisValue": "5",
+        "value": "closing_price",
+        "max": "ma_5"
+      },
+      {
+        "label": "Price above MA 10",
+        "axisValue": "10",
+        "value": "closing_price",
+        "min": "ma_10"
+      },
+      {
+        "label": "Price below MA 10",
+        "axisValue": "10",
+        "value": "closing_price",
+        "max": "ma_10"
+      },
+      {
+        "label": "Price above MA 20",
+        "axisValue": "20",
+        "value": "closing_price",
+        "min": "ma_20"
+      },
+      {
+        "label": "Price below MA 20",
+        "axisValue": "20",
+        "value": "closing_price",
+        "max": "ma_20"
+      },
+      {
+        "label": "Price above MA 50",
+        "axisValue": "50",
+        "value": "closing_price",
+        "min": "ma_50"
+      },
+      {
+        "label": "Price below MA 50",
+        "axisValue": "50",
+        "value": "closing_price",
+        "max": "ma_50"
+      },
+      {
+        "label": "Price above MA 100",
+        "axisValue": "100",
+        "value": "closing_price",
+        "min": "ma_100"
+      },
+      {
+        "label": "Price below MA 100",
+        "axisValue": "100",
+        "value": "closing_price",
+        "max": "ma_100"
+      },
+      {
+        "label": "Price above MA 200",
+        "axisValue": "200",
+        "value": "closing_price",
+        "min": "ma_200"
+      },
+      {
+        "label": "Price below MA 200",
+        "axisValue": "200",
+        "value": "closing_price",
+        "max": "ma_200"
+      },
+      {
+        "label": "MA 5 above MA 20",
+        "axisValue": "crossovers",
+        "value": "ma_5",
+        "min": "ma_20"
+      },
+      {
+        "label": "MA 5 below MA 20",
+        "axisValue": "crossovers",
+        "value": "ma_5",
+        "max": "ma_20"
+      },
+      {
+        "label": "MA 10 above MA 50",
+        "axisValue": "crossovers",
+        "value": "ma_10",
+        "min": "ma_50"
+      },
+      {
+        "label": "MA 10 below MA 50",
+        "axisValue": "crossovers",
+        "value": "ma_10",
+        "max": "ma_50"
+      },
+      {
+        "label": "MA 20 above MA 50",
+        "axisValue": "crossovers",
+        "value": "ma_20",
+        "min": "ma_50"
+      },
+      {
+        "label": "MA 20 below MA 50",
+        "axisValue": "crossovers",
+        "value": "ma_20",
+        "max": "ma_50"
+      },
+      {
+        "label": "MA 50 above MA 200",
+        "axisValue": "crossovers",
+        "value": "ma_50",
+        "min": "ma_200"
+      },
+      {
+        "label": "MA 50 below MA 200",
+        "axisValue": "crossovers",
+        "value": "ma_50",
+        "max": "ma_200"
+      }
+    ]
+  },
+  {
+    "key": "macdSignal",
+    "prompt_id": "6a6a09815656a1493f5b2dfd",
+    "label": "MACD Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Fast 12 / Slow 26 / Signal 9",
+    "options": [
+      {
+        "label": "Golden Cross",
+        "prompt_id": "6a6a09815656a1493f5b2dfd"
+      },
+      {
+        "label": "Dead Cross",
+        "prompt_id": "6a6a09c45656a1493f5b2dfe"
+      }
+    ]
+  },
+  {
+    "key": "cciSignal",
+    "prompt_id": "6a6ae7465656a1493f5b2e00",
+    "label": "CCI Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Commodity Channel Index signal",
+    "options": [
+      {
+        "label": "Buy Signal",
+        "prompt_id": "6a6ae7465656a1493f5b2e00"
+      },
+      {
+        "label": "Sell Signal",
+        "prompt_id": "6a6ae65e5656a1493f5b2dff"
+      }
+    ]
+  },
+  {
+    "key": "kdjSignal",
+    "prompt_id": "6a69f35a5656a1493f5b2df5",
+    "label": "KDJ Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "KDJ momentum signal",
+    "options": [
+      {
+        "label": "Buy Signal",
+        "prompt_id": "6a69f35a5656a1493f5b2df5"
+      },
+      {
+        "label": "Sell Signal",
+        "prompt_id": "6a69f3ac5656a1493f5b2df6"
+      }
+    ]
+  },
+  {
+    "key": "rsiSignal",
+    "prompt_id": "6a6aeee65656a1493f5b2e01",
+    "label": "RSI Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Relative Strength Index signal",
+    "options": [
+      {
+        "label": "Buy Signal",
+        "prompt_id": "6a6aeee65656a1493f5b2e01"
+      },
+      {
+        "label": "Sell Signal",
+        "prompt_id": "6a6aef591bf1ae485128045a"
+      }
+    ]
+  },
+  {
+    "key": "bollingerBandSignal",
+    "prompt_id": "6a6b0a911bf1ae485128045b",
+    "label": "Bollinger Band Signal",
+    "category": "technical",
+    "type": "signal",
+    "description": "Period 20 / standard deviation 2",
+    "options": [
+      {
+        "label": "Price Crosses Above Upper Band",
+        "prompt_id": "6a6b0a911bf1ae485128045b"
+      },
+      {
+        "label": "Price Crosses Below Lower Band",
+        "prompt_id": "6a6b0b451bf1ae485128045c"
+      },
+      {
+        "label": "Price Between Basis and Upper Band",
+        "prompt_id": "6a6b0cbc5656a1493f5b2e03"
+      },
+      {
+        "label": "Price Between Lower Band and Basis",
+        "prompt_id": "6a6b0d6b1bf1ae485128045d"
+      }
+    ]
+  }
+]

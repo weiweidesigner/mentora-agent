@@ -1,0 +1,782 @@
+[
+  {
+    "key": "overview",
+    "columns": [
+      {
+        "id": "10",
+        "key": "10",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "199112",
+        "key": "199112",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "13",
+        "key": "13",
+        "attrs": {
+          "adjustment": "backward",
+          "time_period": "day_1",
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "19",
+        "key": "19",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "turnover_ratio_pct",
+        "key": "turnover_ratio_pct",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "total_market_value",
+        "key": "total_market_value",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "pe_ttm",
+        "key": "pe_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "eps_ttm",
+        "key": "eps_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "dividend_ratio_pct_ttm",
+        "key": "dividend_ratio_pct_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ext_metric_sector_4_name",
+        "key": "ext_metric_sector_4_name",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "price_amplitude_ratio_pct",
+        "key": "price_amplitude_ratio_pct",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "8",
+        "key": "8",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "9",
+        "key": "9",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "pb_mrq",
+        "key": "pb_mrq",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "index_weighted_avg_roe_ttm",
+        "key": "index_weighted_avg_roe_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "total_assets_return_ratio_ttm",
+        "key": "total_assets_return_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "performance",
+    "columns": [
+      {
+        "id": "10",
+        "key": "10",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "199112",
+        "key": "199112",
+        "attrs": {
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_week_1",
+        "attrs": {
+          "time_period": "week_1",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_month_1",
+        "attrs": {
+          "time_period": "month_1",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_month_3",
+        "attrs": {
+          "time_period": "month_3",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_month_6",
+        "attrs": {
+          "time_period": "month_6",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_ytd",
+        "attrs": {
+          "time_period": "year_1",
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_year_1",
+        "attrs": {
+          "time_period": "year_1",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_year_5",
+        "attrs": {
+          "time_period": "year_5",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": true
+      },
+      {
+        "id": "inr-price_change_ratio_pct-sum",
+        "key": "perf_year_10",
+        "attrs": {
+          "time_period": "year_10",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "inr-volatility-avg",
+        "key": "volatility_week_1",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "week_1",
+          "period_type": "rolling2"
+        },
+        "colorful": false
+      },
+      {
+        "id": "inr-volatility-avg",
+        "key": "volatility_month_1",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "month_1",
+          "period_type": "rolling2"
+        },
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "valuation",
+    "columns": [
+      {
+        "id": "total_market_value",
+        "key": "total_market_value",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "inr-total_market_value_perf-cust",
+        "key": "market_cap_perf_year_1",
+        "attrs": {
+          "time_period": "year_1",
+          "period_type": "rolling",
+          "trade_class": "intraday"
+        },
+        "colorful": false
+      },
+      {
+        "id": "pe_ttm",
+        "key": "pe_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "peg_ttm",
+        "key": "peg_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ps_ttm",
+        "key": "ps_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "pb_mrq",
+        "key": "pb_mrq",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "pcf_ttm",
+        "key": "pcf_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "price_cash_ratio",
+        "key": "price_cash_ratio",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ev",
+        "key": "ev",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ev_revenue_ratio_ttm",
+        "key": "ev_revenue_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ev_ebit_ratio_ttm",
+        "key": "ev_ebit_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ev_ebitda_ratio_ttm",
+        "key": "ev_ebitda_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "dividends",
+    "columns": [
+      {
+        "id": "per_share_dividend_factor_financial_year",
+        "key": "per_share_dividend_factor_financial_year",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "per_share_dividend_factor",
+        "key": "per_share_dividend_factor",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "dividend_ratio_pct_ttm",
+        "key": "dividend_ratio_pct_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "forward_dividend_ratio_pct",
+        "key": "forward_dividend_ratio_pct",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "dividend_payment_ratio_ttm",
+        "key": "dividend_payment_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "per_share_dividend_factor_financial_year_dividend",
+        "key": "per_share_dividend_factor_financial_year_dividend",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "per_share_dividend_factor_financial_year_growth",
+        "key": "per_share_dividend_factor_financial_year_growth",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "profitability",
+    "columns": [
+      {
+        "id": "sale_gross_margin_ttm",
+        "key": "sale_gross_margin_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "operating_profit_divide_income_total_ttm",
+        "key": "operating_profit_divide_income_total_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "profit_before_tax_margin_ttm",
+        "key": "profit_before_tax_margin_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "sale_net_interest_ratio_ttm",
+        "key": "sale_net_interest_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "free_cash_flow_margin_ttm",
+        "key": "free_cash_flow_margin_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "total_assets_return_ratio_ttm",
+        "key": "total_assets_return_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "index_weighted_avg_roe_ttm",
+        "key": "index_weighted_avg_roe_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "capital_invested_return_ratio_ttm",
+        "key": "capital_invested_return_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "research_and_development_expenses_ratio_ttm",
+        "key": "research_and_development_expenses_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "market_sell_administrative_expenses_ratio_ttm",
+        "key": "market_sell_administrative_expenses_ratio_ttm",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "incomeStatement",
+    "columns": [
+      {
+        "id": "operating_income_total_ttm",
+        "key": "operating_income_total_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "operating_income_total_ttm_yoy",
+        "key": "operating_income_total_ttm_yoy",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "gross_profit_ttm",
+        "key": "gross_profit_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "operating_income_ttm",
+        "key": "operating_income_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "net_profit_ttm",
+        "key": "net_profit_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ebitda_ttm",
+        "key": "ebitda_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "ebit_ttm",
+        "key": "ebit_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "balanced_diluted_eps_ttm",
+        "key": "balanced_diluted_eps_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "balanced_diluted_eps_ttm_yoy",
+        "key": "balanced_diluted_eps_ttm_yoy",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "balanceSheet",
+    "columns": [
+      {
+        "id": "assets_total_v2",
+        "key": "assets_total_v2",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "total_current_assets",
+        "key": "total_current_assets",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "cash_equivalents_short_term_investments_v2",
+        "key": "cash_equivalents_short_term_investments_v2",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "total_debt_v2",
+        "key": "total_debt_v2",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "debt",
+        "key": "debt",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "net_debt",
+        "key": "net_debt",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "holder_equity_total_v2",
+        "key": "holder_equity_total_v2",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "current_ratio",
+        "key": "current_ratio",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "quick_ratio",
+        "key": "quick_ratio",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "debt_equity_ratio",
+        "key": "debt_equity_ratio",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "cash_debt_ratio",
+        "key": "cash_debt_ratio",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "cashFlow",
+    "columns": [
+      {
+        "id": "act_cash_flow_net_ttm",
+        "key": "act_cash_flow_net_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "invest_cash_flow_net_ttm",
+        "key": "invest_cash_flow_net_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "financing_cash_flow_net_ttm",
+        "key": "financing_cash_flow_net_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "free_cash_flow_ttm",
+        "key": "free_cash_flow_ttm",
+        "attrs": {},
+        "colorful": false
+      },
+      {
+        "id": "capital_expenditure_ttm",
+        "key": "capital_expenditure_ttm",
+        "attrs": {},
+        "colorful": false
+      }
+    ]
+  },
+  {
+    "key": "technicals",
+    "columns": [
+      {
+        "id": "4294967268",
+        "key": "technicals_0",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 14
+            },
+            {
+              "param": "indicator_component",
+              "value": "RSI"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "4294967272",
+        "key": "technicals_1",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 10
+            },
+            {
+              "param": "indicator_component",
+              "value": "MOM"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "4294967288",
+        "key": "technicals_2",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "indicator_component",
+              "value": "AO"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "4294967275",
+        "key": "technicals_3",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 20
+            },
+            {
+              "param": "indicator_component",
+              "value": "CCI"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "4294967290",
+        "key": "technicals_4",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "%K Length",
+              "value": 14
+            },
+            {
+              "param": "%K Smoothing",
+              "value": 3
+            },
+            {
+              "param": "%D Smoothing",
+              "value": 3
+            },
+            {
+              "param": "indicator_component",
+              "value": "%K"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "4294967290",
+        "key": "technicals_5",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "%K Length",
+              "value": 14
+            },
+            {
+              "param": "%K Smoothing",
+              "value": 3
+            },
+            {
+              "param": "%D Smoothing",
+              "value": 3
+            },
+            {
+              "param": "indicator_component",
+              "value": "%D"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "68317",
+        "key": "technicals_6",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Short-term",
+              "value": 12
+            },
+            {
+              "param": "Long-term",
+              "value": 26
+            },
+            {
+              "param": "M",
+              "value": 9
+            },
+            {
+              "param": "indicator_component",
+              "value": "DIFF"
+            }
+          ]
+        },
+        "colorful": false
+      },
+      {
+        "id": "68317",
+        "key": "technicals_7",
+        "attrs": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Short-term",
+              "value": 12
+            },
+            {
+              "param": "Long-term",
+              "value": 26
+            },
+            {
+              "param": "M",
+              "value": 9
+            },
+            {
+              "param": "indicator_component",
+              "value": "DEA"
+            }
+          ]
+        },
+        "colorful": false
+      }
+    ]
+  }
+]

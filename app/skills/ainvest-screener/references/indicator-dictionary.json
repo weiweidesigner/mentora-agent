@@ -1,0 +1,6232 @@
+[
+  {
+    "id": "6",
+    "title": "Close of Previous Day",
+    "aliases": [
+      "6",
+      "Close of Previous Day",
+      "昨收价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "7",
+    "title": "Open Price",
+    "aliases": [
+      "7",
+      "Open Price",
+      "开盘价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "8",
+    "title": "Daily High",
+    "aliases": [
+      "8",
+      "Daily High",
+      "最高价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "9",
+    "title": "Daily Low",
+    "aliases": [
+      "9",
+      "Daily Low",
+      "最低价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "10",
+    "title": "Current Price",
+    "aliases": [
+      "10",
+      "Current Price",
+      "最新价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "13",
+    "title": "Volume",
+    "aliases": [
+      "13",
+      "Volume",
+      "成交量"
+    ],
+    "attrs": {
+      "adjustment": "backward",
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "19",
+    "title": "Turnover",
+    "aliases": [
+      "19",
+      "Turnover",
+      "成交金额",
+      "成交额"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "24",
+    "title": "Bid Price 1",
+    "aliases": [
+      "24",
+      "Bid Price 1",
+      "委托买入价格一",
+      "买一价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "25",
+    "title": "Bid Size 1",
+    "aliases": [
+      "25",
+      "Bid Size 1",
+      "委托买入数量一",
+      "买一量"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "30",
+    "title": "Ask Price 1",
+    "aliases": [
+      "30",
+      "Ask Price 1",
+      "委托卖出价格一",
+      "卖一价"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "31",
+    "title": "Ask Size 1",
+    "aliases": [
+      "31",
+      "Ask Size 1",
+      "委托卖出数量一",
+      "卖一量",
+      "卖一量（最新交易日）"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "199112",
+    "title": "Change %",
+    "aliases": [
+      "199112",
+      "Change %",
+      "涨幅",
+      "涨跌幅"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "264648",
+    "title": "Daily Change",
+    "aliases": [
+      "264648",
+      "Daily Change",
+      "当日涨跌",
+      "涨跌额"
+    ],
+    "attrs": {
+      "trade_class": "post_market"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "55",
+    "title": "Code Name",
+    "aliases": [
+      "55",
+      "Code Name",
+      "代码名称",
+      "代码名称、股票名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "275",
+    "title": "Best Performer",
+    "aliases": [
+      "275",
+      "Best Performer",
+      "领涨股"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "65551",
+    "title": "Security Code",
+    "aliases": [
+      "65551",
+      "Security Code",
+      "展示代码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "65541",
+    "title": "Market Session",
+    "aliases": [
+      "65541",
+      "Market Session",
+      "交易阶段"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "65555",
+    "title": "Exchange Status",
+    "aliases": [
+      "65555",
+      "Exchange Status",
+      "交易状态"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_trade_time",
+    "title": "Current Trade Time",
+    "aliases": [
+      "ext_metric_trade_time",
+      "Current Trade Time",
+      "美股市场当前交易时间戳",
+      "交易时间"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "order_book",
+    "title": "盘口",
+    "aliases": [
+      "order_book",
+      "盘口"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "assets_total",
+    "title": "Assets Total",
+    "aliases": [
+      "assets_total",
+      "Assets Total",
+      "总资产",
+      "指数在管资产",
+      "ETF 行业、概念、地区的总AUM（在管资产）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "buy_sell_volume_ratio_pct",
+    "title": "Bid Ask Volume Ratio",
+    "aliases": [
+      "buy_sell_volume_ratio_pct",
+      "Bid Ask Volume Ratio",
+      "委比"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "dividend_ratio_pct_ttm",
+    "title": "Dividend Ratio Percent",
+    "aliases": [
+      "dividend_ratio_pct_ttm",
+      "Dividend Ratio Percent",
+      "股息率(TTM)",
+      "TTM股息率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ev",
+    "title": "Enterprise Value",
+    "aliases": [
+      "ev",
+      "Enterprise Value",
+      "企业价值",
+      "企业估值",
+      "市值 + 总债务 - 现金及现金等价物"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ev_ebit_ratio_ttm",
+    "title": "Enterprise Value to Ebit Trailing Twelve Months",
+    "aliases": [
+      "ev_ebit_ratio_ttm",
+      "Enterprise Value to Ebit Trailing Twelve Months",
+      "EV息税前利润比(TTM)",
+      "EV / EBIT TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ev_ebitda_ratio_ttm",
+    "title": "Enterprise Multiple (TTM)",
+    "aliases": [
+      "ev_ebitda_ratio_ttm",
+      "Enterprise Multiple (TTM)",
+      "EV息税前折旧摊销前利润比(TTM)",
+      "ev_revenue_ratio_ttm",
+      "EV/Sales TTM",
+      "EV / 过去12个月总收入"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "rise_cnt",
+    "title": "Rise Count",
+    "aliases": [
+      "rise_cnt",
+      "Rise Count",
+      "上涨家数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "fall_cnt",
+    "title": "Fall Count",
+    "aliases": [
+      "fall_cnt",
+      "Fall Count",
+      "下跌家数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "volume_24h",
+    "title": "24H Volume",
+    "aliases": [
+      "volume_24h",
+      "24H Volume",
+      "24H成交量",
+      "24小时成交量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "turnover_24h",
+    "title": "24H Turnover",
+    "aliases": [
+      "turnover_24h",
+      "24H Turnover",
+      "24H成交额",
+      "24小时成交额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "open_price_24h",
+    "title": "24H Open",
+    "aliases": [
+      "open_price_24h",
+      "24H Open",
+      "24H开盘价",
+      "24小时开盘价"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "low_price_24h",
+    "title": "24H Low",
+    "aliases": [
+      "low_price_24h",
+      "24H Low",
+      "24H最低价",
+      "24小时最低价"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_change_24h",
+    "title": "Intraday Price Change",
+    "aliases": [
+      "price_change_24h",
+      "Intraday Price Change",
+      "日内涨跌额（价格）",
+      "24小时涨跌"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_amplitude_ratio_pct_24h",
+    "title": "24H Range %",
+    "aliases": [
+      "price_amplitude_ratio_pct_24h",
+      "24H Range %",
+      "24H振幅",
+      "24小时振幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_change_ratio_pct_24h",
+    "title": "Intraday Price Change %",
+    "aliases": [
+      "price_change_ratio_pct_24h",
+      "Intraday Price Change %",
+      "日内涨跌幅（价格）",
+      "24小时涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "open_price_change",
+    "title": "Change From Open",
+    "aliases": [
+      "open_price_change",
+      "Change From Open",
+      "涨跌(开盘价计算）",
+      "涨跌额"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "open_price_change_ratio_pct",
+    "title": "Change % From Open",
+    "aliases": [
+      "open_price_change_ratio_pct",
+      "Change % From Open",
+      "涨幅（基于开盘价）",
+      "涨跌幅"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "open_over_high_ratio_pct",
+    "title": "Gap Up Over Yesterday's High",
+    "aliases": [
+      "open_over_high_ratio_pct",
+      "Gap Up Over Yesterday's High",
+      "跳空幅度（基于昨日最高价）",
+      "跳空幅度"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "pb_mrq",
+    "title": "Price to Book Ratio",
+    "aliases": [
+      "pb_mrq",
+      "Price to Book Ratio",
+      "市净率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "pcf_ttm",
+    "title": "Price to Cash Ratio (TTM)",
+    "aliases": [
+      "pcf_ttm",
+      "Price to Cash Ratio (TTM)",
+      "市现率(TTM)",
+      "P/CF (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "pe_mrq",
+    "title": "Price to Earnings Ratio Mrq",
+    "aliases": [
+      "pe_mrq",
+      "Price to Earnings Ratio Mrq",
+      "市盈率(MRQ)",
+      "动态市盈率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "pe_lyr",
+    "title": "Price to Earnings Ratio Lyr",
+    "aliases": [
+      "pe_lyr",
+      "Price to Earnings Ratio Lyr",
+      "市盈率(LYR)",
+      "静态市盈"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "pe_ttm",
+    "title": "Price to Earnings Ratio (TTM)",
+    "aliases": [
+      "pe_ttm",
+      "Price to Earnings Ratio (TTM)",
+      "市盈率(TTM)",
+      "TTM市盈率, PE TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "peg_ttm",
+    "title": "Dynamic Peg (TTM)",
+    "aliases": [
+      "peg_ttm",
+      "Dynamic Peg (TTM)",
+      "动态PEG比率",
+      "PEG TTM",
+      "市盈率（PE/TTM）÷ (盈利增长率（G）* 100)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_amplitude_ratio_pct",
+    "title": "Amplitude",
+    "aliases": [
+      "price_amplitude_ratio_pct",
+      "Amplitude",
+      "振幅"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_cash_ratio",
+    "title": "Cash Flow Multiple",
+    "aliases": [
+      "price_cash_ratio",
+      "Cash Flow Multiple",
+      "市价现金比",
+      "市现率",
+      "股价 ÷ 每股经营活动现金流（Cash Flow per Share）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "price_gap_ratio_pct",
+    "title": "Gap Percent",
+    "aliases": [
+      "price_gap_ratio_pct",
+      "Gap Percent",
+      "跳空幅度（基于昨日收盘价）",
+      "跳空高开幅度",
+      "(open - 上一根k线的close)/上一根k线的close * 100"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ps_ttm",
+    "title": "Price to Sales Ratio (TTM)",
+    "aliases": [
+      "ps_ttm",
+      "Price to Sales Ratio (TTM)",
+      "市销率(TTM)",
+      "TTM市销率, PS TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_market_value",
+    "title": "Equity Market Capitalization",
+    "aliases": [
+      "total_market_value",
+      "Equity Market Capitalization",
+      "总市值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "flow_market_value",
+    "title": "Flow Market Value",
+    "aliases": [
+      "flow_market_value",
+      "Flow Market Value",
+      "流通市值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "turnover_ratio_pct",
+    "title": "Trading Turnover",
+    "aliases": [
+      "turnover_ratio_pct",
+      "Trading Turnover",
+      "换手率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "199590",
+    "title": "52周最高价",
+    "aliases": [
+      "199590",
+      "52周最高价"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "199591",
+    "title": "52周最低价",
+    "aliases": [
+      "199591",
+      "52周最低价"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "199639",
+    "title": "20日收盘价涨幅",
+    "aliases": [
+      "199639",
+      "20日收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330203",
+    "title": "10日收盘价涨幅",
+    "aliases": [
+      "330203",
+      "10日收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330204",
+    "title": "5日收盘价涨幅",
+    "aliases": [
+      "330204",
+      "5日收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330378",
+    "title": "24小时成交量",
+    "aliases": [
+      "330378",
+      "24小时成交量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330379",
+    "title": "24小时成交额",
+    "aliases": [
+      "330379",
+      "24小时成交额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330406",
+    "title": "24小时涨幅",
+    "aliases": [
+      "330406",
+      "24小时涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330407",
+    "title": "24小时涨跌",
+    "aliases": [
+      "330407",
+      "24小时涨跌"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "330743",
+    "title": "250日收盘价涨幅",
+    "aliases": [
+      "330743",
+      "250日收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "461346",
+    "title": "年初至今收盘价涨幅",
+    "aliases": [
+      "461346",
+      "年初至今收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "527708",
+    "title": "120日收盘价涨幅",
+    "aliases": [
+      "527708",
+      "120日收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "3934664",
+    "title": "5分钟收盘价涨幅",
+    "aliases": [
+      "3934664",
+      "5分钟收盘价涨幅"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-price_change_ratio_pct-sum",
+    "title": "Price Change % (Period)",
+    "aliases": [
+      "inr-price_change_ratio_pct-sum",
+      "Price Change % (Period)",
+      "区间涨幅",
+      "区间收盘价涨幅",
+      "区间收盘价涨幅",
+      "区间涨幅"
+    ],
+    "attrs": {
+      "time_period": "year_10",
+      "period_type": "rolling",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-price_amplitude_ratio_pct-max",
+    "title": "Amplitude (Period)",
+    "aliases": [
+      "inr-price_amplitude_ratio_pct-max",
+      "Amplitude (Period)",
+      "区间振幅（基于起始价）",
+      "区间振幅",
+      "区间振幅（基于起始价）"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-volume-sum",
+    "title": "Cumulative Volume (Period)",
+    "aliases": [
+      "inr-volume-sum",
+      "Cumulative Volume (Period)",
+      "区间成交量",
+      "区间成交量"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-money-sum",
+    "title": "Cumulative Trading Value (Period)",
+    "aliases": [
+      "inr-money-sum",
+      "Cumulative Trading Value (Period)",
+      "区间成交额",
+      "区间成交额"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-high_price-max",
+    "title": "Max High Price",
+    "aliases": [
+      "inr-high_price-max",
+      "Max High Price",
+      "区间最大最高价",
+      "区间最高价",
+      "区间最大最高价"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-low_price-min",
+    "title": "52-Week Low (Period)",
+    "aliases": [
+      "inr-low_price-min",
+      "52-Week Low (Period)",
+      "区间最小最低价",
+      "区间最低价",
+      "区间最小最低价"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-close_price_return_ratio-std_dev",
+    "title": "Volatility (Period)",
+    "aliases": [
+      "inr-close_price_return_ratio-std_dev",
+      "Volatility (Period)",
+      "区间波动率",
+      "区间波动率"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-open_price_change_ratio_pct-sum",
+    "title": "Price Change % from Open (Period)",
+    "aliases": [
+      "inr-open_price_change_ratio_pct-sum",
+      "Price Change % from Open (Period)",
+      "区间涨幅(开盘价计算)",
+      "区间开盘价涨幅",
+      "区间开盘价涨幅",
+      "区间涨幅(开盘价计算)"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "year_10",
+      "period_type": "rolling2"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-open_price_change-sum",
+    "title": "Price Change from Open (Period)",
+    "aliases": [
+      "inr-open_price_change-sum",
+      "Price Change from Open (Period)",
+      "区间涨跌(开盘价计算)",
+      "区间开盘价涨跌额",
+      "区间开盘价涨跌额",
+      "区间涨跌(开盘价计算)"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-price_change-sum",
+    "title": "Price Change (Period)",
+    "aliases": [
+      "inr-price_change-sum",
+      "Price Change (Period)",
+      "区间涨跌",
+      "区间收盘价涨跌额",
+      "区间收盘价涨跌额",
+      "区间涨跌"
+    ],
+    "attrs": {
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-annual_return_ratio_pct-sum",
+    "title": "Annualized Rate of Return",
+    "aliases": [
+      "inr-annual_return_ratio_pct-sum",
+      "Annualized Rate of Return",
+      "区间年化收益率",
+      "年化收益率",
+      "区间年化收益率"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "year_3",
+      "period_type": "rolling"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-open_price_change_ratio_pct_diff-sum",
+    "title": "Difference of Price Change Ratio from Open (Period)",
+    "aliases": [
+      "inr-open_price_change_ratio_pct_diff-sum",
+      "Difference of Price Change Ratio from Open (Period)",
+      "区间涨幅差(开盘价计算)",
+      "涨幅差",
+      "区间涨幅差(开盘价计算)"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "year_1",
+      "period_type": "rolling2",
+      "match_code": "169:SPY"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-total_market_value_perf-cust",
+    "title": "Market Value Performance (Period)",
+    "aliases": [
+      "inr-total_market_value_perf-cust",
+      "Market Value Performance (Period)",
+      "区间市值表现",
+      "市值表现",
+      "区间市值表现"
+    ],
+    "attrs": {
+      "time_period": "year_1",
+      "period_type": "rolling",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "inr-volume-avg",
+    "title": "Average Trading Volume (Period)",
+    "aliases": [
+      "inr-volume-avg",
+      "Average Trading Volume (Period)",
+      "区间平均成交量",
+      "区间平均成交量"
+    ],
+    "attrs": {
+      "time_period": "day_20",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "volatility",
+    "title": "1-day Volatility",
+    "aliases": [
+      "volatility",
+      "1-day Volatility",
+      "波动率 1日",
+      "1日波动率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "volume_change_ratio_pct",
+    "title": "Volume Change %",
+    "aliases": [
+      "volume_change_ratio_pct",
+      "Volume Change %",
+      "成交量变化幅度",
+      "区间成交量涨幅"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "bond_price_face_value_ratio_pct",
+    "title": "Face Value Ratio",
+    "aliases": [
+      "bond_price_face_value_ratio_pct",
+      "Face Value Ratio",
+      "债券面值比",
+      "价格占面值百分比"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "high_price_all_time",
+    "title": "All-Time High",
+    "aliases": [
+      "high_price_all_time",
+      "All-Time High",
+      "历史最高价",
+      "上市至今的最高价，使用默认前复权（拆合股）计算"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "low_price_all_time",
+    "title": "All-Time Low",
+    "aliases": [
+      "low_price_all_time",
+      "All-Time Low",
+      "历史最低价",
+      "上市至今的最低价，使用默认前复权（拆合股）计算"
+    ],
+    "attrs": {
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "402",
+    "title": "总股本",
+    "aliases": [
+      "402",
+      "总股本"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "466",
+    "title": "除权日",
+    "aliases": [
+      "466",
+      "除权日",
+      "Exdate  除权日"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "1002",
+    "title": "EPS TTM",
+    "aliases": [
+      "1002",
+      "EPS TTM",
+      "EPS 每股收益（TTM）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "1005",
+    "title": "BVPS",
+    "aliases": [
+      "1005",
+      "BVPS",
+      "每股净资产，NAVPS"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "1015",
+    "title": "ROE",
+    "aliases": [
+      "1015",
+      "ROE",
+      "净资产收益率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "3541449",
+    "title": "ROA",
+    "aliases": [
+      "3541449",
+      "ROA",
+      "总资产收益率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "act_cash_flow_net",
+    "title": "Net Cash Provided by Operating Activities",
+    "aliases": [
+      "act_cash_flow_net",
+      "Net Cash Provided by Operating Activities",
+      "经营活动现金流量净额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "act_cash_flow_net_quarter",
+    "title": "经营活动现金流量净额（单季度）",
+    "aliases": [
+      "act_cash_flow_net_quarter",
+      "经营活动现金流量净额（单季度）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "act_cash_flow_net_ttm",
+    "title": "Net Cash Flows From Operating Activities (TTM)",
+    "aliases": [
+      "act_cash_flow_net_ttm",
+      "Net Cash Flows From Operating Activities (TTM)",
+      "经营活动现金流量净额(TTM)",
+      "经营活动现金流量净额 TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "actual_issuance_price",
+    "title": "Actual IPO Price",
+    "aliases": [
+      "actual_issuance_price",
+      "Actual IPO Price",
+      "实际发行价格",
+      "实际发行价"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "assets_debt_ratio",
+    "title": "Debt to Assets Ratio",
+    "aliases": [
+      "assets_debt_ratio",
+      "Debt to Assets Ratio",
+      "资产负债率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "balanced_diluted_eps_ttm",
+    "title": "Diluted EPS (TTM)",
+    "aliases": [
+      "balanced_diluted_eps_ttm",
+      "Diluted EPS (TTM)",
+      "稀释每股收益(TTM)",
+      "EPS dil TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "balanced_diluted_eps_ttm_yoy",
+    "title": "Diluted Earnings per Share TTM (YoY Growth Rate)",
+    "aliases": [
+      "balanced_diluted_eps_ttm_yoy",
+      "Diluted Earnings per Share TTM (YoY Growth Rate)",
+      "稀释每股收益TTM(同比增长率)",
+      "EPS dil growth TTM YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "balanced_eps_ttm_yoy",
+    "title": "Basic Earnings per Share TTM (YoY Growth Rate)",
+    "aliases": [
+      "balanced_eps_ttm_yoy",
+      "Basic Earnings per Share TTM (YoY Growth Rate)",
+      "基本每股收益TTM(同比增长率)",
+      "Basic EPS TTM YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "beta",
+    "title": "Beta",
+    "aliases": [
+      "beta",
+      "Beta",
+      "贝塔值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "capital_expenditure_ttm",
+    "title": "Payments for Property and Equipment (TTM)",
+    "aliases": [
+      "capital_expenditure_ttm",
+      "Payments for Property and Equipment (TTM)",
+      "资本支出(TTM)",
+      "CAPEX TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "capital_invested_return_ratio",
+    "title": "Capital Invested Return Ratio",
+    "aliases": [
+      "capital_invested_return_ratio",
+      "Capital Invested Return Ratio",
+      "投资回报率",
+      "Return on Total Capital TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "capital_invested_return_ratio_ttm",
+    "title": "Return on Invested Capital (ROIC) (TTM)",
+    "aliases": [
+      "capital_invested_return_ratio_ttm",
+      "Return on Invested Capital (ROIC) (TTM)",
+      "ROIC(TTM)",
+      "ROIC (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "cash_and_cash_equivalents",
+    "title": "Cash and Cash Equivalents",
+    "aliases": [
+      "cash_and_cash_equivalents",
+      "Cash and Cash Equivalents",
+      "现金及现金等价物"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "cash_debt_ratio",
+    "title": "Cash to Debt Ratio",
+    "aliases": [
+      "cash_debt_ratio",
+      "Cash to Debt Ratio",
+      "现金债务比率",
+      "Cash / debt FQ"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "cash_equivalents_net_addition",
+    "title": "Increase in Cash and Cash Equivalents",
+    "aliases": [
+      "cash_equivalents_net_addition",
+      "Increase in Cash and Cash Equivalents",
+      "现金及现金等价物净增加额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "cash_ratio",
+    "title": "Cash Ratio",
+    "aliases": [
+      "cash_ratio",
+      "Cash Ratio",
+      "现金比率",
+      "Cash ratio"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "current_ratio",
+    "title": "Current Ratio",
+    "aliases": [
+      "current_ratio",
+      "Current Ratio",
+      "流动比率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "debt",
+    "title": "Debt (FQ)",
+    "aliases": [
+      "debt",
+      "Debt (FQ)",
+      "总债务",
+      "Total Debt FQ"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "debt_equity_ratio",
+    "title": "Debt to Equity Ratio",
+    "aliases": [
+      "debt_equity_ratio",
+      "Debt to Equity Ratio",
+      "负债与权益比率",
+      "Debt / equity FQ"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "dividend_payment_ratio_ttm",
+    "title": "Div Payout Ratio (TTM)",
+    "aliases": [
+      "dividend_payment_ratio_ttm",
+      "Div Payout Ratio (TTM)",
+      "股息支付率(TTM)",
+      "Div payout ratio % (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "earnings_before_interest_taxes",
+    "title": "Earnings Before Interest and Taxes",
+    "aliases": [
+      "earnings_before_interest_taxes",
+      "Earnings Before Interest and Taxes",
+      "息税前利润"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ebit_margin_ttm",
+    "title": "EBIT Profit Margin (TTM)",
+    "aliases": [
+      "ebit_margin_ttm",
+      "EBIT Profit Margin (TTM)",
+      "EBIT利润率(TTM)",
+      "EBIT Margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ebit_ttm",
+    "title": "Earnings Before Interest and Taxes (TTM)",
+    "aliases": [
+      "ebit_ttm",
+      "Earnings Before Interest and Taxes (TTM)",
+      "息税前利润TTM",
+      "EBIT (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ebitda_margin_ttm",
+    "title": "EBITDA Profit Margin (TTM)",
+    "aliases": [
+      "ebitda_margin_ttm",
+      "EBITDA Profit Margin (TTM)",
+      "EBITDA利润率(TTM)",
+      "EBITDA Margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ebitda_ttm",
+    "title": "Earnings Before Interest, Taxes, Depreciation and Amortization (TTM)",
+    "aliases": [
+      "ebitda_ttm",
+      "Earnings Before Interest, Taxes, Depreciation and Amortization (TTM)",
+      "息税前折旧摊销前利润EBITDA(TTM)",
+      "EBITDA TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ebitda_ttm_yoy",
+    "title": "EBITDA (YoY Growth Rate)",
+    "aliases": [
+      "ebitda_ttm_yoy",
+      "EBITDA (YoY Growth Rate)",
+      "EBITDA(TTM，同比增长率)",
+      "EBITDA TTM YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "employee_number",
+    "title": "Number of Employees",
+    "aliases": [
+      "employee_number",
+      "Number of Employees",
+      "员工人数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_actual_disclose_date",
+    "title": "Actual Earnings Release Date",
+    "aliases": [
+      "financial_actual_disclose_date",
+      "Actual Earnings Release Date",
+      "财报实际披露日期",
+      "已披露的财报日期"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_announcement_traceability",
+    "title": "Announcement Source Url",
+    "aliases": [
+      "financial_announcement_traceability",
+      "Announcement Source Url",
+      "财报公告溯源原网地址"
+    ],
+    "attrs": {
+      "time_period": "quarter"
+    },
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_appoint_disclose_date",
+    "title": "Expected Earnings Release Date",
+    "aliases": [
+      "financial_appoint_disclose_date",
+      "Expected Earnings Release Date",
+      "财报预约披露日期",
+      "财报披露日期"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_disclose_time_slot",
+    "title": "Announcement Time Slot",
+    "aliases": [
+      "financial_disclose_time_slot",
+      "Announcement Time Slot",
+      "财报披露时间段",
+      "财报披露的交易时段，盘前、盘中、盘后"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_period",
+    "title": "Latest Earnings Period",
+    "aliases": [
+      "financial_period",
+      "Latest Earnings Period",
+      "财报报告期",
+      "财报报类型"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financial_year",
+    "title": "Accounting Year",
+    "aliases": [
+      "financial_year",
+      "Accounting Year",
+      "财报年度",
+      "已披露的财报年度"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financing_cash_flow_net",
+    "title": "Net Cash Used in Financing Activities",
+    "aliases": [
+      "financing_cash_flow_net",
+      "Net Cash Used in Financing Activities",
+      "筹资活动现金流量净额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financing_cash_flow_net_quarter",
+    "title": "筹资活动现金流量净额（单季度）",
+    "aliases": [
+      "financing_cash_flow_net_quarter",
+      "筹资活动现金流量净额（单季度）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "financing_cash_flow_net_ttm",
+    "title": "Cash Flow From Financing Activities (TTM)",
+    "aliases": [
+      "financing_cash_flow_net_ttm",
+      "Cash Flow From Financing Activities (TTM)",
+      "筹资活动现金流(TTM)",
+      "Financing CF  TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "flow_capital",
+    "title": "Free Float Shares",
+    "aliases": [
+      "flow_capital",
+      "Free Float Shares",
+      "流通股本",
+      "流通股本（股票）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "free_cash_flow_margin_ttm",
+    "title": "Free Cash Flow Profit Margin (TTM)",
+    "aliases": [
+      "free_cash_flow_margin_ttm",
+      "Free Cash Flow Profit Margin (TTM)",
+      "FreecashflowMarginTTM",
+      "Free cash flow Margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "free_cash_flow_ttm",
+    "title": "Free Cash Flow to the Firm (TTM)",
+    "aliases": [
+      "free_cash_flow_ttm",
+      "Free Cash Flow to the Firm (TTM)",
+      "企业自由现金流量(TTM)",
+      "Free cash flow TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "free_cash_flow_ttm_yoy",
+    "title": "Free Cash Flow TTM (YoY Growth Rate)",
+    "aliases": [
+      "free_cash_flow_ttm_yoy",
+      "Free Cash Flow TTM (YoY Growth Rate)",
+      "自由现金流量TTM(同比增长率)",
+      "Free cash flow TTM YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_manage_scale_yoy",
+    "title": "AUM Growth Rate (Monthly) %",
+    "aliases": [
+      "fund_manage_scale_yoy",
+      "AUM Growth Rate (Monthly) %",
+      "基金管理规模增速(月度)",
+      "AUM增速（1M）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_net",
+    "title": "单位净值",
+    "aliases": [
+      "fund_net",
+      "单位净值",
+      "单位净值（ETF）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "gross_profit",
+    "title": "Gross Profit",
+    "aliases": [
+      "gross_profit",
+      "Gross Profit",
+      "毛利润"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "gross_profit_quarter",
+    "title": "毛利润（单季度）",
+    "aliases": [
+      "gross_profit_quarter",
+      "毛利润（单季度）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "gross_profit_ttm",
+    "title": "Gross Earnings (TTM)",
+    "aliases": [
+      "gross_profit_ttm",
+      "Gross Earnings (TTM)",
+      "毛利润(TTM)",
+      "Gross Profit (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "gross_profit_ttm_yoy",
+    "title": "Gross Profit TTM (YoY Growth Rate)",
+    "aliases": [
+      "gross_profit_ttm_yoy",
+      "Gross Profit TTM (YoY Growth Rate)",
+      "毛利TTM(同比增长率)",
+      "毛利润 TTM YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "holder_equity_total",
+    "title": "Total Equity",
+    "aliases": [
+      "holder_equity_total",
+      "Total Equity",
+      "股东权益合计"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "index_weighted_avg_roe_ttm",
+    "title": "Return on Equity (TTM)",
+    "aliases": [
+      "index_weighted_avg_roe_ttm",
+      "Return on Equity (TTM)",
+      "净资产收益率(TTM)",
+      "Return on Equity TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "invest_cash_flow_net",
+    "title": "Net Cash Used in Investing Activities",
+    "aliases": [
+      "invest_cash_flow_net",
+      "Net Cash Used in Investing Activities",
+      "投资活动现金流量净额"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "invest_cash_flow_net_ttm",
+    "title": "Cash Flow From Investing Activities (TTM)",
+    "aliases": [
+      "invest_cash_flow_net_ttm",
+      "Cash Flow From Investing Activities (TTM)",
+      "投资活动现金流(TTM)",
+      "Investing CF  TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "invest_cash_flow_net_quarter",
+    "title": "投资活动现金流量净额（单季度）",
+    "aliases": [
+      "invest_cash_flow_net_quarter",
+      "投资活动现金流量净额（单季度）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "listing_date",
+    "title": "Listing Date",
+    "aliases": [
+      "listing_date",
+      "Listing Date",
+      "上市日期"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "market_sell_administrative_expenses_ratio_ttm",
+    "title": "SG&A Ratio (TTM)",
+    "aliases": [
+      "market_sell_administrative_expenses_ratio_ttm",
+      "SG&A Ratio (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "net_debt",
+    "title": "Net Debt",
+    "aliases": [
+      "net_debt",
+      "Net Debt",
+      "净负债",
+      "Net Debt FQ"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "net_profit",
+    "title": "Net Income",
+    "aliases": [
+      "net_profit",
+      "Net Income",
+      "净利润",
+      "Net income"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "net_profit_ttm",
+    "title": "Net Income (TTM)",
+    "aliases": [
+      "net_profit_ttm",
+      "Net Income (TTM)",
+      "净利润(TTM)",
+      "净利润TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "net_profit_yoy",
+    "title": "净利润YoY",
+    "aliases": [
+      "net_profit_yoy",
+      "净利润YoY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "now_year_return_ratio",
+    "title": "Return Rate This Year",
+    "aliases": [
+      "now_year_return_ratio",
+      "Return Rate This Year",
+      "今年回报率",
+      "近一年累计回报",
+      "etf 特有的 近一年累计回报"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_income_ttm",
+    "title": "Operating Income (TTM)",
+    "aliases": [
+      "operating_income_ttm",
+      "Operating Income (TTM)",
+      "营业收入(TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_income_total",
+    "title": "Total Revenue",
+    "aliases": [
+      "operating_income_total",
+      "Total Revenue",
+      "营业总收入",
+      "Total revenue"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_income_total_ttm",
+    "title": "Revenue (TTM)",
+    "aliases": [
+      "operating_income_total_ttm",
+      "Revenue (TTM)",
+      "营业总收入(TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_income_total_ttm_yoy",
+    "title": "Operating Revenue TTM (YoY Growth Rate)",
+    "aliases": [
+      "operating_income_total_ttm_yoy",
+      "Operating Revenue TTM (YoY Growth Rate)",
+      "营业总收入TTM(同比增长率)",
+      "营业总收入(YoY)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_profit_divide_income_total_ttm",
+    "title": "Operating Profit Margin (TTM)",
+    "aliases": [
+      "operating_profit_divide_income_total_ttm",
+      "Operating Profit Margin (TTM)",
+      "营业利润率(TTM)",
+      "Operating margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "parent_holder_net_profit_ttm",
+    "title": "Net Income Attributable to Common Shareholders (TTM)",
+    "aliases": [
+      "parent_holder_net_profit_ttm",
+      "Net Income Attributable to Common Shareholders (TTM)",
+      "归母净利润(TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "payment_method_code",
+    "title": "Payment Method Code",
+    "aliases": [
+      "payment_method_code",
+      "Payment Method Code",
+      "结算方式编码",
+      "U本位/币本位编码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_assets_total",
+    "title": "Total Assets per Employee",
+    "aliases": [
+      "per_person_assets_total",
+      "Total Assets per Employee",
+      "人均总资产",
+      "Total assets per employee"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_debt",
+    "title": "Total Debt per Employee",
+    "aliases": [
+      "per_person_debt",
+      "Total Debt per Employee",
+      "人均总债务",
+      "Total debt per employee"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_free_cash_flow",
+    "title": "Free Cash Flow per Employee",
+    "aliases": [
+      "per_person_free_cash_flow",
+      "Free Cash Flow per Employee",
+      "人均自由现金流",
+      "Free cash flow per employee"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_net_profit",
+    "title": "Net Profit Per Person",
+    "aliases": [
+      "per_person_net_profit",
+      "Net Profit Per Person",
+      "人均净利润"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_operating_income_total",
+    "title": "Revenue per Employee",
+    "aliases": [
+      "per_person_operating_income_total",
+      "Revenue per Employee",
+      "人均营收",
+      "Revenue / Employee"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_person_research_costs",
+    "title": "Research and Development Expenses per Employee",
+    "aliases": [
+      "per_person_research_costs",
+      "Research and Development Expenses per Employee",
+      "人均研发费用",
+      "Research & development per employee"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend",
+    "title": "Dividend Per Share",
+    "aliases": [
+      "per_share_dividend",
+      "Dividend Per Share",
+      "每股分红"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend_ttm",
+    "title": "Cash Dividend Per Share (TTM)",
+    "aliases": [
+      "per_share_dividend_ttm",
+      "Cash Dividend Per Share (TTM)",
+      "每股分红(TTM)",
+      "TTM股息"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend_factor",
+    "title": "Adjusted Dividend Per Share",
+    "aliases": [
+      "per_share_dividend_factor",
+      "Adjusted Dividend Per Share",
+      "每股分红(复权)",
+      "Div per share FQ"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend_factor_financial_year",
+    "title": "Adjusted Dividend Per Share (LFY)",
+    "aliases": [
+      "per_share_dividend_factor_financial_year",
+      "Adjusted Dividend Per Share (LFY)",
+      "每股分红(复权,财年)",
+      "Div per share LFY"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend_factor_financial_year_dividend",
+    "title": "Consecutive Dividend Payout Years",
+    "aliases": [
+      "per_share_dividend_factor_financial_year_dividend",
+      "Consecutive Dividend Payout Years",
+      "持续分红",
+      "Cont div payout"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "per_share_dividend_factor_financial_year_growth",
+    "title": "Consecutive Dividend Growth",
+    "aliases": [
+      "per_share_dividend_factor_financial_year_growth",
+      "Consecutive Dividend Growth",
+      "持续股息增长",
+      "Cont div growth"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "phone_meeting_file_link",
+    "title": "Earnings Call Document Link",
+    "aliases": [
+      "phone_meeting_file_link",
+      "Earnings Call Document Link",
+      "电话会议文件链接"
+    ],
+    "attrs": {
+      "time_period": "quarter"
+    },
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "phone_meeting_title",
+    "title": "Earnings Call Title",
+    "aliases": [
+      "phone_meeting_title",
+      "Earnings Call Title",
+      "电话会议标题"
+    ],
+    "attrs": {
+      "time_period": "quarter"
+    },
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "profit_before_tax_margin_ttm",
+    "title": "Pretax Profit Margin (TTM)",
+    "aliases": [
+      "profit_before_tax_margin_ttm",
+      "Pretax Profit Margin (TTM)",
+      "税前利润率(TTM)",
+      "Pretax margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "quick_ratio",
+    "title": "Quick Ratio",
+    "aliases": [
+      "quick_ratio",
+      "Quick Ratio",
+      "速动比率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "research_and_development_expenses_ratio_ttm",
+    "title": "Research and Development Expenses Ratio (TTM)",
+    "aliases": [
+      "research_and_development_expenses_ratio_ttm",
+      "Research and Development Expenses Ratio (TTM)",
+      "研发费用比率(TTM)",
+      "R&D Ratio (TTM)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "sale_gross_margin_ttm",
+    "title": "Gross Profit Margin (TTM)",
+    "aliases": [
+      "sale_gross_margin_ttm",
+      "Gross Profit Margin (TTM)",
+      "毛利率(TTM)",
+      "Gross Margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "sale_net_interest_ratio_ttm",
+    "title": "Net Income Margin (TTM)",
+    "aliases": [
+      "sale_net_interest_ratio_ttm",
+      "Net Income Margin (TTM)",
+      "净利润率(TTM)",
+      "Net Margin TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "YYYY-MM-DD",
+    "title": "string",
+    "aliases": [
+      "YYYY-MM-DD",
+      "string",
+      "date",
+      "否",
+      "上线"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_assets_net_ratio_ttm",
+    "title": "Return on Assets (TTM)",
+    "aliases": [
+      "total_assets_net_ratio_ttm",
+      "Return on Assets (TTM)",
+      "资产回报率(TTM)",
+      "Return on Assets TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_assets_turnover_ratio_ttm",
+    "title": "Asset Turnover Ratio (TTM)",
+    "aliases": [
+      "total_assets_turnover_ratio_ttm",
+      "Asset Turnover Ratio (TTM)",
+      "资产周转率(TTM)",
+      "Asset Turnover TTM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_current_assets",
+    "title": "Total Current Assets",
+    "aliases": [
+      "total_current_assets",
+      "Total Current Assets",
+      "流动资产合计"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_debt",
+    "title": "Total Liabilities",
+    "aliases": [
+      "total_debt",
+      "Total Liabilities",
+      "总负债"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "operating_income_total_qoq",
+    "title": "Operating Revenue (YoY Growth Rate)",
+    "aliases": [
+      "operating_income_total_qoq",
+      "Operating Revenue (YoY Growth Rate)",
+      "营业收入(同比增长率)",
+      "营收环比"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "net_profit_qoq",
+    "title": "Net Profit Attributable to Shareholders of the Parent Company (YoY Growth Rate)",
+    "aliases": [
+      "net_profit_qoq",
+      "Net Profit Attributable to Shareholders of the Parent Company (YoY Growth Rate)",
+      "归属母公司股东的净利润(同比增长率)",
+      "归母环比"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "analyst_rating_newest",
+    "title": "Analyst Consensus Rating",
+    "aliases": [
+      "analyst_rating_newest",
+      "Analyst Consensus Rating",
+      "股票分析师评级"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "total_supply",
+    "title": "Crypto Total Supply",
+    "aliases": [
+      "total_supply",
+      "Crypto Total Supply",
+      "总供应",
+      "总供应量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "circulation_supply",
+    "title": "Crypto Circulating Supply",
+    "aliases": [
+      "circulation_supply",
+      "Crypto Circulating Supply",
+      "流通供应量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "circulation_rate",
+    "title": "Circulation Rate",
+    "aliases": [
+      "circulation_rate",
+      "Circulation Rate",
+      "流通率",
+      "流通供应率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "next_interest_reset_date",
+    "title": "Coupon Next Reset Date",
+    "aliases": [
+      "next_interest_reset_date",
+      "Coupon Next Reset Date",
+      "下一次利息重置日",
+      "string",
+      "date",
+      "否",
+      "上线"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_volume_sum",
+    "title": "Aggregate Option Volume",
+    "aliases": [
+      "ext_stat_opt_volume_sum",
+      "Aggregate Option Volume",
+      "标的所属期权成交量之和",
+      "正股对应期权的成交量之和"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_open_interest_sum",
+    "title": "Aggregate Option Open Interest",
+    "aliases": [
+      "ext_stat_opt_open_interest_sum",
+      "Aggregate Option Open Interest",
+      "标的所属期权的持仓量之和",
+      "正股对应期权的持仓量之和"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_volume_put_call_ratio",
+    "title": "C Ratio",
+    "aliases": [
+      "ext_stat_opt_volume_put_call_ratio",
+      "C Ratio",
+      "标的所属期权的put/call成交量比率",
+      "正股对应期权的 put成交量/call成交量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_open_interest_put_call_ratio",
+    "title": "OI-Based Put-Call Ratio",
+    "aliases": [
+      "ext_stat_opt_open_interest_put_call_ratio",
+      "OI-Based Put-Call Ratio",
+      "标的所属期权的put/call持仓量比率",
+      "正标的所属期权的put/call持仓量比率",
+      "正股对应期权的 put持仓量/call持仓量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_iv_avg",
+    "title": "Average Implied Volatility of Underlying Options",
+    "aliases": [
+      "ext_stat_opt_iv_avg",
+      "Average Implied Volatility of Underlying Options",
+      "标的所属期权的IV平均值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_stat_opt_max_pain",
+    "title": "Max Pain",
+    "aliases": [
+      "ext_stat_opt_max_pain",
+      "Max Pain",
+      "最大痛苦点"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_has_opt",
+    "title": "Has Option",
+    "aliases": [
+      "ext_metric_has_opt",
+      "Has Option",
+      "是否有期权",
+      "正股代码是否有期权"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_vol_oi_ratio",
+    "title": "Volume / Open Interest",
+    "aliases": [
+      "ext_metric_vol_oi_ratio",
+      "Volume / Open Interest",
+      "成交量/持仓量",
+      "volume/open_interest"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_moneyness_type",
+    "title": "ITM / OTM",
+    "aliases": [
+      "ext_metric_moneyness_type",
+      "ITM / OTM",
+      "价内价外类型"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_intrinsic_value",
+    "title": "Intrinsic Value",
+    "aliases": [
+      "ext_metric_intrinsic_value",
+      "Intrinsic Value",
+      "内在价值",
+      "内在价值 IntrinsicValue"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_extrinsic_value",
+    "title": "Extrinsic Value",
+    "aliases": [
+      "ext_metric_extrinsic_value",
+      "Extrinsic Value",
+      "时间价值"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "Delta",
+    "title": "Delta",
+    "aliases": [
+      "Delta"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "Rho",
+    "title": "Rho",
+    "aliases": [
+      "Rho"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "Theta",
+    "title": "Theta",
+    "aliases": [
+      "Theta"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_iv",
+    "title": "Implied Volatility",
+    "aliases": [
+      "ext_metric_iv",
+      "Implied Volatility",
+      "IV",
+      "隐含波动率 IV"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Investment Direction",
+    "title": "ETF Long/Short Type",
+    "aliases": [
+      "国际北美etf@Investment Direction",
+      "ETF Long/Short Type",
+      "美股ETF多空类型"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Dividend Frequency",
+    "title": "Fund Dividend Frequency",
+    "aliases": [
+      "国际北美etf@Dividend Frequency",
+      "Fund Dividend Frequency",
+      "基金分红频率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Assets Under Management(Latest)",
+    "title": "AUM (Day)",
+    "aliases": [
+      "国际北美etf@Assets Under Management(Latest)",
+      "AUM (Day)",
+      "AUM"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Expense Ratio",
+    "title": "ETF Expense Ratio",
+    "aliases": [
+      "国际北美etf@Expense Ratio",
+      "ETF Expense Ratio",
+      "ETF费用率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Latest Premium Rate",
+    "title": "Fund Premium Rate",
+    "aliases": [
+      "国际北美etf@Latest Premium Rate",
+      "Fund Premium Rate",
+      "基金溢价率（最新）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Latest Net Fund Flow",
+    "title": "Net Capital Inflows (Snapshot)",
+    "aliases": [
+      "国际北美etf@Latest Net Fund Flow",
+      "Net Capital Inflows (Snapshot)",
+      "ETF资金净流入"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "国际北美etf@Benchmark",
+    "title": "ETF Benchmark",
+    "aliases": [
+      "国际北美etf@Benchmark",
+      "ETF Benchmark"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_etf_type",
+    "title": "ETF Class",
+    "aliases": [
+      "ext_metric_etf_type",
+      "ETF Class",
+      "etf种类",
+      "etf 种类",
+      "产品自定义指标"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_magic_signal",
+    "title": "Magic Signal",
+    "aliases": [
+      "ext_metric_magic_signal",
+      "Magic Signal",
+      "神奇电波",
+      "红绿电波"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_1_code",
+    "title": "Primary Industry Index Code",
+    "aliases": [
+      "ext_metric_sector_1_code",
+      "Primary Industry Index Code",
+      "股票/ETF所属的一级行业指数代码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_1_name",
+    "title": "Primary Industry Name",
+    "aliases": [
+      "ext_metric_sector_1_name",
+      "Primary Industry Name",
+      "股票/ETF所属的一级行业名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_2_code",
+    "title": "Secondary Industry Index Code",
+    "aliases": [
+      "ext_metric_sector_2_code",
+      "Secondary Industry Index Code",
+      "股票/ETF所属的二级行业指数代码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_2_name",
+    "title": "Secondary Industry Name",
+    "aliases": [
+      "ext_metric_sector_2_name",
+      "Secondary Industry Name",
+      "股票/ETF所属的二级行业名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_3_code",
+    "title": "Level 3 Industry Index Code",
+    "aliases": [
+      "ext_metric_sector_3_code",
+      "Level 3 Industry Index Code",
+      "股票/ETF所属的三级行业指数代码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_3_name",
+    "title": "Level 3 Industry Name",
+    "aliases": [
+      "ext_metric_sector_3_name",
+      "Level 3 Industry Name",
+      "股票/ETF所属的三级行业名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_4_code",
+    "title": "Level 4 Industry Index Code",
+    "aliases": [
+      "ext_metric_sector_4_code",
+      "Level 4 Industry Index Code",
+      "股票/ETF所属的四级行业指数代码"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_4_name",
+    "title": "Level 4 Industry Name",
+    "aliases": [
+      "ext_metric_sector_4_name",
+      "Level 4 Industry Name",
+      "股票/ETF所属的四级行业名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_security_class",
+    "title": "Asset Class",
+    "aliases": [
+      "ext_metric_security_class",
+      "Asset Class",
+      "证券类型（行情服务分类）",
+      "证券类型",
+      "证券类型，具体含义见 证券类型"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_sector_level",
+    "title": "Ext Metric Sector Level",
+    "aliases": [
+      "ext_metric_sector_level",
+      "Ext Metric Sector Level",
+      "指数代码行业等级",
+      "同花顺指数代码所属行业等级"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_index_etf_code",
+    "title": "ETF Index Tracked",
+    "aliases": [
+      "ext_metric_index_etf_code",
+      "ETF Index Tracked",
+      "杠杆ETF对应的指数ETF代码",
+      "杠杆ETF对应的指数ETF代码，比如SQQQ对应的是 185:QQQ"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_ipo_status",
+    "title": "IPO Status",
+    "aliases": [
+      "ext_metric_ipo_status",
+      "IPO Status",
+      "新股状态"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_rank_change",
+    "title": "24-hour Rank Change",
+    "aliases": [
+      "ext_metric_rank_change",
+      "24-hour Rank Change",
+      "24小时热榜排名变化"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_highlight",
+    "title": "Core Highlights",
+    "aliases": [
+      "ext_metric_highlight",
+      "Core Highlights",
+      "亮点描述",
+      "亮点描述，支持中英文"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_listed_exchange",
+    "title": "Bourse Code",
+    "aliases": [
+      "ext_metric_listed_exchange",
+      "Bourse Code",
+      "上市交易所编码",
+      "上市交易所的编码，枚举详见市场和交易所"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_listed_exchange_name",
+    "title": "Exchange",
+    "aliases": [
+      "ext_metric_listed_exchange_name",
+      "Exchange",
+      "上市交易所名称"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_fundamental_rating",
+    "title": "Fundamental Rating",
+    "aliases": [
+      "ext_metric_fundamental_rating",
+      "Fundamental Rating",
+      "基础面评分",
+      "基础面评分（股票）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_liquidity_rating",
+    "title": "Liquidity Rating",
+    "aliases": [
+      "ext_metric_liquidity_rating",
+      "Liquidity Rating",
+      "流动性评分",
+      "流动性评分（股票）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_metric_quant_rating",
+    "title": "Quant Rating",
+    "aliases": [
+      "ext_metric_quant_rating",
+      "Quant Rating",
+      "量化评分",
+      "量化评分（股票）"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "yield_to_maturity",
+    "title": "Yield To Maturity",
+    "aliases": [
+      "yield_to_maturity",
+      "Yield To Maturity",
+      "债券收益率",
+      "time_period必选 day_1"
+    ],
+    "attrs": {
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "etfNetBuyFlowMonth",
+    "title": "1-Month Creation/Redemption Flow",
+    "aliases": [
+      "etfNetBuyFlowMonth",
+      "1-Month Creation/Redemption Flow",
+      "近1月申赎资金流动"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfNetBuyFlowNowyear",
+    "title": "YTD Creation/Redemption Flow",
+    "aliases": [
+      "etfNetBuyFlowNowyear",
+      "YTD Creation/Redemption Flow",
+      "今年以来申赎资金流动"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfNetBuyFlowTmonth",
+    "title": "3-Month Creation/Redemption Flow",
+    "aliases": [
+      "etfNetBuyFlowTmonth",
+      "3-Month Creation/Redemption Flow",
+      "近3月申赎资金流动"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfNetBuyFlowTyear",
+    "title": "3-Year Creation/Redemption Flow",
+    "aliases": [
+      "etfNetBuyFlowTyear",
+      "3-Year Creation/Redemption Flow",
+      "近3年申赎资金流动"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfNetBuyFlowYear",
+    "title": "1-Year Creation/Redemption Flow",
+    "aliases": [
+      "etfNetBuyFlowYear",
+      "1-Year Creation/Redemption Flow",
+      "近1年申赎资金流动"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "farDivYld",
+    "title": "Forward Annualized Dividend",
+    "aliases": [
+      "farDivYld",
+      "Forward Annualized Dividend",
+      "远期年化分红"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "heavyWeight5",
+    "title": "Top 5 Weight",
+    "aliases": [
+      "heavyWeight5",
+      "Top 5 Weight",
+      "前5大持仓权重"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "heavyWeight10",
+    "title": "Top 10 Weight",
+    "aliases": [
+      "heavyWeight10",
+      "Top 10 Weight",
+      "前10大持仓权重"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "heavyWeight15",
+    "title": "Top 15 Weight",
+    "aliases": [
+      "heavyWeight15",
+      "Top 15 Weight",
+      "前15大持仓权重"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "heavyWeight25",
+    "title": "Top 25 Weight",
+    "aliases": [
+      "heavyWeight25",
+      "Top 25 Weight",
+      "前25大持仓权重"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "heavyWeight50",
+    "title": "Top 50 Weight",
+    "aliases": [
+      "heavyWeight50",
+      "Top 50 Weight",
+      "前50大持仓权重"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceMonth",
+    "title": "NAV Performance % (1M)",
+    "aliases": [
+      "navPerformanceMonth",
+      "NAV Performance % (1M)",
+      "NAV一个月表现",
+      "nav 一个月表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceTmonth",
+    "title": "NAV Performance % (3M)",
+    "aliases": [
+      "navPerformanceTmonth",
+      "NAV Performance % (3M)",
+      "NAV三个月表现",
+      "nav 三个月表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceYear",
+    "title": "NAV Performance % (1Y)",
+    "aliases": [
+      "navPerformanceYear",
+      "NAV Performance % (1Y)",
+      "NAV一年表现",
+      "nav 一年表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceTyear",
+    "title": "NAV Performance % (3Y)",
+    "aliases": [
+      "navPerformanceTyear",
+      "NAV Performance % (3Y)",
+      "NAV三年表现",
+      "nav 三年表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceFyear",
+    "title": "NAV Performance % (5Y)",
+    "aliases": [
+      "navPerformanceFyear",
+      "NAV Performance % (5Y)",
+      "NAV五年表现",
+      "nav 五年表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navPerformanceNowyear",
+    "title": "NAV Performance % (YTD)",
+    "aliases": [
+      "navPerformanceNowyear",
+      "NAV Performance % (YTD)",
+      "NAV年初至今表现",
+      "nav 年初至今表现"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnMonth",
+    "title": "NAV Total Return (1M)",
+    "aliases": [
+      "navTotalReturnMonth",
+      "NAV Total Return (1M)",
+      "NAV一个月回报率",
+      "nav 一个月回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnTmonth",
+    "title": "NAV Total Return (3M)",
+    "aliases": [
+      "navTotalReturnTmonth",
+      "NAV Total Return (3M)",
+      "NAV三个月回报率",
+      "nav 三个月回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnYear",
+    "title": "NAV Total Return (1Y)",
+    "aliases": [
+      "navTotalReturnYear",
+      "NAV Total Return (1Y)",
+      "NAV一年回报率",
+      "NAV 一年回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnTyear",
+    "title": "NAV Total Return (3Y)",
+    "aliases": [
+      "navTotalReturnTyear",
+      "NAV Total Return (3Y)",
+      "NAV三年回报率",
+      "NAV 三年回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnFyear",
+    "title": "NAV Total Return (5Y)",
+    "aliases": [
+      "navTotalReturnFyear",
+      "NAV Total Return (5Y)",
+      "NAV五年回报率",
+      "NAV 五年回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "navTotalReturnNowyear",
+    "title": "NAV Total Return (YTD)",
+    "aliases": [
+      "navTotalReturnNowyear",
+      "NAV Total Return (YTD)",
+      "NAV年初至今回报率",
+      "NAV 年初至今回报率"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundBrand",
+    "title": "Brand",
+    "aliases": [
+      "fundBrand",
+      "Brand",
+      "品牌名称"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundLegalStruct",
+    "title": "Structure",
+    "aliases": [
+      "fundLegalStruct",
+      "Structure",
+      "法律结构"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundIsActiveMgmt",
+    "title": "Active or Passive Management",
+    "aliases": [
+      "fundIsActiveMgmt",
+      "Active or Passive Management",
+      "是否主动管理",
+      "[1：是；0：否；2：未知]"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundDivTaxType",
+    "title": "Distribution Tax Treatment",
+    "aliases": [
+      "fundDivTaxType",
+      "Distribution Tax Treatment",
+      "分红税类型"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundIncomeTaxType",
+    "title": "Income tax type",
+    "aliases": [
+      "fundIncomeTaxType",
+      "Income tax type",
+      "所得税类型"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalyEn",
+    "title": "Fund Analysis",
+    "aliases": [
+      "fundAnalyEn",
+      "Fund Analysis",
+      "基金分析(英文)"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundIssuer",
+    "title": "Issuer",
+    "aliases": [
+      "fundIssuer",
+      "Issuer",
+      "发行商"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAssetClass",
+    "title": "Asset Class",
+    "aliases": [
+      "fundAssetClass",
+      "Asset Class",
+      "资产类别"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundCategory",
+    "title": "Category",
+    "aliases": [
+      "fundCategory",
+      "Category",
+      "基金分类",
+      "分类"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundFocus",
+    "title": "Focus",
+    "aliases": [
+      "fundFocus",
+      "Focus",
+      "焦点"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundNiche",
+    "title": "Niche",
+    "aliases": [
+      "fundNiche",
+      "Niche",
+      "利基"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundStrategy",
+    "title": "Strategy",
+    "aliases": [
+      "fundStrategy",
+      "Strategy",
+      "策略"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundWeightingScheme",
+    "title": "Weighting scheme",
+    "aliases": [
+      "fundWeightingScheme",
+      "Weighting scheme",
+      "加权方案"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundSelectionCriteria",
+    "title": "Selection Criteria",
+    "aliases": [
+      "fundSelectionCriteria",
+      "Selection Criteria",
+      "选择标准"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundGeography",
+    "title": "Geography",
+    "aliases": [
+      "fundGeography",
+      "Geography",
+      "地理"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundMaxStCapitalGainsRate",
+    "title": "Max ST Capital Gains Rate",
+    "aliases": [
+      "fundMaxStCapitalGainsRate",
+      "Max ST Capital Gains Rate",
+      "最高短期资本利得税",
+      "最高短期资本收益率"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundMaxLtCapitalGainsRate",
+    "title": "Max LT Capital Gains Rate",
+    "aliases": [
+      "fundMaxLtCapitalGainsRate",
+      "Max LT Capital Gains Rate",
+      "最高长期资本利得税",
+      "最高长期资本收益率"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundPrimaryAdvisor",
+    "title": "Primary Advisor",
+    "aliases": [
+      "fundPrimaryAdvisor",
+      "Primary Advisor",
+      "首席顾问"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundDistributor",
+    "title": "Distributor",
+    "aliases": [
+      "fundDistributor",
+      "Distributor",
+      "分销商"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "premiumRate",
+    "title": "Discount/Premium to NAV",
+    "aliases": [
+      "premiumRate",
+      "Discount/Premium to NAV",
+      "基金溢价率(线上使用)",
+      "基金溢价率"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "fundShare",
+    "title": "Number of Shares",
+    "aliases": [
+      "fundShare",
+      "Number of Shares",
+      "份额规模"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundDividendTreatment",
+    "title": "Dividend Treatment",
+    "aliases": [
+      "fundDividendTreatment",
+      "Dividend Treatment",
+      "分红方式"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "issueDate",
+    "title": "Fund Issue Date",
+    "aliases": [
+      "issueDate",
+      "Fund Issue Date",
+      "基金发行日期",
+      "成立日期"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundIndexTracked",
+    "title": "Index Tracked",
+    "aliases": [
+      "fundIndexTracked",
+      "Index Tracked",
+      "跟踪指数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundHomeUrl",
+    "title": "Home URL",
+    "aliases": [
+      "fundHomeUrl",
+      "Home URL",
+      "基金官网主页"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAssetTypeMarketValue",
+    "title": "Asset Market Cap Distribution",
+    "aliases": [
+      "fundAssetTypeMarketValue",
+      "Asset Market Cap Distribution",
+      "基金资产市值分布"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAssetTypeIndustry",
+    "title": "Asset Market Cap Distribution",
+    "aliases": [
+      "fundAssetTypeIndustry",
+      "Asset Market Cap Distribution",
+      "基金资产行业分布"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAssetType",
+    "title": "Asset Type Allocation",
+    "aliases": [
+      "fundAssetType",
+      "Asset Type Allocation",
+      "资产类型分布"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAssetTypeRegion",
+    "title": "Asset Region Distribution",
+    "aliases": [
+      "fundAssetTypeRegion",
+      "Asset Region Distribution",
+      "基金资产地区分布"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundHoldingsCount",
+    "title": "Holdings Count",
+    "aliases": [
+      "fundHoldingsCount",
+      "Holdings Count",
+      "持仓数量"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundMarketCapMin",
+    "title": "Min Market Cap of Holdings",
+    "aliases": [
+      "fundMarketCapMin",
+      "Min Market Cap of Holdings",
+      "持仓市值最小值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundMarketCapMax",
+    "title": "Max Market Cap of Holdings",
+    "aliases": [
+      "fundMarketCapMax",
+      "Max Market Cap of Holdings",
+      "持仓市值最大值"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundMarketCapMedian",
+    "title": "Median Market Cap of Holdings",
+    "aliases": [
+      "fundMarketCapMedian",
+      "Median Market Cap of Holdings",
+      "持仓市值中位数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalystSellNum",
+    "title": "Analyst Sell Number",
+    "aliases": [
+      "fundAnalystSellNum",
+      "Analyst Sell Number",
+      "分析师卖出股票数",
+      "分析师卖出观点数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalystHoldNum",
+    "title": "Analyst Hold Number",
+    "aliases": [
+      "fundAnalystHoldNum",
+      "Analyst Hold Number",
+      "分析师持有股票数",
+      "分析师持有观点数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalystHighlyRecommendNum",
+    "title": "Number of Analyst Highly Recommended Stock",
+    "aliases": [
+      "fundAnalystHighlyRecommendNum",
+      "Number of Analyst Highly Recommended Stock",
+      "分析师强力推荐股票数",
+      "分析师强力推荐观点数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalystUnderperformMarketNum",
+    "title": "Analyst Underperform Market Number",
+    "aliases": [
+      "fundAnalystUnderperformMarketNum",
+      "Analyst Underperform Market Number",
+      "分析师跑输大盘股票数",
+      "分析师跑输大盘观点数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fundAnalystBuyNum",
+    "title": "Analyst Buy Number",
+    "aliases": [
+      "fundAnalystBuyNum",
+      "Analyst Buy Number",
+      "分析师买入股票数",
+      "分析师买入观点数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfPe",
+    "title": "ETF PE",
+    "aliases": [
+      "etfPe",
+      "ETF PE",
+      "ETF市盈率"
+    ],
+    "attrs": {
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "etfPb",
+    "title": "ETF PB",
+    "aliases": [
+      "etfPb",
+      "ETF PB",
+      "ETF市净率"
+    ],
+    "attrs": {
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "adjustedNav",
+    "title": "Adjusted NAV",
+    "aliases": [
+      "adjustedNav",
+      "Adjusted NAV",
+      "前复权基金净值"
+    ],
+    "attrs": {
+      "time_period": "day_1"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967288",
+    "title": "Awesome Oscillator",
+    "aliases": [
+      "4294967288",
+      "Awesome Oscillator",
+      "动量震荡指标"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "indicator_component",
+          "value": "AO"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967287",
+    "title": "Hull Moving Average",
+    "aliases": [
+      "4294967287",
+      "Hull Moving Average",
+      "船体移动平均线"
+    ],
+    "attrs": {
+      "tech_param": [
+        "HMA",
+        "9"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967284",
+    "title": "Ultimate Oscillator",
+    "aliases": [
+      "4294967284",
+      "Ultimate Oscillator",
+      "终极振荡器"
+    ],
+    "attrs": {
+      "tech_param": [
+        "HMA",
+        "7",
+        "14",
+        "28"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967283",
+    "title": "Relative Strength Index",
+    "aliases": [
+      "4294967283",
+      "Relative Strength Index",
+      "随机相对强弱指数",
+      "Stochastic RSI"
+    ],
+    "attrs": {
+      "tech_param": [
+        "K",
+        "3",
+        "3",
+        "14",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967282",
+    "title": "Ichimoku Cloud",
+    "aliases": [
+      "4294967282",
+      "Ichimoku Cloud",
+      "一目均衡表"
+    ],
+    "attrs": {
+      "tech_param": [
+        "Conversion Line",
+        "9",
+        "26",
+        "52",
+        "26"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967281",
+    "title": "Aroon Indicator",
+    "aliases": [
+      "4294967281",
+      "Aroon Indicator",
+      "阿隆指标",
+      "Aroon"
+    ],
+    "attrs": {
+      "tech_param": [
+        "Aroon Up",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967280",
+    "title": "Average Daily Range",
+    "aliases": [
+      "4294967280",
+      "Average Daily Range",
+      "平均日间波幅"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ADR",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967279",
+    "title": "Average Daily Range",
+    "aliases": [
+      "4294967279",
+      "Average Daily Range",
+      "平均日间波幅百分比",
+      "Average Daily Range %"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ADR%",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967293",
+    "title": "Average True Range",
+    "aliases": [
+      "4294967293",
+      "Average True Range",
+      "平均真实波幅"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ATR",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967278",
+    "title": "Average True Range",
+    "aliases": [
+      "4294967278",
+      "Average True Range",
+      "平均真实波幅百分比",
+      "Average True Range %"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ATR%",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "68320",
+    "title": "Bollinger Bands",
+    "aliases": [
+      "68320",
+      "Bollinger Bands",
+      "布林带"
+    ],
+    "attrs": {
+      "tech_param": [
+        "MID",
+        "20",
+        "2"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967277",
+    "title": "Bull Bear Power",
+    "aliases": [
+      "4294967277",
+      "Bull Bear Power",
+      "多空力量指标"
+    ],
+    "attrs": {
+      "tech_param": [
+        "BBPower",
+        "13"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967276",
+    "title": "Chaikin Money Flow",
+    "aliases": [
+      "4294967276",
+      "Chaikin Money Flow",
+      "蔡金资金流量指标"
+    ],
+    "attrs": {
+      "tech_param": [
+        "CMF",
+        "20"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967275",
+    "title": "Commodity Channel Index",
+    "aliases": [
+      "4294967275",
+      "Commodity Channel Index",
+      "商品通道指数"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "Length",
+          "value": 20
+        },
+        {
+          "param": "indicator_component",
+          "value": "CCI"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967274",
+    "title": "Directional Movement Index",
+    "aliases": [
+      "4294967274",
+      "Directional Movement Index",
+      "趋向指标"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ADX",
+        "14",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "265380",
+    "title": "Donchian Channel",
+    "aliases": [
+      "265380",
+      "Donchian Channel",
+      "唐奇安通道",
+      "Donchian Channels"
+    ],
+    "attrs": {
+      "tech_param": [
+        "UPPER",
+        "20"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "265381",
+    "title": "Exponential Moving Average",
+    "aliases": [
+      "265381",
+      "Exponential Moving Average",
+      "指数移动平均线"
+    ],
+    "attrs": {
+      "tech_param": [
+        "EMA",
+        "10"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967273",
+    "title": "Keltner Channel",
+    "aliases": [
+      "4294967273",
+      "Keltner Channel",
+      "凯尔特纳通道",
+      "Keltner Channels"
+    ],
+    "attrs": {
+      "tech_param": [
+        "Upper",
+        "20",
+        "2",
+        "10"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967272",
+    "title": "Momentum",
+    "aliases": [
+      "4294967272",
+      "Momentum",
+      "动量指标"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "Length",
+          "value": 10
+        },
+        {
+          "param": "indicator_component",
+          "value": "MOM"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967271",
+    "title": "Money Flow Index",
+    "aliases": [
+      "4294967271",
+      "Money Flow Index",
+      "资金流量指数"
+    ],
+    "attrs": {
+      "tech_param": [
+        "MFI",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "68317",
+    "title": "Convergence Divergence of Moving Averages",
+    "aliases": [
+      "68317",
+      "Convergence Divergence of Moving Averages",
+      "指数平滑移动平均线（MACD）",
+      "Moving Average Convergence Divergence"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "Short-term",
+          "value": 12
+        },
+        {
+          "param": "Long-term",
+          "value": 26
+        },
+        {
+          "param": "M",
+          "value": 9
+        },
+        {
+          "param": "indicator_component",
+          "value": "DEA"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967270",
+    "title": "Parabolic SAR",
+    "aliases": [
+      "4294967270",
+      "Parabolic SAR",
+      "抛物线转向指标"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ParabolicSAR"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967269",
+    "title": "Rate of Change",
+    "aliases": [
+      "4294967269",
+      "Rate of Change",
+      "变动率指标"
+    ],
+    "attrs": {
+      "tech_param": [
+        "ROC",
+        "9"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967268",
+    "title": "Relative Strength",
+    "aliases": [
+      "4294967268",
+      "Relative Strength",
+      "相对强弱指数",
+      "Relative Strength Index"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "Length",
+          "value": 14
+        },
+        {
+          "param": "indicator_component",
+          "value": "RSI"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "265372",
+    "title": "Simple Moving Average",
+    "aliases": [
+      "265372",
+      "Simple Moving Average",
+      "简单移动平均线"
+    ],
+    "attrs": {
+      "tech_param": [
+        "MA",
+        "10"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967290",
+    "title": "Fast Stochastic",
+    "aliases": [
+      "4294967290",
+      "Fast Stochastic",
+      "随机指标",
+      "Stochastic"
+    ],
+    "attrs": {
+      "trade_class": "intraday",
+      "time_period": "day_1",
+      "tech_param": [
+        {
+          "param": "%K Length",
+          "value": 14
+        },
+        {
+          "param": "%K Smoothing",
+          "value": 3
+        },
+        {
+          "param": "%D Smoothing",
+          "value": 3
+        },
+        {
+          "param": "indicator_component",
+          "value": "%D"
+        }
+      ]
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967292",
+    "title": "Average Price Weighted by Volume",
+    "aliases": [
+      "4294967292",
+      "Average Price Weighted by Volume",
+      "成交量加权平均价",
+      "Volume Weighted Average Price"
+    ],
+    "attrs": {
+      "tech_param": [
+        "VWAP",
+        "1"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967267",
+    "title": "Moving Average Volume Weighted",
+    "aliases": [
+      "4294967267",
+      "Moving Average Volume Weighted",
+      "成交量加权移动平均线",
+      "Volume Weighted Moving Average"
+    ],
+    "attrs": {
+      "tech_param": [
+        "VWMA",
+        "20"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "68321",
+    "title": "Williams %R",
+    "aliases": [
+      "68321",
+      "Williams %R",
+      "威廉百分比范围",
+      "Williams Percent Range"
+    ],
+    "attrs": {
+      "tech_param": [
+        "WR",
+        "14"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967266",
+    "title": "Cam Pivots",
+    "aliases": [
+      "4294967266",
+      "Cam Pivots",
+      "卡玛利拉枢轴点",
+      "Pivot Points Camarilla"
+    ],
+    "attrs": {
+      "tech_param": [
+        "P"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967265",
+    "title": "Classic Pivot",
+    "aliases": [
+      "4294967265",
+      "Classic Pivot",
+      "经典枢轴点",
+      "Pivot Points Classic"
+    ],
+    "attrs": {
+      "tech_param": [
+        "P"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967264",
+    "title": "DeMark Pivots",
+    "aliases": [
+      "4294967264",
+      "DeMark Pivots",
+      "德马克枢轴点",
+      "Pivot Points DeM"
+    ],
+    "attrs": {
+      "tech_param": [
+        "P"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967263",
+    "title": "Fib Pivot",
+    "aliases": [
+      "4294967263",
+      "Fib Pivot",
+      "斐波那契枢轴点",
+      "Pivot Points Fibonacci"
+    ],
+    "attrs": {
+      "tech_param": [
+        "P"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "4294967262",
+    "title": "Woodie Pivot Points",
+    "aliases": [
+      "4294967262",
+      "Woodie Pivot Points",
+      "伍迪枢轴点",
+      "Pivot Points Woodie"
+    ],
+    "attrs": {
+      "tech_param": [
+        "P"
+      ],
+      "time_period": "day_1",
+      "trade_class": "intraday"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_overall_rating",
+    "title": "综合最新得分",
+    "aliases": [
+      "fund_overall_rating",
+      "综合最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "feature_quote_data",
+    "title": "fund_overall_rating_diff_30d",
+    "aliases": [
+      "feature_quote_data",
+      "fund_overall_rating_diff_30d",
+      "综合得分30d差值"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_flow_rating",
+    "title": "资金流最新得分",
+    "aliases": [
+      "fund_flow_rating",
+      "资金流最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_fundamental_rating",
+    "title": "基本面最新得分",
+    "aliases": [
+      "fund_fundamental_rating",
+      "基本面最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_momentum_rating",
+    "title": "动量最新得分",
+    "aliases": [
+      "fund_momentum_rating",
+      "动量最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_perform_rating",
+    "title": "表现最新得分",
+    "aliases": [
+      "fund_perform_rating",
+      "表现最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_safe_rating",
+    "title": "安全最新得分",
+    "aliases": [
+      "fund_safe_rating",
+      "安全最新得分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_overall_mean_rating",
+    "title": "综合平均分",
+    "aliases": [
+      "fund_overall_mean_rating",
+      "综合平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_flow_mean_rating",
+    "title": "资金流平均分",
+    "aliases": [
+      "fund_flow_mean_rating",
+      "资金流平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_fundamental_mean_rating",
+    "title": "基本面平均分",
+    "aliases": [
+      "fund_fundamental_mean_rating",
+      "基本面平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_momentum_mean_rating",
+    "title": "动量平均分",
+    "aliases": [
+      "fund_momentum_mean_rating",
+      "动量平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_perform_mean_rating",
+    "title": "表现平均分",
+    "aliases": [
+      "fund_perform_mean_rating",
+      "表现平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_safe_mean_rating",
+    "title": "安全平均分",
+    "aliases": [
+      "fund_safe_mean_rating",
+      "安全平均分"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_flow_reason",
+    "title": "资金流评分变动原因",
+    "aliases": [
+      "fund_flow_reason",
+      "资金流评分变动原因"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_fundamental_reason",
+    "title": "基本面评分变动原因",
+    "aliases": [
+      "fund_fundamental_reason",
+      "基本面评分变动原因"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_momentum_reason",
+    "title": "动量评分变动原因",
+    "aliases": [
+      "fund_momentum_reason",
+      "动量评分变动原因"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_perform_reason",
+    "title": "表现评分变动原因",
+    "aliases": [
+      "fund_perform_reason",
+      "表现评分变动原因"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "fund_safe_reason",
+    "title": "安全评分变动原因",
+    "aliases": [
+      "fund_safe_reason",
+      "安全评分变动原因"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_concept_desc",
+    "title": "Concept Description",
+    "aliases": [
+      "ext_concept_desc",
+      "Concept Description",
+      "概念描述"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_concept_create_time",
+    "title": "Concept Created Time",
+    "aliases": [
+      "ext_concept_create_time",
+      "Concept Created Time",
+      "概念创建时间"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_concept_update_time",
+    "title": "Concept Updated Time",
+    "aliases": [
+      "ext_concept_update_time",
+      "Concept Updated Time",
+      "概念更新时间"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_concept_member_count",
+    "title": "Number of Constituent Stocks",
+    "aliases": [
+      "ext_concept_member_count",
+      "Number of Constituent Stocks",
+      "概念成分股个数"
+    ],
+    "attrs": {},
+    "sortable": true,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_ai_direction",
+    "title": "Crypto Post AI Direction",
+    "aliases": [
+      "ext_crypto_post_ai_direction",
+      "Crypto Post AI Direction",
+      "AI direction"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_surge_rate",
+    "title": "Ext Crypto Post Surge Rate",
+    "aliases": [
+      "ext_crypto_post_surge_rate",
+      "Ext Crypto Post Surge Rate",
+      "Topic surge\n（热度增长率）",
+      "帖子增长率"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": true,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_unusual_activity",
+    "title": "Ext Crypto Unusual Activity",
+    "aliases": [
+      "ext_crypto_unusual_activity",
+      "Ext Crypto Unusual Activity",
+      "热度异动"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": false,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "Rank",
+    "title": "排名",
+    "aliases": [
+      "Rank",
+      "排名"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "Soaring",
+    "title": "较上次排名变更",
+    "aliases": [
+      "Soaring",
+      "较上次排名变更",
+      "number"
+    ],
+    "attrs": {},
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_count",
+    "title": "Ext Crypto Post Count",
+    "aliases": [
+      "ext_crypto_post_count",
+      "Ext Crypto Post Count",
+      "帖子数量"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_bullish_count",
+    "title": "Ext Crypto Post Bullish Count",
+    "aliases": [
+      "ext_crypto_post_bullish_count",
+      "Ext Crypto Post Bullish Count",
+      "看牛帖子数量"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_bearish_count",
+    "title": "Ext Crypto Post Bearish Count",
+    "aliases": [
+      "ext_crypto_post_bearish_count",
+      "Ext Crypto Post Bearish Count",
+      "看熊帖子数量"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_bullish_abstract",
+    "title": "Ext Crypto Post Bullish Abstract",
+    "aliases": [
+      "ext_crypto_post_bullish_abstract",
+      "Ext Crypto Post Bullish Abstract",
+      "看牛帖子摘要"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  },
+  {
+    "id": "ext_crypto_post_bearish_abstract",
+    "title": "Ext Crypto Post Bearish Abstract",
+    "aliases": [
+      "ext_crypto_post_bearish_abstract",
+      "Ext Crypto Post Bearish Abstract",
+      "看熊帖子摘要"
+    ],
+    "attrs": {
+      "time_period": "min_240"
+    },
+    "sortable": false,
+    "numeric": true,
+    "assets": [
+      "stock",
+      "etf"
+    ]
+  }
+]

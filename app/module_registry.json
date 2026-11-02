@@ -584,5 +584,11 @@
     "script": "data_table.py",
     "label": "完整数据表格",
     "description": "通用完整数据表格：从本地 JSON 文件或结构化 rows 读取全部记录，columns 精确映射字段。固定表头、文本左对齐和数值右对齐、窗口内横纵滚动、全屏查看、全量排序；大数据虚拟滚动不截断源行。支持 --payload、--data-json、--output、--schema。用于明细、清单、完整记录表，不重复生成同一份 Markdown 表格。"
+  },
+  {
+    "name": "ainvest_screener",
+    "script": "screen.py",
+    "label": "US Stock and ETF Screener",
+    "description": "美股、美国上市 ETF 条件筛选数据工具（ainvest-screener）。筛选/选股/选ETF/找符合条件的证券：行业、主题、估值、P/E、ROE、费率、日成交量、资产规模 AUM、收益率和技术指标。支持预设标签、多选 OR、跨字段 AND、排序、分页和表格所需结果；无需登录。先用 fields/metrics/strategies 查相关参数，再用 query --asset stock|etf --filters-json --strategy --columns --sort --order --offset --limit --output --csv 获取筛选结果。不需要先调用 ETF 热力图或全量预取。"
   }
 ]

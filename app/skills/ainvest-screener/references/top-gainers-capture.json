@@ -1,0 +1,220 @@
+{
+  "data_mode": "browser_capture",
+  "captured_at": "2026-11-02T06:43:09.090Z",
+  "method": "POST",
+  "endpoint": "https://extquote.ainvest.com/index_api/indicator/v2/snapshot",
+  "http_status": 200,
+  "request": {
+    "symbol": [
+      {
+        "op": "intersect",
+        "type": "block_id",
+        "value": [
+          "C3FE"
+        ]
+      }
+    ],
+    "indicator": [
+      {
+        "id": "199112",
+        "req_unique_id": "ranking",
+        "attr": {
+          "trade_class": "intraday"
+        }
+      }
+    ],
+    "sort": [
+      {
+        "pos": 0,
+        "order": "desc"
+      }
+    ],
+    "page": {
+      "begin": 0,
+      "count": 20
+    }
+  },
+  "response": {
+    "status_code": 0,
+    "status_msg": "success",
+    "data": {
+      "indicator": [
+        {
+          "id": "199112",
+          "req_unique_id": "ranking",
+          "attr": {
+            "trade_class": "intraday",
+            "value_type": "ratio",
+            "unit": "%"
+          }
+        }
+      ],
+      "symbol_type": "market_code",
+      "data": [
+        {
+          "symbol_code": "171:SNDQ",
+          "value": [
+            {
+              "v": 27.24496
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:AAOZ",
+          "value": [
+            {
+              "v": 26.973275
+            }
+          ]
+        },
+        {
+          "symbol_code": "169:SOXS",
+          "value": [
+            {
+              "v": 24.952015
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:COHQ",
+          "value": [
+            {
+              "v": 23.884261
+            }
+          ]
+        },
+        {
+          "symbol_code": "185:CONI",
+          "value": [
+            {
+              "v": 21.926025
+            }
+          ]
+        },
+        {
+          "symbol_code": "169:DAMD",
+          "value": [
+            {
+              "v": 21.613237
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:SMHD",
+          "value": [
+            {
+              "v": 20.792138
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:UVIX",
+          "value": [
+            {
+              "v": 20.767688
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:NBIZ",
+          "value": [
+            {
+              "v": 20.400381
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:AXTQ",
+          "value": [
+            {
+              "v": 20.063358
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:CORD",
+          "value": [
+            {
+              "v": 19.077568
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:CRCD",
+          "value": [
+            {
+              "v": 18.981481
+            }
+          ]
+        },
+        {
+          "symbol_code": "169:BERZ",
+          "value": [
+            {
+              "v": 18.349564
+            }
+          ]
+        },
+        {
+          "symbol_code": "169:AIQD",
+          "value": [
+            {
+              "v": 17.971505
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:BEZ",
+          "value": [
+            {
+              "v": 17.465224
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:SKHQ",
+          "value": [
+            {
+              "v": 17.275156
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:IREZ",
+          "value": [
+            {
+              "v": 17.250257
+            }
+          ]
+        },
+        {
+          "symbol_code": "171:LITZ",
+          "value": [
+            {
+              "v": 17.012635
+            }
+          ]
+        },
+        {
+          "symbol_code": "185:SMST",
+          "value": [
+            {
+              "v": 16.593567
+            }
+          ]
+        },
+        {
+          "symbol_code": "185:QBTZ",
+          "value": [
+            {
+              "v": 16.373881
+            }
+          ]
+        }
+      ],
+      "page": {
+        "total": 5788
+      }
+    }
+  }
+}

@@ -1,0 +1,4048 @@
+[
+  {
+    "prompt_id": "6a3ccffe5656a1493f5b2ab1",
+    "label": "Exchange",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "NYSE",
+        "value": "NYSE"
+      },
+      {
+        "label": "NASDAQ",
+        "value": "NASDAQ"
+      },
+      {
+        "label": "AMEX",
+        "value": "AMEX"
+      },
+      {
+        "label": "CBOE",
+        "value": "CBOE"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cd24a1bf1ae485128011a",
+    "label": "Index",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "S&P 500",
+        "value": "S&P 500"
+      },
+      {
+        "label": "NASDAQ-100",
+        "value": "NASDAQ-100"
+      },
+      {
+        "label": "Nasdaq",
+        "value": "Nasdaq"
+      },
+      {
+        "label": "Dow Jones",
+        "value": "Dow Jones"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cd4bf5656a1493f5b2ab3",
+    "label": "Sector",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Health Care",
+        "value": "Health Care"
+      },
+      {
+        "label": "Information Technology",
+        "value": "Information Technology"
+      },
+      {
+        "label": "Financials",
+        "value": "Financials"
+      },
+      {
+        "label": "Energy",
+        "value": "Energy"
+      },
+      {
+        "label": "Consumer Staples",
+        "value": "Consumer Staples"
+      },
+      {
+        "label": "Consumer Discretionary",
+        "value": "Consumer Discretionary"
+      },
+      {
+        "label": "Communication Services",
+        "value": "Communication Services"
+      },
+      {
+        "label": "Industrials",
+        "value": "Industrials"
+      },
+      {
+        "label": "Real Estate",
+        "value": "Real Estate"
+      },
+      {
+        "label": "Materials",
+        "value": "Materials"
+      },
+      {
+        "label": "Utilities",
+        "value": "Utilities"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cd7391bf1ae485128011d",
+    "label": "Industry",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Personal Care Products",
+        "value": "Personal Care Products"
+      },
+      {
+        "label": "Hotels, Restaurants & Leisure",
+        "value": "Hotels, Restaurants & Leisure"
+      },
+      {
+        "label": "Leisure Products",
+        "value": "Leisure Products"
+      },
+      {
+        "label": "Paper & Forest Products",
+        "value": "Paper & Forest Products"
+      },
+      {
+        "label": "Technology Hardware, Storage & Peripherals",
+        "value": "Technology Hardware, Storage & Peripherals"
+      },
+      {
+        "label": "Air Freight & Logistics",
+        "value": "Air Freight & Logistics"
+      },
+      {
+        "label": "Life Sciences Tools & Services",
+        "value": "Life Sciences Tools & Services"
+      },
+      {
+        "label": "Banks",
+        "value": "Banks"
+      },
+      {
+        "label": "Retail REITs",
+        "value": "Retail REITs"
+      },
+      {
+        "label": "Industrial Conglomerates",
+        "value": "Industrial Conglomerates"
+      },
+      {
+        "label": "Software",
+        "value": "Software"
+      },
+      {
+        "label": "Trading Companies & Distributors",
+        "value": "Trading Companies & Distributors"
+      },
+      {
+        "label": "Semiconductors & Semiconductor Equipment",
+        "value": "Semiconductors & Semiconductor Equipment"
+      },
+      {
+        "label": "Textiles, Apparel & Luxury Goods",
+        "value": "Textiles, Apparel & Luxury Goods"
+      },
+      {
+        "label": "Beverages",
+        "value": "Beverages"
+      },
+      {
+        "label": "Industrial REITs",
+        "value": "Industrial REITs"
+      },
+      {
+        "label": "Multi-Utilities",
+        "value": "Multi-Utilities"
+      },
+      {
+        "label": "Automobiles",
+        "value": "Automobiles"
+      },
+      {
+        "label": "Chemicals",
+        "value": "Chemicals"
+      },
+      {
+        "label": "Passenger Airlines",
+        "value": "Passenger Airlines"
+      },
+      {
+        "label": "Gas Utilities",
+        "value": "Gas Utilities"
+      },
+      {
+        "label": "Metals & Mining",
+        "value": "Metals & Mining"
+      },
+      {
+        "label": "Transportation Infrastructure",
+        "value": "Transportation Infrastructure"
+      },
+      {
+        "label": "Consumer Staples Distribution & Retail",
+        "value": "Consumer Staples Distribution & Retail"
+      },
+      {
+        "label": "Tobacco",
+        "value": "Tobacco"
+      },
+      {
+        "label": "Diversified Consumer Services",
+        "value": "Diversified Consumer Services"
+      },
+      {
+        "label": "Diversified REITs",
+        "value": "Diversified REITs"
+      },
+      {
+        "label": "Independent Power and Renewable Electricity Producers",
+        "value": "Independent Power and Renewable Electricity Producers"
+      },
+      {
+        "label": "Media",
+        "value": "Media"
+      },
+      {
+        "label": "Automobile Components",
+        "value": "Automobile Components"
+      },
+      {
+        "label": "Consumer Finance",
+        "value": "Consumer Finance"
+      },
+      {
+        "label": "Capital Markets",
+        "value": "Capital Markets"
+      },
+      {
+        "label": "Broadline Retail",
+        "value": "Broadline Retail"
+      },
+      {
+        "label": "Construction & Engineering",
+        "value": "Construction & Engineering"
+      },
+      {
+        "label": "Hotel & Resort REITs",
+        "value": "Hotel & Resort REITs"
+      },
+      {
+        "label": "Household Products",
+        "value": "Household Products"
+      },
+      {
+        "label": "Entertainment",
+        "value": "Entertainment"
+      },
+      {
+        "label": "Distributors",
+        "value": "Distributors"
+      },
+      {
+        "label": "Interactive Media & Services",
+        "value": "Interactive Media & Services"
+      },
+      {
+        "label": "Health Care Providers & Services",
+        "value": "Health Care Providers & Services"
+      },
+      {
+        "label": "IT Services",
+        "value": "IT Services"
+      },
+      {
+        "label": "Specialty Retail",
+        "value": "Specialty Retail"
+      },
+      {
+        "label": "Aerospace & Defense",
+        "value": "Aerospace & Defense"
+      },
+      {
+        "label": "Household Durables",
+        "value": "Household Durables"
+      },
+      {
+        "label": "Health Care Equipment & Supplies",
+        "value": "Health Care Equipment & Supplies"
+      },
+      {
+        "label": "Biotechnology",
+        "value": "Biotechnology"
+      },
+      {
+        "label": "Health Care Technology",
+        "value": "Health Care Technology"
+      },
+      {
+        "label": "Commercial Services & Supplies",
+        "value": "Commercial Services & Supplies"
+      },
+      {
+        "label": "Electrical Equipment",
+        "value": "Electrical Equipment"
+      },
+      {
+        "label": "Health Care REITs",
+        "value": "Health Care REITs"
+      },
+      {
+        "label": "Containers & Packaging",
+        "value": "Containers & Packaging"
+      },
+      {
+        "label": "Food Products",
+        "value": "Food Products"
+      },
+      {
+        "label": "Water Utilities",
+        "value": "Water Utilities"
+      },
+      {
+        "label": "Specialized REITs",
+        "value": "Specialized REITs"
+      },
+      {
+        "label": "Pharmaceuticals",
+        "value": "Pharmaceuticals"
+      },
+      {
+        "label": "Real Estate Management & Development",
+        "value": "Real Estate Management & Development"
+      },
+      {
+        "label": "Professional Services",
+        "value": "Professional Services"
+      },
+      {
+        "label": "Building Products",
+        "value": "Building Products"
+      },
+      {
+        "label": "Electric Utilities",
+        "value": "Electric Utilities"
+      },
+      {
+        "label": "Financial Services",
+        "value": "Financial Services"
+      },
+      {
+        "label": "Machinery",
+        "value": "Machinery"
+      },
+      {
+        "label": "Marine Transportation",
+        "value": "Marine Transportation"
+      },
+      {
+        "label": "Office REITs",
+        "value": "Office REITs"
+      },
+      {
+        "label": "Diversified Telecommunication Services",
+        "value": "Diversified Telecommunication Services"
+      },
+      {
+        "label": "Energy Equipment & Services",
+        "value": "Energy Equipment & Services"
+      },
+      {
+        "label": "Insurance",
+        "value": "Insurance"
+      },
+      {
+        "label": "Oil, Gas & Consumable Fuels",
+        "value": "Oil, Gas & Consumable Fuels"
+      },
+      {
+        "label": "Mortgage Real Estate Investment Trusts (REITs)",
+        "value": "Mortgage Real Estate Investment Trusts (REITs)"
+      },
+      {
+        "label": "Ground Transportation",
+        "value": "Ground Transportation"
+      },
+      {
+        "label": "Construction Materials",
+        "value": "Construction Materials"
+      },
+      {
+        "label": "Residential REITs",
+        "value": "Residential REITs"
+      },
+      {
+        "label": "Wireless Telecommunication Services",
+        "value": "Wireless Telecommunication Services"
+      },
+      {
+        "label": "Communications Equipment",
+        "value": "Communications Equipment"
+      },
+      {
+        "label": "Electronic Equipment, Instruments & Components",
+        "value": "Electronic Equipment, Instruments & Components"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cd8841bf1ae485128011e",
+    "label": "Country",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Isle of Man",
+        "value": "Isle of Man"
+      },
+      {
+        "label": "France",
+        "value": "France"
+      },
+      {
+        "label": "Finland",
+        "value": "Finland"
+      },
+      {
+        "label": "Peru",
+        "value": "Peru"
+      },
+      {
+        "label": "Cayman Islands",
+        "value": "Cayman Islands"
+      },
+      {
+        "label": "Macao",
+        "value": "Macao"
+      },
+      {
+        "label": "United States",
+        "value": "United States"
+      },
+      {
+        "label": "Israel",
+        "value": "Israel"
+      },
+      {
+        "label": "Colombia",
+        "value": "Colombia"
+      },
+      {
+        "label": "Sweden",
+        "value": "Sweden"
+      },
+      {
+        "label": "Denmark",
+        "value": "Denmark"
+      },
+      {
+        "label": "Belgium",
+        "value": "Belgium"
+      },
+      {
+        "label": "United Kingdom",
+        "value": "United Kingdom"
+      },
+      {
+        "label": "Viet Nam",
+        "value": "Viet Nam"
+      },
+      {
+        "label": "Mauritius",
+        "value": "Mauritius"
+      },
+      {
+        "label": "Singapore",
+        "value": "Singapore"
+      },
+      {
+        "label": "Puerto Rico",
+        "value": "Puerto Rico"
+      },
+      {
+        "label": "Kazakhstan",
+        "value": "Kazakhstan"
+      },
+      {
+        "label": "Chile",
+        "value": "Chile"
+      },
+      {
+        "label": "Switzerland",
+        "value": "Switzerland"
+      },
+      {
+        "label": "Argentina",
+        "value": "Argentina"
+      },
+      {
+        "label": "Monaco",
+        "value": "Monaco"
+      },
+      {
+        "label": "Bahamas",
+        "value": "Bahamas"
+      },
+      {
+        "label": "Mexico",
+        "value": "Mexico"
+      },
+      {
+        "label": "India",
+        "value": "India"
+      },
+      {
+        "label": "Germany",
+        "value": "Germany"
+      },
+      {
+        "label": "Taiwan",
+        "value": "Taiwan"
+      },
+      {
+        "label": "Malaysia",
+        "value": "Malaysia"
+      },
+      {
+        "label": "Cambodia",
+        "value": "Cambodia"
+      },
+      {
+        "label": "Australia",
+        "value": "Australia"
+      },
+      {
+        "label": "Uruguay",
+        "value": "Uruguay"
+      },
+      {
+        "label": "United Arab Emirates",
+        "value": "United Arab Emirates"
+      },
+      {
+        "label": "Thailand",
+        "value": "Thailand"
+      },
+      {
+        "label": "Ireland",
+        "value": "Ireland"
+      },
+      {
+        "label": "Luxembourg",
+        "value": "Luxembourg"
+      },
+      {
+        "label": "Japan",
+        "value": "Japan"
+      },
+      {
+        "label": "Hong Kong",
+        "value": "Hong Kong"
+      },
+      {
+        "label": "South Africa",
+        "value": "South Africa"
+      },
+      {
+        "label": "Guernsey",
+        "value": "Guernsey"
+      },
+      {
+        "label": "Gibraltar",
+        "value": "Gibraltar"
+      },
+      {
+        "label": "Canada",
+        "value": "Canada"
+      },
+      {
+        "label": "Brazil",
+        "value": "Brazil"
+      },
+      {
+        "label": "China",
+        "value": "China"
+      },
+      {
+        "label": "Greece",
+        "value": "Greece"
+      },
+      {
+        "label": "Bermuda",
+        "value": "Bermuda"
+      },
+      {
+        "label": "Italy",
+        "value": "Italy"
+      },
+      {
+        "label": "Jersey",
+        "value": "Jersey"
+      },
+      {
+        "label": "Netherlands",
+        "value": "Netherlands"
+      },
+      {
+        "label": "Philippines",
+        "value": "Philippines"
+      },
+      {
+        "label": "Turkey",
+        "value": "Turkey"
+      },
+      {
+        "label": "Indonesia",
+        "value": "Indonesia"
+      },
+      {
+        "label": "Morocco",
+        "value": "Morocco"
+      },
+      {
+        "label": "Spain",
+        "value": "Spain"
+      },
+      {
+        "label": "Jordan",
+        "value": "Jordan"
+      },
+      {
+        "label": "Cyprus",
+        "value": "Cyprus"
+      },
+      {
+        "label": "Norway",
+        "value": "Norway"
+      },
+      {
+        "label": "South Korea",
+        "value": "South Korea"
+      },
+      {
+        "label": "Virgin Islands (British)",
+        "value": "Virgin Islands (British)"
+      },
+      {
+        "label": "Panama",
+        "value": "Panama"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cd9301bf1ae485128011f",
+    "label": "Theme",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Modern Service Industry",
+        "value": "Modern Service Industry"
+      },
+      {
+        "label": "5G",
+        "value": "5G"
+      },
+      {
+        "label": "Shale Oil",
+        "value": "Shale Oil"
+      },
+      {
+        "label": "Legacy stocks",
+        "value": "Legacy stocks"
+      },
+      {
+        "label": "Hedge Fund",
+        "value": "Hedge Fund"
+      },
+      {
+        "label": "Space Exploration",
+        "value": "Space Exploration"
+      },
+      {
+        "label": "Digital Music",
+        "value": "Digital Music"
+      },
+      {
+        "label": "Nuclear Power",
+        "value": "Nuclear Power"
+      },
+      {
+        "label": "Gene Editing",
+        "value": "Gene Editing"
+      },
+      {
+        "label": "Metaverse",
+        "value": "Metaverse"
+      },
+      {
+        "label": "Cyber Security",
+        "value": "Cyber Security"
+      },
+      {
+        "label": "Online Education",
+        "value": "Online Education"
+      },
+      {
+        "label": "Humanoid Robot",
+        "value": "Humanoid Robot"
+      },
+      {
+        "label": "Baby Concept",
+        "value": "Baby Concept"
+      },
+      {
+        "label": "Vaccine Products",
+        "value": "Vaccine Products"
+      },
+      {
+        "label": "ESG Theme",
+        "value": "ESG Theme"
+      },
+      {
+        "label": "Tesla Concept",
+        "value": "Tesla Concept"
+      },
+      {
+        "label": "US tech stocks [US]",
+        "value": "US tech stocks [US]"
+      },
+      {
+        "label": "AIGC",
+        "value": "AIGC"
+      },
+      {
+        "label": "NBA stocks",
+        "value": "NBA stocks"
+      },
+      {
+        "label": "Blockchain Economy",
+        "value": "Blockchain Economy"
+      },
+      {
+        "label": "Soda stock",
+        "value": "Soda stock"
+      },
+      {
+        "label": "Brazil",
+        "value": "Brazil"
+      },
+      {
+        "label": "Dating Economy",
+        "value": "Dating Economy"
+      },
+      {
+        "label": "Low-Cost Airlines",
+        "value": "Low-Cost Airlines"
+      },
+      {
+        "label": "Asset Management",
+        "value": "Asset Management"
+      },
+      {
+        "label": "Wallstreetbets",
+        "value": "Wallstreetbets"
+      },
+      {
+        "label": "Big Data",
+        "value": "Big Data"
+      },
+      {
+        "label": "Fiber optics",
+        "value": "Fiber optics"
+      },
+      {
+        "label": "Trump concept",
+        "value": "Trump concept"
+      },
+      {
+        "label": "Transportation as a Service",
+        "value": "Transportation as a Service"
+      },
+      {
+        "label": "Argentina",
+        "value": "Argentina"
+      },
+      {
+        "label": "Chile",
+        "value": "Chile"
+      },
+      {
+        "label": "ChatGPT",
+        "value": "ChatGPT"
+      },
+      {
+        "label": "MAMAA[US]",
+        "value": "MAMAA[US]"
+      },
+      {
+        "label": "Satellite Communication",
+        "value": "Satellite Communication"
+      },
+      {
+        "label": "Innovative Material",
+        "value": "Innovative Material"
+      },
+      {
+        "label": "Fintech Innovation",
+        "value": "Fintech Innovation"
+      },
+      {
+        "label": "WallStreetBets",
+        "value": "WallStreetBets"
+      },
+      {
+        "label": "Industrial Concept",
+        "value": "Industrial Concept"
+      },
+      {
+        "label": "Medium-Sized Oncology",
+        "value": "Medium-Sized Oncology"
+      },
+      {
+        "label": "The Global Fintech Index",
+        "value": "The Global Fintech Index"
+      },
+      {
+        "label": "Leisure and entertainment",
+        "value": "Leisure and entertainment"
+      },
+      {
+        "label": "Smart City",
+        "value": "Smart City"
+      },
+      {
+        "label": "Medical Insurance",
+        "value": "Medical Insurance"
+      },
+      {
+        "label": "Shoe stocks",
+        "value": "Shoe stocks"
+      },
+      {
+        "label": "Autonomous Vehicles",
+        "value": "Autonomous Vehicles"
+      },
+      {
+        "label": "Electronic Technology",
+        "value": "Electronic Technology"
+      },
+      {
+        "label": "Mattress",
+        "value": "Mattress"
+      },
+      {
+        "label": "Alibaba Concept",
+        "value": "Alibaba Concept"
+      },
+      {
+        "label": "Solar Energy",
+        "value": "Solar Energy"
+      },
+      {
+        "label": "German",
+        "value": "German"
+      },
+      {
+        "label": "Internet of Things",
+        "value": "Internet of Things"
+      },
+      {
+        "label": "Lithium Battery",
+        "value": "Lithium Battery"
+      },
+      {
+        "label": "US Tech",
+        "value": "US Tech"
+      },
+      {
+        "label": "Trading broker",
+        "value": "Trading broker"
+      },
+      {
+        "label": "Alzheimer",
+        "value": "Alzheimer"
+      },
+      {
+        "label": "Solid-State Battery",
+        "value": "Solid-State Battery"
+      },
+      {
+        "label": "Video Game Stocks",
+        "value": "Video Game Stocks"
+      },
+      {
+        "label": "Multimodal AI(Sora)",
+        "value": "Multimodal AI(Sora)"
+      },
+      {
+        "label": "Cryptocurrencies",
+        "value": "Cryptocurrencies"
+      },
+      {
+        "label": "EV Charging",
+        "value": "EV Charging"
+      },
+      {
+        "label": "India",
+        "value": "India"
+      },
+      {
+        "label": "Wireless Charging",
+        "value": "Wireless Charging"
+      },
+      {
+        "label": "VR stocks",
+        "value": "VR stocks"
+      },
+      {
+        "label": "Sea Transportation",
+        "value": "Sea Transportation"
+      },
+      {
+        "label": "Single offering stocks",
+        "value": "Single offering stocks"
+      },
+      {
+        "label": "Lidar sensor",
+        "value": "Lidar sensor"
+      },
+      {
+        "label": "Semiconductor",
+        "value": "Semiconductor"
+      },
+      {
+        "label": "Software stocks",
+        "value": "Software stocks"
+      },
+      {
+        "label": "Environmentally friendly",
+        "value": "Environmentally friendly"
+      },
+      {
+        "label": "Digital Payment",
+        "value": "Digital Payment"
+      },
+      {
+        "label": "Cannabis",
+        "value": "Cannabis"
+      },
+      {
+        "label": "New Retail",
+        "value": "New Retail"
+      },
+      {
+        "label": "South Korean stocks",
+        "value": "South Korean stocks"
+      },
+      {
+        "label": "Weight-Loss Treatment",
+        "value": "Weight-Loss Treatment"
+      },
+      {
+        "label": "Military",
+        "value": "Military"
+      },
+      {
+        "label": "Mobile Gaming",
+        "value": "Mobile Gaming"
+      },
+      {
+        "label": "Alcohol Stocks",
+        "value": "Alcohol Stocks"
+      },
+      {
+        "label": "Verbs or nouns companies",
+        "value": "Verbs or nouns companies"
+      },
+      {
+        "label": "Wearable Technology",
+        "value": "Wearable Technology"
+      },
+      {
+        "label": "Credit card",
+        "value": "Credit card"
+      },
+      {
+        "label": "Commercial Spaceflight",
+        "value": "Commercial Spaceflight"
+      },
+      {
+        "label": "Infrastructure",
+        "value": "Infrastructure"
+      },
+      {
+        "label": "Big Software Stocks [US]",
+        "value": "Big Software Stocks [US]"
+      },
+      {
+        "label": "Big Tech Stocks [US]",
+        "value": "Big Tech Stocks [US]"
+      },
+      {
+        "label": "US food companies",
+        "value": "US food companies"
+      },
+      {
+        "label": "MLB Concept",
+        "value": "MLB Concept"
+      },
+      {
+        "label": "Hydrogen",
+        "value": "Hydrogen"
+      },
+      {
+        "label": "SaaS",
+        "value": "SaaS"
+      },
+      {
+        "label": "Nancy Pelosi Portfolio",
+        "value": "Nancy Pelosi Portfolio"
+      },
+      {
+        "label": "News Stock [US]",
+        "value": "News Stock [US]"
+      },
+      {
+        "label": "Turkish",
+        "value": "Turkish"
+      },
+      {
+        "label": "US Fashion",
+        "value": "US Fashion"
+      },
+      {
+        "label": "Bio-pharmaceutical",
+        "value": "Bio-pharmaceutical"
+      },
+      {
+        "label": "Newspaper stocks",
+        "value": "Newspaper stocks"
+      },
+      {
+        "label": "Large-scale Pharmaceutical",
+        "value": "Large-scale Pharmaceutical"
+      },
+      {
+        "label": "Berkshire Hathaway Portfolio",
+        "value": "Berkshire Hathaway Portfolio"
+      },
+      {
+        "label": "E-Commerce",
+        "value": "E-Commerce"
+      },
+      {
+        "label": "Cloud Computing",
+        "value": "Cloud Computing"
+      },
+      {
+        "label": "Casual dining stocks",
+        "value": "Casual dining stocks"
+      },
+      {
+        "label": "Logistic",
+        "value": "Logistic"
+      },
+      {
+        "label": "Integrated Circuit",
+        "value": "Integrated Circuit"
+      },
+      {
+        "label": "Culture Media",
+        "value": "Culture Media"
+      },
+      {
+        "label": "Electric Vehicles",
+        "value": "Electric Vehicles"
+      },
+      {
+        "label": "3D Printing",
+        "value": "3D Printing"
+      },
+      {
+        "label": "Recession-proof Stocks [US]",
+        "value": "Recession-proof Stocks [US]"
+      },
+      {
+        "label": "Smart Home",
+        "value": "Smart Home"
+      },
+      {
+        "label": "Photovoltaic",
+        "value": "Photovoltaic"
+      },
+      {
+        "label": "Biotechnology",
+        "value": "Biotechnology"
+      },
+      {
+        "label": "GAMAM[US]",
+        "value": "GAMAM[US]"
+      },
+      {
+        "label": "Natural Gas",
+        "value": "Natural Gas"
+      },
+      {
+        "label": "China Tech",
+        "value": "China Tech"
+      },
+      {
+        "label": "China",
+        "value": "China"
+      },
+      {
+        "label": "Bachelor Party Stocks [US]",
+        "value": "Bachelor Party Stocks [US]"
+      },
+      {
+        "label": "UAV",
+        "value": "UAV"
+      },
+      {
+        "label": "Luxury Goods",
+        "value": "Luxury Goods"
+      },
+      {
+        "label": "Biomass",
+        "value": "Biomass"
+      },
+      {
+        "label": "Low-Cap Tumor",
+        "value": "Low-Cap Tumor"
+      },
+      {
+        "label": "TV Broadcasting",
+        "value": "TV Broadcasting"
+      },
+      {
+        "label": "Alternative Energy",
+        "value": "Alternative Energy"
+      },
+      {
+        "label": "NFL stocks",
+        "value": "NFL stocks"
+      },
+      {
+        "label": "Beef",
+        "value": "Beef"
+      },
+      {
+        "label": "Bermuda",
+        "value": "Bermuda"
+      },
+      {
+        "label": "Rare Metal",
+        "value": "Rare Metal"
+      },
+      {
+        "label": "Apple Concept",
+        "value": "Apple Concept"
+      },
+      {
+        "label": "Vegetarianism",
+        "value": "Vegetarianism"
+      },
+      {
+        "label": "Chip Stocks",
+        "value": "Chip Stocks"
+      },
+      {
+        "label": "Reddit",
+        "value": "Reddit"
+      },
+      {
+        "label": "Artificial Intelligence",
+        "value": "Artificial Intelligence"
+      },
+      {
+        "label": "Software Outsourcing",
+        "value": "Software Outsourcing"
+      },
+      {
+        "label": "AR",
+        "value": "AR"
+      },
+      {
+        "label": "FMCG stocks",
+        "value": "FMCG stocks"
+      },
+      {
+        "label": "Sensor",
+        "value": "Sensor"
+      },
+      {
+        "label": "Virtual Reality",
+        "value": "Virtual Reality"
+      },
+      {
+        "label": "Flying Car",
+        "value": "Flying Car"
+      },
+      {
+        "label": "Robot",
+        "value": "Robot"
+      },
+      {
+        "label": "Famous meme stocks",
+        "value": "Famous meme stocks"
+      },
+      {
+        "label": "IDC",
+        "value": "IDC"
+      },
+      {
+        "label": "Monkeypox",
+        "value": "Monkeypox"
+      },
+      {
+        "label": "NVIDIA's shareholding stocks",
+        "value": "NVIDIA's shareholding stocks"
+      },
+      {
+        "label": "MAG7 index",
+        "value": "MAG7 index"
+      },
+      {
+        "label": "MR",
+        "value": "MR"
+      },
+      {
+        "label": "US Truck Transportation",
+        "value": "US Truck Transportation"
+      },
+      {
+        "label": "FANG[US]",
+        "value": "FANG[US]"
+      },
+      {
+        "label": "Coffee",
+        "value": "Coffee"
+      },
+      {
+        "label": "Cancel Research",
+        "value": "Cancel Research"
+      },
+      {
+        "label": "World's oldest companies",
+        "value": "World's oldest companies"
+      },
+      {
+        "label": "Quantum Technology",
+        "value": "Quantum Technology"
+      },
+      {
+        "label": "FAANG[US]",
+        "value": "FAANG[US]"
+      },
+      {
+        "label": "Environmental Protection",
+        "value": "Environmental Protection"
+      },
+      {
+        "label": "AI terminals",
+        "value": "AI terminals"
+      },
+      {
+        "label": "The Big Five",
+        "value": "The Big Five"
+      },
+      {
+        "label": "Tencent Related",
+        "value": "Tencent Related"
+      },
+      {
+        "label": "India Tech",
+        "value": "India Tech"
+      },
+      {
+        "label": "Streaming",
+        "value": "Streaming"
+      },
+      {
+        "label": "South Africa",
+        "value": "South Africa"
+      },
+      {
+        "label": "The United Arab Emirates",
+        "value": "The United Arab Emirates"
+      },
+      {
+        "label": "Chinese Taiwan",
+        "value": "Chinese Taiwan"
+      },
+      {
+        "label": "Social Media",
+        "value": "Social Media"
+      },
+      {
+        "label": "Music stocks",
+        "value": "Music stocks"
+      },
+      {
+        "label": "CPO Concept",
+        "value": "CPO Concept"
+      },
+      {
+        "label": "US software stocks",
+        "value": "US software stocks"
+      },
+      {
+        "label": "Online Game",
+        "value": "Online Game"
+      },
+      {
+        "label": "Elon Musk",
+        "value": "Elon Musk"
+      },
+      {
+        "label": "Chiplet",
+        "value": "Chiplet"
+      },
+      {
+        "label": "Robotaxi",
+        "value": "Robotaxi"
+      },
+      {
+        "label": "Fintech",
+        "value": "Fintech"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3ba70c5656a1493f5b2ab0",
+    "label": "Market Cap",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Mega ($200B+)",
+        "min": 200000000000
+      },
+      {
+        "label": "Large ($10B–$200B)",
+        "min": 10000000000,
+        "max": 200000000000
+      },
+      {
+        "label": "Mid ($2B–$10B)",
+        "min": 2000000000,
+        "max": 10000000000
+      },
+      {
+        "label": "Small ($300M–$2B)",
+        "min": 300000000,
+        "max": 2000000000
+      },
+      {
+        "label": "Micro ($50M–$300M)",
+        "min": 50000000,
+        "max": 300000000
+      },
+      {
+        "label": "Nano (under $50M)",
+        "max": 50000000
+      },
+      {
+        "label": "+Large (over $10B)",
+        "min": 10000000000
+      },
+      {
+        "label": "+Mid (over $2B)",
+        "min": 2000000000
+      },
+      {
+        "label": "+Small (over $300M)",
+        "min": 300000000
+      },
+      {
+        "label": "+Micro (over $50M)",
+        "min": 50000000
+      },
+      {
+        "label": "-Mid (under $10B)",
+        "max": 10000000000
+      },
+      {
+        "label": "-Small (under $2B)",
+        "max": 2000000000
+      },
+      {
+        "label": "-Micro (under $300M)",
+        "max": 300000000
+      },
+      {
+        "label": "-Nano (under $50M)",
+        "max": 50000000
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cda435656a1493f5b2ab4",
+    "label": "Price",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under $1",
+        "max": 1
+      },
+      {
+        "label": "Under $2",
+        "max": 2
+      },
+      {
+        "label": "Under $3",
+        "max": 3
+      },
+      {
+        "label": "Under $4",
+        "max": 4
+      },
+      {
+        "label": "Under $5",
+        "max": 5
+      },
+      {
+        "label": "Under $7",
+        "max": 7
+      },
+      {
+        "label": "Under $10",
+        "max": 10
+      },
+      {
+        "label": "Under $15",
+        "max": 15
+      },
+      {
+        "label": "Under $20",
+        "max": 20
+      },
+      {
+        "label": "Under $30",
+        "max": 30
+      },
+      {
+        "label": "Under $40",
+        "max": 40
+      },
+      {
+        "label": "Under $50",
+        "max": 50
+      },
+      {
+        "label": "Over $1",
+        "min": 1
+      },
+      {
+        "label": "Over $2",
+        "min": 2
+      },
+      {
+        "label": "Over $3",
+        "min": 3
+      },
+      {
+        "label": "Over $4",
+        "min": 4
+      },
+      {
+        "label": "Over $5",
+        "min": 5
+      },
+      {
+        "label": "Over $7",
+        "min": 7
+      },
+      {
+        "label": "Over $10",
+        "min": 10
+      },
+      {
+        "label": "Over $15",
+        "min": 15
+      },
+      {
+        "label": "Over $20",
+        "min": 20
+      },
+      {
+        "label": "Over $30",
+        "min": 30
+      },
+      {
+        "label": "Over $40",
+        "min": 40
+      },
+      {
+        "label": "Over $50",
+        "min": 50
+      },
+      {
+        "label": "Over $60",
+        "min": 60
+      },
+      {
+        "label": "Over $70",
+        "min": 70
+      },
+      {
+        "label": "Over $80",
+        "min": 80
+      },
+      {
+        "label": "Over $90",
+        "min": 90
+      },
+      {
+        "label": "Over $100",
+        "min": 100
+      },
+      {
+        "label": "$1 to $5",
+        "min": 1,
+        "max": 5
+      },
+      {
+        "label": "$1 to $10",
+        "min": 1,
+        "max": 10
+      },
+      {
+        "label": "$1 to $20",
+        "min": 1,
+        "max": 20
+      },
+      {
+        "label": "$5 to $10",
+        "min": 5,
+        "max": 10
+      },
+      {
+        "label": "$5 to $20",
+        "min": 5,
+        "max": 20
+      },
+      {
+        "label": "$5 to $50",
+        "min": 5,
+        "max": 50
+      },
+      {
+        "label": "$10 to $20",
+        "min": 10,
+        "max": 20
+      },
+      {
+        "label": "$10 to $50",
+        "min": 10,
+        "max": 50
+      },
+      {
+        "label": "$20 to $50",
+        "min": 20,
+        "max": 50
+      },
+      {
+        "label": "$50 to $100",
+        "min": 50,
+        "max": 100
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cdafa5656a1493f5b2ab5",
+    "label": "Average Volume",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under 50K",
+        "max": 50000
+      },
+      {
+        "label": "Under 100K",
+        "max": 100000
+      },
+      {
+        "label": "Under 500K",
+        "max": 500000
+      },
+      {
+        "label": "Under 750K",
+        "max": 750000
+      },
+      {
+        "label": "Under 1M",
+        "max": 1000000
+      },
+      {
+        "label": "Over 50K",
+        "min": 50000
+      },
+      {
+        "label": "Over 100K",
+        "min": 100000
+      },
+      {
+        "label": "Over 200K",
+        "min": 200000
+      },
+      {
+        "label": "Over 300K",
+        "min": 300000
+      },
+      {
+        "label": "Over 400K",
+        "min": 400000
+      },
+      {
+        "label": "Over 500K",
+        "min": 500000
+      },
+      {
+        "label": "Over 750K",
+        "min": 750000
+      },
+      {
+        "label": "Over 1M",
+        "min": 1000000
+      },
+      {
+        "label": "Over 2M",
+        "min": 2000000
+      },
+      {
+        "label": "100K to 500K",
+        "min": 100000,
+        "max": 500000
+      },
+      {
+        "label": "100K to 1M",
+        "min": 100000,
+        "max": 1000000
+      },
+      {
+        "label": "500K to 1M",
+        "min": 500000,
+        "max": 1000000
+      },
+      {
+        "label": "500K to 10M",
+        "min": 500000,
+        "max": 10000000
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cdb921bf1ae4851280120",
+    "label": "Trading Volume",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under 50K",
+        "max": 50000
+      },
+      {
+        "label": "Under 100K",
+        "max": 100000
+      },
+      {
+        "label": "Under 500K",
+        "max": 500000
+      },
+      {
+        "label": "Under 750K",
+        "max": 750000
+      },
+      {
+        "label": "Under 1M",
+        "max": 1000000
+      },
+      {
+        "label": "Over 50K",
+        "min": 50000
+      },
+      {
+        "label": "Over 100K",
+        "min": 100000
+      },
+      {
+        "label": "Over 200K",
+        "min": 200000
+      },
+      {
+        "label": "Over 300K",
+        "min": 300000
+      },
+      {
+        "label": "Over 400K",
+        "min": 400000
+      },
+      {
+        "label": "Over 500K",
+        "min": 500000
+      },
+      {
+        "label": "Over 750K",
+        "min": 750000
+      },
+      {
+        "label": "Over 1M",
+        "min": 1000000
+      },
+      {
+        "label": "Over 2M",
+        "min": 2000000
+      },
+      {
+        "label": "100K to 500K",
+        "min": 100000,
+        "max": 500000
+      },
+      {
+        "label": "100K to 1M",
+        "min": 100000,
+        "max": 1000000
+      },
+      {
+        "label": "500K to 1M",
+        "min": 500000,
+        "max": 1000000
+      },
+      {
+        "label": "500K to 10M",
+        "min": 500000,
+        "max": 10000000
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3ce46e5656a1493f5b2ab7",
+    "label": "Target Price",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "50% Above Price",
+        "min": 0.5
+      },
+      {
+        "label": "40% Above Price",
+        "min": 0.4
+      },
+      {
+        "label": "30% Above Price",
+        "min": 0.3
+      },
+      {
+        "label": "20% Above Price",
+        "min": 0.2
+      },
+      {
+        "label": "10% Above Price",
+        "min": 0.1
+      },
+      {
+        "label": "5% Above Price",
+        "min": 0.05
+      },
+      {
+        "label": "Above Price",
+        "min": 0
+      },
+      {
+        "label": "Below Price",
+        "max": 0
+      },
+      {
+        "label": "5% Below Price",
+        "max": -0.05
+      },
+      {
+        "label": "10% Below Price",
+        "max": -0.1
+      },
+      {
+        "label": "20% Below Price",
+        "max": -0.2
+      },
+      {
+        "label": "30% Below Price",
+        "max": -0.3
+      },
+      {
+        "label": "40% Below Price",
+        "max": -0.4
+      },
+      {
+        "label": "50% Below Price",
+        "max": -0.5
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3ce5995656a1493f5b2abb",
+    "label": "Analyst Recom",
+    "category": "descriptive",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Strong Buy",
+        "value": "Strong Buy"
+      },
+      {
+        "label": "Buy",
+        "value": "Buy"
+      },
+      {
+        "label": "Neutral",
+        "value": "Neutral"
+      },
+      {
+        "label": "Sell",
+        "value": "Sell"
+      },
+      {
+        "label": "Strong Sell",
+        "value": "Strong Sell"
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cea5a1bf1ae4851280124",
+    "label": "Shares Outstanding",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under 1M",
+        "max": 1000000
+      },
+      {
+        "label": "Under 5M",
+        "max": 5000000
+      },
+      {
+        "label": "Under 10M",
+        "max": 10000000
+      },
+      {
+        "label": "Under 20M",
+        "max": 20000000
+      },
+      {
+        "label": "Under 50M",
+        "max": 50000000
+      },
+      {
+        "label": "Under 100M",
+        "max": 100000000
+      },
+      {
+        "label": "Over 1M",
+        "min": 1000000
+      },
+      {
+        "label": "Over 2M",
+        "min": 2000000
+      },
+      {
+        "label": "Over 5M",
+        "min": 5000000
+      },
+      {
+        "label": "Over 10M",
+        "min": 10000000
+      },
+      {
+        "label": "Over 20M",
+        "min": 20000000
+      },
+      {
+        "label": "Over 50M",
+        "min": 50000000
+      },
+      {
+        "label": "Over 100M",
+        "min": 100000000
+      },
+      {
+        "label": "Over 200M",
+        "min": 200000000
+      },
+      {
+        "label": "Over 500M",
+        "min": 500000000
+      },
+      {
+        "label": "Over 1000M",
+        "min": 1000000000
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3ceaf31bf1ae4851280125",
+    "label": "Floating Shares",
+    "category": "descriptive",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under 1M",
+        "max": 1000000
+      },
+      {
+        "label": "Under 5M",
+        "max": 5000000
+      },
+      {
+        "label": "Under 10M",
+        "max": 10000000
+      },
+      {
+        "label": "Under 20M",
+        "max": 20000000
+      },
+      {
+        "label": "Under 50M",
+        "max": 50000000
+      },
+      {
+        "label": "Under 100M",
+        "max": 100000000
+      },
+      {
+        "label": "Over 1M",
+        "min": 1000000
+      },
+      {
+        "label": "Over 2M",
+        "min": 2000000
+      },
+      {
+        "label": "Over 5M",
+        "min": 5000000
+      },
+      {
+        "label": "Over 10M",
+        "min": 10000000
+      },
+      {
+        "label": "Over 20M",
+        "min": 20000000
+      },
+      {
+        "label": "Over 50M",
+        "min": 50000000
+      },
+      {
+        "label": "Over 100M",
+        "min": 100000000
+      },
+      {
+        "label": "Over 200M",
+        "min": 200000000
+      },
+      {
+        "label": "Over 500M",
+        "min": 500000000
+      },
+      {
+        "label": "Over 1000M",
+        "min": 1000000000
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44b5b71bf1ae4851280131",
+    "label": "P/E",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<15)",
+        "max": 15
+      },
+      {
+        "label": "Profitable (>=0)",
+        "min": 0
+      },
+      {
+        "label": "High (>=50)",
+        "min": 50
+      },
+      {
+        "label": "Under 5",
+        "max": 5
+      },
+      {
+        "label": "Under 10",
+        "max": 10
+      },
+      {
+        "label": "Under 20",
+        "max": 20
+      },
+      {
+        "label": "Under 25",
+        "max": 25
+      },
+      {
+        "label": "Under 30",
+        "max": 30
+      },
+      {
+        "label": "Under 35",
+        "max": 35
+      },
+      {
+        "label": "Under 40",
+        "max": 40
+      },
+      {
+        "label": "Under 45",
+        "max": 45
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 10",
+        "min": 10
+      },
+      {
+        "label": "Over 15",
+        "min": 15
+      },
+      {
+        "label": "Over 20",
+        "min": 20
+      },
+      {
+        "label": "Over 25",
+        "min": 25
+      },
+      {
+        "label": "Over 30",
+        "min": 30
+      },
+      {
+        "label": "Over 35",
+        "min": 35
+      },
+      {
+        "label": "Over 40",
+        "min": 40
+      },
+      {
+        "label": "Over 45",
+        "min": 45
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44b6691bf1ae4851280132",
+    "label": "PEG",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<1)",
+        "max": 1
+      },
+      {
+        "label": "High (>=2)",
+        "min": 2
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Under 3",
+        "max": 3
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44b7c21bf1ae4851280133",
+    "label": "P/S",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<1)",
+        "max": 1
+      },
+      {
+        "label": "High (>=10)",
+        "min": 10
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Under 3",
+        "max": 3
+      },
+      {
+        "label": "Under 4",
+        "max": 4
+      },
+      {
+        "label": "Under 5",
+        "max": 5
+      },
+      {
+        "label": "Under 6",
+        "max": 6
+      },
+      {
+        "label": "Under 7",
+        "max": 7
+      },
+      {
+        "label": "Under 8",
+        "max": 8
+      },
+      {
+        "label": "Under 9",
+        "max": 9
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 6",
+        "min": 6
+      },
+      {
+        "label": "Over 7",
+        "min": 7
+      },
+      {
+        "label": "Over 8",
+        "min": 8
+      },
+      {
+        "label": "Over 9",
+        "min": 9
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44bb331bf1ae4851280134",
+    "label": "P/B",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<1)",
+        "max": 1
+      },
+      {
+        "label": "High (>=10)",
+        "min": 10
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Under 3",
+        "max": 3
+      },
+      {
+        "label": "Under 4",
+        "max": 4
+      },
+      {
+        "label": "Under 5",
+        "max": 5
+      },
+      {
+        "label": "Under 6",
+        "max": 6
+      },
+      {
+        "label": "Under 7",
+        "max": 7
+      },
+      {
+        "label": "Under 8",
+        "max": 8
+      },
+      {
+        "label": "Under 9",
+        "max": 9
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 6",
+        "min": 6
+      },
+      {
+        "label": "Over 7",
+        "min": 7
+      },
+      {
+        "label": "Over 8",
+        "min": 8
+      },
+      {
+        "label": "Over 9",
+        "min": 9
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44bd1e1bf1ae4851280135",
+    "label": "P/C",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<3)",
+        "max": 3
+      },
+      {
+        "label": "High (>=50)",
+        "min": 50
+      },
+      {
+        "label": "Under 1",
+        "max": 1
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Under 4",
+        "max": 4
+      },
+      {
+        "label": "Under 5",
+        "max": 5
+      },
+      {
+        "label": "Under 6",
+        "max": 6
+      },
+      {
+        "label": "Under 7",
+        "max": 7
+      },
+      {
+        "label": "Under 8",
+        "max": 8
+      },
+      {
+        "label": "Under 9",
+        "max": 9
+      },
+      {
+        "label": "Under 10",
+        "max": 10
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 6",
+        "min": 6
+      },
+      {
+        "label": "Over 7",
+        "min": 7
+      },
+      {
+        "label": "Over 8",
+        "min": 8
+      },
+      {
+        "label": "Over 9",
+        "min": 9
+      },
+      {
+        "label": "Over 10",
+        "min": 10
+      },
+      {
+        "label": "Over 20",
+        "min": 20
+      },
+      {
+        "label": "Over 30",
+        "min": 30
+      },
+      {
+        "label": "Over 40",
+        "min": 40
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44becb1bf1ae4851280136",
+    "label": "Gross Profit Margin",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "High (>=50%)",
+        "min": 0.5
+      },
+      {
+        "label": "Under 90%",
+        "max": 0.9
+      },
+      {
+        "label": "Under 80%",
+        "max": 0.8
+      },
+      {
+        "label": "Under 70%",
+        "max": 0.7
+      },
+      {
+        "label": "Under 60%",
+        "max": 0.6
+      },
+      {
+        "label": "Under 50%",
+        "max": 0.5
+      },
+      {
+        "label": "Under 45%",
+        "max": 0.45
+      },
+      {
+        "label": "Under 40%",
+        "max": 0.4
+      },
+      {
+        "label": "Under 35%",
+        "max": 0.35
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Under 25%",
+        "max": 0.25
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 16%",
+        "max": 0.16
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 5%",
+        "max": 0.05
+      },
+      {
+        "label": "Under -10%",
+        "max": -0.1
+      },
+      {
+        "label": "Under -20%",
+        "max": -0.2
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -70%",
+        "max": -0.7
+      },
+      {
+        "label": "Under -100%",
+        "max": -1
+      },
+      {
+        "label": "Over 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 25%",
+        "min": 0.25
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over 35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over 40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over 45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over 60%",
+        "min": 0.6
+      },
+      {
+        "label": "Over 70%",
+        "min": 0.7
+      },
+      {
+        "label": "Over 80%",
+        "min": 0.8
+      },
+      {
+        "label": "Over 90%",
+        "min": 0.9
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44bf815656a1493f5b2acf",
+    "label": "Operating Profit Margin",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Very Negative (<-20%)",
+        "max": -0.2
+      },
+      {
+        "label": "High (>=25%)",
+        "min": 0.25
+      },
+      {
+        "label": "Under 90%",
+        "max": 0.9
+      },
+      {
+        "label": "Under 80%",
+        "max": 0.8
+      },
+      {
+        "label": "Under 70%",
+        "max": 0.7
+      },
+      {
+        "label": "Under 60%",
+        "max": 0.6
+      },
+      {
+        "label": "Under 50%",
+        "max": 0.5
+      },
+      {
+        "label": "Under 45%",
+        "max": 0.45
+      },
+      {
+        "label": "Under 40%",
+        "max": 0.4
+      },
+      {
+        "label": "Under 35%",
+        "max": 0.35
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Under 25%",
+        "max": 0.25
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 16%",
+        "max": 0.16
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 5%",
+        "max": 0.05
+      },
+      {
+        "label": "Under -10%",
+        "max": -0.1
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -70%",
+        "max": -0.7
+      },
+      {
+        "label": "Under -100%",
+        "max": -1
+      },
+      {
+        "label": "Over 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over 35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over 40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over 45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over 50%",
+        "min": 0.5
+      },
+      {
+        "label": "Over 60%",
+        "min": 0.6
+      },
+      {
+        "label": "Over 70%",
+        "min": 0.7
+      },
+      {
+        "label": "Over 80%",
+        "min": 0.8
+      },
+      {
+        "label": "Over 90%",
+        "min": 0.9
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c0311bf1ae4851280137",
+    "label": "Net Profit Margin",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Very Negative (<-20%)",
+        "max": -0.2
+      },
+      {
+        "label": "High (>=20%)",
+        "min": 0.2
+      },
+      {
+        "label": "Under 90%",
+        "max": 0.9
+      },
+      {
+        "label": "Under 80%",
+        "max": 0.8
+      },
+      {
+        "label": "Under 70%",
+        "max": 0.7
+      },
+      {
+        "label": "Under 60%",
+        "max": 0.6
+      },
+      {
+        "label": "Under 50%",
+        "max": 0.5
+      },
+      {
+        "label": "Under 45%",
+        "max": 0.45
+      },
+      {
+        "label": "Under 40%",
+        "max": 0.4
+      },
+      {
+        "label": "Under 35%",
+        "max": 0.35
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Under 25%",
+        "max": 0.25
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 16%",
+        "max": 0.16
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 5%",
+        "max": 0.05
+      },
+      {
+        "label": "Under -10%",
+        "max": -0.1
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -70%",
+        "max": -0.7
+      },
+      {
+        "label": "Under -100%",
+        "max": -1
+      },
+      {
+        "label": "Over 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over 25%",
+        "min": 0.25
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over 35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over 40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over 45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over 50%",
+        "min": 0.5
+      },
+      {
+        "label": "Over 60%",
+        "min": 0.6
+      },
+      {
+        "label": "Over 70%",
+        "min": 0.7
+      },
+      {
+        "label": "Over 80%",
+        "min": 0.8
+      },
+      {
+        "label": "Over 90%",
+        "min": 0.9
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c2221bf1ae4851280138",
+    "label": "Return on Assets",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Very Positive (>=15%)",
+        "min": 0.15
+      },
+      {
+        "label": "Very Negative (<-15%)",
+        "max": -0.15
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -45%",
+        "max": -0.45
+      },
+      {
+        "label": "Under -40%",
+        "max": -0.4
+      },
+      {
+        "label": "Under -35%",
+        "max": -0.35
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -25%",
+        "max": -0.25
+      },
+      {
+        "label": "Under -20%",
+        "max": -0.2
+      },
+      {
+        "label": "Under -10%",
+        "max": -0.1
+      },
+      {
+        "label": "Under -5%",
+        "max": -0.05
+      },
+      {
+        "label": "Over +5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over +10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over +20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over +25%",
+        "min": 0.25
+      },
+      {
+        "label": "Over +30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over +35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over +40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over +45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over +50%",
+        "min": 0.5
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c2fb5656a1493f5b2ad1",
+    "label": "Return on Equity",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Very Positive (>=30%)",
+        "min": 0.3
+      },
+      {
+        "label": "Very Negative (<-15%)",
+        "max": -0.15
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -45%",
+        "max": -0.45
+      },
+      {
+        "label": "Under -40%",
+        "max": -0.4
+      },
+      {
+        "label": "Under -35%",
+        "max": -0.35
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -25%",
+        "max": -0.25
+      },
+      {
+        "label": "Under -20%",
+        "max": -0.2
+      },
+      {
+        "label": "Under -10%",
+        "max": -0.1
+      },
+      {
+        "label": "Under -5%",
+        "max": -0.05
+      },
+      {
+        "label": "Over +5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over +10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over +15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over +20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over +25%",
+        "min": 0.25
+      },
+      {
+        "label": "Over +35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over +40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over +45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over +50%",
+        "min": 0.5
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c3ea5656a1493f5b2ad2",
+    "label": "Return on Invested Capital",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Very Positive (>=25%)",
+        "min": 0.25
+      },
+      {
+        "label": "Very Negative (<-10%)",
+        "max": -0.1
+      },
+      {
+        "label": "Under -50%",
+        "max": -0.5
+      },
+      {
+        "label": "Under -45%",
+        "max": -0.45
+      },
+      {
+        "label": "Under -40%",
+        "max": -0.4
+      },
+      {
+        "label": "Under -35%",
+        "max": -0.35
+      },
+      {
+        "label": "Under -30%",
+        "max": -0.3
+      },
+      {
+        "label": "Under -25%",
+        "max": -0.25
+      },
+      {
+        "label": "Under -20%",
+        "max": -0.2
+      },
+      {
+        "label": "Under -15%",
+        "max": -0.15
+      },
+      {
+        "label": "Under -5%",
+        "max": -0.05
+      },
+      {
+        "label": "Over +5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over +10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over +15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over +20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over +30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over +35%",
+        "min": 0.35
+      },
+      {
+        "label": "Over +40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over +45%",
+        "min": 0.45
+      },
+      {
+        "label": "Over +50%",
+        "min": 0.5
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c4a71bf1ae4851280139",
+    "label": "Current Ratio",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "High (>=3)",
+        "min": 3
+      },
+      {
+        "label": "Low (<1)",
+        "max": 1
+      },
+      {
+        "label": "Under 0.5",
+        "max": 0.5
+      },
+      {
+        "label": "Over 0.5",
+        "min": 0.5
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 1.5",
+        "min": 1.5
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 10",
+        "min": 10
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c53f1bf1ae485128013a",
+    "label": "Quick Ratio",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "High (>=3)",
+        "min": 3
+      },
+      {
+        "label": "Low (<0.5)",
+        "max": 0.5
+      },
+      {
+        "label": "Under 1",
+        "max": 1
+      },
+      {
+        "label": "Over 0.5",
+        "min": 0.5
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 1.5",
+        "min": 1.5
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Over 10",
+        "min": 10
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c6b85656a1493f5b2ad3",
+    "label": "Payout Ratio",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "Low (<20%)",
+        "max": 0.2
+      },
+      {
+        "label": "High (>=50%)",
+        "min": 0.5
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over 40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over 60%",
+        "min": 0.6
+      },
+      {
+        "label": "Over 70%",
+        "min": 0.7
+      },
+      {
+        "label": "Over 80%",
+        "min": 0.8
+      },
+      {
+        "label": "Over 90%",
+        "min": 0.9
+      },
+      {
+        "label": "Over 100%",
+        "min": 1
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Under 40%",
+        "max": 0.4
+      },
+      {
+        "label": "Under 50%",
+        "max": 0.5
+      },
+      {
+        "label": "Under 60%",
+        "max": 0.6
+      },
+      {
+        "label": "Under 70%",
+        "max": 0.7
+      },
+      {
+        "label": "Under 80%",
+        "max": 0.8
+      },
+      {
+        "label": "Under 90%",
+        "max": 0.9
+      },
+      {
+        "label": "Under 100%",
+        "max": 1
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c7d35656a1493f5b2ad4",
+    "label": "Diluted EPS YoY",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "High (>=25%)",
+        "min": 0.25
+      },
+      {
+        "label": "Under 5%",
+        "max": 0.05
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 15%",
+        "max": 0.15
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 25%",
+        "max": 0.25
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Over 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44c9095656a1493f5b2ad5",
+    "label": "Revenue Yoy Growth",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Negative (<0%)",
+        "max": 0
+      },
+      {
+        "label": "Positive (>=0%)",
+        "min": 0
+      },
+      {
+        "label": "High (>=25%)",
+        "min": 0.25
+      },
+      {
+        "label": "Under 5%",
+        "max": 0.05
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Under 15%",
+        "max": 0.15
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 25%",
+        "max": 0.25
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Over 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a44cce55656a1493f5b2ad6",
+    "label": "Institutional Ownership",
+    "category": "fundamental",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Low (<5%)",
+        "max": 0.05
+      },
+      {
+        "label": "High (>=90%)",
+        "min": 0.9
+      },
+      {
+        "label": "Under 90%",
+        "max": 0.9
+      },
+      {
+        "label": "Under 80%",
+        "max": 0.8
+      },
+      {
+        "label": "Under 70%",
+        "max": 0.7
+      },
+      {
+        "label": "Under 60%",
+        "max": 0.6
+      },
+      {
+        "label": "Under 50%",
+        "max": 0.5
+      },
+      {
+        "label": "Under 40%",
+        "max": 0.4
+      },
+      {
+        "label": "Under 30%",
+        "max": 0.3
+      },
+      {
+        "label": "Under 20%",
+        "max": 0.2
+      },
+      {
+        "label": "Under 10%",
+        "max": 0.1
+      },
+      {
+        "label": "Over 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Over 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Over 30%",
+        "min": 0.3
+      },
+      {
+        "label": "Over 40%",
+        "min": 0.4
+      },
+      {
+        "label": "Over 50%",
+        "min": 0.5
+      },
+      {
+        "label": "Over 60%",
+        "min": 0.6
+      },
+      {
+        "label": "Over 70%",
+        "min": 0.7
+      },
+      {
+        "label": "Over 80%",
+        "min": 0.8
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cec211bf1ae4851280126",
+    "label": "Percentage Change",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Up",
+        "min": 0
+      },
+      {
+        "label": "Up 1%",
+        "min": 0.01
+      },
+      {
+        "label": "Up 2%",
+        "min": 0.02
+      },
+      {
+        "label": "Up 3%",
+        "min": 0.03
+      },
+      {
+        "label": "Up 4%",
+        "min": 0.04
+      },
+      {
+        "label": "Up 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Up 6%",
+        "min": 0.06
+      },
+      {
+        "label": "Up 7%",
+        "min": 0.07
+      },
+      {
+        "label": "Up 8%",
+        "min": 0.08
+      },
+      {
+        "label": "Up 9%",
+        "min": 0.09
+      },
+      {
+        "label": "Up 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Up 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Up 20%",
+        "min": 0.2
+      },
+      {
+        "label": "Down",
+        "max": 0
+      },
+      {
+        "label": "Down 1%",
+        "max": -0.01
+      },
+      {
+        "label": "Down 2%",
+        "max": -0.02
+      },
+      {
+        "label": "Down 3%",
+        "max": -0.03
+      },
+      {
+        "label": "Down 4%",
+        "max": -0.04
+      },
+      {
+        "label": "Down 5%",
+        "max": -0.05
+      },
+      {
+        "label": "Down 6%",
+        "max": -0.06
+      },
+      {
+        "label": "Down 7%",
+        "max": -0.07
+      },
+      {
+        "label": "Down 8%",
+        "max": -0.08
+      },
+      {
+        "label": "Down 9%",
+        "max": -0.09
+      },
+      {
+        "label": "Down 10%",
+        "max": -0.1
+      },
+      {
+        "label": "Down 15%",
+        "max": -0.15
+      },
+      {
+        "label": "Down 20%",
+        "max": -0.2
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3cedc95656a1493f5b2abd",
+    "label": "Gap Up",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Up",
+        "min": 0
+      },
+      {
+        "label": "Up 1%",
+        "min": 0.01
+      },
+      {
+        "label": "Up 2%",
+        "min": 0.02
+      },
+      {
+        "label": "Up 3%",
+        "min": 0.03
+      },
+      {
+        "label": "Up 4%",
+        "min": 0.04
+      },
+      {
+        "label": "Up 5%",
+        "min": 0.05
+      },
+      {
+        "label": "Up 6%",
+        "min": 0.06
+      },
+      {
+        "label": "Up 7%",
+        "min": 0.07
+      },
+      {
+        "label": "Up 8%",
+        "min": 0.08
+      },
+      {
+        "label": "Up 9%",
+        "min": 0.09
+      },
+      {
+        "label": "Up 10%",
+        "min": 0.1
+      },
+      {
+        "label": "Up 15%",
+        "min": 0.15
+      },
+      {
+        "label": "Up 20%",
+        "min": 0.2
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3d10985656a1493f5b2abf",
+    "label": "Gap Down",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Down",
+        "max": 0
+      },
+      {
+        "label": "Down 1%",
+        "max": -0.01
+      },
+      {
+        "label": "Down 2%",
+        "max": -0.02
+      },
+      {
+        "label": "Down 3%",
+        "max": -0.03
+      },
+      {
+        "label": "Down 4%",
+        "max": -0.04
+      },
+      {
+        "label": "Down 5%",
+        "max": -0.05
+      },
+      {
+        "label": "Down 6%",
+        "max": -0.06
+      },
+      {
+        "label": "Down 7%",
+        "max": -0.07
+      },
+      {
+        "label": "Down 8%",
+        "max": -0.08
+      },
+      {
+        "label": "Down 9%",
+        "max": -0.09
+      },
+      {
+        "label": "Down 10%",
+        "max": -0.1
+      },
+      {
+        "label": "Down 15%",
+        "max": -0.15
+      },
+      {
+        "label": "Down 20%",
+        "max": -0.2
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3ba3ab1bf1ae4851280118",
+    "label": "RSI",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Overbought (90)",
+        "min": 90
+      },
+      {
+        "label": "Overbought (80)",
+        "min": 80
+      },
+      {
+        "label": "Overbought (70)",
+        "min": 70
+      },
+      {
+        "label": "Oversold (30)",
+        "max": 30
+      },
+      {
+        "label": "Oversold (20)",
+        "max": 20
+      },
+      {
+        "label": "Oversold (10)",
+        "max": 10
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3d0f815656a1493f5b2abe",
+    "label": "Beta",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Under 0",
+        "max": 0
+      },
+      {
+        "label": "Under 0.5",
+        "max": 0.5
+      },
+      {
+        "label": "Under 1",
+        "max": 1
+      },
+      {
+        "label": "Under 1.5",
+        "max": 1.5
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Over 0",
+        "min": 0
+      },
+      {
+        "label": "Over 0.5",
+        "min": 0.5
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 1.5",
+        "min": 1.5
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 2.5",
+        "min": 2.5
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "0 to 0.5",
+        "min": 0,
+        "max": 0.5
+      },
+      {
+        "label": "0 to 1",
+        "min": 0,
+        "max": 1
+      },
+      {
+        "label": "0.5 to 1",
+        "min": 0.5,
+        "max": 1
+      },
+      {
+        "label": "0.5 to 1.5",
+        "min": 0.5,
+        "max": 1.5
+      },
+      {
+        "label": "1 to 1.5",
+        "min": 1,
+        "max": 1.5
+      },
+      {
+        "label": "1 to 2",
+        "min": 1,
+        "max": 2
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3d12c51bf1ae4851280127",
+    "label": "ATR",
+    "category": "technical",
+    "type": "range",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Over 0.25",
+        "min": 0.25
+      },
+      {
+        "label": "Over 0.5",
+        "min": 0.5
+      },
+      {
+        "label": "Over 0.75",
+        "min": 0.75
+      },
+      {
+        "label": "Over 1",
+        "min": 1
+      },
+      {
+        "label": "Over 1.5",
+        "min": 1.5
+      },
+      {
+        "label": "Over 2",
+        "min": 2
+      },
+      {
+        "label": "Over 2.5",
+        "min": 2.5
+      },
+      {
+        "label": "Over 3",
+        "min": 3
+      },
+      {
+        "label": "Over 3.5",
+        "min": 3.5
+      },
+      {
+        "label": "Over 4",
+        "min": 4
+      },
+      {
+        "label": "Over 4.5",
+        "min": 4.5
+      },
+      {
+        "label": "Over 5",
+        "min": 5
+      },
+      {
+        "label": "Under 0.25",
+        "max": 0.25
+      },
+      {
+        "label": "Under 0.5",
+        "max": 0.5
+      },
+      {
+        "label": "Under 0.75",
+        "max": 0.75
+      },
+      {
+        "label": "Under 1",
+        "max": 1
+      },
+      {
+        "label": "Under 1.5",
+        "max": 1.5
+      },
+      {
+        "label": "Under 2",
+        "max": 2
+      },
+      {
+        "label": "Under 2.5",
+        "max": 2.5
+      },
+      {
+        "label": "Under 3",
+        "max": 3
+      },
+      {
+        "label": "Under 3.5",
+        "max": 3.5
+      },
+      {
+        "label": "Under 4",
+        "max": 4
+      },
+      {
+        "label": "Under 4.5",
+        "max": 4.5
+      },
+      {
+        "label": "Under 5",
+        "max": 5
+      }
+    ]
+  },
+  {
+    "prompt_id": "6a3d1c295656a1493f5b2ac1",
+    "label": "Candlestick",
+    "category": "technical",
+    "type": "value",
+    "enabled": true,
+    "options": [
+      {
+        "label": "Long Lower Shadow",
+        "value": "long_lower_shadow"
+      },
+      {
+        "label": "Long Upper Shadow",
+        "value": "long_upper_shadow"
+      },
+      {
+        "label": "Hammer",
+        "value": "hammer"
+      },
+      {
+        "label": "Inverted Hammer",
+        "value": "inverted_hammer"
+      },
+      {
+        "label": "Spinning Top White",
+        "value": "spinning_top_white"
+      },
+      {
+        "label": "Spinning Top Black",
+        "value": "spinning_top_black"
+      },
+      {
+        "label": "Dragonfly Doji",
+        "value": "dragonfly_doji"
+      },
+      {
+        "label": "Marubozu White",
+        "value": "marubozu_white"
+      },
+      {
+        "label": "Marubozu Black",
+        "value": "marubozu_black"
+      }
+    ]
+  }
+]

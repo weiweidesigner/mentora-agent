@@ -1,0 +1,1428 @@
+[
+  {
+    "value": "overview",
+    "label": "Overview",
+    "columns": [
+      {
+        "index_id": "国际北美etf@Assets Under Management(Latest)",
+        "column_key": "overview.0",
+        "lang_key": "AinvestWeb_market_metric_aum",
+        "title": "AUM",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "10",
+        "column_key": "overview.1",
+        "lang_key": "AinvestWeb_market_metric_last",
+        "title": "Last",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "199112",
+        "column_key": "overview.2",
+        "lang_key": "AinvestWeb_market_metric_change%",
+        "title": "Change %",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "19",
+        "column_key": "overview.3",
+        "lang_key": "AinvestWeb_market_metric_turnover",
+        "title": "Turnover",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "264648",
+        "column_key": "overview.4",
+        "lang_key": "AinvestWeb_market_metric_change",
+        "title": "Change",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "13",
+        "column_key": "overview.5",
+        "lang_key": "AinvestWeb_market_metric_volume",
+        "title": "Volume",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "relative_volume_ratio",
+        "column_key": "overview.6",
+        "lang_key": "AinvestWeb_market_metric_relative_volume",
+        "title": "Rel Volume",
+        "index_attr": {
+          "time_period": "day_1"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "turnover_ratio_pct",
+        "column_key": "overview.7",
+        "lang_key": "AinvestWeb_market_metric_%turnover",
+        "title": "Turnover %",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "dividend_ratio_pct_ttm",
+        "column_key": "overview.8",
+        "lang_key": "AinvestWeb_market_metric_div_yield_ttm",
+        "title": "Div Yield % (TTM)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "overview.9",
+        "lang_key": "AinvestWeb_market_metric_change_ratio_ytd",
+        "title": "Change % (YTD)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Expense Ratio",
+        "column_key": "overview.10",
+        "lang_key": "AinvestWeb_market_metric_expense",
+        "title": "Expense Ratio",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Leverage Ratio",
+        "column_key": "overview.11",
+        "lang_key": "AinvestWeb_market_stock_list_tab_20",
+        "title": "Leveraged",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "199590",
+        "column_key": "overview.12",
+        "lang_key": "AinvestWeb_market_stock_list_tab_29",
+        "title": "52W High",
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "199591",
+        "column_key": "overview.13",
+        "lang_key": "AinvestWeb_market_stock_list_tab_31",
+        "title": "52W Low",
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "overview.14",
+        "lang_key": "AinvestWeb_market_metric_total_return",
+        "title": "Total Return (1Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-annual_return_ratio_pct-sum",
+        "column_key": "overview.15",
+        "lang_key": "AinvestWeb_market_metric_annual_return",
+        "title": "Annual Return (3Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_3",
+          "period_type": "rolling"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct_diff-sum",
+        "column_key": "overview.16",
+        "lang_key": "AinvestWeb_market_metric_total_return_sp500",
+        "title": "Total Return (1Y) vs. S&P 500",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1",
+          "period_type": "rolling2",
+          "match_code": "169:SPY"
+        },
+        "formatter": "percent",
+        "width": 148,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "listing_date",
+        "column_key": "overview.17",
+        "lang_key": "AinvestWeb_market_metric_listed",
+        "title": "Listed",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnTyear",
+        "column_key": "overview.18",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_3y",
+        "title": "NAV Total Return (3Y)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Asset Class",
+        "column_key": "overview.19",
+        "lang_key": "AinvestWeb_market_metric_asset_class",
+        "title": "Asset Class",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundFocus",
+        "column_key": "overview.20",
+        "lang_key": "AinvestWeb_market_metric_focus",
+        "title": "Focus",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundNiche",
+        "column_key": "overview.21",
+        "lang_key": "AinvestWeb_market_metric_niche",
+        "title": "Niche",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundStrategy",
+        "column_key": "overview.22",
+        "lang_key": "AinvestWeb_market_metric_strategy",
+        "title": "Strategy",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundCategory",
+        "column_key": "overview.23",
+        "lang_key": "AinvestWeb_market_metric_category_classification",
+        "title": "Category Classification",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_manage_scale_yoy",
+        "column_key": "overview.24",
+        "lang_key": "AinvestWeb_market_metric_aum_performance_1m",
+        "title": "AUM Performance % (1M)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Latest Premium Rate",
+        "column_key": "premiumRate",
+        "lang_key": "AinvestWeb_market_metric_disc_prem_to_nav",
+        "title": "Disc / Prem to NAV",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "performance",
+    "label": "Performance",
+    "columns": [
+      {
+        "index_id": "10",
+        "column_key": "performance.0",
+        "lang_key": "AinvestWeb_market_metric_last",
+        "title": "Last",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "199112",
+        "column_key": "performance.1",
+        "lang_key": "AinvestWeb_market_metric_change%",
+        "title": "Change %",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.2",
+        "lang_key": "AinvestWeb_market_metric_change_1w",
+        "title": "Perf % (1W)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "week_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.3",
+        "lang_key": "AinvestWeb_market_metric_change_1m",
+        "title": "Perf % (1M)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "month_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.4",
+        "lang_key": "AinvestWeb_market_metric_change_3m",
+        "title": "Perf % (3M)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "month_3",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.5",
+        "lang_key": "AinvestWeb_market_metric_change_6m",
+        "title": "Perf % (6M)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "month_6",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.6",
+        "lang_key": "AinvestWeb_market_metric_change_ytd",
+        "title": "Perf % (YTD)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.7",
+        "lang_key": "AinvestWeb_market_metric_change_1y",
+        "title": "Perf % (1Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.8",
+        "lang_key": "AinvestWeb_market_metric_change_3y",
+        "title": "Perf % (3Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_3",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.9",
+        "lang_key": "AinvestWeb_market_metric_change_5y",
+        "title": "Perf % (5Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_5",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-open_price_change_ratio_pct-sum",
+        "column_key": "performance.10",
+        "lang_key": "AinvestWeb_market_metric_change_10y",
+        "title": "Perf % (10Y)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "year_10",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "extendedHours",
+    "label": "Extended Hours",
+    "columns": [
+      {
+        "index_id": "10",
+        "column_key": "extendedHours.0",
+        "lang_key": "AinvestWeb_market_metric_last_pre",
+        "title": "Pre-Market Last",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "199112",
+        "column_key": "extendedHours.1",
+        "lang_key": "AinvestWeb_market_metric_change%_pre",
+        "title": "Pre-Market Chg %",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "264648",
+        "column_key": "extendedHours.2",
+        "lang_key": "AinvestWeb_market_metric_change_pre",
+        "title": "Pre-Market Chg",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "13",
+        "column_key": "extendedHours.3",
+        "lang_key": "AinvestWeb_market_metric_volume_pre",
+        "title": "Pre-Market Vol",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "19",
+        "column_key": "extendedHours.4",
+        "lang_key": "AinvestWeb_market_metric_turnover_pre",
+        "title": "Pre-Market Turnover",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "price_gap_ratio_pct",
+        "column_key": "extendedHours.5",
+        "lang_key": "AinvestWeb_market_metric_pre_market_gap",
+        "title": "Pre-Market Gap %",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "8",
+        "column_key": "extendedHours.6",
+        "lang_key": "AinvestWeb_market_metric_high_pre",
+        "title": "Pre-Market High",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "9",
+        "column_key": "extendedHours.7",
+        "lang_key": "AinvestWeb_market_metric_low_pre",
+        "title": "Pre-Market Low",
+        "index_attr": {
+          "trade_class": "pre_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "10",
+        "column_key": "extendedHours.8",
+        "lang_key": "AinvestWeb_market_metric_last",
+        "title": "Last",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "199112",
+        "column_key": "extendedHours.9",
+        "lang_key": "AinvestWeb_market_metric_change%",
+        "title": "Change %",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "price_gap_ratio_pct",
+        "column_key": "extendedHours.10",
+        "lang_key": "AinvestWeb_market_metric_gap",
+        "title": "Gap %",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "13",
+        "column_key": "extendedHours.11",
+        "lang_key": "AinvestWeb_market_metric_volume",
+        "title": "Volume",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "19",
+        "column_key": "extendedHours.12",
+        "lang_key": "AinvestWeb_market_metric_turnover",
+        "title": "Turnover",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "volume_change_ratio_pct",
+        "column_key": "extendedHours.13",
+        "lang_key": "AinvestWeb_market_metric_vol_change",
+        "title": "Vol Change %",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "10",
+        "column_key": "extendedHours.14",
+        "lang_key": "AinvestWeb_market_metric_last_post",
+        "title": "Post-Market Last",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "199112",
+        "column_key": "extendedHours.15",
+        "lang_key": "AinvestWeb_market_metric_change%_post",
+        "title": "Post-Market Chg %",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "264648",
+        "column_key": "extendedHours.16",
+        "lang_key": "AinvestWeb_market_metric_change_post",
+        "title": "Post-Market Chg",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": true,
+        "realtime": true
+      },
+      {
+        "index_id": "13",
+        "column_key": "extendedHours.17",
+        "lang_key": "AinvestWeb_market_metric_volume_post",
+        "title": "Post-Market Vol",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "19",
+        "column_key": "extendedHours.18",
+        "lang_key": "AinvestWeb_market_metric_turnover_post",
+        "title": "Post-Market Turnover",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "8",
+        "column_key": "extendedHours.19",
+        "lang_key": "AinvestWeb_market_metric_high_post",
+        "title": "Post-Market High",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "9",
+        "column_key": "extendedHours.20",
+        "lang_key": "AinvestWeb_market_metric_low_post",
+        "title": "Post-Market Low",
+        "index_attr": {
+          "trade_class": "post_market"
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "fundFlows",
+    "label": "Fund Flows",
+    "columns": [
+      {
+        "index_id": "etfNetBuyFlowMonth",
+        "column_key": "fundFlows.0",
+        "lang_key": "AinvestWeb_market_metric_fund_flows_1m",
+        "title": "Fund Flows (1M)",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "etfNetBuyFlowTmonth",
+        "column_key": "fundFlows.1",
+        "lang_key": "AinvestWeb_market_metric_fund_flows_3m",
+        "title": "Fund Flows (3M)",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "etfNetBuyFlowYear",
+        "column_key": "fundFlows.2",
+        "lang_key": "AinvestWeb_market_metric_fund_flows_1y",
+        "title": "Fund Flows (1Y)",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "etfNetBuyFlowTyear",
+        "column_key": "fundFlows.3",
+        "lang_key": "AinvestWeb_market_metric_fund_flows_3y",
+        "title": "Fund Flows (3Y)",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "etfNetBuyFlowNowyear",
+        "column_key": "fundFlows.4",
+        "lang_key": "AinvestWeb_market_metric_fund_flows_ytd",
+        "title": "Fund Flows (YTD)",
+        "formatter": "compact",
+        "width": 108,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "dividends",
+    "label": "Dividends",
+    "columns": [
+      {
+        "index_id": "10",
+        "column_key": "dividends.0",
+        "lang_key": "AinvestWeb_market_metric_last",
+        "title": "Last",
+        "index_attr": {
+          "trade_class": "intraday"
+        },
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": true
+      },
+      {
+        "index_id": "dividend_ratio_pct_ttm",
+        "column_key": "dividends.1",
+        "lang_key": "AinvestWeb_market_metric_div_yield_indicated",
+        "title": "Div Yield % (Indicated)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "farDivYld",
+        "column_key": "dividends.2",
+        "lang_key": "AinvestWeb_market_metric_ind_annual_div",
+        "title": "Ind Annual Div",
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Dividend Frequency",
+        "column_key": "dividends.3",
+        "lang_key": "AinvestWeb_market_metric_div_frequency",
+        "title": "Div Frequency",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundDividendTreatment",
+        "column_key": "dividends.4",
+        "lang_key": "AinvestWeb_market_metric_div_treatment",
+        "title": "Div Treatment",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "navPerformance",
+    "label": "NAV Performance",
+    "columns": [
+      {
+        "index_id": "fund_net",
+        "column_key": "navPerformance.0",
+        "lang_key": "AinvestWeb_market_metric_nav",
+        "title": "NAV",
+        "formatter": "price",
+        "width": 88,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Latest Premium Rate",
+        "column_key": "navPerformance.premiumRate",
+        "lang_key": "AinvestWeb_market_metric_disc_prem_to_nav",
+        "title": "Disc / Prem to NAV",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "navPerformanceMonth",
+        "column_key": "navPerformance.2",
+        "lang_key": "AinvestWeb_market_metric_nav_perf_1m",
+        "title": "NAV Perf % (1M)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navPerformanceTmonth",
+        "column_key": "navPerformance.3",
+        "lang_key": "AinvestWeb_market_metric_nav_perf_3m",
+        "title": "NAV Perf % (3M)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navPerformanceYear",
+        "column_key": "navPerformance.4",
+        "lang_key": "AinvestWeb_market_metric_nav_perf_1y",
+        "title": "NAV Perf % (1Y)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navPerformanceTyear",
+        "column_key": "navPerformance.5",
+        "lang_key": "AinvestWeb_market_metric_nav_perf_3y",
+        "title": "NAV Perf % (3Y)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navPerformanceNowyear",
+        "column_key": "navPerformance.6",
+        "lang_key": "AinvestWeb_market_metric_nav_perf_ytd",
+        "title": "NAV Perf % (YTD)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnMonth",
+        "column_key": "navPerformance.7",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_1m",
+        "title": "NAV Total Return (1M)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnTmonth",
+        "column_key": "navPerformance.8",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_3m",
+        "title": "NAV Total Return (3M)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnYear",
+        "column_key": "navPerformance.9",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_1y",
+        "title": "NAV Total Return (1Y)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnTyear",
+        "column_key": "navPerformance.10",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_3y",
+        "title": "NAV Total Return (3Y)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      },
+      {
+        "index_id": "navTotalReturnNowyear",
+        "column_key": "navPerformance.11",
+        "lang_key": "AinvestWeb_market_metric_nav_total_return_ytd",
+        "title": "NAV Total Return (YTD)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": true,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "holdings",
+    "label": "Holdings",
+    "columns": [
+      {
+        "index_id": "fundIssuer",
+        "column_key": "holdings.0",
+        "lang_key": "AinvestWeb_screener_holdings_0",
+        "title": "Issuer",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "heavyWeight10",
+        "column_key": "holdings.1",
+        "lang_key": "AinvestWeb_screener_holdings_1",
+        "title": "Top 10 Weight",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "heavyWeight25",
+        "column_key": "holdings.2",
+        "lang_key": "AinvestWeb_screener_holdings_2",
+        "title": "Top 25 Weight",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "heavyWeight50",
+        "column_key": "holdings.3",
+        "lang_key": "AinvestWeb_screener_holdings_3",
+        "title": "Top 50 Weight",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fundGeography",
+        "column_key": "holdings.4",
+        "lang_key": "AinvestWeb_screener_holdings_4",
+        "title": "Holdings Region",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "国际北美etf@Leverage Ratio",
+        "column_key": "holdings.5",
+        "lang_key": "AinvestWeb_screener_holdings_5",
+        "title": "Leverage",
+        "formatter": "text",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "risk",
+    "label": "Risk",
+    "columns": [
+      {
+        "index_id": "beta",
+        "column_key": "risk.0",
+        "lang_key": "AinvestWeb_screener_risk_0",
+        "title": "Beta (1Y)",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_beta_3y",
+        "column_key": "risk.1",
+        "lang_key": "AinvestWeb_screener_risk_1",
+        "title": "Beta (3Y)",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_beta_5y",
+        "column_key": "risk.2",
+        "lang_key": "AinvestWeb_screener_risk_2",
+        "title": "Beta (5Y)",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "volatility",
+        "column_key": "risk.3",
+        "lang_key": "AinvestWeb_screener_risk_3",
+        "title": "Volatility (1D)",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-volatility-avg",
+        "column_key": "risk.4",
+        "lang_key": "AinvestWeb_screener_risk_4",
+        "title": "Volatility (1W)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "week_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "inr-volatility-avg",
+        "column_key": "risk.5",
+        "lang_key": "AinvestWeb_screener_risk_5",
+        "title": "Volatility (1M)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "month_1",
+          "period_type": "rolling2"
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "technicals",
+    "label": "Technicals",
+    "columns": [
+      {
+        "index_id": "4294967268",
+        "column_key": "technicals.0",
+        "lang_key": "AinvestWeb_screener_technicals_0",
+        "title": "RSI (14)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 14
+            },
+            {
+              "param": "indicator_component",
+              "value": "RSI"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "4294967272",
+        "column_key": "technicals.1",
+        "lang_key": "AinvestWeb_screener_technicals_1",
+        "title": "Mom (10)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 10
+            },
+            {
+              "param": "indicator_component",
+              "value": "MOM"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "4294967288",
+        "column_key": "technicals.2",
+        "lang_key": "AinvestWeb_screener_technicals_2",
+        "title": "AO",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "indicator_component",
+              "value": "AO"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "4294967275",
+        "column_key": "technicals.3",
+        "lang_key": "AinvestWeb_screener_technicals_3",
+        "title": "CCI (20)",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Length",
+              "value": 20
+            },
+            {
+              "param": "indicator_component",
+              "value": "CCI"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "4294967290",
+        "column_key": "technicals.4",
+        "lang_key": "AinvestWeb_screener_technicals_4",
+        "title": "Stoch (14, 3, 3) %K",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "%K Length",
+              "value": 14
+            },
+            {
+              "param": "%K Smoothing",
+              "value": 3
+            },
+            {
+              "param": "%D Smoothing",
+              "value": 3
+            },
+            {
+              "param": "indicator_component",
+              "value": "%K"
+            }
+          ]
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "4294967290",
+        "column_key": "technicals.5",
+        "lang_key": "AinvestWeb_screener_technicals_5",
+        "title": "Stoch (14, 3, 3) %D",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "%K Length",
+              "value": 14
+            },
+            {
+              "param": "%K Smoothing",
+              "value": 3
+            },
+            {
+              "param": "%D Smoothing",
+              "value": 3
+            },
+            {
+              "param": "indicator_component",
+              "value": "%D"
+            }
+          ]
+        },
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "68317",
+        "column_key": "technicals.6",
+        "lang_key": "AinvestWeb_screener_technicals_6",
+        "title": "MACD (12, 26) Level",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Short-term",
+              "value": 12
+            },
+            {
+              "param": "Long-term",
+              "value": 26
+            },
+            {
+              "param": "M",
+              "value": 9
+            },
+            {
+              "param": "indicator_component",
+              "value": "DIFF"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "68317",
+        "column_key": "technicals.7",
+        "lang_key": "AinvestWeb_screener_technicals_7",
+        "title": "MACD (12, 26) Signal",
+        "index_attr": {
+          "trade_class": "intraday",
+          "time_period": "day_1",
+          "tech_param": [
+            {
+              "param": "Short-term",
+              "value": 12
+            },
+            {
+              "param": "Long-term",
+              "value": 26
+            },
+            {
+              "param": "M",
+              "value": 9
+            },
+            {
+              "param": "indicator_component",
+              "value": "DEA"
+            }
+          ]
+        },
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  },
+  {
+    "value": "ratings",
+    "label": "Ratings",
+    "columns": [
+      {
+        "index_id": "fund_overall_rating",
+        "column_key": "ratings.0",
+        "lang_key": "AinvestWeb_screener_ratings_0",
+        "title": "Overall Score",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_flow_rating",
+        "column_key": "ratings.1",
+        "lang_key": "AinvestWeb_screener_ratings_1",
+        "title": "Fund Flow Score",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_fundamental_rating",
+        "column_key": "ratings.2",
+        "lang_key": "AinvestWeb_screener_ratings_2",
+        "title": "Fundamental Score",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_momentum_rating",
+        "column_key": "ratings.3",
+        "lang_key": "AinvestWeb_screener_ratings_3",
+        "title": "Momentum Score",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_perform_rating",
+        "column_key": "ratings.4",
+        "lang_key": "AinvestWeb_screener_ratings_4",
+        "title": "Performance Score",
+        "formatter": "percent",
+        "width": 104,
+        "colorize": false,
+        "realtime": false
+      },
+      {
+        "index_id": "fund_safe_rating",
+        "column_key": "ratings.5",
+        "lang_key": "AinvestWeb_screener_ratings_5",
+        "title": "Safety Score",
+        "formatter": "number",
+        "width": 120,
+        "colorize": false,
+        "realtime": false
+      }
+    ]
+  }
+]
