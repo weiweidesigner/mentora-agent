@@ -14,7 +14,15 @@ export default defineConfig({
       { find: "streamviz-react/styles.css", replacement: resolve("node_modules/streamviz-react/src/theme/styles.css") },
     ],
   },
-  plugins: [react(), {
+  plugins: [{
+    name: "streamviz-report-title-policy",
+    enforce: "pre",
+    resolveId(source, importer) {
+      if (source === './runtimeDocument' && importer?.replaceAll('\\', '/').endsWith('/streamviz-react/src/react/StreamVisualization.tsx')) {
+        return resolve('frontend/streamviz-runtime.mjs');
+      }
+    },
+  }, react(), {
     name: "streamviz-artifact-theme",
     closeBundle() {
       const themeSource = resolve("app/skills/streamviz/assets/artifact-theme.css");
