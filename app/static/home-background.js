@@ -135,12 +135,19 @@
     returnFocus = document.activeElement;
     openingActive = true;previousInert = shell.inert;shell.inert = true;
     opening.hidden = false;opening.classList.add('is-playing');
+    intro.preload = 'auto';
     intro.src = intro.dataset.src;intro.muted = false;intro.volume = .8;
     document.addEventListener('click', enableOpeningAudio, true);
     document.addEventListener('keydown', enableOpeningAudio, true);
     resetDeadline();
-    intro.addEventListener('playing', () => { if (openingActive) resetDeadline(); }, {once:true});
-    revealTimer = setTimeout(() => opening.classList.add('is-revealed'), 1100);
+    // Start the title clock with decoded playback, rather than during download.
+    intro.addEventListener('playing', () => {
+      if (!openingActive) return;
+      resetDeadline();
+      revealTimer = setTimeout(() => {
+        if (openingActive) opening.classList.add('is-revealed');
+      }, 1100);
+    }, {once:true});
     intro.addEventListener('ended', finishOpening, {once:true});
     intro.addEventListener('error', finishOpening, {once:true});
     enableOpeningAudio();

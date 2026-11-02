@@ -89,3 +89,17 @@ test('diagnostics are collapsed, dismissible and removed from the refresh URL',a
  panel.querySelector('button[aria-label="关闭声音诊断"]').click();assert.equal(h.d.querySelector('#mentoraOpeningDebugPanel'),null);
  h.intro.dispatchEvent(new h.w.Event('playing'));assert.equal(h.d.querySelector('#mentoraOpeningDebugPanel'),null);h.dom.window.close();
 });
+
+test('the welcome reveal waits for actual video playback and is cancelled when the opening ends',async()=>{
+  const h=setup({opening:true});
+  assert.equal(h.intro.preload,'auto');
+  assert.equal([...h.timers.values()].some(x=>x.ms===1100),false);
+  h.intro.dispatchEvent(new h.w.Event('playing'));
+  const reveal=[...h.timers.values()].find(x=>x.ms===1100);
+  assert.ok(reveal);assert.equal(h.opening.classList.contains('is-revealed'),false);
+  reveal.fn();assert.equal(h.opening.classList.contains('is-revealed'),true);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();
+  reveal.fn();assert.equal(h.opening.classList.contains('is-revealed'),false);
+  assert.ok(html.indexOf('/static/home-background.js')<html.indexOf('/static/app.js'));
+  h.dom.window.close();
+});

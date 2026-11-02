@@ -2532,7 +2532,13 @@ DESKTOP_PET_ACTIVITY: dict[str, Any] = {
 @app.middleware("http")
 async def no_cache_generated_assets(request, call_next):
     response = await call_next(request)
-    if request.url.path.startswith(("/generated/", "/static/")):
+    # Public, packaged motion media can be reused across visits. Keep scripts,
+    # user-generated artifacts and all other assets on their existing policy.
+    if (response.status_code in (200, 206, 304)
+            and request.url.path.startswith("/static/assets/mentora-motion/")
+            and request.url.path.endswith((".mp4", ".jpg"))):
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    elif request.url.path.startswith(("/generated/", "/static/")):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
