@@ -24,6 +24,9 @@ class CharacterProfile(BaseModel):
     gender: Literal['female','male','neutral'] = 'female'
     relationship: Literal['none','daughter','wife','mother'] = 'none'
     proactivity: int = Field(default=50, ge=0, le=100)
+    proactivePrivate: bool = True
+    proactiveGroups: list[str] = Field(default_factory=list,max_length=200)
+
     personality: str = Field(default='温柔知性', max_length=80)
     role: str = Field(default='可以轻松聊天，也能认真解答问题的陪伴助手', max_length=500)
     agentPrompt: str = Field(default='', max_length=6000)
@@ -34,6 +37,12 @@ class CharacterProfile(BaseModel):
     stickerIds: list[str] | None = Field(default=None, max_length=160)
     stickerPacks: list[str] = Field(default_factory=lambda:['dafeiyu-companion'], max_length=24)
 
+
+    @field_validator('proactiveGroups')
+    @classmethod
+    def validate_proactive_groups(cls,value):
+        if any(not re.fullmatch(r'[a-f0-9]{24}',v) for v in value):raise ValueError('群目标无效')
+        return list(dict.fromkeys(value))
 
     @field_validator('responseMode', mode='before')
     @classmethod
@@ -196,15 +205,46 @@ class CharacterStore:
         return profile
 
     def save(self,owner,profile):
+        previous=self.get(owner)
+        profile=profile.model_copy(update={key:previous[key] for key in ('proactivePrivate','proactiveGroups') if key not in profile.model_fields_set})
         with self.tasks.db() as db:
             db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)',(owner,profile.model_dump_json(),time.time()))
             # A newly saved UI preference supersedes an old QQ quick toggle.
             db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)',(owner,)) if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone() else None
-        return self.get(owner)
+        saved=self.get(owner)
+        from app.qq_destinations import enabled_for
+        connection=self.qq.row(owner)
+        if connection:
+            with self.tasks.db() as db:
+                exists=db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_companion_outbox'").fetchone()
+                planned=list(db.execute("SELECT id,scope FROM qq_companion_outbox WHERE state='planned'")) if exists else []
+            for row in planned:
+                try:app=json.loads(row['scope'])[0]
+                except (ValueError,TypeError):continue
+                if app==connection['app_id'] and not enabled_for(saved,row['scope'],self.tasks):
+                    with self.tasks.db() as db:db.execute("UPDATE qq_companion_outbox SET state='cancelled',error='已取消此会话的主动联系' WHERE id=? AND state='planned'",(row['id'],))
+        return saved
 
     def owner_for_scope(self,scope):
         with self.tasks.db() as db:row=db.execute('SELECT owner FROM character_links WHERE scope=?',(scope,)).fetchone()
-        return row['owner'] if row else None
+        if row:return row['owner']
+        # Synthetic room targets are authorized only through live speaker links
+        # belonging to the currently connected bot; they are never stored links.
+        try:
+            app,kind,target,sender=json.loads(scope)
+            if kind!='groups' or sender!='@group':return None
+        except (ValueError,TypeError):return None
+        with self.tasks.db() as db:
+            links=list(db.execute('SELECT l.scope,l.owner FROM character_links l JOIN character_qq_connections c ON c.owner=l.owner WHERE c.app_id=?',(app,)))
+        for link in links:
+            try:parts=json.loads(link['scope'])
+            except (ValueError,TypeError):continue
+            if len(parts)==4 and parts[:3]==[app,kind,target] and parts[3]!='@group':return link['owner']
+        from app.qq_destinations import GroupDirectory
+        if any(r['target']==target and r['active'] for r in GroupDirectory(self.tasks).rows(app)):
+            with self.tasks.db() as db:connection=db.execute('SELECT owner FROM character_qq_connections WHERE app_id=?',(app,)).fetchone()
+            if connection:return connection['owner']
+        return None
 
     def memory_context(self,scope):
         from app.qq_companion import CompanionMemory
@@ -280,6 +320,14 @@ def create_router(store):
         return {'profile':profile,'builtins':installed_stickers(profile),'packs':packs(profile),'stickers':store.stickers(user),'linkedCount':count,'qq':store.qq.public(user)}
     @router.put('')
     def save(payload:CharacterProfile,request:Request,response:Response):return store.save(owner(request,response,True),payload)
+    from app.qq_destinations import ProactiveTargets
+    targets=ProactiveTargets(store.tasks,store)
+    router.add_event_handler('shutdown',targets.close)
+    @router.get('/proactive-targets')
+    def proactive_targets(request:Request,response:Response):return targets.listing(owner(request,response))
+    @router.post('/proactive-targets/sync')
+    def sync_proactive_targets(request:Request,response:Response):
+        user=owner(request,response,True);targets.sync(user);return {'ok':True}
     @router.get('/companion')
     def companion(request:Request,response:Response):
         from app.qq_companion import CompanionMemory

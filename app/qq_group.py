@@ -35,7 +35,7 @@ class QQGroupConversation:
             self.pending.release()
             raise
 
-    def record(self, event_id, scope, text, mentioned=False):
+    def record(self, event_id, scope, text, mentioned=False, replace=False):
         app, kind, target, sender = json.loads(scope)
         room = json.dumps([app, target])
         value = self.tasks.cipher.encrypt(json.dumps({'text': text, 'speaker': hashlib.sha256(sender.encode()).hexdigest()[:8]}, ensure_ascii=False).encode()).decode()
@@ -43,6 +43,8 @@ class QQGroupConversation:
             db.execute('DELETE FROM qq_group_messages WHERE created<?', (time.time()-86400,))
             db.execute('INSERT OR IGNORE INTO qq_group_messages(id,room,scope,job_id,payload,created,mentioned) VALUES(?,?,?,?,?,?,?)',
                        (event_id, room, scope, hashlib.sha256(event_id.encode()).hexdigest(), value, time.time(), int(mentioned)))
+            if replace:
+                db.execute('UPDATE qq_group_messages SET payload=? WHERE id=? AND scope=?',(value,event_id,scope))
             if mentioned:
                 db.execute('UPDATE qq_group_messages SET mentioned=1 WHERE id=?', (event_id,))
             db.execute('DELETE FROM qq_group_messages WHERE room=? AND id NOT IN (SELECT id FROM qq_group_messages WHERE room=? ORDER BY created DESC LIMIT 160)', (room, room))
@@ -76,6 +78,8 @@ class QQGroupConversation:
                 continue
             try:
                 value = json.loads(self.tasks.cipher.decrypt(row['payload'].encode()))
+                from app.qq_images import readable_faces
+                value['text']=readable_faces(value['text'])
                 items.append({'role': 'user', 'speaker': value['speaker'], 'text': value['text'][:400], 'at': row['created']})
             except Exception:
                 continue
@@ -87,6 +91,8 @@ class QQGroupConversation:
         return sorted(items, key=lambda x:x['at'])[-20:]
 
     def should_reply(self, event_id, scope, text, profile):
+        from app.qq_images import readable_faces
+        text=readable_faces(text)
         if self.mentioned(event_id):
             return True
         if profile.get('groupReplyMode', 'natural') == 'mentions':

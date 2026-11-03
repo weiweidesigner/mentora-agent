@@ -1,4 +1,4 @@
-"""Per-speaker companion memory and durable, bounded private QQ proactive delivery."""
+"""Per-speaker companion memory and durable, bounded private and group QQ proactive delivery."""
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +13,8 @@ import secrets
 import threading
 import time
 from zoneinfo import ZoneInfo
+
+from app.qq_destinations import enabled_for
 
 log = logging.getLogger(__name__)
 TZ = ZoneInfo('Asia/Shanghai')
@@ -66,6 +68,37 @@ class CompanionMemory:
                         and (value[1]=='users' and value[2]==value[3] or include_groups and value[1]=='groups')):result.append(row['scope'])
             except (ValueError,TypeError):continue
         return result
+
+    def outgoing_scopes(self, owner):
+        """One durable target per room, separate from each speaker's memory."""
+        targets={}
+        for scope in self.scopes(owner, include_groups=True):
+            app,kind,target,sender=json.loads(scope)
+            if kind=='groups':scope=json.dumps([app,kind,target,'@group'])
+            targets[scope]=None
+        connection=None
+        with self.tasks.db() as db:connection=db.execute('SELECT app_id FROM character_qq_connections WHERE owner=?',(owner,)).fetchone()
+        if connection:
+            from app.qq_destinations import GroupDirectory
+            for row in GroupDirectory(self.tasks).rows(connection['app_id']):
+                if row['active']:targets[json.dumps([connection['app_id'],'groups',row['target'],'@group'])]=None
+        return list(targets)
+
+    def is_room(self, scope):
+        parts=json.loads(scope)
+        return parts[1]=='groups' and parts[3]=='@group'
+
+    def proactive_context(self, scope):
+        if not self.is_room(scope):
+            known=self.get(scope)
+            return self.context(scope),self.conversation(scope,8,known['forgotBefore'])
+        # Only public room messages, never a member's personal or private facts.
+        from app.qq_group import QQGroupConversation
+        reader=object.__new__(QQGroupConversation);reader.tasks=self.tasks
+        recent=reader.context(scope,after=self.get(scope)['forgotBefore'])
+        return ('这是向整个QQ群公开发言，不是私聊；不要称呼某个群员为亲属或伴侣，不提个人画像、私聊或未公开的记忆。'
+                '只参考下列公开群聊；没有相关上下文时使用面向全群的简短开场，不假设共同经历。',
+                [{'role':r['role'],'text':('群员 '+r.get('speaker','')+'：' if r['role']=='user' else '')+r['text']} for r in recent])
 
     def history(self, scope, limit=24, after=0):
         with self.tasks.db() as db:
@@ -171,13 +204,14 @@ class CompanionMemory:
     def snapshot(self, owner, now=None):
         now=time.time() if now is None else now;day=local_day(now);result=[]
         group_numbers={};member_numbers={}
-        for index,scope in enumerate(self.scopes(owner,include_groups=True),1):
+        for index,scope in enumerate(dict.fromkeys(self.scopes(owner,include_groups=True)+self.outgoing_scopes(owner)),1):
             parts=json.loads(scope);kind=parts[1]
             if kind=='groups':
                 group_key=(parts[0],parts[2]);group_numbers.setdefault(group_key,len(group_numbers)+1)
                 members=member_numbers.setdefault(group_key,{})
                 members.setdefault(parts[3],len(members)+1)
-                label=f'QQ 群聊 {group_numbers[group_key]} · 成员 {members[parts[3]]}'
+                label=(f'QQ 群聊 {group_numbers[group_key]} · 主动消息（需群主开启权限）' if parts[3]=='@group'
+                       else f'QQ 群聊 {group_numbers[group_key]} · 成员 {members[parts[3]]}')
             else:label='QQ 私聊 '+str(index)
             data=self.get(scope);stats=self.intimacy(scope)
             with self.tasks.db() as db:
@@ -190,7 +224,7 @@ class CompanionMemory:
                 item.update(topic=draft.get('topic',''),question=draft.get('question',''),
                             message=self.decode(item.pop('body')).get('text',''))
                 item.pop('id')
-            result.append({'id':scope_id(scope),'label':label,'kind':kind,'intimacy':stats,'facts':[{k:f[k] for k in ('id','text','label','weight','quote','kind') if k in f} for f in data['facts']],
+            result.append({'id':scope_id(scope),'label':label,'kind':kind,'proactiveTarget':kind=='users' or self.is_room(scope),'intimacy':stats,'facts':[{k:f[k] for k in ('id','text','label','weight','quote','kind') if k in f} for f in data['facts']],
                            'updated':data['updated'],'planState':plan['state'] if plan else 'waiting',
                            'today':sends,'sentToday':sum(s['state']=='sent' for s in sends)+self.extra_sent(scope,day)})
         return {'recipients':result,'timezone':'Asia/Shanghai','planningTime':'01:00','sendWindow':'09:00–21:00','dailyLimit':3}
@@ -245,7 +279,7 @@ class QQCompanion:
         try:
             parts=json.loads(scope)
             if (len(parts)!=4 or not all(isinstance(x,str) and x for x in parts)
-                    or not (parts[1]=='groups' or parts[1]=='users' and parts[2]==parts[3])):return
+                    or not (parts[1]=='groups' and parts[3]!='@group' or parts[1]=='users' and parts[2]==parts[3])):return
         except (ValueError,TypeError):return
         with self.lock:
             if scope in self.pending:return
@@ -294,7 +328,7 @@ class QQCompanion:
         if installed<midnight_check<=now:
             for owner in owners:
                 profile=self.characters.get(owner)
-                for scope in self.memory.scopes(owner):
+                for scope in self.memory.outgoing_scopes(owner):
                     if profile['proactivity']>0:self.plan(scope,profile,now)
         with self.tasks.db() as db:due=[dict(r) for r in db.execute("SELECT * FROM qq_companion_outbox WHERE state='planned' AND due<=? ORDER BY due",(now,))]
         for row in due:self.deliver(row,now)
@@ -305,8 +339,12 @@ class QQCompanion:
         for scope in scopes:self.schedule_drafts(scope,day,now)
 
     def plan(self, scope, profile, now):
+        if not enabled_for(profile,scope,self.tasks):return
         parts=json.loads(scope)
-        if parts[1]!='users' or parts[2]!=parts[3]:return
+        if not (parts[1]=='users' and parts[2]==parts[3] or self.memory.is_room(scope)):return
+        owner=self.characters.owner_for_scope(scope)
+        connection=self.characters.qq.row(owner) if owner else None
+        if not connection or connection['app_id']!=parts[0]:return
         day=local_day(now)
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -314,7 +352,7 @@ class QQCompanion:
             if row and (row['state']!='retry' or row['retry']>now):return
             db.execute("INSERT INTO qq_companion_plans VALUES(?,?,'planning','',?,0) ON CONFLICT(scope,day) DO UPDATE SET state='planning',updated=excluded.updated",(scope,day,now))
         try:
-            self.memory.update(scope,self.runner,force=True)
+            if not self.memory.is_room(scope):self.memory.update(scope,self.runner,force=True)
             local=datetime.fromtimestamp(now,TZ)
             available={k:datetime.combine(local.date(),day_time.fromisoformat(v),TZ).timestamp() for k,v in SLOTS.items()}
             available={k:ts for k,ts in available.items() if ts>now}
@@ -366,14 +404,14 @@ class QQCompanion:
         rows=[r for r in rows if r['id'] not in decision.get('drafts',{})]
         if not rows:return
         known=self.memory.get(scope)
+        memory_context,history=self.memory.proactive_context(scope)
         schedule=[{'id':r['id'],'time':datetime.fromtimestamp(r['due'],TZ).strftime('%Y-%m-%d %H:%M')} for r in rows]
         prompt=('为已安排的日常主动联系准备话题和一句自然的聊天开场，供用户在角色定制页面提前查看。'
                 '这是准备计划，不发送消息，不查询行情，不生成附件。结合角色设定、用户真实记忆和最近聊天，'
                 '顺着最近真实对话接话，像自己忽然想到对方时发QQ；各时段聊不同的小事，可以接话、分享或轻松打趣，不必硬凑问句。不要把每次联系都写成询问近况、提醒休息或关怀通知。不假设其作息、经历或喜好，'
                 '不编造最新数据，不索要回复。只返回 JSON：'
                 '{"plans":[{"id":"原计划id","topic":"简短话题","question":"准备向用户问的一句话"}]}。'
-                'id必须逐一对应以下安排，不增减：'+json.dumps(schedule,ensure_ascii=False)+self.memory.context(scope))
-        history=self.memory.conversation(scope,8,known['forgotBefore'])
+                'id必须逐一对应以下安排，不增减：'+json.dumps(schedule,ensure_ascii=False)+memory_context)
         answer=self.runner(scope+':proactive-plan-'+day,prompt,history)
         raw=str(answer.get('interpretation') or '')
         value=json.loads(raw[raw.find('{'):raw.rfind('}')+1])
@@ -402,6 +440,8 @@ class QQCompanion:
             db.execute('UPDATE qq_companion_plans SET decision=? WHERE scope=? AND day=?',(self.memory.encode(latest),scope,day))
 
     def deliver(self, row, now):
+        parts=json.loads(row['scope'])
+        if not (parts[1]=='users' and parts[2]==parts[3] or self.memory.is_room(row['scope'])):return
         owner=self.characters.owner_for_scope(row['scope']);profile=self.characters.get(owner) if owner else None
         local=datetime.fromtimestamp(now,TZ)
         with self.tasks.db() as db:
@@ -409,7 +449,7 @@ class QQCompanion:
             current=db.execute('SELECT state FROM qq_companion_outbox WHERE id=?',(row['id'],)).fetchone()
             if not current or current['state']!='planned':return
             state=None
-            if not profile or profile['proactivity']==0:state='cancelled'
+            if not profile or profile['proactivity']==0 or not enabled_for(profile,row['scope'],self.tasks):state='cancelled'
             elif row['day']!=local.date().isoformat() or local.time()>day_time(21) or now-row['due']>2700:state='expired'
             elif local.time()<day_time(9):return
             attempts=db.execute('SELECT count(*) FROM qq_companion_outbox WHERE scope=? AND day=? AND attempted IS NOT NULL',(row['scope'],row['day'])).fetchone()[0]
@@ -421,12 +461,12 @@ class QQCompanion:
         try:
             # Read the latest persona and memory at delivery time, not last night's snapshot.
             known=self.memory.get(row['scope'])
-            context=self.memory.conversation(row['scope'],8,known['forgotBefore'])
+            memory_context,context=self.memory.proactive_context(row['scope'])
             prompt=('现在是北京时间'+local.strftime('%Y-%m-%d %H:%M')+'。这是已授权的日常主动联系，只生成将由通道发送的一条消息正文，不执行发送工具。'
                     '像自己忽然想到对方时发一条QQ：顺着最近来回聊过的一件真实小事接话，保留角色平时的口吻。可以轻松打趣、说个小感受、接着上次的话题，不必每次问问题或叫同一个称呼。简短口语，少写铺垫和礼貌套话。'
                     '不要把每次联系都写成询问近况、提醒喝水休息或定时慰问；不要罗列多个问题让对方逐项回答。'
                     '不要像通知，不提计划、模型、亲密分数，不索要回复，不施压，不虚构共同经历，不杜撰最新行情。'
-                    '不要生成HTML、图表或附件；只输出正文。'+self.memory.context(row['scope']))
+                    '不要生成HTML、图表或附件；只输出正文。'+memory_context)
             with self.tasks.db() as db:
                 plan=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(row['scope'],row['day'])).fetchone()
             draft=self.memory.decode(plan['decision']).get('drafts',{}).get(row['id']) if plan else None
@@ -444,16 +484,16 @@ class QQCompanion:
             # A request can cross the cutoff or the user can disable proactivity while generation runs.
             latest=self.clock();latest_local=datetime.fromtimestamp(latest,TZ)
             latest_profile=self.characters.for_scope(row['scope'])
-            if latest_local.date()!=local.date() or not day_time(9)<=latest_local.time()<=day_time(21) or latest_profile['proactivity']==0 or self.stop_event.is_set() or self.characters.owner_for_scope(row['scope'])!=owner:
+            if latest_local.date()!=local.date() or not day_time(9)<=latest_local.time()<=day_time(21) or latest_profile['proactivity']==0 or not enabled_for(latest_profile,row['scope'],self.tasks) or self.stop_event.is_set() or self.characters.owner_for_scope(row['scope'])!=owner:
                 with self.tasks.db() as db:db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE id=?",(row['id'],))
                 return
             connection=self.characters.qq.row(owner)
             app_id,kind,target,_=json.loads(row['scope'])
-            if not connection or connection['app_id']!=app_id or kind!='users':raise ValueError('Invalid recipient connection')
+            if not connection or connection['app_id']!=app_id or kind not in ('users','groups'):raise ValueError('Invalid recipient connection')
             from app.qq_channel import QQClient
             client=QQClient(credentials_provider=lambda:self.characters.qq.credentials(connection['id']))
             from app.qq_voice import QQVoice
-            mode=latest_profile['responseMode'];voice=QQVoice(self.tasks,client)
+            mode='text' if kind=='groups' else latest_profile['responseMode'];voice=QQVoice(self.tasks,client)
             if mode=='auto' and voice.enabled(row['scope']) and len(body)<=140:
                 from app.qq_expression import QQExpressionRouter
                 mode=QQExpressionRouter().route('结合最近聊天的一次日常主动问候',body,context,[],sticker_probability=0)['mode']
@@ -462,16 +502,17 @@ class QQCompanion:
                 return (not self.stop_event.is_set() and moment.date()==local.date()
                         and day_time(9)<=moment.time()<=day_time(21)
                         and self.characters.for_scope(row['scope'])['proactivity']>0
+                        and enabled_for(self.characters.for_scope(row['scope']),row['scope'],self.tasks)
                         and self.characters.owner_for_scope(row['scope'])==owner
                         and self.memory.get(row['scope'])['forgotBefore']==known['forgotBefore'])
             # Count the contact once; its attached reaction has no daily quota charge.
             if mode=='voice' and voice.enabled(row['scope']) and len(body)<=140:
-                job={'scope':row['scope'],'kind':'users','target':target,'created':self.clock(),
+                job={'scope':row['scope'],'kind':kind,'target':target,'created':self.clock(),
                      'voice_instruction':'角色性别：'+{'female':'成年女性','male':'成年男性','neutral':'中性自然声线'}[latest_profile['gender']]+'，年龄：'+str(latest_profile['age'])+'，表达风格：'+latest_profile['personality']+'。自然口语，标准普通话。'}
                 if not voice.send(job,body,proactive=True,before_send=still_allowed):
                     with self.tasks.db() as db:db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE id=?",(row['id'],))
                     return
-            elif still_allowed():client.proactive(target,body)
+            elif still_allowed():client.proactive(target,body,**({'kind':kind} if kind=='groups' else {}))
             else:
                 with self.tasks.db() as db:db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE id=?",(row['id'],))
                 return
@@ -479,11 +520,11 @@ class QQCompanion:
         except Exception:
             # An uncertain HTTP result must not cause duplicate messages on retry.
             with self.tasks.db() as db:
-                db.execute("UPDATE qq_companion_outbox SET state='failed',error='本次未能确认送达，请检查QQ主动消息权限' WHERE id=?",(row['id'],))
+                db.execute("UPDATE qq_companion_outbox SET state='failed',error='本次未能确认送达；群聊请群主开启机器人主动在群聊内发言，并检查平台权限与额度' WHERE id=?",(row['id'],))
                 db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE scope=? AND day=? AND state='planned'",(row['scope'],row['day']))
             log.warning('QQ proactive delivery not confirmed; remaining messages cancelled for the day')
             return
-        self.send_reaction(row,owner,body,context,known)
+        if not self.memory.is_room(row['scope']):self.send_reaction(row,owner,body,context,known)
 
 
     def send_reaction(self, row, owner, body, context, known):
@@ -506,7 +547,7 @@ class QQCompanion:
             profile=self.characters.for_scope(row['scope'])
             if (self.stop_event.is_set() or self.characters.owner_for_scope(row['scope'])!=owner
                     or self.memory.get(row['scope'])['forgotBefore']!=known['forgotBefore']
-                    or profile['proactivity']==0 or profile['stickerProbability']==0
+                    or profile['proactivity']==0 or not enabled_for(profile,row['scope'],self.tasks) or profile['stickerProbability']==0
                     or moment.date().isoformat()!=row['day'] or not day_time(9)<=moment.time()<=day_time(21)):return
             asset=next((x for x in catalog(profile) if x['id']==selected.get('sticker')),None)
             if not asset:return

@@ -139,7 +139,8 @@ def test_owner_only_memory_api_includes_separate_group_members(env):
         db.execute('UPDATE character_links SET owner=? WHERE scope=?',(owner,e.scope))
         db.execute('INSERT INTO character_links VALUES(?,?)',(json.dumps(['123456','groups','group','alice']),owner))
     recipients=a.get('/api/character/companion').json()['recipients']
-    assert len(recipients)==2 and {r['kind'] for r in recipients}=={'users','groups'}
+    assert len(recipients)==3 and {r['kind'] for r in recipients}=={'users','groups'}
+    assert sum(r['kind']=='groups' and r['proactiveTarget'] for r in recipients)==1
     assert b.get('/api/character/companion').json()['recipients']==[]
     path='/api/character/companion/'+scope_id(e.scope)+'/memory'
     assert a.delete(path).status_code==403
@@ -326,7 +327,7 @@ def test_group_backfill_keeps_other_members_groups_and_private_memory_separate(e
         assert [f['quote'] for f in s.memory.get(scope)['facts']]==[f'我喜欢咖啡{i}']
         assert all(scope!=other for other in s.memory.scopes('owner'))
     result=s.memory.snapshot('owner')['recipients']
-    groups=[r for r in result if r['kind']=='groups']
+    groups=[r for r in result if r['kind']=='groups' and not r['proactiveTarget']]
     assert len(groups)==3 and len({r['label'] for r in groups})==3
     assert s.memory.snapshot('another-owner')['recipients']==[]
 

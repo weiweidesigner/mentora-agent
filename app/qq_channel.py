@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import APIRouter, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
-HELP = '直接发问题就可以聊天，支持连续追问。会按语境选择文字、语音和表情。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。可在角色定制页设置主动性，主动问候仅用于 QQ 私聊，需 QQ 允许接收。'
+HELP = '直接发问题就可以聊天，支持连续追问。会按语境选择文字、语音和表情。发送“开启语音”或“关闭语音”切换语音回复。发送“新对话”清空聊天上下文，发送“最新”查询最近回答。也可以发送“查看 任务分享链接”获取结果并绑定任务；之后发送“任务最新”查看任务更新，发送“解绑”取消绑定。可在角色定制页设置主动性，主动问候支持 QQ 私聊和群聊；私聊需允许接收，群聊需群主开启「机器人主动在群聊内发言」。'
 IDENTIFIER = re.compile(r'[A-Za-z0-9_-]{1,128}')
 
 
@@ -89,17 +89,25 @@ class QQClient:
             raise QQChannelError('QQ 回复失败，请检查消息权限、URL 配置及回复时限')
 
 
-    def proactive(self, target, content):
-        if not IDENTIFIER.fullmatch(target) or not content.strip():
+    def group_details(self,target,part):
+        if not IDENTIFIER.fullmatch(target) or part not in ('info','bot_state'):raise QQChannelError('群信息参数无效')
+        response=requests.get(f'https://api.sgroup.qq.com/v2/groups/{target}/{part}',headers={'Authorization':'QQBot '+self.token()},timeout=(5,10),allow_redirects=False)
+        if response.status_code!=200:raise QQChannelError('QQ 群资料接口暂不可用或未授权')
+        result=response.json()
+        if not isinstance(result,dict):raise QQChannelError('QQ 群资料格式无效')
+        return result
+
+    def proactive(self, target, content, *, kind='users'):
+        if kind not in ('users','groups') or not IDENTIFIER.fullmatch(target) or not content.strip():
             raise QQChannelError('QQ 消息目标或内容无效')
-        response = requests.post(f'https://api.sgroup.qq.com/v2/users/{target}/messages',
+        response = requests.post(f'https://api.sgroup.qq.com/v2/{kind}/{target}/messages',
                                 headers={'Authorization':'QQBot '+self.token()},
                                 json={'msg_type':0,'content':content}, timeout=15, allow_redirects=False)
         if response.status_code not in (200,201,202) or not response.json().get('id'):
             raise QQChannelError('QQ 主动消息未能确认送达')
 
-    def proactive_media(self, target, url, *, file_type=3):
-        return self.media_reply('users', target, None, url, file_type=file_type, sequence=1)
+    def proactive_media(self, target, url, *, file_type=3, kind='users'):
+        return self.media_reply(kind, target, None, url, file_type=file_type, sequence=1)
 
     def voice_reply(self, kind, target, message_id, audio_url, *, sequence=3):
         return self.media_reply(kind, target, message_id, audio_url, file_type=3, sequence=sequence)
@@ -207,9 +215,16 @@ class QQChannel:
 
     def dispatch(self, payload):
         event = payload.get('t')
+        if payload.get('op')==0:
+            from app.qq_destinations import GroupDirectory
+            app_id,_=self.client.credentials()
+            GroupDirectory(self.tasks).observe(app_id,event,payload.get('d'))
         if payload.get('op') != 0 or event not in ('C2C_MESSAGE_CREATE', 'GROUP_AT_MESSAGE_CREATE', 'GROUP_MESSAGE_CREATE'):
             return
         data = payload.get('d') or {}
+        from app.qq_images import image_attachments
+        images = image_attachments(data) if self.chat else []
+        if images and data.get('content') is None:data = {**data,'content':''}
         author = data.get('author') or {}
         if author.get('bot') is True:
             return
@@ -230,6 +245,7 @@ class QQChannel:
         event_id = json.dumps([app_id, kind, target, message_id])
         ordinary_group = event == 'GROUP_MESSAGE_CREATE'
         text = data['content'].strip() if ordinary_group else re.sub(r'<@!?[^>]+>', '', data['content']).strip()
+        if images and not text:text='[用户发送了图片或表情]'
         if ordinary_group and (not self.chat or not text or len(text)>6000):
             return
         if kind == 'groups' and self.chat and text and len(text)<=6000:
@@ -242,6 +258,10 @@ class QQChannel:
             if old and (old['state'] == 'sent' or old['state'] == 'processing' and old['updated'] > now - 60 or ordinary_group and old['state'] == 'ignored'):
                 return
             db.execute('INSERT OR REPLACE INTO qq_events VALUES(?,?,?)', (event_id, 'processing', now))
+        if images:
+            if not self.chat.images.schedule(self._understand_images,event_id,scope,kind,target,message_id,text,images,ordinary_group):
+                with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='ignored' WHERE id=?",(event_id,))
+            return
         if ordinary_group:
             if not self.chat.groups.schedule(self._consider_group, event_id, scope, target, message_id, text):
                 with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='ignored' WHERE id=?", (event_id,))
@@ -267,6 +287,23 @@ class QQChannel:
         # Ordinary group traffic must not produce queue/busy notices or change settings.
         if reply is not None and not automatic:
             self.client.reply(kind, target, message_id, reply)
+
+    def _understand_images(self,event_id,scope,kind,target,message_id,text,images,ordinary_group):
+        try:
+            with self.tasks.db() as db:
+                event=db.execute('SELECT state,updated FROM qq_events WHERE id=?',(event_id,)).fetchone()
+            if not event or event['state']!='processing' or time.time()-event['updated']>180:return
+            try:observation=self.chat.images.describe(images,text)
+            except Exception:observation='[用户发送了图片或表情，但本次无法读取内容；不要猜测图片内容。需要时如实说明并请用户重发。]'
+            question=(text+'\n'+observation)[:6000]
+            if kind=='groups':
+                self.chat.groups.record(event_id,scope,question,mentioned=not ordinary_group,replace=True)
+                self._consider_group(event_id,scope,target,message_id,question)
+            else:
+                self._respond(event_id,scope,kind,target,message_id,question)
+                with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='sent' WHERE id=?",(event_id,))
+        except Exception:
+            with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='failed' WHERE id=?",(event_id,))
 
     def _consider_group(self, event_id, scope, target, message_id, text):
         try:

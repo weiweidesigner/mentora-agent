@@ -15,3 +15,9 @@ For replies to inbound QQ chats, JEV decides sticker suitability independently f
 The implementation uses the official C2C active-message endpoint with no `msg_id`, `event_id` or `is_wakeup`, and never borrows an old reply ID. QQ can reject active delivery when users disallow it. See [QQ message overview](https://bot.q.qq.com/wiki/develop/api-v2/server-inter/message/overview.html) and [C2C message API](https://bot.q.qq.com/wiki/develop/api-v2/autogen/api/v2_users_user_openid_messages.post.html).
 
 `VEYA_QQ_COMPANION_SCHEDULER=0` disables the scheduler for non-delivery environments. The local endpoint follows `QQ_EXPRESSION_URL` / `LAYA_DECISION_URL`, using the same configured model as the existing QQ expression router. Verification uses simulated clocks and mocked platform sends; it does not send test messages to real users.
+
+### 主动联系范围
+
+角色页的“主动消息发送到（可多选）”保存 `proactivePrivate` 和 `proactiveGroups`（owner 作用域下的群目标摘要 ID）。默认保留私聊，群聊需逐个勾选。它独立于“关于你”里的记忆查看筛选。规划、发送前、生成后和附加表情前均校验最新范围；取消选择会取消对应待发送计划。
+
+群目录从已绑定群聊及签名验证后的 `GROUP_ADD_ROBOT` / `GROUP_DEL_ROBOT` / `GROUP_MSG_RECEIVE` / `GROUP_MSG_REJECT` 事件维护。`GET /v2/groups/{group_openid}/info` 同步 `group_name`，`GET .../bot_state` 同步 `allow_proactive_msg`，后台同步最多28次/分钟；未获资料权限时展示“名称待同步 / 权限待确认”，不会伪造群名或已授权状态。当前机器人实测两个接口均可用。此范围覆盖机器人已关联群，不代表能够枚举操作者个人QQ账号里的所有群。

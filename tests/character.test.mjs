@@ -9,7 +9,7 @@ const defaults={relationship:'none',proactivity:50,stickerPacks:['companion'],st
 const tick=()=>new Promise(r=>setTimeout(r,25));
 function selectMemory(h,ids){for(const input of h.d.querySelectorAll('#chRecipient input')){const next=ids.includes(input.value);if(input.checked!==next){input.checked=next;input.dispatchEvent(new h.w.Event('change',{bubbles:true}));}}}
 const selectedMemory=h=>[...h.d.querySelectorAll('#chRecipient input:checked')].map(x=>x.value);
-function setup(qqMetadata={},companion={recipients:[]}){
+function setup(qqMetadata={},companion={recipients:[]},targets={groups:[],connected:true,syncing:false}){
  const dom=new JSDOM(html,{url:'https://example.com/?tab=character',runScripts:'outside-only'}),w=dom.window,requests=[];
  let profile={...defaults,stickerPacks:[...defaults.stickerPacks]},stickers=[],qq={},savedSecret='';
  const members=[{id:'shy',label:'害羞',file:'shy.jpg',description:'害羞脸红',url:'/static/assets/qq-fish/shy.jpg',packId:'companion'},{id:'surprise',label:'震惊',url:'/static/assets/qq-stickers/surprise.jpg',packId:'reactions'}];
@@ -18,7 +18,7 @@ function setup(qqMetadata={},companion={recipients:[]}){
  w.setSidebarCollapsed=()=>{};
  w.fetch=async(path,options={})=>{
   const body=options.body?JSON.parse(options.body):undefined;requests.push({path,method:options.method||'GET',body});let result;
-  if(path.endsWith('/companion'))result=companion;else if(path.endsWith('/qq/secret'))result={appSecret:savedSecret};else if(path.includes('/sticker-packs/')){const id=path.split('/').at(-1);if(options.method==='POST'){if(!profile.stickerPacks.includes(id))profile.stickerPacks.push(id);result={ok:true};}else if(options.method==='DELETE'){profile.stickerPacks=profile.stickerPacks.filter(p=>p!==id);result={ok:true};}else result={...currentPacks().find(p=>p.id===id),items:members.filter(x=>x.packId===id)};}
+  if(path.endsWith('/proactive-targets/sync'))result={ok:true};else if(path.endsWith('/proactive-targets'))result=targets;else if(path.endsWith('/companion'))result=companion;else if(path.endsWith('/qq/secret'))result={appSecret:savedSecret};else if(path.includes('/sticker-packs/')){const id=path.split('/').at(-1);if(options.method==='POST'){if(!profile.stickerPacks.includes(id))profile.stickerPacks.push(id);result={ok:true};}else if(options.method==='DELETE'){profile.stickerPacks=profile.stickerPacks.filter(p=>p!==id);result={ok:true};}else result={...currentPacks().find(p=>p.id===id),items:members.filter(x=>x.packId===id)};}
   else if(path.endsWith('/qq')){savedSecret=body.appSecret||savedSecret;profile={...(body.profile||profile),...(qqMetadata.botName?{name:qqMetadata.botName}:{})};result=qq={...qqMetadata,configured:true,appId:body.appId,hasSecret:true,ready:true,requiresWebhookSetup:false,profile,webhookUrl:'https://example.com/api/qq/webhook/demo'};}
   else if(options.method==='PUT'){profile={...body};result=profile;}
   else if(options.method==='POST'&&path.endsWith('/stickers')){stickers.push({id:'sample',label:body.label,description:body.description,url:'/api/character/stickers/sample.png'});result={id:'sample'};}
@@ -115,5 +115,20 @@ test('memory picker names sources clearly and shows multiple memories and plans 
  selectMemory(h,['room']);assert.equal(d.querySelector('#chMemoryStats').textContent,'');assert.equal(d.querySelector('#chWordCloud').hidden,true);assert.match(d.querySelector('#chMemoryStatus').textContent,/群主/);
  assert.equal(h.requests.filter(x=>x.method!=='GET').length,0);
  const picker=d.querySelector('#chRecipientPicker');picker.open=true;picker.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(picker.open,false);
+ h.dom.window.close();
+});
+
+
+test('proactive destinations persist an explicit private and group allowlist independently of memory viewing',async()=>{
+ const one='a'.repeat(24),two='b'.repeat(24);
+ const h=setup({}, {recipients:[]}, {connected:true,groups:[{id:one,name:'一起摸鱼群',available:true,permission:'allowed'},{id:two,name:'<img src=x>',available:false,permission:'denied'}]});await tick();
+ const d=h.d;assert.equal(d.querySelector('#chProactivePrivate').checked,true);assert.match(d.querySelector('#chProactiveGroups').textContent,/一起摸鱼群/);assert.equal(d.querySelector('#chProactiveGroups img'),null);
+ assert.equal(d.querySelector('[data-proactive-group="'+two+'"]').disabled,true);
+ const input=d.querySelector('[data-proactive-group="'+one+'"]');input.checked=true;input.dispatchEvent(new h.w.Event('change',{bubbles:true}));d.querySelector('#chProactivePrivate').checked=false;
+ d.querySelector('#characterForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
+ const saved=h.requests.find(r=>r.method==='PUT').body;assert.equal(saved.proactivePrivate,false);assert.deepEqual(saved.proactiveGroups,[one]);
+ d.querySelector('#chSyncProactiveGroups').click();await tick();assert.equal(h.requests.some(r=>r.path.endsWith('/proactive-targets/sync')&&r.method==='POST'),true);
+ assert.equal(d.querySelector('[data-proactive-group="'+one+'"]').checked,true);
+ d.querySelector('#chClearProactiveGroups').click();assert.equal(d.querySelectorAll('[data-proactive-group]:checked').length,0);
  h.dom.window.close();
 });
