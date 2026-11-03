@@ -140,7 +140,7 @@ def test_singing_tool_lists_then_renders_only_real_catalog_songs(singing,tmp_pat
     module.main();receipt=json.loads(output.read_text())['qqSong'];assert validate(receipt,singing.key)
     assert posted==[{'songId':'twinkle','voiceId':'companion'}]
     monkeypatch.setattr('sys.argv',['singing_render.py','--operation','render','--song-id','missing','--delivery-key',singing.key,'--output',str(output)])
-    with pytest.raises(ValueError,match='尚未加入'):module.main()
+    with pytest.raises(ValueError,match='还没学会'):module.main()
     assert len(posted)==1
 
 

@@ -31,13 +31,13 @@ def main():
     headers={'Authorization':'Bearer '+token}
     if args.library_key:headers['X-Singing-Library']=args.library_key
     response=requests.get(endpoint+'/songs',headers=headers,timeout=10,allow_redirects=False)
-    if response.status_code!=200:raise RuntimeError('歌声曲库暂时无法读取')
+    if response.status_code!=200:raise RuntimeError('暂时无法确认会唱的歌曲，请稍后再试')
     catalog=edited_catalog(response.json(),args.library_key)
     if args.operation=='catalog':result={'type':'singing-catalog',**catalog}
     else:
         if not args.delivery_key:raise ValueError('当前 QQ 轮次缺少 delivery-key')
         song=next((s for s in catalog['songs'] if s['id']==args.song_id),None)
-        if not song:raise ValueError('这首歌尚未加入曲库，请从实际曲库选择')
+        if not song:raise ValueError('这首歌还没学会，暂时唱不了')
         if args.voice_id not in {v['id'] for v in catalog['voices']}:raise ValueError('声线未配置')
         if not catalog.get('ready'):raise RuntimeError('本地歌声模型尚未就绪')
         response=requests.post(endpoint+'/render',headers=headers,json={'songId':song['id'],'voiceId':args.voice_id},
