@@ -49,7 +49,7 @@ test('refreshing another workspace also plays the opening and retains its destin
 
 
 test('the opening requests audio while the resident background remains muted',async()=>{
-  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-oneesan\.mp4$/);assert.equal(h.video.muted,true);
+  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-welcome-extracted\.mp4$/);assert.equal(h.video.muted,true);
   h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.paused,true);assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
@@ -105,7 +105,7 @@ test('the welcome reveal waits for actual video playback and is cancelled when t
 });
 
 test('the mixed greeting adds no separate playback or delay before entry',async()=>{
- const h=setup({opening:true});assert.equal(h.d.querySelector('#mentoraWelcomeAudio'),null);assert.match(h.intro.getAttribute('src'),/opening-oneesan\.mp4$/);
+ const h=setup({opening:true});assert.equal(h.d.querySelector('#mentoraWelcomeAudio'),null);assert.match(h.intro.getAttribute('src'),/opening-welcome-extracted\.mp4$/);
  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.intro.paused,true);assert.equal([...h.timers.values()].some(t=>t.ms===5000),false);
  [...h.timers.values()].find(t=>t.ms===650).fn();assert.equal(h.opening.hidden,true);h.dom.window.close();
 });
