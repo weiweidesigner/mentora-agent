@@ -78,7 +78,10 @@ class SongLibrary:
         with self.tasks.db() as db:rows=[dict(r) for r in db.execute('SELECT * FROM song_practice WHERE owner=? ORDER BY created DESC',(owner,))]
         own={('learn-'+r['id']):r for r in rows}
         learned=[dict(s,state='ready',uploaded=False) for s in catalog if s['id'] not in own]
-        learned.extend(self.public_row(r) for r in rows if r['state']=='ready')
+        available={s['id']:s for s in catalog}
+        learned.extend({**self.public_row(r),**({'seconds':available['learn-'+r['id']]['seconds']}
+                       if available.get('learn-'+r['id'],{}).get('seconds') else {})}
+                       for r in rows if r['state']=='ready')
         return {'learned':learned,'practicing':[self.public_row(r) for r in rows if r['state']!='ready'],
                 'recipients':self.recipients(owner),'online':online,'maxBytes':MAX_UPLOAD}
 
@@ -240,13 +243,17 @@ def create_router(service):
     def preview(song_id:str,request:Request,response:Response):
         user=owner(request,response)
         if not re.fullmatch(r'[a-z0-9_-]{1,64}',song_id):raise HTTPException(404,'歌曲不存在')
+        fallback=None
         if song_id.startswith('learn-'):
             row=service.row(user,song_id[6:]);path=service.root/(row['id']+'.wav')
             if row['state']!='ready' or not path.is_file():raise HTTPException(404,'歌曲尚未练习完成')
-            return FileResponse(path,media_type='audio/wav',headers={'Cache-Control':'no-store'})
+            fallback=path
         try:
             result=requests.get(service.endpoint()+'/preview/'+song_id,headers=service.headers(user),timeout=(3,15),allow_redirects=False)
-            if result.status_code!=200:raise HTTPException(404,'试听暂不可用')
-            return Response(result.content,media_type='audio/wav',headers={'Cache-Control':'no-store'})
-        except requests.RequestException:raise HTTPException(503,'本地歌声服务暂不可用') from None
+            if result.status_code==200:return Response(result.content,media_type='audio/wav',headers={'Cache-Control':'no-store'})
+            if fallback:return FileResponse(fallback,media_type='audio/wav',headers={'Cache-Control':'no-store'})
+            raise HTTPException(404,'试听暂不可用')
+        except requests.RequestException:
+            if fallback:return FileResponse(fallback,media_type='audio/wav',headers={'Cache-Control':'no-store'})
+            raise HTTPException(503,'本地歌声服务暂不可用') from None
     return router

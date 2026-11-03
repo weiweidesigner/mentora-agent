@@ -116,6 +116,17 @@ def test_full_song_preview_and_receipt_are_not_rejected_by_excerpt_limits(env,mo
     assert (e.service.root/(ident+'.wav')).stat().st_size==len(preview)
 
 
+def test_rebuilt_song_listing_and_preview_use_current_full_recording(env,monkeypatch):
+    e=env;ident=upload(e);ready(e,ident)
+    (e.service.root/(ident+'.wav')).write_bytes(b'RIFFold-excerpt')
+    def get(url,**kwargs):
+        if '/preview/' in url:return response(audio=b'RIFFfull-recording')
+        return response({'songs':[{'id':'learn-'+ident,'seconds':254.59}],'ready':True})
+    monkeypatch.setattr('app.song_library.requests.get',get)
+    assert e.a.get('/api/character/songs').json()['learned'][0]['seconds']==254.59
+    assert e.a.get('/api/character/songs/learn-'+ident+'/preview').content==b'RIFFfull-recording'
+
+
 def ready(e,ident):
     e.service.update(ident,state='ready',seconds=20,recipient=e.scope,notification='pending')
     (e.service.root/(ident+'.silk')).write_bytes(AUDIO)

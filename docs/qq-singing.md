@@ -28,6 +28,8 @@ To add local stems, run using the isolated worker Python:
 python scripts/register_singing_song.py --root /path/to/mentora-singing --id my-song --title '歌曲名' --vocal-file /path/to/vocals.wav --backing-file /path/to/backing.wav --alias '别名' --source '素材来源与使用说明'
 ```
 
+Omit `--seconds` to import the entire recording; it is only for an explicitly requested excerpt. New uploads start at zero by default. To replace an existing legacy excerpt, `scripts/rebuild_singing_catalog.py --root <private-data-dir> --manifest <private-manifest.json>` reimports explicitly mapped local originals and warms their full-song caches. The manifest lists `songs` with existing catalog `id` and local `input` (mixed recording) or `vocalFile`. A journal beside the manifest records progress and resumes completed entries without recomputing them. Failed conversions restore the previous entry. Run with no other catalog imports active. The rebuild sends no QQ messages.
+
 For a locally supplied full recording, replace the stem arguments with `--input /path/to/song.wav`. The helper extracts a short clip and uses Demucs (`htdemucs`, CPU) to prepare vocal/accompaniment stems once. It never searches, purchases or downloads songs. Missing catalog songs are reported honestly; they are not substituted with a different song.
 
 ## Delivery integrity

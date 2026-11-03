@@ -134,7 +134,7 @@ def locate(payload,owner='',allow_learning=False):
 
 def cache_paths(payload,owner='',allow_learning=False):
     song,voice,vocal,reference,backing=locate(payload,owner,allow_learning)
-    identity=json.dumps([REVISION,'full-source-v1',song,voice,[(p.stat().st_mtime_ns,p.stat().st_size) for p in [vocal,reference,*([backing] if backing else [])]]],sort_keys=True)
+    identity=json.dumps([REVISION,song,voice,[(p.stat().st_mtime_ns,p.stat().st_size) for p in [vocal,reference,*([backing] if backing else [])]]],sort_keys=True)
     key=hashlib.sha256(identity.encode()).hexdigest()
     cache=ROOT/'renders';cache.mkdir(mode=0o700,exist_ok=True)
     return cache/(key+'.silk'),cache/(key+'.json')
