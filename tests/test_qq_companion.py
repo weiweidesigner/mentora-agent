@@ -34,7 +34,9 @@ def env(tmp_path,monkeypatch):
         return {'interpretation':'{"facts":[]}' if scope.endswith(':memory') else '今天也记得给自己留一点休息时间呀。'}
     service=QQCompanion(tasks,characters,runner,SimpleNamespace(decide=lambda *args:{'count':3,'slots':['morning','afternoon','night']}),clock=lambda:now[0])
     monkeypatch.setattr(QQClient,'proactive',lambda self,target,body:sent.append((target,body)))
-    yield SimpleNamespace(tasks=tasks,characters=characters,scope=scope,service=service,now=now,sent=sent)
+    images=[]
+    monkeypatch.setattr(QQClient,'proactive_media',lambda self,target,url,**kw:images.append((target,url,kw)))
+    yield SimpleNamespace(tasks=tasks,characters=characters,scope=scope,service=service,now=now,sent=sent,images=images)
     service.close()
 
 
@@ -261,3 +263,38 @@ def test_learning_notifications_share_the_three_message_budget(env):
         e.now[0]=row['due'];s.deliver(row,e.now[0])
     assert len(e.sent)==1
     assert [r['state'] for r in outbox(e)]==['sent','limited','limited']
+
+
+def test_proactive_contacts_attach_images_without_consuming_daily_outreach_quota(env):
+    e=env;s=e.service;e.characters.save('owner',CharacterProfile(proactivity=100,stickerProbability=100,responseMode='text'))
+    s.plan(e.scope,e.characters.get('owner'),e.now[0]);rows=outbox(e)
+    for row in rows:
+        e.now[0]=row['due'];s.deliver(row,e.now[0]);s.deliver(row,e.now[0])
+    assert len(e.sent)==3 and len(e.images)==3
+    assert all(x[2]['file_type']==1 for x in e.images)
+    with e.tasks.db() as db:
+        assert db.execute("SELECT count(*) FROM qq_proactive_reactions WHERE state='sent'").fetchone()[0]==3
+        assert db.execute('SELECT count(*) FROM qq_extra_message_attempts').fetchone()[0]==0
+    assert s.memory.snapshot('owner',e.now[0])['recipients'][0]['sentToday']==3
+
+
+def test_reaction_failure_keeps_primary_sent_and_future_contacts_planned(env,monkeypatch):
+    e=env;s=e.service;s.plan(e.scope,e.characters.get('owner'),e.now[0]);row=outbox(e)[0];e.now[0]=row['due']
+    monkeypatch.setattr(QQClient,'proactive_media',lambda *a,**k:(_ for _ in ()).throw(RuntimeError('uncertain write')))
+    s.deliver(row,e.now[0]);s.deliver(row,e.now[0])
+    assert len(e.sent)==1 and [r['state'] for r in outbox(e)]==['sent','planned','planned']
+    with e.tasks.db() as db:assert db.execute('SELECT state FROM qq_proactive_reactions').fetchone()[0]=='unknown'
+
+
+def test_proactive_generation_includes_both_sides_and_prior_actual_outreach(env):
+    e=env;s=e.service;add_chat(e,question='今天想练雨爱')
+    with e.tasks.db() as db:db.execute('UPDATE qq_chat_jobs SET answer=?',(json.dumps({'interpretation':'好呀，练好唱给你听'}),))
+    s.plan(e.scope,e.characters.get('owner'),e.now[0]);rows=outbox(e);seen=[]
+    def runner(scope,prompt,history):
+        seen.append((prompt,history));return {'interpretation':'刚刚还想着你那首雨爱呢'}
+    s.runner=runner
+    for row in rows[:2]:e.now[0]=row['due'];s.deliver(row,e.now[0])
+    assert [r['role'] for r in seen[0][1]]==['user','assistant']
+    assert seen[0][1][1]['text']=='好呀，练好唱给你听'
+    assert '刚刚还想着你那首雨爱呢' in seen[1][0]
+    assert '不必每次问问题' in seen[0][0]

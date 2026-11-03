@@ -34,18 +34,18 @@ def test_semantic_voice_and_catalog_reaction_with_real_scores(router):
     assert plan['source']=='local-jev-laya'
 
 
-def test_formal_context_blocks_stickers_even_at_max_probability(router):
+def test_enabled_stickers_have_no_formal_context_veto(router):
     active,client=router;client.modes=('text',.99,'none',.98,'heart',.9)
     plan=active.route('请列出今天指数数据','正式数据',[],sticker_catalog(),sticker_probability=100)
-    assert plan['mode']=='text' and plan['sticker'] is None
-    assert plan['reactionChoice']=='none' and not plan['stickerPending']
+    assert plan['mode']=='text' and plan['sticker']=='heart'
+    assert plan['reactionChoice'] is None and not plan['stickerPending']
 
 
 def test_casual_winner_is_not_vetoed_by_extra_confidence_threshold(router):
     active,client=router;client.modes=('voice',.55,'add',.59,'heart',.9)
     plan=active.route('普通问题','普通回答',[],sticker_catalog())
     assert plan['mode']=='text' and plan['sticker']=='heart' and plan['confidence']==.55
-    assert plan['reactionConfidence']==.59 and plan['stickerEligible']
+    assert plan['reactionConfidence'] is None and plan['stickerEligible']
 
 
 def test_missing_model_or_invalid_score_falls_back_without_inventing_confidence(router,monkeypatch):
@@ -118,23 +118,23 @@ def test_equally_fitting_installed_stickers_do_not_cancel_each_other(router):
     assert plan['stickerSource']=='local-jev-laya'
 
 
-def test_max_frequency_cannot_override_jev_context_veto(router):
+def test_max_frequency_is_not_cancelled_by_context_or_low_selection_score(router):
     active,client=router
     active.draw=lambda:99
     client.modes=('text',.99,'none',.99,'heart',.08)
     plan=active.route('想看表情包'*100,'来啦',[],sticker_catalog(),sticker_probability=100)
-    assert plan['sticker'] is None and not plan['stickerPending']
+    assert plan['sticker']=='heart' and not plan['stickerPending']
 
 
-def test_model_outage_skips_stickers_without_inventing_a_score(router,monkeypatch):
+def test_model_outage_uses_enabled_pool_without_inventing_a_score(router,monkeypatch):
     active,_=router
     monkeypatch.delenv('LAYA_DECISION_URL')
     plan=active.route('发个表情','好呀',[],[{'id':'only-enabled','description':'开心'}],sticker_probability=100)
-    assert plan['sticker'] is None and plan['reactionConfidence'] is None
-    assert plan['stickerSource']=='decision-unavailable' and not plan['stickerPending']
+    assert plan['sticker']=='only-enabled' and plan['stickerConfidence'] is None
+    assert plan['stickerSource']=='catalog-fallback' and not plan['stickerPending']
 
 
-def test_large_catalog_selection_deadline_skips_image_instead_of_random_fallback(monkeypatch):
+def test_large_catalog_selection_deadline_still_returns_an_enabled_image(monkeypatch):
     monkeypatch.setenv('LAYA_DECISION_URL','http://local')
     monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=None,Choice=lambda **kw:SimpleNamespace(**kw)))
     clock=iter([0,1,46])
@@ -149,7 +149,7 @@ def test_large_catalog_selection_deadline_skips_image_instead_of_random_fallback
             self._ask();self._ask()
             pytest.fail('selection must stop at its total deadline')
     plan=QQExpressionRouter(client_factory=Client).select_sticker('表情','来啦',[],[{'id':'enabled','description':'开心'}])
-    assert Client.calls==1 and plan['sticker'] is None and plan['stickerSource']=='selection-unavailable'
+    assert Client.calls==1 and plan['sticker']=='enabled' and plan['stickerSource']=='catalog-fallback'
 
 
 def test_text_preference_does_not_prevent_emotional_chat_reactions(router):
@@ -166,13 +166,13 @@ def test_approved_casual_chat_selects_installed_image_without_second_veto(router
     assert not plan['stickerPending'] and plan['stickerSource']=='local-jev-laya'
 
 
-def test_invalid_reaction_score_does_not_leave_pending_image(router):
+def test_unrelated_reaction_score_cannot_veto_an_enabled_image(router):
     active,client=router;client.modes=('text',.99,'add',float('nan'),'heart',.9)
     plan=active.route('抱抱','抱抱你',[],sticker_catalog(),sticker_probability=100)
-    assert plan['sticker'] is None and not plan['stickerPending']
+    assert plan['sticker']=='heart' and not plan['stickerPending']
 
 
-def test_current_formal_turn_is_classified_without_affectionate_history(monkeypatch):
+def test_no_second_context_gate_is_called_for_an_enabled_reaction(monkeypatch):
     monkeypatch.setenv('LAYA_DECISION_URL','http://local')
     monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=None,Choice=lambda **kw:SimpleNamespace(**kw)))
     seen=[]
@@ -187,5 +187,5 @@ def test_current_formal_turn_is_classified_without_affectionate_history(monkeypa
     history=[{'role':'user','text':'亲爱的抱抱我嘛'}]
     plan=QQExpressionRouter(client_factory=Client).route('请核对合同付款条款','合同分三期付款',history,[{'id':'heart','description':'比心'}],sticker_probability=100)
     assert seen[0][1]['recent_context']
-    assert 'recent_context' not in seen[1][1] and seen[1][1]['user_message']=='请核对合同付款条款'
-    assert plan['sticker'] is None and not plan['stickerPending']
+    assert all(key!='reaction' for key,state in seen)
+    assert plan['sticker']=='heart' and not plan['stickerPending']

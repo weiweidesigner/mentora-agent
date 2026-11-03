@@ -38,6 +38,7 @@ class CompanionMemory:
             CREATE INDEX IF NOT EXISTS qq_companion_due ON qq_companion_outbox(state,due);
             CREATE TABLE IF NOT EXISTS qq_companion_meta(key TEXT PRIMARY KEY,value TEXT);
             CREATE TABLE IF NOT EXISTS qq_extra_message_attempts(key TEXT PRIMARY KEY,scope TEXT,day TEXT,state TEXT);
+            CREATE TABLE IF NOT EXISTS qq_proactive_reactions(plan_id TEXT PRIMARY KEY,state TEXT,sticker TEXT,error TEXT DEFAULT '');
             ''')
             db.execute("INSERT OR IGNORE INTO qq_companion_meta VALUES('installed',?)",(str(time.time()),))
 
@@ -69,6 +70,17 @@ class CompanionMemory:
         with self.tasks.db() as db:
             if not db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_chat_jobs'").fetchone():return []
             return [dict(r) for r in reversed(list(db.execute("SELECT id,question,answer,created FROM qq_chat_jobs WHERE scope=? AND state='completed' AND delivered=1 AND created>? ORDER BY created DESC LIMIT ?",(scope,after,limit))))]
+
+    def conversation(self, scope, limit=8, after=0):
+        from app.qq_chat import plain_answer
+        context=[]
+        for row in self.history(scope,limit,after):
+            context.append({'role':'user','text':row['question'][:1000]})
+            try:answer=json.loads(row['answer'] or '{}')
+            except (ValueError,TypeError):continue
+            if answer.get('interpretation'):
+                context.append({'role':'assistant','text':plain_answer(answer)[:1000]})
+        return context
 
     def intimacy(self, scope):
         with self.tasks.db() as db:
@@ -314,13 +326,13 @@ class QQCompanion:
         if not rows:return
         known=self.memory.get(scope)
         schedule=[{'id':r['id'],'time':datetime.fromtimestamp(r['due'],TZ).strftime('%Y-%m-%d %H:%M')} for r in rows]
-        prompt=('为已安排的日常主动联系准备话题和一句计划提问，供用户在角色定制页面提前查看。'
+        prompt=('为已安排的日常主动联系准备话题和一句自然的聊天开场，供用户在角色定制页面提前查看。'
                 '这是准备计划，不发送消息，不查询行情，不生成附件。结合角色设定、用户真实记忆和最近聊天，'
-                '各时段话题要自然且有区别；不了解用户时可以开放式关心，不假设其作息、经历或喜好，'
+                '顺着最近真实对话接话，像自己忽然想到对方时发QQ；各时段聊不同的小事，可以接话、分享或轻松打趣，不必硬凑问句。不要把每次联系都写成询问近况、提醒休息或关怀通知。不假设其作息、经历或喜好，'
                 '不编造最新数据，不索要回复。只返回 JSON：'
                 '{"plans":[{"id":"原计划id","topic":"简短话题","question":"准备向用户问的一句话"}]}。'
                 'id必须逐一对应以下安排，不增减：'+json.dumps(schedule,ensure_ascii=False)+self.memory.context(scope))
-        history=[{'role':'user','text':r['question'][:1000]} for r in self.memory.history(scope,8,known['forgotBefore'])]
+        history=self.memory.conversation(scope,8,known['forgotBefore'])
         answer=self.runner(scope+':proactive-plan-'+day,prompt,history)
         raw=str(answer.get('interpretation') or '')
         value=json.loads(raw[raw.find('{'):raw.rfind('}')+1])
@@ -367,15 +379,20 @@ class QQCompanion:
             db.execute("UPDATE qq_companion_outbox SET state='sending',attempted=? WHERE id=?",(now,row['id']))
         try:
             # Read the latest persona and memory at delivery time, not last night's snapshot.
-            known=self.memory.get(row['scope']);recent=self.memory.history(row['scope'],8,known['forgotBefore'])
-            context=[{'role':'user','text':r['question'][:1000]} for r in recent]
+            known=self.memory.get(row['scope'])
+            context=self.memory.conversation(row['scope'],8,known['forgotBefore'])
             prompt=('现在是北京时间'+local.strftime('%Y-%m-%d %H:%M')+'。这是已授权的日常主动联系，只生成将由通道发送的一条消息正文，不执行发送工具。'
-                    '结合角色关系、性格、Agent 提示词、用户明确的长期记忆和最近聊天，写一句至三句自然的日常问候或关心。'
+                    '像自己忽然想到对方时发一条QQ：顺着最近来回聊过的一件真实小事接话，保留角色平时的口吻。可以轻松打趣、说个小感受、接着上次的话题，不必每次问问题或叫同一个称呼。简短口语，少写铺垫和礼貌套话。'
+                    '不要把每次联系都写成询问近况、提醒喝水休息或定时慰问；不要罗列多个问题让对方逐项回答。'
                     '不要像通知，不提计划、模型、亲密分数，不索要回复，不施压，不虚构共同经历，不杜撰最新行情。'
                     '不要生成HTML、图表或附件；只输出正文。'+self.memory.context(row['scope']))
             with self.tasks.db() as db:
                 plan=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(row['scope'],row['day'])).fetchone()
             draft=self.memory.decode(plan['decision']).get('drafts',{}).get(row['id']) if plan else None
+            with self.tasks.db() as db:
+                previous=[dict(r) for r in db.execute("SELECT due,body FROM qq_companion_outbox WHERE scope=? AND state='sent' AND due<? ORDER BY due DESC LIMIT 3",(row['scope'],now))]
+            previous_text=[self.memory.decode(r['body']).get('text','') for r in reversed(previous)]
+            if any(previous_text):prompt+='最近已经主动发过的话（避免重复话题和开头）：'+json.dumps(previous_text,ensure_ascii=False)
             if draft:
                 prompt+='这次已向用户展示的计划话题和提问：'+json.dumps(draft,ensure_ascii=False)+'。围绕这个话题，结合最新聊天调整措辞；若已不合时宜，不要机械重复。'
             answer=self.runner(row['scope']+':proactive-'+row['id'],prompt,context)
@@ -406,7 +423,7 @@ class QQCompanion:
                         and self.characters.for_scope(row['scope'])['proactivity']>0
                         and self.characters.owner_for_scope(row['scope'])==owner
                         and self.memory.get(row['scope'])['forgotBefore']==known['forgotBefore'])
-            # Exactly one platform message per slot; no extra sticker or text supplement.
+            # Count the contact once; its attached reaction has no daily quota charge.
             if mode=='voice' and voice.enabled(row['scope']) and len(body)<=140:
                 job={'scope':row['scope'],'kind':'users','target':target,'created':self.clock(),
                      'voice_instruction':'角色性别：'+{'female':'成年女性','male':'成年男性','neutral':'中性自然声线'}[latest_profile['gender']]+'，年龄：'+str(latest_profile['age'])+'，表达风格：'+latest_profile['personality']+'。自然口语，标准普通话。'}
@@ -424,3 +441,50 @@ class QQCompanion:
                 db.execute("UPDATE qq_companion_outbox SET state='failed',error='本次未能确认送达，请检查QQ主动消息权限' WHERE id=?",(row['id'],))
                 db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE scope=? AND day=? AND state='planned'",(row['scope'],row['day']))
             log.warning('QQ proactive delivery not confirmed; remaining messages cancelled for the day')
+            return
+        self.send_reaction(row,owner,body,context,known)
+
+
+    def send_reaction(self, row, owner, body, context, known):
+        """Attach a reaction without consuming another outreach slot."""
+        from app.qq_expression import QQExpressionRouter
+        from app.sticker_marketplace import installed_stickers
+        from app.qq_channel import QQClient
+        def catalog(profile):
+            items=self.characters.stickers(owner)+installed_stickers(profile)
+            ids=profile.get('stickerIds')
+            return items if ids is None else [x for x in items if x['id'] in ids]
+        try:
+            profile=self.characters.for_scope(row['scope'])
+            if profile['stickerProbability']==0:return
+            pool=catalog(profile)
+            if not pool:return
+            selected=QQExpressionRouter().select_sticker('接着最近聊天主动联系对方',body,context,pool)
+            # Respect a subsequent unlink, disabled setting or cleared memory.
+            moment=datetime.fromtimestamp(self.clock(),TZ)
+            profile=self.characters.for_scope(row['scope'])
+            if (self.stop_event.is_set() or self.characters.owner_for_scope(row['scope'])!=owner
+                    or self.memory.get(row['scope'])['forgotBefore']!=known['forgotBefore']
+                    or profile['proactivity']==0 or profile['stickerProbability']==0
+                    or moment.date().isoformat()!=row['day'] or not day_time(9)<=moment.time()<=day_time(21)):return
+            asset=next((x for x in catalog(profile) if x['id']==selected.get('sticker')),None)
+            if not asset:return
+            connection=self.characters.qq.row(owner)
+            app_id,kind,target,_=json.loads(row['scope'])
+            if not connection or connection['app_id']!=app_id or kind!='users':return
+            with self.tasks.db() as db:
+                db.execute('BEGIN IMMEDIATE')
+                current=db.execute('SELECT state FROM qq_companion_outbox WHERE id=?',(row['id'],)).fetchone()
+                if not current or current['state']!='sent':return
+                result=db.execute("INSERT OR IGNORE INTO qq_proactive_reactions(plan_id,state,sticker) VALUES(?,'sending',?)",(row['id'],asset['id']))
+                if not result.rowcount:return
+            path=asset.get('url') or '/static/assets/qq-fish/'+asset['file']
+            url=os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')+path
+            client=QQClient(credentials_provider=lambda:self.characters.qq.credentials(connection['id']))
+            client.proactive_media(target,url,file_type=1)
+            with self.tasks.db() as db:db.execute("UPDATE qq_proactive_reactions SET state='sent' WHERE plan_id=?",(row['id'],))
+        except Exception:
+            # An image failure neither retracts the delivered text/voice nor
+            # cancels future contacts. An uncertain media send is never retried.
+            with self.tasks.db() as db:db.execute("UPDATE qq_proactive_reactions SET state='unknown',error='表情包未能确认送达，未自动重发' WHERE plan_id=? AND state='sending'",(row['id'],))
+            log.warning('QQ proactive reaction not confirmed; primary message retained')
