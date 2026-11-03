@@ -51,10 +51,10 @@ class QQExpressionRouter:
                         current = self.state(question, answer, [])
                         current.pop('recent_context')
                         response = client.system_one(state=current, questions={'reaction': Choice(
-                            instructions='Classify the current user intent. Choose casual conversation or task-oriented communication.',
+                            instructions='Choose the communication style of this exchange.',
                             criteria={
-                                'add':'The user is having casual conversation: small talk, greetings, jokes, sharing everyday life, affection, playful banter or emotional comfort.',
-                                'none':'The user wants factual answers, professional work, analysis, troubleshooting, complaint resolution or urgent help.'})})
+                                'add':'Casual friendly conversation between friends, including greetings, daily life, jokes, emotions and affection.',
+                                'none':'A formal work request or factual task requiring a serious informative response, rather than a casual chat.'})})
                         reaction = response.answers['reaction']
                         score = float(reaction.confidence)
                         if reaction.choice not in ('add','none') or not math.isfinite(score) or not 0 <= score <= 1:

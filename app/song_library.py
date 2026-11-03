@@ -20,7 +20,7 @@ from app.qq_companion import CompanionMemory,scope_id,TZ,local_day
 from app.qq_singing import library_key,save
 
 log=logging.getLogger(__name__)
-MAX_UPLOAD=40*1024*1024
+MAX_UPLOAD=30*1024*1024
 
 
 class PracticeInput(BaseModel):
@@ -214,7 +214,7 @@ def create_router(service):
             with path.open('wb') as out:
                 async for chunk in request.stream():
                     size+=len(chunk)
-                    if size>MAX_UPLOAD:raise HTTPException(413,'MP3 最大 40MB')
+                    if size>MAX_UPLOAD:raise HTTPException(413,'MP3 最大 30MB')
                     out.write(chunk)
             if size<128:raise HTTPException(422,'MP3 文件为空或无效')
             with path.open('rb') as source:magic=source.read(3)

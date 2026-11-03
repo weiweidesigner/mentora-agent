@@ -262,7 +262,7 @@ async def learn(ident:str,request:Request,title:str,start:float=45):
         with part.open('wb') as out:
             async for chunk in request.stream():
                 size+=len(chunk)
-                if size>40*1024*1024:raise HTTPException(413,'MP3 最大 40MB')
+                if size>30*1024*1024:raise HTTPException(413,'MP3 最大 30MB')
                 out.write(chunk)
         if size<128:raise HTTPException(422,'MP3 文件为空或无效')
         part.chmod(0o600);part.replace(source)
