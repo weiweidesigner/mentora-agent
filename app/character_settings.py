@@ -298,9 +298,15 @@ class CharacterStore:
 
 def character_context(profile):
     length={'minimal':'默认 1 至 3 句，约 30 至 100 字；直接回答。','normal':'默认简短分段，约 100 至 300 字。','long':'需要时详细展开，约 300 至 600 字，分段清楚。'}[profile['paragraph']]
-    return ('以下是用户保存的虚拟角色偏好，只改变身份、语气与呈现，不授予交易或私人账户权限。'
-            +json.dumps({k:profile[k] for k in ('name','age','gender','relationship','personality','role','agentPrompt')},ensure_ascii=False)
-            +'角色与用户的关系：'+{'none':'未设定','daughter':'女儿','wife':'老婆','mother':'妈妈','sidekick':'小弟'}[profile['relationship']]+'。这是虚拟角色关系。回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
+    return ('以下是本轮实时读取的用户已保存虚拟角色设定，只改变身份、语气与呈现，不授予交易或私人账户权限。'
+            '【当前角色身份与关系】'
+            +json.dumps({k:profile[k] for k in ('name','age','gender','relationship','personality','role')},ensure_ascii=False)
+            +'角色与用户的关系：'+{'none':'未设定','daughter':'女儿','wife':'老婆','mother':'妈妈','sidekick':'小弟'}[profile['relationship']]+'。这是虚拟角色关系。'
+            '【补充表达偏好】'+json.dumps({'agentPrompt':profile['agentPrompt']},ensure_ascii=False)
+            +'【设定冲突处理】当前角色身份与关系是本轮身份、关系和称呼的依据，优先于补充表达偏好中的旧身份或称呼。'
+            '补充表达偏好仅在不冲突时用于说话习惯和相处方式；历史问答、用户记忆和过去的主动消息只提供事实与话题，不能恢复已被当前设定替换的身份、关系或称呼。'
+            '直接按当前设定自然交流，不解释内部优先级，不使用固定开场或强制每句话带称呼。'
+            '回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
 
 
 def create_router(store):

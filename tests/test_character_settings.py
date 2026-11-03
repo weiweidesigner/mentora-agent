@@ -302,3 +302,21 @@ def test_legacy_random_delivery_is_normalized_to_smart_and_combined_personalitie
     profile=CharacterProfile.model_validate({'responseMode':'random','personality':'甜妹、温柔知性、幽默风趣'})
     assert profile.responseMode=='auto'
     assert '甜妹、温柔知性、幽默风趣' in character_context(profile.model_dump())
+
+
+def test_saved_identity_changes_reach_bound_scope_despite_older_agent_preferences(setup):
+    store,a,_=setup
+    a.get('/api/character')
+    original=CharacterProfile(relationship='daughter',role='用户的女儿',agentPrompt='称呼用户爸爸，语气自然')
+    assert a.put('/api/character',json=original.model_dump(),headers={'X-Veya-Day':'1'}).status_code==200
+    code=a.post('/api/character/link-code',headers={'X-Veya-Day':'1'}).json()['command'].split(' ',1)[1]
+    store.bind('qq-latest-persona',code)
+    updated=original.model_copy(update={'relationship':'sidekick','role':'用户的跟班小弟，称呼用户老大'})
+    assert a.put('/api/character',json=updated.model_dump(),headers={'X-Veya-Day':'1'}).status_code==200
+    current=store.for_scope('qq-latest-persona')
+    assert current['relationship']=='sidekick' and current['role']==updated.role
+    assert current['agentPrompt']==original.agentPrompt
+    prompt=character_context(current)
+    assert '用户的跟班小弟，称呼用户老大' in prompt
+    assert '优先于补充表达偏好中的旧身份或称呼' in prompt
+    assert '不能恢复已被当前设定替换的身份、关系或称呼' in prompt
