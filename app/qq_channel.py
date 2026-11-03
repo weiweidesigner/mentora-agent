@@ -207,12 +207,16 @@ class QQChannel:
 
     def dispatch(self, payload):
         event = payload.get('t')
-        if payload.get('op') != 0 or event not in ('C2C_MESSAGE_CREATE', 'GROUP_AT_MESSAGE_CREATE'):
+        if payload.get('op') != 0 or event not in ('C2C_MESSAGE_CREATE', 'GROUP_AT_MESSAGE_CREATE', 'GROUP_MESSAGE_CREATE'):
             return
         data = payload.get('d') or {}
         author = data.get('author') or {}
+        if author.get('bot') is True:
+            return
         sender = author.get('user_openid') or author.get('id') or author.get('member_openid')
-        kind = 'groups' if event == 'GROUP_AT_MESSAGE_CREATE' else 'users'
+        kind = 'groups' if event in ('GROUP_AT_MESSAGE_CREATE', 'GROUP_MESSAGE_CREATE') else 'users'
+        if event == 'GROUP_MESSAGE_CREATE' and not isinstance(data.get('content'), str):
+            return
         target = data.get('group_openid') if kind == 'groups' else sender
         message_id = data.get('id')
         if (not all(isinstance(v, str) and IDENTIFIER.fullmatch(v) for v in (sender, target))
@@ -224,30 +228,63 @@ class QQChannel:
         if self.chat:
             self.chat.characters.qq.attach(scope, app_id, secret)
         event_id = json.dumps([app_id, kind, target, message_id])
+        ordinary_group = event == 'GROUP_MESSAGE_CREATE'
+        text = data['content'].strip() if ordinary_group else re.sub(r'<@!?[^>]+>', '', data['content']).strip()
+        if ordinary_group and (not self.chat or not text or len(text)>6000):
+            return
+        if kind == 'groups' and self.chat and text and len(text)<=6000:
+            self.chat.groups.record(event_id, scope, text, mentioned=not ordinary_group)
         now = time.time()
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
             db.execute('DELETE FROM qq_events WHERE updated<?', (now - 86400,))
             old = db.execute('SELECT * FROM qq_events WHERE id=?', (event_id,)).fetchone()
-            if old and (old['state'] == 'sent' or old['state'] == 'processing' and old['updated'] > now - 60):
+            if old and (old['state'] == 'sent' or old['state'] == 'processing' and old['updated'] > now - 60 or ordinary_group and old['state'] == 'ignored'):
                 return
             db.execute('INSERT OR REPLACE INTO qq_events VALUES(?,?,?)', (event_id, 'processing', now))
+        if ordinary_group:
+            if not self.chat.groups.schedule(self._consider_group, event_id, scope, target, message_id, text):
+                with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='ignored' WHERE id=?", (event_id,))
+            return
         try:
-            text = re.sub(r'<@!?[^>]+>', '', data['content']).strip()
-            if not text or len(text) > 6000:
-                reply = '请发送 1 至 6000 字的问题。'
-            elif self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话', '开启语音', '关闭语音', '解绑角色') and not text.startswith('绑定角色 ') and not re.match(r'^查看\s+https?://', text):
-                reply = self.chat.enqueue(event_id, scope, kind, target, message_id, text)
-            else:
-                reply = self.content(scope, text)
-            if reply is not None:
-                self.client.reply(kind, target, message_id, reply)
+            self._respond(event_id, scope, kind, target, message_id, text)
         except Exception:
             with self.tasks.db() as db:
                 db.execute("UPDATE qq_events SET state='failed' WHERE id=?", (event_id,))
             raise HTTPException(503, 'QQ 回复失败，请稍后重试') from None
         with self.tasks.db() as db:
             db.execute("UPDATE qq_events SET state='sent' WHERE id=?", (event_id,))
+
+    def _respond(self, event_id, scope, kind, target, message_id, text, *, automatic=False):
+        if not automatic:
+            text = re.sub(r'<@!?[^>]+>', '', text).strip()
+        if not text or len(text)>6000:
+            reply = '请发送 1 至 6000 字的问题。'
+        elif automatic or self.chat and text not in ('帮助', 'help', '/help', '最新', '查看', '结果', '任务最新', '解绑', '新对话', '开启语音', '关闭语音', '解绑角色') and not text.startswith('绑定角色 ') and not re.match(r'^查看\s+https?://', text):
+            reply = self.chat.enqueue(event_id, scope, kind, target, message_id, text)
+        else:
+            reply = self.content(scope, text)
+        # Ordinary group traffic must not produce queue/busy notices or change settings.
+        if reply is not None and not automatic:
+            self.client.reply(kind, target, message_id, reply)
+
+    def _consider_group(self, event_id, scope, target, message_id, text):
+        try:
+            with self.tasks.db() as db:
+                event = db.execute('SELECT updated FROM qq_events WHERE id=?', (event_id,)).fetchone()
+            if not event or time.time()-event['updated']>240:
+                return
+            reply = self.chat.groups.should_reply(event_id, scope, text, self.chat.characters.for_scope(scope))
+            with self.tasks.db() as db:
+                db.execute('BEGIN IMMEDIATE')
+                mentioned = self.chat.groups.mentioned(event_id, db)
+                if not mentioned and (not reply or self.chat.groups.busy(scope)):
+                    db.execute("UPDATE qq_events SET state='ignored' WHERE id=?", (event_id,))
+                    return
+            self._respond(event_id, scope, 'groups', target, message_id, text, automatic=not mentioned)
+            with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='sent' WHERE id=?", (event_id,))
+        except Exception:
+            with self.tasks.db() as db:db.execute("UPDATE qq_events SET state='failed' WHERE id=?", (event_id,))
 
 
 def create_router(tasks, chat_runner=None):
@@ -262,7 +299,7 @@ def create_router(tasks, chat_runner=None):
             router.add_event_handler('startup', companion.start)
         router.add_event_handler('shutdown', companion.close)
     if channel.chat:
-        router.add_event_handler('shutdown', lambda: channel.chat.pool.shutdown(wait=False, cancel_futures=True))
+        router.add_event_handler('shutdown', channel.chat.close)
 
     @router.get('/api/qq/voice/{filename}')
     def voice_resource(filename: str):
@@ -352,6 +389,6 @@ def create_router(tasks, chat_runner=None):
     def stop_connected_channels():
         for item in channels.values():
             if item.chat:
-                item.chat.pool.shutdown(wait=False, cancel_futures=True)
+                item.chat.close()
 
     return router

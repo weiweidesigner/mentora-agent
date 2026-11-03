@@ -28,6 +28,7 @@ class CharacterProfile(BaseModel):
     role: str = Field(default='可以轻松聊天，也能认真解答问题的陪伴助手', max_length=500)
     agentPrompt: str = Field(default='', max_length=6000)
     responseMode: Literal['auto','voice','text'] = 'auto'
+    groupReplyMode: Literal['natural','mentions'] = 'natural'
     paragraph: Literal['minimal','normal','long'] = 'normal'
     stickerProbability: int = Field(default=50, ge=0, le=100)
     stickerIds: list[str] | None = Field(default=None, max_length=160)

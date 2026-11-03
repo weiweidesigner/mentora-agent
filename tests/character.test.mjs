@@ -85,3 +85,13 @@ test('group memory defaults to the most active speaker and hides private proacti
  const select=h.d.querySelector('#chRecipient');select.value='private';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud').textContent,'称呼');
  h.d.querySelector('#chRefreshMemory').click();await tick();assert.equal(select.value,'private');h.dom.window.close();
 });
+
+test('group participation preference can be switched and saved',async()=>{
+ const h=setup();await tick();const form=h.d.querySelector('#characterForm');
+ assert.equal(form.elements.groupReplyMode.value,'natural');
+ h.d.querySelector('[data-field="groupReplyMode"] [data-value="mentions"]').click();
+ form.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
+ assert.equal(h.requests.find(r=>r.method==='PUT').body.groupReplyMode,'mentions');
+ assert.match(h.d.querySelector('[data-field="groupReplyMode"]').parentElement.textContent,/获取群内全部消息/);
+ h.dom.window.close();
+});

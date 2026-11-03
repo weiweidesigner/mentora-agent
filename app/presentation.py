@@ -1013,7 +1013,14 @@ def run_qq_chat(scope, question, history):
         '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息；'
         '不要假设能访问网页用户的私人账户。\n\n用户消息：'
     )
+    import json
     profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
+    try:
+        group_chat = json.loads(scope.rsplit(':', 1)[0])[1] == 'groups'
+    except (ValueError, TypeError, IndexError):
+        group_chat = False
+    if group_chat:
+        context = context.removesuffix('用户消息：') + '当前回复会发送到QQ群。结合发言人和群聊背景自然接话，不把群员互相说的话当成对你的要求；不要把私聊中的亲密关系、记忆或昵称套给其他群员。没有帮助时不延伸话题或催人回复。\n\n用户消息：'
     song_owner = CHARACTERS.owner_for_scope(scope.rsplit(':', 1)[0]) if hasattr(CHARACTERS,'owner_for_scope') else None
     context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + singing_context(delivery_key,song_owner) + '用户消息：'
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
