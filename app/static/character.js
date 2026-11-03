@@ -67,7 +67,8 @@ function renderMemory(){
  if(!r){$('chMemoryStats').textContent='';$('chMemoryStatus').textContent='';return;}
  const stats=r.intimacy;
  $('chMemoryStats').innerHTML=`<div><span>亲密度</span><strong>${Number(stats.score)}<small> / 100</small></strong><p>${Number(stats.days)} 天 · ${Number(stats.turns)} 次聊天</p><meter min="0" max="100" value="${Number(stats.score)}" aria-label="亲密度"></meter></div>`;
- $('chMemoryStatus').textContent='';
+ const count=(r.facts||[]).length;
+ $('chMemoryStatus').textContent=count===1?'目前记住了 1 条信息，更多画像会随 QQ 聊天逐步积累。':count===0?'还没有可确认的画像记忆。':'';
 }
 async function loadMemory(){if(memoryBusy)return;memoryBusy=true;$('chRefreshMemory').disabled=true;try{const previous=$('chRecipient').value;companionData=await api('/companion');companionData.recipients=companionData.recipients||[];$('chRecipient').innerHTML=companionData.recipients.map(r=>`<option value="${esc(r.id)}">${esc(r.label)}</option>`).join('');if(companionData.recipients.some(r=>r.id===previous))$('chRecipient').value=previous;$('chRecipientLabel').hidden=companionData.recipients.length<2;renderMemory();const now=new Date();$('chMemoryRefreshAt').textContent='最近刷新 '+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',month:'2-digit',day:'2-digit'}).format(now).split('/').reverse().join('/')+' '+new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(now);}catch(e){$('chMemoryStatus').textContent=e.message;}finally{memoryBusy=false;$('chRefreshMemory').disabled=false;}}
 $('chRecipient').addEventListener('change',renderMemory);

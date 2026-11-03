@@ -69,3 +69,11 @@ test('memory sphere rotates with keyboard and refresh only reads memory',async()
  d.querySelector('#chRefreshMemory').click();await tick();assert.equal(h.requests.filter(r=>r.path.endsWith('/companion')).length,2);assert.equal(h.requests.some(r=>r.method==='DELETE'),false);
  h.dom.window.close();
 });
+
+test('a sparse profile explains its single sourced fact without inventing nodes',async()=>{
+ const h=setup({}, {recipients:[{id:'one',label:'私聊',intimacy:{score:11,days:1,turns:2},facts:[{id:'name',label:'称呼',text:'用户称呼角色大肥鱼',weight:1}]}]});await tick();
+ assert.equal(h.d.querySelectorAll('.chMemoryWord').length,1);
+ assert.match(h.d.querySelector('#chMemoryStatus').textContent,/1 条信息/);
+ assert.equal(h.d.querySelector('.chMemoryWordText').textContent,'称呼');
+ h.dom.window.close();
+});
