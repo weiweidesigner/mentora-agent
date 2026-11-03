@@ -856,7 +856,8 @@ def create_router(service):
             token = secrets.token_urlsafe(32)
             response.set_cookie(COOKIE, token, max_age=31536000, httponly=True, secure=request.url.scheme == 'https' or request.headers.get('x-forwarded-proto') == 'https', samesite='strict', path='/')
         response.headers['Cache-Control'] = 'no-store'
-        return hashlib.sha256(token.encode()).hexdigest()
+        from app.browser_identity import owner_for_token
+        return owner_for_token(token)
 
     def writer(request, response):
         if request.headers.get('x-veya-day') != '1':
@@ -1096,7 +1097,8 @@ def create_router(service):
                 snapshot={key:value for key,value in service.unpack(row['current_config']).items() if key not in SECRET_FIELDS}
                 snapshot['systemPreset']=True
             snapshot['id'] = row['task_id']
-            visitor = hashlib.sha256(request.cookies.get(COOKIE, '').encode()).hexdigest()
+            from app.browser_identity import owner_for_token
+            visitor = owner_for_token(request.cookies.get(COOKIE, ''))
             return {'taskId': row['task_id'], 'runId': row['id'], 'task': snapshot, 'canEdit': visitor == row['owner'], 'title': config['title'], 'question': task_result_question(row['owner'],service.unpack(row['current_config']),config,answer), 'answer': answer, 'cachedDate': row['finished']}
 
     @router.post('/subscriptions')

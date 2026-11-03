@@ -205,7 +205,8 @@ def identity(request,response):
     token=request.cookies.get(COOKIE,'')
     if not re.fullmatch(r'[A-Za-z0-9_-]{43}',token):token=secrets.token_urlsafe(32)
     response.set_cookie(COOKIE,token,max_age=31536000,httponly=True,secure=request.url.scheme=='https' or request.headers.get('x-forwarded-proto')=='https',samesite='strict',path='/')
-    return hashlib.sha256(token.encode()).hexdigest()
+    from app.browser_identity import owner_for_token
+    return owner_for_token(token)
 
 
 def create_router(store,request_model,event_factory,cancel_factory=None):

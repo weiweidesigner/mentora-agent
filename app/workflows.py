@@ -663,7 +663,8 @@ def create_router(service):
         if not re.fullmatch(r'[A-Za-z0-9_-]{43}',token):
             token=secrets.token_urlsafe(32);response.set_cookie(COOKIE,token,max_age=31536000,httponly=True,secure=request.url.scheme=='https' or request.headers.get('x-forwarded-proto')=='https',samesite='strict',path='/')
         response.headers['Cache-Control']='no-store'
-        return hashlib.sha256(token.encode()).hexdigest()
+        from app.browser_identity import owner_for_token
+        return owner_for_token(token)
     @router.get('/catalog')
     def catalog(request:Request,response:Response,agent:Literal['mentora','mentora-deal']='mentora'):
         identity(request,response)
