@@ -15,6 +15,7 @@ from app.character_settings import CharacterStore, CharacterProfile, character_c
 @pytest.fixture
 def setup(tmp_path,monkeypatch):
     from app.qq_channel import QQClient
+    monkeypatch.setattr('app.character_settings.normalize_character_prompt',lambda profile:profile.agentPrompt)
     monkeypatch.setattr(QQClient,'me',lambda self:{'name':'','avatar':''})
     tasks=DayTasks(tmp_path,lambda *a:{})
     store=CharacterStore(tasks)
@@ -320,3 +321,23 @@ def test_saved_identity_changes_reach_bound_scope_despite_older_agent_preference
     assert '用户的跟班小弟，称呼用户老大' in prompt
     assert '优先于补充表达偏好中的旧身份或称呼' in prompt
     assert '不能恢复已被当前设定替换的身份、关系或称呼' in prompt
+
+
+def test_qq_confirmation_uses_same_prompt_cleanup_and_saves_atomically(setup,monkeypatch):
+    from fastapi import HTTPException
+    from app.qq_channel import QQClient
+    store,a,_=setup
+    a.get('/api/character')
+    monkeypatch.setattr(QQClient,'token',lambda self:'token')
+    monkeypatch.setattr('app.character_settings.normalize_character_prompt',lambda profile:'语气自然，讨论正事时认真。')
+    body={'appId':'123456','appSecret':'test-secret','profile':CharacterProfile(relationship='sidekick',role='跟班小弟',agentPrompt='我是女儿，叫爸爸，语气自然，讨论正事时认真。').model_dump()}
+    response=a.put('/api/character/qq',json=body,headers={'X-Veya-Day':'1'})
+    assert response.status_code==200
+    assert response.json()['profile']['agentPrompt']=='语气自然，讨论正事时认真。'
+    def fail(profile):raise HTTPException(503,'not saved')
+    monkeypatch.setattr('app.character_settings.normalize_character_prompt',fail)
+    body['appSecret']='replacement-secret';body['profile']['role']='另一个角色'
+    assert a.put('/api/character/qq',json=body,headers={'X-Veya-Day':'1'}).status_code==503
+    with store.tasks.db() as db:
+        row=db.execute('SELECT id FROM character_qq_connections').fetchone()
+    assert store.qq.credentials(row['id'])[1]=='test-secret'

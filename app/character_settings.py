@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
 from app.chat_sessions import identity
+from app.character_prompt import normalize_character_prompt, prompt_fingerprint
 
 
 class CharacterProfile(BaseModel):
@@ -135,6 +136,10 @@ class QQConnectionStore:
             bot=client.me()
         except Exception:
             bot=self.bot_profile(owner) if old and old['app_id']==payload.appId else None
+        if payload.profile is not None:
+            if bot and bot.get('name'):
+                payload.profile=payload.profile.model_copy(update={'name':bot['name']})
+            payload.profile=CharacterStore(self.tasks).prepare(owner,payload.profile)
         with self.tasks.db() as db:
             existing = db.execute('SELECT owner FROM character_qq_connections WHERE app_id=?', (payload.appId,)).fetchone()
             if existing and existing['owner'] != owner:
@@ -148,9 +153,8 @@ class QQConnectionStore:
             elif old and old['app_id']!=payload.appId:
                 db.execute('DELETE FROM character_qq_profiles WHERE connection=?',(connection,))
             if payload.profile is not None:
-                if bot and bot.get('name'):
-                    payload.profile=payload.profile.model_copy(update={'name':bot['name']})
                 db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)', (owner,payload.profile.model_dump_json(),time.time()))
+                db.execute('INSERT OR REPLACE INTO character_prompt_versions VALUES(?,?)',(owner,prompt_fingerprint(payload.profile)))
                 if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone():
                     db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)', (owner,))
         self.attach_history(owner)
@@ -192,6 +196,7 @@ class CharacterStore:
         self.images=tasks.directory/'character-stickers';self.images.mkdir(exist_ok=True,mode=0o700)
         with tasks.db() as db:
             db.executescript('''CREATE TABLE IF NOT EXISTS character_profiles(owner TEXT PRIMARY KEY,payload TEXT,updated REAL);
+            CREATE TABLE IF NOT EXISTS character_prompt_versions(owner TEXT PRIMARY KEY,fingerprint TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS character_links(scope TEXT PRIMARY KEY,owner TEXT);
             CREATE TABLE IF NOT EXISTS character_codes(hash TEXT PRIMARY KEY,owner TEXT,expires REAL);
             CREATE TABLE IF NOT EXISTS character_stickers(id TEXT PRIMARY KEY,owner TEXT,label TEXT,description TEXT,created REAL);''')
@@ -204,11 +209,20 @@ class CharacterStore:
         if bot and bot.get('name'):profile['name']=bot['name']
         return profile
 
-    def save(self,owner,profile):
+    def prepare(self,owner,profile):
         previous=self.get(owner)
         profile=profile.model_copy(update={key:previous[key] for key in ('proactivePrivate','proactiveGroups') if key not in profile.model_fields_set})
         with self.tasks.db() as db:
+            normalized=db.execute('SELECT fingerprint FROM character_prompt_versions WHERE owner=?',(owner,)).fetchone()
+        if not normalized or normalized['fingerprint'] != prompt_fingerprint(profile):
+            profile=profile.model_copy(update={'agentPrompt':normalize_character_prompt(profile)})
+        return profile
+
+    def save(self,owner,profile):
+        profile=self.prepare(owner,profile)
+        with self.tasks.db() as db:
             db.execute('INSERT OR REPLACE INTO character_profiles VALUES(?,?,?)',(owner,profile.model_dump_json(),time.time()))
+            db.execute('INSERT OR REPLACE INTO character_prompt_versions VALUES(?,?)',(owner,prompt_fingerprint(profile)))
             # A newly saved UI preference supersedes an old QQ quick toggle.
             db.execute('DELETE FROM qq_voice_preferences WHERE scope IN (SELECT scope FROM character_links WHERE owner=?)',(owner,)) if db.execute("SELECT 1 FROM sqlite_master WHERE name='qq_voice_preferences'").fetchone() else None
         saved=self.get(owner)
