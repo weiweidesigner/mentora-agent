@@ -253,3 +253,11 @@ def test_invalid_topic_plan_does_not_change_existing_schedule(env):
     with pytest.raises(ValueError):s.prepare_drafts(e.scope,'2026-11-03')
     assert outbox(e)==before
     assert all(not r['question'] for r in s.memory.snapshot('owner',e.now[0])['recipients'][0]['today'])
+def test_learning_notifications_share_the_three_message_budget(env):
+    e=env;s=e.service;s.plan(e.scope,e.characters.get('owner'),e.now[0]);rows=outbox(e)
+    with e.tasks.db() as db:
+        db.executemany("INSERT INTO qq_extra_message_attempts VALUES(?,?,?,'sent')",[(key,e.scope,rows[0]['day']) for key in ('song:text','song:audio')])
+    for row in rows:
+        e.now[0]=row['due'];s.deliver(row,e.now[0])
+    assert len(e.sent)==1
+    assert [r['state'] for r in outbox(e)]==['sent','limited','limited']

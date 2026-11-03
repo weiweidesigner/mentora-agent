@@ -19,6 +19,12 @@ def signature(data):
     return hmac.new(key.encode(),body,hashlib.sha256).hexdigest()
 
 
+def library_key(owner):
+    if not re.fullmatch(r'[a-f0-9]{64}',owner or ''):raise ValueError('Invalid library owner')
+    token=os.environ['QQ_SINGING_TOKEN'].strip()
+    return owner+'.'+hmac.new(token.encode(),('song-library:'+owner).encode(),hashlib.sha256).hexdigest()
+
+
 def validate(receipt,delivery_key=None,folder=None):
     try:
         if not isinstance(receipt,dict):return None
@@ -86,9 +92,12 @@ def receipt_from_event(event,delivery_key):
     return walk(event)
 
 
-def context(delivery_key):
+def context(delivery_key,owner=None):
     if not os.getenv('QQ_SINGING_ENDPOINT') or not os.getenv('QQ_SINGING_TOKEN'):return ''
+    library=' --library-key '+library_key(owner) if owner else ''
+    binding='本轮 catalog 和 render 命令都须附加'+library+'。' if library else ''
     return ('QQ 支持本地歌声转换。用户明确点歌时，按正常 Agent 流程调用 singing 能力 singing_render.py；'
+            +binding+
             '先用 --operation catalog 查询真实曲库，再用 --operation render --song-id 实际ID '
             '--voice-id companion --delivery-key '+delivery_key+' --output outputs/data/singing-'+delivery_key+'.json 生成。'
             '这是允许的音频生成能力，QQ 通道会发送真实歌声，不需要 HTML、图片或报告。'

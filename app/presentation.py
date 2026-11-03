@@ -984,6 +984,9 @@ app.include_router(create_day_router(DAY_TASKS))
 from app.character_settings import CharacterStore, character_context, create_router as create_character_router
 CHARACTERS = CharacterStore(DAY_TASKS)
 app.include_router(create_character_router(CHARACTERS))
+from app.song_library import SongLibrary, create_router as create_song_library_router
+SONG_LIBRARY = SongLibrary(DAY_TASKS,CHARACTERS)
+app.include_router(create_song_library_router(SONG_LIBRARY))
 
 
 def run_qq_chat(scope, question, history):
@@ -1011,7 +1014,8 @@ def run_qq_chat(scope, question, history):
         '不要假设能访问网页用户的私人账户。\n\n用户消息：'
     )
     profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
-    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + singing_context(delivery_key) + '用户消息：'
+    song_owner = CHARACTERS.owner_for_scope(scope.rsplit(':', 1)[0]) if hasattr(CHARACTERS,'owner_for_scope') else None
+    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + singing_context(delivery_key,song_owner) + '用户消息：'
     effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
     payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
                           reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')

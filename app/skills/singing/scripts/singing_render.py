@@ -18,15 +18,18 @@ def main():
     parser.add_argument('--song-id')
     parser.add_argument('--voice-id',default='companion')
     parser.add_argument('--delivery-key')
+    parser.add_argument('--library-key',default='')
     parser.add_argument('--output')
     args=parser.parse_args()
     if args.schema:
         print(json.dumps({'operation':['catalog','render'],'song-id':'real catalog id','voice-id':'catalog voice id',
+                          'library-key':'optional owner-scoped library key supplied by current QQ turn',
                           'delivery-key':'32 hex characters supplied by current QQ turn','output':'JSON output path'}));return
     if not args.output:parser.error('--output is required')
     endpoint=os.getenv('QQ_SINGING_ENDPOINT','').rstrip('/');token=os.getenv('QQ_SINGING_TOKEN','')
     if not endpoint or not token:raise RuntimeError('歌声服务暂未配置')
     headers={'Authorization':'Bearer '+token}
+    if args.library_key:headers['X-Singing-Library']=args.library_key
     response=requests.get(endpoint+'/songs',headers=headers,timeout=10,allow_redirects=False)
     if response.status_code!=200:raise RuntimeError('歌声曲库暂时无法读取')
     catalog=response.json()

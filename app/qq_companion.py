@@ -37,6 +37,7 @@ class CompanionMemory:
             CREATE TABLE IF NOT EXISTS qq_companion_outbox(id TEXT PRIMARY KEY,scope TEXT,day TEXT,due REAL,state TEXT,attempted REAL,body TEXT DEFAULT '',error TEXT DEFAULT '');
             CREATE INDEX IF NOT EXISTS qq_companion_due ON qq_companion_outbox(state,due);
             CREATE TABLE IF NOT EXISTS qq_companion_meta(key TEXT PRIMARY KEY,value TEXT);
+            CREATE TABLE IF NOT EXISTS qq_extra_message_attempts(key TEXT PRIMARY KEY,scope TEXT,day TEXT,state TEXT);
             ''')
             db.execute("INSERT OR IGNORE INTO qq_companion_meta VALUES('installed',?)",(str(time.time()),))
 
@@ -128,6 +129,9 @@ class CompanionMemory:
             db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE scope=? AND state='planned'",(scope,))
             db.execute("UPDATE qq_companion_plans SET decision='' WHERE scope=?",(scope,))
 
+    def extra_sent(self,scope,day):
+        with self.tasks.db() as db:return db.execute("SELECT count(*) FROM qq_extra_message_attempts WHERE scope=? AND day=? AND state='sent'",(scope,day)).fetchone()[0]
+
     def snapshot(self, owner, now=None):
         now=time.time() if now is None else now;day=local_day(now);result=[]
         for index,scope in enumerate(self.scopes(owner),1):
@@ -144,7 +148,7 @@ class CompanionMemory:
                 item.pop('id')
             result.append({'id':scope_id(scope),'label':'QQ 私聊 '+str(index),'intimacy':stats,'facts':[{k:f[k] for k in ('id','text','label','weight','quote') if k in f} for f in data['facts']],
                            'updated':data['updated'],'planState':plan['state'] if plan else 'waiting',
-                           'today':sends,'sentToday':sum(s['state']=='sent' for s in sends)})
+                           'today':sends,'sentToday':sum(s['state']=='sent' for s in sends)+self.extra_sent(scope,day)})
         return {'recipients':result,'timezone':'Asia/Shanghai','planningTime':'01:00','sendWindow':'09:00–21:00','dailyLimit':3}
 
 
@@ -356,6 +360,7 @@ class QQCompanion:
             elif row['day']!=local.date().isoformat() or local.time()>day_time(21) or now-row['due']>2700:state='expired'
             elif local.time()<day_time(9):return
             attempts=db.execute('SELECT count(*) FROM qq_companion_outbox WHERE scope=? AND day=? AND attempted IS NOT NULL',(row['scope'],row['day'])).fetchone()[0]
+            attempts+=db.execute('SELECT count(*) FROM qq_extra_message_attempts WHERE scope=? AND day=?',(row['scope'],row['day'])).fetchone()[0]
             if attempts>=3:state='limited'
             if state:
                 db.execute('UPDATE qq_companion_outbox SET state=? WHERE id=?',(state,row['id']));return

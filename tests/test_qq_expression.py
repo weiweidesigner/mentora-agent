@@ -41,11 +41,11 @@ def test_formal_context_blocks_stickers_even_at_max_probability(router):
     assert plan['reactionChoice']=='none' and not plan['stickerPending']
 
 
-def test_uncertain_context_does_not_force_voice_or_stickers(router):
+def test_casual_winner_is_not_vetoed_by_extra_confidence_threshold(router):
     active,client=router;client.modes=('voice',.55,'add',.59,'heart',.9)
     plan=active.route('普通问题','普通回答',[],sticker_catalog())
-    assert plan['mode']=='text' and plan['sticker'] is None and plan['confidence']==.55
-    assert plan['reactionConfidence']==.59 and not plan['stickerEligible']
+    assert plan['mode']=='text' and plan['sticker']=='heart' and plan['confidence']==.55
+    assert plan['reactionConfidence']==.59 and plan['stickerEligible']
 
 
 def test_missing_model_or_invalid_score_falls_back_without_inventing_confidence(router,monkeypatch):
@@ -159,10 +159,10 @@ def test_text_preference_does_not_prevent_emotional_chat_reactions(router):
     assert plan['sticker'] is None
 
 
-def test_no_fitting_image_is_a_valid_local_decision(router):
-    active,client=router;client.modes=('voice',.99,'add',.98,'__none__',.94)
-    plan=active.route('想安静地待会','我陪你安静待一会',[],[{'id':'dance','description':'兴奋大笑跳舞'}],sticker_probability=100)
-    assert plan['stickerEligible'] and plan['sticker'] is None
+def test_approved_casual_chat_selects_installed_image_without_second_veto(router):
+    active,client=router;client.modes=('text',.99,'add',.51,'heart',.4)
+    plan=active.route('今天吃了好吃的','不错呀',[],[{'id':'heart','description':'双手比心，开心'}],sticker_probability=100)
+    assert plan['stickerEligible'] and plan['sticker']=='heart'
     assert not plan['stickerPending'] and plan['stickerSource']=='local-jev-laya'
 
 
