@@ -65,7 +65,7 @@ function renderMemory(){
  $('chClearMemory').hidden=!r||!r.facts?.length;renderProactivePlan(r);
  if(!r){$('chMemoryStats').textContent='';$('chWordCloud').innerHTML='<p class="chEmpty">和 QQ 机器人聊几句后，这里会开始积累你们的记忆。</p>';$('chMemoryStatus').textContent='仅根据对应 QQ 私聊的真实内容整理。';return;}
  const stats=r.intimacy;
- $('chMemoryStats').innerHTML=`<div><span>亲密度</span><strong>${Number(stats.score)}<small> / 100</small></strong><p>${Number(stats.days)} 天 · ${Number(stats.turns)} 次聊天</p><meter min="0" max="100" value="${Number(stats.score)}" aria-label="亲密度"></meter></div><div><span>今日主动消息</span><strong>${Number(r.sentToday)}<small> / 3</small></strong><p>${r.planState==='planned'?'今日已安排 '+(r.today||[]).length+' 条':r.planState==='retry'?'计划准备中，稍后重试':r.planState==='planning'?'正在生成今日计划':'每日 01:00 安排'}</p></div>`;
+ $('chMemoryStats').innerHTML=`<div><span>亲密度</span><strong>${Number(stats.score)}<small> / 100</small></strong><p>${Number(stats.days)} 天 · ${Number(stats.turns)} 次聊天</p><meter min="0" max="100" value="${Number(stats.score)}" aria-label="亲密度"></meter></div>`;
  $('chWordCloud').innerHTML=r.facts.length?r.facts.map(f=>`<span class="chMemoryWord" style="--word-size:${14+Math.min(10,Math.max(1,Number(f.weight)||1))*1.2}px" tabindex="0" title="${esc(f.text+' · '+(f.quote||''))}">${esc(f.label)}</span>`).join(''):'<p class="chEmpty">还没有明确的长期偏好，继续自然聊天就好。</p>';
  $('chMemoryStatus').textContent='亲密度按聊天次数和持续天数累计；词云来自用户明确自述的偏好。';
 }
