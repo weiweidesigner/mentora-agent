@@ -146,3 +146,33 @@ def test_bot_authors_and_non_text_full_events_are_ignored(bot):
     item=event();item['d']['author']['bot']=True;channel.dispatch(item)
     item=event();del item['d']['content'];channel.dispatch(item)
     assert not calls and not client.sent
+
+
+def test_delayed_followup_keeps_question_and_delivered_answer_for_participation(bot):
+    channel,tasks,client,calls=bot;groups=channel.chat.groups
+    channel.dispatch(event('大肥鱼今天A股表现怎么样',mid='previous',mentioned=True))
+    until(lambda:len(client.sent)==1)
+    old=time.time()-25*60
+    with tasks.db() as db:
+        db.execute('UPDATE qq_group_messages SET created=?,replied_at=?',(old,old+120))
+        db.execute('UPDATE qq_chat_jobs SET created=?',(old,))
+        scope=db.execute('SELECT scope FROM qq_group_messages').fetchone()['scope']
+    captured=[]
+    class Model:
+        def __init__(self,**kwargs):self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
+        def __enter__(self):return self
+        def __exit__(self,*args):pass
+        def create(self,**kwargs):
+            captured.append(json.loads(kwargs['messages'][1]['content']))
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"reply":true}'))])
+    groups.factory=Model
+    assert groups.should_reply('next',scope,'那昨天美股表现呢',CharacterProfile().model_dump())
+    recent=captured[-1]['recent_group']
+    assert any(x['role']=='user' and 'A股' in x['text'] and x['speaker']==captured[-1]['current_speaker'] for x in recent)
+    assert any(x['role']=='assistant' and '这样看' in x['text'] for x in recent)
+    assert all(x['seconds_ago']>15*60 for x in recent)
+    with tasks.db() as db:
+        db.execute('INSERT INTO qq_chat_resets(scope,reset_at) VALUES(?,?)',(scope,time.time()))
+    assert groups.should_reply('next',scope,'另一个话题',CharacterProfile().model_dump())
+    assert captured[-1]['recent_group']==[]
+    assert groups.context(scope,before=old+86401+120)==[]
