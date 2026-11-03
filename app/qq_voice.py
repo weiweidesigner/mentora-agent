@@ -66,7 +66,7 @@ class QQVoice:
                                base+'/api/qq/voice/'+receipt['id']+'.silk',sequence=3)
         return True
 
-    def send(self, job, text, *, proactive=False, before_send=None):
+    def send(self, job, text, *, proactive=False, before_send=None, sequence_start=None):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')
         parts = speech_chunks(text)
         audio_parts = []
@@ -115,5 +115,5 @@ class QQVoice:
             else:
                 # Keep sequence 4 available for the reaction image.
                 self.client.voice_reply(job['kind'], job['target'], job['message_id'], url,
-                                        sequence=3 if index == 0 else 5 + index)
+                                        sequence=(sequence_start + index) if sequence_start is not None else (3 if index == 0 else 5 + index))
         return True

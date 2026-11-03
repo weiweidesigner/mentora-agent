@@ -77,7 +77,8 @@ def test_invalid_synth_response_is_not_uploaded(tasks,monkeypatch):
     assert not list(voice.directory.glob('*.silk'))
 
 
-def test_long_voice_sends_every_segment_in_order_without_sequence_collisions(tasks,monkeypatch):
+@pytest.mark.parametrize('sequence_start,expected',[(None,[3,6,7]),(6,[6,7,8])])
+def test_long_voice_sends_every_segment_in_order_without_sequence_collisions(tasks,monkeypatch,sequence_start,expected):
     generated, sent = [], []
     monkeypatch.setenv('QQ_BREEZE_ENDPOINT','http://127.0.0.1:18768')
     monkeypatch.setenv('QQ_BREEZE_TOKEN','test')
@@ -87,9 +88,9 @@ def test_long_voice_sends_every_segment_in_order_without_sequence_collisions(tas
     monkeypatch.setattr('app.qq_voice.requests.post',post)
     voice=QQVoice(tasks,SimpleNamespace(voice_reply=lambda *a,**k:sent.append((a,k))))
     text=('完整的第一段。'*10)+('完整的第二段。'*10)+('完整的结尾。'*10)
-    assert voice.send({'kind':'groups','target':'g','message_id':'m','created':time.time()},text)
+    assert voice.send({'kind':'groups','target':'g','message_id':'m','created':time.time()},text,sequence_start=sequence_start)
     assert ''.join(generated)==text
-    assert [kwargs['sequence'] for _,kwargs in sent]==[3,6,7]
+    assert [kwargs['sequence'] for _,kwargs in sent]==expected
     assert len({args[-1] for args,_ in sent})==3
 
 

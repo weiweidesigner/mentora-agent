@@ -81,7 +81,7 @@ def test_singing_uses_qq_media_without_breeze_or_voice_preference(singing,tmp_pa
 
 
 @pytest.mark.parametrize('reply_text',['给你唱一段小星星。',''])
-def test_qq_chat_delivers_generated_song_without_narrating_the_reply(singing,tmp_path,monkeypatch,reply_text):
+def test_qq_chat_delivers_song_with_optional_text(singing,tmp_path,monkeypatch,reply_text):
     from app.qq_chat import QQChat
     tasks=DayTasks(tmp_path,lambda *a:{})
     voices=[];texts=[]
@@ -91,10 +91,39 @@ def test_qq_chat_delivers_generated_song_without_narrating_the_reply(singing,tmp
     monkeypatch.setattr(chat.voice,'send',lambda *a:pytest.fail('Singing must not use Breeze TTS'))
     chat.enqueue('sing-request','scope','users','alice','mid','唱小星星')
     chat.pool.shutdown(wait=True)
-    assert len(voices)==1 and not texts
+    assert len(voices)==1 and texts==([reply_text] if reply_text else [])
     with tasks.db() as db:
         row=db.execute('SELECT delivered FROM qq_chat_jobs').fetchone();assert row[0]==1
-        plan=json.loads(db.execute('SELECT payload FROM qq_expression_decisions').fetchone()[0]);assert plan['deliveredMode']=='singing'
+        plan=json.loads(db.execute('SELECT payload FROM qq_expression_decisions').fetchone()[0]);assert plan['deliveredMode']==('singing+text' if reply_text else 'singing')
+
+
+@pytest.mark.parametrize('spoken_result',[True,False,'error'])
+def test_song_can_include_spoken_response_and_selected_sticker(singing,tmp_path,monkeypatch,spoken_result):
+    from app.qq_chat import QQChat
+    tasks=DayTasks(tmp_path,lambda *a:{})
+    events=[]
+    client=SimpleNamespace(
+        voice_reply=lambda *a,**kw:events.append(('song',kw['sequence'])),
+        reply=lambda *a,**kw:events.append(('text',kw['sequence'])),
+        image_reply=lambda *a,**kw:events.append(('image',kw['sequence'])))
+    chat=QQChat(tasks,client,lambda *a:{'interpretation':'这首送给你，今天也辛苦啦。','qqSong':singing.receipt})
+    monkeypatch.setattr(chat.expression,'route',lambda *a,**kw:{'mode':'voice','sticker':'heart'})
+    monkeypatch.setattr(chat.voice,'enabled',lambda *a:True)
+    def spoken(job,text,*,sequence_start):
+        assert events==[('song',3)]
+        assert sequence_start==6 and text=='这首送给你，今天也辛苦啦。'
+        if spoken_result=='error':raise RuntimeError('synthesis unavailable')
+        if spoken_result:events.append(('speech',sequence_start))
+        return spoken_result
+    monkeypatch.setattr(chat.voice,'send',spoken)
+    chat.enqueue('sing-request','scope','users','alice','mid','唱小星星')
+    chat.pool.shutdown(wait=True)
+    assert events==[('song',3),('speech',6) if spoken_result is True else ('text',5),('image',4)]
+    with tasks.db() as db:
+        assert db.execute('SELECT delivered FROM qq_chat_jobs').fetchone()[0]==1
+        plan=json.loads(db.execute('SELECT payload FROM qq_expression_decisions').fetchone()[0])
+        assert plan['stickerSent'] is True
+        assert plan['deliveredMode']==('singing+voice' if spoken_result is True else 'singing+text')
 
 
 def test_singing_tool_lists_then_renders_only_real_catalog_songs(singing,tmp_path,monkeypatch):

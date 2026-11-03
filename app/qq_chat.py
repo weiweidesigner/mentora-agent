@@ -245,6 +245,22 @@ class QQChat:
                 log.warning('QQ singing delivery failed for job %s',job_id)
                 content = '歌声片段已生成，但本次 QQ 语音未能确认送达，请稍后重试。'
                 plan['mode'] = 'text'
+        # Singing is media, not a replacement for the conversational response.
+        # Reserve 2/3 for credit/song and 4 for the optional reaction image.
+        if delivered and plan['deliveredMode'] == 'singing' and str(answer.get('interpretation') or '').strip() and time.time()-job['created'] < window:
+            supplement = False
+            if plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
+                try:
+                    supplement = bool(self.voice.send(job, content, sequence_start=6))
+                    if supplement:plan['deliveredMode'] = 'singing+voice'
+                except Exception:
+                    log.warning('QQ song spoken supplement failed for job %s', job_id)
+            if not supplement:
+                try:
+                    self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=5)
+                    plan['deliveredMode'] = 'singing+text'
+                except Exception:
+                    log.warning('QQ song text supplement failed for job %s; song retained', job_id)
         if not delivered and completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
             try:
                 delivered = bool(self.voice.send(job, content))
