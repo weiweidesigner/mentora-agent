@@ -53,6 +53,8 @@ def speech(payload: Speech, request: Request):
         raise HTTPException(409, 'Speech worker busy')
     try:
         return model_pool.submit(synthesize, payload.text, payload.instruction).result()
+    except SpeechTooLong:
+        raise HTTPException(413, 'Split speech into smaller complete segments') from None
     except Exception as exc:
         print('Breeze synthesis failed:', type(exc).__name__, flush=True)
         raise HTTPException(503, 'Speech synthesis failed') from None
@@ -60,18 +62,25 @@ def speech(payload: Speech, request: Request):
         lock.release()
 
 
+class SpeechTooLong(ValueError):
+    pass
+
+
 def synthesize(text, instruction=None):
     import numpy as np
     import pilk
     chunks = []
     for chunk in model.generate(text=text, instruct=instruction or VOICE, cfg_scale=4, max_tokens=1800):
+        if getattr(chunk, 'token_count', 0) >= 1800:
+            raise SpeechTooLong('Generation exhausted its token budget')
         audio = np.asarray(chunk.audio).reshape(-1)
         chunks.append(audio)
     if not chunks:
         raise RuntimeError('empty audio')
     audio = np.concatenate(chunks)
     rate = int(chunk.sample_rate)
-    audio = audio[:rate*55]
+    if len(audio) > rate*55:
+        raise SpeechTooLong('Segment exceeds safe voice duration')
     if len(audio) < rate // 10:
         raise RuntimeError('empty audio')
     pcm = (np.clip(audio, -1, 1) * 32767).astype('<i2').tobytes()

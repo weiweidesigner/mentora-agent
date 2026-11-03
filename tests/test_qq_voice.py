@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 import pytest
 
 from app.day_tasks import DayTasks
-from app.qq_voice import QQVoice, speech_text
+from app.qq_voice import QQVoice, speech_text, speech_chunks
 from app.qq_channel import QQClient, QQChannelError, create_router
 
 
@@ -17,9 +17,14 @@ def tasks(tmp_path):
     return DayTasks(tmp_path, lambda c,r: {})
 
 
-def test_spoken_excerpt_ends_at_sentence_and_removes_urls():
-    text = '第一句。' + '第二句很长' * 80 + 'https://example.com/'
-    assert speech_text(text) == '第一句。详细内容请看文字。'
+def test_long_speech_keeps_all_content_and_splits_at_sentences():
+    text = '第一句。' + '第二句很长' * 30 + '。最后一句。'
+    assert speech_text(text + 'https://example.com/') == text
+    parts = speech_chunks(text)
+    assert ''.join(parts) == text
+    assert parts[0] == '第一句。'
+    assert all(len(part) <= 100 for part in parts)
+    assert parts[-1].endswith('最后一句。')
     assert speech_text('简短回答。') == '简短回答。'
 
 
@@ -70,6 +75,51 @@ def test_invalid_synth_response_is_not_uploaded(tasks,monkeypatch):
     with pytest.raises(ValueError):
         voice.send({'kind':'users','created':time.time()},'你好')
     assert not list(voice.directory.glob('*.silk'))
+
+
+def test_long_voice_sends_every_segment_in_order_without_sequence_collisions(tasks,monkeypatch):
+    generated, sent = [], []
+    monkeypatch.setenv('QQ_BREEZE_ENDPOINT','http://127.0.0.1:18768')
+    monkeypatch.setenv('QQ_BREEZE_TOKEN','test')
+    def post(url, **kwargs):
+        generated.append(kwargs['json']['text'])
+        return SimpleNamespace(content=b'\x02#!SILK_V3'+str(len(generated)).encode(),raise_for_status=lambda:None)
+    monkeypatch.setattr('app.qq_voice.requests.post',post)
+    voice=QQVoice(tasks,SimpleNamespace(voice_reply=lambda *a,**k:sent.append((a,k))))
+    text=('完整的第一段。'*10)+('完整的第二段。'*10)+('完整的结尾。'*10)
+    assert voice.send({'kind':'groups','target':'g','message_id':'m','created':time.time()},text)
+    assert ''.join(generated)==text
+    assert [kwargs['sequence'] for _,kwargs in sent]==[3,6,7]
+    assert len({args[-1] for args,_ in sent})==3
+
+
+def test_overlong_audio_is_resplit_without_losing_text(tasks,monkeypatch):
+    calls, sent = [], []
+    monkeypatch.setenv('QQ_BREEZE_ENDPOINT','http://127.0.0.1:18768')
+    monkeypatch.setenv('QQ_BREEZE_TOKEN','test')
+    def post(url, **kwargs):
+        text=kwargs['json']['text'];calls.append(text)
+        return SimpleNamespace(status_code=413 if len(calls)==1 else 200,
+                               content=b'\x02#!SILK_V3encoded',raise_for_status=lambda:None)
+    monkeypatch.setattr('app.qq_voice.requests.post',post)
+    voice=QQVoice(tasks,SimpleNamespace(voice_reply=lambda *a,**k:sent.append((a,k))))
+    text='长句子没有停顿'*10
+    assert voice.send({'kind':'users','target':'u','message_id':'m','created':time.time()},text)
+    assert ''.join(calls[1:])==text and len(sent)==2
+
+
+def test_failed_later_synthesis_never_sends_an_incomplete_answer(tasks,monkeypatch):
+    monkeypatch.setenv('QQ_BREEZE_ENDPOINT','http://127.0.0.1:18768')
+    monkeypatch.setenv('QQ_BREEZE_TOKEN','test')
+    calls=[]
+    def post(*args,**kwargs):
+        calls.append(True)
+        if len(calls)>1:raise RuntimeError('worker unavailable')
+        return SimpleNamespace(content=b'\x02#!SILK_V3encoded',raise_for_status=lambda:None)
+    monkeypatch.setattr('app.qq_voice.requests.post',post)
+    voice=QQVoice(tasks,SimpleNamespace(voice_reply=lambda *a,**k:pytest.fail('partial answer sent')))
+    with pytest.raises(RuntimeError):
+        voice.send({'kind':'users','created':time.time()},'第一段。'*30)
 
 
 def test_qq_voice_upload_uses_silk_and_never_active_send(monkeypatch):
@@ -136,3 +186,17 @@ def test_breeze_model_load_and_generation_share_one_gpu_thread(monkeypatch):
         response=client.post('/speech',json={'text':'你好'},headers={'Authorization':'Bearer test-token'})
     assert response.status_code==200
     assert len(threads)==2 and threads[0]==threads[1] and threads[0]!=threading.get_ident()
+
+
+@pytest.mark.parametrize('seconds,tokens',[(56,700),(1,1800)])
+def test_breeze_rejects_incomplete_audio_instead_of_silently_trimming(monkeypatch,seconds,tokens):
+    import sys
+    import numpy as np
+    from scripts import breeze_tts_service as worker
+    monkeypatch.setattr(worker,'TOKEN','test-token')
+    monkeypatch.setitem(sys.modules,'pilk',SimpleNamespace(encode=lambda *a,**k:pytest.fail('incomplete audio encoded')))
+    monkeypatch.setattr(worker,'model',SimpleNamespace(generate=lambda **k:iter([
+        SimpleNamespace(audio=np.zeros(24000*seconds),sample_rate=24000,token_count=tokens)])))
+    client=TestClient(worker.app)
+    response=client.post('/speech',json={'text':'完整的长回答。'},headers={'Authorization':'Bearer test-token'})
+    assert response.status_code==413

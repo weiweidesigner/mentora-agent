@@ -8,15 +8,25 @@ import time
 import requests
 
 
-def speech_text(text, limit=140):
-    value = re.sub(r'https?://\S+|\[\[AIME_[^\n]+?\]\]', '', text).strip()
-    if len(value) <= limit:
-        return value
-    prefix = value[:limit]
-    ends = [m.end() for m in re.finditer(r'[。！？；\n]', prefix)]
-    if ends:
-        prefix = prefix[:ends[-1]]
-    return prefix.strip() + '详细内容请看文字。'
+def speech_text(text):
+    return re.sub(r'https?://\S+|\[\[AIME_[^\n]+?\]\]', '', text).strip()
+
+
+def speech_chunks(text, limit=100):
+    """Keep all spoken content, preferring sentence and clause boundaries."""
+    value = speech_text(text)
+    chunks = []
+    while len(value) > limit:
+        prefix = value[:limit]
+        ends = [m.end() for m in re.finditer(r'[。！？；\n]', prefix)]
+        if not ends:
+            ends = [m.end() for m in re.finditer(r'[，,、：:；;\s]', prefix)]
+        end = ends[-1] if ends else limit
+        chunks.append(value[:end].strip())
+        value = value[end:].strip()
+    if value:
+        chunks.append(value)
+    return chunks
 
 
 class QQVoice:
@@ -58,16 +68,30 @@ class QQVoice:
 
     def send(self, job, text, *, proactive=False, before_send=None):
         endpoint = os.environ['QQ_BREEZE_ENDPOINT'].rstrip('/')
-        payload = {'text': speech_text(text)}
-        if job.get('voice_instruction'):
-            payload['instruction'] = job['voice_instruction'][:300]
-        response = requests.post(endpoint + '/speech', json=payload,
-                                 headers={'Authorization': 'Bearer ' + os.environ['QQ_BREEZE_TOKEN']},
-                                 timeout=(5, 120), allow_redirects=False)
-        response.raise_for_status()
-        audio = response.content
-        if len(audio) > 2*1024*1024 or not audio.startswith(b'\x02#!SILK_V3'):
-            raise ValueError('Invalid voice resource')
+        parts = speech_chunks(text)
+        audio_parts = []
+        # Reserve room for the full-text fallback and optional reaction.
+        # Never deliver only a prefix of an answer that exceeds this budget.
+        while parts:
+            if len(parts) + len(audio_parts) > 3:
+                raise ValueError('Answer needs more voice messages; use full text')
+            part = parts.pop(0)
+            payload = {'text': part}
+            if job.get('voice_instruction'):
+                payload['instruction'] = job['voice_instruction'][:300]
+            response = requests.post(endpoint + '/speech', json=payload,
+                                     headers={'Authorization': 'Bearer ' + os.environ['QQ_BREEZE_TOKEN']},
+                                     timeout=(5, 120), allow_redirects=False)
+            if getattr(response, 'status_code', None) == 413 and len(part) > 1:
+                parts[:0] = speech_chunks(part, max(1, len(part)//2))
+                continue
+            response.raise_for_status()
+            audio = response.content
+            if len(audio) > 2*1024*1024 or not audio.startswith(b'\x02#!SILK_V3'):
+                raise ValueError('Invalid voice resource')
+            audio_parts.append(audio)
+        if not audio_parts:
+            return False
         window = 270 if job['kind'] == 'groups' else 3500
         if time.time() - job['created'] > window:
             return False
@@ -77,14 +101,19 @@ class QQVoice:
                     path.unlink(missing_ok=True)
             except FileNotFoundError:
                 pass
-        name = secrets.token_urlsafe(24) + '.silk'
-        path = self.directory / name
-        path.write_bytes(audio); path.chmod(0o600)
         base = os.getenv('VEYA_PUBLIC_URL', 'https://weiweidesigner.com/mentora/').rstrip('/')
-        url = base + '/api/qq/voice/' + name
-        if before_send is not None and not before_send():return False
-        if proactive:
-            self.client.proactive_media(job['target'],url,file_type=3)
-        else:
-            self.client.voice_reply(job['kind'], job['target'], job['message_id'], url, sequence=3)
+        for index, audio in enumerate(audio_parts):
+            if time.time() - job['created'] > window:
+                return False
+            name = secrets.token_urlsafe(24) + '.silk'
+            path = self.directory / name
+            path.write_bytes(audio); path.chmod(0o600)
+            url = base + '/api/qq/voice/' + name
+            if before_send is not None and not before_send():return False
+            if proactive:
+                self.client.proactive_media(job['target'],url,file_type=3)
+            else:
+                # Keep sequence 4 available for the reaction image.
+                self.client.voice_reply(job['kind'], job['target'], job['message_id'], url,
+                                        sequence=3 if index == 0 else 5 + index)
         return True
