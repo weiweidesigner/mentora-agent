@@ -49,14 +49,14 @@ test('refreshing another workspace also plays the opening and retains its destin
 
 
 test('the opening requests audio while the resident background remains muted',async()=>{
-  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-welcome-extracted\.mp4$/);assert.equal(h.video.muted,true);
-  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.paused,true);assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
+  const h=setup({opening:true});assert.equal(h.intro.muted,false);assert.equal(h.intro.volume,.8);assert.match(h.intro.getAttribute('src'),/opening-welcome-early\.mp4$/);assert.equal(h.video.muted,true);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);h.dom.window.close();
 });
 test('autoplay rejection falls back to animation, and a gesture enables sound only during the opening',async()=>{
   const h=setup({opening:true,autoplayBlocked:true});await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,false);assert.equal(h.opening.hidden,false);
   assert.equal(h.opening.querySelector('p').textContent,'欢迎来到股神大肥鱼世界');assert.equal(h.opening.dataset.sound,'blocked');h.intro.currentTime=3.5;
-  h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);assert.equal(h.intro.currentTime,0);assert.equal(h.opening.dataset.sound,'playing');assert.doesNotMatch(h.opening.textContent,/点击画面/);
-  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.paused,true);assert.equal(h.video.muted,true);assert.equal(h.video.paused,false);h.dom.window.close();
+  h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.paused,false);assert.equal(h.intro.currentTime,3.5);assert.equal(h.opening.dataset.sound,'playing');assert.doesNotMatch(h.opening.textContent,/点击画面/);
+  h.intro.dispatchEvent(new h.w.Event('ended'));await tick();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.video.muted,true);assert.equal(h.video.paused,false);h.dom.window.close();
 });
 
 
@@ -70,10 +70,10 @@ test('an early user gesture wins over a late autoplay permission rejection',asyn
 test('a second page refresh starts a new opening even with a previous played record',()=>{
   for(let i=0;i<2;i++){const h=setup({opening:true});assert.equal(h.opening.hidden,false);assert.equal(h.intro.paused,false);h.dom.window.close();}
 });
-test('keyboard activation starts sound from the beginning and slow loading gets a complete playback window',async()=>{
-  const h=setup({opening:true,autoplayBlocked:true});await tick();const before=[...h.timers.keys()];h.intro.dispatchEvent(new h.w.Event('playing'));assert.ok(before.some(id=>!h.timers.has(id)));
+test('keyboard activation unmutes the current frame without extending the opening',async()=>{
+  const h=setup({opening:true,autoplayBlocked:true});await tick();const before=[...h.timers.keys()];h.intro.dispatchEvent(new h.w.Event('playing'));assert.ok(before.every(id=>h.timers.has(id)));
   h.intro.currentTime=4;h.allowAudio();h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Tab',bubbles:true}));await tick();assert.equal(h.intro.muted,true);assert.equal(h.intro.currentTime,4);
-  h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.currentTime,0);h.dom.window.close();
+  h.d.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await tick();assert.equal(h.intro.muted,false);assert.equal(h.intro.currentTime,4);h.dom.window.close();
 });
 
 
@@ -105,7 +105,26 @@ test('the welcome reveal waits for actual video playback and is cancelled when t
 });
 
 test('the mixed greeting adds no separate playback or delay before entry',async()=>{
- const h=setup({opening:true});assert.equal(h.d.querySelector('#mentoraWelcomeAudio'),null);assert.match(h.intro.getAttribute('src'),/opening-welcome-extracted\.mp4$/);
- h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.intro.paused,true);assert.equal([...h.timers.values()].some(t=>t.ms===5000),false);
+ const h=setup({opening:true});assert.equal(h.d.querySelector('#mentoraWelcomeAudio'),null);assert.match(h.intro.getAttribute('src'),/opening-welcome-early\.mp4$/);
+ h.intro.dispatchEvent(new h.w.Event('ended'));await tick();assert.notEqual(h.shell.inert,true);assert.equal(h.intro.muted,true);assert.equal([...h.timers.values()].some(t=>t.ms===5000),false);
  [...h.timers.values()].find(t=>t.ms===650).fn();assert.equal(h.opening.hidden,true);h.dom.window.close();
+});
+
+
+test('entry fades on the visual timeline while video keeps moving, and audio gestures never reset it',async()=>{
+ const h=setup({opening:true,autoplayBlocked:true});await tick();
+ Object.defineProperty(h.intro,'duration',{value:5.5});h.intro.dispatchEvent(new h.w.Event('playing'));
+ const [key,fade]=[...h.timers].find(([,t])=>Math.abs(t.ms-4850)<1);
+ assert.ok(fade);h.intro.currentTime=3;h.allowAudio();h.d.dispatchEvent(new h.w.MouseEvent('click',{bubbles:true}));await tick();
+ assert.equal(h.intro.currentTime,3);assert.equal(h.timers.get(key),fade);
+ fade.fn();assert.equal(h.opening.classList.contains('is-playing'),false);assert.notEqual(h.shell.inert,true);
+ assert.equal(h.intro.paused,false);assert.equal(h.intro.muted,true);
+ [...h.timers.values()].find(t=>t.ms===650).fn();assert.equal(h.opening.hidden,true);assert.equal(h.intro.paused,true);
+ h.dom.window.close();
+});
+
+test('leaving the page stops both videos even if the opening was still fading',()=>{
+ const h=setup({opening:true});h.w.dispatchEvent(new h.w.Event('pagehide'));
+ assert.equal(h.intro.paused,true);assert.equal(h.video.paused,true);assert.equal(h.opening.hidden,true);
+ h.dom.window.close();
 });

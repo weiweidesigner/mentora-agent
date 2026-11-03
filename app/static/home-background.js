@@ -12,10 +12,9 @@
   const intro = document.querySelector('#mentoraOpeningVideo');
   const subtitle = opening?.querySelector('.mentoraOpeningTitle p');
   const welcome = subtitle?.textContent || '';
-  let audioBlocked = false;
   const excluded = ['tasks-view', 'widgets-view', 'portfolio-view', 'character-view', 'case-overlay-open'];
   const chatVisible = () => !conversation.hidden && !excluded.some(name => shell.classList.contains(name));
-  let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0;
+  let openingActive = false, deadline = 0, revealTimer = 0, hideTimer = 0, fadeTimer = 0;
   let previousInert = false, audioAttempt = 0, returnFocus = null;
   const saveData = () => Boolean(navigator.connection?.saveData);
   // Opt-in, local-only diagnostics. No telemetry or account data is collected.
@@ -77,8 +76,9 @@
     if (!openingActive) return;
     traceOpening('finish');
     openingActive = false;++audioAttempt;
-    clearTimeout(deadline);clearTimeout(revealTimer);
-    intro.pause();intro.muted = true;
+    clearTimeout(deadline);clearTimeout(revealTimer);clearTimeout(fadeTimer);
+    // Keep the picture moving throughout its fade; speech never holds entry.
+    intro.muted = true;
     document.removeEventListener('click', enableOpeningAudio, true);
     document.removeEventListener('keydown', enableOpeningAudio, true);
     opening.classList.remove('is-playing', 'is-revealed');
@@ -87,7 +87,7 @@
     opening.removeAttribute('role');opening.removeAttribute('tabindex');
     if (subtitle) subtitle.textContent = welcome;
     if (document.activeElement === opening) returnFocus?.focus?.({preventScroll:true});
-    hideTimer = setTimeout(() => { opening.hidden = true; }, 650);
+    hideTimer = setTimeout(() => { intro.pause();opening.hidden = true; }, 650);
     sync();
   }
   function resetDeadline() {
@@ -99,16 +99,13 @@
     if (event?.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
     if (event?.type === 'keydown') event.preventDefault();
     const attempt = ++audioAttempt;
-    if (audioBlocked && event) {
-      intro.currentTime = 0;
-      resetDeadline();
-    }
+    // A sound gesture unmutes the current frame without rewinding or extending entry.
     intro.muted = false;
     traceOpening(event ? 'gesture-audible' : 'autoplay-audible');
     intro.play().then(() => {
       if (!openingActive || attempt !== audioAttempt) return;
       traceOpening('audible-started');
-      audioBlocked = false;opening.dataset.sound = 'playing';
+      opening.dataset.sound = 'playing';
       if (subtitle) subtitle.textContent = welcome;
       opening.setAttribute('aria-hidden', 'true');
       opening.removeAttribute('role');opening.removeAttribute('tabindex');
@@ -118,11 +115,11 @@
       if (error?.name !== 'NotAllowedError') { finishOpening(); return; }
       // Browser permissions cannot be overridden. Make the sound action visible
       // on the existing opening, without restoring a toolbar or skip button.
-      audioBlocked = true;opening.dataset.sound = 'blocked';
+      opening.dataset.sound = 'blocked';
       if (subtitle) subtitle.textContent = welcome;
       opening.removeAttribute('aria-hidden');
       opening.setAttribute('role', 'button');opening.setAttribute('tabindex', '0');
-      opening.setAttribute('aria-label', '点击画面，从头有声播放 Mentora 开场');
+      opening.setAttribute('aria-label', '点击画面，开启 Mentora 开场声音');
       opening.focus({preventScroll:true});
       intro.muted = true;
       intro.play().catch(() => {
@@ -143,7 +140,12 @@
     // Start the title clock with decoded playback, rather than during download.
     intro.addEventListener('playing', () => {
       if (!openingActive) return;
-      resetDeadline();
+      // Fade before the media ends, while frames still move. This visual clock
+      // is independent of the greeting and is never restarted by sound gestures.
+      const remaining = intro.duration - intro.currentTime - .65;
+      if (Number.isFinite(remaining) && remaining > 0) {
+        fadeTimer = setTimeout(finishOpening, remaining * 1000);
+      }
       revealTimer = setTimeout(() => {
         if (openingActive) opening.classList.add('is-revealed');
       }, 1100);
@@ -157,7 +159,7 @@
   }).observe(shell, {attributes:true, attributeFilter:['class']});
   new MutationObserver(sync).observe(conversation, {attributes:true, attributeFilter:['hidden']});
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && openingActive) finishOpening();
+    if (document.hidden) { finishOpening();intro?.pause(); }
     sync();
   });
   motion.addEventListener('change', () => {
@@ -169,7 +171,8 @@
     sync();
   });
   window.addEventListener('pagehide', () => {
-    finishOpening();clearTimeout(hideTimer);video.pause();
+    finishOpening();clearTimeout(hideTimer);intro?.pause();video.pause();
+    if (opening) opening.hidden = true;
   });
   // Every page load starts its opening; route switches do not restart it.
   // No replay/skip controls or sample content are added to the page.
