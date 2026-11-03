@@ -731,7 +731,7 @@ textarea {
 .generatedFileList{display:flex;flex-direction:column;gap:10px;margin:8px 0 8px;min-width:0}
 .finalAnswer.has-generated-files>.mixedReport>.reportFrameShell:last-child{margin-bottom:4px}
 .finalAnswer.has-generated-files>.generatedFileList{margin-top:4px}
-.generatedFileOpen{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:inherit;text-align:left;border:0;padding:0;background:transparent;font:inherit;cursor:pointer}
+
 .generatedFileOpen::after{content:'';position:absolute;inset:0;border-radius:inherit}
 
 .shareActions {

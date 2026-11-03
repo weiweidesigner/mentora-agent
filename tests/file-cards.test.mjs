@@ -6,9 +6,11 @@ const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8'
 const styles=readFileSync(new URL('../app/static/styles.css',import.meta.url),'utf8');
 const start=source.indexOf('function fileDeliverables('),end=source.indexOf('async function renderMixedReportFlow',start);
 function setup(){
- const dom=new JSDOM('<main class="shell"><aside class="appSidebar"></aside><section class="conversation"><article><div class="finalAnswer"><section class="mixedReport">Report</section></div></article></section></main>',{url:'https://example.com/mentora/',runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<main class="shell"><aside class="appSidebar"></aside><section class="conversation"><article><div class="finalAnswer"><section class="mixedReport">Report</section></div></article></section></main>',{url:'https://example.com/mentora/',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  w.currentThemeMode=()=> 'dark';w.escapeHtml=s=>String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
+ w.withArtifactWidgetControl=node=>node;
  w.fetch=async()=>({ok:true});w.closeActivityDrawer=()=>{};w.setSidebarCollapsed=value=>w.document.querySelector('.shell').classList.toggle('sidebar-collapsed',value);
+ w.eval(readFileSync(new URL('../app/static/vendor/action-cards.js',import.meta.url),'utf8'));
  w.eval(source.slice(start,end));return {dom,w,article:w.document.querySelector('article')};
 }
 test('navigation and file cards share their fixed compact geometry and hover-only actions',()=>{
@@ -60,7 +62,7 @@ test('preview closes, returns focus and clears the document; downloading does no
  assert.equal(panel.classList.contains('is-expanded'),true);
  assert.equal(panel.querySelector('.filePreviewExpand').getAttribute('aria-label'),'退出全屏');
  assert.equal(panel.querySelector('.filePreviewExpand').querySelectorAll('svg').length,2);
- assert.ok(panel.querySelector('.filePreviewTab .filePreviewClose'));
+ assert.ok(panel.querySelector('.filePreviewWindowControls .filePreviewClose'));
  assert.equal(s.w.document.querySelector('.conversation').hasAttribute('inert'),true);
  assert.equal(s.w.document.querySelector('.appSidebar').hasAttribute('inert'),false);
  assert.equal(s.w.document.querySelector('.shell').classList.contains('sidebar-collapsed'),false);
@@ -103,16 +105,16 @@ test('historical provider prefixes are hidden without changing stored artifact U
  assert.equal(s.w.document.querySelector('.filePreviewTitle').textContent,'midterm-elections.html');s.dom.window.close();
 });
 
-test('file preview uses a tab header and breadcrumb navigation',async()=>{
+test('file preview keeps filename, download and window controls',async()=>{
  const s=setup();
  await s.w.openGeneratedFilePreview({name:'app.js',type:'JS',relativePath:'app/static/app.js',open:'/api/workspace-file/preview?path=outputs/app.js',download:'/api/workspace-file/download?path=outputs/app.js',workspaceFile:true},s.article);
  const panel=s.w.document.querySelector('#generatedFilePreview');
- assert.equal(panel.querySelector('.filePreviewTab').getAttribute('role'),'tab');
- assert.equal(panel.querySelector('.filePreviewTypeIcon').textContent,'JS');
+ assert.ok(panel.querySelector('.filePreviewHeader .filePreviewWindowControls'));
+ assert.equal(panel.querySelector('.filePreviewDownload').download,'app.js');
  assert.equal(panel.querySelector('.filePreviewTitle').textContent,'app.js');
- assert.match(panel.querySelector('.filePreviewBreadcrumb').textContent,/工作mentora-agentappstaticapp\.js/);
+ assert.match(panel.querySelector('.filePreviewDownload').href,/workspace-file\/download/);
  await s.w.openGeneratedFilePreview({name:'payload.json',type:'JSON',relativePath:'outputs/payload.json',open:'/api/workspace-file/preview?path=outputs/payload.json',download:'/api/workspace-file/download?path=outputs/payload.json',workspaceFile:true},s.article);
- assert.equal(panel.querySelector('.filePreviewTypeIcon').textContent,'JSON');
+ assert.equal(panel.querySelector('.filePreviewTitle').textContent,'payload.json');
  s.dom.window.close();
 });
 
@@ -135,11 +137,14 @@ test('file HTML keeps its inline document and compact file card together',async(
 });
 test('artifact theme switch is removed while non-theme interactions survive and host theme wins',async()=>{
  const script=readFileSync(new URL('../app/static/artifact-presentation.js',import.meta.url),'utf8');
- const dom=new JSDOM('<html data-theme="light"><body><button id="mtr-theme-toggle" aria-label="切换明暗主题">浅色</button><button id="filter">筛选</button><script data-artifact-host-theme="dark">'+script+'</script></body></html>',{runScripts:'dangerously'});
+ const observers=[];
+ const dom=new JSDOM('<html data-theme="light"><body><button id="mtr-theme-toggle" aria-label="切换明暗主题">浅色</button><button id="filter">筛选</button><script data-artifact-host-theme="dark">'+script+'</script></body></html>',{runScripts:'dangerously',pretendToBeVisual:true,beforeParse(w){const Observer=w.MutationObserver;w.MutationObserver=class extends Observer{constructor(callback){super(callback);observers.push(this);}};}});
  await new Promise(r=>setTimeout(r,10));assert.equal(dom.window.document.querySelector('#mtr-theme-toggle'),null);
  assert.ok(dom.window.document.querySelector('#filter'));assert.equal(dom.window.document.documentElement.dataset.theme,'dark');
  dom.window.document.documentElement.dataset.theme='light';await new Promise(r=>setTimeout(r,0));
- assert.equal(dom.window.document.documentElement.dataset.theme,'dark');dom.window.close();
+ assert.equal(dom.window.document.documentElement.dataset.theme,'dark');
+ await new Promise(resolve=>dom.window.requestAnimationFrame(resolve));
+ for(const observer of observers)observer.disconnect();dom.window.close();
 });
 
 test('embedded HTML reports align their nested reader with chat text without changing standalone files',()=>{

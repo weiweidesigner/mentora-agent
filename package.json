@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build:pine": "npm --prefix .dependencies/pine-script-skill run build:runtime",
-    "build:streamviz": "vite build --config vite.streamviz.config.js"
+    "build:action-cards": "node scripts/build-action-cards.mjs",
+    "build:streamviz": "node scripts/build-action-cards.mjs && vite build --config vite.streamviz.config.js"
   },
   "dependencies": {
     "lucide-react": "^1.24.0",

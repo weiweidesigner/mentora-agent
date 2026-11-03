@@ -1404,14 +1404,7 @@ function createNavigationArtifact(code, item = {}) {
   host.dataset.artifactReady = "true";
   host.dataset.streamvizRendered = "true";
   for (const {label, url} of links) {
-    const card = document.createElement("a");
-    card.className = "entry mentoraNavigationCard";
-    card.href = url;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
-    card.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18"/></svg><span class="name"></span><span class="mentoraActionDirection" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m9 5 7 7-7 7"/></svg></span>';
-    card.querySelector(".name").textContent = label;
-    host.append(card);
+    host.append(window.MentoraActionCards.NavigationCard({label,href:url},document));
   }
   return host;
 }
@@ -4045,7 +4038,7 @@ function renderFileDeliverables(article,data){
   if(!files.length)return;
   answer.classList.add('has-generated-files');
   const list=document.createElement('section');list.className='generatedFileList';list.setAttribute('aria-label','生成的文件');
-  list.innerHTML=files.map(file=>`<div class="generatedFileCard"><svg class="generatedFileIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg><button class="generatedFileOpen" type="button" aria-haspopup="dialog" aria-label="预览 ${escapeHtml(file.name)}"><span class="generatedFileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span><span class="generatedFileType">${escapeHtml(file.type)}</span></button><a class="generatedFileDownload" href="${escapeHtml(file.download)}" download="${escapeHtml(file.name)}" aria-label="下载文件 ${escapeHtml(file.name)}" title="下载文件">${filePreviewControlIcon('download')}</a></div>`).join('');
+  list.innerHTML=files.map(file=>window.MentoraActionCards.FilePreviewCard(file,location.href)).join('');
   list.querySelectorAll('.generatedFileOpen').forEach((button,index)=>{
     button.addEventListener('click',()=>void openGeneratedFilePreview(files[index],button));
   });

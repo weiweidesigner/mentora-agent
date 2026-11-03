@@ -28,3 +28,13 @@ test('ordinary report links and unsafe entry URLs do not become navigation cards
   const dom=new JSDOM(html);try{assert.equal(styleNavigationCards(dom.window.document,css),false);assert.equal(dom.window.document.querySelector('[data-mentora-action-cards]'),null);}finally{dom.window.close();}
  }
 });
+
+test('explicit generic navigation cards use the shared component without touching article links',()=>{
+ const dom=new JSDOM('<a data-action-card="navigation" href="/settings">设置</a><a class="entry" href="https://example.org/article">普通文章</a>',{url:'https://example.org/mentora/'});
+ try{const d=dom.window.document;styleNavigationCards(d,css);
+ assert.equal(d.querySelector('[data-action-card]').classList.contains('mentoraNavigationCard'),true);
+ assert.equal(d.querySelectorAll('.mentoraActionDirection').length,1);
+ assert.equal(d.querySelector('a.entry').classList.contains('mentoraNavigationCard'),false);
+ styleNavigationCards(d,css);assert.equal(d.querySelectorAll('.mentoraActionDirection').length,1);
+ }finally{dom.window.close();}
+});

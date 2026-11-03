@@ -10162,11 +10162,13 @@ function ze(e) {
 //#region frontend/action-card-policy.mjs
 var Be = g();
 function Ve(e, t) {
-	let n = e.ownerDocument || e, r = [...e.querySelectorAll("a.entry,button.entry")].filter((e) => {
-		if (e.localName === "button") return e.hasAttribute("data-ainvest-feature");
+	let n = e.ownerDocument || e, r = [...e.querySelectorAll("a.entry,button.entry,a[data-action-card=\"navigation\"],button[data-action-card=\"navigation\"]")].filter((e) => {
+		if (e.localName === "button") return e.hasAttribute("data-ainvest-feature") || e.dataset.actionCard === "navigation";
 		try {
-			let t = new URL(e.getAttribute("href"));
-			return t.protocol === "https:" && !t.username && !t.password && !t.port && [
+			let t = e.getAttribute("href");
+			if (!t) return !1;
+			let r = new URL(t, n.baseURI), i = e.dataset.actionCard === "navigation";
+			return (i ? ["https:", "http:"].includes(r.protocol) : r.protocol === "https:") && !r.username && !r.password && (i || !r.port && [
 				"ainvest.com",
 				"www.ainvest.com",
 				"news.ainvest.com",
@@ -10175,15 +10177,28 @@ function Ve(e, t) {
 				"community.ainvest.com",
 				"contact.ainvest.com",
 				"affiliate.ainvest.com"
-			].includes(t.hostname);
+			].includes(r.hostname));
 		} catch {
 			return !1;
 		}
 	});
 	if (!r.length) return !1;
 	for (let e of r) {
-		e.classList.add("mentoraNavigationCard");
+		e.classList.add("mentoraNavigationCard"), e.dataset.actionCard = "navigation";
 		let t = e.querySelector("svg.arrow,svg.entry-arrow");
+		if (!t) {
+			t = n.createElementNS("http://www.w3.org/2000/svg", "svg");
+			for (let [e, n] of Object.entries({
+				class: "arrow",
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				"stroke-width": "1.5",
+				"aria-hidden": "true"
+			})) t.setAttribute(e, n);
+			let r = n.createElementNS("http://www.w3.org/2000/svg", "path");
+			r.setAttribute("d", "M5 12h14m-6-6 6 6-6 6"), t.append(r), e.append(t);
+		}
 		if (t && !t.parentElement.classList.contains("mentoraActionDirection")) {
 			let e = n.createElement("span");
 			e.className = "mentoraActionDirection", e.setAttribute("aria-hidden", "true"), t.replaceWith(e), e.append(t);
@@ -10199,7 +10214,7 @@ function He(e, t) {
 }
 //#endregion
 //#region app/static/action-cards.css?raw
-var Ue = "/* Shared by file deliverables and navigation documents, including saved cards. */\n:root{--action-card-bg:#f6f6f6;--action-card-line:#e8e8e8;--action-card-ink:#242424;--action-card-muted:#858585}\n@media(prefers-color-scheme:dark){:root:not([data-theme=\"light\"]){--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}}\n:root[data-theme=\"dark\"]{--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}\n.generatedFileCard,.mentoraNavigationCard{box-sizing:border-box!important;position:relative;display:flex!important;align-items:center!important;gap:10px!important;width:min(100%,420px)!important;max-width:100%!important;height:60px!important;min-height:60px!important;padding:10px 12px!important;margin:0!important;border:1px solid var(--action-card-line)!important;border-radius:12px!important;background:var(--action-card-bg)!important;color:var(--action-card-ink)!important;text-align:left;text-decoration:none!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",\"Microsoft YaHei\",sans-serif!important;font-size:14px;line-height:20px;min-width:0}\n.generatedFileIcon,.mentoraNavigationCard :is(.icon,.entry-icon){width:20px!important;height:20px!important;flex:0 0 20px!important;color:var(--action-card-ink)!important;stroke-width:1.5;pointer-events:none}\n.generatedFileName,.mentoraNavigationCard :is(.name,.entry-name){display:block;min-width:0;max-width:100%;font-size:14px!important;line-height:20px!important;font-weight:500!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;overflow-wrap:normal!important}\n.mentoraNavigationCard :is(.name,.entry-name){flex:1}\n.generatedFileType{font-size:12px;line-height:16px;color:var(--action-card-muted)}\n.generatedFileDownload,.mentoraActionDirection{position:relative;z-index:1;box-sizing:border-box;width:36px!important;height:36px!important;flex:0 0 36px!important;display:grid!important;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:transparent!important;opacity:0!important;visibility:hidden;pointer-events:none;transition:opacity .12s ease}\n.generatedFileDownload svg,.mentoraActionDirection svg{width:18px!important;height:18px!important;opacity:1!important;flex:none}\n.generatedFileCard:is(:hover,:focus-within) .generatedFileDownload,.mentoraNavigationCard:is(:hover,:focus-visible) .mentoraActionDirection{opacity:1!important;visibility:visible;pointer-events:auto}\n.generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible,.mentoraNavigationCard:focus-visible{outline:2px solid #2563eb;outline-offset:3px}\n@media(prefers-reduced-motion:reduce){.generatedFileDownload,.mentoraActionDirection{transition:none}}\n", We = (e) => He(ze(Le(e)), Ue);
+var Ue = "/* Shared by file deliverables and navigation documents, including saved cards. */\n:root{--action-card-bg:#f6f6f6;--action-card-line:#e8e8e8;--action-card-ink:#242424;--action-card-muted:#858585}\n@media(prefers-color-scheme:dark){:root:not([data-theme=\"light\"]){--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}}\n:root[data-theme=\"dark\"]{--action-card-bg:#181818;--action-card-line:#262626;--action-card-ink:#ededed;--action-card-muted:#919191}\n.generatedFileCard,.mentoraNavigationCard{box-sizing:border-box!important;position:relative;display:flex!important;align-items:center!important;gap:10px!important;width:min(100%,420px)!important;max-width:100%!important;height:60px!important;min-height:60px!important;padding:10px 12px!important;margin:0!important;border:1px solid var(--action-card-line)!important;border-radius:12px!important;background:var(--action-card-bg)!important;color:var(--action-card-ink)!important;text-align:left;text-decoration:none!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",\"PingFang SC\",\"Microsoft YaHei\",sans-serif!important;font-size:14px;line-height:20px;min-width:0}\n.generatedFileIcon,.mentoraNavigationCard :is(.icon,.entry-icon){width:20px!important;height:20px!important;flex:0 0 20px!important;color:var(--action-card-ink)!important;stroke-width:1.5;pointer-events:none}\n.generatedFileName,.mentoraNavigationCard :is(.name,.entry-name){display:block;min-width:0;max-width:100%;font-size:14px!important;line-height:20px!important;font-weight:500!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis;overflow-wrap:normal!important}\n.mentoraNavigationCard :is(.name,.entry-name){flex:1}\n.generatedFileOpen{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:inherit;text-align:left;border:0;padding:0;background:transparent;font:inherit;cursor:pointer}\n.generatedFileType{font-size:12px;line-height:16px;color:var(--action-card-muted)}\n.generatedFileDownload,.mentoraActionDirection{position:relative;z-index:1;box-sizing:border-box;width:36px!important;height:36px!important;flex:0 0 36px!important;display:grid!important;place-items:center;color:inherit;border-radius:8px;text-decoration:none;background:transparent!important;opacity:0!important;visibility:hidden;pointer-events:none;transition:opacity .12s ease}\n.generatedFileDownload svg,.mentoraActionDirection svg{width:18px!important;height:18px!important;opacity:1!important;flex:none}\n.generatedFileCard:is(:hover,:focus-within) .generatedFileDownload,.mentoraNavigationCard:is(:hover,:focus-visible) .mentoraActionDirection{opacity:1!important;visibility:visible;pointer-events:auto}\n.generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible,.mentoraNavigationCard:focus-visible{outline:2px solid #2563eb;outline-offset:3px}\n@media(prefers-reduced-motion:reduce){.generatedFileDownload,.mentoraActionDirection{transition:none}}\n", We = (e) => He(ze(Le(e)), Ue);
 //#endregion
 //#region ../mentora-title-dedup-20261102/node_modules/streamviz-react/src/react/useStreamingCode.ts
 function Ge(e, t, n) {

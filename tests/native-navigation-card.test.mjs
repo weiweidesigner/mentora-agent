@@ -5,6 +5,7 @@ import {JSDOM} from 'jsdom';
 const source=readFileSync(new URL('../app/static/app.js',import.meta.url),'utf8');
 function setup(){
  const dom=new JSDOM('<div id="mount"></div>',{runScripts:'outside-only',url:'https://example.com/mentora/'});
+ dom.window.eval(readFileSync(new URL('../app/static/vendor/action-cards.js',import.meta.url),'utf8'));
  dom.window.eval(source.slice(source.indexOf('function createNavigationArtifact('),source.indexOf('function createStreamVisualizationArtifact(')));
  return dom;
 }
