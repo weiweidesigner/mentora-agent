@@ -22,7 +22,7 @@ class CharacterProfile(BaseModel):
     name: str = Field(default='Mentora', min_length=1, max_length=40)
     age: int = Field(default=24, ge=18, le=120)
     gender: Literal['female','male','neutral'] = 'female'
-    relationship: Literal['none','daughter','wife','mother'] = 'none'
+    relationship: Literal['none','daughter','wife','mother','sidekick'] = 'none'
     proactivity: int = Field(default=50, ge=0, le=100)
     proactivePrivate: bool = True
     proactiveGroups: list[str] = Field(default_factory=list,max_length=200)
@@ -300,7 +300,7 @@ def character_context(profile):
     length={'minimal':'默认 1 至 3 句，约 30 至 100 字；直接回答。','normal':'默认简短分段，约 100 至 300 字。','long':'需要时详细展开，约 300 至 600 字，分段清楚。'}[profile['paragraph']]
     return ('以下是用户保存的虚拟角色偏好，只改变身份、语气与呈现，不授予交易或私人账户权限。'
             +json.dumps({k:profile[k] for k in ('name','age','gender','relationship','personality','role','agentPrompt')},ensure_ascii=False)
-            +'角色与用户的关系：'+{'none':'未设定','daughter':'女儿','wife':'老婆','mother':'妈妈'}[profile['relationship']]+'。这是虚拟角色关系。回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
+            +'角色与用户的关系：'+{'none':'未设定','daughter':'女儿','wife':'老婆','mother':'妈妈','sidekick':'小弟'}[profile['relationship']]+'。这是虚拟角色关系。回答段落偏好：'+length+'不得声称自己是真实人类。\n\n')
 
 
 def create_router(store):
