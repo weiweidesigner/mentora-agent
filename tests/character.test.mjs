@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
 const html=readFileSync(new URL('../app/static/index.html',import.meta.url),'utf8');
-const source=readFileSync(new URL('../app/static/character.js',import.meta.url),'utf8');
+const source=readFileSync(new URL('../app/static/memory-sphere.js',import.meta.url),'utf8')+'\n'+readFileSync(new URL('../app/static/character.js',import.meta.url),'utf8');
 const navigation=readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8');
 const defaults={relationship:'none',proactivity:50,stickerPacks:['companion'],stickerIds:null,name:'Mentora',age:24,gender:'female',personality:'温柔知性',role:'陪伴助手',agentPrompt:'',responseMode:'auto',paragraph:'normal',stickerProbability:50};
 const tick=()=>new Promise(r=>setTimeout(r,25));
@@ -42,7 +42,7 @@ test('other workspace navigation hides character settings',async()=>{const h=set
 
 test('QQ identity replaces preview image and name automatically on confirmation',async()=>{const h=setup({botName:'QQ 角色名',avatarUrl:'https://q.qlogo.cn/bot.png'});await tick();const f=h.d.querySelector('#chQQForm');f.elements.appId.value='123456';f.elements.appSecret.value='test';f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();assert.equal(h.d.querySelector('#chAvatar').src,'https://q.qlogo.cn/bot.png');assert.equal(h.d.querySelector('#chPreviewName').textContent,'QQ 角色名');assert.equal(h.d.querySelector('[name=name]').value,'QQ 角色名');assert.equal(h.d.querySelector('[name=name]').readOnly,true);assert.match(h.d.querySelector('#chIdentityHint').textContent,/与 QQ/);h.dom.window.close();});
 
-test('relationship and proactivity persist with the rest of the persona',async()=>{const h=setup();await tick();const f=h.d.querySelector('#characterForm');f.elements.relationship.value='wife';f.elements.proactivity.value='85';f.elements.proactivity.dispatchEvent(new h.w.Event('input'));f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();const saved=h.requests.find(r=>r.method==='PUT').body;assert.equal(saved.relationship,'wife');assert.equal(saved.proactivity,85);assert.equal(h.d.querySelector('#chProactivityValue').value,'85%');assert.match(h.d.querySelector('#chPreviewTags').textContent,/老婆/);assert.match(h.d.querySelector('.chCompanion').textContent,/和 QQ 机器人聊几句/);h.dom.window.close();});
+test('relationship and proactivity persist with the rest of the persona',async()=>{const h=setup();await tick();const f=h.d.querySelector('#characterForm');f.elements.relationship.value='wife';f.elements.proactivity.value='85';f.elements.proactivity.dispatchEvent(new h.w.Event('input'));f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();const saved=h.requests.find(r=>r.method==='PUT').body;assert.equal(saved.relationship,'wife');assert.equal(saved.proactivity,85);assert.equal(h.d.querySelector('#chProactivityValue').value,'85%');assert.match(h.d.querySelector('#chPreviewTags').textContent,/老婆/);assert.ok(h.d.querySelector('.chMemorySphere svg'));assert.equal(h.d.querySelector('#chClearMemory'),null);h.dom.window.close();});
 
 test('memory cloud separates recipients and escapes user-derived labels',async()=>{const h=setup({}, {recipients:[{id:'alice',label:'QQ 私聊 1',intimacy:{score:65,days:8,turns:30},sentToday:1,planState:'planned',facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢喝咖啡',weight:4}]},{id:'bob',label:'QQ 私聊 2',intimacy:{score:10,days:1,turns:2},sentToday:0,planState:'waiting',facts:[{label:'<img src=x>',text:'literal',quote:'literal',weight:2}]}]});await tick();await tick();assert.match(h.d.querySelector('#chMemoryStats').textContent,/65/);assert.equal(h.d.querySelector('#chWordCloud').textContent,'咖啡');const select=h.d.querySelector('#chRecipient');select.value='bob';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud img'),null);assert.equal(h.d.querySelector('#chWordCloud').textContent,'<img src=x>');assert.doesNotMatch(h.d.querySelector('#chWordCloud').textContent,/咖啡/);h.dom.window.close();});
 
@@ -54,5 +54,18 @@ test('proactive plans show Beijing times, prepared questions, actual delivery an
  assert.match(block.textContent,/午间准备怎么放松/);assert.equal(block.querySelector('img'),null);
  assert.match(block.textContent,/已发送/);assert.match(block.textContent,/下午过得怎么样/);assert.doesNotMatch(block.textContent,/原计划问题/);
  const select=h.d.querySelector('#chRecipient');select.value='two';select.dispatchEvent(new h.w.Event('change'));assert.match(block.textContent,/今天未安排主动联系/);assert.doesNotMatch(block.textContent,/午间休息/);
+ h.dom.window.close();
+});
+
+
+test('memory sphere rotates with keyboard and refresh only reads memory',async()=>{
+ const h=setup({}, {recipients:[{id:'one',label:'私聊',intimacy:{score:5,days:1,turns:3},facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢咖啡',weight:4},{label:'旅行',text:'喜欢旅行',weight:2}]}]});await tick();
+ const d=h.d,scene=d.querySelector('.chMemorySphere'),word=d.querySelector('.chMemoryWord');
+ assert.equal(d.querySelectorAll('.chMemoryWord').length,2);assert.ok(d.querySelector('.chSphereGrid'));
+ const before=word.style.left;scene.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));assert.notEqual(word.style.left,before);
+ assert.match(d.querySelector('#chMemoryRefreshAt').textContent,/最近刷新 \d{2}\/\d{2} \d{2}:\d{2}/);
+ assert.equal(d.querySelector('#chMemoryStatus').textContent,'');assert.equal(d.querySelector('#chClearMemory'),null);
+ assert.doesNotMatch(d.querySelector('.chCompanion').textContent,/亲密度按|词云来自|计划提问是提前|慢慢认识你/);
+ d.querySelector('#chRefreshMemory').click();await tick();assert.equal(h.requests.filter(r=>r.path.endsWith('/companion')).length,2);assert.equal(h.requests.some(r=>r.method==='DELETE'),false);
  h.dom.window.close();
 });
