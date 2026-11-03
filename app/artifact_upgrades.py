@@ -946,7 +946,7 @@ def upgrade_inflation_history_heatmap(artifact):
 
 def upgrade_government_debt_heatmap(artifact):
     """Refresh debt ratio categories from saved data, without changing observations."""
-    if 'government-debt-heatmap' not in artifact or 'data-government-debt-ui="2"' in artifact:
+    if 'government-debt-heatmap' not in artifact or 'data-government-debt-ui="3"' in artifact:
         return artifact
     try:
         match = re.search(r'<script\b[^>]*id=["\']component-data["\'][^>]*>(.*?)</script>', artifact, re.S)
@@ -958,9 +958,34 @@ def upgrade_government_debt_heatmap(artifact):
         theme = re.search(r'data-theme=["\'](dark|light)["\']', artifact)
         if theme:
             payload['theme'] = theme[1]
-        return _native_rating('government_debt_heatmap').render_html(payload)
+        rendered = _native_rating('government_debt_heatmap').render_html(payload)
+        return readable_debt_tooltips(rendered, payload.get('language', 'en'))
     except (ValueError, TypeError, KeyError):
         return artifact
+
+
+def readable_debt_tooltips(artifact: str, language: str) -> str:
+    """Explain each actual ratio on a 100-unit scale; retain original observations."""
+    from html import escape, unescape
+
+    def cell(match):
+        parts = unescape(match[2]).split('|')
+        parts = [part for part in parts if not part.startswith(('Debt coverage:', '债务范围：', '債務範圍：'))]
+        if len(parts) >= 4 and parts[2].endswith('%'):
+            try:
+                value = float(parts[2][:-1].replace(',', ''))
+                amount = f'{value:,.2f}'.rstrip('0').rstrip('.')
+                if value >= 0:
+                    parts[3] = (f'每100元GDP，对应约{amount}元政府债务' if language == 'zh-CN' else
+                                f'每100元GDP，對應約{amount}元政府債務' if language.startswith('zh') else
+                                f'Government debt is about {amount} per 100 units of GDP')
+            except ValueError:
+                pass
+        tag = match[1] + escape('|'.join(parts), quote=True) + match[3]
+        return re.sub(r'aria-label="[^"]*"', lambda _: 'aria-label="' + escape(' · '.join(parts), quote=True) + '"', tag)
+
+    artifact = re.sub(r'(<td\b[^>]*\bdata-tip=")([^"]*)("[^>]*>)', cell, artifact)
+    return artifact.replace('data-government-debt-ui="2"', 'data-government-debt-ui="3"')
 
 
 @lru_cache(maxsize=1)
@@ -996,8 +1021,10 @@ def _native_data_table():
 
 def upgrade_data_table(artifact: str, theme: str) -> str:
     """Refresh saved native tables from embedded records, without reopening their source."""
-    if not re.search(r'data-data-table-version=["\'][12345]["\']', artifact):
+    if 'data-data-table-version=' not in artifact or 'data-data-table-version="7"' in artifact:
         return artifact
+    if re.search(r'data-data-table-version=["\']6["\']', artifact):
+        return complete_table_fields(artifact)
     match = re.search(r'<script\b[^>]*id=["\']table-data["\'][^>]*>(.*?)</script>', artifact, re.S)
     if not match:
         return artifact
@@ -1005,6 +1032,19 @@ def upgrade_data_table(artifact: str, theme: str) -> str:
         config = json.loads(match[1])
         if not isinstance(config, dict) or config.get('type') != 'data-table':
             return artifact
-        return _native_data_table().build_html({**config, 'theme': theme})
+        return complete_table_fields(_native_data_table().build_html({**config, 'theme': theme}))
     except (ValueError, TypeError, KeyError, ImportError, OSError):
         return artifact
+
+
+def complete_table_fields(artifact: str) -> str:
+    """Size virtualized columns to all formatted values, with horizontal scrolling."""
+    artifact = artifact.replace('Math.max(header,Math.min(c.width,content))', 'Math.max(header,c.width,content)')
+    artifact = artifact.replace("Math.max(28,Math.min(c.width,Math.ceil(", "Math.max(28,Math.max(c.width,Math.ceil(")
+    artifact = artifact.replace("const widths=config.columns.map", "const tableFont=getComputedStyle(table),bodyFont=tableFont.font,headerFont=getComputedStyle(head.cells[0]).font;\nconst widths=config.columns.map")
+    artifact = artifact.replace("textWidth(c.label,'12px sans-serif')", 'textWidth(c.label,headerFont)')
+    artifact = artifact.replace("textWidth(format(row[i],c),'13px sans-serif')", 'textWidth(format(row[i],c),bodyFont)')
+    artifact = artifact.replace('overflow:hidden;text-overflow:ellipsis;white-space:nowrap;height:44px', 'overflow:visible;text-overflow:clip;white-space:nowrap;height:44px')
+    artifact = artifact.replace('overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text', 'overflow:visible;text-overflow:clip;white-space:nowrap;cursor:text')
+    artifact = artifact.replace('.head-button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}', '.head-button span{overflow:visible;text-overflow:clip;white-space:nowrap}')
+    return re.sub(r'data-data-table-version=["\'][1-6]["\']', 'data-data-table-version="7"', artifact)
