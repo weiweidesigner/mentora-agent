@@ -7,6 +7,8 @@ const source=readFileSync(new URL('../app/static/memory-sphere.js',import.meta.u
 const navigation=readFileSync(new URL('../app/static/navigation-url.js',import.meta.url),'utf8');
 const defaults={relationship:'none',proactivity:50,stickerPacks:['companion'],stickerIds:null,name:'Mentora',age:24,gender:'female',personality:'温柔知性',role:'陪伴助手',agentPrompt:'',responseMode:'auto',paragraph:'normal',stickerProbability:50};
 const tick=()=>new Promise(r=>setTimeout(r,25));
+function selectMemory(h,ids){for(const input of h.d.querySelectorAll('#chRecipient input')){const next=ids.includes(input.value);if(input.checked!==next){input.checked=next;input.dispatchEvent(new h.w.Event('change',{bubbles:true}));}}}
+const selectedMemory=h=>[...h.d.querySelectorAll('#chRecipient input:checked')].map(x=>x.value);
 function setup(qqMetadata={},companion={recipients:[]}){
  const dom=new JSDOM(html,{url:'https://example.com/?tab=character',runScripts:'outside-only'}),w=dom.window,requests=[];
  let profile={...defaults,stickerPacks:[...defaults.stickerPacks]},stickers=[],qq={},savedSecret='';
@@ -44,7 +46,7 @@ test('QQ identity replaces preview image and name automatically on confirmation'
 
 test('relationship and proactivity persist with the rest of the persona',async()=>{const h=setup();await tick();const f=h.d.querySelector('#characterForm');f.elements.relationship.value='wife';f.elements.proactivity.value='85';f.elements.proactivity.dispatchEvent(new h.w.Event('input'));f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();const saved=h.requests.find(r=>r.method==='PUT').body;assert.equal(saved.relationship,'wife');assert.equal(saved.proactivity,85);assert.equal(h.d.querySelector('#chProactivityValue').value,'85%');assert.match(h.d.querySelector('#chPreviewTags').textContent,/老婆/);assert.ok(h.d.querySelector('.chMemorySphere svg'));assert.equal(h.d.querySelector('#chClearMemory'),null);h.dom.window.close();});
 
-test('memory cloud separates recipients and escapes user-derived labels',async()=>{const h=setup({}, {recipients:[{id:'alice',label:'QQ 私聊 1',intimacy:{score:65,days:8,turns:30},sentToday:1,planState:'planned',facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢喝咖啡',weight:4}]},{id:'bob',label:'QQ 私聊 2',intimacy:{score:10,days:1,turns:2},sentToday:0,planState:'waiting',facts:[{label:'<img src=x>',text:'literal',quote:'literal',weight:2}]}]});await tick();await tick();assert.match(h.d.querySelector('#chMemoryStats').textContent,/65/);assert.equal(h.d.querySelector('#chWordCloud').textContent,'咖啡');const select=h.d.querySelector('#chRecipient');select.value='bob';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud img'),null);assert.equal(h.d.querySelector('#chWordCloud').textContent,'<img src=x>');assert.doesNotMatch(h.d.querySelector('#chWordCloud').textContent,/咖啡/);h.dom.window.close();});
+test('memory cloud separates recipients and escapes user-derived labels',async()=>{const h=setup({}, {recipients:[{id:'alice',label:'QQ 私聊 1',intimacy:{score:65,days:8,turns:30},sentToday:1,planState:'planned',facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢喝咖啡',weight:4}]},{id:'bob',label:'QQ 私聊 2',intimacy:{score:10,days:1,turns:2},sentToday:0,planState:'waiting',facts:[{label:'<img src=x>',text:'literal',quote:'literal',weight:2}]}]});await tick();await tick();assert.match(h.d.querySelector('#chMemoryStats').textContent,/65/);assert.equal(h.d.querySelector('#chWordCloud').textContent,'咖啡');selectMemory(h,['bob']);assert.equal(h.d.querySelector('#chWordCloud img'),null);assert.equal(h.d.querySelector('#chWordCloud').textContent,'<img src=x>');assert.doesNotMatch(h.d.querySelector('#chWordCloud').textContent,/咖啡/);h.dom.window.close();});
 
 test('proactive plans show Beijing times, prepared questions, actual delivery and recipient-specific state',async()=>{
  const due=Date.parse('2026-11-03T11:30:00+08:00')/1000;
@@ -53,7 +55,7 @@ test('proactive plans show Beijing times, prepared questions, actual delivery an
  assert.deepEqual([...block.querySelectorAll('time')].map(x=>x.textContent),['11:30','14:30']);
  assert.match(block.textContent,/午间准备怎么放松/);assert.equal(block.querySelector('img'),null);
  assert.match(block.textContent,/已发送/);assert.match(block.textContent,/下午过得怎么样/);assert.doesNotMatch(block.textContent,/原计划问题/);
- const select=h.d.querySelector('#chRecipient');select.value='two';select.dispatchEvent(new h.w.Event('change'));assert.match(block.textContent,/今天未安排主动联系/);assert.doesNotMatch(block.textContent,/午间休息/);
+ selectMemory(h,['two']);assert.match(block.textContent,/今天未安排主动联系/);assert.doesNotMatch(block.textContent,/午间休息/);
  h.dom.window.close();
 });
 
@@ -81,9 +83,9 @@ test('a sparse profile explains its single sourced fact without inventing nodes'
 
 test('group memory defaults to the most active speaker and hides private proactive plans',async()=>{
  const h=setup({}, {recipients:[{id:'private',kind:'users',label:'QQ 私聊 1',intimacy:{score:1,days:1,turns:2},facts:[{label:'称呼',text:'昵称',weight:1}]},{id:'group',kind:'groups',label:'QQ 群聊 1 · 成员 1',intimacy:{score:20,days:3,turns:20},facts:[{label:'雨爱',text:'多次点唱过雨爱',weight:2}],today:[],planState:'waiting'}]});
- await tick();assert.equal(h.d.querySelector('#chRecipient').value,'group');assert.equal(h.d.querySelector('#chWordCloud').textContent,'雨爱');assert.equal(h.d.querySelector('#chProactivePlan').hidden,true);
- const select=h.d.querySelector('#chRecipient');select.value='private';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud').textContent,'称呼');
- h.d.querySelector('#chRefreshMemory').click();await tick();assert.equal(select.value,'private');h.dom.window.close();
+ await tick();assert.deepEqual(selectedMemory(h),['group']);assert.equal(h.d.querySelector('#chWordCloud').textContent,'雨爱');assert.equal(h.d.querySelector('#chProactivePlan').hidden,true);
+ selectMemory(h,['private']);assert.equal(h.d.querySelector('#chWordCloud').textContent,'称呼');
+ h.d.querySelector('#chRefreshMemory').click();await tick();assert.deepEqual(selectedMemory(h),['private']);h.dom.window.close();
 });
 
 test('group participation preference can be switched and saved',async()=>{
@@ -93,5 +95,25 @@ test('group participation preference can be switched and saved',async()=>{
  form.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();
  assert.equal(h.requests.find(r=>r.method==='PUT').body.groupReplyMode,'mentions');
  assert.match(h.d.querySelector('[data-field="groupReplyMode"]').parentElement.textContent,/获取群内全部消息/);
+ h.dom.window.close();
+});
+
+
+test('memory picker names sources clearly and shows multiple memories and plans separately',async()=>{
+ const h=setup({}, {recipients:[
+  {id:'private',kind:'users',label:'QQ 私聊 1',intimacy:{score:10,days:1,turns:2},facts:[{id:'same',label:'咖啡',text:'喜欢咖啡',weight:1}],today:[],planState:'waiting'},
+  {id:'member',kind:'groups',proactiveTarget:false,label:'QQ 群聊 1 · 成员 1',intimacy:{score:20,days:2,turns:8},facts:[{id:'same',label:'旅行',text:'喜欢旅行',weight:1}],today:[]},
+  {id:'room',kind:'groups',proactiveTarget:true,label:'QQ 群聊 1 · 主动消息（需群主开启权限）',intimacy:{score:0},facts:[],today:[],planState:'planned'}
+ ]});await tick();
+ const d=h.d;assert.match(d.querySelector('#chRecipient').textContent,/私聊 1 · 对方的记忆/);assert.match(d.querySelector('#chRecipient').textContent,/群聊 1 · 成员 1 的记忆/);assert.match(d.querySelector('#chRecipient').textContent,/全群主动联系计划/);
+ d.querySelector('#chMemorySelectAll').click();assert.equal(selectedMemory(h).length,3);assert.equal(d.querySelectorAll('.chMemoryWord').length,2);assert.equal(d.querySelectorAll('#chMemoryStats meter').length,2);
+ assert.match(d.querySelector('#chMemoryStats').textContent,/10/);assert.match(d.querySelector('#chMemoryStats').textContent,/20/);assert.equal(d.querySelectorAll('.chMemoryPlanSource').length,2);
+ assert.match(d.querySelector('.chMemoryWord').title,/私聊 1/);assert.match(d.querySelectorAll('.chMemoryWord')[1].title,/成员 1/);
+ d.querySelector('#chRefreshMemory').click();await tick();assert.equal(selectedMemory(h).length,3);
+ d.querySelector('#chMemorySelectNone').click();assert.equal(selectedMemory(h).length,0);assert.match(d.querySelector('#chMemoryStatus').textContent,/选择要查看/);assert.equal(d.querySelector('#chWordCloud').hidden,true);
+ d.querySelector('#chRefreshMemory').click();await tick();assert.equal(selectedMemory(h).length,0);
+ selectMemory(h,['room']);assert.equal(d.querySelector('#chMemoryStats').textContent,'');assert.equal(d.querySelector('#chWordCloud').hidden,true);assert.match(d.querySelector('#chMemoryStatus').textContent,/群主/);
+ assert.equal(h.requests.filter(x=>x.method!=='GET').length,0);
+ const picker=d.querySelector('#chRecipientPicker');picker.open=true;picker.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(picker.open,false);
  h.dom.window.close();
 });
