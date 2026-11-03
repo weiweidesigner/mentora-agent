@@ -47,6 +47,10 @@ def save(audio,*,delivery_key,song,voice_id,duration,folder=None):
     data={'id':ident,'songId':song['id'],'title':str(song['title'])[:120],'voiceId':voice_id,
           'duration':float(duration),'engine':'seed-vc-svc','deliveryKey':delivery_key,
           'created':time.time(),'sha256':hashlib.sha256(audio).hexdigest()}
+    credit=song.get('attribution','')
+    if credit:
+        if not isinstance(credit,str) or len(credit)>700:raise ValueError('Invalid song attribution')
+        data['attribution']=credit
     data['signature']=signature(data)
     for suffix,body in [('.silk',audio),('.song.json',json.dumps(data,ensure_ascii=False).encode())]:
         path=root/(ident+suffix);temp=root/(ident+suffix+'.tmp')

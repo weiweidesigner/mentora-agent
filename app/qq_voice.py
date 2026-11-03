@@ -50,6 +50,8 @@ class QQVoice:
         window = 270 if job['kind'] == 'groups' else 3500
         if time.time()-job['created']>window:return False
         base = os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')
+        if receipt.get('attribution'):
+            self.client.reply(job['kind'],job['target'],job['message_id'],receipt['attribution'],sequence=2)
         self.client.voice_reply(job['kind'],job['target'],job['message_id'],
                                base+'/api/qq/voice/'+receipt['id']+'.silk',sequence=3)
         return True

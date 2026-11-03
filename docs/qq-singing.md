@@ -18,6 +18,10 @@ Worker environment: `SINGING_DATA_DIR`, `SEED_VC_CHECKOUT`, `SINGING_TOKEN_FILE`
 
 The initial test catalog is **小星星（英文清唱）**, a 20-second excerpt of Derrick Coetzee's 2012 a cappella recording, dedicated to CC0: https://commons.wikimedia.org/wiki/File:Twinkle_Twinkle_Little_Star_-_sung_with_full_lyrics.ogg . The fixed adult companion reference was generated locally with Breeze. The catalog title explicitly identifies the English a cappella version; it is not a Chinese performance or an arbitrary song-name service.
 
+The expanded private catalog also includes 20-second excerpts of 友谊地久天长 (English a cappella), 奇异恩典 (English with accompaniment), 阿里郎 (English Adaptation-2), plus the user's existing local recordings of 突然的自我 (Live), 梨花香 (旺仔小乔 version) and 却有晴 (Live). Local originals and their stems remain outside the repository; importing a private file does not grant redistribution rights.
+
+The Japanese Vocaloid entry **FREELY TOMORROW** uses Mitchie M's CC BY 3.0 recording, originally voiced by Hatsune Miku: https://commons.wikimedia.org/wiki/File:Freely_Tomorrow.ogg . The audio excerpt is separated and voice-converted; no character artwork is included. An optional catalog `attribution` is passed through the authenticated catalog, signed into the current-turn receipt, and sent as a QQ text credit before the audio. Credit delivery failure prevents sending the corresponding audio. Use `--attribution` when importing a recording whose license requires this notice.
+
 To add local stems, run using the isolated worker Python:
 
 ```sh

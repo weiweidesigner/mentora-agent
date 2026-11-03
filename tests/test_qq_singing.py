@@ -40,6 +40,17 @@ def test_only_completed_tool_receipts_produce_audio(singing):
     assert receipt_from_event({'phase':'completed','observation':output},'b'*32) is None
 
 
+def test_song_credit_is_signed_and_delivered_before_audio(singing,tmp_path):
+    credit='FREELY TOMORROW · Mitchie M · CC BY 3.0; excerpt and voice conversion'
+    receipt=save(singing.audio,delivery_key=singing.key,song={'id':'freely-tomorrow','title':'FREELY TOMORROW','attribution':credit},voice_id='companion',duration=20)
+    assert validate({**receipt,'attribution':'different credit'}) is None
+    sent=[]
+    client=SimpleNamespace(reply=lambda *a,**kw:sent.append(('credit',a[-1])),voice_reply=lambda *a,**kw:sent.append(('audio',a[-1])))
+    voice=QQVoice(DayTasks(tmp_path,lambda *a:{}),client)
+    assert voice.send_song({'kind':'users','target':'alice','message_id':'mid','created':time.time()},receipt)
+    assert sent[0]==('credit',credit) and sent[1][0]=='audio'
+
+
 def test_expired_receipt_and_invalid_audio_are_rejected(singing,monkeypatch):
     s=singing
     monkeypatch.setattr('app.qq_singing.time.time',lambda:s.receipt['created']+901)

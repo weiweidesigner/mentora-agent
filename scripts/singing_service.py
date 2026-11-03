@@ -98,7 +98,8 @@ def songs(request:Request):
     authorize(request)
     entries,voices=catalog()
     return {'songs':[{'id':s['id'],'title':s['title'],'aliases':s.get('aliases',[]),
-                      'seconds':s.get('seconds',20),'source':s.get('source','')} for s in entries],
+                      'seconds':s.get('seconds',20),'source':s.get('source',''),
+                      **({'attribution':s['attribution']} if s.get('attribution') else {})} for s in entries],
             'voices':[{'id':v['id'],'label':v['label']} for v in voices],
             'ready':ENGINE is not None}
 
