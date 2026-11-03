@@ -147,7 +147,7 @@ class QQConnectionStore:
         return self.public(owner)
 
     def attach_history(self, owner):
-        """Recover authenticated C2C recipients when a bot was configured after their chats."""
+        """Recover authenticated private and per-speaker group history for this bot."""
         connection=self.row(owner)
         if not connection:return
         with self.tasks.db() as db:
@@ -156,7 +156,8 @@ class QQConnectionStore:
             for row in rows:
                 try:
                     parts=json.loads(row["scope"])
-                    if len(parts)!=4 or parts[0]!=connection["app_id"] or parts[1]!="users" or parts[2]!=parts[3]:continue
+                    if (len(parts)!=4 or not all(isinstance(x,str) and x for x in parts) or parts[0]!=connection["app_id"]
+                            or not (parts[1]=="groups" or parts[1]=="users" and parts[2]==parts[3])):continue
                 except (ValueError,TypeError):continue
                 db.execute("INSERT OR IGNORE INTO character_links VALUES(?,?)",(row["scope"],owner))
 

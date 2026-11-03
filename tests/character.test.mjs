@@ -77,3 +77,11 @@ test('a sparse profile explains its single sourced fact without inventing nodes'
  assert.equal(h.d.querySelector('.chMemoryWordText').textContent,'称呼');
  h.dom.window.close();
 });
+
+
+test('group memory defaults to the most active speaker and hides private proactive plans',async()=>{
+ const h=setup({}, {recipients:[{id:'private',kind:'users',label:'QQ 私聊 1',intimacy:{score:1,days:1,turns:2},facts:[{label:'称呼',text:'昵称',weight:1}]},{id:'group',kind:'groups',label:'QQ 群聊 1 · 成员 1',intimacy:{score:20,days:3,turns:20},facts:[{label:'雨爱',text:'多次点唱过雨爱',weight:2}],today:[],planState:'waiting'}]});
+ await tick();assert.equal(h.d.querySelector('#chRecipient').value,'group');assert.equal(h.d.querySelector('#chWordCloud').textContent,'雨爱');assert.equal(h.d.querySelector('#chProactivePlan').hidden,true);
+ const select=h.d.querySelector('#chRecipient');select.value='private';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud').textContent,'称呼');
+ h.d.querySelector('#chRefreshMemory').click();await tick();assert.equal(select.value,'private');h.dom.window.close();
+});
