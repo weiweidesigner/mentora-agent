@@ -105,8 +105,19 @@ def test_completed_job_moves_tabs_caches_real_audio_and_notifies_once(env,monkey
     assert e.service.memory.snapshot(e.owner,e.now[0])['recipients'][0]['sentToday']==0
 
 
+def test_full_song_preview_and_receipt_are_not_rejected_by_excerpt_limits(env,monkeypatch):
+    e=env;ident=upload(e)
+    audio=b'\x02#!SILK_V3'+b'a'*(2*1024*1024+1)
+    preview=b'RIFF'+b'w'*(8*1024*1024+1)
+    monkeypatch.setattr('app.song_library.requests.post',lambda *a,**kw:response(audio=audio,headers={'X-Audio-Duration':'242.4'}))
+    monkeypatch.setattr('app.song_library.requests.get',lambda *a,**kw:response(audio=preview))
+    e.service.finish(e.service.row(e.owner,ident),{},'http://worker')
+    assert e.service.row(e.owner,ident)['seconds']==242.4
+    assert (e.service.root/(ident+'.wav')).stat().st_size==len(preview)
+
+
 def ready(e,ident):
-    e.service.update(ident,state='ready',recipient=e.scope,notification='pending')
+    e.service.update(ident,state='ready',seconds=20,recipient=e.scope,notification='pending')
     (e.service.root/(ident+'.silk')).write_bytes(AUDIO)
     return e.service.row(e.owner,ident)
 

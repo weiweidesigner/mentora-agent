@@ -1,6 +1,6 @@
 ---
 name: singing
-description: QQ 点歌与歌声转换。查询真实本地曲库，使用固定角色参考音色运行 Seed-VC，生成可由 QQ 通道发送的短歌声。只在用户明确点歌、想听唱歌时使用。
+description: QQ 点歌与歌声转换。查询真实本地曲库，使用固定角色参考音色运行 Seed-VC，生成可由 QQ 通道发送的歌声。只在用户明确点歌、想听唱歌时使用。
 ---
 
 # Singing
@@ -13,4 +13,4 @@ Preserve the general Agent reasoning loop. This capability creates audio; it doe
 4. When the current QQ request supplies a `--library-key`, append it to BOTH catalog and render commands so user-uploaded learned songs are visible only to that owner. Do not reuse a library key from history. The current QQ request supplies the delivery key. Never reuse a key or receipt from history. Rendering requires a real configured worker and a catalog entry.
 5. A successful result includes a signed `qqSong` receipt. The QQ channel validates the real audio and sends it after the Agent finishes. Reply naturally in one short sentence; do not print the receipt, internal paths, or claim successful delivery before channel execution. A failed tool call is not a completed song.
 
-The worker uses an existing sung vocal track as the melody carrier, converts its timbre to the configured reference voice with Seed-VC's f0-conditioned SVC model, and optionally mixes its prepared accompaniment. This is song conversion, not TTS narration, arbitrary lyrics-to-music generation, or unrestricted song-name search. Catalog clips are at most 30 seconds. On missing songs, service failure or loading, explain the actual limitation. Do not improvise placeholder audio or start normal speech synthesis as a substitute for singing.
+The worker uses an existing sung vocal track as the melody carrier, converts its timbre to the configured reference voice with Seed-VC's f0-conditioned SVC model, and optionally mixes its prepared accompaniment. This is song conversion, not TTS narration, arbitrary lyrics-to-music generation, or unrestricted song-name search. Convert the full registered source without an artificial duration cap. A legacy excerpt remains an excerpt until reimported from its original recording. Platform delivery errors and the runtime's execution deadline remain authoritative; never claim a QQ duration limit without verified evidence. On missing songs, service failure or loading, explain the actual limitation. Do not improvise placeholder audio or start normal speech synthesis as a substitute for singing.

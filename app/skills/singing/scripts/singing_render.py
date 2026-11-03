@@ -41,7 +41,7 @@ def main():
         if args.voice_id not in {v['id'] for v in catalog['voices']}:raise ValueError('声线未配置')
         if not catalog.get('ready'):raise RuntimeError('本地歌声模型尚未就绪')
         response=requests.post(endpoint+'/render',headers=headers,json={'songId':song['id'],'voiceId':args.voice_id},
-                               timeout=(5,210),allow_redirects=False,stream=True)
+                               timeout=(5,None),allow_redirects=False,stream=True)
         if response.status_code!=200:
             response.close();raise RuntimeError('歌声生成暂未完成或服务忙，请稍后再试')
         if response.headers.get('X-Singing-Engine')!='seed-vc-svc':
@@ -49,11 +49,10 @@ def main():
         audio=bytearray()
         for chunk in response.iter_content(65536):
             audio.extend(chunk)
-            if len(audio)>2*1024*1024:response.close();raise ValueError('歌声音频过大')
         receipt=save(bytes(audio),delivery_key=args.delivery_key,song=song,voice_id=args.voice_id,
                      duration=float(response.headers['X-Audio-Duration']))
         result={'type':'singing-result','qqSong':receipt,'source':song.get('source',''),
-                'answer':'已生成'+song['title']+'的歌声片段，由 QQ 通道发送。'}
+                'answer':'已生成'+song['title']+'的歌声，由 QQ 通道发送。'}
     path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,ensure_ascii=False));path.chmod(0o600)
     print(json.dumps(result,ensure_ascii=False))
 

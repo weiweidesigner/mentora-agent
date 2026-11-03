@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import shutil
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -106,7 +107,7 @@ def songs(request:Request):
     owner=library_owner(request)
     entries=[s for s in entries if visible(s,owner)]
     return {'songs':[{'id':s['id'],'title':s['title'],'aliases':s.get('aliases',[]),
-                      'seconds':s.get('seconds',20),'source':s.get('source',''),
+                      'seconds':s.get('seconds'),'source':s.get('source',''),
                       **({'attribution':s['attribution']} if s.get('attribution') else {})} for s in entries],
             'voices':[{'id':v['id'],'label':v['label']} for v in voices],
             'ready':ENGINE is not None}
@@ -133,7 +134,7 @@ def locate(payload,owner='',allow_learning=False):
 
 def cache_paths(payload,owner='',allow_learning=False):
     song,voice,vocal,reference,backing=locate(payload,owner,allow_learning)
-    identity=json.dumps([REVISION,song,voice,[(p.stat().st_mtime_ns,p.stat().st_size) for p in [vocal,reference,*([backing] if backing else [])]]],sort_keys=True)
+    identity=json.dumps([REVISION,'full-source-v1',song,voice,[(p.stat().st_mtime_ns,p.stat().st_size) for p in [vocal,reference,*([backing] if backing else [])]]],sort_keys=True)
     key=hashlib.sha256(identity.encode()).hexdigest()
     cache=ROOT/'renders';cache.mkdir(mode=0o700,exist_ok=True)
     return cache/(key+'.silk'),cache/(key+'.json')
@@ -141,7 +142,6 @@ def cache_paths(payload,owner='',allow_learning=False):
 
 def generate(payload,owner='',allow_learning=False):
     song,voice,vocal,reference,backing=locate(payload,owner,allow_learning)
-    seconds=min(30,max(3,float(song.get('seconds',20))))
     shift=int(voice.get('semitones',0))
     if not -12<=shift<=12:raise ValueError('Invalid transposition')
     target,meta=cache_paths(payload,owner,allow_learning)
@@ -155,7 +155,9 @@ def generate(payload,owner='',allow_learning=False):
     started=time.monotonic()
     with tempfile.TemporaryDirectory(prefix='sing-',dir=ROOT) as tmp:
         folder=Path(tmp);source=folder/'source.wav';output=folder/'converted'
-        command(['ffmpeg','-v','error','-y','-i',str(vocal),'-t',str(seconds),'-ac','1','-ar','44100',str(source)])
+        command(['ffmpeg','-v','error','-y','-i',str(vocal),'-ac','1','-ar','44100',str(source)])
+        source_seconds=sf.info(str(source)).duration
+        if not math.isfinite(source_seconds) or source_seconds<=0:raise ValueError('Invalid source duration')
         args=SimpleNamespace(source=str(source),target=str(reference),output=str(output),
                              diffusion_steps=int(os.getenv('SINGING_DIFFUSION_STEPS','30')),
                              length_adjust=1.0,inference_cfg_rate=.7,f0_condition=True,
@@ -167,15 +169,17 @@ def generate(payload,owner='',allow_learning=False):
         if backing:
             command(['ffmpeg','-v','error','-y','-i',str(files[0]),'-i',str(backing),'-filter_complex',
                      '[0:a]volume=0.85[v];[1:a]volume=0.3[b];[v][b]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.9:level=0[a]',
-                     '-map','[a]','-t',str(seconds),'-ar','44100',str(mixed)])
+                     '-map','[a]','-ar','44100',str(mixed)])
         else:
-            command(['ffmpeg','-v','error','-y','-i',str(files[0]),'-af','alimiter=limit=0.9:level=0','-t',str(seconds),str(mixed)])
+            command(['ffmpeg','-v','error','-y','-i',str(files[0]),'-af','alimiter=limit=0.9:level=0',str(mixed)])
         pcm=folder/'out.pcm';silk=folder/'out.silk'
         command(['ffmpeg','-v','error','-y','-i',str(mixed),'-f','s16le','-ar','24000','-ac','1',str(pcm)])
         pilk.encode(str(pcm),str(silk),pcm_rate=24000,tencent=True)
         audio=silk.read_bytes();duration=pcm.stat().st_size/48000
-        if not audio.startswith(b'\x02#!SILK_V3') or len(audio)>2*1024*1024 or not 1<=duration<=30.1:
+        if not audio.startswith(b'\x02#!SILK_V3') or not math.isfinite(duration) or duration<=0:
             raise ValueError('Invalid singing output')
+        if abs(duration-source_seconds)>max(1,source_seconds*.01):
+            raise ValueError('Converted singing does not cover the full source')
         metadata={'songId':song['id'],'title':song['title'],'voiceId':voice['id'],'duration':round(duration,2),
                   'engine':'seed-vc-svc','revision':REVISION,'generationSeconds':round(time.monotonic()-started,2),
                   'source':song.get('source','')}
@@ -242,7 +246,7 @@ def public_job(data):
 
 
 @app.post('/learn/{ident}')
-async def learn(ident:str,request:Request,title:str,start:float=45):
+async def learn(ident:str,request:Request,title:str,start:float=0):
     authorize(request);owner=library_owner(request)
     if not owner:raise HTTPException(403,'请从角色曲库发起练习')
     path=job_path(ident)
@@ -255,7 +259,7 @@ async def learn(ident:str,request:Request,title:str,start:float=45):
             if old['state'] in ('queued','practicing','ready'):return public_job(old)
             if old['state']=='uploading':raise HTTPException(409,'音频正在上传')
         path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
-        data={'id':ident,'owner':owner,'title':title,'start':start,'songId':'learn-'+ident,'state':'uploading','seconds':20,'error':''}
+        data={'id':ident,'owner':owner,'title':title,'start':start,'songId':'learn-'+ident,'state':'uploading','seconds':0,'error':''}
         write_job(data)
     source=path.parent/'input.mp3';part=path.parent/'input.part';size=0
     try:
@@ -291,8 +295,8 @@ def learn_job(ident):
         if not any(s['id']==data['songId'] for s in existing):
             subprocess.run([sys.executable,str(ROOT/'register_singing_song.py'),'--root',str(staged),'--id',data['songId'],
                             '--title',data['title'],'--input',str(path.parent/'input.mp3'),'--start',str(data['start']),
-                            '--seconds','20','--alias',data['title'],'--source','User-uploaded private MP3; excerpt and voice conversion.'],
-                           check=True,timeout=600,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                            '--alias',data['title'],'--source','User-uploaded private MP3; voice conversion.'],
+                           check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         song=next(s for s in json.loads(registry.read_text())['songs'] if s['id']==data['songId'])
         import soundfile as sf
         if sf.info(str(staged/song['vocal'])).duration<3:raise ValueError('Clip too short')

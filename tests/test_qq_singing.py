@@ -31,6 +31,18 @@ def test_receipt_cannot_be_forged_replayed_or_redirected(singing):
     assert validate(s.receipt,s.key) is None
 
 
+def test_full_song_receipt_accepts_minutes_and_large_valid_audio(singing):
+    audio=b'\x02#!SILK_V3'+b'a'*(2*1024*1024+1)
+    receipt=save(audio,delivery_key=singing.key,song={'id':'full','title':'完整歌曲'},voice_id='companion',duration=246.8)
+    assert validate(receipt,singing.key)['duration']==246.8
+
+
+@pytest.mark.parametrize('duration',[0,-1,float('nan'),float('inf')])
+def test_invalid_duration_still_rejected_without_an_artificial_maximum(singing,duration):
+    with pytest.raises(ValueError):
+        save(singing.audio,delivery_key=singing.key,song={'id':'full','title':'歌'},voice_id='companion',duration=duration)
+
+
 def test_only_completed_tool_receipts_produce_audio(singing):
     s=singing
     output=json.dumps({'ok':True,'observation':{'type':'singing-result','qqSong':s.receipt}})

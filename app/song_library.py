@@ -1,5 +1,6 @@
 """Owner-scoped MP3 practice jobs and explicit QQ completion notifications."""
 import json
+import math
 import logging
 import os
 from pathlib import Path
@@ -37,7 +38,7 @@ class SongLibrary:
         with tasks.db() as db:
             db.execute('''CREATE TABLE IF NOT EXISTS song_practice(
               id TEXT PRIMARY KEY,owner TEXT,title TEXT,start REAL,filename TEXT,state TEXT,created REAL,updated REAL,
-              error TEXT DEFAULT '',recipient TEXT DEFAULT '',notification TEXT DEFAULT 'none',notice_error TEXT DEFAULT '',seconds REAL DEFAULT 20)''')
+              error TEXT DEFAULT '',recipient TEXT DEFAULT '',notification TEXT DEFAULT 'none',notice_error TEXT DEFAULT '',seconds REAL DEFAULT 0)''')
             db.execute("CREATE TABLE IF NOT EXISTS song_notification_attempts(key TEXT PRIMARY KEY,scope TEXT,day TEXT,state TEXT)")
             # Song completion is a user-requested task receipt, separate from
             # the daily companion outreach allowance. Preserve old dedup keys.
@@ -147,14 +148,14 @@ class SongLibrary:
     def finish(self,row,headers,endpoint):
         response=requests.post(endpoint+'/render',json={'songId':'learn-'+row['id'],'voiceId':'companion'},headers=headers,timeout=(3,15),allow_redirects=False)
         response.raise_for_status();audio=response.content
-        if len(audio)>2*1024*1024 or not audio.startswith(b'\x02#!SILK_V3'):raise ValueError('Invalid singing output')
+        if not audio.startswith(b'\x02#!SILK_V3'):raise ValueError('Invalid singing output')
         preview=requests.get(endpoint+'/preview/learn-'+row['id'],headers=headers,timeout=(3,30),allow_redirects=False)
         preview.raise_for_status()
-        if len(preview.content)>8*1024*1024 or not preview.content.startswith(b'RIFF'):raise ValueError('Invalid preview')
+        if not preview.content.startswith(b'RIFF'):raise ValueError('Invalid preview')
         for suffix,body in [('.silk',audio),('.wav',preview.content)]:
             p=self.root/(row['id']+suffix);temp=p.with_suffix(suffix+'.tmp');temp.write_bytes(body);temp.chmod(0o600);temp.replace(p)
         duration=float(response.headers['X-Audio-Duration'])
-        if not 1<=duration<=30.1:raise ValueError('Invalid singing duration')
+        if not math.isfinite(duration) or duration<=0:raise ValueError('Invalid singing duration')
         self.update(row['id'],state='ready',seconds=duration,error='')
 
     def notify(self,row):
@@ -204,7 +205,7 @@ def create_router(service):
     @router.get('')
     def listing(request:Request,response:Response):return service.listing(owner(request,response))
     @router.post('/upload')
-    async def upload(request:Request,response:Response,filename:str,title:str="",start:float=45):
+    async def upload(request:Request,response:Response,filename:str,title:str="",start:float=0):
         user=owner(request,response,True)
         title=title.strip() or Path(filename).stem.strip()[:120]
         if not title or len(title)>120 or not filename.lower().endswith('.mp3') or len(filename)>200 or not 0<=start<=3600:raise HTTPException(422,'请选择有效的 MP3 文件')

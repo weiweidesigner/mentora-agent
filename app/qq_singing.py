@@ -2,6 +2,7 @@
 import hashlib
 import hmac
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -35,10 +36,10 @@ def validate(receipt,delivery_key=None,folder=None):
         signed={k:v for k,v in data.items() if k!='signature'}
         if not hmac.compare_digest(str(data.get('signature','')),signature(signed)):return None
         if receipt!=data or (delivery_key is not None and data.get('deliveryKey')!=delivery_key):return None
-        if data.get('engine')!='seed-vc-svc' or not 1<=float(data['duration'])<=30.1:return None
+        if data.get('engine')!='seed-vc-svc' or not math.isfinite(float(data['duration'])) or float(data['duration'])<=0:return None
         if not 0<=time.time()-float(data['created'])<=900:return None
         path=root/(ident+'.silk');audio=path.read_bytes()
-        if not audio.startswith(b'\x02#!SILK_V3') or len(audio)>2*1024*1024:return None
+        if not audio.startswith(b'\x02#!SILK_V3'):return None
         if hashlib.sha256(audio).hexdigest()!=data['sha256']:return None
         return data
     except (OSError,ValueError,TypeError,KeyError):return None
@@ -46,8 +47,8 @@ def validate(receipt,delivery_key=None,folder=None):
 
 def save(audio,*,delivery_key,song,voice_id,duration,folder=None):
     if not re.fullmatch(r'[a-f0-9]{32}',delivery_key):raise ValueError('Invalid singing delivery key')
-    if not audio.startswith(b'\x02#!SILK_V3') or len(audio)>2*1024*1024:raise ValueError('Invalid singing audio')
-    if not 1<=float(duration)<=30.1:raise ValueError('Invalid singing duration')
+    if not audio.startswith(b'\x02#!SILK_V3'):raise ValueError('Invalid singing audio')
+    if not math.isfinite(float(duration)) or float(duration)<=0:raise ValueError('Invalid singing duration')
     root=Path(folder) if folder is not None else directory();root.mkdir(parents=True,exist_ok=True,mode=0o700)
     ident=hashlib.sha256((delivery_key+'|'+song['id']+'|'+voice_id).encode()).hexdigest()[:32]
     data={'id':ident,'songId':song['id'],'title':str(song['title'])[:120],'voiceId':voice_id,

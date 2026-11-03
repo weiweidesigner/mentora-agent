@@ -76,3 +76,31 @@ def test_failed_generation_keeps_registered_song_hidden_and_retry_can_finish(wor
     monkeypatch.setattr(m,'generate',lambda *a:(b'voice',{'duration':8}));m.learn_job(ident)
     assert json.loads(path.read_text())['state']=='ready'
     assert 'learning' in [s['id'] for s in e.client.get('/songs',headers=e.headers('a'*64)).json()['songs']]
+
+
+def test_conversion_uses_entire_source_despite_legacy_twenty_second_metadata(worker,monkeypatch):
+    import sys
+    from pathlib import Path
+    e=worker;m=e.m;commands=[]
+    def command(args,**kwargs):
+        commands.append(args)
+        path=Path(args[-1]);path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_bytes(b'\0'*(48000*122) if path.suffix=='.pcm' else b'fixture')
+    def convert(args):
+        path=Path(args.output);path.mkdir();(path/'converted.wav').write_bytes(b'fixture')
+    monkeypatch.setattr(m,'command',command)
+    monkeypatch.setattr(m,'ENGINE',SimpleNamespace(main=convert))
+    monkeypatch.setitem(sys.modules,'soundfile',SimpleNamespace(info=lambda _:SimpleNamespace(duration=122)))
+    monkeypatch.setitem(sys.modules,'pilk',SimpleNamespace(encode=lambda source,target,**kw:Path(target).write_bytes(b'\x02#!SILK_V3full')))
+    audio,meta=m.generate(m.Render(songId='twinkle'))
+    assert meta['duration']==122 and audio.endswith(b'full')
+    assert all('-t' not in args for args in commands)
+
+
+def test_new_uploads_default_to_beginning_without_an_excerpt_duration(worker,monkeypatch):
+    e=worker;monkeypatch.setattr(e.m.LEARNING_POOL,'submit',lambda *a:None)
+    ident='f'*32
+    result=e.client.post('/learn/'+ident+'?title=full',headers=e.headers('a'*64),content=b'ID3'+b'x'*200)
+    assert result.status_code==200
+    data=json.loads(e.m.job_path(ident).read_text())
+    assert data['start']==0 and data['seconds']==0
