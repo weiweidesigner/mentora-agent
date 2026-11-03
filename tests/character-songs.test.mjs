@@ -35,11 +35,13 @@ test('invalid files do not prevent valid files in the same selection from upload
  assert.equal(e.calls.filter(c=>c.path.includes('/upload?')).length,1);assert.match($('chSongStatus').textContent,/bad.txt/);assert.equal($('chSongPracticingCount').textContent,'1');
  }finally{e.dom.window.close();}
 });
-test('songs support multi-selection and bulk practice with mandatory completion notification',async()=>{
+test('practice rows have no selection controls and show the completion promise while practicing',async()=>{
  const e=setup(),$=id=>e.w.document.getElementById(id);try{await tick();
- Object.defineProperty($('chSongFile'),'files',{value:[new e.w.File(['ID3data'],'a.mp3'),new e.w.File(['ID3data'],'b.mp3')]});$('chSongFile').dispatchEvent(new e.w.Event('change'));await tick();
- $('chSongSelectAll').checked=true;$('chSongSelectAll').dispatchEvent(new e.w.Event('change'));assert.equal($('chSongSelectedCount').textContent,'已选 2 首');
- $('chSongPracticeSelected').click();await tick();assert.equal(e.calls.filter(c=>c.path.endsWith('/practice')).length,2);assert.ok(e.calls.filter(c=>c.path.endsWith('/practice')).every(c=>JSON.parse(c.options.body).notify===true));assert.equal($('chSongPracticeTools').hidden,true);
+ Object.defineProperty($('chSongFile'),'files',{value:[new e.w.File(['ID3data'],'a.mp3')]});$('chSongFile').dispatchEvent(new e.w.Event('change'));await tick();
+ assert.equal($('chSongSelectAll'),null);assert.equal($('chSongPracticeSelected'),null);assert.equal($('chSongPracticingPanel').querySelector('input[type=checkbox]'),null);
+ e.data.practicing[0].state='practicing';$('characterWorkspace').hidden=true;$('characterWorkspace').hidden=false;await tick();
+ assert.match($('chSongPracticingPanel').textContent,/正在练习，练会后，我会主动唱给你～/);
+ assert.equal($('chSongPracticingPanel').querySelector('[data-song-practice]').textContent,'正在练习');
  }finally{e.dom.window.close();}
 });
 test('multiple QQ recipients require an explicit choice before practice',async()=>{
