@@ -85,7 +85,7 @@ class QQExpressionRouter:
                     # not just each call. Optional images never delay the main reply.
                     ask = getattr(client, '_ask', None)
                     if ask is not None:
-                        deadline = time.monotonic() + 10
+                        deadline = time.monotonic() + 45
                         def bounded_ask(**kwargs):
                             remaining = deadline-time.monotonic()
                             if remaining <= 0:

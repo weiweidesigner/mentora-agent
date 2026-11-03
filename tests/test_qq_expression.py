@@ -137,7 +137,7 @@ def test_model_outage_skips_stickers_without_inventing_a_score(router,monkeypatc
 def test_large_catalog_selection_deadline_skips_image_instead_of_random_fallback(monkeypatch):
     monkeypatch.setenv('LAYA_DECISION_URL','http://local')
     monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=None,Choice=lambda **kw:SimpleNamespace(**kw)))
-    clock=iter([0,1,11])
+    clock=iter([0,1,46])
     monkeypatch.setattr('app.qq_expression.time.monotonic',lambda:next(clock))
     class Client:
         calls=0
