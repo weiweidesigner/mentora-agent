@@ -1,6 +1,4 @@
-import hashlib
 import json
-import sys
 import threading
 import time
 from types import SimpleNamespace
@@ -121,22 +119,21 @@ def test_semantic_decision_uses_context_and_only_mentions_mode_is_respected(bot,
     channel,tasks,client,calls=bot;groups=channel.chat.groups
     captured=[]
     class Model:
-        score=.93
-        def __init__(self,**kwargs):pass
+        decision=True
+        def __init__(self,**kwargs):self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
         def __enter__(self):return self
         def __exit__(self,*args):pass
-        def system_one(self,**kwargs):
+        def create(self,**kwargs):
             captured.append(kwargs)
-            return SimpleNamespace(answers={'participation':SimpleNamespace(probabilities={'reply':self.score,'quiet':1-self.score})})
-    monkeypatch.setitem(sys.modules,'app.laya_client',SimpleNamespace(LocalLayaClient=Model,Choice=lambda **k:SimpleNamespace(**k)))
-    monkeypatch.setenv('LAYA_DECISION_URL','http://local.test')
+            return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps({'reply':self.decision})))])
+    groups.factory=Model
     scope=json.dumps(['app','groups','room','alice']);groups.record('one',scope,'刚才在讨论露营。')
     profile=CharacterProfile().model_dump()
     assert groups.should_reply('next',scope,'你觉得呢？',profile)
-    assert captured[-1]['state']['recent_group'][0]['text']=='刚才在讨论露营。'
-    Model.score=.1
+    assert json.loads(captured[-1]['messages'][1]['content'])['recent_group'][0]['text']=='刚才在讨论露营。'
+    Model.decision=False
     assert not groups.should_reply('next',scope,'小王你来回答。',profile)
-    Model.score=float('nan')
+    Model.decision='true'
     assert not groups.should_reply('next',scope,'问题',profile)
     profile['groupReplyMode']='mentions';before=len(captured)
     assert not groups.should_reply('next',scope,'你好',profile) and len(captured)==before
