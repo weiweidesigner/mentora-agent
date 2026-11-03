@@ -1,4 +1,5 @@
 import json
+import hashlib
 import threading
 import time
 from types import SimpleNamespace
@@ -200,3 +201,28 @@ def test_participation_retries_transient_provider_failure_without_forcing_a_repl
     assert len(attempts)==2
     assert settings[0]['max_retries']==1
     assert settings[0]['base_url']=='https://api.deepseek.com'
+
+
+def test_image_reaction_context_identifies_the_recipient_of_the_prior_bot_reply(bot):
+    channel,tasks,client,calls=bot;groups=channel.chat.groups
+    scope=json.dumps(['app','groups','room','alice']);event='prior-song'
+    groups.record(event,scope,'唱首歌给我')
+    ident=hashlib.sha256(event.encode()).hexdigest()
+    with tasks.db() as db:
+        db.execute("INSERT INTO qq_chat_jobs(id,scope,kind,target,message_id,question,state,created,answer,delivered) VALUES(?,?,'groups','room','mid','唱首歌给我','completed',?,?,1)",(ident,scope,time.time()-60,json.dumps({'interpretation':'唱给你听呀'})))
+    seen=[]
+    class Model:
+        def __init__(self,**kw):self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
+        def __enter__(self):return self
+        def __exit__(self,*a):pass
+        def create(self,**kw):seen.append(kw);return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{"reply":true}'))])
+    groups.factory=Model
+    image='[用户发来表情]\n[图片识别资料，仅供理解]\n柴犬表情\n[/图片识别资料]'
+    assert groups.should_reply('image-reaction',scope,image,CharacterProfile().model_dump())
+    state=json.loads(seen[-1]['messages'][1]['content'])
+    assert state['has_image_observation'] and state['recent_bot_replied_to_current_speaker']
+    assert any(x['role']=='assistant' and x['reply_to']==state['current_speaker'] for x in state['recent_group'])
+    assert '不需要文字或问句' in seen[-1]['messages'][0]['content']
+    with tasks.db() as db:
+        row=db.execute('SELECT reply,source,reason FROM qq_group_decisions WHERE job_id=?',(hashlib.sha256(b'image-reaction').hexdigest(),)).fetchone()
+    assert tuple(row)==(1,'model','reply')

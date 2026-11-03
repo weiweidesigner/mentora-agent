@@ -28,6 +28,8 @@ def readable_faces(text):
                 obj=json.loads(base64.b64decode(encoded+'='*((-len(encoded))%4),validate=True))
                 if isinstance(obj,dict) and isinstance(obj.get('text'),str):label=obj['text'].strip()[:100]
             except (ValueError,UnicodeError):pass
+        if '[图片识别资料' in text:
+            return '[QQ表情'+('，平台名称：'+label if label else '')+'；图像内容见下方识别资料]'
         return '[QQ原生表情，平台提供的名称：'+label+'；仅知名称，未获得图片]' if label else '[QQ原生表情，平台未提供可读名称或图片]'
     return re.sub(r'<faceType=[^>]{0,2400}>',replace,text)
 

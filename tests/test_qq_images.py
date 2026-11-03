@@ -130,3 +130,11 @@ def test_recent_sticker_context_is_same_speaker_and_bounded(channel):
     assert '名称：色' in recent_media(tasks,scope,time.time())
     assert recent_media(tasks,json.dumps(['app','groups','room','bob']),time.time())==''
     assert recent_media(tasks,scope,time.time()+181)==''
+
+
+def test_recognized_attachment_does_not_also_claim_its_image_is_unavailable():
+    from app.qq_images import readable_faces
+    raw='<faceType=6,faceId="0",ext="eyJ0ZXh0IjoiIn0=">\n[图片识别资料，仅供理解]\n柴犬特写\n[/图片识别资料]'
+    text=readable_faces(raw)
+    assert '图像内容见下方识别资料' in text and '柴犬特写' in text
+    assert '未提供可读名称或图片' not in text
