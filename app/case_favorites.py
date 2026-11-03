@@ -245,6 +245,19 @@ def create_router(store):
         with store.db() as db:
             row = db.execute('SELECT payload FROM case_favorites WHERE owner=? AND id=?', (user, case_id)).fetchone()
         if not row: raise HTTPException(404, '案例不存在')
-        return json.loads(row['payload'])
+        payload = json.loads(row['payload'])
+        answer = payload.get('answer') or {}
+        # Saved executable documents already have a native iframe lifecycle.
+        # Resolve this from the local file so replay need not download it once
+        # for classification and again for the actual document.
+        artifacts = answer.get('reportArtifacts') or []
+        render_modes = {}
+        for item in artifacts:
+            if not isinstance(item, dict):continue
+            document = next(_artifact_documents({'reportArtifacts':[item]}, store.directory.parent/'generated'), '')
+            if re.search(r'<(?:script|iframe)\b', document, re.I):
+                render_modes[item.get('url') or item.get('htmlUrl')] = 'iframe'
+        payload['artifactRenderModes'] = render_modes
+        return payload
 
     return router

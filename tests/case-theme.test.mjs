@@ -87,3 +87,31 @@ test('native business documents keep their own palette while receiving the host 
  await new Promise(resolve=>w.setTimeout(resolve,0));
  w.close();
 });
+
+test('owned iframe readiness reveals content before the full resource load event',()=>{
+ const dom=new JSDOM('<div class="chatArtifactShell"></div>',{url:'https://example.com/mentora/'}),w=dom.window;
+ const context=vm.createContext({document:w.document,window:w,URL,currentThemeMode:()=> 'dark',resizeReportDocumentFrame:()=>{},setTimeout:fn=>{fn();return 1;},requestAnimationFrame:fn=>fn()});
+ vm.runInContext(imageDetection,context);vm.runInContext(loadingLogic,context);
+ vm.runInContext(app.slice(app.indexOf('function createArtifactFallbackFrame('),app.indexOf('async function artifactCode(')),context);
+ const start=app.indexOf("window.addEventListener('message',event=>{\n  if(!['mentora:add-widget'");
+ vm.runInContext(app.slice(start,app.indexOf('\nfunction isImageGalleryArtifact(',start)),context);
+ const shell=vm.runInContext('createArtifactFallbackFrame({url:"/generated/slow-resources.html"},0)',context);
+ w.document.querySelector('.chatArtifactShell').append(shell);
+ const frame=shell.querySelector('iframe');
+ assert(shell.querySelector('.chartLoadingOverlay'));
+ w.dispatchEvent(new w.MessageEvent('message',{data:{type:'mentora:widget-ready'},source:w}));
+ assert(shell.querySelector('.chartLoadingOverlay'),'unrelated messages must not dismiss loading');
+ w.dispatchEvent(new w.MessageEvent('message',{data:{type:'mentora:widget-ready'},source:frame.contentWindow}));
+ assert.equal(shell.querySelector('.chartLoadingOverlay'),null);
+ assert.equal(shell.dataset.artifactReady,'true');
+ assert.equal(shell.classList.contains('is-chart-loading'),false);
+ w.close();
+});
+
+test('known iframe artifacts bypass the classification fetch and StreamViz mount',()=>{
+ const dom=new JSDOM('',{url:'https://example.com/mentora/'}),w=dom.window;
+ const context=vm.createContext({document:w.document,window:w,canonicalArtifact:v=>v,isGeneratedImageArtifact:()=>false,createArtifactFallbackFrame:(item)=>({direct:item.url}),fetch:()=>{throw Error('unnecessary fetch');}});
+ vm.runInContext(app.slice(app.indexOf('function createStreamVisualizationArtifact('),app.indexOf('\nfunction orderedStreamFlow(')),context);
+ const result=vm.runInContext('createStreamVisualizationArtifact({url:"/generated/interactive.html",renderMode:"iframe"},0)',context);
+ assert.equal(result.direct,'/generated/interactive.html');w.close();
+});

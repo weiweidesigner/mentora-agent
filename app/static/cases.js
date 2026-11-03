@@ -254,7 +254,7 @@
     });
   }
 
-  async function replayAnswer(article, answer, signal) {
+  async function replayAnswer(article, answer, signal, renderModes = {}) {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     // Native image and video presentation is shared with live answers.
     if (answer.videos?.length || answer.reportArtifacts?.some(item => typeof isGeneratedImageArtifact === "function" && isGeneratedImageArtifact(item))) return;
@@ -272,7 +272,7 @@
       if (marker) {
         const index = artifacts.findIndex((item) => item.path === marker[1]);
         if (index >= 0 && !shown.has(index)) {
-          const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal, demoLoadingMs: artifacts[index].caseDemoLoadingMs });
+          const host = createStreamVisualizationArtifact(artifacts[index], index, { showActions: false, replay: true, signal, renderMode: renderModes[artifacts[index].url], demoLoadingMs: artifacts[index].caseDemoLoadingMs });
           flow.append(typeof withArtifactWidgetControl === 'function' ? withArtifactWidgetControl(host,artifacts[index]) : host);
           shown.add(index);
           if (!await replayPause(280, signal)) return;
@@ -389,7 +389,7 @@
       requestAnimationFrame(() => {
         if (version === loadVersion) messages.scrollTop = 0;
       });
-      await replayAnswer(article, cached.answer, signal);
+      await replayAnswer(article, cached.answer, signal, cached.artifactRenderModes);
       if (signal.aborted || version !== loadVersion) return;
       const scrollTop = messages.scrollTop;
       renderFinalAnswer(article, cached.answer);

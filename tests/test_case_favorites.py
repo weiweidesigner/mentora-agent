@@ -191,3 +191,20 @@ def test_business_component_label_takes_priority_over_auxiliary_chart(tmp_path):
     for artifacts in ([ranking,performance],[performance,ranking]):
         assert answer_component_tag({'reportArtifacts':artifacts},tmp_path)=='议员投资表现'
     assert answer_component_tag({'reportArtifacts':[ranking]},tmp_path)=='柱状图'
+
+
+def test_saved_scripted_artifact_replays_directly_without_mutating_snapshot(clients):
+    import json
+    a, _, store = clients
+    generated = store.directory.parent / 'generated'
+    generated.mkdir(exist_ok=True)
+    (generated / 'replay-interactive.html').write_text('<html><body><main><table></table></main><script>/* interaction */</script></body></html>')
+    value = data()
+    value['answer']['reportArtifacts'] = [dict(url='/mentora/generated/replay-interactive.html')]
+    row = a.post('/api/case-favorites', headers={'X-Veya-Day':'1'}, json=value).json()
+    replay = a.get(row['conversationUrl']).json()
+    assert replay['artifactRenderModes'] == {'/mentora/generated/replay-interactive.html':'iframe'}
+    assert replay['answer']['reportArtifacts'] == value['answer']['reportArtifacts']
+    with store.db() as db:
+        snapshot = json.loads(db.execute('SELECT payload FROM case_favorites WHERE id=?', (row['id'],)).fetchone()[0])
+    assert 'renderMode' not in snapshot['answer']['reportArtifacts'][0]

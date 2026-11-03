@@ -1266,7 +1266,7 @@ window.addEventListener('message',event=>{
   if(!['mentora:add-widget','mentora:widget-ready'].includes(event.data?.type))return;
   const frame=Array.from(document.querySelectorAll('.chatArtifactShell iframe')).find(f=>f.contentWindow===event.source);
   if(!frame)return;
-  if(event.data.type==='mentora:widget-ready'){frame.contentWindow.postMessage({type:'mentora:widget-control'},'*');return;}
+  if(event.data.type==='mentora:widget-ready'){frame.reportContentReady?.();frame.contentWindow.postMessage({type:'mentora:widget-control'},'*');return;}
   const shell=frame.closest('.chatArtifactShell');
   window.dispatchEvent(new CustomEvent('mentora:add-artifact-to-widget',{detail:{url:shell.dataset.artifactUrl,title:String(event.data.title||shell.dataset.artifactTitle||'可视化组件').slice(0,160),trigger:shell.querySelector('.artifactAddToWidget')}}));
 });
@@ -1321,7 +1321,21 @@ function createArtifactFallbackFrame(item, index, options = {}) {
     if (source.pathname.includes("/static/cases/")) source.searchParams.set("theme", currentThemeMode());
     frame.src = source.href;
   }
+  let contentReady = false;
+  frame.reportContentReady = () => {
+    if (contentReady) return;
+    contentReady = true;
+    resizeReportDocumentFrame(frame);
+    setTimeout(() => requestAnimationFrame(() => {
+      loading.remove();
+      shell.classList.remove("is-chart-loading");
+      shell.dataset.artifactReady = "true";
+    }), Math.max(0, demoLoadingMs - (Date.now() - loadingStartedAt)));
+  };
   frame.addEventListener("load", () => {
+    // The embedded runtime can signal usable content before fonts/images finish.
+    // Reveal it independently of optional enhancements or their failures.
+    frame.reportContentReady();
     if (new URL(frame.src, window.location.origin).pathname.includes("/static/cases/")) {
       const root = frame.contentDocument?.documentElement;
       if (root) root.dataset.theme = new URL(frame.src).searchParams.get("theme") || currentThemeMode();
@@ -1343,11 +1357,6 @@ function createArtifactFallbackFrame(item, index, options = {}) {
     window.installTradingViewSurface?.(frame);
     resizeReportDocumentFrame(frame);
     installReportTooltipPortal(frame);
-    setTimeout(() => requestAnimationFrame(() => {
-      loading.remove();
-      shell.classList.remove("is-chart-loading");
-      shell.dataset.artifactReady = "true";
-    }), Math.max(0, demoLoadingMs - (Date.now() - loadingStartedAt)));
   });
   return shell;
 }
@@ -1412,7 +1421,7 @@ function createNavigationArtifact(code, item = {}) {
 function createStreamVisualizationArtifact(item, index, options = {}) {
   item = canonicalArtifact(item);
   if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
-  if (Number(options.demoLoadingMs) > 0) return createArtifactFallbackFrame(item, index, { demoLoadingMs: options.demoLoadingMs });
+  if (item.renderMode === "iframe" || options.renderMode === "iframe" || Number(options.demoLoadingMs) > 0) return createArtifactFallbackFrame(item, index, { demoLoadingMs: options.demoLoadingMs });
   const host = document.createElement("div");
   host.className = `streamvizArtifactHost${options.live ? " is-live" : ""}`;
   host.dataset.loadingKind = 'artifact';
