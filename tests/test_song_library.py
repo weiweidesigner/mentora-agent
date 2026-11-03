@@ -181,3 +181,37 @@ def test_legacy_song_receipts_migrate_without_consuming_companion_quota(env):
         assert db.execute('SELECT 1 FROM qq_extra_message_attempts WHERE key=?',(key,)).fetchone() is None
     assert migrated.memory.extra_sent(e.scope,day)==0
     migrated.close()
+
+
+def test_preview_prepares_missing_builtin_audio_once_and_serves_seekable_wav(env,monkeypatch):
+    import io,time,wave,threading
+    e=env;buffer=io.BytesIO()
+    with wave.open(buffer,'wb') as output:
+        output.setnchannels(1);output.setsampwidth(2);output.setframerate(16000);output.writeframes(b'\0\0'*160)
+    wav=buffer.getvalue();entered=threading.Event();release=threading.Event();calls=[];generated=[False]
+    class PreviewResponse:
+        def __init__(self,status=200,body=b''):self.status_code=status;self.body=body
+        def __enter__(self):return self
+        def __exit__(self,*a):self.close()
+        def close(self):pass
+        def raise_for_status(self):
+            if self.status_code!=200:raise RuntimeError('bad response')
+        def iter_content(self,size):yield self.body
+    def get(url,**kwargs):
+        if url.endswith('/songs'):return response({'songs':[{'id':'amazing-grace','title':'奇异恩典','seconds':173.973333}],'ready':True})
+        return PreviewResponse(200,wav) if generated[0] else PreviewResponse(404)
+    def post(url,**kwargs):
+        calls.append(url);entered.set();assert release.wait(3);generated[0]=True;return PreviewResponse()
+    monkeypatch.setattr('app.song_library.requests.get',get);monkeypatch.setattr('app.song_library.requests.post',post)
+    try:
+        assert e.a.post('/api/character/songs/amazing-grace/preview',json={},headers={'X-Veya-Day':'1'}).status_code==200
+        assert entered.wait(1)
+        assert e.a.post('/api/character/songs/amazing-grace/preview',json={},headers={'X-Veya-Day':'1'}).json()['state']=='preparing'
+        release.set();deadline=time.monotonic()+2
+        while e.a.get('/api/character/songs/amazing-grace/preview-status').json()['state']!='ready' and time.monotonic()<deadline:time.sleep(.01)
+        assert len(calls)==1
+        result=e.a.get('/api/character/songs/amazing-grace/preview',headers={'Range':'bytes=0-11'})
+        assert result.status_code==206 and result.content==wav[:12]
+        assert e.a.post('/api/character/songs/amazing-grace/preview',json={},headers={'X-Veya-Day':'1'}).json()['state']=='ready'
+        assert len(calls)==1
+    finally:release.set()

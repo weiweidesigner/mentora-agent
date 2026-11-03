@@ -1,5 +1,7 @@
 """Owner-scoped MP3 practice jobs and explicit QQ completion notifications."""
 import json
+import hashlib
+from concurrent.futures import ThreadPoolExecutor
 import math
 import logging
 import os
@@ -35,6 +37,8 @@ class SongLibrary:
         self.client_factory=client_factory;self.clock=clock or time.time
         self.root=tasks.directory/'song-library';self.root.mkdir(exist_ok=True,mode=0o700)
         self.stop_event=threading.Event();self.thread=None;self.lock=threading.Lock()
+        self.preview_lock=threading.Lock();self.preview_jobs={}
+        self.preview_pool=ThreadPoolExecutor(max_workers=1,thread_name_prefix='song-preview')
         with tasks.db() as db:
             db.execute('''CREATE TABLE IF NOT EXISTS song_practice(
               id TEXT PRIMARY KEY,owner TEXT,title TEXT,start REAL,filename TEXT,state TEXT,created REAL,updated REAL,
@@ -110,7 +114,8 @@ class SongLibrary:
             db.execute("UPDATE song_practice SET state='failed',error='上传被中断，请重新上传' WHERE state='uploading'")
         self.thread=threading.Thread(target=self.loop,daemon=True,name='song-library');self.thread.start()
 
-    def close(self):self.stop_event.set()
+    def close(self):
+        self.stop_event.set();self.preview_pool.shutdown(wait=False,cancel_futures=True)
 
     def loop(self):
         while not self.stop_event.is_set():
@@ -198,6 +203,67 @@ class SongLibrary:
             self.update(row['id'],notification='unknown',notice_error='QQ 通知或试唱未能确认送达，可在 QQ 直接点歌；未自动重发')
 
 
+    def preview_path(self, owner, song_id):
+        if song_id.startswith('learn-'):
+            row=self.row(owner,song_id[6:])
+            if row['state']!='ready':raise HTTPException(409,'歌曲尚未练习完成')
+        try:
+            entries=json.loads((self.root/('catalog-'+owner+'.json')).read_text())
+            version=next((entry for entry in entries if entry.get('id')==song_id),{})
+        except (OSError,ValueError,TypeError):version={}
+        key=hashlib.sha256((owner+':'+song_id+':'+json.dumps(version,sort_keys=True)).encode()).hexdigest()
+        return self.root/('preview-'+key+'.wav')
+
+    def preview_status(self, owner, song_id):
+        if not re.fullmatch(r'[a-z0-9_-]{1,64}',song_id):raise HTTPException(404,'歌曲不存在')
+        path=self.preview_path(owner,song_id)
+        if path.is_file():return {'state':'ready','error':''}
+        with self.preview_lock:return dict(self.preview_jobs.get((owner,song_id),{'state':'idle','error':''}))
+
+    def prepare_preview(self, owner, song_id):
+        state=self.preview_status(owner,song_id)
+        if state['state']=='ready':return state
+        if self.stop_event.is_set():raise HTTPException(503,'试听服务正在重启，请稍后重试')
+        listing=self.listing(owner)
+        if not any(x['id']==song_id for x in listing['learned']):raise HTTPException(404,'歌曲不存在或尚未练习完成')
+        key=(owner,song_id)
+        with self.preview_lock:
+            current=self.preview_jobs.get(key,{})
+            if current.get('state') in ('queued','preparing'):return dict(current)
+            self.preview_jobs[key]={'state':'queued','error':''}
+        self.preview_pool.submit(self.build_preview,owner,song_id)
+        return self.preview_status(owner,song_id)
+
+    def build_preview(self, owner, song_id):
+        key=(owner,song_id);path=self.preview_path(owner,song_id);temp=path.with_suffix('.wav.tmp')
+        with self.preview_lock:self.preview_jobs[key]={'state':'preparing','error':''}
+        try:
+            headers=self.headers(owner);endpoint=self.endpoint()
+            result=requests.get(endpoint+'/preview/'+song_id,headers=headers,timeout=(3,30),allow_redirects=False,stream=True)
+            if result.status_code==404:
+                result.close()
+                # Conversion can take minutes for a full song. This runs in the
+                # bounded background pool; the browser polls a fast status API.
+                with requests.post(endpoint+'/render',json={'songId':song_id,'voiceId':'companion'},headers=headers,timeout=(3,None),allow_redirects=False,stream=True) as rendered:
+                    rendered.raise_for_status()
+                result=requests.get(endpoint+'/preview/'+song_id,headers=headers,timeout=(3,30),allow_redirects=False,stream=True)
+            with result:
+                result.raise_for_status();size=0
+                with temp.open('wb') as out:
+                    for chunk in result.iter_content(256*1024):
+                        size+=len(chunk)
+                        if size>512*1024*1024:raise ValueError('Preview too large')
+                        out.write(chunk)
+            with temp.open('rb') as source:header=source.read(12)
+            if size<44 or header[:4]!=b'RIFF' or header[8:12]!=b'WAVE':raise ValueError('Invalid WAV preview')
+            temp.chmod(0o600);temp.replace(path)
+            with self.preview_lock:self.preview_jobs[key]={'state':'ready','error':''}
+        except Exception:
+            temp.unlink(missing_ok=True)
+            with self.preview_lock:self.preview_jobs[key]={'state':'failed','error':'试听音频准备未完成，请点击试听重试'}
+            log.warning('Song preview preparation failed for %s',song_id)
+
+
 def create_router(service):
     router=APIRouter(prefix='/api/character/songs')
     router.add_event_handler('startup',service.start);router.add_event_handler('shutdown',service.close)
@@ -239,15 +305,20 @@ def create_router(service):
         user=owner(request,response,True);service.row(user,ident)
         with service.tasks.db() as db:db.execute("UPDATE song_practice SET notification='cancelled',notice_error='' WHERE id=? AND owner=? AND notification='pending'",(ident,user))
         return {'ok':True}
+    @router.post('/{song_id}/preview')
+    def prepare_preview(song_id:str,request:Request,response:Response):
+        return service.prepare_preview(owner(request,response,True),song_id)
+    @router.get('/{song_id}/preview-status')
+    def preview_status(song_id:str,request:Request,response:Response):
+        return service.preview_status(owner(request,response),song_id)
     @router.get('/{song_id}/preview')
     def preview(song_id:str,request:Request,response:Response):
         user=owner(request,response)
         if not re.fullmatch(r'[a-z0-9_-]{1,64}',song_id):raise HTTPException(404,'歌曲不存在')
-        fallback=None
-        if song_id.startswith('learn-'):
-            row=service.row(user,song_id[6:]);path=service.root/(row['id']+'.wav')
-            if row['state']!='ready' or not path.is_file():raise HTTPException(404,'歌曲尚未练习完成')
-            fallback=path
+        cached=service.preview_path(user,song_id)
+        if cached.is_file():return FileResponse(cached,media_type='audio/wav',headers={'Cache-Control':'no-store'})
+        fallback=service.root/(song_id[6:]+'.wav') if song_id.startswith('learn-') else None
+        fallback=fallback if fallback and fallback.is_file() else None
         try:
             result=requests.get(service.endpoint()+'/preview/'+song_id,headers=service.headers(user),timeout=(3,15),allow_redirects=False)
             if result.status_code==200:return Response(result.content,media_type='audio/wav',headers={'Cache-Control':'no-store'})
