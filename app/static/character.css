@@ -53,7 +53,7 @@
 :root[data-theme="dark"] .chMemoryWord{color:hsl(var(--word-hue,185) 88% 77%)}
 .chMemoryWordText{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;padding:3px 8px;margin:0;text-shadow:0 0 7px hsl(var(--word-hue,185) 85% 60% / .2);animation:chMemoryBreathe var(--word-duration,4s) ease-in-out var(--word-phase,0s) infinite}
 .chMemoryWord::before{content:"";position:absolute;z-index:-1;inset:-6px -12px;border-radius:50%;background:radial-gradient(ellipse,hsl(var(--word-hue,185) 85% 65% / .12),transparent 68%);filter:blur(7px);pointer-events:none}
-@keyframes chMemoryBreathe{0%,100%{opacity:.76;text-shadow:0 0 5px hsl(var(--word-hue,185) 85% 60% / .18),0 0 12px hsl(var(--word-hue,185) 85% 60% / .08)}50%{opacity:1;text-shadow:0 0 7px hsl(var(--word-hue,185) 85% 65% / .65),0 0 20px hsl(var(--word-hue,185) 85% 60% / .3)}}
+@keyframes chMemoryBreathe{0%,100%{opacity:.76}50%{opacity:1}}
 .chMemorySphere.is-motion-paused .chMemoryWordText{animation-play-state:paused}
 .chMemoryWord:hover .chMemoryWordText,.chMemoryWord:focus-visible .chMemoryWordText{opacity:1;animation-play-state:paused;text-shadow:0 0 10px hsl(var(--word-hue,185) 85% 65% / .75),0 0 24px hsl(var(--word-hue,185) 85% 60% / .4)}
 @media(prefers-reduced-motion:reduce){.chMemoryWordText{animation:none;opacity:1}}
@@ -71,3 +71,6 @@
 .chProactiveDestinations{margin:0 0 24px}.chProactiveDestinations legend{font-size:13px;margin-bottom:8px}.chProactiveDestinations .chMemoryOption{padding:8px 0}.chProactiveDestinations .chMemoryOption small{display:block;color:var(--muted);font-size:11px;line-height:1.7}.chProactiveTargetActions{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.characterWorkspace .chProactiveTargetActions button{font-size:12px;padding:6px 10px}.chProactiveDestinations .chHint{font-size:12px;margin-bottom:0}
 :root[data-theme="dark"] .chSongRow audio{color-scheme:dark}:root[data-theme="light"] .chSongRow audio{color-scheme:light}
 
+
+/* Cache decorative layers; breathing changes opacity without repainting shadows. */
+.chMemoryNebula .chNebulaField{will-change:transform;transform-origin:50% 50%}.chMemoryNebula .chSphereDot{filter:none}.chNebulaMist{will-change:transform,opacity}.chMemoryWord::before{filter:none}.chMemoryNebula{contain:layout style}.chStickerSection,#chSongSection{content-visibility:auto;contain-intrinsic-size:auto 600px}

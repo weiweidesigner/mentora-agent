@@ -8,6 +8,7 @@ section.innerHTML=`<header class="chGalleryHeader"><div><h2>会唱的歌</h2><p>
 <div class="chGalleryTabs chSongTabs" role="tablist" aria-label="歌曲学习状态"><button type="button" role="tab" id="chSongTabLearned" aria-controls="chSongLearnedPanel" aria-selected="true" tabindex="0" data-song-tab="learned">已经学会 <span id="chSongLearnedCount">0</span></button><button type="button" role="tab" id="chSongTabPracticing" aria-controls="chSongPracticingPanel" aria-selected="false" tabindex="-1" data-song-tab="practicing">正在练习 <span id="chSongPracticingCount">0</span></button></div>
 <div id="chSongLearnedPanel" role="tabpanel" aria-labelledby="chSongTabLearned" class="chSongPanel"><p class="chEmpty">正在读取曲库…</p></div><div id="chSongPracticingPanel" role="tabpanel" aria-labelledby="chSongTabPracticing" class="chSongPanel" hidden></div><p id="chSongStatus" class="chHint" role="status" aria-live="polite"></p>`;
 workspace.querySelector('.chStickerSection').before(section);
+let lastLoad=0;
 let data={learned:[],practicing:[],recipients:[],online:false},view='learned',loading=false,uploading=false,practicing=false;
 const previewLoading=new Set();
 const duration=value=>{const seconds=Number(value);return Number.isFinite(seconds)&&seconds>0?seconds.toFixed(2):'';};
@@ -21,7 +22,7 @@ function render(){
  const previous=$('chSongRecipient').value;$('chSongRecipient').innerHTML=(data.recipients.length>1?'<option value="">请选择 QQ 会话</option>':'')+data.recipients.map(r=>`<option value="${esc(r.id)}">${esc(r.label)}</option>`).join('');if(data.recipients.some(r=>r.id===previous))$('chSongRecipient').value=previous;$('chSongRecipientLabel').hidden=data.recipients.length<2;
  tab(view);syncPreviewButtons();
 }
-async function load(){if(loading)return;loading=true;try{const previous=new Set(data.practicing.map(x=>x.id));const result=await api();data={learned:result.learned||[],practicing:result.practicing||[],recipients:result.recipients||[],online:Boolean(result.online)};render();const done=data.learned.find(s=>previous.has(s.id));if(done)$('chSongStatus').textContent='《'+done.title+'》练好啦，已移到已经学会。';else if(!data.online&&!uploading&&!practicing)$('chSongStatus').textContent='本地歌声服务暂不可用，已上传的歌曲和进度会保留。';else if($('chSongStatus').textContent.startsWith('本地歌声服务'))$('chSongStatus').textContent='';}catch(e){$('chSongStatus').textContent=e.message;}finally{loading=false;}}
+async function load(){if(loading)return;loading=true;try{const previous=new Set(data.practicing.map(x=>x.id));const result=await api();lastLoad=Date.now();data={learned:result.learned||[],practicing:result.practicing||[],recipients:result.recipients||[],online:Boolean(result.online)};render();const done=data.learned.find(s=>previous.has(s.id));if(done)$('chSongStatus').textContent='《'+done.title+'》练好啦，已移到已经学会。';else if(!data.online&&!uploading&&!practicing)$('chSongStatus').textContent='本地歌声服务暂不可用，已上传的歌曲和进度会保留。';else if($('chSongStatus').textContent.startsWith('本地歌声服务'))$('chSongStatus').textContent='';}catch(e){$('chSongStatus').textContent=e.message;}finally{loading=false;}}
 $('chSongUploadToggle').addEventListener('click',()=>{$('chSongFile').click();});
 $('chSongFile').addEventListener('change',async()=>{
  const files=Array.from($('chSongFile').files||[]);$('chSongFile').value='';if(!files.length||uploading)return;
@@ -73,6 +74,6 @@ async function playPreview(id){
 section.addEventListener('click',async e=>{const t=e.target.closest('[data-song-tab]');if(t){tab(t.dataset.songTab);return;}const practice=e.target.closest('[data-song-practice]'),preview=e.target.closest('[data-song-preview]');if(practice){void practiceSong(practice.dataset.songPractice);return;}if(preview)void playPreview(preview.dataset.songPreview);});
 section.querySelector('[role=tablist]').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?'learned':e.key==='End'?'practicing':view==='learned'?'practicing':'learned';tab(next);section.querySelector('[data-song-tab="'+next+'"]').focus();});
 new MutationObserver(()=>{if(!workspace.hidden)void load();}).observe(workspace,{attributes:true,attributeFilter:['hidden']});
-setInterval(()=>{if(!workspace.hidden&&!document.hidden)void load();},4000);
+setInterval(()=>{if(!workspace.hidden&&!document.hidden&&(Date.now()-lastLoad>60000||data.practicing.some(s=>['queued','practicing'].includes(s.state))))void load();},4000);
 if(!workspace.hidden)void load();
 })();

@@ -64,7 +64,7 @@ test('memory sphere rotates with keyboard and refresh only reads memory',async()
  const h=setup({}, {recipients:[{id:'one',label:'私聊',intimacy:{score:5,days:1,turns:3},facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢咖啡',weight:4},{label:'旅行',text:'喜欢旅行',weight:2}]}]});await tick();
  const d=h.d,scene=d.querySelector('.chMemorySphere'),word=d.querySelector('.chMemoryWord');
  assert.equal(d.querySelectorAll('.chMemoryWord').length,2);assert.ok(d.querySelector('.chSphereGrid'));
- const before=word.style.left;scene.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));assert.notEqual(word.style.left,before);
+ const before=word.style.transform;scene.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));assert.notEqual(word.style.transform,before);
  assert.match(d.querySelector('#chMemoryRefreshAt').textContent,/最近刷新 \d{2}\/\d{2} \d{2}:\d{2}/);
  assert.equal(d.querySelector('#chMemoryStatus').textContent,'');assert.equal(d.querySelector('#chClearMemory'),null);
  assert.doesNotMatch(d.querySelector('.chCompanion').textContent,/亲密度按|词云来自|计划提问是提前|慢慢认识你/);
