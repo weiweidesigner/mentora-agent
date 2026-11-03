@@ -176,3 +176,27 @@ def test_delayed_followup_keeps_question_and_delivered_answer_for_participation(
     assert groups.should_reply('next',scope,'另一个话题',CharacterProfile().model_dump())
     assert captured[-1]['recent_group']==[]
     assert groups.context(scope,before=old+86401+120)==[]
+
+
+def test_participation_retries_transient_provider_failure_without_forcing_a_reply(bot,monkeypatch):
+    import httpx
+    from openai import OpenAI
+    channel,tasks,client,calls=bot
+    attempts=[]
+    def handle(request):
+        attempts.append(request)
+        if len(attempts)==1:
+            return httpx.Response(503,json={'error':{'message':'temporarily unavailable'}})
+        return httpx.Response(200,json={'id':'decision','object':'chat.completion','created':0,'model':'test',
+            'choices':[{'index':0,'message':{'role':'assistant','content':'{"reply":false}'},'finish_reason':'stop'}]})
+    settings=[]
+    def factory(**kwargs):
+        settings.append(kwargs)
+        return OpenAI(**{**kwargs,'api_key':'test-key'},http_client=httpx.Client(transport=httpx.MockTransport(handle)))
+    groups=channel.chat.groups;groups.factory=factory
+    monkeypatch.setenv('DEEPSEEK_BASE_URL','')
+    scope=json.dumps(['app','groups','room','alice'])
+    assert not groups.should_reply('next',scope,'群员在和其他人聊天',CharacterProfile().model_dump())
+    assert len(attempts)==2
+    assert settings[0]['max_retries']==1
+    assert settings[0]['base_url']=='https://api.deepseek.com'

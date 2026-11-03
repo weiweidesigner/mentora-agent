@@ -119,7 +119,7 @@ class QQGroupConversation:
                       '只输出JSON对象，reply必须是布尔值，例如{"reply":true}或{"reply":false}。')
             model = os.getenv('AICHART_DEEPSEEK_MODEL','deepseek-flash')
             with (self.factory or OpenAI)(api_key=os.getenv('DEEPSEEK_API_KEY'),
-                    base_url=os.getenv('DEEPSEEK_BASE_URL','https://api.deepseek.com'),timeout=8,max_retries=0) as client:
+                    base_url=os.getenv('DEEPSEEK_BASE_URL') or 'https://api.deepseek.com',timeout=8,max_retries=1) as client:
                 response = client.chat.completions.create(model=model,
                     messages=[{'role':'system','content':prompt},{'role':'user','content':json.dumps(state,ensure_ascii=False)}],
                     response_format={'type':'json_object'},max_tokens=64,temperature=0,
@@ -132,6 +132,9 @@ class QQGroupConversation:
                     log.warning('QQ group participation usage recording unavailable')
             result = json.loads(response.choices[0].message.content or '{}')
             return result.get('reply') is True
-        except Exception:
-            log.warning('QQ group participation unavailable; ordinary message left unanswered')
+        except Exception as exc:
+            # Keep credentials, message content and provider response bodies out
+            # of logs, but distinguish transport errors from invalid decisions.
+            log.warning('QQ group participation unavailable (%s, status=%s); ordinary message left unanswered',
+                        type(exc).__name__, getattr(exc, 'status_code', None))
             return False
