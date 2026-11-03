@@ -110,7 +110,7 @@ def test_song_can_include_spoken_response_and_selected_sticker(singing,tmp_path,
     monkeypatch.setattr(chat.expression,'route',lambda *a,**kw:{'mode':'voice','sticker':'heart'})
     monkeypatch.setattr(chat.voice,'enabled',lambda *a:True)
     def spoken(job,text,*,sequence_start):
-        assert events==[('song',3)]
+        assert events==[]
         assert sequence_start==6 and text=='这首送给你，今天也辛苦啦。'
         if spoken_result=='error':raise RuntimeError('synthesis unavailable')
         if spoken_result:events.append(('speech',sequence_start))
@@ -118,7 +118,7 @@ def test_song_can_include_spoken_response_and_selected_sticker(singing,tmp_path,
     monkeypatch.setattr(chat.voice,'send',spoken)
     chat.enqueue('sing-request','scope','users','alice','mid','唱小星星')
     chat.pool.shutdown(wait=True)
-    assert events==[('song',3),('speech',6) if spoken_result is True else ('text',5),('image',4)]
+    assert events==[('speech',6) if spoken_result is True else ('text',5),('song',3),('image',4)]
     with tasks.db() as db:
         assert db.execute('SELECT delivered FROM qq_chat_jobs').fetchone()[0]==1
         plan=json.loads(db.execute('SELECT payload FROM qq_expression_decisions').fetchone()[0])

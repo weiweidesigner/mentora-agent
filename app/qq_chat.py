@@ -235,9 +235,26 @@ class QQChat:
             completed = db.execute('SELECT state FROM qq_chat_jobs WHERE id=?', (job_id,)).fetchone()
         delivered = False
         if completed and completed['state'] == 'completed' and answer.get('qqSong'):
+            # The Agent may leave the conversational response empty. When present,
+            # deliver it before the song, without imposing a canned introduction.
+            from app.qq_singing import validate
+            intro_mode = None
+            if validate(answer['qqSong'], folder=self.voice.directory) and str(answer.get('interpretation') or '').strip() and time.time()-job['created'] < window:
+                if plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
+                    try:
+                        if self.voice.send(job, content, sequence_start=6):intro_mode = 'voice'
+                    except Exception:
+                        log.warning('QQ song spoken introduction failed for job %s', job_id)
+                if intro_mode is None:
+                    try:
+                        self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=5)
+                        intro_mode = 'text'
+                    except Exception:
+                        log.warning('QQ song text introduction failed for job %s', job_id)
+            plan['songIntroductionMode'] = intro_mode
             try:
                 delivered = self.voice.send_song(job,answer['qqSong'])
-                if delivered:plan['deliveredMode'] = 'singing'
+                if delivered:plan['deliveredMode'] = 'singing' + ('+'+intro_mode if intro_mode else '')
                 else:
                     content = '歌声片段已生成，但本次 QQ 语音未能确认送达，请稍后重试。'
                     plan['mode'] = 'text'
@@ -245,22 +262,6 @@ class QQChat:
                 log.warning('QQ singing delivery failed for job %s',job_id)
                 content = '歌声片段已生成，但本次 QQ 语音未能确认送达，请稍后重试。'
                 plan['mode'] = 'text'
-        # Singing is media, not a replacement for the conversational response.
-        # Reserve 2/3 for credit/song and 4 for the optional reaction image.
-        if delivered and plan['deliveredMode'] == 'singing' and str(answer.get('interpretation') or '').strip() and time.time()-job['created'] < window:
-            supplement = False
-            if plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
-                try:
-                    supplement = bool(self.voice.send(job, content, sequence_start=6))
-                    if supplement:plan['deliveredMode'] = 'singing+voice'
-                except Exception:
-                    log.warning('QQ song spoken supplement failed for job %s', job_id)
-            if not supplement:
-                try:
-                    self.client.reply(job['kind'], job['target'], job['message_id'], content, sequence=5)
-                    plan['deliveredMode'] = 'singing+text'
-                except Exception:
-                    log.warning('QQ song text supplement failed for job %s; song retained', job_id)
         if not delivered and completed and completed['state'] == 'completed' and plan['mode'] == 'voice' and self.voice.enabled(job['scope']) and time.time()-job['created'] < window-165:
             try:
                 delivered = bool(self.voice.send(job, content))

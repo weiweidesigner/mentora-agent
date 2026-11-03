@@ -147,10 +147,10 @@ def test_local_breeze_worker_auth_busy_and_silk_output(monkeypatch):
     import numpy as np
     from scripts import breeze_tts_service as worker
     monkeypatch.setattr(worker,'TOKEN','test-token')
-    monkeypatch.setattr(worker,'model',SimpleNamespace(generate=lambda **kwargs:iter([SimpleNamespace(audio=np.zeros(2400),sample_rate=24000)])))
+    monkeypatch.setattr(worker,'model',SimpleNamespace(generate=lambda **kwargs:iter([SimpleNamespace(audio=np.zeros(12000),sample_rate=24000)])))
     def encode(source,target,**kwargs):
         assert kwargs=={'pcm_rate':24000,'tencent':True}
-        assert len(Path(source).read_bytes())==4800
+        assert len(Path(source).read_bytes())==36480  # .5 s audio + .25 s release, complete 20 ms frames
         Path(target).write_bytes(b'\x02#!SILK_V3encoded')
     monkeypatch.setitem(sys.modules,'pilk',SimpleNamespace(encode=encode))
     client=TestClient(worker.app)
@@ -173,7 +173,7 @@ def test_breeze_model_load_and_generation_share_one_gpu_thread(monkeypatch):
     class Model:
         def generate(self,**kwargs):
             threads.append(threading.get_ident())
-            yield SimpleNamespace(audio=np.zeros(2400),sample_rate=24000)
+            yield SimpleNamespace(audio=np.zeros(12000),sample_rate=24000)
     def load(path):
         threads.append(threading.get_ident())
         return Model()

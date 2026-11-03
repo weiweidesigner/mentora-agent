@@ -6,6 +6,7 @@ import asyncio
 import os
 from pathlib import Path
 import secrets
+import re
 import tempfile
 import threading
 
@@ -66,23 +67,67 @@ class SpeechTooLong(ValueError):
     pass
 
 
+def speech_segments(text, limit=45):
+    """Use short complete sentences to reduce premature model EOS on long text."""
+    segments = []
+    for sentence in re.findall(r'[^。！？!?\n]+[。！？!?\n]*|[。！？!?]+', text):
+        sentence = sentence.strip()
+        while len(sentence) > limit:
+            boundaries = list(re.finditer(r'[，,、：:；;\s]', sentence[:limit]))
+            end = boundaries[-1].end() if boundaries else limit
+            segments.append(sentence[:end].strip())
+            sentence = sentence[end:].strip()
+        if sentence:segments.append(sentence)
+    return segments
+
+
+def generate_segment(text, instruction, depth=0):
+    import numpy as np
+    chunks = []
+    rate = None
+    exhausted = False
+    for chunk in model.generate(text=text, instruct=instruction or VOICE, cfg_scale=4, max_tokens=1800):
+        exhausted |= getattr(chunk, 'token_count', 0) >= 1800
+        current_rate = int(chunk.sample_rate)
+        if rate is not None and rate != current_rate:
+            raise RuntimeError('Inconsistent synthesis sample rates')
+        rate = current_rate
+        chunks.append(np.asarray(chunk.audio).reshape(-1))
+    if not chunks or not rate:raise RuntimeError('empty audio')
+    audio = np.concatenate(chunks)
+    # Conservative sanity check, not an ASR claim of transcript equivalence.
+    units = len(re.findall(r'[\u3400-\u9fff]|[A-Za-z0-9]+', text))
+    suspicious = len(audio) < rate * max(.1, units / 12)
+    if exhausted or suspicious:
+        if depth >= 2 or len(text) < 8:
+            raise SpeechTooLong('Speech completeness could not be confirmed')
+        pieces = speech_segments(text, max(4, len(text)//2))
+        if len(pieces) < 2:raise SpeechTooLong('Speech completeness could not be confirmed')
+        outputs = [generate_segment(piece, instruction, depth+1) for piece in pieces]
+        if any(sr != rate for _, sr in outputs):raise RuntimeError('Inconsistent synthesis sample rates')
+        pause = np.zeros(round(rate*.12), dtype=np.float32)
+        audio = np.concatenate([part for index, (a, _) in enumerate(outputs) for part in ((pause, a) if index else (a,))])
+    return audio, rate
+
+
 def synthesize(text, instruction=None):
     import numpy as np
     import pilk
-    chunks = []
-    for chunk in model.generate(text=text, instruct=instruction or VOICE, cfg_scale=4, max_tokens=1800):
-        if getattr(chunk, 'token_count', 0) >= 1800:
-            raise SpeechTooLong('Generation exhausted its token budget')
-        audio = np.asarray(chunk.audio).reshape(-1)
-        chunks.append(audio)
-    if not chunks:
-        raise RuntimeError('empty audio')
-    audio = np.concatenate(chunks)
-    rate = int(chunk.sample_rate)
+    outputs = [generate_segment(part, instruction) for part in speech_segments(text)]
+    if not outputs:raise RuntimeError('empty audio')
+    rate = outputs[0][1]
+    if any(sr != rate for _, sr in outputs):raise RuntimeError('Inconsistent synthesis sample rates')
+    pause = np.zeros(round(rate*.12), dtype=np.float32)
+    audio = np.concatenate([part for index, (a, _) in enumerate(outputs) for part in ((pause, a) if index else (a,))])
     if len(audio) > rate*55:
         raise SpeechTooLong('Segment exceeds safe voice duration')
     if len(audio) < rate // 10:
         raise RuntimeError('empty audio')
+    # Preserve the final phoneme and provide a natural release into silence.
+    # Round up to complete 20 ms SILK frames instead of dropping a partial tail.
+    audio = np.concatenate((audio, np.zeros(round(rate*.25), dtype=np.float32)))
+    frame = max(1, round(rate*.02))
+    audio = np.pad(audio, (0, (-len(audio)) % frame))
     pcm = (np.clip(audio, -1, 1) * 32767).astype('<i2').tobytes()
     with tempfile.TemporaryDirectory(prefix='mentora-breeze-') as folder:
         source, target = Path(folder)/'voice.pcm', Path(folder)/'voice.silk'
