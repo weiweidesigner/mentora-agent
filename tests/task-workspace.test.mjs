@@ -467,3 +467,28 @@ test('QQ connection copies a task command and reports missing server configurati
  d.querySelector('[data-task-more="live"]').click();d.querySelector('[data-task-action="qq"]').click();await tick();
  assert.match(d.querySelector('#taskMessage').textContent,/QQ 渠道尚未配置/);h.dom.window.close();
 });
+
+test('task type filters synchronize both menus and include legacy agents and public workflows',async()=>{
+ const h=setup({tasks:[
+  {...base,id:'legacy'},
+  {...base,id:'deal',agent:'mentora-deal',taskMode:'agent',enabled:false},
+  {...base,id:'flow',taskMode:'workflow',enabled:false},
+ ],sceneTasks:[{...base,id:'public-flow',taskMode:'workflow',systemPreset:true}]});await tick();
+ const d=h.w.document;
+ const ids=list=>[...d.querySelectorAll(`#${list} [data-task-open]`)].map(e=>e.dataset.taskOpen).sort();
+ const change=(id,value)=>{d.getElementById(id).value=value;d.getElementById(id).dispatchEvent(new h.w.Event('change'));};
+ change('taskSidebarFilter','workflow');
+ assert.equal(d.getElementById('taskFilter').value,'workflow');
+ assert.equal(d.getElementById('taskSidebarSectionTitle').textContent,'WorkFlow 任务');
+ for(const list of ['taskSidebarList','taskLandingList'])assert.deepEqual(ids(list),['flow','public-flow']);
+ change('taskFilter','agent');
+ assert.equal(d.getElementById('taskSidebarFilter').value,'agent');
+ assert.equal(d.getElementById('taskSidebarSectionTitle').textContent,'Agent 任务');
+ for(const list of ['taskSidebarList','taskLandingList'])assert.deepEqual(ids(list),['deal','legacy']);
+ d.getElementById('taskSearch').value='no-match';d.getElementById('taskSearch').dispatchEvent(new h.w.Event('input'));
+ assert.deepEqual(ids('taskLandingList'),[]);
+ d.getElementById('taskSearch').value='';change('taskFilter','paused');
+ assert.deepEqual(ids('taskLandingList'),['deal','flow']);
+ change('taskFilter','all');assert.equal(ids('taskLandingList').length,4);
+ h.dom.window.close();
+});

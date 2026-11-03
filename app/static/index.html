@@ -71,7 +71,7 @@
             <div class="taskSidebarTitle"><h2>定时任务</h2><button id="taskSearchToggle" class="taskSidebarIcon" type="button" aria-label="搜索任务" aria-expanded="false" aria-controls="taskSearchField"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/></svg></button></div>
             <button id="taskSidebarNew" class="taskSidebarCreate dayTextButton" type="button" aria-label="新建定时任务"><span aria-hidden="true">＋</span> 新建任务</button>
             <label id="taskSearchField" class="taskSearchLabel" hidden><input id="taskSearch" type="search" placeholder="搜索任务" aria-label="搜索定时任务" /></label>
-            <div class="taskSidebarSection"><span id="taskSidebarSectionTitle">即将执行</span><label class="taskSidebarFilterControl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M6 12h12M9 18h6"/></svg><select id="taskSidebarFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></label></div>
+            <div class="taskSidebarSection"><span id="taskSidebarSectionTitle">即将执行</span><label class="taskSidebarFilterControl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M6 12h12M9 18h6"/></svg><select id="taskSidebarFilter" aria-label="筛选侧栏任务"><option value="all">全部任务</option><option value="workflow">WorkFlow 任务</option><option value="agent">Agent 任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></label></div>
             <div id="taskSidebarList"></div>
             <button id="taskSidebarExpand" class="dayTextButton taskSidebarExpand" type="button" hidden>展开显示</button>
           </section>
@@ -237,7 +237,7 @@
         </header>
         <div id="taskLanding" class="taskLanding">
           <div class="taskLandingMark" aria-hidden="true"><img src="/static/assets/task-clock.svg" alt="" /></div>
-          <header class="taskLandingHeader"><h1><span class="taskDesktopLabel">安排任务</span><span class="taskMobileLabel">定时任务</span></h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
+          <header class="taskLandingHeader"><h1><span class="taskDesktopLabel">安排任务</span><span class="taskMobileLabel">定时任务</span></h1><select id="taskFilter" class="taskFilter" aria-label="筛选任务"><option value="all">全部任务</option><option value="workflow">WorkFlow 任务</option><option value="agent">Agent 任务</option><option value="active">活动</option><option value="paused">已暂停</option><option value="completed">已完成</option></select></header>
           <p class="taskLead">Mentora 可以帮你持续跟踪市场，在需要的时候带来更新。</p>
           <div class="taskSceneFilters" hidden><label>市场<select id="taskMarketFilter" aria-label="筛选交易市场"><option value="all">全部市场</option><option value="CN">🇨🇳 A股</option><option value="US">🇺🇸 美股</option><option value="HK">🇭🇰 港股</option></select></label><label>场景<select id="taskStageFilter" aria-label="筛选交易场景"><option value="all">全部场景</option><option value="pre">盘前</option><option value="live">盘中</option><option value="post">收盘 / 盘后</option><option value="rest">休市</option></select></label></div><div id="taskLandingList" class="taskLandingList"></div>
           <div class="taskRecommendations"><h2>推荐新建 · 寻找买入候选</h2><p class="dayHelp" hidden>Mentora Deal 按盘前、盘中、盘后筛选候选，给出买入条件与失效条件。选择模板可调整时间和频率。</p><button id="taskAddDealPack" hidden type="button" class="dayButton">添加 A股 + 美股六个场景任务</button><p id="taskPackMessage" hidden class="dayHelp" role="status"></p><div id="taskRecommendations"></div></div>
@@ -335,7 +335,7 @@
     <script src="/static/chart-activation.js?v=20261026-no-caption"></script>
     <script src="/static/widget-recommendations.js?v=20261016-click-send"></script>
     <script src="/static/widgets.js?v=20261102-route-state"></script>
-    <script src="/static/day-tasks.js?v=20261102-qq-channel"></script>
+    <script src="/static/day-tasks.js?v=20261103-task-type-filter"></script>
     <script src="/static/workflows.js?v=20261027-cancel-build"></script>
     <script src="/static/strategy-code-editor.js?v=20261023-syntax"></script>
     <script src="/static/portfolio.js?v=20261102-route-state"></script>

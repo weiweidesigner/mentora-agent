@@ -217,7 +217,7 @@
   }
   function visibleTasks() {
     const query=$('taskSearch').value.trim().toLowerCase();
-    return [...tasks,...sceneTasks].filter(t=>matchesScene(t)&&(filter==='all'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query))).sort(taskTimeOrder);
+    return [...tasks,...sceneTasks].filter(t=>matchesScene(t)&&(filter==='all'||filter==='workflow'&&t.taskMode==='workflow'||filter==='agent'&&t.taskMode!=='workflow'||filter==='active'&&t.enabled&&!completed(t)||filter==='paused'&&!t.enabled&&!completed(t)||filter==='completed'&&completed(t))&&(!query||`${t.title} ${t.question}`.toLowerCase().includes(query))).sort(taskTimeOrder);
   }
   function sidebarDate(value, task, includeTime=true, relative=true) {
     if(!value||!Number.isFinite(new Date(value).getTime()))return '';
@@ -261,7 +261,7 @@
     $('taskSidebarList').innerHTML=taskRows(sidebarExpanded?rows:rows.slice(0,5),true)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskSidebarExpand').hidden=rows.length<=5;
     $('taskSidebarExpand').textContent=sidebarExpanded?'收起显示':'展开显示';
-    $('taskSidebarSectionTitle').textContent={all:'即将执行',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
+    $('taskSidebarSectionTitle').textContent={all:'即将执行',workflow:'WorkFlow 任务',agent:'Agent 任务',active:'活动任务',paused:'已暂停',completed:'已完成'}[filter];
     $('taskLandingList').innerHTML=taskRows(rows)||'<p class="taskListEmpty">暂无符合条件的任务</p>';
     $('taskFilter').value=$('taskSidebarFilter').value=filter;
     $('taskRecommendations').innerHTML=recommendations.filter(matchesScene).map(item=>`<button type="button" class="taskRecommendation" data-recommendation="${item.id}"><span class="taskTemplateIcon" aria-hidden="true">${item.icon}</span><span><strong>${esc(item.title)}</strong><small>${esc(item.description)}</small></span><span aria-hidden="true">＋</span></button>`).join('');
