@@ -6,6 +6,7 @@ import math
 import os
 from pathlib import Path
 import re
+import sqlite3
 import time
 
 
@@ -24,6 +25,23 @@ def library_key(owner):
     if not re.fullmatch(r'[a-f0-9]{64}',owner or ''):raise ValueError('Invalid library owner')
     token=os.environ['QQ_SINGING_TOKEN'].strip()
     return owner+'.'+hmac.new(token.encode(),('song-library:'+owner).encode(),hashlib.sha256).hexdigest()
+
+
+def edited_catalog(catalog,key):
+    """Apply the same owner edits used by the website to QQ singing tools.
+
+    The worker must have already authenticated this library key. The audio cache
+    and source metadata remain unchanged when only its displayed name changes.
+    """
+    owner=key.split('.')[0]
+    if not re.fullmatch(r'[a-f0-9]{64}',owner):return catalog
+    path=directory().parent/'tasks.sqlite3'
+    if not path.exists():return catalog
+    with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='song_library_edits'").fetchone():return catalog
+        edits={row[0]:{'title':row[1],'deleted':row[2]} for row in db.execute('SELECT song_id,title,deleted FROM song_library_edits WHERE owner=?',(owner,))}
+    return {**catalog,'songs':[{**song,**({'title':edits[song['id']]['title']} if edits.get(song['id'],{}).get('title') else {})}
+            for song in catalog['songs'] if not edits.get(song['id'],{}).get('deleted')]}
 
 
 def validate(receipt,delivery_key=None,folder=None):

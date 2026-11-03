@@ -31,6 +31,10 @@ class PracticeInput(BaseModel):
     notify:bool=True
 
 
+class SongTitleInput(BaseModel):
+    title:str=Field(min_length=1,max_length=120)
+
+
 class SongLibrary:
     def __init__(self,tasks,characters,client_factory=None,clock=None):
         self.tasks=tasks;self.characters=characters;self.memory=CompanionMemory(tasks)
@@ -44,6 +48,7 @@ class SongLibrary:
               id TEXT PRIMARY KEY,owner TEXT,title TEXT,start REAL,filename TEXT,state TEXT,created REAL,updated REAL,
               error TEXT DEFAULT '',recipient TEXT DEFAULT '',notification TEXT DEFAULT 'none',notice_error TEXT DEFAULT '',seconds REAL DEFAULT 0)''')
             db.execute("CREATE TABLE IF NOT EXISTS song_notification_attempts(key TEXT PRIMARY KEY,scope TEXT,day TEXT,state TEXT)")
+            db.execute('CREATE TABLE IF NOT EXISTS song_library_edits(owner TEXT,song_id TEXT,title TEXT,deleted INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(owner,song_id))')
             # Song completion is a user-requested task receipt, separate from
             # the daily companion outreach allowance. Preserve old dedup keys.
             db.execute("INSERT OR IGNORE INTO song_notification_attempts SELECT * FROM qq_extra_message_attempts WHERE key LIKE 'song:%'")
@@ -86,8 +91,27 @@ class SongLibrary:
         learned.extend({**self.public_row(r),**({'seconds':available['learn-'+r['id']]['seconds']}
                        if available.get('learn-'+r['id'],{}).get('seconds') else {})}
                        for r in rows if r['state']=='ready')
+        with self.tasks.db() as db:
+            edits={r['song_id']:dict(r) for r in db.execute('SELECT * FROM song_library_edits WHERE owner=?',(owner,))}
+        learned=[{**s,**({'title':edits[s['id']]['title']} if edits.get(s['id'],{}).get('title') else {})}
+                 for s in learned if not edits.get(s['id'],{}).get('deleted')]
         return {'learned':learned,'practicing':[self.public_row(r) for r in rows if r['state']!='ready'],
                 'recipients':self.recipients(owner),'online':online,'maxBytes':MAX_UPLOAD}
+
+    def edit(self,owner,song_id,title=None,deleted=False):
+        if not re.fullmatch(r'[a-z0-9_-]{1,64}',song_id):raise HTTPException(404,'歌曲不存在')
+        if title is not None:
+            title=title.strip()
+            if not title:raise HTTPException(422,'歌名不能为空')
+        with self.lock:
+            if not any(s['id']==song_id for s in self.listing(owner)['learned']):raise HTTPException(404,'歌曲不存在')
+            with self.tasks.db() as db:
+                db.execute('INSERT INTO song_library_edits(owner,song_id,title,deleted) VALUES(?,?,?,?) ON CONFLICT(owner,song_id) DO UPDATE SET title=COALESCE(excluded.title,song_library_edits.title),deleted=excluded.deleted',(owner,song_id,title,int(deleted)))
+                if song_id.startswith('learn-'):
+                    if deleted:
+                        db.execute("UPDATE song_practice SET notification='cancelled',notice_error='' WHERE owner=? AND id=? AND notification='pending'",(owner,song_id[6:]))
+                    else:db.execute('UPDATE song_practice SET title=? WHERE owner=? AND id=?',(title,owner,song_id[6:]))
+        return {'ok':True}
 
     def practice(self,owner,ident,payload):
         row=self.row(owner,ident)
@@ -204,6 +228,9 @@ class SongLibrary:
 
 
     def preview_path(self, owner, song_id):
+        with self.tasks.db() as db:
+            hidden=db.execute('SELECT deleted FROM song_library_edits WHERE owner=? AND song_id=?',(owner,song_id)).fetchone()
+        if hidden and hidden['deleted']:raise HTTPException(404,'歌曲不存在')
         if song_id.startswith('learn-'):
             row=self.row(owner,song_id[6:])
             if row['state']!='ready':raise HTTPException(409,'歌曲尚未练习完成')
@@ -300,6 +327,12 @@ def create_router(service):
         return service.public_row(service.row(user,ident))
     @router.post('/{ident}/practice')
     def practice(ident:str,payload:PracticeInput,request:Request,response:Response):return service.practice(owner(request,response,True),ident,payload)
+    @router.patch('/{song_id}')
+    def rename(song_id:str,payload:SongTitleInput,request:Request,response:Response):
+        return service.edit(owner(request,response,True),song_id,title=payload.title)
+    @router.delete('/{song_id}')
+    def delete(song_id:str,request:Request,response:Response):
+        return service.edit(owner(request,response,True),song_id,deleted=True)
     @router.delete('/{ident}/notification')
     def cancel_notice(ident:str,request:Request,response:Response):
         user=owner(request,response,True);service.row(user,ident)
@@ -315,6 +348,9 @@ def create_router(service):
     def preview(song_id:str,request:Request,response:Response):
         user=owner(request,response)
         if not re.fullmatch(r'[a-z0-9_-]{1,64}',song_id):raise HTTPException(404,'歌曲不存在')
+        with service.tasks.db() as db:
+            hidden=db.execute('SELECT deleted FROM song_library_edits WHERE owner=? AND song_id=?',(user,song_id)).fetchone()
+        if hidden and hidden['deleted']:raise HTTPException(404,'歌曲不存在')
         cached=service.preview_path(user,song_id)
         if cached.is_file():return FileResponse(cached,media_type='audio/wav',headers={'Cache-Control':'no-store'})
         fallback=service.root/(song_id[6:]+'.wav') if song_id.startswith('learn-') else None

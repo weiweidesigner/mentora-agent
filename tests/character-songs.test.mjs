@@ -11,6 +11,8 @@ function setup(recipients=[{id:"recipient",label:"QQ 私聊 1"}]){
   if(path.endsWith('/preview'))body={state:'ready'};
   else if(path.includes('/upload?')){const id='job'+data.practicing.length;body={id:'learn-'+id,jobId:id,title:new URL(path,'https://example.com').searchParams.get('filename'),state:'uploaded',notification:'none'};data.practicing.push(body);}
   else if(path.endsWith('/practice')){body=data.practicing.find(x=>path.includes('/'+x.jobId+'/'));body.state='queued';}
+  else if(options.method==='PATCH'){data.learned=data.learned.map(s=>path.endsWith('/'+s.id)?{...s,title:JSON.parse(options.body).title}:s);body={ok:true};}
+  else if(options.method==='DELETE'){data.learned=data.learned.filter(s=>!path.endsWith('/'+s.id));body={ok:true};}
   return {ok:true,json:async()=>JSON.parse(JSON.stringify(body))};
  };
  w.eval(source);return{w,dom,calls,get data(){return data;}};
@@ -25,9 +27,38 @@ test('upload opens the file picker directly, accepts multiple files, and keeps e
  e.w.document.querySelector('[data-song-practice]').click();await tick();
  const practice=e.calls.find(c=>c.path.endsWith('/practice'));assert.deepEqual(JSON.parse(practice.options.body),{notify:true,recipientId:'recipient'});
  assert.equal($('chSongPracticingPanel').querySelector('[data-song-practice]').disabled,true);
+ assert.doesNotMatch($('chSongStatus').textContent,/已开始练习/);
  const song=e.data.practicing.shift();e.data.learned.push({...song,state:'ready',seconds:7.5});$('characterWorkspace').hidden=true;$('characterWorkspace').hidden=false;await tick();
  assert.equal($('chSongLearnedCount').textContent,'2');assert.equal($('chSongPracticingCount').textContent,'1');assert.match($('chSongStatus').textContent,/练好啦/);
  $('chSongTabPracticing').dispatchEvent(new e.w.KeyboardEvent('keydown',{key:'Home',bubbles:true}));assert.equal($('chSongTabLearned').getAttribute('aria-selected'),'true');
+ }finally{e.dom.window.close();}
+});
+test('edit next to upload swaps preview for rename and delete, persists names and exits cleanly',async()=>{
+ const e=setup(),d=e.w.document,$=id=>d.getElementById(id);try{await tick();
+ assert.equal($('chSongEditToggle').parentElement,$('chSongUploadToggle').parentElement);
+ assert.equal(d.querySelectorAll('[data-song-preview]').length,1);
+ $('chSongEditToggle').click();assert.equal($('chSongEditToggle').textContent,'完成');
+ assert.equal(d.querySelectorAll('[data-song-preview]').length,0);assert.equal(d.querySelectorAll('[data-song-rename]').length,1);assert.equal(d.querySelectorAll('[data-song-delete]').length,1);
+ d.querySelector('[data-song-rename]').click();const input=d.querySelector('[name=title]');input.value='<新歌名>';
+ d.querySelector('[data-song-rename-form]').dispatchEvent(new e.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(d.querySelector('.chSongInfo h3').textContent,'<新歌名>');assert.equal(d.querySelector('.chSongInfo 新歌名'),null);
+ assert.deepEqual(JSON.parse(e.calls.find(c=>c.options.method==='PATCH').options.body),{title:'<新歌名>'});
+ $('chSongEditToggle').click();assert.equal(d.querySelectorAll('[data-song-preview]').length,1);
+ assert.equal(d.querySelector('[data-song-preview]').getAttribute('aria-label'),'试听 <新歌名>');
+ $('chSongEditToggle').click();d.querySelector('[data-song-delete]').click();await tick();
+ assert.equal(e.calls.filter(c=>c.options.method==='DELETE').length,1);assert.equal($('chSongLearnedCount').textContent,'0');
+ $('characterWorkspace').hidden=true;$('characterWorkspace').hidden=false;await tick();assert.equal($('chSongLearnedCount').textContent,'0');
+ }finally{e.dom.window.close();}
+});
+test('failed edits keep the song and preserve the entered name for retry',async()=>{
+ const e=setup(),d=e.w.document;try{await tick();const original=e.w.fetch;
+ e.w.fetch=async(path,options={})=>options.method==='PATCH'||options.method==='DELETE'?{ok:false,json:async()=>({detail:'暂时无法保存'})}:original(path,options);
+ d.getElementById('chSongEditToggle').click();d.querySelector('[data-song-delete]').click();await tick();
+ assert.equal(d.querySelector('.chSongInfo h3').textContent,'小星星');
+ d.querySelector('[data-song-rename]').click();d.querySelector('[name=title]').value='新名字';
+ d.querySelector('form').dispatchEvent(new e.w.Event('submit',{bubbles:true,cancelable:true}));await tick();
+ assert.equal(d.querySelector('[name=title]').value,'新名字');assert.equal(d.querySelector('button[type=submit]').disabled,false);
+ assert.match(d.getElementById('chSongStatus').textContent,/暂时无法保存/);
  }finally{e.dom.window.close();}
 });
 test('invalid files do not prevent valid files in the same selection from uploading',async()=>{

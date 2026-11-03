@@ -127,6 +127,39 @@ def test_rebuilt_song_listing_and_preview_use_current_full_recording(env,monkeyp
     assert e.a.get('/api/character/songs/learn-'+ident+'/preview').content==b'RIFFfull-recording'
 
 
+def test_song_rename_delete_persist_and_block_cached_previews_without_affecting_other_owners(env,monkeypatch):
+    e=env;catalog={'songs':[{'id':'curated','title':'原歌名','seconds':120}],'ready':True}
+    from app.qq_singing import edited_catalog
+    monkeypatch.setenv('VEYA_DAY_DATA_DIR',str(e.tasks.directory))
+    monkeypatch.setattr('app.song_library.requests.get',lambda *a,**kw:response(catalog))
+    headers={'X-Veya-Day':'1'}
+    assert e.a.patch('/api/character/songs/curated',json={'title':'新歌名'}).status_code==403
+    assert e.a.patch('/api/character/songs/curated',json={'title':'  '},headers=headers).status_code==422
+    assert e.a.patch('/api/character/songs/curated',json={'title':' 新歌名 '},headers=headers).status_code==200
+    assert e.a.get('/api/character/songs').json()['learned'][0]['title']=='新歌名'
+    assert e.b.get('/api/character/songs').json()['learned'][0]['title']=='原歌名'
+    assert edited_catalog(catalog,e.owner+'.verified')['songs'][0]['title']=='新歌名'
+    e.service.preview_path(e.owner,'curated').write_bytes(b'RIFFcached')
+    assert e.a.delete('/api/character/songs/curated',headers=headers).status_code==200
+    assert e.a.get('/api/character/songs').json()['learned']==[]
+    assert e.b.get('/api/character/songs').json()['learned'][0]['id']=='curated'
+    assert e.a.get('/api/character/songs/curated/preview').status_code==404
+    assert e.a.get('/api/character/songs/curated/preview-status').status_code==404
+    assert e.a.post('/api/character/songs/curated/preview',json={},headers=headers).status_code==404
+    assert edited_catalog(catalog,e.owner+'.verified')['songs']==[]
+    assert edited_catalog(catalog,'b'*64+'.verified')['songs'][0]['title']=='原歌名'
+
+
+def test_offline_edits_persist_against_the_cached_catalog_without_a_model_restart(env,monkeypatch):
+    import requests
+    e=env
+    monkeypatch.setattr('app.song_library.requests.get',lambda *a,**kw:response({'songs':[{'id':'song','title':'原名'}],'ready':True}))
+    assert e.a.get('/api/character/songs').json()['learned'][0]['title']=='原名'
+    monkeypatch.setattr('app.song_library.requests.get',lambda *a,**kw:(_ for _ in ()).throw(requests.ConnectionError()))
+    assert e.a.patch('/api/character/songs/song',json={'title':'新名'},headers={'X-Veya-Day':'1'}).status_code==200
+    assert e.a.get('/api/character/songs').json()['learned'][0]['title']=='新名'
+
+
 def ready(e,ident):
     e.service.update(ident,state='ready',seconds=20,recipient=e.scope,notification='pending')
     (e.service.root/(ident+'.silk')).write_bytes(AUDIO)

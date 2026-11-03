@@ -74,3 +74,5 @@
 
 /* Cache decorative layers; breathing changes opacity without repainting shadows. */
 .chMemoryNebula .chNebulaField{will-change:transform;transform-origin:50% 50%}.chMemoryNebula .chSphereDot{filter:none}.chNebulaMist{will-change:transform,opacity}.chMemoryWord::before{filter:none}.chMemoryNebula{contain:layout style}.chStickerSection,#chSongSection{content-visibility:auto;contain-intrinsic-size:auto 600px}
+
+.chSongHeaderActions{display:flex;align-items:center;gap:10px;flex:none}.chSongRenameForm{grid-column:1/-1;display:flex;align-items:flex-end;gap:16px}.chSongRenameForm label{flex:1;min-width:0;font-size:12px;color:var(--muted)}.chSongRenameForm input{margin-top:8px}.chSongHeaderActions button,.chSongActions button{white-space:nowrap}@media(max-width:520px){.chSongSection .chGalleryHeader{flex-wrap:wrap}.chSongRenameForm{flex-wrap:wrap}.chSongRenameForm label{flex-basis:100%}.chSongRenameForm .chSongActions{margin-left:auto}}

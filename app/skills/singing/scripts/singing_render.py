@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[4]))
 import requests
-from app.qq_singing import save
+from app.qq_singing import save,edited_catalog
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     if args.library_key:headers['X-Singing-Library']=args.library_key
     response=requests.get(endpoint+'/songs',headers=headers,timeout=10,allow_redirects=False)
     if response.status_code!=200:raise RuntimeError('歌声曲库暂时无法读取')
-    catalog=response.json()
+    catalog=edited_catalog(response.json(),args.library_key)
     if args.operation=='catalog':result={'type':'singing-catalog',**catalog}
     else:
         if not args.delivery_key:raise ValueError('当前 QQ 轮次缺少 delivery-key')
