@@ -25,7 +25,7 @@ MAX_UPLOAD=30*1024*1024
 
 class PracticeInput(BaseModel):
     recipientId:str=Field(default='',max_length=24)
-    notify:bool=False
+    notify:bool=True
 
 
 class SongLibrary:
@@ -38,6 +38,11 @@ class SongLibrary:
             db.execute('''CREATE TABLE IF NOT EXISTS song_practice(
               id TEXT PRIMARY KEY,owner TEXT,title TEXT,start REAL,filename TEXT,state TEXT,created REAL,updated REAL,
               error TEXT DEFAULT '',recipient TEXT DEFAULT '',notification TEXT DEFAULT 'none',notice_error TEXT DEFAULT '',seconds REAL DEFAULT 20)''')
+            db.execute("CREATE TABLE IF NOT EXISTS song_notification_attempts(key TEXT PRIMARY KEY,scope TEXT,day TEXT,state TEXT)")
+            # Song completion is a user-requested task receipt, separate from
+            # the daily companion outreach allowance. Preserve old dedup keys.
+            db.execute("INSERT OR IGNORE INTO song_notification_attempts SELECT * FROM qq_extra_message_attempts WHERE key LIKE 'song:%'")
+            db.execute("DELETE FROM qq_extra_message_attempts WHERE key LIKE 'song:%'")
 
     def headers(self,owner):
         return {'Authorization':'Bearer '+os.environ['QQ_SINGING_TOKEN'],'X-Singing-Library':library_key(owner)}
@@ -80,8 +85,9 @@ class SongLibrary:
         row=self.row(owner,ident)
         scope=''
         if payload.notify:
-            scope=next((s for s in self.memory.scopes(owner) if scope_id(s)==payload.recipientId),'')
-            if not scope:raise HTTPException(422,'请选择已连接的 QQ 私聊')
+            scopes=self.memory.scopes(owner)
+            scope=next((s for s in scopes if scope_id(s)==payload.recipientId),'') if payload.recipientId else (scopes[0] if len(scopes)==1 else '')
+            if not scope:raise HTTPException(422,'请选择接收通知的 QQ 私聊' if scopes else '请先连接 QQ 并私聊一次，再开始练习')
             connection=self.characters.qq.row(owner)
             if not connection or json.loads(scope)[0]!=connection['app_id']:raise HTTPException(422,'QQ 连接不匹配')
         with self.tasks.db() as db:
@@ -96,7 +102,7 @@ class SongLibrary:
         with self.tasks.db() as db:
             interrupted=[r['id'] for r in db.execute("SELECT id FROM song_practice WHERE notification='sending'")]
             db.execute("UPDATE song_practice SET notification='unknown',notice_error='发送状态未确认，未自动重发' WHERE notification='sending'")
-            for ident in interrupted:db.execute("UPDATE qq_extra_message_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",('song:'+ident+':text','song:'+ident+':audio'))
+            for ident in interrupted:db.execute("UPDATE song_notification_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",('song:'+ident+':text','song:'+ident+':audio'))
             db.execute("UPDATE song_practice SET state='failed',error='上传被中断，请重新上传' WHERE state='uploading'")
         self.thread=threading.Thread(target=self.loop,daemon=True,name='song-library');self.thread.start()
 
@@ -166,13 +172,9 @@ class SongLibrary:
             db.execute('BEGIN IMMEDIATE')
             current=db.execute('SELECT notification FROM song_practice WHERE id=?',(row['id'],)).fetchone()
             if current['notification']!='pending':return
-            scheduled=db.execute('SELECT count(*) FROM qq_companion_outbox WHERE scope=? AND day=? AND attempted IS NOT NULL',(scope,day)).fetchone()[0]
-            extras=db.execute('SELECT count(*) FROM qq_extra_message_attempts WHERE scope=? AND day=?',(scope,day)).fetchone()[0]
-            if scheduled+extras+2>3:
-                db.execute("UPDATE song_practice SET notice_error='今日主动消息额度已用完，将等待次日额度' WHERE id=?",(row['id'],));return
-            if db.execute('SELECT 1 FROM qq_extra_message_attempts WHERE key IN (?,?)',keys).fetchone():
+            if db.execute('SELECT 1 FROM song_notification_attempts WHERE key IN (?,?)',keys).fetchone():
                 db.execute("UPDATE song_practice SET notification='unknown',notice_error='发送状态未确认，未自动重发' WHERE id=?",(row['id'],));return
-            db.executemany("INSERT INTO qq_extra_message_attempts VALUES(?,?,?,'reserved')",[(k,scope,day) for k in keys])
+            db.executemany("INSERT INTO song_notification_attempts VALUES(?,?,?,'reserved')",[(k,scope,day) for k in keys])
             db.execute("UPDATE song_practice SET notification='sending',notice_error='' WHERE id=?",(row['id'],))
         try:
             from app.qq_channel import QQClient
@@ -180,15 +182,15 @@ class SongLibrary:
             client=factory(credentials_provider=lambda:self.characters.qq.credentials(connection['id']))
             body='我学会《'+row['title']+'》啦，唱给你听。'
             client.proactive(target,body)
-            with self.tasks.db() as db:db.execute("UPDATE qq_extra_message_attempts SET state='sent' WHERE key=?",(keys[0],))
+            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='sent' WHERE key=?",(keys[0],))
             audio=(self.root/(row['id']+'.silk')).read_bytes()
             receipt=save(audio,delivery_key=secrets.token_hex(16),song={'id':'learn-'+row['id'],'title':row['title']},voice_id='companion',duration=row['seconds'],folder=self.tasks.directory/'qq-voice')
             base=os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')
             client.proactive_media(target,base+'/api/qq/voice/'+receipt['id']+'.silk',file_type=3)
-            with self.tasks.db() as db:db.execute("UPDATE qq_extra_message_attempts SET state='sent' WHERE key=?",(keys[1],))
+            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='sent' WHERE key=?",(keys[1],))
             self.update(row['id'],notification='sent',notice_error='')
         except Exception:
-            with self.tasks.db() as db:db.execute("UPDATE qq_extra_message_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",keys)
+            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",keys)
             self.update(row['id'],notification='unknown',notice_error='QQ 通知或试唱未能确认送达，可在 QQ 直接点歌；未自动重发')
 
 
@@ -202,9 +204,10 @@ def create_router(service):
     @router.get('')
     def listing(request:Request,response:Response):return service.listing(owner(request,response))
     @router.post('/upload')
-    async def upload(request:Request,response:Response,title:str,filename:str,start:float=45):
+    async def upload(request:Request,response:Response,filename:str,title:str="",start:float=45):
         user=owner(request,response,True)
-        if not title.strip() or len(title)>120 or not filename.lower().endswith('.mp3') or len(filename)>200 or not 0<=start<=3600:raise HTTPException(422,'请填写歌名并选择 MP3，起点为 0—3600 秒')
+        title=title.strip() or Path(filename).stem.strip()[:120]
+        if not title or len(title)>120 or not filename.lower().endswith('.mp3') or len(filename)>200 or not 0<=start<=3600:raise HTTPException(422,'请选择有效的 MP3 文件')
         with service.tasks.db() as db:
             if db.execute("SELECT count(*) FROM song_practice WHERE owner=? AND state!='ready'",(user,)).fetchone()[0]>=30:raise HTTPException(409,'待练习歌曲较多，请先完成已有练习')
         ident=uuid.uuid4().hex;now=service.clock();path=service.root/(ident+'.mp3')

@@ -101,8 +101,8 @@ def test_completed_job_moves_tabs_caches_real_audio_and_notifies_once(env,monkey
     assert e.a.get(f'/api/character/songs/learn-{ident}/preview').content.startswith(b'RIFF')
     result=e.a.get('/api/character/songs').json()
     assert not result['practicing'] and result['learned'][0]['seconds']==7.5
-    with e.tasks.db() as db:assert db.execute("SELECT count(*) FROM qq_extra_message_attempts WHERE state='sent'").fetchone()[0]==2
-    assert e.service.memory.snapshot(e.owner,e.now[0])['recipients'][0]['sentToday']==2
+    with e.tasks.db() as db:assert db.execute("SELECT count(*) FROM song_notification_attempts WHERE state='sent'").fetchone()[0]==2
+    assert e.service.memory.snapshot(e.owner,e.now[0])['recipients'][0]['sentToday']==0
 
 
 def ready(e,ident):
@@ -111,15 +111,19 @@ def ready(e,ident):
     return e.service.row(e.owner,ident)
 
 
-def test_notification_respects_window_combined_daily_cap_and_cancellation(env):
+def test_completion_notifications_are_independent_of_daily_outreach_cap(env):
     e=env;ident=upload(e);row=ready(e,ident)
     e.now[0]=datetime(2026,11,3,22,tzinfo=TZ).timestamp();e.service.notify(row);assert not e.sent
     e.now[0]=datetime(2026,11,4,12,tzinfo=TZ).timestamp()
     with e.tasks.db() as db:
-        for i in range(2):db.execute("INSERT INTO qq_companion_outbox(id,scope,day,due,state,attempted) VALUES(?,?,?,?,'sent',?)",(str(i),e.scope,local_day(e.now[0]),e.now[0],e.now[0]))
-    e.service.notify(row);assert not e.sent and e.service.row(e.owner,ident)['notification']=='pending'
-    assert e.a.delete(f'/api/character/songs/{ident}/notification',headers={'X-Veya-Day':'1'}).status_code==200
-    e.now[0]+=86400;e.service.notify(row);assert not e.sent
+        for i in range(3):db.execute("INSERT INTO qq_companion_outbox(id,scope,day,due,state,attempted) VALUES(?,?,?,?,'sent',?)",(str(i),e.scope,local_day(e.now[0]),e.now[0],e.now[0]))
+    e.service.notify(row)
+    assert [x[0] for x in e.sent]==['text','audio']
+    assert e.service.row(e.owner,ident)['notification']=='sent'
+    assert e.service.memory.snapshot(e.owner,e.now[0])['recipients'][0]['sentToday']==3
+    another=upload(e);pending=ready(e,another)
+    assert e.a.delete(f'/api/character/songs/{another}/notification',headers={'X-Veya-Day':'1'}).status_code==200
+    e.service.notify(pending);assert len(e.sent)==2
 
 
 def test_uncertain_qq_failure_never_replays_or_exceeds_budget(env):
@@ -128,7 +132,7 @@ def test_uncertain_qq_failure_never_replays_or_exceeds_budget(env):
     e.client.proactive_media=fail
     e.service.notify(row);e.service.notify(row)
     assert len(e.sent)==1 and e.service.row(e.owner,ident)['notification']=='unknown'
-    with e.tasks.db() as db:assert db.execute('SELECT count(*) FROM qq_extra_message_attempts').fetchone()[0]==2
+    with e.tasks.db() as db:assert db.execute('SELECT count(*) FROM song_notification_attempts').fetchone()[0]==2
 
 
 def test_practice_rejects_unlinked_recipient_and_cross_site(env):
@@ -136,3 +140,22 @@ def test_practice_rejects_unlinked_recipient_and_cross_site(env):
     with pytest.raises(Exception) as error:e.service.practice(e.owner,ident,PracticeInput(notify=True,recipientId='bad'))
     assert error.value.status_code==422
     assert e.a.post(f'/api/character/songs/{ident}/practice',json={},headers={'X-Veya-Day':'1','Sec-Fetch-Site':'cross-site'}).status_code==403
+
+
+def test_filename_supplies_title_and_practice_defaults_to_notify_sole_linked_recipient(env):
+    e=env
+    r=e.a.post('/api/character/songs/upload',params={'filename':'我的新歌.mp3'},content=MP3,headers={'X-Veya-Day':'1'})
+    assert r.status_code==200 and r.json()['title']=='我的新歌'
+    result=e.a.post('/api/character/songs/'+r.json()['jobId']+'/practice',json={},headers={'X-Veya-Day':'1'})
+    assert result.status_code==200 and result.json()['notification']=='pending'
+
+
+def test_legacy_song_receipts_migrate_without_consuming_companion_quota(env):
+    e=env;key='song:old:text';day=local_day(e.now[0])
+    with e.tasks.db() as db:db.execute("INSERT INTO qq_extra_message_attempts VALUES(?,?,?,'sent')",(key,e.scope,day))
+    migrated=SongLibrary(e.tasks,e.service.characters,clock=e.service.clock)
+    with e.tasks.db() as db:
+        assert db.execute('SELECT state FROM song_notification_attempts WHERE key=?',(key,)).fetchone()[0]=='sent'
+        assert db.execute('SELECT 1 FROM qq_extra_message_attempts WHERE key=?',(key,)).fetchone() is None
+    assert migrated.memory.extra_sent(e.scope,day)==0
+    migrated.close()
