@@ -126,14 +126,22 @@ class CompanionMemory:
         with self.tasks.db() as db:
             db.execute('INSERT OR REPLACE INTO qq_companion_memory VALUES(?,?,?)',(scope,self.encode(data),time.time()))
             db.execute("UPDATE qq_companion_outbox SET state='cancelled' WHERE scope=? AND state='planned'",(scope,))
+            db.execute("UPDATE qq_companion_plans SET decision='' WHERE scope=?",(scope,))
 
     def snapshot(self, owner, now=None):
         now=time.time() if now is None else now;day=local_day(now);result=[]
         for index,scope in enumerate(self.scopes(owner),1):
             data=self.get(scope);stats=self.intimacy(scope)
             with self.tasks.db() as db:
-                plan=db.execute('SELECT state FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
-                sends=[dict(r) for r in db.execute('SELECT due,state,error FROM qq_companion_outbox WHERE scope=? AND day=? ORDER BY due',(scope,day))]
+                plan=db.execute('SELECT state,decision FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
+                sends=[dict(r) for r in db.execute('SELECT id,due,state,error,body FROM qq_companion_outbox WHERE scope=? AND day=? ORDER BY due',(scope,day))]
+            decision=self.decode(plan['decision']) if plan else {}
+            drafts=decision.get('drafts',{})
+            for item in sends:
+                draft=drafts.get(item['id'],{})
+                item.update(topic=draft.get('topic',''),question=draft.get('question',''),
+                            message=self.decode(item.pop('body')).get('text',''))
+                item.pop('id')
             result.append({'id':scope_id(scope),'label':'QQ 私聊 '+str(index),'intimacy':stats,'facts':[{k:f[k] for k in ('id','text','label','weight','quote') if k in f} for f in data['facts']],
                            'updated':data['updated'],'planState':plan['state'] if plan else 'waiting',
                            'today':sends,'sentToday':sum(s['state']=='sent' for s in sends)})
@@ -235,6 +243,11 @@ class QQCompanion:
                     if profile['proactivity']>0:self.plan(scope,profile,now)
         with self.tasks.db() as db:due=[dict(r) for r in db.execute("SELECT * FROM qq_companion_outbox WHERE state='planned' AND due<=? ORDER BY due",(now,))]
         for row in due:self.deliver(row,now)
+        # Also fill today's existing schedules after an upgrade, without changing
+        # their times or blocking the scheduler on text generation.
+        with self.tasks.db() as db:
+            scopes=[r[0] for r in db.execute("SELECT DISTINCT scope FROM qq_companion_outbox WHERE day=? AND state='planned' AND due>?",(day,now))]
+        for scope in scopes:self.schedule_drafts(scope,day,now)
 
     def plan(self, scope, profile, now):
         day=local_day(now)
@@ -261,6 +274,76 @@ class QQCompanion:
             with self.tasks.db() as db:db.execute("UPDATE qq_companion_plans SET state='retry',retry=?,updated=? WHERE scope=? AND day=?",(now+900,now,scope,day))
             log.warning('QQ companion planning waits for local decision or memory service')
 
+    def schedule_drafts(self, scope, day, now):
+        with self.tasks.db() as db:
+            plan=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
+            ids=[r[0] for r in db.execute("SELECT id FROM qq_companion_outbox WHERE scope=? AND day=? AND state='planned' AND due>?",(scope,day,now))]
+        decision=self.memory.decode(plan['decision']) if plan else {}
+        if not ids or all(key in decision.get('drafts',{}) for key in ids) or decision.get('draftRetry',0)>now:return
+        key='draft:'+scope+day
+        with self.lock:
+            if key in self.pending:return
+            self.pending.add(key)
+        def work():
+            try:self.prepare_drafts(scope,day)
+            except Exception:
+                with self.tasks.db() as db:
+                    row=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
+                    value=self.memory.decode(row['decision']) if row else {}
+                    value['draftRetry']=self.clock()+900
+                    db.execute('UPDATE qq_companion_plans SET decision=? WHERE scope=? AND day=?',(self.memory.encode(value),scope,day))
+                log.warning('QQ proactive topic preparation unavailable; schedule retained')
+            finally:
+                with self.lock:self.pending.discard(key)
+        try:self.pool.submit(work)
+        except RuntimeError:
+            with self.lock:self.pending.discard(key)
+
+    def prepare_drafts(self, scope, day):
+        owner=self.characters.owner_for_scope(scope)
+        if not owner:return
+        with self.tasks.db() as db:
+            rows=[dict(r) for r in db.execute("SELECT id,due FROM qq_companion_outbox WHERE scope=? AND day=? AND state='planned' AND due>? ORDER BY due",(scope,day,self.clock()))]
+            plan=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
+        decision=self.memory.decode(plan['decision']) if plan else {}
+        rows=[r for r in rows if r['id'] not in decision.get('drafts',{})]
+        if not rows:return
+        known=self.memory.get(scope)
+        schedule=[{'id':r['id'],'time':datetime.fromtimestamp(r['due'],TZ).strftime('%Y-%m-%d %H:%M')} for r in rows]
+        prompt=('为已安排的日常主动联系准备话题和一句计划提问，供用户在角色定制页面提前查看。'
+                '这是准备计划，不发送消息，不查询行情，不生成附件。结合角色设定、用户真实记忆和最近聊天，'
+                '各时段话题要自然且有区别；不了解用户时可以开放式关心，不假设其作息、经历或喜好，'
+                '不编造最新数据，不索要回复。只返回 JSON：'
+                '{"plans":[{"id":"原计划id","topic":"简短话题","question":"准备向用户问的一句话"}]}。'
+                'id必须逐一对应以下安排，不增减：'+json.dumps(schedule,ensure_ascii=False)+self.memory.context(scope))
+        history=[{'role':'user','text':r['question'][:1000]} for r in self.memory.history(scope,8,known['forgotBefore'])]
+        answer=self.runner(scope+':proactive-plan-'+day,prompt,history)
+        raw=str(answer.get('interpretation') or '')
+        value=json.loads(raw[raw.find('{'):raw.rfind('}')+1])
+        items=value.get('plans')
+        if not isinstance(items,list) or len(items)!=len(rows):raise ValueError('Invalid topic plan')
+        drafts={}
+        for item in items:
+            if not isinstance(item,dict):raise ValueError('Invalid topic')
+            ident=item.get('id');topic=item.get('topic');question=item.get('question')
+            if (ident not in {r['id'] for r in rows} or ident in drafts or not isinstance(topic,str)
+                    or not 0<len(topic.strip())<=60 or not isinstance(question,str) or not 0<len(question.strip())<=240):
+                raise ValueError('Invalid topic draft')
+            drafts[ident]={'topic':topic.strip(),'question':question.strip()}
+        with self.tasks.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            # Clearing memory, unlinking, or a delivery starting while generation
+            # runs wins over this stale topic draft.
+            memory=self.memory.get(scope)
+            if memory['forgotBefore']!=known['forgotBefore'] or self.characters.owner_for_scope(scope)!=owner:return
+            current=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(scope,day)).fetchone()
+            if not current:return
+            active={r[0] for r in db.execute("SELECT id FROM qq_companion_outbox WHERE scope=? AND day=? AND state='planned'",(scope,day))}
+            latest=self.memory.decode(current['decision'])
+            latest.setdefault('drafts',{}).update({key:value for key,value in drafts.items() if key in active})
+            latest.pop('draftRetry',None)
+            db.execute('UPDATE qq_companion_plans SET decision=? WHERE scope=? AND day=?',(self.memory.encode(latest),scope,day))
+
     def deliver(self, row, now):
         owner=self.characters.owner_for_scope(row['scope']);profile=self.characters.get(owner) if owner else None
         local=datetime.fromtimestamp(now,TZ)
@@ -285,6 +368,11 @@ class QQCompanion:
                     '结合角色关系、性格、Agent 提示词、用户明确的长期记忆和最近聊天，写一句至三句自然的日常问候或关心。'
                     '不要像通知，不提计划、模型、亲密分数，不索要回复，不施压，不虚构共同经历，不杜撰最新行情。'
                     '不要生成HTML、图表或附件；只输出正文。'+self.memory.context(row['scope']))
+            with self.tasks.db() as db:
+                plan=db.execute('SELECT decision FROM qq_companion_plans WHERE scope=? AND day=?',(row['scope'],row['day'])).fetchone()
+            draft=self.memory.decode(plan['decision']).get('drafts',{}).get(row['id']) if plan else None
+            if draft:
+                prompt+='这次已向用户展示的计划话题和提问：'+json.dumps(draft,ensure_ascii=False)+'。围绕这个话题，结合最新聊天调整措辞；若已不合时宜，不要机械重复。'
             answer=self.runner(row['scope']+':proactive-'+row['id'],prompt,context)
             from app.qq_chat import plain_answer
             body=plain_answer(answer)

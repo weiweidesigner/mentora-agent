@@ -215,3 +215,41 @@ def test_existing_authenticated_private_chats_attach_to_configured_bot_only(env)
     assert e.characters.owner_for_scope(e.scope)=='owner'
     assert e.characters.owner_for_scope(other) is None
     assert e.characters.owner_for_scope(group) is None
+
+
+def test_prepared_topics_are_private_encrypted_and_used_at_delivery(env):
+    e=env;s=e.service;s.plan(e.scope,e.characters.get('owner'),e.now[0]);rows=outbox(e)
+    questions={r['id']:{'id':r['id'],'topic':'休息安排','question':'今天想给自己留一点休息时间吗？'} for r in rows}
+    calls=[]
+    def runner(scope,prompt,history):
+        calls.append(prompt)
+        return {'interpretation':json.dumps({'plans':list(questions.values())},ensure_ascii=False)}
+    s.runner=runner;s.prepare_drafts(e.scope,'2026-11-03')
+    visible=s.memory.snapshot('owner',e.now[0])['recipients'][0]['today']
+    assert len(visible)==3 and all(r['question']=='今天想给自己留一点休息时间吗？' for r in visible)
+    assert all(r['topic']=='休息安排' for r in visible)
+    assert s.memory.snapshot('other',e.now[0])['recipients']==[]
+    with e.tasks.db() as db:
+        assert '休息安排' not in db.execute('SELECT decision FROM qq_companion_plans').fetchone()[0]
+    s.runner=lambda scope,prompt,history:(calls.append(prompt) or {'interpretation':'今天想歇一会儿吗？'})
+    e.now[0]=rows[0]['due'];s.deliver(rows[0],e.now[0])
+    assert '今天想给自己留一点休息时间吗？' in calls[-1]
+    assert s.memory.snapshot('owner',e.now[0])['recipients'][0]['today'][0]['message']=='今天想歇一会儿吗？'
+
+
+def test_clearing_memory_during_topic_generation_cannot_restore_private_drafts(env):
+    e=env;s=e.service;s.plan(e.scope,e.characters.get('owner'),e.now[0]);rows=outbox(e)
+    def runner(*args):
+        s.memory.clear(e.scope)
+        return {'interpretation':json.dumps({'plans':[{'id':r['id'],'topic':'私人偏好','question':'私人问题？'} for r in rows]})}
+    s.runner=runner;s.prepare_drafts(e.scope,'2026-11-03')
+    assert all(not r['question'] for r in s.memory.snapshot('owner',e.now[0])['recipients'][0]['today'])
+    assert all(r['state']=='cancelled' for r in outbox(e))
+
+
+def test_invalid_topic_plan_does_not_change_existing_schedule(env):
+    e=env;s=e.service;s.plan(e.scope,e.characters.get('owner'),e.now[0]);before=outbox(e)
+    s.runner=lambda *a:{'interpretation':'{"plans":[{"id":"unknown","topic":"x","question":"x"}]}'}
+    with pytest.raises(ValueError):s.prepare_drafts(e.scope,'2026-11-03')
+    assert outbox(e)==before
+    assert all(not r['question'] for r in s.memory.snapshot('owner',e.now[0])['recipients'][0]['today'])

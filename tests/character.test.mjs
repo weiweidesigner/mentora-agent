@@ -45,3 +45,14 @@ test('QQ identity replaces preview image and name automatically on confirmation'
 test('relationship and proactivity persist with the rest of the persona',async()=>{const h=setup();await tick();const f=h.d.querySelector('#characterForm');f.elements.relationship.value='wife';f.elements.proactivity.value='85';f.elements.proactivity.dispatchEvent(new h.w.Event('input'));f.dispatchEvent(new h.w.Event('submit',{cancelable:true}));await tick();const saved=h.requests.find(r=>r.method==='PUT').body;assert.equal(saved.relationship,'wife');assert.equal(saved.proactivity,85);assert.equal(h.d.querySelector('#chProactivityValue').value,'85%');assert.match(h.d.querySelector('#chPreviewTags').textContent,/老婆/);assert.match(h.d.querySelector('.chCompanion').textContent,/和 QQ 机器人聊几句/);h.dom.window.close();});
 
 test('memory cloud separates recipients and escapes user-derived labels',async()=>{const h=setup({}, {recipients:[{id:'alice',label:'QQ 私聊 1',intimacy:{score:65,days:8,turns:30},sentToday:1,planState:'planned',facts:[{label:'咖啡',text:'喜欢咖啡',quote:'我喜欢喝咖啡',weight:4}]},{id:'bob',label:'QQ 私聊 2',intimacy:{score:10,days:1,turns:2},sentToday:0,planState:'waiting',facts:[{label:'<img src=x>',text:'literal',quote:'literal',weight:2}]}]});await tick();await tick();assert.match(h.d.querySelector('#chMemoryStats').textContent,/65/);assert.equal(h.d.querySelector('#chWordCloud').textContent,'咖啡');const select=h.d.querySelector('#chRecipient');select.value='bob';select.dispatchEvent(new h.w.Event('change'));assert.equal(h.d.querySelector('#chWordCloud img'),null);assert.equal(h.d.querySelector('#chWordCloud').textContent,'<img src=x>');assert.doesNotMatch(h.d.querySelector('#chWordCloud').textContent,/咖啡/);h.dom.window.close();});
+
+test('proactive plans show Beijing times, prepared questions, actual delivery and recipient-specific state',async()=>{
+ const due=Date.parse('2026-11-03T11:30:00+08:00')/1000;
+ const h=setup({}, {recipients:[{id:'one',label:'私聊 1',intimacy:{score:11,days:1,turns:2},facts:[],sentToday:1,planState:'planned',today:[{due,state:'planned',topic:'午间休息',question:'午间准备怎么放松？<img src=x>'},{due:due+10800,state:'sent',topic:'下午问候',question:'原计划问题',message:'下午过得怎么样？'}]},{id:'two',label:'私聊 2',intimacy:{score:0,days:0,turns:0},facts:[],sentToday:0,planState:'planned',today:[]}]});
+ await tick();const block=h.d.querySelector('#chProactivePlan');assert.equal(block.hidden,false);
+ assert.deepEqual([...block.querySelectorAll('time')].map(x=>x.textContent),['11:30','14:30']);
+ assert.match(block.textContent,/午间准备怎么放松/);assert.equal(block.querySelector('img'),null);
+ assert.match(block.textContent,/已发送/);assert.match(block.textContent,/下午过得怎么样/);assert.doesNotMatch(block.textContent,/原计划问题/);
+ const select=h.d.querySelector('#chRecipient');select.value='two';select.dispatchEvent(new h.w.Event('change'));assert.match(block.textContent,/今天未安排主动联系/);assert.doesNotMatch(block.textContent,/午间休息/);
+ h.dom.window.close();
+});
