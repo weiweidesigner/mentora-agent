@@ -108,7 +108,7 @@ test('memory picker names sources clearly and shows multiple memories and plans 
  const d=h.d;assert.match(d.querySelector('#chRecipient').textContent,/私聊 1 · 对方的记忆/);assert.match(d.querySelector('#chRecipient').textContent,/群聊 1 · 成员 1 的记忆/);assert.match(d.querySelector('#chRecipient').textContent,/全群主动联系计划/);
  d.querySelector('#chMemorySelectAll').click();assert.equal(selectedMemory(h).length,3);assert.equal(d.querySelectorAll('.chMemoryWord').length,2);assert.equal(d.querySelectorAll('#chMemoryStats [role="meter"]').length,2);
  assert.match(d.querySelector('#chMemoryStats').textContent,/10/);assert.match(d.querySelector('#chMemoryStats').textContent,/20/);assert.equal(d.querySelectorAll('.chMemoryPlanSource').length,2);
- assert.match(d.querySelector('.chMemoryWord').title,/私聊 1/);assert.match(d.querySelectorAll('.chMemoryWord')[1].title,/成员 1/);
+ d.querySelector('.chMemoryWord').dispatchEvent(new h.w.Event('pointerenter'));assert.match(d.querySelector('.chMemoryTooltip').textContent,/私聊 1/);d.querySelectorAll('.chMemoryWord')[1].dispatchEvent(new h.w.Event('pointerenter'));assert.match(d.querySelector('.chMemoryTooltip').textContent,/成员 1/);
  d.querySelector('#chRefreshMemory').click();await tick();assert.equal(selectedMemory(h).length,3);
  d.querySelector('#chMemorySelectNone').click();assert.equal(selectedMemory(h).length,0);assert.match(d.querySelector('#chMemoryStatus').textContent,/选择要查看/);assert.equal(d.querySelector('#chWordCloud').hidden,true);
  d.querySelector('#chRefreshMemory').click();await tick();assert.equal(selectedMemory(h).length,0);
