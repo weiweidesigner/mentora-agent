@@ -67,8 +67,17 @@ class SongLibrary:
         if not r:raise HTTPException(404,'歌曲不存在')
         return dict(r)
 
+    def notification_scopes(self,owner):
+        from app.qq_destinations import enabled_for
+        connection=self.characters.qq.row(owner)
+        if not connection:return []
+        profile=self.characters.get(owner)
+        return [scope for scope in self.memory.outgoing_scopes(owner)
+                if json.loads(scope)[0]==connection['app_id'] and enabled_for(profile,scope,self.tasks)]
+
     def recipients(self,owner):
-        return [{'id':scope_id(s),'label':'QQ 私聊 '+str(i+1)} for i,s in enumerate(self.memory.scopes(owner))]
+        return [{'id':scope_id(s),'label':'QQ 群聊' if json.loads(s)[1]=='groups' else 'QQ 私聊'}
+                for s in self.notification_scopes(owner)]
 
     def public_row(self,row):
         return {'jobId':row['id'],'id':'learn-'+row['id'],'title':row['title'],'seconds':row['seconds'],
@@ -115,18 +124,16 @@ class SongLibrary:
 
     def practice(self,owner,ident,payload):
         row=self.row(owner,ident)
-        scope=''
-        if payload.notify:
-            scopes=self.memory.scopes(owner)
-            scope=next((s for s in scopes if scope_id(s)==payload.recipientId),'') if payload.recipientId else (scopes[0] if len(scopes)==1 else '')
-            if not scope:raise HTTPException(422,'请选择接收通知的 QQ 私聊' if scopes else '请先连接 QQ 并私聊一次，再开始练习')
-            connection=self.characters.qq.row(owner)
-            if not connection or json.loads(scope)[0]!=connection['app_id']:raise HTTPException(422,'QQ 连接不匹配')
+        scopes=self.notification_scopes(owner) if payload.notify else []
+        if payload.notify and not scopes:raise HTTPException(422,'请先在“主动联系”中选择接收通知的会话')
+        if payload.recipientId and payload.recipientId not in {scope_id(scope) for scope in scopes}:
+            raise HTTPException(422,'该会话未在“主动联系”中启用')
+        scope=scopes[0] if len(scopes)==1 else ''
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
             current=db.execute('SELECT state FROM song_practice WHERE id=? AND owner=?',(ident,owner)).fetchone()
             if current['state'] in ('queued','practicing','ready'):return self.public_row(self.row(owner,ident))
-            db.execute("UPDATE song_practice SET state='queued',error='',recipient=?,notification=?,notice_error='',updated=? WHERE owner=? AND id=?",(scope,'pending' if scope else 'none',self.clock(),owner,ident))
+            db.execute("UPDATE song_practice SET state='queued',error='',recipient=?,notification=?,notice_error='',updated=? WHERE owner=? AND id=?",(scope,'pending' if payload.notify else 'none',self.clock(),owner,ident))
         return self.public_row(self.row(owner,ident))
 
     def start(self):
@@ -134,7 +141,7 @@ class SongLibrary:
         with self.tasks.db() as db:
             interrupted=[r['id'] for r in db.execute("SELECT id FROM song_practice WHERE notification='sending'")]
             db.execute("UPDATE song_practice SET notification='unknown',notice_error='发送状态未确认，未自动重发' WHERE notification='sending'")
-            for ident in interrupted:db.execute("UPDATE song_notification_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",('song:'+ident+':text','song:'+ident+':audio'))
+            for ident in interrupted:db.execute("UPDATE song_notification_attempts SET state='unknown' WHERE key LIKE ? AND state='reserved'",('song:'+ident+':%',))
             db.execute("UPDATE song_practice SET state='failed',error='上传被中断，请重新上传' WHERE state='uploading'")
         self.thread=threading.Thread(target=self.loop,daemon=True,name='song-library');self.thread.start()
 
@@ -191,40 +198,58 @@ class SongLibrary:
         self.update(row['id'],state='ready',seconds=duration,error='')
 
     def notify(self,row):
+        if self.row(row['owner'],row['id'])['notification']!='pending':return
         now=self.clock();local=datetime.fromtimestamp(now,TZ)
         if not day_time(9)<=local.time()<=day_time(21):
             self.update(row['id'],notice_error='将在 09:00—21:00 通知');return
-        owner=row['owner'];scope=row['recipient'];connection=self.characters.qq.row(owner)
-        if not connection or scope not in self.memory.scopes(owner):
-            self.update(row['id'],notification='cancelled',notice_error='QQ 会话已解除连接');return
-        app_id,kind,target,_=json.loads(scope)
-        if app_id!=connection['app_id'] or kind!='users':
-            self.update(row['id'],notification='cancelled',notice_error='QQ 连接不匹配');return
-        day=local_day(now);keys=['song:'+row['id']+':text','song:'+row['id']+':audio']
+        owner=row['owner'];connection=self.characters.qq.row(owner)
+        scopes=self.notification_scopes(owner)
+        if not connection or not scopes:
+            self.update(row['id'],notification='cancelled',notice_error='当前没有启用的 QQ 通知会话');return
+        day=local_day(now);prefix='song:'+row['id']+':'
+        deliveries=[(scope,[prefix+scope_id(scope)+':text',prefix+scope_id(scope)+':audio']) for scope in scopes]
         with self.tasks.db() as db:
             db.execute('BEGIN IMMEDIATE')
             current=db.execute('SELECT notification FROM song_practice WHERE id=?',(row['id'],)).fetchone()
             if current['notification']!='pending':return
-            if db.execute('SELECT 1 FROM song_notification_attempts WHERE key IN (?,?)',keys).fetchone():
+            # Include old private-only receipts: never replay a previously attempted job.
+            if db.execute('SELECT 1 FROM song_notification_attempts WHERE key LIKE ?',(prefix+'%',)).fetchone():
                 db.execute("UPDATE song_practice SET notification='unknown',notice_error='发送状态未确认，未自动重发' WHERE id=?",(row['id'],));return
-            db.executemany("INSERT INTO song_notification_attempts VALUES(?,?,?,'reserved')",[(k,scope,day) for k in keys])
+            db.executemany("INSERT INTO song_notification_attempts VALUES(?,?,?,'reserved')",[(key,scope,day) for scope,keys in deliveries for key in keys])
             db.execute("UPDATE song_practice SET notification='sending',notice_error='' WHERE id=?",(row['id'],))
+
+        def allowed(scope):
+            current=self.characters.qq.row(owner)
+            return (current and current['id']==connection['id'] and current['app_id']==connection['app_id']
+                    and scope in self.notification_scopes(owner))
+
+        def mark(keys,state):
+            with self.tasks.db() as db:
+                db.executemany("UPDATE song_notification_attempts SET state=? WHERE key=? AND state='reserved'",[(state,key) for key in keys])
         try:
             from app.qq_channel import QQClient
-            factory=self.client_factory or QQClient
-            client=factory(credentials_provider=lambda:self.characters.qq.credentials(connection['id']))
-            body='我学会《'+row['title']+'》啦，唱给你听。'
-            client.proactive(target,body)
-            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='sent' WHERE key=?",(keys[0],))
+            client=(self.client_factory or QQClient)(credentials_provider=lambda:self.characters.qq.credentials(connection['id']))
             audio=(self.root/(row['id']+'.silk')).read_bytes()
             receipt=save(audio,delivery_key=secrets.token_hex(16),song={'id':'learn-'+row['id'],'title':row['title']},voice_id='companion',duration=row['seconds'],folder=self.tasks.directory/'qq-voice')
             base=os.getenv('VEYA_PUBLIC_URL','https://weiweidesigner.com/mentora/').rstrip('/')
-            client.proactive_media(target,base+'/api/qq/voice/'+receipt['id']+'.silk',file_type=3)
-            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='sent' WHERE key=?",(keys[1],))
-            self.update(row['id'],notification='sent',notice_error='')
+            for scope,keys in deliveries:
+                if not allowed(scope):mark(keys,'cancelled');continue
+                _,kind,target,_=json.loads(scope)
+                options={'kind':kind} if kind=='groups' else {}
+                try:
+                    client.proactive(target,'我学会《'+row['title']+'》啦，唱给你听。',**options)
+                    mark(keys[:1],'sent')
+                    if not allowed(scope):mark(keys[1:],'cancelled');continue
+                    client.proactive_media(target,base+'/api/qq/voice/'+receipt['id']+'.silk',file_type=3,**options)
+                    mark(keys[1:],'sent')
+                except Exception:mark(keys,'unknown')
         except Exception:
-            with self.tasks.db() as db:db.execute("UPDATE song_notification_attempts SET state='unknown' WHERE key IN (?,?) AND state='reserved'",keys)
-            self.update(row['id'],notification='unknown',notice_error='QQ 通知或试唱未能确认送达，可在 QQ 直接点歌；未自动重发')
+            for _,keys in deliveries:mark(keys,'unknown')
+        with self.tasks.db() as db:
+            states={r['state'] for r in db.execute('SELECT state FROM song_notification_attempts WHERE key LIKE ?',(prefix+'%',))}
+        state='unknown' if states & {'reserved','unknown'} else 'cancelled' if 'cancelled' in states else 'sent'
+        error='QQ 通知或试唱未能确认送达，可在 QQ 直接点歌；未自动重发' if state=='unknown' else '通知会话已取消勾选' if state=='cancelled' else ''
+        self.update(row['id'],notification=state,notice_error=error)
 
 
     def preview_path(self, owner, song_id):

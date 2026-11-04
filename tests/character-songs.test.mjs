@@ -25,7 +25,7 @@ test('upload opens the file picker directly, accepts multiple files, and keeps e
  assert.equal($('chSongPracticingPanel').hidden,false);assert.equal($('chSongPracticingCount').textContent,'2');assert.equal(e.calls.filter(c=>c.path.includes('/upload?')).length,2);
  assert.equal(e.calls.filter(c=>c.path.endsWith('/practice')).length,0);assert.equal($('chSongPracticingPanel').querySelector('img'),null);
  e.w.document.querySelector('[data-song-practice]').click();await tick();
- const practice=e.calls.find(c=>c.path.endsWith('/practice'));assert.deepEqual(JSON.parse(practice.options.body),{notify:true,recipientId:'recipient'});
+ const practice=e.calls.find(c=>c.path.endsWith('/practice'));assert.deepEqual(JSON.parse(practice.options.body),{notify:true});
  assert.equal($('chSongPracticingPanel').querySelector('[data-song-practice]').disabled,true);
  assert.doesNotMatch($('chSongStatus').textContent,/已开始练习/);
  const song=e.data.practicing.shift();e.data.learned.push({...song,state:'ready',seconds:7.5});$('characterWorkspace').hidden=true;$('characterWorkspace').hidden=false;await tick();
@@ -76,11 +76,12 @@ test('practice rows have no selection controls and show the completion promise w
  assert.equal($('chSongPracticingPanel').querySelector('[data-song-practice]').textContent,'正在练习');
  }finally{e.dom.window.close();}
 });
-test('multiple QQ recipients require an explicit choice before practice',async()=>{
- const e=setup([{id:'a',label:'私聊1'},{id:'b',label:'私聊2'}]),$=id=>e.w.document.getElementById(id);try{await tick();
+test('practice follows shared destination settings without a separate private-chat selector',async()=>{
+ const e=setup([{id:'a',label:'群聊1'},{id:'b',label:'群聊2'}]),$=id=>e.w.document.getElementById(id);try{await tick();
+ assert.equal($('chSongRecipient'),null);
  Object.defineProperty($('chSongFile'),'files',{value:[new e.w.File(['ID3data'],'a.mp3')]});$('chSongFile').dispatchEvent(new e.w.Event('change'));await tick();
- e.w.document.querySelector('[data-song-practice]').click();await tick();assert.equal(e.calls.filter(c=>c.path.endsWith('/practice')).length,0);assert.match($('chSongStatus').textContent,/请选择/);
- $('chSongRecipient').value='b';e.w.document.querySelector('[data-song-practice]').click();await tick();assert.equal(JSON.parse(e.calls.find(c=>c.path.endsWith('/practice')).options.body).recipientId,'b');
+ e.w.document.querySelector('[data-song-practice]').click();await tick();
+ assert.deepEqual(JSON.parse(e.calls.find(c=>c.path.endsWith('/practice')).options.body),{notify:true});
  }finally{e.dom.window.close();}
 });
 

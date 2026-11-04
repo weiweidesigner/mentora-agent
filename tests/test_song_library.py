@@ -248,3 +248,63 @@ def test_preview_prepares_missing_builtin_audio_once_and_serves_seekable_wav(env
         assert e.a.post('/api/character/songs/amazing-grace/preview',json={},headers={'X-Veya-Day':'1'}).json()['state']=='ready'
         assert len(calls)==1
     finally:release.set()
+
+
+def select_groups(e,targets,private=False):
+    from app.character_settings import CharacterProfile
+    from app.qq_destinations import GroupDirectory,room_scope
+    directory=GroupDirectory(e.tasks)
+    scopes=[room_scope('123456',target) for target in targets]
+    for target in targets:directory.note('123456',target,active=1,allowed=1)
+    e.service.characters.save(e.owner,CharacterProfile(proactivePrivate=private,proactiveGroups=[scope_id(s) for s in scopes]))
+    return scopes
+
+
+def test_legacy_pending_private_notice_uses_current_selected_groups(env):
+    e=env;ident=upload(e);row=ready(e,ident)
+    select_groups(e,['room-one','room-two'])
+    calls=[]
+    e.client.proactive=lambda target,body,**kw:calls.append(('text',target,kw.get('kind','users')))
+    e.client.proactive_media=lambda target,url,**kw:calls.append(('audio',target,kw.get('kind','users')))
+    e.service.notify(row);e.service.notify(row)
+    assert calls==[('text','room-one','groups'),('audio','room-one','groups'),('text','room-two','groups'),('audio','room-two','groups')]
+    assert e.service.row(e.owner,ident)['notification']=='sent'
+    with e.tasks.db() as db:
+        assert db.execute('SELECT count(*) FROM song_notification_attempts').fetchone()[0]==4
+        assert db.execute('SELECT count(*) FROM qq_extra_message_attempts').fetchone()[0]==0
+
+
+def test_practice_cannot_override_group_only_settings_with_private_recipient(env):
+    e=env;ident=upload(e);select_groups(e,['room-one'])
+    with pytest.raises(Exception) as error:
+        e.service.practice(e.owner,ident,PracticeInput(recipientId=scope_id(e.scope)))
+    assert error.value.status_code==422
+    e.service.practice(e.owner,ident,PracticeInput())
+    assert json.loads(e.service.row(e.owner,ident)['recipient'])[1]=='groups'
+
+
+def test_notification_stops_when_all_destinations_are_unchecked(env):
+    e=env;ident=upload(e);row=ready(e,ident);select_groups(e,[])
+    e.service.notify(row)
+    assert not e.sent
+    assert e.service.row(e.owner,ident)['notification']=='cancelled'
+
+
+def test_group_notification_rechecks_settings_before_audio(env):
+    e=env;ident=upload(e);row=ready(e,ident);select_groups(e,['room-one'])
+    calls=[]
+    def send(target,body,**kw):
+        calls.append((target,kw['kind']));select_groups(e,[])
+    e.client.proactive=send
+    e.service.notify(row)
+    assert calls==[('room-one','groups')] and not e.sent
+    with e.tasks.db() as db:
+        assert sorted(r['state'] for r in db.execute('SELECT state FROM song_notification_attempts'))==['cancelled','sent']
+
+
+def test_group_permission_revocation_does_not_fall_back_to_private(env):
+    from app.qq_destinations import GroupDirectory
+    e=env;ident=upload(e);row=ready(e,ident);select_groups(e,['room-one'])
+    GroupDirectory(e.tasks).note('123456','room-one',allowed=0)
+    e.service.notify(row)
+    assert not e.sent and e.service.row(e.owner,ident)['notification']=='cancelled'
