@@ -79,21 +79,23 @@ function renderMemoryPicker(rebuild=true){
 const memorySphere=window.MentoraMemorySphere($('chWordCloud'));
 function proactivePlanHTML(r){
  const items=r.today||[];
- const states={planned:'待发送',sending:'正在准备发送',sent:'已发送',failed:'发送失败',cancelled:'已取消',expired:'已过期',limited:'已达当日上限',unknown:'发送状态待确认'};
+ const states={planned:'计划提问',sending:'正在准备发送',sent:'已发送',failed:'发送失败',cancelled:'已取消',expired:'已过期',limited:'已达当日上限',unknown:'发送状态待确认'};
  const time=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit',hour12:false});
  const empty=r.planState==='planned'?'今天未安排主动联系':r.planState==='retry'?'计划暂未准备完成，稍后会重试。':'今日计划尚未生成。';
- return `<header class="chPlanHeader"><h3>今日主动计划</h3><span>北京时间${items.length?' · '+items.length+' 条安排':''}</span></header>${items.length?`<ol class="chPlanList">${items.map(item=>{
+ return `<header class="chPlanHeader"><h3>今日主动计划</h3>${items.length?'<span>'+items.length+' 条安排</span>':''}</header>${items.length?`<ol class="chPlanList">${items.map(item=>{
   const sent=item.state==='sent';const content=sent&&item.message?item.message:item.question;
-  return `<li class="chPlanItem"><time datetime="${esc(new Date(item.due*1000).toISOString())}">${esc(time.format(new Date(item.due*1000)))}</time><div class="chPlanContent"><div class="chPlanLine"><strong>${esc(item.topic||(content?'主动消息':'话题准备中'))}</strong><span class="chPlanState">${esc(states[item.state]||'待确认')}</span></div>${content?`<p><span>${sent?'已发送':'计划提问'}</span>${esc(content)}</p>`:'<p class="chHint">正在准备具体话题，准备好后会在这里显示。</p>'}${item.error?`<p class="chHint">${esc(item.error)}</p>`:''}</div></li>`;
+  return `<li class="chPlanItem"><time datetime="${esc(new Date(item.due*1000).toISOString())}">${esc(time.format(new Date(item.due*1000)))}</time><div class="chPlanContent"><div class="chPlanLine"><strong>${esc(item.topic||(content?'主动消息':'话题准备中'))}</strong><span class="chPlanState">${esc(states[item.state]||'待确认')}</span></div>${content?`<p>${esc(content)}</p>`:'<p class="chHint">正在准备具体话题，准备好后会在这里显示。</p>'}${item.error?`<p class="chHint">${esc(item.error)}</p>`:''}</div></li>`;
  }).join('')}</ol>`:`<p class="chEmpty">${empty}</p>`}`;
 }
 function renderMemory(){
  const chosen=companionData.recipients.filter(r=>memorySelection.has(r.id));
  const memories=chosen.filter(r=>!(r.kind==='groups'&&r.proactiveTarget===true));
  const plans=chosen.filter(hasPlan),block=$('chProactivePlan');block.hidden=!plans.length;
- block.innerHTML=plans.map(r=>`<section class="chMemoryPlanSource">${chosen.length>1||r.kind==='groups'?`<h3 class="chMemoryOrigin">${esc(memoryName(r))}</h3>`:''}${proactivePlanHTML(r)}</section>`).join('');
+ block.innerHTML=plans.map(r=>`<section class="chMemoryPlanSource">${proactivePlanHTML(r)}</section>`).join('');
  memorySphere.setFacts(memories.flatMap(r=>(r.facts||[]).map((f,i)=>({...f,id:r.id+':'+(f.id||i),text:memoryName(r)+'：'+(f.text||f.label||'')}))));
- $('chMemoryStats').innerHTML=memories.map(r=>{const stats=r.intimacy||{};return `<div>${chosen.length>1?`<h3 class="chMemoryOrigin">${esc(memoryName(r))}</h3>`:''}<span>亲密度</span><strong>${Number(stats.score||0)}<small> / 100</small></strong><p>${Number(stats.days||0)} 天 · ${Number(stats.turns||0)} 次聊天</p><meter min="0" max="100" value="${Number(stats.score||0)}" aria-label="${esc(memoryName(r))}的亲密度"></meter></div>`;}).join('');
+ const statsHTML=memories.map((r,index)=>{const stats=r.intimacy||{},raw=Number(stats.score),score=Number.isFinite(raw)?Math.max(0,Math.min(100,raw)):0,id='ch-heart-'+index;const heart='M50 88C40 79 12 60 12 35C12 10 40 5 50 24C60 5 88 10 88 35C88 60 60 79 50 88Z';return `<div>${chosen.length>1?`<h3 class="chMemoryOrigin">${esc(memoryName(r))}</h3>`:''}<span>亲密度</span><div class="chHeartMeter" role="meter" aria-label="${esc(memoryName(r))}的亲密度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${score}"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="${id}"><path d="${heart}" /></clipPath></defs><path class="chHeartBase" d="${heart}" /><g clip-path="url(#${id})"><rect class="chHeartFill" x="10" y="${88-score*.78}" width="80" height="${score*.78}" /></g><path class="chHeartOutline" d="${heart}" /></svg><span class="chHeartValue" aria-hidden="true">${score}%</span></div><p>${Number(stats.days||0)} 天 · ${Number(stats.turns||0)} 次聊天</p></div>`;}).join('');
+ // Keep the existing heart animation when a background refresh changes nothing.
+ if($('chMemoryStats').dataset.content!==statsHTML){$('chMemoryStats').innerHTML=statsHTML;$('chMemoryStats').dataset.content=statsHTML;}
  const count=memories.reduce((n,r)=>n+(r.facts||[]).length,0);
  $('chWordCloud').hidden=!memories.length;
  $('chMemoryStatus').textContent=!chosen.length?'选择要查看的记忆或计划。':!memories.length?'全群主动联系需群主在 QQ 中开启相应权限。':count===1?'目前记住了 1 条信息，更多画像会随 QQ 聊天逐步积累。':count===0?'所选会话还没有可确认的画像记忆。':'';
