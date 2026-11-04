@@ -4091,7 +4091,7 @@ p {
 .conversation.is-empty .inspirationSquare { display:block; flex:0 0 auto; width:min(calc(100% - 48px),1100px); margin:8px auto 0; padding:0 0 64px; }
 .inspirationHeader h2 { margin:0 0 8px; font-size:26px; letter-spacing:-.5px; }
 .inspirationHeader p,.inspirationCategorySubtitle { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
-.inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:var(--bg); }
+.inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:transparent; }
 .inspirationTabs::-webkit-scrollbar { display:none; }
 .inspirationTabs button { flex:none;white-space:nowrap; }
 .inspirationTabs button { transition:color .15s ease; }
@@ -4121,7 +4121,7 @@ p {
   .conversation.is-empty .composer { padding-top:max(48px,calc(50dvh - 134px)); }
   .conversation.is-empty .inspirationSquare { width:100%; padding:0 12px 40px; }
   .inspirationHeader h2 { font-size:22px; }
-  .inspirationTabs { position:sticky; top:52px; z-index:5; height:52px; flex-wrap:nowrap; gap:4px; margin:16px -12px 12px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:var(--bg); }
+  .inspirationTabs { position:sticky; top:52px; z-index:5; height:52px; flex-wrap:nowrap; gap:4px; margin:16px -12px 12px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:transparent; }
   .inspirationTabs::-webkit-scrollbar { display:none; }
   .inspirationCategoryHeader { position:sticky; top:104px; z-index:4; margin:0 -12px 6px; padding:10px 12px; background:var(--bg); }
   .inspirationTabs button { flex:none; white-space:nowrap; padding:8px 12px; font-size:13px; }
