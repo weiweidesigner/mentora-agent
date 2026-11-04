@@ -1,0 +1,1 @@
+../.dependencies/mentora-companion/app/qq_chat_views.py

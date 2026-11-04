@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/weiweidesigner/mentora-themes.git",
+  "revision": "e4e61c13bc5e14843199170433770062a3cd337f",
+  "checkout": ".dependencies/mentora-themes",
+  "links": {
+    "app/static/assets/home-light-background.jpg": "app/static/assets/home-light-background.jpg",
+    "app/static/assets/home-light-background.mp4": "app/static/assets/home-light-background.mp4",
+    "app/static/assets/home-market-background.jpg": "app/static/assets/home-market-background.jpg",
+    "app/static/assets/home-market-background.mp4": "app/static/assets/home-market-background.mp4",
+    "app/static/assets/mentora-motion": "app/static/assets/mentora-motion",
+    "app/static/custom-background.js": "app/static/custom-background.js",
+    "app/static/home-background.js": "app/static/home-background.js",
+    "app/static/mentora-motion.css": "app/static/mentora-motion.css",
+    "app/static/theme-catalog.js": "app/static/theme-catalog.js",
+    "app/static/theme-settings.css": "app/static/theme-settings.css",
+    "app/static/theme-settings.js": "app/static/theme-settings.js",
+    "docs/home-background-sources.md": "docs/home-background-sources.md"
+  }
+}

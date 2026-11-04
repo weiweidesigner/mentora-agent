@@ -22,12 +22,12 @@ test('steady animation does not rewrite stars or text layout, and unchanged fact
  h.api.setFacts(h.facts);assert.equal(h.scene.querySelector('.chMemoryWord'),word);
  }finally{h.dom.window.close();}
 });
-test('animation stops offscreen, on hover, and when leaving the character page',async()=>{
+test('animation stops offscreen, on a memory hover, and when leaving the character page',async()=>{
  const h=setup();try{
  assert.equal(h.frames.size,1);h.observer([{isIntersecting:false}]);assert.equal(h.frames.size,0);
  h.observer([{isIntersecting:true}]);assert.equal(h.frames.size,1);
- h.scene.dispatchEvent(new h.w.Event('pointerenter'));assert.equal(h.frames.size,0);
- h.scene.dispatchEvent(new h.w.Event('pointerleave'));assert.equal(h.frames.size,1);
+ h.scene.querySelector('.chMemoryWord').dispatchEvent(new h.w.Event('pointerenter'));assert.equal(h.frames.size,0);
+ h.scene.querySelector('.chMemoryWord').dispatchEvent(new h.w.Event('pointerleave'));assert.equal(h.frames.size,1);
  h.workspace.hidden=true;await Promise.resolve();assert.equal(h.frames.size,0);
  h.workspace.hidden=false;await Promise.resolve();assert.equal(h.frames.size,1);
  h.workspace.dispatchEvent(new h.w.Event('scroll'));assert.equal(h.frames.size,0);

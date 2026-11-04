@@ -566,6 +566,8 @@ def upgrade_widget_tradingview(artifact: str) -> str:
     """
     if 'id="tv-config"' not in artifact:
         return artifact
+    from app.tradingview_theme import upgrade_tradingview_theme
+    artifact = upgrade_tradingview_theme(artifact)
     # The classic profile embeds its text in a fixed scrolling viewport. The
     # official Web Component exposes its own content height to the host instead.
     def profile_component(match):

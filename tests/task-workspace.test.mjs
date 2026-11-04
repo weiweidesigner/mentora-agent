@@ -32,6 +32,7 @@ function setup({sceneTasks=[],scene='live',mobile=false,tasks=[{...base,id:'live
   else data={};
   return {ok:true,json:async()=>data};
  };
+ w.restoreSavedActivity=async()=>{};w.activeController=null;w.stopRunPoll=()=>{};
  w.mergeSourcesByUrl=(sources)=>sources;w.sourcesFromInsightMarkdown=()=>[];w.detectLanguage=()=>"zh-CN";w.escapeHtml=v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;');w.buildCapabilityBar=()=>'';w.buildResultActions=()=>'<button class=shareResultButton>分享</button>';w.refreshSavedToolStepTitles=()=>{};w.attachResultActionHandlers=()=>{};w.toggleActivityDrawer=article=>article.dataset.activityOpened='true';
  w.COPY_MESSAGE_ICON='copy';w.CHECK_ICON='check';w.EDIT_MESSAGE_ICON='edit';w.autoResizeUserEdit=()=>{};w.handleMessageEnter=(event,_input,send)=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();send();}};
  w.eval(userMessageSource);w.eval(savedAnswerSource);w.eval(editorSource);w.eval(source);return {dom,w,requests,saves};

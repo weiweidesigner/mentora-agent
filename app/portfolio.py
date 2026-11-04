@@ -232,6 +232,7 @@ class InvestmentPreferencesInput(BaseModel):
 class InvestmentProfileInput(BaseModel):
     profile: str = Field(default='',max_length=4000)
     investment: InvestmentPreferencesInput | None = None
+    reservePct: float | None = Field(default=None,ge=0,le=95,allow_inf_nan=False)
 
 
 class WorkflowStateInput(BaseModel):
@@ -466,6 +467,9 @@ class Portfolio:
     def setting(self, owner, settings):
         self.account(owner)
         with self.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row=db.execute('SELECT settings FROM accounts WHERE owner=?',(owner,)).fetchone()
+            settings={**DEFAULTS,**json.loads(row['settings']),**settings}
             db.execute('UPDATE accounts SET settings=? WHERE owner=?',(json.dumps(settings),owner))
         return settings
 
@@ -858,7 +862,12 @@ def create_router(service):
 
     @router.put('/workflow/profile')
     def save_investment_profile(payload:InvestmentProfileInput,request:Request,response:Response):
-        return service.workflow.save_profile(owner(request,response,True),payload.profile,payload.investment.model_dump(exclude_none=True) if payload.investment is not None else None)
+        user=owner(request,response,True)
+        investment=payload.investment.model_dump(exclude_none=True) if payload.investment is not None else None
+        if payload.reservePct is not None:
+            from app.profile_position_settings import save_profile_position
+            return save_profile_position(service,user,payload.profile,investment,payload.reservePct)
+        return service.workflow.save_profile(user,payload.profile,investment)
 
     @router.put('/workflow/state')
     def set_workflow_state(payload:WorkflowStateInput,request:Request,response:Response):
@@ -969,7 +978,7 @@ def create_router(service):
 
     @router.put('/settings')
     def settings(payload:SettingsInput,request:Request,response:Response):
-        return service.setting(owner(request,response,True),payload.model_dump())
+        return service.setting(owner(request,response,True),payload.model_dump(exclude_unset=True))
 
     @router.post('/plans')
     def plan(payload:PlanInput,request:Request,response:Response):

@@ -45,7 +45,7 @@
   let defaultsVersion=0,defaultsLoading=false,initialEmptyId='';
   let pendingBoardId='';
   let generationCatalog=[],generationCatalogLoaded=false;
-  const refreshingBoards=new Set(), pageRefreshedAt=new Date();
+  const refreshingBoards=new Set(), refreshingCards=new Set(), pageRefreshedAt=new Date();
   const refreshTime=value=>`${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')} ${String(value.getHours()).padStart(2,'0')}:${String(value.getMinutes()).padStart(2,'0')}`;
   const componentFor=id=>generationCatalog.find(c=>c.id===id)||catalog.find(c=>c.id===id);
   async function ensureGenerationCatalog(){await ensureCatalog();if(!generationCatalogLoaded){const response=await fetch('/api/widgets/generation-catalog');if(!response.ok)throw Error('组件能力暂不可用，请重试。');generationCatalog=await response.json();generationCatalogLoaded=true;}}
@@ -61,6 +61,7 @@
     time.title='上次页面刷新：'+refreshTime(shown);
     time.dateTime=shown.toISOString();
   }
+  const refreshIcon=$('widgetRefresh')?.querySelector('svg')?.outerHTML||'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17"/></svg>';
   const trashIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M966.128 181.12H840.96c-0.168 0-0.32-0.096-0.488-0.096-0.16 0-0.312 0.096-0.48 0.096H184.064c-0.176 0-0.32-0.096-0.48-0.096-0.16 0-0.304 0.096-0.48 0.096H57.872a32.6 32.6 0 1 0 0 65.208h93.104v651.928c0 69.32 56.392 125.744 125.712 125.744h470.688c69.32 0 125.712-56.424 125.712-125.744V246.328h93.04a32.6 32.6 0 1 0 0-65.208z m-158.256 717.136c0 33.376-27.136 60.528-60.504 60.528H276.688c-33.352 0-60.496-27.16-60.496-60.528V246.328h591.68v651.928z"/><path d="M346.488 814.744a32.608 32.608 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24a32.6 32.6 0 0 0 32.608 32.616zM512 814.744a32.6 32.6 0 0 0 32.608-32.608V422.888a32.6 32.6 0 0 0-65.216 0v359.24A32.6 32.6 0 0 0 512 814.744zM677.544 814.744a32.584 32.584 0 0 0 32.6-32.608V422.888c0-18.008-14.576-32.6-32.6-32.6s-32.608 14.592-32.608 32.6v359.24a32.592 32.592 0 0 0 32.608 32.616zM318.848 157.6a32.608 32.608 0 0 0 32.608-32.6c0-23.808 64.048-59.792 160.576-59.792 96.512 0 160.544 35.984 160.544 59.792a32.6 32.6 0 0 0 32.608 32.6 32.592 32.592 0 0 0 32.6-32.6C737.792 53.736 640.736 0 512.032 0 383.312 0 286.24 53.736 286.24 125a32.608 32.608 0 0 0 32.608 32.6z"/></svg>`;
   const configIcon=`<svg viewBox="0 0 1024 1024" aria-hidden="true"><path d="M114.11 276.65h474.9c13.49 54.81 63.05 95.59 121.96 95.59s108.47-40.78 121.96-95.59h76.86c16.57 0 30-13.43 30-30s-13.43-30-30-30h-76.86c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-474.9c-16.57 0-30 13.43-30 30s13.43 30 30 30z m596.85-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59zM114.11 542h97.06c13.49 54.81 63.04 95.59 121.96 95.59S441.6 596.81 455.09 542h454.8c16.57 0 30-13.43 30-30s-13.43-30-30-30h-454.8c-13.49-54.81-63.04-95.59-121.96-95.59S224.66 427.19 211.17 482h-97.06c-16.57 0-30 13.43-30 30s13.43 30 30 30z m219.02-95.59c36.17 0 65.59 29.42 65.59 65.59s-29.42 65.59-65.59 65.59-65.59-29.42-65.59-65.59 29.42-65.59 65.59-65.59z m576.75 300.94H737.33c-13.49-54.81-63.05-95.59-121.96-95.59s-108.47 40.78-121.96 95.59h-379.3c-16.57 0-30 13.43-30 30s13.43 30 30 30h379.31c13.49 54.81 63.04 95.59 121.96 95.59s108.47-40.78 121.96-95.59h172.55c16.57 0 30-13.43 30-30s-13.43-30-30-30z m-294.51 95.59c-36.17 0-65.59-29.42-65.59-65.59s29.42-65.59 65.59-65.59 65.59 29.42 65.59 65.59-29.42 65.59-65.59 65.59z"/></svg>`;
   const current = () => boards.find(b => b.id === activeId);
@@ -269,7 +270,7 @@
   }
   function cardNode(card) {
     const el=document.createElement('article');el.className='widgetCard';el.dataset.card=card.id;el.dataset.signature=JSON.stringify([card.status,card.url,card.error,card.loadingText,card.refreshedAt]);
-    el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
+    el.innerHTML=`<header class="widgetCardHeader" tabindex="0" aria-label="点击选中卡片，拖动或方向键移动" title="拖动移动，右上角配置图表"><span class="widgetGrip" aria-hidden="true">⠿</span><span class="widgetCardTitle">${esc(card.title)}</span><div class="widgetCardActions"><button type="button" data-refresh title="刷新卡片" aria-label="刷新 ${esc(card.title)}">${refreshIcon}</button><button type="button" data-config title="配置" aria-label="配置图表">${configIcon}</button><button type="button" data-remove title="删除" aria-label="删除图表">${trashIcon}</button></div></header>`;
     if (card.url && ['ready','loading'].includes(card.status)) {
       const frame=document.createElement('iframe');frame.title=card.title;frame.src=frameUrl(card);frame.loading='lazy';frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
       frame.addEventListener('load',()=>{postKlineConfig(card,el);try{hydrateTradingView(card,JSON.parse(frame.contentDocument?.querySelector('#tv-config')?.textContent||'{}'),el);}catch{}window.installTradingViewSurface?.(frame,(height,intrinsic)=>{
@@ -314,6 +315,7 @@
     for(const card of board.cards){const old=oldNodes.get(card.id);if(old?.dataset.signature===JSON.stringify([card.status,card.url,card.error,card.loadingText,card.refreshedAt])){old.querySelector('.widgetCardTitle').textContent=card.title;postKlineConfig(card,old);}else if(old){old.replaceWith(cardNode(card));}else{canvas.append(cardNode(card));}}$('widgetEmpty').hidden=!!board.cards.length;
     $('widgetGenerate').hidden=jobs.has(activeId)||commandControllers.has(activeId);$('widgetStop').hidden=!jobs.has(activeId)&&!commandControllers.has(activeId);
     updateSelection();
+    for(const button of canvas.querySelectorAll('[data-refresh]')){const cardId=button.closest('[data-card]').dataset.card;button.disabled=jobs.has(board.id)||commandControllers.has(board.id)||board.cards.find(card=>card.id===cardId)?.status==='loading';button.classList.toggle('is-refreshing',refreshingCards.has(cardId));button.setAttribute('aria-busy',String(refreshingCards.has(cardId)));}
     applyLayout();notice(progressByBoard.get(activeId)||'');
   }
   function route(push=true) {
@@ -688,6 +690,24 @@
     }catch(error){reply=error.name==='AbortError'?'调整已停止。':error.message;if(images.length&&boards.includes(board)){imageDrafts.set(board.id,images);if(activeId===board.id&&!$('widgetPrompt').value)$('widgetPrompt').value=message;}}
     finally{progressByBoard.delete(board.id);commandControllers.delete(board.id);if(jobs.get(board.id)===controller)jobs.delete(board.id);if(boards.includes(board)){board.chat=[...(board.chat||[]),{role:'assistant',content:reply||'调整已停止。'}].slice(-40);}save();if(activeId===board.id){render();notice(reply);}}
   }
+  async function refreshCard(card){
+    const board=current();if(!board?.cards.includes(card)||jobs.has(board.id)||commandControllers.has(board.id))return;
+    const controller=new AbortController();commandControllers.set(board.id,controller);refreshingCards.add(card.id);render();
+    let failure='';
+    try{
+      await ensureGenerationCatalog();
+      if(controller.signal.aborted||!boards.includes(board)||!board.cards.includes(card))return;
+      const component=componentFor(card.component);
+      if(!component&&card.component)throw Error('组件暂不可用');
+      setProgress(board,'正在刷新：'+card.title);
+      const result=await generate(card.request||(card.parameters?.symbols||[]).join(',')||card.title,component||null,card.id,card.market||card.parameters?.market||'default',board,{...(card.parameters||{}),signal:controller.signal,preserveOnError:true});
+      if(result?.status!=='ready'||result.refreshError)failure=result?.refreshError||result?.error||'刷新未完成';
+    }catch(error){failure=error.message;}
+    finally{
+      commandControllers.delete(board.id);refreshingCards.delete(card.id);progressByBoard.delete(board.id);save();
+      if(activeId===board.id){render();notice(controller.signal.aborted?'刷新已停止，已保留原内容。':failure?'刷新未完成，已保留原内容：'+failure:'卡片已刷新。');}
+    }
+  }
   async function refreshBoard(){
     const board=current();if(!board?.cards.length||jobs.has(board.id)||commandControllers.has(board.id))return;
     const controller=new AbortController(),ids=board.cards.map(c=>c.id);let refreshed=0,failures=[];
@@ -801,6 +821,7 @@
   canvas.addEventListener('click',event=>{
     const el=event.target.closest('[data-card]');if(!el){selectedCardId='';updateSelection();return;}const board=current(),card=board.cards.find(c=>c.id===el.dataset.card);if(!card)return;
     if(!event.target.closest('button')){selectedCardId=card.id;updateSelection();}
+    if(event.target.closest('[data-refresh]')){refreshCard(card);return;}
     if(event.target.closest('[data-config]')){configureCard(card);return;}
     if(event.target.closest('[data-remove]')){board.cards=board.cards.filter(c=>c!==card);save();render();}
     if(event.target.closest('[data-open]')&&card.url)window.open(frameUrl(card),'_blank','noopener');

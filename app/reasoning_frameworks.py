@@ -24,6 +24,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Iterator
 from app.public_stream import PublicStream, WIDGET_TOOL
+from app.navigation_delivery import navigation_receipt, delivered_navigation, settle_navigation_answer
 from app.streamviz_files import HtmlRenderEvents
 from app.parallel_widgets import ParallelWidgets
 from urllib import error as urllib_error
@@ -2161,6 +2162,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         visualization_guidance: str = "",
         _repair_attempt: int = 0,
         runtime_env: dict[str,str] | None = None,
+        _navigation_cards: list[dict[str,str]] | None = None,
     ) -> Iterator[tuple[str, dict[str, Any]]]:
         self._add_deepseek_sdk_path()
         selected_model = inference_model.strip() or os.getenv("AICHART_DEEPSEEK_MODEL", "deepseek-flash")
@@ -2226,6 +2228,11 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
             "标准数据图使用通用确定性图表组件；StreamViz 编排报告并通过 chart_artifacts 嵌入已验证图表，非标准图解可原生流式生成；已有结构化 payload 可用内置布局模板；"
             "不要再加载 custom-html-widget 或手写 HTML，除非用户明确要求定制版式或模板确实无法表达。"
             "默认只执行一次自动布局检查；只有检查返回具体缺陷时才读取截图、修复并复验。"
+        )
+        prompt += (
+            "\n\n最终交付遵守所选技能的客户端格式。导航技能成功返回 title、icon、url 时，"
+            "最终答案先给简短说明，再用独立 JSON 代码块交付所选目标的三字段卡片；必要限制放在卡片外。用户明确只要卡片时可省略说明，不附技能标记或图表标记。"
+            "检索候选不等于生成卡片，只有执行目标入口工具成功后才能交付。"
         )
         if selected_reasoning_effort == "low":
             prompt += (
@@ -2336,6 +2343,7 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
         tool_context_by_call_id: dict[str, dict[str, Any]] = {}
         usage_totals = {"input": 0, "cached": 0, "output": 0, "reasoning": 0}
         pending_public_text = ""
+        navigation_cards = list(_navigation_cards or [])
         public_stream = PublicStream('deepseek',visual_briefs=True,gate_unlabelled=True)
         parallel_widgets = ParallelWidgets(self.generated_dir)
         with self._active_run_guard:self._active_widget_runs[session_key]=parallel_widgets
@@ -2482,6 +2490,10 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                                                     if isinstance(block, dict) and block.get("type") == "text")
                     if event_type == 'tool/result' and _tool_result_failed(data,message,observation):
                         phase='failed'
+                    if event_type == 'tool/result' and phase == 'completed':
+                        card = navigation_receipt(observation)
+                        if card and card not in navigation_cards:
+                            navigation_cards.append(card)
                     params_text = display_arguments if isinstance(display_arguments, str) else json.dumps(display_arguments, ensure_ascii=False)
                     tool_step = {
                         "index": tool_index, "total": tool_index, "tool": name, "script": name,
@@ -2568,6 +2580,33 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
                     break
             detail = f"：{failure_message}" if failure_message else ""
             raise ReasoningFrameworkError(f"DeepSeek Harness 未返回结果{detail}")
+        answer, navigation_updates = settle_navigation_answer(public_stream, answer, navigation_cards)
+        yield from navigation_updates
+        if navigation_cards and not delivered_navigation(public_stream.clean_answer(answer), navigation_cards):
+            if _repair_attempt < 1:
+                # The model chooses the target. Never display the last candidate
+                # merely because it appeared in a successful tool receipt.
+                self._drop_deepseek_harness(harness_key)
+                for key in list(public_stream.public_blocks):
+                    if key not in public_stream.progress_keys:
+                        yield 'answer_text', {'blockId': key, 'discard': True}
+                yield 'status', {'message': '正在补齐页面入口卡片', 'phase': 'navigation-delivery-repair', 'lang': 'zh-CN'}
+                guidance = (visualization_guidance + '\n\n' if visualization_guidance else '') + (
+                    '导航交付修复：上一轮工具已返回导航卡片，但最终答案未交付客户端可识别的卡片。'
+                    '依据原始目标、页面功能和上一轮结论选择正确落点；候选不是显示指令，不能默认选最后一个。'
+                    '复用已生成卡片，无需重新检索。成功交付应包含简短说明及独立 JSON 代码块中的 title、icon、url 卡片对象，'
+                    '逐字保留工具字段；说明和必要限制放在卡片外，不附 AIME_SKILLS 或 HTML。'
+                    '若候选均不满足目标，继续正常推理，不得声称已生成所请求的卡片。\n'
+                    '已成功生成的候选：' + json.dumps(navigation_cards, ensure_ascii=False) +
+                    '\n上一轮结论：' + public_stream.clean_answer(answer)
+                )
+                yield from self._stream_deepseek(
+                    question, images, session_key, '', history, inference_model,
+                    reasoning_effort, guidance, _repair_attempt=1,
+                    runtime_env=runtime_env, _navigation_cards=navigation_cards,
+                )
+                return
+            raise ReasoningFrameworkError('导航工具已返回候选，但最终卡片尚未完成交付，请重试。')
         public_stream.artifacts.extend(html_events.artifacts)
         public_stream.artifacts.extend(parallel_widgets.artifacts)
         if not public_stream.artifacts and self._requires_html_deliverable(question) and not re.search(
@@ -2653,12 +2692,35 @@ Yahoo 取数工具已由用户移除。禁止调用 yahoo-data、yfinance 或 Ya
     def _deepseek_harness(
         self, harness_type: Any, session_id: str, options: dict[str, Any]
     ) -> tuple[Any, threading.Lock]:
+        try:
+            cache_size = max(1, int(os.getenv('AICHART_DEEPSEEK_HARNESS_CACHE_SIZE', '2')))
+        except ValueError:
+            cache_size = 2
+        retired = []
         with self._deepseek_harness_guard:
-            harness = self._deepseek_harnesses.get(session_id)
+            with self._active_run_guard:
+                active = set(self._active_deepseek_runs.values())
+            incoming = session_id not in self._deepseek_harnesses
+            for key in list(self._deepseek_harnesses):
+                if len(self._deepseek_harnesses) + int(incoming) <= cache_size:
+                    break
+                lock = self._deepseek_session_locks[key]
+                if key != session_id and key not in active and not lock.locked():
+                    retired.append(self._deepseek_harnesses.pop(key))
+                    self._deepseek_session_locks.pop(key)
+        # Close idle processes before allocating another runtime. Active sessions
+        # and acquired run locks are never evicted to meet the cache target.
+        for old in retired:
+            try:
+                old.close()
+            except Exception:
+                pass
+        with self._deepseek_harness_guard:
+            harness = self._deepseek_harnesses.pop(session_id, None)
             if harness is None:
                 harness = harness_type(**options)
-                self._deepseek_harnesses[session_id] = harness
                 self._deepseek_session_locks[session_id] = threading.Lock()
+            self._deepseek_harnesses[session_id] = harness
             return harness, self._deepseek_session_locks[session_id]
 
     def close(self) -> None:

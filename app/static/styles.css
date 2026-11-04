@@ -1,4 +1,4 @@
-@import url("./action-cards.css?v=20261102-action-cards");
+@import url("./action-cards.css?v=20261103-navigation-fix");
 /* Self-hosted CJK fallback for Linux exports; native system fonts stay first. */
 @font-face{font-family:"Mentora CJK";src:url("/static/fonts/NotoSansSC-VF.woff2") format("woff2");font-style:normal;font-weight:100 900;font-display:swap}
 :root {

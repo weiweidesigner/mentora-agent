@@ -13,3 +13,8 @@
 .generatedFileCard:is(:hover,:focus-within) .generatedFileDownload,.mentoraNavigationCard:is(:hover,:focus-visible) .mentoraActionDirection{opacity:1!important;visibility:visible;pointer-events:auto}
 .generatedFileOpen:focus-visible,.generatedFileDownload:focus-visible,.mentoraNavigationCard:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.generatedFileDownload,.mentoraActionDirection{transition:none}}
+
+/* The whole navigation row is clickable; its arrow is a quiet hover cue. */
+.mentoraNavigationCard{cursor:pointer}
+.mentoraActionDirection{color:var(--action-card-muted);pointer-events:none!important}
+.mentoraActionDirection svg{opacity:.55!important;stroke-width:1.35}

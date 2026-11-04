@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "consolidatedSource": true,
+  "components": [
+    "mentora-companion",
+    "mentora-themes",
+    "mentora-workflows",
+    "ainvest-page-navigation"
+  ],
+  "integration": "Original app.* imports and static URLs are retained through pinned repository exports."
+}

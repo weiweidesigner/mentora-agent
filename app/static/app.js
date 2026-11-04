@@ -567,7 +567,7 @@ async function syncServerSessions() {
     storeSessions([...combined.filter(isHistoryVisibleSession).slice(0,20),...combined.filter(session=>!isHistoryVisibleSession(session))]);
     renderHistory();
     const restored = currentSession && sessions.get(currentSession.id);
-    if (!activeController && restored && (currentSession.activeRunId || (currentSession.requestId && currentSession.requestId === restored.requestId && currentSession.status !== restored.status))) restoreSession(currentSession.id);
+    if (!document.querySelector(".shell.theme-settings-view") && !activeController && restored && (currentSession.activeRunId || (currentSession.requestId && currentSession.requestId === restored.requestId && currentSession.status !== restored.status))) restoreSession(currentSession.id);
   } catch { /* Browser history remains available while offline. */ }
 }
 
@@ -1434,7 +1434,7 @@ async function artifactCode(url) {
 
 function createNavigationArtifact(code, item = {}) {
   const doc = new DOMParser().parseFromString(String(code || ""), "text/html");
-  const entries = [...doc.querySelectorAll("a.entry.mentoraNavigationCard")];
+  const entries = [...doc.querySelectorAll('a.entry,a[data-action-card="navigation"]')];
   if (!entries.length) return null;
   const allowed = new Set(["ainvest.com", "www.ainvest.com", "news.ainvest.com", "chart.ainvest.com", "crypto.ainvest.com", "community.ainvest.com", "contact.ainvest.com", "affiliate.ainvest.com"]);
   const links = entries.map(entry => {
@@ -1658,8 +1658,9 @@ function syncStreamAnswerPlacement(article, preview) {
   }
   let tail = raw.slice(cursor);
   const open = tail.lastIndexOf("[[");
-  const marker = "[[AIME_CHART:";
-  if (open >= 0 && (marker.startsWith(tail.slice(open)) || tail.slice(open).startsWith(marker))) tail = tail.slice(0, open);
+  const markers = ["[[AIME_CHART:", "[[AIME_SKILLS:", "[[AIME_FILE:"];
+  if (open >= 0 && markers.some(marker => marker.startsWith(tail.slice(open)) || tail.slice(open).startsWith(marker))) tail = tail.slice(0, open);
+  if (tail.endsWith("[")) tail = tail.slice(0, -1);
   tokens.push({text: tail});
   preview.streamAnswerNodes ||= new Map();
   const desired = [], seen = new Set();
@@ -1897,6 +1898,21 @@ function upsertStreamVisualization(article, data = {}) {
     window.AimeStreamViz?.unmount?.(host);
     host.remove();
     return;
+  }
+  // Navigation links must live in the host document: the chart sandbox cannot
+  // open new tabs. Settle streamed and restored navigation through one renderer.
+  if (data.final) {
+    let code = host.streamVisualizationCode || "";
+    if (!code && host.streamVisualizationRawArguments) {
+      try { code = JSON.parse(host.streamVisualizationRawArguments).widget_code || ""; } catch { /* The final artifact can still resolve incomplete arguments. */ }
+    }
+    const navigation = createNavigationArtifact(code, {url:data.htmlUrl || host.dataset.artifactUrl});
+    if (navigation) {
+      navigation.dataset.visualizationId = key;
+      window.AimeStreamViz?.unmount?.(host);
+      host.replaceWith(navigation);
+      return;
+    }
   }
   // StreamViz parses incomplete tool JSON/HTML and patches its existing iframe.
   // Forward real deltas immediately; its own loader handles an empty prefix.
@@ -6500,6 +6516,8 @@ function updateScrollHint() {
 }
 
 function formatInsight(value) {
+  const navigationCard = window.AInvestNavigationCards?.render(value);
+  if (navigationCard) return navigationCard;
   const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
   if (!lines.some((line) => line.trim())) return "<p>暂无解读文本。</p>";
   const blocks = [];
@@ -6531,7 +6549,8 @@ function formatInsight(value) {
     if (line.startsWith("```")) {
       flushTextBlocks();
       if (inCode) {
-        blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+        const navigationCard = window.AInvestNavigationCards?.render(codeLines.join("\n"));
+        blocks.push(navigationCard || `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
         codeLines = [];
       }
       inCode = !inCode;
@@ -6601,7 +6620,7 @@ function formatInsight(value) {
     flushList();
     paragraph.push(line);
   }
-  if (inCode && codeLines.length) blocks.push(`<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
+  if (inCode && codeLines.length) blocks.push(window.AInvestNavigationCards?.render(codeLines.join("\n")) || `<pre><code>${escapeHtml(codeLines.join("\n"))}</code></pre>`);
   flushTextBlocks();
   return blocks.join("");
 }

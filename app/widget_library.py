@@ -191,6 +191,9 @@ def build_widget(payload: TradingViewInput, output_dir: Path = GENERATED) -> dic
     if payload.preset and ((payload.preset=='intraday' and payload.widget!='symbol-overview') or (payload.preset in {'forex','crypto-pairs'} and payload.widget!='screener')):
         raise ValueError('该组件不支持指定的预设。')
     raw_config = validate_tradingview_config(payload.widget, payload.config or {})
+    if payload.widget == 'advanced-chart':
+        from app.tradingview_theme import adaptive_widget_config
+        raw_config = adaptive_widget_config(raw_config, payload.followTheme)
     values = list(dict.fromkeys(s.strip() for s in payload.symbols if s.strip()))
     if not values and payload.widget not in MARKETS and isinstance(raw_config.get('symbol'), str):
         values = [raw_config['symbol']]

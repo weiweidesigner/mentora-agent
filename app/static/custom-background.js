@@ -1,0 +1,1 @@
+../../.dependencies/mentora-themes/app/static/custom-background.js

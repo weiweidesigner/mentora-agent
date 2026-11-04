@@ -58,6 +58,8 @@ from app.congress_recent_trades import router as congress_recent_trades_router
 from app.business_images import router as business_image_router
 
 app = FastAPI(title="Mentora presentation gateway")
+from app.device_navigation import router as real_device_router
+app.include_router(real_device_router)
 app.include_router(business_image_router)
 app.include_router(congress_recent_trades_router)
 app.include_router(video_thumbnail_router)
@@ -85,6 +87,8 @@ def portfolio_styles():
 
 
 from app.native_pine_artifacts import NativePineStaticFiles
+from app.component_assets import mount_component_assets
+mount_component_assets(app, ROOT)
 app.mount("/static", NativePineStaticFiles(directory=STATIC_DIR), name="static")
 app.mount("/generated", StaticFiles(directory=GENERATED_DIR), name="generated")
 
@@ -196,7 +200,7 @@ app.include_router(create_case_favorites_router(CHAT_SESSIONS))
 def durable_chat_events(payload,user):
     portfolio=globals().get('PORTFOLIO')
     research_only=bool(portfolio and portfolio.workflow.research_only_request(payload.question))
-    deal=bool(portfolio and not research_only and (payload.agent=='mentora-deal' or (not payload.agent and portfolio.workflow.handles_question(payload.question,payload.history))))
+    deal=bool(portfolio and not research_only and payload.agent=='mentora-deal')
     events=portfolio.workflow.stream_idea(user,payload.question,payload.history,reasoning_effort=payload.reasoningEffort) if deal else framework_events(payload,user=user)
     if research_only:yield 'status',{'message':'正在研究当前品种与周期','agent':'mentora','lang':'zh-CN'}
     charts={}
@@ -617,7 +621,7 @@ def standalone_share_html(session: dict[str, Any]) -> str:
     context_classes=' '.join(name for name in contexts if name in ('cachedCaseAnswer','cachedReplay'))
     return f'''<!doctype html>
 <html lang="zh-CN" data-theme="{theme_mode}" style="color-scheme:{theme_mode}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css"><link rel="stylesheet" href="/static/share-answer.css">
+<title>{title}</title><link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css"><link rel="stylesheet" href="/static/ainvest-navigation-cards.css"><link rel="stylesheet" href="/static/share-answer.css">
 <style>
 .shareAnswerDocument{{box-sizing:border-box;width:100%;max-width:none;margin:0;background:transparent}}
 .streamvizArtifactHost,.visualize-widget-block{{display:block;width:100%;max-width:100%;height:auto;overflow:visible}}
@@ -941,7 +945,6 @@ with sync_playwright() as p:
 
 # Daily research uses exactly the same skill-based execution path as chat.
 from app.day_tasks import DayTasks, create_router as create_day_router, MARKETS
-from app.qq_channel import create_router as create_qq_router
 
 
 def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
@@ -981,70 +984,11 @@ def run_daily_research(config: dict[str, Any], run_id: str) -> dict[str, Any]:
 
 DAY_TASKS = DayTasks(Path(os.getenv('VEYA_DAY_DATA_DIR', str(ROOT / 'outputs' / 'day-tasks'))), run_daily_research)
 app.include_router(create_day_router(DAY_TASKS))
-from app.character_settings import CharacterStore, character_context, create_router as create_character_router
-CHARACTERS = CharacterStore(DAY_TASKS)
-app.include_router(create_character_router(CHARACTERS))
-from app.song_library import SongLibrary, create_router as create_song_library_router
-SONG_LIBRARY = SongLibrary(DAY_TASKS,CHARACTERS)
-app.include_router(create_song_library_router(SONG_LIBRARY))
-
-
-def run_qq_chat(scope, question, history):
-    import hashlib
-    import secrets
-    from app.qq_singing import context as singing_context, receipt_from_event
-    delivery_key = secrets.token_hex(16)
-    song_receipt = None
-    from app.delivery_preferences import plain_text_delivery
-    owner = 'qq-' + hashlib.sha256(scope.encode()).hexdigest()
-    context = (
-        '这是 QQ 渠道的 Mentora 轻聊天，用户已选择纯文本内容交付（外部服务可朗读成语音）。支持连续追问。'
-        '日常聊天、玩笑、亲近或撒娇请求用自然友好的口语回应，别把每句话都写成研究报告；正式问题保持准确。'
-        '不要输出“收到，正在分析”之类固定处理回执，不解释内部情绪分类、置信度或回复媒介决策。'
-        '语音和现成表情由 QQ 通道自动处理，你只写自然的回复正文；不要宣称不能发语音或表情，也不要用字符画或素材文件名代替表情。'
-        '按正常 Agent 流程判断是否需要项目技能查询数据或检索来源，保持证据真实、必要分析完整。'
-        'QQ 不支持 HTML 或交互可视化：跳过可视化与报告渲染步骤，不调用图表、表格组件、'
-        'StreamViz、页面、HTML、PDF、图片或报告文件生成工具；不生成图表标记、附件、报告或分享页面。'
-        '即使资料或历史回答包含图表，也只提炼文字结论；用户问趋势、对比、财务或列表时，用简短文字表达。'
-        '直接回答问题，默认约 100 至 300 字；简单闲聊用一两句，用户明确要求展开时再增加细节。'
-        '先说结论，再给少量关键事实，必要时用 1 至 3 个简短条目；不写长篇报告、大标题、Markdown 表格、代码或渲染语法。'
-        '群聊有短时回复窗口，请及时给出已有证据支持的结论；资料不足就明确缺失，不为补齐非必要细节反复查询。'
-        '金融行情注明关键数据的截至时间和必要的来源名称；数据缺失如实说明，不编造。'
-        '仅进行信息查询与分析，不得交易、修改账户、设置提醒或向其他渠道发送消息；'
-        '不要假设能访问网页用户的私人账户。\n\n用户消息：'
-    )
-    import json
-    profile = CHARACTERS.for_scope(scope.rsplit(':', 1)[0])
-    try:
-        group_chat = json.loads(scope.rsplit(':', 1)[0])[1] == 'groups'
-    except (ValueError, TypeError, IndexError):
-        group_chat = False
-    if group_chat:
-        context = context.removesuffix('用户消息：') + '当前回复会发送到QQ群。结合发言人和群聊背景自然接话，不把群员互相说的话当成对你的要求；不要把私聊中的亲密关系、记忆或昵称套给其他群员。没有帮助时不延伸话题或催人回复。\n\n用户消息：'
-    song_owner = CHARACTERS.owner_for_scope(scope.rsplit(':', 1)[0]) if hasattr(CHARACTERS,'owner_for_scope') else None
-    context = context.removesuffix('用户消息：') + character_context(profile) + CHARACTERS.memory_context(scope.rsplit(':', 1)[0]) + singing_context(delivery_key,song_owner) + '用户消息：'
-    effort = DAY_TASKS.execution_preferences().get('reasoningEffort') or 'low'
-    payload = ChatRequest(question=context + question, agent='mentora', sessionId=owner,
-                          reasoningFramework='deepseek', reasoningEffort=effort, history=history, themeMode='light')
-    answer = None
-    with plain_text_delivery():
-        for event, data in durable_chat_events(payload, owner):
-            if event == 'tool_step':
-                found = receipt_from_event(data, delivery_key)
-                if found: song_receipt = found
-            if event == 'error':
-                raise RuntimeError('QQ research returned an error')
-            if event == 'final':
-                answer = normalize_chat_result(data)
-    if answer is None:
-        raise RuntimeError('QQ research returned no final answer')
-    answer.pop('qqSong', None)
-    if song_receipt:
-        answer['qqSong'] = song_receipt
-    return answer
-
-
-app.include_router(create_qq_router(DAY_TASKS, chat_runner=run_qq_chat))
+from app.companion_runtime import install as install_companion
+_COMPANION = install_companion(app, DAY_TASKS, ChatRequest, durable_chat_events, normalize_chat_result)
+CHARACTERS = _COMPANION.characters
+SONG_LIBRARY = _COMPANION.songs
+run_qq_chat = _COMPANION.chat
 
 
 @app.on_event('startup')

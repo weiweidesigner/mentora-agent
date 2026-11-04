@@ -7,16 +7,18 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('aime-chart-theme-v1') === 'light' ? 'light' : 'dark'; } catch { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="icon" type="image/svg+xml" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
     <link rel="apple-touch-icon" href="/static/assets/mentora-logo.svg?v=20261015-neutral" />
-    <link rel="stylesheet" href="/static/styles.css?v=20261102-case-opaque" />
+    <link rel="stylesheet" href="/static/styles.css?v=20261103-navigation-fix" />
     <link rel="stylesheet" href="/static/image-viewer.css?v=20261028-viewer7" />
     <link rel="stylesheet" href="/static/vendor/streamviz/streamviz.css?v=20261015-full-column" />
-    <link rel="stylesheet" href="/static/widgets.css?v=20261026-widget-attachments" />
+    <link rel="stylesheet" href="/static/widgets.css?v=widget-theme-afcd32d45d50" />
     <link rel="stylesheet" href="/static/portfolio.css?v=20261027-position-links" />
     <link rel="stylesheet" href="/static/portfolio-controls.css?v=20261026-ocr-selection" />
     <link rel="stylesheet" href="/static/strategy-code-editor.css?v=20261023-syntax" />
       <link rel="stylesheet" href="/static/workflows.css?v=20261027-io-panel" />
-    <link rel="stylesheet" href="/static/character.css?v=20261103-character-performance" />
+    <link rel="stylesheet" href="/static/character.css?v=nebula-2d23e4526d4d" />
     <link rel="stylesheet" href="/static/mentora-motion.css?v=20261102-chat-gradient-restored" />
+<link rel="stylesheet" href="/static/ainvest-navigation-cards.css?v=6828988c2f08">
+<link rel="stylesheet" href="/static/theme-settings.css?v=9f8c1d974c42">
 </head>
   <body>
     <div id="mentoraOpening" class="mentoraOpening" aria-hidden="true" hidden>
@@ -49,10 +51,7 @@
               <img class="brandMark" src="/static/assets/mentora-logo.svg?v=20261015-neutral" alt="" />
               <span class="brandName">Mentora</span>
             </button>
-            <button id="themeModeControl" class="themeToggleButton" type="button" aria-label="切换到深色模式" aria-pressed="false" title="切换到深色模式">
-              <svg class="themeIconSun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4L19 5"></path></svg>
-              <svg class="themeIconMoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 13.2A8.7 8.7 0 0 1 10.8 3.6a8.7 8.7 0 1 0 9.6 9.6Z"></path></svg>
-            </button>
+            <button id="themeSettingsButton" class="themeToggleButton" type="button" aria-label="主题" title="主题" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"/><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/></svg></button>
             <button id="sidebarCollapseButton" class="sidebarCollapseButton" type="button" aria-label="收起侧边栏">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3"></rect><path d="M10 5v14"></path></svg>
             </button>
@@ -320,29 +319,33 @@
         <div id="activityBody" class="activityBody"></div>
       </aside>
     </main>
-    <script src="/static/home-background.js?v=20261103-earlier-welcome"></script>
+    <script src="/static/theme-catalog.js?v=9f8c1d974c42"></script>
+    <script src="/static/custom-background.js?v=9f8c1d974c42"></script>
+    <script src="/static/home-background.js?9f8c1d974c42"></script>
     <script type="module" src="/static/vendor/streamviz/streamviz.js?v=20261103-action-components"></script>
     <script src="/api/client-config.js"></script>
     <script src="/static/tradingview-surface.js?v=20261016-click-activate"></script>
     <script src="/static/image-viewer.js?v=20261028-viewer7"></script>
     <script src="/static/generation-scroll.js?v=20261028-user-control"></script>
-    <script src="/static/navigation-url.js?v=20261102-character"></script>
+    <script src="/static/navigation-url.js?9f8c1d974c42"></script>
     <script src="/static/vendor/action-cards.js?v=20261103-components"></script>
-    <script src="/static/app.js?v=20261103-action-components"></script>
+    <script src="/static/ainvest-navigation-cards.js?v=20261103-real-device-v3-no-success-notice"></script>
+    <script src="/static/app.js?themes-9f8c1d974c42"></script>
     <script src="/static/case-favorites.js?v=20261026-my-cases"></script>
     <script src="/static/cases.js?v=20261027-replay-once"></script>
     <script src="/static/task-editor.js?v=20261015-solid-dates"></script>
     <script src="/static/widget-symbol-picker.js?v=20261016-keyword-names"></script>
     <script src="/static/chart-activation.js?v=20261026-no-caption"></script>
     <script src="/static/widget-recommendations.js?v=20261016-click-send"></script>
-    <script src="/static/widgets.js?v=20261102-route-state"></script>
+    <script src="/static/widgets.js?v=widget-theme-afcd32d45d50"></script>
     <script src="/static/day-tasks.js?v=20261103-task-type-filter"></script>
     <script src="/static/workflows.js?v=20261027-cancel-build"></script>
     <script src="/static/strategy-code-editor.js?v=20261023-syntax"></script>
-    <script src="/static/portfolio.js?v=20261102-route-state"></script>
+    <script src="/static/portfolio.js?v=position-23a5bead4c0a"></script>
     <script src="/static/portfolio-import.js?v=20261026-bulk-progress" ></script>
-    <script src="/static/memory-sphere.js?v=20261103-character-performance"></script>
-    <script src="/static/character.js?v=20261103-single-identity"></script>
+    <script src="/static/memory-sphere.js?v=nebula-2d23e4526d4d"></script>
+    <script src="/static/character.js?v=20261104-chat-views-v1"></script>
     <script src="/static/character-songs.js?v=20261103-character-performance"></script>
+<script src="/static/theme-settings.js?v=9f8c1d974c42"></script>
 </body>
 </html>

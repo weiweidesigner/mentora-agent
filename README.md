@@ -1,5 +1,10 @@
 # Mentora Agent
 
+## Private application modules
+
+QQ/character/memory, themes/animation, and scheduled tasks/workflows are maintained in private repositories through pinned lock files. See [component ownership and migration](docs/private-component-repositories.md). Shared application composition and the remaining implementation stay in this repository.
+
+
 **See Beyond the Data**
 
 Mentora 是基于 DeepSeek Harness 的研究与可视化智能体，包含推理执行、工具活动展示、SSE 事件适配、报告展示、会话与分享、前端交互和样式。保留 Codex、本地 Ollama 与 AutoGen Studio 适配。组件、取数和视觉能力通过独立仓库的锁文件引用，不在宿主复制实现。

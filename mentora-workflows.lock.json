@@ -1,0 +1,28 @@
+{
+  "repository": "https://github.com/weiweidesigner/mentora-workflows.git",
+  "revision": "fa1ca690afaa266ea2113d274f9914b1b91c5033",
+  "checkout": ".dependencies/mentora-workflows",
+  "links": {
+    "app/day_presets.py": "app/day_presets.py",
+    "app/day_tasks.py": "app/day_tasks.py",
+    "app/static/day-tasks.js": "app/static/day-tasks.js",
+    "app/static/task-editor.js": "app/static/task-editor.js",
+    "app/static/workflows.css": "app/static/workflows.css",
+    "app/static/workflows.js": "app/static/workflows.js",
+    "app/task_planner.py": "app/task_planner.py",
+    "app/workflow_contracts.py": "app/workflow_contracts.py",
+    "app/workflow_graph.py": "app/workflow_graph.py",
+    "app/workflow_news.py": "app/workflow_news.py",
+    "app/workflow_observations.py": "app/workflow_observations.py",
+    "app/workflow_skill_results.py": "app/workflow_skill_results.py",
+    "app/workflows.py": "app/workflows.py",
+    "docs/daily-research-tasks.md": "docs/daily-research-tasks.md",
+    "tests/test_day_scenes.py": "tests/test_day_scenes.py",
+    "tests/test_day_task_stream.py": "tests/test_day_task_stream.py",
+    "tests/test_day_tasks.py": "tests/test_day_tasks.py",
+    "tests/test_task_planner.py": "tests/test_task_planner.py",
+    "tests/test_workflow_news.py": "tests/test_workflow_news.py",
+    "tests/test_workflow_skill_results.py": "tests/test_workflow_skill_results.py",
+    "tests/test_workflows.py": "tests/test_workflows.py"
+  }
+}

@@ -6,6 +6,7 @@ const source = readFileSync(new URL('../app/static/app.js', import.meta.url), 'u
 function fixture() {
   const dom = new JSDOM('<article><div class="finalAnswer"></div></article>', { runScripts:'outside-only' });
   const w = dom.window;
+  w.createNavigationArtifact = () => null;
   w.canonicalArtifact = value => value;
   w.sanitizeUserFacingInsight = value => value;
   w.formatInsight = value => value;

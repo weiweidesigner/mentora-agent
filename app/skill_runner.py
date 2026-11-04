@@ -68,9 +68,14 @@ def _registered_script(script_name: str, project_root: Path) -> tuple[Path, dict
     # cannot be redirected to an arbitrary filesystem path.
     if Path(script_name).name != script_name or not script_name.endswith(".py"):
         raise ValueError("script must be a registered basename")
-    matches = [item for item in _registry(project_root) if Path(str(item.get("script") or "")).name == script_name]
+    registered = _registry(project_root)
+    matches = [item for item in registered if Path(str(item.get("script") or "")).name == script_name]
     if not matches:
-        raise ValueError(f"script is not allowlisted: {script_name}")
+        namespace = script_name.partition("_")[0] + "_"
+        alternatives = sorted({Path(str(item.get("script") or "")).name for item in registered
+                               if str(item.get("script") or "").startswith(namespace)})[:12]
+        hint = f"; registered scripts in this namespace: {', '.join(alternatives)}" if alternatives else ""
+        raise ValueError(f"script is not allowlisted: {script_name}{hint}")
     preferred_skills = {
         "ainvest_news_search.py": "internal-search",
         "ainvest_video_search.py": "video-search",
@@ -90,7 +95,7 @@ def _registered_script(script_name: str, project_root: Path) -> tuple[Path, dict
 def _artifact_paths(arguments: list[str], project_root: Path) -> list[Path]:
     paths: list[Path] = []
     for index, value in enumerate(arguments[:-1]):
-        if value not in {"--output", "--payload-output", "--code-output"}:
+        if value not in {"--output", "--payload-output", "--code-output", "--diagnostics-output"}:
             continue
         path = Path(arguments[index + 1]).expanduser()
         if not path.is_absolute():

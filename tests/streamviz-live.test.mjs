@@ -12,6 +12,8 @@ function fixture(){
  w.mountStreamVisualization=(host,payload)=>{mounts.push({host,...payload});host.dataset.mounted='true';};
  w.AimeStreamViz={unmount:host=>{host.dataset.unmounted='true';}};
  w.createStreamVisualizationArtifact=()=>w.document.createElement('iframe');
+ w.eval(readFileSync(new URL('../app/static/vendor/action-cards.js',import.meta.url),'utf8'));
+ w.eval(source.slice(source.indexOf('function createNavigationArtifact('),source.indexOf('function createStreamVisualizationArtifact(')));
  w.eval(source.slice(start,end));
  return {w,article,mounts,send:data=>w.upsertStreamVisualization(article,data),close:()=>w.close()};
 }
@@ -98,4 +100,17 @@ test('composed charts load the verified final artifact instead of the streamed e
   assert.equal(f.article.querySelector('.streamvizArtifactHost'),null);
   assert.equal(f.mounts.length,1);
  }finally{f.close();}
+});
+
+test('final streamed web navigation becomes a native clickable link outside the chart sandbox',()=>{
+ for(const native of [false,true]){
+  const f=fixture();try{
+   const html='<main><a class="entry" href="https://www.ainvest.com/economics/USINTR/"><span class="name">USINTR · 宏观指标历史详情</span></a></main>';
+   f.send({id:'nav',reset:true,...(native?{argumentDelta:JSON.stringify({widget_code:html}),native:true}:{delta:html})});
+   f.send({id:'nav',final:true,htmlUrl:'/generated/rate.html'});
+   const link=f.article.querySelector('.nativeNavigationArtifact a');
+   assert(link);assert.equal(link.href,'https://www.ainvest.com/economics/USINTR/');assert.equal(link.target,'_blank');
+   assert.equal(f.article.querySelectorAll('iframe').length,0);assert.equal(link.closest('[data-visualization-id]').dataset.visualizationId,'nav');
+  }finally{f.close();}
+ }
 });

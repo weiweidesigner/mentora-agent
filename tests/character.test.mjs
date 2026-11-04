@@ -132,3 +132,11 @@ test('proactive destinations persist an explicit private and group allowlist ind
  d.querySelector('#chClearProactiveGroups').click();assert.equal(d.querySelectorAll('[data-proactive-group]:checked').length,0);
  h.dom.window.close();
 });
+
+test('room outreach has its own public plan and permission hint without member intimacy',async()=>{
+ const h=setup({}, {recipients:[{id:'room',kind:'groups',proactiveTarget:true,label:'QQ 群聊 1 · 主动消息',intimacy:{score:0,days:0,turns:0},facts:[],planState:'planned',today:[{due:Date.now()/1000,state:'failed',error:'请群主开启主动发言权限'}]}]});
+ await tick();assert.equal(h.d.querySelector('#chProactivePlan').hidden,false);
+ assert.match(h.d.querySelector('#chProactivePlan').textContent,/群主开启/);
+ assert.match(h.d.querySelector('#chMemoryStatus').textContent,/全群主动联系.*群主/);
+ assert.equal(h.d.querySelector('#chMemoryStats').textContent,'');h.dom.window.close();
+});

@@ -601,5 +601,29 @@
     "script": "screen.py",
     "label": "US Stock and ETF Screener",
     "description": "美股、美国上市 ETF 条件筛选数据工具（ainvest-screener）。筛选/选股/选ETF/找符合条件的证券：行业、主题、估值、P/E、ROE、费率、日成交量、资产规模 AUM、收益率和技术指标。支持预设标签、多选 OR、跨字段 AND、排序、分页和表格所需结果；无需登录。先用 fields/metrics/strategies 查相关参数，再用 query --asset stock|etf --filters-json --strategy --columns --sort --order --offset --limit --output --csv 获取筛选结果。不需要先调用 ETF 热力图或全量预取。"
+  },
+  {
+    "name": "ainvest_android_entry",
+    "script": "ainvest_android_entry.py",
+    "label": "AInvest Android 导航卡片",
+    "description": "AInvest 本平台跳转卡片。按功能语义检索候选并结合功能描述定位目标。内部发现分开返回 address_status/address_record、required_parameters、can_generate_card 和 destination_test_status；有地址不等于已验证，未验证也不等于没有地址。来源及绑定完整且 can_generate_card=true 时补齐真实参数生成链接，无需遍历内部控件；只启动 App 不算到达目标。can_generate_card=false 时按 next_action 补绑定或修正冲突，不反复空参数重试，不用父页替代子页。精确目标无法直达时，可按 nearby_destinations 和已证实层级比较最近入口；用户已接受最近位置策略即已有授权，无需重复确认。卡片须说明实际落点和剩余一步，同一证券不变，不宣称已到精确子页；未接受此策略时不自行替换。成功卡片恰好 title/icon/url，不执行交易、账户变更或设备操作。 Android 最近入口仅选 nearby_destinations 中 delivery_available=true 的记录；以 --feature-id 指实际入口、--nearest-for 指原目标，可将实际落点和剩余操作放入 title，证券参数保持同一对象。固定 AAPL 样本不能替代其他证券。 最终回复先给简短说明，再将原始三字段卡片置于独立 JSON 代码块；必要限制放卡片外。"
+  },
+  {
+    "name": "ainvest_ios_entry",
+    "script": "ainvest_ios_entry.py",
+    "label": "AInvest iOS 导航卡片",
+    "description": "AInvest 本平台跳转卡片。按功能语义检索候选并结合功能描述定位目标。内部发现分开返回 address_status/address_record、required_parameters、can_generate_card 和 destination_test_status；有地址不等于已验证，未验证也不等于没有地址。来源及绑定完整且 can_generate_card=true 时补齐真实参数生成链接，无需遍历内部控件；只启动 App 不算到达目标。can_generate_card=false 时按 next_action 补绑定或修正冲突，不反复空参数重试，不用父页替代子页。精确目标无法直达时，可按 nearby_destinations 和已证实层级比较最近入口；用户已接受最近位置策略即已有授权，无需重复确认。卡片须说明实际落点和剩余一步，同一证券不变，不宣称已到精确子页；未接受此策略时不自行替换。成功卡片恰好 title/icon/url，不执行交易、账户变更或设备操作。 iOS 已完成原目录及原生 Tab 参数复核；保留 launch_mode_constraints，不能将冷启动样本推广到同证券热启动。Financials 使用 company/financials，Related 使用 relatedETFs。外层 Options 不是内部 Discover；最近入口可用 --nearest-for，必须保留实际落点与剩余操作。 最终回复先给简短说明，再将原始三字段卡片置于独立 JSON 代码块；必要限制放卡片外。"
+  },
+  {
+    "name": "ainvest_web_entry",
+    "script": "ainvest_web_entry.py",
+    "label": "AInvest Web 导航卡片",
+    "description": "AInvest 本平台跳转卡片。按功能语义检索候选并结合功能描述定位目标。内部发现分开返回 address_status/address_record、required_parameters、can_generate_card 和 destination_test_status；有地址不等于已验证，未验证也不等于没有地址。来源及绑定完整且 can_generate_card=true 时补齐真实参数生成链接，无需遍历内部控件；只启动 App 不算到达目标。can_generate_card=false 时按 next_action 补绑定或修正冲突，不反复空参数重试，不用父页替代子页。精确目标无法直达时，可按 nearby_destinations 和已证实层级比较最近入口；用户已接受最近位置策略即已有授权，无需重复确认。卡片须说明实际落点和剩余一步，同一证券不变，不宣称已到精确子页；未接受此策略时不自行替换。成功卡片恰好 title/icon/url，不执行交易、账户变更或设备操作。 Web 已完成1193条功能/状态复核；1151条含UI点击证据，不能视为全部直达通过。历史验证必须匹配完整URL与参数，不能把通用图表周期当作期权子Tab。可用 --nearest-for 交付记录且 delivery_available=true 的最近入口，标题须保留实际落点及剩余动作。UI-only不可伪装直达；产品主体未确认、Coming Soon、内嵌页未加载和受阻来源分别保留，crypto受阻不自动重试。 最终回复先给简短说明，再将原始三字段卡片置于独立 JSON 代码块；必要限制放卡片外。"
+  },
+  {
+    "name": "ainvest_web_catalog",
+    "script": "ainvest_web_catalog.py",
+    "label": "AInvest 官网目录证据",
+    "description": "Web 导航离线补充检索：--site-overview、--site-branch、--site-find、--observed-links、--search-pages、--verification-status。仅返回页面与来源证据；卡片统一用 ainvest_web_entry.py 生成。"
   }
 ]

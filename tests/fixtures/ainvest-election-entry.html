@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AInvest 2026 中期选举</title>
+<style>
+  :root{
+    color-scheme: light dark;
+    --surface: var(--sv-surface-primary, #ffffff);
+    --surface-2: var(--sv-surface-secondary, #f4f5f7);
+    --ink: var(--sv-text-primary, #141414);
+    --muted: var(--sv-text-secondary, #6b7280);
+    --line: var(--sv-border-subtle, #e4e6ea);
+    --accent: var(--sv-chart-series-1, #2563eb);
+    --accent-soft: rgba(37,99,235,.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --surface: var(--sv-surface-primary, #1d1d1f);
+      --surface-2: var(--sv-surface-secondary, #2a2a2d);
+      --ink: var(--sv-text-primary, #f2f2f2);
+      --muted: var(--sv-text-secondary, #a1a1a6);
+      --line: var(--sv-border-subtle, #3a3a3d);
+      --accent-soft: rgba(96,165,250,.14);
+    }
+  }
+  [data-theme="dark"]{
+    --surface: var(--sv-surface-primary, #1d1d1f);
+    --surface-2: var(--sv-surface-secondary, #2a2a2d);
+    --ink: var(--sv-text-primary, #f2f2f2);
+    --muted: var(--sv-text-secondary, #a1a1a6);
+    --line: var(--sv-border-subtle, #3a3a3d);
+    --accent-soft: rgba(96,165,250,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:transparent}
+  body{
+    color:var(--ink);
+    font:16px/1.45 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    padding:2px;
+  }
+  .wrap{max-width:560px}
+  .entry{
+    display:flex;align-items:center;gap:14px;
+    width:100%;min-height:72px;padding:15px 18px;
+    border:1px solid var(--line);border-radius:18px;
+    background:var(--surface);
+    text-decoration:none;color:inherit;
+    transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .entry:hover{
+    border-color:var(--accent);
+    box-shadow:0 6px 20px rgba(0,0,0,.08);
+    transform:translateY(-1px);
+  }
+  .entry:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .icon{
+    width:42px;height:42px;flex:none;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--accent-soft);color:var(--accent);
+  }
+  .icon svg{width:23px;height:23px}
+  .text{flex:1;min-width:0}
+  .eyebrow{
+    font-size:10.5px;letter-spacing:.10em;font-weight:700;
+    color:var(--accent);text-transform:uppercase;margin-bottom:2px;
+  }
+  .name{font-size:17px;font-weight:650;letter-spacing:.01em}
+  .meta{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .arrow{width:18px;height:18px;flex:none;color:var(--muted)}
+  .note{
+    font-size:11.5px;color:var(--muted);
+    margin:8px 2px 0;line-height:1.5;
+  }
+</style>
+<body>
+  <div class="wrap">
+    <a class="entry" href="https://news.ainvest.com/deep-topic/topic/midterm-election-2026-2610/" target="_blank" rel="noopener noreferrer">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10.5 12 5l8 5.5"/>
+          <path d="M5.5 10.5h13v9h-13z"/>
+          <path d="M9.5 14.2h5v5.3h-5z"/>
+        </svg>
+      </span>
+      <span class="text">
+        <span class="eyebrow">AInvest Special Report</span>
+        <div class="name">2026 中期选举</div>
+        <div class="meta">参议院 · 众议院 · 投票日 11月3日</div>
+      </span>
+      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m9 5 7 7-7 7"/>
+      </svg>
+    </a>
+    <p class="note">AInvest 新闻专题页；若侧栏内嵌受站点验证限制，点击卡片将在新标签页打开原站。</p>
+  </div>
+</body>
+</html>

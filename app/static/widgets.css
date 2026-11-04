@@ -369,3 +369,5 @@
 .widgetAddArtifactDialog button:hover{background:var(--soft-2)}
 .widgetAddArtifactDialog button[type=submit]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .widgetAddArtifactDialog button[type=submit]:hover{opacity:.88}
+
+.widgetCardActions [data-refresh] svg{fill:none;stroke:currentColor;stroke-width:1.7}.widgetCardActions [data-refresh].is-refreshing svg{animation:widget-spin 1.2s linear infinite}.widgetCardActions [data-refresh]:disabled{opacity:.45;cursor:wait}@media(prefers-reduced-motion:reduce){.widgetCardActions [data-refresh].is-refreshing svg{animation:none}}

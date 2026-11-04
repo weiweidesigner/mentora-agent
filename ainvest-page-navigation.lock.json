@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/weiweidesigner/ainvest-page-navigation.git",
+  "revision": "6b1d62557ad802ddacdd4ad9b6b5a041cdd8b8ed",
+  "checkout": ".dependencies/ainvest-page-navigation",
+  "links": {
+    "app/skills/ainvest-app-navigation": "ainvest-app-navigation",
+    ".agents/skills/ainvest-app-navigation": "ainvest-app-navigation",
+    "app/skills/ainvest-ios-navigation": "ainvest-ios-navigation",
+    ".agents/skills/ainvest-ios-navigation": "ainvest-ios-navigation",
+    "app/skills/ainvest-web-navigation": "ainvest-web-navigation",
+    ".agents/skills/ainvest-web-navigation": "ainvest-web-navigation"
+  }
+}
