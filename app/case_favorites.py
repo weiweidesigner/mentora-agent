@@ -148,6 +148,16 @@ def _document_component_names(document):
     return ['金融图表'] if 'data-business-title' in document else ['可视化报告']
 
 
+def answer_has_business_chart(answer, generated_dir=None):
+    """Classify saved native components from local artifacts, never question text."""
+    rows=json.loads((Path(__file__).parent/'static/widget-catalog.json').read_text())
+    names=_component_names()
+    native={names[row['id']] for row in rows if row.get('skill')=='business-chart-recall' and row.get('provider')=='business'}
+    native.update({'K线图','多股分时','资本结构','关键统计数据'})
+    return any(native.intersection(_document_component_names(document))
+               for document in _artifact_documents(answer,generated_dir))
+
+
 def answer_component_tag(answer, generated_dir=None, category='mine'):
     """Name the rendered components in Chinese, independently of storage category."""
     labels=[]
@@ -191,6 +201,7 @@ def create_router(store):
             for row in rows:
                 metadata=json.loads(row['metadata'])
                 answer=json.loads(row['payload']).get('answer') or {}
+                metadata['businessChart']=answer_has_business_chart(answer,store.directory.parent/'generated')
                 metadata['preview']=answer_preview(answer,store.directory.parent/'generated')
                 metadata['tag']=answer_component_tag(answer,store.directory.parent/'generated',metadata.get('category','mine'))
                 cases.append(metadata)
@@ -206,6 +217,7 @@ def create_router(store):
         now = dt.datetime.now(dt.timezone.utc).isoformat()
         metadata = dict(id=key, category=payload.category, title=payload.title.strip() or question[:40],
                         question=question, preview=answer_preview(payload.answer,store.directory.parent/'generated'), tag=answer_component_tag(payload.answer,store.directory.parent/'generated',payload.category),
+                        businessChart=answer_has_business_chart(payload.answer,store.directory.parent/'generated'),
                         cachedDate=dt.datetime.now(dt.timezone(dt.timedelta(hours=8))).date().isoformat(),
                         conversationUrl='/api/case-favorites/' + key, personal=True,
                         fingerprint=fingerprint)
@@ -213,7 +225,7 @@ def create_router(store):
             db.execute('BEGIN IMMEDIATE')
             existing = db.execute('SELECT metadata FROM case_favorites WHERE owner=? AND id=?', (user, key)).fetchone()
             if existing:
-                saved=json.loads(existing['metadata']);saved.update(preview=metadata['preview'],tag=metadata['tag']);return saved
+                saved=json.loads(existing['metadata']);saved.update(preview=metadata['preview'],tag=metadata['tag'],businessChart=metadata['businessChart']);return saved
             db.execute('INSERT INTO case_favorites VALUES(?,?,?,?,?,?)',
                        (user, key, payload.category, json.dumps(metadata, ensure_ascii=False), content, now))
         return metadata

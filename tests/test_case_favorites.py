@@ -208,3 +208,17 @@ def test_saved_scripted_artifact_replays_directly_without_mutating_snapshot(clie
     with store.db() as db:
         snapshot = json.loads(db.execute('SELECT payload FROM case_favorites WHERE id=?', (row['id'],)).fetchone()[0])
     assert 'renderMode' not in snapshot['answer']['reportArtifacts'][0]
+
+
+def test_saved_business_chart_classification_is_owner_scoped_and_does_not_rewrite_snapshot(clients):
+    a,b,store=clients
+    generated=store.directory.parent/'generated';generated.mkdir(exist_ok=True)
+    (generated/'native-test.html').write_text('<div class="income-statement">native</div>')
+    value=data('mine');value['answer']['reportArtifacts']=[{'url':'/generated/native-test.html'}]
+    saved=a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=value).json()
+    assert saved['businessChart'] is True
+    assert a.get('/api/case-favorites').json()['cases'][0]['businessChart'] is True
+    assert b.get('/api/case-favorites').json()['cases']==[]
+    assert a.get(saved['conversationUrl']).json()['answer']['reportArtifacts']==value['answer']['reportArtifacts']
+    generic=data('mine');generic['question']='AInvest 业务图表';generic['answer']['reportArtifacts']=[]
+    assert a.post('/api/case-favorites',headers={'X-Veya-Day':'1'},json=generic).json()['businessChart'] is False

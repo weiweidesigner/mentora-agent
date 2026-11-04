@@ -599,6 +599,8 @@
       }
       await window.MentoraCaseFavorites?.ready;
       let personal=[...(window.MentoraCaseFavorites?.rows||[])];
+      const isBusiness=row=>row.businessChart===true||(row.id?.startsWith('business-')&&row.tool!=='TradingViewChart');
+      const businessCategory='business-charts';
       const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];
       window.veyaCases=[...(window.veyaCases||[]),...[...personal,...catalog.cases].filter(row=>!(window.veyaCases||[]).some(item=>item.id===row.id))];
       let current='mine',scrollPending=false;
@@ -620,9 +622,12 @@
         return personal.filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;}).map(row=>({...row,category:'mine'}));
       };
       const render=()=>{
+        if([...personal,...catalog.cases].some(isBusiness)&&!categories.some(category=>category.id===businessCategory))categories.splice(Math.max(1,categories.findIndex(category=>category.id==='charts')+1),0,{id:businessCategory,title:'金融业务图表',subtitle:'收藏中的 AInvest 原生业务图表，与行情、财报、估值和资金流案例同步展示。'});
+
         tabs.innerHTML=categories.map(category=>'<button type="button" role="tab" id="inspiration-tab-'+category.id+'" aria-controls="inspirationPanel" aria-selected="'+(category.id===current)+'" tabindex="'+(category.id===current?0:-1)+'" data-category="'+category.id+'">'+escapeHtml(category.title)+'</button>').join('');
         panel.innerHTML=categories.map(category=>{
-          const rows=category.id==='mine'?mineRows():catalog.cases.filter(row=>row.category===category.id);
+          const seen=new Set();
+          const rows=category.id==='mine'?mineRows():(category.id===businessCategory?[...personal.filter(isBusiness),...catalog.cases.filter(isBusiness)]:catalog.cases.filter(row=>row.category===category.id&&!isBusiness(row))).filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;});
           const cards=(items,level=4)=>'<div class="inspirationGrid">'+items.map((row,index)=>cardHtml(row,index).replaceAll('<h2>','<h'+level+'>').replaceAll('</h2>','</h'+level+'>')).join('')+'</div>';
           let content=category.id==='mine'&&!rows.length?'<p class="inspirationEmpty">暂无收藏</p>':cards(rows);
           if(category.id==='charts'&&catalog.tradingViewGroups?.length){

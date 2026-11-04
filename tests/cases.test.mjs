@@ -543,12 +543,31 @@ test('financial gallery renders official TradingView groups with native research
  const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
  const h=setup('https://example.com/','组件案例',catalog);await tick();
  const groups=h.w.document.querySelectorAll('.inspirationWidgetGroup');
- assert.equal(groups.length,catalog.tradingViewGroups.length+1);
+ assert.equal(groups.length,catalog.tradingViewGroups.length);
+ assert(h.w.document.querySelector('#inspiration-section-business-charts [data-case=business-income_statement]'));
  for(const group of catalog.tradingViewGroups){
   const section=h.w.document.querySelector(`#widget-group-${group.id}`).closest('section');
   const expected=catalog.cases.filter(row=>row.tool==='TradingViewChart'&&row.widgetGroup===group.id);
   assert.equal(section.querySelectorAll('[data-case]').length,expected.length);
   assert.match(section.textContent,new RegExp(group.title));
  }
+ h.w.close();
+});
+
+
+test('saved native business charts sync privately into business category and deduplicate',async()=>{
+ const native={id:'saved-native',fingerprint:'one',category:'mine',businessChart:true,title:'原生财报',question:'财报',tag:'利润表',conversationUrl:'/api/case-favorites/saved-native'};
+ const generic={id:'saved-report',category:'mine',title:'普通报告',question:'报告',conversationUrl:'/api/case-favorites/saved-report'};
+ const catalog={categories:[{id:'charts',title:'金融图表'}],cases:[{id:'business-income_statement',category:'charts',title:'公开利润表',question:'公开财报'},{id:'business-trading_view_chart',tool:'TradingViewChart',category:'charts',title:'TradingView',question:'价格'}]};
+ const h=setup('https://example.com/','原始收藏回答',catalog,{favorites:[native,{...native,id:'saved-duplicate'},generic]});await tick();
+ const d=h.w.document;
+ assert.equal(d.querySelectorAll('#inspiration-section-business-charts .caseCard').length,2);
+ assert(d.querySelector('#inspiration-section-mine [data-case=saved-native]'));
+ assert.equal(d.querySelector('#inspiration-section-business-charts [data-case=saved-report]'),null);
+ assert(d.querySelector('#inspiration-section-charts [data-case=business-trading_view_chart]'));
+ d.querySelector('#inspiration-section-business-charts [data-case=saved-native]').click();await tick();
+ assert.match(h.messages.textContent,/原始收藏回答/);assert.equal(h.sent.length,0);
+ h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-removed',{detail:{ids:['saved-native','saved-duplicate']}}));
+ assert.equal(d.querySelector('#inspiration-section-business-charts [data-case=saved-native]'),null);
  h.w.close();
 });
