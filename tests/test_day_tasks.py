@@ -530,3 +530,25 @@ def test_new_absolute_tasks_always_save_fixed_clock_time(mode,cadence):
     task=TaskInput(title='固定时间研究',question='复盘市场',market='US',cadence=cadence,time='14:30',timezone='Asia/Shanghai',timeMode=mode,offset=15)
     assert task.timeMode=='fixed' and task.offset==0
     assert task.time=='14:30' and task.timezone=='Asia/Shanghai'
+
+
+def test_pausing_cancels_unstarted_run_and_finishes_progress_stream(client,service):
+    task=create(client).json()
+    run=client.post('/api/day/tasks/'+task['id']+'/run',headers={'X-Veya-Day':'1'}).json()['runId']
+    paused=client.put('/api/day/tasks/'+task['id'],json=config(enabled=False),headers={'X-Veya-Day':'1'})
+    assert paused.status_code==200
+    assert paused.json()['enabled'] is False and paused.json()['activeRun'] is None
+    assert paused.json()['lastRun']['status']=='cancelled'
+    assert service.claim() is None
+    events=client.get('/api/day/tasks/'+task['id']+'/runs/'+run+'/events')
+    assert 'event: run_state' in events.text and '"status": "cancelled"' in events.text
+    assert '任务已暂停，已取消排队' in events.text
+
+
+def test_pausing_schedule_does_not_mislabel_already_running_work(service):
+    task=service.save('alice',TaskInput(**config()))
+    with service.db() as db:service.enqueue(db,service.owned(db,'alice',task['id']))
+    run=service.claim()
+    paused=service.save('alice',TaskInput(**config(enabled=False)),task['id'])
+    assert paused['enabled'] is False and paused['activeRun']==run['id']
+    assert paused['lastRun']['status']=='running'

@@ -576,6 +576,13 @@ class DayTasks:
                 config['wecomUrl'] = ''
             if old:
                 db.execute('UPDATE tasks SET config=?,next_at=? WHERE id=?', (self.pack(config), next_at, task_id))
+                if not config['enabled'] and old['active_run']:
+                    # Serialize with claim(): only work that has not started can
+                    # be cancelled by pausing its schedule.
+                    stopped=db.execute("UPDATE runs SET status='cancelled',finished=?,error='任务已暂停，已取消排队' WHERE id=? AND status='queued'",(stamp(now_utc()),old['active_run'])).rowcount
+                    if stopped:
+                        db.execute('UPDATE tasks SET active_run=NULL WHERE id=? AND active_run=?',(task_id,old['active_run']))
+                        db.execute('INSERT INTO run_events(run_id,event,payload,created) VALUES(?,?,?,?)',(old['active_run'],'error',json.dumps({'message':'任务已暂停，已取消排队','status':'cancelled'},ensure_ascii=False),stamp(now_utc())))
             else:
                 db.execute('INSERT INTO tasks(id,owner,config,next_at,created) VALUES(?,?,?,?,?)', (task_id, owner, self.pack(config), next_at, stamp(now_utc())))
             db.execute('INSERT OR IGNORE INTO result_links(task_id,token) VALUES(?,?)', (task_id, secrets.token_urlsafe(32)))
@@ -1005,7 +1012,7 @@ def create_router(service):
                             data['thinkingElapsed']=max(0,(dt.datetime.fromisoformat(run['finished'])-dt.datetime.fromisoformat(run['created'])).total_seconds()*1000)
                     yield 'id: '+str(cursor)+'\nevent: '+row['event']+'\ndata: '+json.dumps(data,ensure_ascii=False)+'\n\n'
                 if len(rows)==100:continue
-                if not run or run['status'] in ('success','failed'):
+                if not run or run['status'] in ('success','failed','cancelled'):
                     yield 'event: run_state\ndata: '+json.dumps({'status':run['status'] if run else 'missing'})+'\n\n'
                     return
                 yield ': keepalive\n\n'

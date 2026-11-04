@@ -390,7 +390,7 @@
     const response=await api('tasks/'+id+'/runs');if(version!==viewVersion)return;
     const runs=response.runs;
     $('taskHistoryControl').hidden=!runs.length;
-    $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
+    $('taskRunSelect').innerHTML=runs.map(r=>`<option value="${r.id}">${esc(dateText(r.finished||r.created,zoneFor(task)))} · ${({success:'已完成',failed:'失败',cancelled:'已取消',queued:'排队中',running:'运行中'})[r.status]}</option>`).join('');
     if(!runs.length) {
       if(task.systemPreset || (task.enabled && task.nextAt)){
         renderWaitingTask(task);return;
