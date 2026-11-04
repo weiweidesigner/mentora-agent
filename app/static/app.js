@@ -1286,6 +1286,14 @@ function installMindMapWheelBoundary(doc) {
   }, { capture: true, passive: true });
 }
 
+function artifactGatewayError(frame) {
+  try {
+    const doc = frame.contentDocument;
+    const gateway = /^(?:502\s+Bad Gateway|503\s+Service(?: Temporarily)? Unavailable|504\s+Gateway Time-?out)\b/i;
+    return gateway.test(doc?.title?.trim() || '') || gateway.test(doc?.body?.textContent?.trim().slice(0, 120) || '');
+  } catch { return false; }
+}
+
 function createArtifactFallbackFrame(item, index, options = {}) {
   if(isGeneratedImageArtifact(item))return createGeneratedImageArtifact(item);
   const loadingStartedAt = Date.now();
@@ -1321,18 +1329,49 @@ function createArtifactFallbackFrame(item, index, options = {}) {
     if (source.pathname.includes("/static/cases/")) source.searchParams.set("theme", currentThemeMode());
     frame.src = source.href;
   }
-  let contentReady = false;
+  let contentReady = false, retryCount = 0, retryTimer;
+  const retryButton = document.createElement('button');
+  retryButton.type = 'button';retryButton.className = 'chartLoadRetry';retryButton.textContent = '重新加载';
+  const showLoading = () => {
+    contentReady = false;
+    delete shell.dataset.artifactReady;
+    shell.classList.add('is-chart-loading');
+    loading.classList.remove('is-error');loading.setAttribute('role','status');
+    loadingLabel.textContent = artifactLoadingMessage(item);retryButton.remove();
+    if (!loading.isConnected) shell.append(loading);
+  };
+  const reload = () => {
+    if (!shell.isConnected) return;
+    showLoading();
+    const url = new URL(frame.src, window.location.origin);
+    url.searchParams.set('v', String(Date.now()) + '-' + retryCount);
+    frame.src = url.href;
+  };
+  retryButton.addEventListener('click', () => { clearTimeout(retryTimer);retryCount = 0;reload(); });
   frame.reportContentReady = () => {
-    if (contentReady) return;
+    if (contentReady || artifactGatewayError(frame)) return;
     contentReady = true;
     resizeReportDocumentFrame(frame);
     setTimeout(() => requestAnimationFrame(() => {
+      if (!contentReady || artifactGatewayError(frame)) return;
       loading.remove();
       shell.classList.remove("is-chart-loading");
       shell.dataset.artifactReady = "true";
     }), Math.max(0, demoLoadingMs - (Date.now() - loadingStartedAt)));
   };
   frame.addEventListener("load", () => {
+    if (artifactGatewayError(frame)) {
+      showLoading();
+      if (retryCount < 3) {
+        clearTimeout(retryTimer);
+        retryTimer = setTimeout(reload, 1000 * 2 ** retryCount++);
+      } else {
+        loading.classList.add('is-error');loading.setAttribute('role','alert');
+        loadingLabel.textContent = '图表暂时未能加载';loading.append(retryButton);
+      }
+      return;
+    }
+    clearTimeout(retryTimer);retryCount = 0;
     // The embedded runtime can signal usable content before fonts/images finish.
     // Reveal it independently of optional enhancements or their failures.
     frame.reportContentReady();

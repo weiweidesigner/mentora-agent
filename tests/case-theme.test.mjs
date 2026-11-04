@@ -115,3 +115,31 @@ test('known iframe artifacts bypass the classification fetch and StreamViz mount
  const result=vm.runInContext('createStreamVisualizationArtifact({url:"/generated/interactive.html",renderMode:"iframe"},0)',context);
  assert.equal(result.direct,'/generated/interactive.html');w.close();
 });
+
+function gatewayFixture(){
+ const dom=new JSDOM('<div class="chatArtifactShell"></div>',{url:'https://example.com/mentora/'}),w=dom.window,timers=new Map();let next=0;
+ const context=vm.createContext({document:w.document,window:w,location:w.location,URL,currentThemeMode:()=> 'dark',resizeReportDocumentFrame:()=>{},installReportTooltipPortal:()=>{},setTimeout:(fn,ms)=>{timers.set(++next,{fn,ms});return next;},clearTimeout:id=>timers.delete(id),requestAnimationFrame:fn=>fn()});
+ vm.runInContext(imageDetection,context);vm.runInContext(loadingLogic,context);
+ vm.runInContext(app.slice(app.indexOf('function createArtifactFallbackFrame('),app.indexOf('async function artifactCode(')),context);
+ const shell=vm.runInContext('createArtifactFallbackFrame({url:"/generated/chart.html"},0)',context);w.document.querySelector('.chatArtifactShell').append(shell);
+ const frame=shell.querySelector('iframe'),doc=w.document.implementation.createHTMLDocument('502 Bad Gateway');doc.body.innerHTML='<h1>502 Bad Gateway</h1><hr>nginx/1.24.0';Object.defineProperty(frame,'contentDocument',{value:doc});
+ const run=()=>{const [id,t]=timers.entries().next().value;timers.delete(id);t.fn();return t.ms;};
+ return {dom,w,shell,frame,doc,timers,run,load:()=>frame.dispatchEvent(new w.Event('load'))};
+}
+test('transient gateway errors stay hidden and retry before revealing a recovered chart',()=>{
+ const e=gatewayFixture();try{
+  e.load();assert.equal(e.shell.dataset.artifactReady,undefined);assert(e.shell.classList.contains('is-chart-loading'));
+  assert.equal(e.run(),1000);assert(new URL(e.frame.src).searchParams.has('v'));
+  e.doc.title='图表';e.doc.body.innerHTML='<main><table><tr><td>已恢复</td></tr></table></main>';
+  e.load();e.run();assert.equal(e.shell.dataset.artifactReady,'true');assert.equal(e.shell.querySelector('.chartLoadingOverlay'),null);
+ }finally{e.w.close();}
+});
+test('persistent gateway errors stop retrying and expose a working manual retry',()=>{
+ const e=gatewayFixture();try{
+  for(const delay of [1000,2000,4000]){e.load();assert.equal(e.run(),delay);}
+  e.load();assert.equal(e.timers.size,0);assert.equal(e.shell.querySelector('[role="alert"] .chartLoadingLabel').textContent,'图表暂时未能加载');
+  assert.equal(e.shell.dataset.artifactReady,undefined);e.shell.querySelector('.chartLoadRetry').click();
+  assert.equal(e.shell.querySelector('.chartLoadRetry'),null);assert.equal(e.shell.querySelector('.chartLoadingOverlay').getAttribute('role'),'status');
+  e.load();assert.equal(e.run(),1000);
+ }finally{e.w.close();}
+});

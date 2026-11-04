@@ -5425,3 +5425,5 @@ details[open]>.activityAction .activityActionChevron{transform:rotate(45deg)}
 
 /* Navigation documents are compact actions, without a chart viewport. */
 .nativeNavigationArtifact{display:grid;gap:8px;min-height:0}
+
+.chartLoadRetry{margin-left:12px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}.chartLoadRetry:hover{background:var(--soft-2)}.chartLoadingOverlay.is-error .chartLoadingLabel{animation:none;opacity:1}
