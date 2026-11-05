@@ -13,9 +13,14 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
   if(options.favorites)w.MentoraCaseFavorites={ready:Promise.resolve(options.favorites),rows:options.favorites};
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
   const rows = options.homeCases || [{id:'amd', title:'AMD', tag:'评级', preview:'市场共识', cachedDate:'2026-10-13', question:'AMD 最新评级如何？', conversationUrl:'/static/cases/amd/conversation.json'}];
-  const requests = [], sent = [], formatted = [], frames = new Map(), intersections = [];
+  const requests = [], sent = [], formatted = [], frames = new Map(), intersections = [], animations = [];
   let frameId = 0;
   if(options.motion){
+    w.HTMLElement.prototype.animate=function(keyframes,timing){
+      const animation={element:this,keyframes,timing,currentTime:0,cancelled:false,cancel(){this.cancelled=true;}};
+      animations.push(animation);return animation;
+    };
+    Object.defineProperty(w.HTMLElement.prototype,'scrollLeft',{get(){return this._scrollLeft||0;},set(value){this._scrollLeft=Math.round(value);},configurable:true});
     Object.defineProperty(w.document,'hidden',{value:false,configurable:true});
     Object.defineProperty(w.HTMLElement.prototype,'clientWidth',{get:()=>900,configurable:true});
     w.HTMLElement.prototype.getBoundingClientRect=()=>({width:600,top:0,bottom:300,left:0,right:600,height:300});
@@ -49,7 +54,7 @@ function setup(url = 'https://example.com/', text = '完整缓存答案', catalo
     },
   });
   vm.runInContext(source,context);
-  return {w, requests, sent, formatted, conversation, messages, frames, intersections, startNewChat: context.startNewChat};
+  return {w, requests, sent, formatted, conversation, messages, frames, intersections, animations, startNewChat: context.startNewChat};
 }
 test('all legacy favorites appear only in Mine and open without inference',async()=>{
  const favorites=['lane','reports','charts','analysis','videos','art'].map(category=>({id:'favorite-'+category,category,title:'测试收藏'+category,tag:'收藏',preview:'离线测试',question:'收藏问题'+category,cachedDate:'2026-10-26',conversationUrl:'/api/case-favorites/'+category}));
@@ -619,25 +624,30 @@ test('legacy business categories merge and saved congress request uses semantic 
 });
 
 
-test('gallery stops animation work offscreen, while scrolling, and outside Home',async()=>{
+test('gallery compositor animation preserves fractional positions and stops when inactive',async()=>{
  const h=setup('https://example.com/','',null,{motion:true});await tick();
+ const running=()=>h.animations.filter(a=>!a.cancelled);
  try{
-  const gallery=h.w.document.querySelector('#caseGrid');
-  assert.equal(h.frames.size,1);
-  const runFrame=now=>{const [id,fn]=h.frames.entries().next().value;h.frames.delete(id);fn(now);};
-  runFrame(1000);runFrame(1020);
-  const lane=gallery.querySelector('.caseLane');const position=lane.scrollLeft;
-  assert.ok(position>600);
-  h.intersections[0]([{isIntersecting:false}]);assert.equal(h.frames.size,0);
-  h.intersections[0]([{isIntersecting:true}]);assert.equal(h.frames.size,1);
-  runFrame(5000);assert.equal(lane.scrollLeft,position,'resume must not jump after idle');
-  gallery.dispatchEvent(new h.w.Event('mouseenter'));assert.equal(h.frames.size,0);
-  gallery.dispatchEvent(new h.w.Event('mouseleave'));assert.equal(h.frames.size,1);
-  h.conversation.dispatchEvent(new h.w.Event('scroll'));assert.equal(h.frames.size,0);
-  await new Promise(resolve=>setTimeout(resolve,200));assert.equal(h.frames.size,1);
-  h.conversation.hidden=true;await tick();assert.equal(h.frames.size,0);
-  h.conversation.hidden=false;await tick();assert.equal(h.frames.size,1);
-  h.conversation.classList.remove('is-empty');await tick();assert.equal(h.frames.size,0);
-  h.conversation.classList.add('is-empty');await tick();assert.equal(h.frames.size,1);
+  const gallery=h.w.document.querySelector('#caseGrid'),lane=gallery.querySelector('.caseLane');
+  assert.equal(running().length,2);assert.equal(h.frames.size,0);
+  const first=running()[0];
+  assert.equal(first.timing.iterations,Infinity);assert.equal(first.timing.easing,'linear');
+  first.currentTime=15.25;
+  const before=lane.scrollLeft;
+  assert.equal(lane.scrollLeft,before,'compositor playback does not write scrollLeft per frame');
+  h.intersections[0]([{isIntersecting:false}]);assert.equal(running().length,0);
+  const transform=lane.firstElementChild.style.transform;
+  const fraction=parseFloat(transform.match(/translate3d\(([-.\d]+)/)[1]);
+  assert.ok(Math.abs(fraction)>0 && Math.abs(fraction)<1,'pausing retains subpixel progress');
+  h.intersections[0]([{isIntersecting:true}]);assert.equal(running().length,2);
+  assert.equal(running()[0].keyframes[0].transform,transform,'resume starts at the exact paused position');
+  gallery.dispatchEvent(new h.w.Event('mouseenter'));assert.equal(running().length,0);
+  gallery.dispatchEvent(new h.w.Event('mouseleave'));assert.equal(running().length,2);
+  h.conversation.dispatchEvent(new h.w.Event('scroll'));assert.equal(running().length,0);
+  await new Promise(resolve=>setTimeout(resolve,200));assert.equal(running().length,2);
+  h.conversation.hidden=true;await tick();assert.equal(running().length,0);
+  h.conversation.hidden=false;await tick();assert.equal(running().length,2);
+  h.conversation.classList.remove('is-empty');await tick();assert.equal(running().length,0);
+  h.conversation.classList.add('is-empty');await tick();assert.equal(running().length,2);
  }finally{h.w.close();}
 });

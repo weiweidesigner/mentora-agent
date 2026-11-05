@@ -4155,6 +4155,7 @@ p {
 .caseLane { width:100%; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; overscroll-behavior-x:contain; cursor:grab; mask-image:linear-gradient(to right,transparent,#000 48px,#000 calc(100% - 48px),transparent); }
 .caseLane::-webkit-scrollbar { display:none; }
 .caseLaneTrack { display:flex; width:max-content; padding:4px 0; }
+.caseLaneTrack.is-auto-moving { will-change:transform; }
 .caseLaneSet { display:flex; gap:14px; padding-right:14px; flex:none; }
 .caseLane .caseCard { flex:0 0 320px; width:320px; height:116px; padding:12px; user-select:none; cursor:grab; }
 .caseLane .caseCardTop { margin-bottom:6px; }

@@ -495,23 +495,51 @@
     const desktop = window.matchMedia("(min-width:761px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
     let lanes = [], hovered = false, suppressClickUntil = 0;
-    let previousFrame = 0, galleryFrame = 0, galleryVisible = true;
+    let galleryVisible = true;
     let galleryFocused = false, galleryScrolling = false, galleryScrollTimer = 0;
     const canMoveGallery = () => galleryVisible && !document.hidden && !conversation.hidden
       && !selectedCase && conversation.classList.contains("is-empty")
       && !hovered && !galleryFocused && !galleryScrolling && !reducedMotion.matches;
-    function syncGalleryMotion() {
-      if (!canMoveGallery()) {
-        if (galleryFrame) cancelAnimationFrame(galleryFrame);
-        galleryFrame = 0;
-        previousFrame = 0;
-        lanes.forEach(state => { state.position = state.lane.scrollLeft; });
-        return;
-      }
-      if (!galleryFrame) galleryFrame = requestAnimationFrame(moveLanes);
+    function placeLane(state, position) {
+      if (!state.cycle) return;
+      state.position = state.cycle + ((position - state.cycle) % state.cycle + state.cycle) % state.cycle;
+      state.lane.scrollLeft = state.position;
+      // Native scroll offsets can round to device pixels. Preserve the remainder
+      // in the transform so pause/resume does not snap the cards to a pixel grid.
+      state.offset = state.lane.scrollLeft - state.position;
+      state.track.style.transform = `translate3d(${state.offset}px,0,0)`;
     }
-    const resizeObserver = new ResizeObserver(() => lanes.forEach(sizeLane));
+    function pauseLane(state) {
+      if (!state.animation) return;
+      const progress = ((Number(state.animation.currentTime) || 0) / state.duration) % 1;
+      const position = state.lane.scrollLeft - state.offset + state.direction * state.cycle * progress;
+      state.animation.cancel();state.animation = null;
+      state.track.classList.remove('is-auto-moving');
+      placeLane(state, position);
+    }
+    function syncGalleryMotion() {
+      const active = canMoveGallery(), now = performance.now();
+      lanes.forEach(state => {
+        if (!active || state.dragging || now < state.manualUntil) { pauseLane(state); return; }
+        if (state.animation || !state.cycle || !state.track.animate) return;
+        placeLane(state, state.lane.scrollLeft - state.offset);
+        state.duration = state.cycle / 18 * 1000;
+        state.track.classList.add('is-auto-moving');
+        state.animation = state.track.animate([
+          {transform:`translate3d(${state.offset}px,0,0)`},
+          {transform:`translate3d(${state.offset-state.direction*state.cycle}px,0,0)`}
+        ], {duration:state.duration,iterations:Infinity,easing:'linear'});
+      });
+    }
+    function holdLane(state, delay) {
+      state.manualUntil = performance.now() + delay;
+      pauseLane(state);
+      window.clearTimeout(state.resumeTimer);
+      state.resumeTimer = window.setTimeout(syncGalleryMotion, delay + 1);
+    }
+    const resizeObserver = new ResizeObserver(() => { lanes.forEach(sizeLane); syncGalleryMotion(); });
     function sizeLane(state) {
+      pauseLane(state);
       const { lane, track } = state;
       const original = track.firstElementChild;
       const cycle = original.getBoundingClientRect().width;
@@ -526,10 +554,11 @@
       while (track.children.length > count) track.lastElementChild.remove();
       state.position = cycle + (state.cycle ? ((state.position % cycle) + cycle) % cycle : (state.direction < 0 ? cycle * .35 : 0));
       state.cycle = cycle;
-      lane.scrollLeft = state.position;
+      placeLane(state, state.position);
     }
     function renderGallery() {
       resizeObserver.disconnect();
+      lanes.forEach(state => { pauseLane(state); window.clearTimeout(state.resumeTimer); });
       lanes = [];
       hovered = gallery.matches(":hover");
       const split = Math.ceil(rows.length / 2);
@@ -538,27 +567,28 @@
           <div class="caseLaneTrack"><div class="caseLaneSet">${items.map((row, index) => cardHtml(row, index + (rowIndex ? split : 0))).join("")}</div></div>
         </div>`).join("");
       gallery.querySelectorAll(".caseLane").forEach((lane, index) => {
-        const state = { lane, track: lane.firstElementChild, direction: index ? -1 : 1, position: 0, cycle: 0, dragging: false, manualUntil: 0 };
+        const state = { lane, track: lane.firstElementChild, direction: index ? -1 : 1, position: 0, cycle: 0, dragging: false, manualUntil: 0, offset: 0, animation: null, resumeTimer: 0 };
         lanes.push(state);
         resizeObserver.observe(lane);
         sizeLane(state);
         // Touch uses native scrolling; pause drift through the swipe and inertia.
         lane.addEventListener("pointerdown", event => {
           if (event.pointerType === "mouse") return;
-          state.dragging = true;
+          pauseLane(state);state.dragging = true;
         });
         const endTouch = event => {
           if (event.pointerType === "mouse") return;
           state.dragging = false;
-          state.position = lane.scrollLeft;
-          state.manualUntil = performance.now() + 2500;
+          state.position = lane.scrollLeft - state.offset;
+          holdLane(state,2500);
         };
         lane.addEventListener("pointerup", endTouch);
         lane.addEventListener("pointercancel", endTouch);
         let pointer = null;
         lane.addEventListener("pointerdown", event => {
           if (event.pointerType !== "mouse" || event.button !== 0) return;
-          pointer = { id: event.pointerId, x: event.clientX, position: lane.scrollLeft };
+          pauseLane(state);
+          pointer = { id: event.pointerId, x: event.clientX, position: lane.scrollLeft - state.offset };
         });
         lane.addEventListener("pointermove", event => {
           if (!pointer || event.pointerId !== pointer.id) return;
@@ -568,8 +598,7 @@
           lane.classList.add("is-dragging");
           if (!lane.hasPointerCapture(event.pointerId)) lane.setPointerCapture(event.pointerId);
           event.preventDefault();
-          state.position = Math.max(0, Math.min(lane.scrollWidth - lane.clientWidth, pointer.position - distance));
-          lane.scrollLeft = state.position;
+          placeLane(state, pointer.position - distance);
         });
         const endDrag = event => {
           if (!pointer || event.pointerId !== pointer.id) return;
@@ -577,13 +606,14 @@
           if (lane.hasPointerCapture(event.pointerId)) lane.releasePointerCapture(event.pointerId);
           pointer = null;
           state.dragging = false;
-          state.position = lane.scrollLeft;
+          state.position = lane.scrollLeft - state.offset;
           lane.classList.remove("is-dragging");
+          holdLane(state,1200);
         };
         lane.addEventListener("pointerup", endDrag);
         lane.addEventListener("pointercancel", endDrag);
         lane.addEventListener("lostpointercapture", endDrag);
-        lane.addEventListener("wheel", () => { state.manualUntil = performance.now() + 1200; }, { passive: true });
+        lane.addEventListener("wheel", () => holdLane(state,1200), { passive: true });
       });
     }
     gallery.addEventListener("mouseenter", () => { hovered = true; syncGalleryMotion(); });
@@ -616,24 +646,10 @@
       const card = event.target.closest("[data-case]");
       if (card) showCase(card.dataset.case);
     });
-    function moveLanes(now) {
-      galleryFrame = 0;
-      if (!canMoveGallery()) { previousFrame = 0; return; }
-      const elapsed = previousFrame ? Math.min(64, now - previousFrame) / 1000 : 0;
-      previousFrame = now;
-      lanes.forEach(state => {
-        if (!state.cycle || state.dragging) return;
-        if (now < state.manualUntil) { state.position = state.lane.scrollLeft; return; }
-        state.position += state.direction * 18 * elapsed;
-        state.position = state.cycle + ((state.position - state.cycle) % state.cycle + state.cycle) % state.cycle;
-        state.lane.scrollLeft = state.position;
-      });
+    window.addEventListener("veya:home-restored", () => {
+      lanes.forEach(state => holdLane(state,2500));
       syncGalleryMotion();
-    }
-    window.addEventListener("veya:home-restored", () => lanes.forEach(state => {
-      state.position = state.lane.scrollLeft;
-      state.manualUntil = performance.now() + 2500;
-    }));
+    });
     window.addEventListener('mentora:case-favorite-removed',event=>{
       const ids=new Set(event.detail.ids);
       rows=rows.filter(row=>!ids.has(row.id));
@@ -641,7 +657,7 @@
       ids.forEach(id=>responseCache.delete(id));
       renderGallery();
     });
-    desktop.addEventListener("change", renderGallery);
+    desktop.addEventListener("change", () => { renderGallery(); syncGalleryMotion(); });
     renderGallery();
     syncGalleryMotion();
     const id = new URLSearchParams(location.search).get("case");
