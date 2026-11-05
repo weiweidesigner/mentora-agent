@@ -153,3 +153,13 @@ test('affinity summary includes the layout and liquid-heart styles used by its m
   assert.match(h.w.getComputedStyle(h.d.querySelector('.chHeartWave')).animation,/chHeartWaveDrift/);
  }finally{h.dom.window.close();}
 });
+
+
+test('today plan expands without a nested height limit',async()=>{
+ const h=setup({}, {recipients:[{id:'private',kind:'users',label:'私聊',facts:[],intimacy:{score:70,days:4,turns:71},today:[1,2,3].map(n=>({due:Date.now()/1000+n*3600,state:'planned',topic:'计划 '+n,question:'完整显示第 '+n+' 条计划内容'}))}]});
+ try{
+  const style=h.d.createElement('style');style.textContent=readFileSync(new URL('../app/static/character.css',import.meta.url),'utf8');h.d.head.append(style);
+  await tick();const plan=h.d.querySelector('#chProactivePlan');assert.equal(plan.hidden,false);assert.equal(plan.querySelectorAll('.chPlanItem').length,3);
+  assert.equal(h.w.getComputedStyle(plan).maxHeight,'none');assert.equal(h.w.getComputedStyle(plan).overflow,'visible');
+ }finally{h.dom.window.close();}
+});
