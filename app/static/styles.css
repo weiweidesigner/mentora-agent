@@ -4111,7 +4111,8 @@ p {
 .inspirationTabs button[aria-selected="true"] { color:var(--ink); }
 .inspirationTabs button::after { content:""; position:absolute; left:16px; right:16px; bottom:0; height:2px; border-radius:1px; background:transparent; }
 .inspirationTabs button[aria-selected="true"]::after { background:currentColor; }
-.inspirationTabs button:focus-visible,.inspirationPanel:focus-visible { outline:2px solid #8a7bff; outline-offset:3px; }
+.inspirationTabs button:focus-visible { outline:2px solid #8a7bff; outline-offset:-2px; }
+.inspirationPanel:focus-visible { outline:2px solid #8a7bff; outline-offset:3px; }
 .inspirationCategory + .inspirationCategory { margin-top:36px; }
 .inspirationCategoryHeader { margin-bottom:6px; }
 .inspirationCategorySubtitle { margin-bottom:16px; }
