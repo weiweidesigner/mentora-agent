@@ -34,13 +34,7 @@ with sync_playwright() as p:
   assert abs(before['x']+before['width']-(host['x']+host['width']-(12 if width<640 else 14)))<1
   assert abs(before['y']-(host['y']+(9 if width<640 else 18)))<1
   assert before['width']==24 and before['height']==24
-  tools=page.locator('.chNebulaZoom');zoom=tools.bounding_box()
-  assert abs(zoom['x']+zoom['width']-(host['x']+host['width']-12))<1
-  assert abs(zoom['y']+zoom['height']-(host['y']+host['height']-12))<1
-  tools.locator('[data-nebula-zoom=in]').click()
-  assert page.locator('.chMemorySphere').evaluate('(el)=>el.style.transform')=='scale(1.25)'
-  tools.locator('[data-nebula-zoom=fit]').click()
-  assert page.locator('.chMemorySphere').evaluate('(el)=>el.style.transform')=='scale(1)'
+  tools=page.locator('.chNebulaZoom');assert tools.is_hidden()
   page.screenshot(path=str(output/f'{theme}-{width}-inline.png'))
   expand.click()
   page.wait_for_function("!!document.fullscreenElement")
@@ -48,6 +42,7 @@ with sync_playwright() as p:
   inset=18
   assert abs(box['x']+box['width']-(width-inset))<1
   assert abs(box['y']-14)<1
+  assert tools.is_visible()
   zoom=tools.bounding_box()
   assert abs(zoom['x']+zoom['width']-(width-12))<1 and abs(zoom['y']+zoom['height']-888)<1
   tools.locator('[data-nebula-zoom=in]').click()
@@ -59,6 +54,7 @@ with sync_playwright() as p:
   page.wait_for_function("!document.fullscreenElement && !document.querySelector('.chNebulaDialog').open")
   assert page.locator('#cloud .chMemorySphere').count()==1
   assert expand.get_attribute('aria-expanded')=='false'
+  assert tools.is_hidden()
   expand.click();page.wait_for_function('!!document.fullscreenElement')
   page.evaluate('document.exitFullscreen()')
   page.wait_for_function("!document.querySelector('.chNebulaDialog').open")

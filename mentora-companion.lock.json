@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/weiweidesigner/mentora-companion.git",
-  "revision": "a179685b035e1ffb73b020eddb2098f8ff32cb96",
+  "revision": "24c27ef3c695655863474d749a059130981ab21d",
   "checkout": ".dependencies/mentora-companion",
   "links": {
     "app/character_prompt.py": "app/character_prompt.py",
