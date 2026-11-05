@@ -8,8 +8,9 @@ def read(name):return json.loads((HERE/name).read_text())
 def apply(source,edits):
  for edit in edits:
   if edit['new'] in source:continue
-  if not edit['old'] or source.count(edit['old'])!=1:raise RuntimeError('Gallery source changed: '+edit['old'][:90])
-  source=source.replace(edit['old'],edit['new'],1)
+  before=next((candidate for candidate in [edit['old'],*edit.get('alternatives',[])] if candidate and source.count(candidate)==1),None)
+  if before is None:raise RuntimeError('Gallery source changed: '+edit['old'][:90])
+  source=source.replace(before,edit['new'],1)
  return source
 rules=read('changes.json');branding=read('branding.json');groups=read('groups.json');changes={}
 p=root/'app/static/cases.js';current=p.read_text();updated=current
@@ -21,7 +22,7 @@ if 'const financialChartGroups = [' not in updated:
 if updated!=current:changes[p]=updated
 p=root/'app/static/styles.css';current=p.read_text();updated=apply(current,branding['app/static/styles.css'])
 if updated!=current:changes[p]=updated
-version=hashlib.sha256(json.dumps(rules,sort_keys=True).encode()).hexdigest()[:12]
+version=hashlib.sha256(json.dumps([rules,branding],sort_keys=True).encode()).hexdigest()[:12]
 p=root/'app/static/index.html';current=p.read_text();updated=current
 for asset in ('cases.js','styles.css'):
  updated,count=re.subn(r'(/static/'+re.escape(asset)+r')(?:\?[^"\'<>]*)?(?=["\'])',lambda m:m[1]+'?v=unified-gallery-'+version,updated)

@@ -46,6 +46,9 @@ with sync_playwright() as runtime:
    page.wait_for_function("document.querySelector('#inspirationTabs').classList.contains('is-stuck')")
    background=page.locator('#inspirationTabs').evaluate('(el)=>getComputedStyle(el).backgroundColor')
    assert background not in ('transparent','rgba(0, 0, 0, 0)')
+   assert 'blur(20px)' in page.locator('#inspirationTabs').evaluate('(el)=>getComputedStyle(el).backdropFilter')
+   assert page.locator('#inspirationTabs').evaluate('(el)=>getComputedStyle(el).borderRadius')=='14px'
+   assert '/ 0.58)' in background
    page.wait_for_function("[...document.querySelectorAll('#inspiration-section-charts [data-brand=ainvest] img')].every(img=>img.complete&&img.naturalWidth>0)")
    page.screenshot(path=str(out/f'{theme}-{width}-sticky.png'))
    page.evaluate("conversation.scrollTop=0")
