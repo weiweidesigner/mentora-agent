@@ -59,3 +59,28 @@ test('perspective produces varied depths and staggers labels around their star a
  assert(words.every(w=>w.querySelector('.chMemoryStar')));assert(new Set(words.map(w=>w.querySelector('.chMemoryWordText').style.transform)).size>2);
  }finally{h.dom.window.close();}
 });
+
+test('nebula zoom controls zoom, clamp, fit and travel with the fullscreen surface',()=>{
+ const h=setup();try{
+ const d=h.w.document,host=d.querySelector('#cloud'),tools=d.querySelector('.chNebulaZoom');
+ const button=action=>tools.querySelector('[data-nebula-zoom='+action+']');
+ const before=h.scene.querySelector('.chMemoryWord').style.transform;
+ button('in').click();assert.equal(h.scene.style.transform,'scale(1.25)');
+ button('out').click();assert.equal(h.scene.style.transform,'scale(1)');
+ h.scene.dispatchEvent(new h.w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+ button('fit').click();assert.equal(h.scene.style.transform,'scale(1)');assert.equal(h.scene.querySelector('.chMemoryWord').style.transform,before);
+ for(let i=0;i<40;i++)button('in').click();assert.equal(h.scene.style.transform,'scale(8)');assert(button('in').disabled);
+ for(let i=0;i<80;i++)button('out').click();assert.equal(h.scene.style.transform,'scale(0.1)');assert(button('out').disabled);
+ button('fit').click();assert(!button('in').disabled&&!button('out').disabled);
+ host.querySelector('.chNebulaExpand').click();assert(d.querySelector('.chNebulaFullSurface').contains(tools));
+ button('in').click();assert.equal(h.scene.style.transform,'scale(1.25)');
+ d.querySelector('.chNebulaClose').click();assert(host.contains(tools));assert.equal(d.querySelectorAll('.chNebulaZoom').length,1);
+ assert.equal(h.scene.style.transform,'scale(1.25)');
+ }finally{h.dom.window.close();}
+});
+test('modified wheel zooms while ordinary scrolling remains available',()=>{
+ const h=setup();try{
+ const ordinary=new h.w.WheelEvent('wheel',{deltaY:-20,cancelable:true,bubbles:true});h.scene.dispatchEvent(ordinary);assert.equal(ordinary.defaultPrevented,false);assert.equal(h.scene.style.transform,'');
+ const zoom=new h.w.WheelEvent('wheel',{deltaY:-20,ctrlKey:true,cancelable:true,bubbles:true});h.scene.dispatchEvent(zoom);assert.equal(zoom.defaultPrevented,true);assert.match(h.scene.style.transform,/scale\(1\.22/);
+ }finally{h.dom.window.close();}
+});
