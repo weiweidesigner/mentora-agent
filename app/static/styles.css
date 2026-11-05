@@ -4096,7 +4096,7 @@ p {
   background:color-mix(in srgb,var(--bg) 58%,transparent);
   -webkit-backdrop-filter:blur(20px) saturate(115%);
   backdrop-filter:blur(20px) saturate(115%);
-  border-radius:14px;
+  border-radius:0;
   box-shadow:0 4px 20px rgb(0 0 0 / 3%);
 }
 .inspirationTabs::-webkit-scrollbar { display:none; }
