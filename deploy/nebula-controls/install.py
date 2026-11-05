@@ -16,6 +16,11 @@ rules=json.loads((HERE/'changes.json').read_text())
 changes={}
 for relative,edits in rules.items():
  path=root/relative
+ # Exported companion assets are served from the pinned checkout directly.
+ manifest=root/'mentora-companion.lock.json'
+ if manifest.is_file():
+  spec=json.loads(manifest.read_text())
+  if relative in spec.get('links',{}):path=root/spec['checkout']/spec['links'][relative]
  current=path.read_text();updated=current
  for edit in edits:
   if edit['new'] and edit['new'] in updated:continue
