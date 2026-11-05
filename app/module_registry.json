@@ -625,5 +625,17 @@
     "script": "ainvest_web_catalog.py",
     "label": "AInvest 官网目录证据",
     "description": "Web 导航离线补充检索：--site-overview、--site-branch、--site-find、--observed-links、--search-pages、--verification-status。仅返回页面与来源证据；卡片统一用 ainvest_web_entry.py 生成。"
+  },
+  {
+    "name": "read_macro_indicator_data",
+    "script": "read_macro_indicator_data.py",
+    "label": "AInvest 宏观经济数据接口",
+    "description": "只读数据API，发现所有来源国家与当地可用指标，读取数值历史到JSON，保留单位、频率、观察期与缺失。用户要求取数后通用展示或选择Widget宏观数据入口时使用；不是原生折线渲染器。按数据和问题选择generic-chart，自由选择图形。因子关系使用read_macro_relations.py。"
+  },
+  {
+    "name": "related_section",
+    "script": "related_section.py",
+    "label": "公司关联主题",
+    "description": "AInvest 公司档案的相关主题与板块；读取真实 Related Section 数据并保留原生标签组件。"
   }
 ]

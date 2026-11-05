@@ -194,3 +194,20 @@ test('home startup does not load saved chart runtimes',async()=>{
  try{await tick();assert.equal(s.d.querySelector('#widgetWorkspace').hidden,true);assert.equal(s.d.querySelectorAll('#widgetCanvas iframe[src]').length,0);}
  finally{s.dom.window.close();}
 });
+
+test('AInvest macro library entry fetches data then chooses generic visualization without a native chart mandate',async()=>{
+ const s=setup({cards:[]});
+ try{
+  s.d.querySelector('#widgetSidebarLibrary').click();await tick();
+  s.d.querySelector('[data-category="宏观经济"]').click();
+  assert(s.d.querySelector('[data-add-preset="inflation_map"]'));
+  s.d.querySelector('[data-add-preset="ainvest-macro-data"]').click();await tick();await tick();
+  const request=JSON.parse(s.calls.find(c=>c.url==='/api/chat/stream').options.body);
+  assert.match(request.question,/read_macro_indicator_data.py/);
+  assert.match(request.question,/read_macro_relations.py/);
+  assert.match(request.question,/generic-chart/);
+  assert.match(request.question,/近5年失业率/);
+  assert.doesNotMatch(request.question,/选择 market-data 技能中的 .*原生渲染器|调用现有业务组件的原生脚本取真实数据/);
+  assert.equal(s.board().cards[0].component,'ainvest-macro-data');
+ }finally{s.dom.window.close();}
+});

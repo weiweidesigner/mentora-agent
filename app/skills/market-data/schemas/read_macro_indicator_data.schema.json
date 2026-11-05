@@ -1,0 +1,8 @@
+{
+  "type": "macro-data",
+  "script": "read_macro_indicator_data.py",
+  "purpose": "Read-only AInvest global macro catalogs and numeric histories as JSON, independently of visualization.",
+  "cli": {"country": "source country ISO2, discover with --list-countries", "indicator": "source metric code, discover available pairs with --list-indicators --country AU", "symbol": "country+metric identity, alternative to country/indicator", "list-countries": "list source countries", "list-indicators": "list actually available indicators for one country", "source-input": "optional explicit raw source handoff, no network", "output": "required .json output"},
+  "dataContract": {"history": "All {t:epoch milliseconds,v:number|null,period:original observation period,label:UTC date}; preserve duplicate timestamps, nulls, source units and actual coverage", "source": "AInvest endpoints, original fetchedAt and full source history request; retrieval time is not observation period", "availability": "Country-specific; unavailable source history fails without synthetic substitutes"},
+  "agentContract": {"capability": "data-only", "rendered": false, "handoff": "Reuse the JSON file downstream. Choose an appropriate generic-chart renderer and its schema from the user's question and the data; no fixed chart type, chart count, data cutoff or display template. Compare countries only after checking compatible units, frequency and observation periods. Factor relationships use read_macro_relations.py and preserve opaque source IDs, direction and scores; never invent numeric mappings or interpret source pass_score as correlation."}
+}

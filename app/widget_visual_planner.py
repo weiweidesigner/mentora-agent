@@ -32,6 +32,11 @@ def dashboard_router(timeout: float) -> JevVisualizationRouter:
 
 
 def component_capabilities(item: dict) -> dict:
+    if item.get('outputMode') == 'data-visualization':
+        return {'provider':'AInvest','assetScope':'来源真实覆盖的国家、地区、宏观指标及宏观因子关系',
+                'inputMode':'data','maxSymbols':0,'symbolKind':'source-catalog-identities',
+                'dataMode':'数据接口取JSON后由执行Agent选generic-chart，不固定图形；不要求股票代码',
+                'dataCapabilities':item.get('dataCapabilities',[]),'canApplyCustomMarks':False}
     widget = item.get('widget', '')
     hosted = item.get('provider') == 'TradingView'
     mode = item.get('inputMode', 'symbol')
@@ -41,9 +46,9 @@ def component_capabilities(item: dict) -> dict:
         maximum, intervals = 1, []
     return {
         'provider': 'TradingView' if hosted else 'native-business',
-        'assetScope': '由组件与交易所支持决定；不得将港股/A股转换为ADR' if hosted else '仅美股公司财务、估值与评级；不支持港股、A股、加密货币或期权',
+        'assetScope': '由组件与交易所支持决定；不得将港股/A股转换为ADR' if hosted else ('来源支持的宏观国家/指标与市场，具体以组件schema为准，不要求公司股票代码' if mode=='data' else '具体资产范围以组件schema为准；公司财务、估值与评级限支持的美国上市公司'),
         'inputMode': mode,
-        'maxSymbols': maximum,
+        'maxSymbols': 0 if mode=='data' else maximum,
         'markets': sorted(allowed_markets(widget)) if widget in MARKETS else [],
         'intervals': intervals,
         'studies': ['MACD', 'RSI', 'ROC', 'Stochastic RSI', 'SMA'] if widget == 'advanced-chart' else [],

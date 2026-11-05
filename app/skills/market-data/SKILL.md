@@ -63,4 +63,17 @@ no retry. See `docs/hk-market-data.md` for source references and exact semantics
 
 ## 宏观经济展示
 
-美国失业率、美国利率、美国贸易差额、全球通胀地图及GDP增长排名均使用 business-chart-recall 下对应的独立原生业务组件。失业率/利率/贸易差额包含蓝色折线与底部时间范围Tab，不再登记read_macro_data.py为Agent数据API入口；不要使用通用图表或StreamViz替代这些原生展示。报价和日线历史仍使用本Skill，不改变行情数据契约。
+默认原生展示：美国失业率、美国利率、美国贸易差额、全球通胀地图及GDP增长排名使用 business-chart-recall 下对应的独立原生业务组件。失业率/利率/贸易差额包含蓝色折线与底部时间范围Tab，不再登记read_macro_data.py为Agent数据API入口；不要使用通用图表或StreamViz替代这些原生展示。报价和日线历史仍使用本Skill，不改变行情数据契约。
+
+
+## 显式宏观数据接口与自由可视化
+
+用户明确要求“先取数，再选通用可视化”，或使用 Widget 的「AInvest 宏观数据」入口时，使用数据接口 `scripts/read_macro_indicator_data.py`。先读同名 schema。该路径返回 JSON，不调用原生业务渲染器，不绑定折线或固定版式；根据用户问题、真实数据和 generic-chart schema 选择呈现。
+
+- `python3 app/skill_runner.py execute --script read_macro_indicator_data.py -- --list-countries --output outputs/data/macro-countries.json`
+- `python3 app/skill_runner.py execute --script read_macro_indicator_data.py -- --list-indicators --country AU --output outputs/data/au-indicators.json`
+- `python3 app/skill_runner.py execute --script read_macro_indicator_data.py -- --country AU --indicator INTR --output outputs/data/au-interest.json`
+
+仅使用真实目录的国家与指标身份；各国覆盖不同。完整历史一次读取，时间筛选、转换或跨国比较在成功的数据文件上完成，不为渲染重复取数。保留原单位、频率、观察期、缺失与重复时间；不将获取时间冒充统计期，不将不同单位直接拼接同轴。源不可用时报错。
+
+因子目录、上下游和影响关系另用 `macro-factor-relations/read_macro_relations.py`，先读其技能与 schema。关系数据与数值历史分开核对来源身份，不猜测数值映射；来源 pass_score 不等于相关系数或置信概率。仍由执行 Agent 决定取数、计算和图表组合。
