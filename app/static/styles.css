@@ -4099,6 +4099,12 @@ p {
   border-radius:0;
   box-shadow:0 4px 20px rgb(0 0 0 / 3%);
 }
+.inspirationTabs {
+  margin-left:calc(-1 * var(--inspiration-bleed-left,0px));
+  margin-right:calc(-1 * var(--inspiration-bleed-right,0px));
+  padding-left:var(--inspiration-bleed-left,0px);
+  padding-right:var(--inspiration-bleed-right,0px);
+}
 .inspirationTabs button:first-child { padding-left:0; }
 .inspirationTabs button:first-child::after { left:0; }
 .inspirationTabs::-webkit-scrollbar { display:none; }
@@ -4132,6 +4138,7 @@ p {
   .conversation.is-empty .inspirationSquare { width:100%; padding:0 12px 40px; }
   .inspirationHeader h2 { font-size:22px; }
   .inspirationTabs { position:sticky; top:52px; z-index:5; height:52px; flex-wrap:nowrap; gap:4px; margin:16px -12px 12px; padding:8px 12px; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:transparent; }
+  .inspirationTabs { margin-left:calc(-1 * var(--inspiration-bleed-left,12px));margin-right:calc(-1 * var(--inspiration-bleed-right,12px));padding-left:var(--inspiration-bleed-left,12px);padding-right:var(--inspiration-bleed-right,12px); }
   .inspirationTabs::-webkit-scrollbar { display:none; }
   .inspirationCategoryHeader { position:sticky; top:104px; z-index:4; margin:0 -12px 6px; padding:10px 12px; background:var(--bg); }
   .inspirationTabs button { flex:none; white-space:nowrap; padding:8px 12px; font-size:13px; }

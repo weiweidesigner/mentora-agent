@@ -673,6 +673,17 @@
       const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id)&&!isBusinessCategory(c))];
       window.veyaCases=[...(window.veyaCases||[]),...[...personal,...catalog.cases].filter(row=>!(window.veyaCases||[]).some(item=>item.id===row.id))];
       let current='mine',scrollPending=false;
+      const syncTabBleed=()=>{
+        const bounds=conversation.getBoundingClientRect(),section=square.getBoundingClientRect();
+        if(!bounds.width||!section.width)return;
+        const style=window.getComputedStyle(square);
+        const left=section.left+(parseFloat(style.paddingLeft)||0)-bounds.left-conversation.clientLeft;
+        const right=bounds.left+conversation.clientLeft+conversation.clientWidth-section.right+(parseFloat(style.paddingRight)||0);
+        for(const [side,value] of [['left',left],['right',right]]){
+          const name='--inspiration-bleed-'+side,next=Math.max(0,value)+'px';
+          if(square.style.getPropertyValue(name)!==next)square.style.setProperty(name,next);
+        }
+      };
       const revealTab=()=>{
         const selected=tabs.querySelector('[aria-selected="true"]');if(!selected)return;
         const bounds=tabs.getBoundingClientRect(),rect=selected.getBoundingClientRect();
@@ -743,6 +754,10 @@
       conversation.addEventListener('scroll',scheduleSpy,{passive:true});
       window.addEventListener('veya:home-restored',scheduleSpy);
       window.addEventListener('resize',scheduleSpy);
+      window.addEventListener('resize',syncTabBleed);
+      const tabResize=new ResizeObserver(syncTabBleed);
+      tabResize.observe(conversation);tabResize.observe(square);
+      syncTabBleed();
       panel.addEventListener('click',event=>{const card=event.target.closest('[data-case]');if(card)showCase(card.dataset.case);});
       window.addEventListener('mentora:case-favorite-saved',event=>{
         const row=event.detail;personal=[row,...personal.filter(item=>item.id!==row.id)];
