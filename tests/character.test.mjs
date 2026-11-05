@@ -140,3 +140,16 @@ test('room outreach has its own public plan and permission hint without member i
  assert.match(h.d.querySelector('#chMemoryStatus').textContent,/全群主动联系.*群主/);
  assert.equal(h.d.querySelector('#chMemoryStats').textContent,'');h.dom.window.close();
 });
+
+
+test('affinity summary includes the layout and liquid-heart styles used by its markup',async()=>{
+ const h=setup({}, {recipients:[{id:'private',kind:'users',label:'私聊',facts:[],intimacy:{score:70,days:4,turns:71}}]});
+ try{
+  const style=h.d.createElement('style');style.textContent=readFileSync(new URL('../app/static/character.css',import.meta.url),'utf8');h.d.head.append(style);
+  await tick();const body=h.d.querySelector('.chAffinityBody');assert.ok(body);
+  assert.equal(h.w.getComputedStyle(body).display,'grid');
+  assert.equal(h.w.getComputedStyle(h.d.querySelector('.chAffinityMetrics')).display,'grid');
+  assert.equal(h.w.getComputedStyle(h.d.querySelector('.chAffinityMetrics dd')).marginLeft,'0px');
+  assert.match(h.w.getComputedStyle(h.d.querySelector('.chHeartWave')).animation,/chHeartWaveDrift/);
+ }finally{h.dom.window.close();}
+});

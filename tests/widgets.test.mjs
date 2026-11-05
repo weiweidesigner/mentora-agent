@@ -273,9 +273,9 @@ test('all tabs may close without deleting content and a plus preset reopens a us
  s.d.querySelector('#widgetSidebarLibrary').click();await tick();s.d.querySelector('[data-add-preset="tv-advanced-chart"]').click();await tick();
  assert.equal(s.d.querySelectorAll('.widgetCard').length,1);assert.equal(s.d.querySelector('#widgetPrompt').disabled,false);s.dom.window.close();
 });
-test('card actions expose only config and supplied trash icons; title-only edits keep iframe',async()=>{
+test('card actions expose refresh, config and trash icons; title-only edits keep iframe',async()=>{
  const s=setup({storage:twoCards()});const card=s.d.querySelector('[data-card="one"]'),frame=card.querySelector('iframe');
- assert.equal(card.querySelectorAll('.widgetCardActions button').length,2);assert.equal(card.querySelectorAll('.widgetCardActions svg').length,2);assert.equal(card.querySelector('.widgetCardActions').textContent,'');
+ assert.equal(card.querySelectorAll('.widgetCardActions button').length,3);assert.equal(card.querySelectorAll('.widgetCardActions svg').length,3);assert.equal(card.querySelector('.widgetCardActions').textContent,'');
  card.querySelector('[data-config]').click();await tick();s.d.querySelector('#widgetCardName').value='新标题';s.d.querySelector('#widgetAddForm').dispatchEvent(new s.w.Event('submit',{cancelable:true}));await tick();
  assert.equal(s.d.querySelector('[data-card="one"] iframe'),frame);assert.equal(s.calls.some(c=>c.url==='/api/widgets/tradingview'),false);s.dom.window.close();
 });

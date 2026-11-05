@@ -29,8 +29,8 @@ test('artifact picker only shows and validates a board name when creating a new 
 });
 const card=(component='generic-bar_chart',id='c')=>({id,title:'收入对比',component,status:'ready',url:'/generated/old.html',request:'用户提供的2026年Q1收入100、Q2收入150，单位万元',parameters:{},x:6,y:0,w:6,h:18,customTitle:true});
 
-function setup({cards=[card()],boards,handler,plan,lastRefreshedAt=''}={}){
-  const dom=new JSDOM(html,{url:'https://example.com/mentora/?tab=widgets',runScripts:'outside-only'}),w=dom.window;
+function setup({cards=[card()],boards,handler,plan,lastRefreshedAt='',url='https://example.com/mentora/?tab=widgets'}={}){
+  const dom=new JSDOM(html,{url,runScripts:'outside-only'}),w=dom.window;
   w.ResizeObserver=class{observe(){}};w.CSS={escape:x=>x};w.confirm=()=>true;
   w.HTMLDialogElement.prototype.show=w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
@@ -169,4 +169,28 @@ test('switching boards during refresh never attaches results or timestamp to the
   s.d.querySelector('#widgetManageOpen').click();s.d.querySelector('[data-manage-open="other"]').click();release();await tick();await tick();
   assert.equal(s.stored().activeId,'other');assert.equal(s.stored().boards.find(b=>b.id==='other').cards.length,0);
   assert.match(s.d.querySelector('#widgetLastRefresh').textContent,/^上次刷新 \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);assert(s.board().lastRefreshedAt);s.dom.window.close();
+});
+
+
+test('leaving widgets releases chart frames and returning restores saved settings',async()=>{
+ const s=setup({cards:[{...card('tv-advanced-chart'),parameters:{symbols:['NASDAQ:AAPL'],interval:'W'}}]});
+ try{
+  const frame=s.d.querySelector('#widgetCanvas iframe'),before=s.board();
+  assert.ok(frame.getAttribute('src'));
+  s.w.dispatchEvent(new s.w.CustomEvent('veya:chat-navigate'));
+  assert.equal(s.d.querySelector('#widgetWorkspace').hidden,true);
+  assert.equal(frame.getAttribute('src'),null);
+  s.d.documentElement.dataset.theme='light';await tick();
+  assert.equal(frame.getAttribute('src'),null);
+  s.d.querySelector('#railWidgets').click();await tick();
+  assert.equal(s.d.querySelector('#widgetCanvas iframe'),frame);
+  assert.match(frame.getAttribute('src'),/theme=light/);
+  assert.deepEqual(s.board().cards[0].parameters,before.cards[0].parameters);
+ }finally{s.dom.window.close();}
+});
+
+test('home startup does not load saved chart runtimes',async()=>{
+ const s=setup({cards:[card('tv-advanced-chart')],url:'https://example.com/mentora/'});
+ try{await tick();assert.equal(s.d.querySelector('#widgetWorkspace').hidden,true);assert.equal(s.d.querySelectorAll('#widgetCanvas iframe[src]').length,0);}
+ finally{s.dom.window.close();}
 });
