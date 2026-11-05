@@ -1,0 +1,40 @@
+{
+  "app/static/cases.js": [
+    {
+      "old": "  const businessGroups = [\n    {id:'market',title:'行情与资金',description:'查看价格走势、分时对比、资金流与成交结构。',pattern:/kline|multi_intraday|key_stats$|seasonals|trade_flow|volume_profile|K线|分时|行情|资金流|成交|季节/},\n    {id:'financials',title:'财务报表与经营',description:'从财务三表、收入构成与关键指标了解公司经营。',pattern:/balance_sheet|cash_flow|income_statement|key_financial|key_statistics|revenue_expenses|revenue_geography|revenue_sources|财务|财报|负债|现金流|营收与利润|收入|成本/},\n",
+      "new": "  // Group chart providers together by business purpose.\n  const financialChartGroups = [\n    {id:'ownership',title:'机构与议员交易',description:'追踪机构、内部人与议员的持仓和交易。',pattern:/congress|insider|institution|议员|国会|机构交易|机构持仓|内部人|聪明钱/i},\n    {id:'market',title:'行情走势与报价',description:'查看价格走势、分时对比、实时报价与技术分析。',pattern:/kline|multi_intraday|key_stats$|seasonals|K线|分时|行情|季节|技术分析/},\n    {id:'flows',title:'资金流与成交结构',description:'观察买卖资金流、成交量与价格分布。',pattern:/trade_flow|volume_profile|资金流|订单流|成交量|成交结构/},\n    {id:'financials',title:'财务报表与经营',description:'从财务三表、收入构成与关键指标了解公司经营。',pattern:/balance_sheet|cash_flow|income_statement|key_financial|key_statistics|revenue_expenses|revenue_geography|revenue_sources|财务|财报|利润表|负债|现金流|营收与利润|收入与|收入构成|成本/},\n"
+    },
+    {
+      "old": "    {id:'ownership',title:'机构与议员交易',description:'追踪机构、内部人与议员的持仓和交易。',pattern:/congress|insider|institution|议员|机构|内部人/},\n    {id:'macro',title:'宏观与市场概览',description:'观察各国经济、债券、市场情绪与行业表现。',pattern:/宏观|经济|GDP|通胀|债券|收益率与期限|恐惧|贪婪|市场动量|行业表现/i},\n    {id:'company',title:'公司资料与主题',description:'查看公司档案、管理层、资本结构及关联主题。',pattern:/about_company|executive_profile|capital_structure|related_section|公司|管理层|资本结构|主题|板块/},\n    {id:'other',title:'更多业务图表',description:'浏览其他 AInvest 原生业务图表。'}\n",
+      "new": "    {id:'macro',title:'宏观经济与市场概览',description:'观察全球市场、经济指标、重要事件与市场情绪。',pattern:/宏观|经济|GDP|通胀|债券|收益率与期限|恐惧|贪婪|市场动量|行业表现/i},\n    {id:'screeners',title:'热力图与筛选',description:'对比市场表现、外汇汇率与筛选结果。',pattern:/热力|筛选|交叉汇率|外汇/},\n    {id:'company',title:'公司资料与主题',description:'查看公司档案、管理层、资本结构及关联主题。',pattern:/about_company|executive_profile|capital_structure|related_section|公司资料|公司档案|公司简介|管理层|资本结构|关联主题|相关主题/},\n    {id:'news',title:'市场新闻',description:'浏览股票与加密货币市场的新闻动态。',pattern:/新闻|头条/},\n    {id:'brokers',title:'经纪商',description:'查看经纪商评分与用户反馈。',pattern:/经纪商/},\n    {id:'other',title:'更多金融图表',description:'浏览其他金融研究图表。'}\n"
+    },
+    {
+      "old": "  const businessGroupFor = row => {\n    const label = [row.id?.startsWith('business-') ? row.id : '',row.tag || ''].join(' ');\n    return businessGroups.find(group => group.pattern?.test(label))?.id || 'other';\n",
+      "new": "  const financialChartGroupFor = row => {\n    if(row.tool==='TradingViewChart'){\n      if(row.widget==='fundamental-data')return 'financials';\n      if(row.widget==='company-profile'||row.widget==='symbol-info')return 'company';\n      return ({charts:'market',tickers:'market',watchlists:'macro','heatmaps-screeners':'screeners','symbol-details':'market','market-news':'news','economic-events':'macro',economics:'macro',brokers:'brokers'})[row.widgetGroup] || 'other';\n    }\n    // Prefer component identity, then card metadata, then the saved request.\n    // Saved favorites have generated IDs and may only carry a generic tag.\n    for(const label of [row.id?.startsWith('business-')?row.id:'',row.tag||'',[row.title,row.question].filter(Boolean).join(' ')]){\n      const match=financialChartGroups.find(group=>group.pattern?.test(label));\n      if(match)return match.id;\n    }\n    return 'other';\n"
+    },
+    {
+      "old": "    if (row.category === \"charts\" && row.tool === \"TradingViewChart\") {\n",
+      "new": "    if (row.tool === \"TradingViewChart\") {\n"
+    },
+    {
+      "old": "      const businessCategory='business-charts';\n",
+      "new": "      const isFinancialChart=row=>isBusiness(row)||row.tool==='TradingViewChart'||row.category==='charts';\n"
+    },
+    {
+      "old": "        if([...personal,...catalog.cases].some(isBusiness)&&!categories.some(category=>category.id===businessCategory))categories.splice(Math.max(1,categories.findIndex(category=>category.id==='charts')+1),0,{id:businessCategory,title:'金融业务图表',subtitle:'AInvest 原生业务图表，按行情、财务、估值与市场研究分类浏览。'});\n",
+      "new": "        if([...personal,...catalog.cases].some(isFinancialChart)&&!categories.some(category=>category.id==='charts'))categories.splice(1,0,{id:'charts',title:'金融图表',subtitle:'按业务类别浏览行情、财报、估值与市场研究图表。'});\n"
+    },
+    {
+      "old": "          const rows=category.id==='mine'?mineRows():(category.id===businessCategory?[...personal.filter(isBusiness),...catalog.cases.filter(isBusiness)]:catalog.cases.filter(row=>row.category===category.id&&!isBusiness(row))).filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;});\n",
+      "new": "          const rows=category.id==='mine'?mineRows():(category.id==='charts'?[...personal.filter(isFinancialChart),...catalog.cases.filter(isFinancialChart)]:catalog.cases.filter(row=>row.category===category.id&&!isBusiness(row))).filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;});\n"
+    },
+    {
+      "old": "          if(category.id===businessCategory){\n            content=businessGroups.map(group=>{\n              const items=rows.filter(row=>businessGroupFor(row)===group.id);\n",
+      "new": "          if(category.id==='charts'){\n            content=financialChartGroups.map(group=>{\n              const items=rows.filter(row=>financialChartGroupFor(row)===group.id);\n"
+    },
+    {
+      "old": "              return '<section class=\"inspirationWidgetGroup\" aria-labelledby=\"business-group-'+group.id+'\"><header class=\"inspirationWidgetGroupHeader\"><h4 id=\"business-group-'+group.id+'\">AInvest · '+escapeHtml(group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';\n            }).join('');\n          }\n          if(category.id==='charts'&&catalog.tradingViewGroups?.length){\n            const groups=[...catalog.tradingViewGroups,{id:'native',title:'公司财务与研究',description:'使用原生业务图表查看财报、估值与资金。'}];\n            content=groups.map(group=>{\n              const items=rows.filter(row=>group.id==='native'?row.tool!=='TradingViewChart':row.tool==='TradingViewChart'&&row.widgetGroup===group.id);\n              if(!items.length)return '';\n              return '<section class=\"inspirationWidgetGroup\" aria-labelledby=\"widget-group-'+group.id+'\"><header class=\"inspirationWidgetGroupHeader\"><h4 id=\"widget-group-'+group.id+'\">'+escapeHtml(group.id==='native'?group.title:'TradingView · '+group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';\n",
+      "new": "              return '<section class=\"inspirationWidgetGroup\" aria-labelledby=\"financial-group-'+group.id+'\"><header class=\"inspirationWidgetGroupHeader\"><h4 id=\"financial-group-'+group.id+'\">'+escapeHtml(group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';\n"
+    }
+  ]
+}

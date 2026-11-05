@@ -172,7 +172,41 @@
     "ths-dividends": "timeline", "us-catalysts": "mind_map",
     "jpm-technical": "kline", "sse-events": "event",
   };
+  const isBusinessCategory = category => ['business-charts','business','financial-business-charts'].includes(category.id) || category.title === '金融业务图表';
+  const isAInvestBusinessCase = row => row.tool !== 'TradingViewChart' && (row.businessChart === true || row.id?.startsWith('business-') || isBusinessCategory({id:row.category}));
+  // Group chart providers together by business purpose.
+  const financialChartGroups = [
+    {id:'ownership',title:'机构与议员交易',description:'追踪机构、内部人与议员的持仓和交易。',pattern:/congress|insider|institution|议员|国会|机构交易|机构持仓|内部人|聪明钱/i},
+    {id:'market',title:'行情走势与报价',description:'查看价格走势、分时对比、实时报价与技术分析。',pattern:/kline|multi_intraday|key_stats$|seasonals|K线|分时|行情|季节|技术分析/},
+    {id:'flows',title:'资金流与成交结构',description:'观察买卖资金流、成交量与价格分布。',pattern:/trade_flow|volume_profile|资金流|订单流|成交量|成交结构/},
+    {id:'financials',title:'财务报表与经营',description:'从财务三表、收入构成与关键指标了解公司经营。',pattern:/balance_sheet|cash_flow|income_statement|key_financial|key_statistics|revenue_expenses|revenue_geography|revenue_sources|财务|财报|利润表|负债|现金流|营收与利润|收入与|收入构成|成本/},
+    {id:'valuation',title:'估值与评级',description:'对比估值、投资评级、分析师观点与业绩预期。',pattern:/rating|valuation|recommendations|estimate|price_target|wall_street|估值|评级|评分|推荐|预期|目标价|共识/},
+    {id:'returns',title:'分红与股东回报',description:'了解股息、分红比例与股东回报。',pattern:/dividend|payout|shareholder_returns|股息|分红|股东回报/},
+    {id:'macro',title:'宏观经济与市场概览',description:'观察全球市场、经济指标、重要事件与市场情绪。',pattern:/宏观|经济|GDP|通胀|债券|收益率与期限|恐惧|贪婪|市场动量|行业表现/i},
+    {id:'screeners',title:'热力图与筛选',description:'对比市场表现、外汇汇率与筛选结果。',pattern:/热力|筛选|交叉汇率|外汇/},
+    {id:'company',title:'公司资料与主题',description:'查看公司档案、管理层、资本结构及关联主题。',pattern:/about_company|executive_profile|capital_structure|related_section|公司资料|公司档案|公司简介|管理层|资本结构|关联主题|相关主题/},
+    {id:'news',title:'市场新闻',description:'浏览股票与加密货币市场的新闻动态。',pattern:/新闻|头条/},
+    {id:'brokers',title:'经纪商',description:'查看经纪商评分与用户反馈。',pattern:/经纪商/},
+    {id:'other',title:'更多金融图表',description:'浏览其他金融研究图表。'}
+  ];
+  const financialChartGroupFor = row => {
+    if(row.tool==='TradingViewChart'){
+      if(row.widget==='fundamental-data')return 'financials';
+      if(row.widget==='company-profile'||row.widget==='symbol-info')return 'company';
+      return ({charts:'market',tickers:'market',watchlists:'macro','heatmaps-screeners':'screeners','symbol-details':'market','market-news':'news','economic-events':'macro',economics:'macro',brokers:'brokers'})[row.widgetGroup] || 'other';
+    }
+    // Prefer component identity, then card metadata, then the saved request.
+    // Saved favorites have generated IDs and may only carry a generic tag.
+    for(const label of [row.id?.startsWith('business-')?row.id:'',row.tag||'',[row.title,row.question].filter(Boolean).join(' ')]){
+      const match=financialChartGroups.find(group=>group.pattern?.test(label));
+      if(match)return match.id;
+    }
+    return 'other';
+  };
   const cardIcon = (row, index) => {
+    if (isAInvestBusinessCase(row)) {
+      return '<span class="caseCardIcon caseCardBrandIcon" data-brand="ainvest"><img src="/static/assets/brands/ainvest.png" alt="AInvest"></span>';
+    }
     const contentType = row.category === "videos" ? "video" : row.category === "art" ? "image" : homeCaseIcons[row.id];
     if (contentType && contentType !== "report") {
       const path = contentIcons[contentType] || visualizationIcons[contentType];
@@ -185,11 +219,8 @@
     if (visualizationIcons[chartType]) {
       return `<span class="caseCardIcon" data-icon="${chartType}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${visualizationIcons[chartType]}</svg></span>`;
     }
-    if (row.category === "charts" && row.tool === "TradingViewChart") {
+    if (row.tool === "TradingViewChart") {
       return '<span class="caseCardIcon caseCardBrandIcon caseCardBrandIcon--tradingview" aria-hidden="true"><img class="brandLogoLight" src="/static/assets/brands/tradingview-black.png" alt=""><img class="brandLogoDark" src="/static/assets/brands/tradingview-white.png" alt=""></span>';
-    }
-    if (row.category === "charts" && row.id.startsWith("business-")) {
-      return '<span class="caseCardIcon caseCardBrandIcon" aria-hidden="true"><img src="/static/assets/brands/ainvest.png" alt=""></span>';
     }
     return `<span class="caseCardIcon" data-icon="document"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${contentIcons.document}</svg></span>`;
   };
@@ -599,9 +630,11 @@
       }
       await window.MentoraCaseFavorites?.ready;
       let personal=[...(window.MentoraCaseFavorites?.rows||[])];
-      const isBusiness=row=>row.businessChart===true||(row.id?.startsWith('business-')&&row.tool!=='TradingViewChart');
-      const businessCategory='business-charts';
-      const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];
+      const businessCategoryIds=new Set(catalog.categories.filter(isBusinessCategory).map(category=>category.id));
+      catalog.cases=catalog.cases.map(row=>businessCategoryIds.has(row.category)&&row.tool!=='TradingViewChart'?{...row,businessChart:true}:row);
+      const isBusiness=isAInvestBusinessCase;
+      const isFinancialChart=row=>isBusiness(row)||row.tool==='TradingViewChart'||row.category==='charts';
+      const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id)&&!isBusinessCategory(c))];
       window.veyaCases=[...(window.veyaCases||[]),...[...personal,...catalog.cases].filter(row=>!(window.veyaCases||[]).some(item=>item.id===row.id))];
       let current='mine',scrollPending=false;
       const revealTab=()=>{
@@ -622,20 +655,19 @@
         return personal.filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;}).map(row=>({...row,category:'mine'}));
       };
       const render=()=>{
-        if([...personal,...catalog.cases].some(isBusiness)&&!categories.some(category=>category.id===businessCategory))categories.splice(Math.max(1,categories.findIndex(category=>category.id==='charts')+1),0,{id:businessCategory,title:'金融业务图表',subtitle:'收藏中的 AInvest 原生业务图表，与行情、财报、估值和资金流案例同步展示。'});
+        if([...personal,...catalog.cases].some(isFinancialChart)&&!categories.some(category=>category.id==='charts'))categories.splice(1,0,{id:'charts',title:'金融图表',subtitle:'按业务类别浏览行情、财报、估值与市场研究图表。'});
 
         tabs.innerHTML=categories.map(category=>'<button type="button" role="tab" id="inspiration-tab-'+category.id+'" aria-controls="inspirationPanel" aria-selected="'+(category.id===current)+'" tabindex="'+(category.id===current?0:-1)+'" data-category="'+category.id+'">'+escapeHtml(category.title)+'</button>').join('');
         panel.innerHTML=categories.map(category=>{
           const seen=new Set();
-          const rows=category.id==='mine'?mineRows():(category.id===businessCategory?[...personal.filter(isBusiness),...catalog.cases.filter(isBusiness)]:catalog.cases.filter(row=>row.category===category.id&&!isBusiness(row))).filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;});
+          const rows=category.id==='mine'?mineRows():(category.id==='charts'?[...personal.filter(isFinancialChart),...catalog.cases.filter(isFinancialChart)]:catalog.cases.filter(row=>row.category===category.id&&!isBusiness(row))).filter(row=>{const key=row.fingerprint||row.id;if(seen.has(key))return false;seen.add(key);return true;});
           const cards=(items,level=4)=>'<div class="inspirationGrid">'+items.map((row,index)=>cardHtml(row,index).replaceAll('<h2>','<h'+level+'>').replaceAll('</h2>','</h'+level+'>')).join('')+'</div>';
           let content=category.id==='mine'&&!rows.length?'<p class="inspirationEmpty">暂无收藏</p>':cards(rows);
-          if(category.id==='charts'&&catalog.tradingViewGroups?.length){
-            const groups=[...catalog.tradingViewGroups,{id:'native',title:'公司财务与研究',description:'使用原生业务图表查看财报、估值与资金。'}];
-            content=groups.map(group=>{
-              const items=rows.filter(row=>group.id==='native'?row.tool!=='TradingViewChart':row.tool==='TradingViewChart'&&row.widgetGroup===group.id);
+          if(category.id==='charts'){
+            content=financialChartGroups.map(group=>{
+              const items=rows.filter(row=>financialChartGroupFor(row)===group.id);
               if(!items.length)return '';
-              return '<section class="inspirationWidgetGroup" aria-labelledby="widget-group-'+group.id+'"><header class="inspirationWidgetGroupHeader"><h4 id="widget-group-'+group.id+'">'+escapeHtml(group.id==='native'?group.title:'TradingView · '+group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';
+              return '<section class="inspirationWidgetGroup" aria-labelledby="financial-group-'+group.id+'"><header class="inspirationWidgetGroupHeader"><h4 id="financial-group-'+group.id+'">'+escapeHtml(group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';
             }).join('');
           }
           return '<section id="inspiration-section-'+category.id+'" class="inspirationCategory" aria-labelledby="inspiration-category-'+category.id+'"><header class="inspirationCategoryHeader"><h3 id="inspiration-category-'+category.id+'">'+escapeHtml(category.title)+'</h3></header>'+(category.subtitle?'<p class="inspirationCategorySubtitle">'+escapeHtml(category.subtitle)+'</p>':'')+content+'</section>';
@@ -660,6 +692,8 @@
         scrollPending=false;
         if(selectedCase||!conversation.classList.contains('is-empty'))return;
         const bounds=conversation.getBoundingClientRect(),tabBounds=tabs.getBoundingClientRect();
+        const stickyTop=parseFloat(window.getComputedStyle(tabs).top)||0;
+        tabs.classList.toggle('is-stuck',conversation.scrollTop>0&&tabBounds.top<=bounds.top+stickyTop+1);
         if(tabBounds.top>=bounds.bottom)return;
         const threshold=Math.max(bounds.top,tabBounds.bottom)+30;
         let next='mine';
@@ -682,7 +716,7 @@
         const ids=new Set(event.detail.ids);personal=personal.filter(row=>!ids.has(row.id));
         window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));ids.forEach(id=>responseCache.delete(id));render();
       });
-      render();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');panel.classList.add('homeContentReady');
+      render();scheduleSpy();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');panel.classList.add('homeContentReady');
       const id=new URLSearchParams(location.search).get('case');
       if([...personal,...catalog.cases].some(row=>row.id===id))showCase(id,false);
     }catch{

@@ -1,0 +1,24 @@
+{
+  "app/static/cases.js": [
+    {
+      "old": "  const isAInvestBusinessCase = row => row.tool !== 'TradingViewChart' && (row.businessChart === true || row.id?.startsWith('business-'));\n",
+      "new": "  const isBusinessCategory = category => ['business-charts','business','financial-business-charts'].includes(category.id) || category.title === '金融业务图表';\n  const isAInvestBusinessCase = row => row.tool !== 'TradingViewChart' && (row.businessChart === true || row.id?.startsWith('business-') || isBusinessCategory({id:row.category}));\n  const businessGroups = [\n    {id:'market',title:'行情与资金',description:'查看价格走势、分时对比、资金流与成交结构。',pattern:/kline|multi_intraday|key_stats$|seasonals|trade_flow|volume_profile|K线|分时|行情|资金流|成交|季节/},\n    {id:'financials',title:'财务报表与经营',description:'从财务三表、收入构成与关键指标了解公司经营。',pattern:/balance_sheet|cash_flow|income_statement|key_financial|key_statistics|revenue_expenses|revenue_geography|revenue_sources|财务|财报|负债|现金流|营收与利润|收入|成本/},\n    {id:'valuation',title:'估值与评级',description:'对比估值、投资评级、分析师观点与业绩预期。',pattern:/rating|valuation|recommendations|estimate|price_target|wall_street|估值|评级|评分|推荐|预期|目标价|共识/},\n    {id:'returns',title:'分红与股东回报',description:'了解股息、分红比例与股东回报。',pattern:/dividend|payout|shareholder_returns|股息|分红|股东回报/},\n    {id:'ownership',title:'机构与议员交易',description:'追踪机构、内部人与议员的持仓和交易。',pattern:/congress|insider|institution|议员|机构|内部人/},\n    {id:'macro',title:'宏观与市场概览',description:'观察各国经济、债券、市场情绪与行业表现。',pattern:/宏观|经济|GDP|通胀|债券|收益率与期限|恐惧|贪婪|市场动量|行业表现/i},\n    {id:'company',title:'公司资料与主题',description:'查看公司档案、管理层、资本结构及关联主题。',pattern:/about_company|executive_profile|capital_structure|related_section|公司|管理层|资本结构|主题|板块/},\n    {id:'other',title:'更多业务图表',description:'浏览其他 AInvest 原生业务图表。'}\n  ];\n  const businessGroupFor = row => {\n    const label = [row.id?.startsWith('business-') ? row.id : '',row.tag || ''].join(' ');\n    return businessGroups.find(group => group.pattern?.test(label))?.id || 'other';\n  };\n"
+    },
+    {
+      "old": "      const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id))];\n",
+      "new": "      const categories=[{id:'mine',title:'我的',subtitle:'收藏你感兴趣的内容，随时回看图表、报告与灵感。'},...catalog.categories.filter(c=>!['all','mine'].includes(c.id)&&!isBusinessCategory(c))];\n"
+    },
+    {
+      "old": "        if([...personal,...catalog.cases].some(isBusiness)&&!categories.some(category=>category.id===businessCategory))categories.splice(Math.max(1,categories.findIndex(category=>category.id==='charts')+1),0,{id:businessCategory,title:'金融业务图表',subtitle:'收藏中的 AInvest 原生业务图表，与行情、财报、估值和资金流案例同步展示。'});\n",
+      "new": "        if([...personal,...catalog.cases].some(isBusiness)&&!categories.some(category=>category.id===businessCategory))categories.splice(Math.max(1,categories.findIndex(category=>category.id==='charts')+1),0,{id:businessCategory,title:'金融业务图表',subtitle:'AInvest 原生业务图表，按行情、财务、估值与市场研究分类浏览。'});\n"
+    },
+    {
+      "old": "          if(category.id==='charts'&&catalog.tradingViewGroups?.length){\n",
+      "new": "          if(category.id===businessCategory){\n            content=businessGroups.map(group=>{\n              const items=rows.filter(row=>businessGroupFor(row)===group.id);\n              if(!items.length)return '';\n              return '<section class=\"inspirationWidgetGroup\" aria-labelledby=\"business-group-'+group.id+'\"><header class=\"inspirationWidgetGroupHeader\"><h4 id=\"business-group-'+group.id+'\">AInvest · '+escapeHtml(group.title)+'</h4><p>'+escapeHtml(group.description)+'</p></header>'+cards(items,5)+'</section>';\n            }).join('');\n          }\n          if(category.id==='charts'&&catalog.tradingViewGroups?.length){\n"
+    },
+    {
+      "old": "      const isBusiness=isAInvestBusinessCase;",
+      "new": "      const businessCategoryIds=new Set(catalog.categories.filter(isBusinessCategory).map(category=>category.id));\n      catalog.cases=catalog.cases.map(row=>businessCategoryIds.has(row.category)&&row.tool!=='TradingViewChart'?{...row,businessChart:true}:row);\n      const isBusiness=isAInvestBusinessCase;"
+    }
+  ]
+}

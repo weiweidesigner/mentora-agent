@@ -539,21 +539,19 @@ test('media galleries and horizontal home lanes use semantic icons',async()=>{
  h.w.close();
 });
 
-test('financial gallery renders official TradingView groups with native research separate',async()=>{
+test('financial gallery mixes providers into business groups without losing public cards',async()=>{
  const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
  const h=setup('https://example.com/','组件案例',catalog);await tick();
- const groups=h.w.document.querySelectorAll('.inspirationWidgetGroup');
- assert.equal(groups.length,catalog.tradingViewGroups.length);
- assert(h.w.document.querySelector('#inspiration-section-business-charts [data-case=business-income_statement]'));
- for(const group of catalog.tradingViewGroups){
-  const section=h.w.document.querySelector(`#widget-group-${group.id}`).closest('section');
-  const expected=catalog.cases.filter(row=>row.tool==='TradingViewChart'&&row.widgetGroup===group.id);
-  assert.equal(section.querySelectorAll('[data-case]').length,expected.length);
-  assert.match(section.textContent,new RegExp(group.title));
- }
+ const d=h.w.document,section=d.querySelector('#inspiration-section-charts');
+ assert.equal(section.querySelectorAll('.caseCard').length,catalog.cases.filter(row=>row.category==='charts').length);
+ assert.equal(d.querySelector('#inspiration-section-business-charts'),null);
+ for(const title of section.querySelectorAll('h4'))assert.doesNotMatch(title.textContent,/AInvest|TradingView/i);
+ const market=d.querySelector('#financial-group-market').closest('section');
+ assert(market.querySelector('[data-case=business-kline] [data-brand=ainvest]'));
+ assert(market.querySelector('[data-case=business-trading_view_chart] .caseCardBrandIcon--tradingview'));
+ assert(d.querySelector('#financial-group-financials').closest('section').querySelector('[data-case=tradingview-fundamental-data]'));
  h.w.close();
 });
-
 
 test('saved native business charts sync privately into business category and deduplicate',async()=>{
  const native={id:'saved-native',fingerprint:'one',category:'mine',businessChart:true,title:'原生财报',question:'财报',tag:'利润表',conversationUrl:'/api/case-favorites/saved-native'};
@@ -561,13 +559,48 @@ test('saved native business charts sync privately into business category and ded
  const catalog={categories:[{id:'charts',title:'金融图表'}],cases:[{id:'business-income_statement',category:'charts',title:'公开利润表',question:'公开财报'},{id:'business-trading_view_chart',tool:'TradingViewChart',category:'charts',title:'TradingView',question:'价格'}]};
  const h=setup('https://example.com/','原始收藏回答',catalog,{favorites:[native,{...native,id:'saved-duplicate'},generic]});await tick();
  const d=h.w.document;
- assert.equal(d.querySelectorAll('#inspiration-section-business-charts .caseCard').length,2);
+ assert.equal(d.querySelectorAll('#inspiration-section-charts .caseCard').length,3);
+ assert.equal(d.querySelectorAll('#inspiration-section-charts [data-brand=ainvest] img').length,2);
+ assert.equal(d.querySelector('#inspiration-section-mine [data-case=saved-native] img').alt,'AInvest');
+ assert.equal(d.querySelector('#inspiration-section-mine [data-case=saved-report] [data-brand=ainvest]'),null);
+ assert(d.querySelector('#inspiration-section-charts [data-case=business-trading_view_chart] .caseCardBrandIcon--tradingview'));
  assert(d.querySelector('#inspiration-section-mine [data-case=saved-native]'));
- assert.equal(d.querySelector('#inspiration-section-business-charts [data-case=saved-report]'),null);
+ assert.equal(d.querySelector('#inspiration-section-charts [data-case=saved-report]'),null);
  assert(d.querySelector('#inspiration-section-charts [data-case=business-trading_view_chart]'));
- d.querySelector('#inspiration-section-business-charts [data-case=saved-native]').click();await tick();
+ d.querySelector('#inspiration-section-charts [data-case=saved-native]').click();await tick();
  assert.match(h.messages.textContent,/原始收藏回答/);assert.equal(h.sent.length,0);
  h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-removed',{detail:{ids:['saved-native','saved-duplicate']}}));
- assert.equal(d.querySelector('#inspiration-section-business-charts [data-case=saved-native]'),null);
+ assert.equal(d.querySelector('#inspiration-section-charts [data-case=saved-native]'),null);
+ h.w.close();
+});
+
+test('gallery tabs gain a background only after reaching their desktop or mobile sticky position',async()=>{
+ const catalog={categories:[{id:'charts',title:'金融图表'}],cases:[]};
+ const h=setup('https://example.com/','回答',catalog);try{
+ await tick();const tabs=h.w.document.querySelector('#inspirationTabs');let top=120;
+ h.conversation.getBoundingClientRect=()=>({top:10,bottom:600});tabs.getBoundingClientRect=()=>({top,bottom:top+52});
+ h.conversation.scrollTop=10;h.conversation.dispatchEvent(new h.w.Event('scroll'));await tick();assert.equal(tabs.classList.contains('is-stuck'),false);
+ top=10;h.conversation.dispatchEvent(new h.w.Event('scroll'));await tick();assert(tabs.classList.contains('is-stuck'));
+ tabs.style.top='52px';top=62;h.conversation.dispatchEvent(new h.w.Event('scroll'));await tick();assert(tabs.classList.contains('is-stuck'));
+ h.conversation.scrollTop=0;top=120;h.conversation.dispatchEvent(new h.w.Event('scroll'));await tick();assert.equal(tabs.classList.contains('is-stuck'),false);
+ }finally{h.w.close();}
+});
+
+test('legacy business categories merge and saved congress request uses semantic classification',async()=>{
+ const catalog=JSON.parse(readFileSync(new URL('../app/static/cases/inspiration/manifest.json',import.meta.url),'utf8'));
+ catalog.categories.push({id:'native-charts',title:'金融业务图表'},{id:'business-charts',title:'金融业务图表'});
+ catalog.cases.push({id:'legacy-native',category:'native-charts',title:'原生图表'});
+ const favorites=[{id:'saved-congress',businessChart:true,tag:'聪明钱',title:'展示最近的美国国会议员股票交易'}, {id:'saved-unknown',businessChart:true,title:'新业务图表'}];
+ const h=setup('https://example.com/','回答',catalog,{favorites});await tick();
+ const d=h.w.document,section=d.querySelector('#inspiration-section-charts');
+ assert.equal([...d.querySelectorAll('#inspirationTabs button')].filter(el=>el.textContent==='金融业务图表').length,0);
+ assert.equal([...d.querySelectorAll('#inspirationTabs button')].filter(el=>el.textContent==='金融图表').length,1);
+ assert.equal(section.querySelectorAll('.caseCard').length,catalog.cases.filter(row=>row.category==='charts').length+3);
+ assert(section.querySelector('[data-case=legacy-native] [data-brand=ainvest]'));
+ assert(section.querySelector('#financial-group-ownership').closest('section').querySelector('[data-case=saved-congress]'));
+ const fallback={id:'saved-title-only',businessChart:true,tag:'业务图表',question:'展示最近的美国国会议员股票交易'};
+ h.w.dispatchEvent(new h.w.CustomEvent('mentora:case-favorite-saved',{detail:fallback}));
+ assert(section.isConnected===false);
+ assert(d.querySelector('#financial-group-ownership').closest('section').querySelector('[data-case=saved-title-only]'));
  h.w.close();
 });

@@ -1,0 +1,34 @@
+{
+  "app/static/cases.js": [
+    {
+      "old": "    \"jpm-technical\": \"kline\", \"sse-events\": \"event\",\n  };\n  const cardIcon = (row, index) => {\n",
+      "new": "    \"jpm-technical\": \"kline\", \"sse-events\": \"event\",\n  };\n  const isAInvestBusinessCase = row => row.tool !== 'TradingViewChart' && (row.businessChart === true || row.id?.startsWith('business-'));\n  const cardIcon = (row, index) => {\n"
+    },
+    {
+      "old": "  const cardIcon = (row, index) => {\n    const contentType = row.category === \"videos\" ? \"video\" : row.category === \"art\" ? \"image\" : homeCaseIcons[row.id];\n",
+      "new": "  const cardIcon = (row, index) => {\n    if (isAInvestBusinessCase(row)) {\n      return '<span class=\"caseCardIcon caseCardBrandIcon\" data-brand=\"ainvest\"><img src=\"/static/assets/brands/ainvest.png\" alt=\"AInvest\"></span>';\n    }\n    const contentType = row.category === \"videos\" ? \"video\" : row.category === \"art\" ? \"image\" : homeCaseIcons[row.id];\n"
+    },
+    {
+      "old": "      return '<span class=\"caseCardIcon caseCardBrandIcon caseCardBrandIcon--tradingview\" aria-hidden=\"true\"><img class=\"brandLogoLight\" src=\"/static/assets/brands/tradingview-black.png\" alt=\"\"><img class=\"brandLogoDark\" src=\"/static/assets/brands/tradingview-white.png\" alt=\"\"></span>';\n    }\n    if (row.category === \"charts\" && row.id.startsWith(\"business-\")) {\n      return '<span class=\"caseCardIcon caseCardBrandIcon\" aria-hidden=\"true\"><img src=\"/static/assets/brands/ainvest.png\" alt=\"\"></span>';\n    }\n    return `<span class=\"caseCardIcon\" data-icon=\"document\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">${contentIcons.document}</svg></span>`;\n",
+      "new": "      return '<span class=\"caseCardIcon caseCardBrandIcon caseCardBrandIcon--tradingview\" aria-hidden=\"true\"><img class=\"brandLogoLight\" src=\"/static/assets/brands/tradingview-black.png\" alt=\"\"><img class=\"brandLogoDark\" src=\"/static/assets/brands/tradingview-white.png\" alt=\"\"></span>';\n    }\n    return `<span class=\"caseCardIcon\" data-icon=\"document\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">${contentIcons.document}</svg></span>`;\n"
+    },
+    {
+      "old": "      let personal=[...(window.MentoraCaseFavorites?.rows||[])];\n      const isBusiness=row=>row.businessChart===true||(row.id?.startsWith('business-')&&row.tool!=='TradingViewChart');\n      const businessCategory='business-charts';\n",
+      "new": "      let personal=[...(window.MentoraCaseFavorites?.rows||[])];\n      const isBusiness=isAInvestBusinessCase;\n      const businessCategory='business-charts';\n"
+    },
+    {
+      "old": "        const bounds=conversation.getBoundingClientRect(),tabBounds=tabs.getBoundingClientRect();\n        if(tabBounds.top>=bounds.bottom)return;\n",
+      "new": "        const bounds=conversation.getBoundingClientRect(),tabBounds=tabs.getBoundingClientRect();\n        const stickyTop=parseFloat(window.getComputedStyle(tabs).top)||0;\n        tabs.classList.toggle('is-stuck',conversation.scrollTop>0&&tabBounds.top<=bounds.top+stickyTop+1);\n        if(tabBounds.top>=bounds.bottom)return;\n"
+    },
+    {
+      "old": "        window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));ids.forEach(id=>responseCache.delete(id));render();\n      });\n      render();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');panel.classList.add('homeContentReady');\n      const id=new URLSearchParams(location.search).get('case');\n",
+      "new": "        window.veyaCases=window.veyaCases.filter(row=>!ids.has(row.id));ids.forEach(id=>responseCache.delete(id));render();\n      });\n      render();scheduleSpy();tabs.setAttribute('aria-busy','false');panel.setAttribute('aria-busy','false');panel.classList.add('homeContentReady');\n      const id=new URLSearchParams(location.search).get('case');\n"
+    }
+  ],
+  "app/static/styles.css": [
+    {
+      "old": ".inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:transparent; }\n.inspirationTabs::-webkit-scrollbar { display:none; }\n.inspirationTabs button { flex:none;white-space:nowrap; }\n",
+      "new": ".inspirationTabs { display:flex; position:sticky; top:0; z-index:5; flex-wrap:nowrap; gap:8px; margin:24px 0; padding:10px 0; overflow-x:auto; scrollbar-width:none; overscroll-behavior-x:contain; background:transparent; }\n.inspirationTabs.is-stuck { background:var(--bg); box-shadow:0 1px 0 var(--line); }\n.inspirationTabs::-webkit-scrollbar { display:none; }\n.inspirationTabs button { flex:none;white-space:nowrap; }\n"
+    }
+  ]
+}
