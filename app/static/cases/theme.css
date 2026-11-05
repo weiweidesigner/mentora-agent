@@ -11,3 +11,12 @@
 :root[data-theme="dark"] :is(.timeLabel,.timeLabel *,#speedBtn,#musicBtn) { color:var(--case-text)!important; }
 :root[data-theme="dark"] .pillBtn { background:#202733!important; border-color:var(--case-grid)!important; }
 :root[data-theme="dark"] #sliderTrack { background:#2a3341!important; }
+
+/* Transparent embeds need their own opaque surface in the fullscreen top layer. */
+:root { --artifact-fullscreen-bg:#fcfbfc; }
+:root[data-theme="dark"] { --artifact-fullscreen-bg:#101010; }
+:fullscreen { background:var(--artifact-fullscreen-bg)!important; }
+:-webkit-full-screen { background:var(--artifact-fullscreen-bg)!important; }
+:fullscreen::backdrop { background:var(--artifact-fullscreen-bg)!important; }
+:-webkit-full-screen::backdrop { background:var(--artifact-fullscreen-bg)!important; }
+body.is-fullscreen { background:var(--artifact-fullscreen-bg)!important; }

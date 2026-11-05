@@ -2,6 +2,19 @@
 (() => {
   const theme=document.currentScript?.dataset.artifactHostTheme;
   const root=document.documentElement;
+  const fullscreenStyle=document.createElement('style');
+  fullscreenStyle.dataset.artifactFullscreenTheme='true';
+  fullscreenStyle.textContent=`
+/* Transparent embeds need their own opaque surface in the fullscreen top layer. */
+:root { --artifact-fullscreen-bg:#fcfbfc; }
+:root[data-theme="dark"] { --artifact-fullscreen-bg:#101010; }
+:fullscreen { background:var(--artifact-fullscreen-bg)!important; }
+:-webkit-full-screen { background:var(--artifact-fullscreen-bg)!important; }
+:fullscreen::backdrop { background:var(--artifact-fullscreen-bg)!important; }
+:-webkit-full-screen::backdrop { background:var(--artifact-fullscreen-bg)!important; }
+body.is-fullscreen { background:var(--artifact-fullscreen-bg)!important; }
+`;
+  document.head.append(fullscreenStyle);
   const embedded=window.frameElement?.classList?.contains('reportDocumentFrame');
   if(embedded){
     root.dataset.mentoraEmbed='chat';

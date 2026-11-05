@@ -143,3 +143,35 @@ test('persistent gateway errors stop retrying and expose a working manual retry'
   e.load();assert.equal(e.run(),1000);
  }finally{e.w.close();}
 });
+
+test('fullscreen surfaces follow the artifact theme and restore transparent embeds on exit',()=>{
+ const script=readFileSync(new URL('../app/static/artifact-presentation.js',import.meta.url),'utf8');
+ const cachedCss=readFileSync(new URL('../app/static/cases/theme.css',import.meta.url),'utf8');
+ const init=script.slice(0,script.indexOf('/* Use market-facing labels'));
+ for(const cached of [false,true]){
+  const dom=new JSDOM('<html data-theme="light"><head><style>body{background:transparent}body.is-fullscreen{background:transparent}</style></head><body></body></html>',{url:'https://example.com/chart'});
+  const w=dom.window;
+  try{
+   if(cached){const style=w.document.createElement('style');style.textContent=cachedCss;w.document.head.append(style);}
+   else vm.runInContext(init,vm.createContext({window:w,document:w.document,MutationObserver:w.MutationObserver}));
+   const style=cached?cachedCss:w.document.querySelector('[data-artifact-fullscreen-theme]').textContent;
+   // Native and WebKit fullscreen must paint the element and its backdrop.
+   for(const selector of [':fullscreen',':-webkit-full-screen',':fullscreen::backdrop',':-webkit-full-screen::backdrop']){
+    assert.ok(style.includes(`${selector} { background:var(--artifact-fullscreen-bg)!important; }`));
+   }
+   for(const mode of ['light','dark','light']){
+    w.document.documentElement.dataset.theme=mode;
+    assert.equal(w.getComputedStyle(w.document.documentElement).getPropertyValue('--artifact-fullscreen-bg').trim(),mode==='dark'?'#101010':'#fcfbfc');
+    assert.equal(w.getComputedStyle(w.document.body).backgroundColor,'rgba(0, 0, 0, 0)');
+    w.document.body.classList.add('is-fullscreen');
+    // jsdom does not resolve inherited custom properties in background shorthand.
+    const rules=[...w.document.styleSheets].flatMap(sheet=>[...sheet.cssRules]);
+    const surface=rules.find(rule=>rule.selectorText==='body.is-fullscreen' && rule.style.getPropertyValue('background')==='var(--artifact-fullscreen-bg)');
+    assert.ok(w.document.body.matches(surface.selectorText));
+    assert.equal(surface.style.getPropertyValue('background'),'var(--artifact-fullscreen-bg)');
+    w.document.body.classList.remove('is-fullscreen');
+    assert.equal(w.getComputedStyle(w.document.body).backgroundColor,'rgba(0, 0, 0, 0)');
+   }
+  }finally{w.close();}
+ }
+});
