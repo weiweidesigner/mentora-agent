@@ -495,7 +495,21 @@
     const desktop = window.matchMedia("(min-width:761px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion:reduce)");
     let lanes = [], hovered = false, suppressClickUntil = 0;
-    let previousFrame = performance.now();
+    let previousFrame = 0, galleryFrame = 0, galleryVisible = true;
+    let galleryFocused = false, galleryScrolling = false, galleryScrollTimer = 0;
+    const canMoveGallery = () => galleryVisible && !document.hidden && !conversation.hidden
+      && !selectedCase && conversation.classList.contains("is-empty")
+      && !hovered && !galleryFocused && !galleryScrolling && !reducedMotion.matches;
+    function syncGalleryMotion() {
+      if (!canMoveGallery()) {
+        if (galleryFrame) cancelAnimationFrame(galleryFrame);
+        galleryFrame = 0;
+        previousFrame = 0;
+        lanes.forEach(state => { state.position = state.lane.scrollLeft; });
+        return;
+      }
+      if (!galleryFrame) galleryFrame = requestAnimationFrame(moveLanes);
+    }
     const resizeObserver = new ResizeObserver(() => lanes.forEach(sizeLane));
     function sizeLane(state) {
       const { lane, track } = state;
@@ -572,27 +586,49 @@
         lane.addEventListener("wheel", () => { state.manualUntil = performance.now() + 1200; }, { passive: true });
       });
     }
-    gallery.addEventListener("mouseenter", () => { hovered = true; });
-    gallery.addEventListener("mouseleave", () => { hovered = false; });
+    gallery.addEventListener("mouseenter", () => { hovered = true; syncGalleryMotion(); });
+    gallery.addEventListener("mouseleave", () => { hovered = false; syncGalleryMotion(); });
+    gallery.addEventListener("focusin", () => { galleryFocused = true; syncGalleryMotion(); });
+    gallery.addEventListener("focusout", event => {
+      galleryFocused = gallery.contains(event.relatedTarget); syncGalleryMotion();
+    });
+    // Let vertical scrolling use the frame budget instead of moving two lanes too.
+    conversation.addEventListener("scroll", () => {
+      galleryScrolling = true; syncGalleryMotion();
+      window.clearTimeout(galleryScrollTimer);
+      galleryScrollTimer = window.setTimeout(() => {
+        galleryScrolling = false; syncGalleryMotion();
+      }, 180);
+    }, { passive: true });
+    if (typeof IntersectionObserver !== "undefined") {
+      new IntersectionObserver(entries => {
+        galleryVisible = entries.some(entry => entry.isIntersecting);
+        syncGalleryMotion();
+      }, { root: conversation }).observe(gallery);
+    }
+    new MutationObserver(syncGalleryMotion).observe(conversation, {
+      attributes: true, attributeFilter: ["class", "hidden"]
+    });
+    document.addEventListener("visibilitychange", syncGalleryMotion);
+    reducedMotion.addEventListener("change", syncGalleryMotion);
     gallery.addEventListener("click", event => {
       if (performance.now() < suppressClickUntil) { event.preventDefault(); return; }
       const card = event.target.closest("[data-case]");
       if (card) showCase(card.dataset.case);
     });
     function moveLanes(now) {
-      const elapsed = Math.min(64, now - previousFrame) / 1000;
+      galleryFrame = 0;
+      if (!canMoveGallery()) { previousFrame = 0; return; }
+      const elapsed = previousFrame ? Math.min(64, now - previousFrame) / 1000 : 0;
       previousFrame = now;
-      if (!document.hidden && !selectedCase && conversation.classList.contains("is-empty")) {
-        const paused = hovered || !!gallery.querySelector(":focus-visible") || reducedMotion.matches;
-        lanes.forEach(state => {
-          if (!state.cycle || state.dragging) return;
-          if (paused || now < state.manualUntil) { state.position = state.lane.scrollLeft; return; }
-          state.position += state.direction * 18 * elapsed;
-          state.position = state.cycle + ((state.position - state.cycle) % state.cycle + state.cycle) % state.cycle;
-          state.lane.scrollLeft = state.position;
-        });
-      }
-      requestAnimationFrame(moveLanes);
+      lanes.forEach(state => {
+        if (!state.cycle || state.dragging) return;
+        if (now < state.manualUntil) { state.position = state.lane.scrollLeft; return; }
+        state.position += state.direction * 18 * elapsed;
+        state.position = state.cycle + ((state.position - state.cycle) % state.cycle + state.cycle) % state.cycle;
+        state.lane.scrollLeft = state.position;
+      });
+      syncGalleryMotion();
     }
     window.addEventListener("veya:home-restored", () => lanes.forEach(state => {
       state.position = state.lane.scrollLeft;
@@ -607,7 +643,7 @@
     });
     desktop.addEventListener("change", renderGallery);
     renderGallery();
-    requestAnimationFrame(moveLanes);
+    syncGalleryMotion();
     const id = new URLSearchParams(location.search).get("case");
     if (id) showCase(id, false);
   }).catch(() => {
