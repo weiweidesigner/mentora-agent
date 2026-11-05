@@ -4099,6 +4099,8 @@ p {
   border-radius:0;
   box-shadow:0 4px 20px rgb(0 0 0 / 3%);
 }
+.inspirationTabs button:first-child { padding-left:0; }
+.inspirationTabs button:first-child::after { left:0; }
 .inspirationTabs::-webkit-scrollbar { display:none; }
 .inspirationTabs button { flex:none;white-space:nowrap; }
 .inspirationTabs button { transition:color .15s ease; }

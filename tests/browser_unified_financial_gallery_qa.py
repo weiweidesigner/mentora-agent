@@ -42,6 +42,14 @@ with sync_playwright() as runtime:
    assert page.locator('#inspiration-section-charts .inspirationWidgetGroup').count()>=6
    assert page.locator('#financial-group-ownership').locator('..').locator('..').locator('[data-case=favorite-native-0]').count()==1
    assert all('AInvest' not in text and 'TradingView' not in text for text in page.locator('#inspiration-section-charts h4').all_text_contents())
+   alignment=page.evaluate('''()=>{
+     const button=document.querySelector('#inspirationTabs button:first-child');
+     const range=document.createRange();range.selectNodeContents(button);
+     const heading=document.querySelector('#inspiration-section-mine h3').getBoundingClientRect();
+     const underlineLeft=button.getBoundingClientRect().left+parseFloat(getComputedStyle(button,'::after').left);
+     return {text:Math.abs(range.getBoundingClientRect().left-heading.left),underline:Math.abs(underlineLeft-heading.left)};
+   }''')
+   assert alignment['text']<1 and alignment['underline']<1,alignment
    page.locator('#inspirationTabs [data-category=charts]').click()
    page.wait_for_function("document.querySelector('#inspirationTabs').classList.contains('is-stuck')")
    background=page.locator('#inspirationTabs').evaluate('(el)=>getComputedStyle(el).backgroundColor')
